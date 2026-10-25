@@ -10,14 +10,17 @@ const JAVASCRIPT_TSC_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
 mod const_enum_import;
+mod contextual_prop_anchors;
 mod dynamic_template_refs;
 mod generic_constructor_slots;
 mod global_components;
 mod incomplete_tags;
 mod javascript_check_js;
 mod long_prop_kebab_case;
+mod optional_prop_spacing;
 mod props_binding;
 mod pug_refusal;
+mod quoted_generic_parameters;
 mod template_expression_syntax;
 mod type_only_import_use;
 mod unicode_prop_bindings;

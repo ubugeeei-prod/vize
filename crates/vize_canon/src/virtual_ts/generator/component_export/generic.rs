@@ -1,4 +1,3 @@
-use super::super::generics::split_generic_params;
 use vize_carton::{String, cstr};
 
 /// The child-side slot resolver a parent's `v-slot` scope calls to instantiate
@@ -23,7 +22,7 @@ pub(super) fn slot_resolver_field(
     if !slots_is_generic {
         return String::default();
     }
-    let resolver_decl = strip_synthetic_any_defaults(generic_decl);
+    let resolver_decl = generic_decl;
     cstr!(
         "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => __VizeSlots<{generic_names}>; "
     )
@@ -65,58 +64,6 @@ pub(super) fn generic_check_props_param(
         }
     }
     param
-}
-
-/// The same parameter list with generated `= any` defaults removed.
-///
-/// A *type alias* parameter needs the `= any` default so bare references stay
-/// legal (#3065), but a call signature must not inherit those synthetic
-/// defaults: when a call cannot infer an argument for a parameter, TypeScript
-/// falls back to the default when there is one and to the constraint when there
-/// is not.
-pub(super) fn strip_synthetic_any_defaults(generic_decl: &str) -> String {
-    let mut stripped = String::default();
-    for param in split_generic_params(generic_decl) {
-        if !stripped.is_empty() {
-            stripped.push_str(", ");
-        }
-        stripped.push_str(param_without_synthetic_any_default(param).as_str());
-    }
-    stripped
-}
-
-/// One parameter declaration with only its generated `= any` suffix removed; `=>` never terminates it.
-fn param_without_synthetic_any_default(param: &str) -> String {
-    let Some((declaration, default)) =
-        default_start(param).and_then(|start| param.split_at_checked(start))
-    else {
-        return param.trim().into();
-    };
-    if default
-        .get(1..)
-        .is_some_and(|default| default.trim() == "any")
-    {
-        declaration.trim().into()
-    } else {
-        param.trim().into()
-    }
-}
-
-fn default_start(param: &str) -> Option<usize> {
-    let bytes = param.as_bytes();
-    let mut depth = 0i32;
-    let mut i = 0usize;
-    while let Some(&byte) = bytes.get(i) {
-        match byte {
-            b'<' => depth += 1,
-            b'>' => depth -= 1,
-            b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,
-            b'=' if depth == 0 => return Some(i),
-            _ => {}
-        }
-        i += 1;
-    }
-    None
 }
 
 #[cfg(test)]

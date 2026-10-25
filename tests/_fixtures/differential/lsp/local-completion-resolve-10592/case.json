@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "id": "lsp/source-session/local-completion-resolve-10592",
+  "provenance": {
+    "fixCommit": "78c539904082646c0fee2a26f0a2224737819efc",
+    "issue": 10592,
+    "witness": {
+      "path": "local-completion-resolve-10592/source-law.rs.txt",
+      "sha256": "932357f1d13cd1645a9864c8dc2115d8acc4929ee120f7c9a986f2de3b236c18"
+    }
+  },
+  "documentVersion": 1,
+  "openDocument": false,
+  "initializationOptions": {
+    "typecheck": false,
+    "lint": false
+  },
+  "files": [
+    {
+      "source": "a-package.json.txt",
+      "runtimePath": "a/package.json",
+      "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"
+    },
+    {
+      "source": "a-vite.config.mjs.txt",
+      "runtimePath": "a/vite.config.mjs",
+      "sha256": "9289d892df5b850f34c47486c209286cb9bdd7e9b6863a54d41a37993ae82300"
+    },
+    {
+      "source": "a-tsconfig.json.txt",
+      "runtimePath": "a/tsconfig.json",
+      "sha256": "07aa477a9b674188c231b9c47c3fae1a95d93bf2f87e0a02909b143951bf6eba"
+    },
+    {
+      "source": "a-page.vue.txt",
+      "runtimePath": "a/src/pages/products/[id].vue",
+      "sha256": "33141e0600a018d25840f8cd5167fcf878a8cd3028b96950c6e293fa40b5c7d4"
+    },
+    {
+      "source": "b-package.json.txt",
+      "runtimePath": "b/package.json",
+      "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"
+    },
+    {
+      "source": "b-vite.config.mjs.txt",
+      "runtimePath": "b/vite.config.mjs",
+      "sha256": "9289d892df5b850f34c47486c209286cb9bdd7e9b6863a54d41a37993ae82300"
+    },
+    {
+      "source": "b-tsconfig.json.txt",
+      "runtimePath": "b/tsconfig.json",
+      "sha256": "07aa477a9b674188c231b9c47c3fae1a95d93bf2f87e0a02909b143951bf6eba"
+    },
+    {
+      "source": "b-page.vue.txt",
+      "runtimePath": "b/src/pages/products/[id].vue",
+      "sha256": "33141e0600a018d25840f8cd5167fcf878a8cd3028b96950c6e293fa40b5c7d4"
+    },
+    {
+      "source": "changed-a-vite.config.mjs.txt",
+      "runtimePath": "transition/a-vite.config.mjs",
+      "sha256": "8c62022a0b0daa930e5f8d8fd80f76686867acd0381cd558253b44b7b475aff7"
+    },
+    {
+      "source": "local-item.json.txt",
+      "runtimePath": "protocol/local-item.json",
+      "sha256": "972a42a8a179cad881cfeb02682150847b0c09ad83fd9f3b4feb1f728a0968d0"
+    },
+    {
+      "source": "initialize-capabilities.json.txt",
+      "runtimePath": "protocol/initialize-capabilities.json",
+      "sha256": "37888467406cb1d4d709bd4cdd652986c4afd9f50e1db1b9ae3163d79a88bfd5"
+    },
+    {
+      "source": "public-before-observation.json.gz",
+      "runtimePath": "custody/public-before-observation.json.gz",
+      "sha256": "3384b7bc8169299a303a6a3ff7f70bf7ef20ee0611c16d4f6fdaee6b1e93c8a8"
+    },
+    {
+      "source": "public-before-wire.jsonl.gz",
+      "runtimePath": "custody/public-before-wire.jsonl.gz",
+      "sha256": "de71bc152f86edb10b520aaa1f72de1d04dfaf3c9cdefcb6da221b8ad3af4faf"
+    },
+    {
+      "source": "public-before-identity.json",
+      "runtimePath": "custody/public-before-identity.json",
+      "sha256": "6b94794836a05e2ce65072dbc5c2da76422ab614dc0f1f62a2e50f30616804e3"
+    },
+    {
+      "source": "source-law.rs.txt",
+      "runtimePath": "custody/source-law.rs",
+      "sha256": "932357f1d13cd1645a9864c8dc2115d8acc4929ee120f7c9a986f2de3b236c18"
+    }
+  ],
+  "entry": "a/src/pages/products/[id].vue",
+  "expected": {
+    "source": "session-plan.json",
+    "sha256": "2ba69600d9038b9ef7b38ea465110ba88fb7ad68edf9ed7db8b4d737366da3f4"
+  },
+  "method": "source-session/local-completion-resolve",
+  "sourceSession": {
+    "kind": "local-completion-resolve-v1",
+    "state": "source-inspected",
+    "executor": "tests/tooling/lsp-local-completion-resolve.test.ts",
+    "plannedClientRpcCount": 23,
+    "directWrapperRpcCount": 22,
+    "workspaceFolders": [
+      "a",
+      "b"
+    ],
+    "documentPaths": [
+      "a/src/pages/products/[id].vue",
+      "b/src/pages/products/[id].vue"
+    ],
+    "transition": {
+      "target": "a/vite.config.mjs",
+      "input": "transition/a-vite.config.mjs",
+      "eventType": 2
+    },
+    "localItem": "protocol/local-item.json",
+    "capabilities": "protocol/initialize-capabilities.json"
+  },
+  "scope": "Actual project/config/item transition inputs. Generic adapter explicitly unsupported; only dedicated source session executes the regression."
+}

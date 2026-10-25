@@ -30,7 +30,7 @@ import {
   toPluginVisibleVirtualId,
 } from "../virtual.ts";
 import { toNativeCssAliasRule } from "../utils/css.ts";
-import { createStyleVirtualId } from "./style-request.ts";
+import { resolveStyleVirtualId } from "./style-request.ts";
 import { resolveTemplateOnlySfcId, type ResolvedSfcId } from "./tree-shaking.ts";
 export function resolveVuePath(state: VizePluginState, id: string, importer?: string): string {
   return resolveViteVuePath(state.root, id, importer);
@@ -913,7 +913,7 @@ export async function resolveIdHook(
       state.logger.log(`resolveId: skipping vitepress-plugin-llms style import ${id}`);
       return null;
     }
-    return createStyleVirtualId(request.normalizedFsId ?? id);
+    return resolveStyleVirtualId(request.normalizedFsId ?? id, state.root);
   }
 
   if (isBuild && request.normalizedFsId) {

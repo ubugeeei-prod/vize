@@ -1,7 +1,4 @@
-use super::{
-    DARWIN_ARM64, LINUX_X64, eof_capability, image_digest, known_binary, known_contract,
-    known_initialize,
-};
+use super::{eof_capability, image_digest, known_contract};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use std::{
@@ -83,46 +80,21 @@ fn streamed_image_digest_authenticates_bytes_in_the_final_partial_buffer() {
 }
 
 #[test]
-fn eof_requires_both_full_physical_image_and_complete_initialize_contract() {
-    let initialized = known_contract();
-    assert!(known_initialize(&initialized));
-    assert!(known_binary(LINUX_X64));
-    assert!(known_binary(DARWIN_ARM64));
-    for value in [
-        json!(null),
-        json!({}),
-        json!({"serverInfo":{"name":"typescript-go"}}),
-        json!({"serverInfo":{"name":"other","version":"7.0.2"}}),
-        json!({"serverInfo":{"name":"typescript-go","version":"7.0.3"}}),
-        json!({"serverInfo":{"name":"typescript-go","version":7.02}}),
-    ] {
-        assert!(!known_initialize(&value));
-    }
-    let mut changed = initialized.clone();
-    changed["capabilities"]["positionEncoding"] = json!("utf-8");
-    assert!(!known_initialize(&changed));
-    let mut changed = initialized.clone();
-    changed["capabilities"]
-        .as_object_mut()
-        .unwrap()
-        .remove("diagnosticProvider");
-    assert!(!known_initialize(&changed));
+fn fake_missing_and_changed_physical_images_cannot_borrow_a_provider_contract() {
     let temp = tempfile::tempdir().unwrap();
     let fake = temp.path().join("native");
-    fs::write(&fake, b"Version 7.0.2\n").unwrap();
-    assert!(!eof_capability(&fake, &initialized));
-    fs::write(&fake, b"Version 7.0.2\n\0\xff").unwrap();
-    assert!(!eof_capability(&fake, &initialized));
-    assert!(!eof_capability(&temp.path().join("absent"), &initialized));
-    for digest in [
-        "",
-        "4f2de678",
-        &"f".repeat(64),
-        vize_l0::cstr!("{LINUX_X64}00").as_str(),
-    ] {
-        assert!(!known_binary(digest));
+    for initialized in [known_contract(), super::mapper_contract::initialize()] {
+        for bytes in [b"Version 7.0.2\n".as_slice(), b"Version 7.1.0-dev\n\0\xff"] {
+            fs::write(&fake, bytes).unwrap();
+            assert!(!eof_capability(&fake, &initialized));
+        }
+        assert!(!eof_capability(&temp.path().join("absent"), &initialized));
     }
 }
+
+#[cfg(unix)]
+mod native_provider;
+mod provider_pairs;
 
 #[cfg(unix)]
 #[test]

@@ -29,16 +29,25 @@ fn trim_expression(expression: &str) -> &str {
 
 fn strip_generated_group_indent(expression: &str, options: &FormatOptions) -> String {
     let expression = trim_expression(expression);
-    let Some((first, rest)) = expression.split_once('\n') else {
+    let separator = if options.end_of_line == crate::EndOfLine::Cr {
+        '\r'
+    } else {
+        '\n'
+    };
+    let Some((first, rest)) = expression.split_once(separator) else {
         return expression.to_compact_string();
     };
     let indent = options.indent_string();
     let mut unindented = String::with_capacity(expression.len());
     unindented.push_str(first);
-    let mut literal = ValueLines::new(expression, Representation::JavaScript);
+    let mut literal = if separator == '\r' {
+        ValueLines::with_cr(expression, Representation::JavaScript)
+    } else {
+        ValueLines::new(expression, Representation::JavaScript)
+    };
     literal.advance_line(first);
-    for line in rest.split('\n') {
-        unindented.push('\n');
+    for line in rest.split(separator) {
+        unindented.push(separator);
         if literal.line_is_raw() {
             unindented.push_str(line);
         } else {
@@ -193,6 +202,11 @@ fn format_expression_with_layout(
             && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
             && let Expression::UnaryExpression(unary) = &statement.expression
             && (matches!(&unary.argument, Expression::CallExpression(_))
+                || (options.canonical_directive_layout
+                    && matches!(
+                        &unary.argument,
+                        Expression::ConditionalExpression(_) | Expression::ObjectExpression(_)
+                    ))
                 || (matches!(
                     &unary.argument,
                     Expression::BinaryExpression(_)
@@ -201,9 +215,10 @@ fn format_expression_with_layout(
                         | Expression::ComputedMemberExpression(_)
                         | Expression::PrivateFieldExpression(_)
                         | Expression::ChainExpression(_)
-                ) && attribute_layout.is_some_and(|(name, value, trimmed)| {
-                    value_uses_standalone_layout(name, value, trimmed, options, depth)
-                })))
+                ) && (options.canonical_directive_layout
+                    || attribute_layout.is_some_and(|(name, value, trimmed)| {
+                        value_uses_standalone_layout(name, value, trimmed, options, depth)
+                    }))))
         {
             // Retained direct calls already consume the attribute-value budget.
             // Apply that budget to the other expression shapes when the value
@@ -217,6 +232,9 @@ fn format_expression_with_layout(
                 .saturating_sub(value_indent as u32)
                 .max(1);
             oxc_options.line_width = LineWidth::try_from(width as u16).unwrap_or_default();
+            if options.canonical_directive_layout {
+                oxc_options.expand = oxc_formatter::Expand::Never;
+            }
             let code =
                 oxc_formatter::format_unary_argument(oxc_allocator, &parsed.program, oxc_options)?
                     .print()
@@ -225,13 +243,16 @@ fn format_expression_with_layout(
             let code = trim_expression(&code);
             let inner = expression_wrapper::unwrap_argument(code, &parsed.program, trimmed)?;
             let removed_generated_group = inner.text.len() != code.len();
-            let code = if removed_generated_group {
+            let code = if removed_generated_group
+                && !matches!(&unary.argument, Expression::ConditionalExpression(_))
+            {
                 strip_generated_group_indent(inner.text, options)
             } else {
                 trim_expression(inner.text).to_compact_string()
             };
-            let owns_attribute_lines = code.contains('\n')
-                || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r'));
+            let owns_attribute_lines = !matches!(&unary.argument, Expression::ObjectExpression(_))
+                && (code.contains('\n')
+                    || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r')));
             return Some(FormattedExpression {
                 code,
                 retained_bare_sequence: inner.retained_bare_sequence,

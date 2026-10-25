@@ -107,7 +107,7 @@ pub(super) fn emit_scope_closures(
     let event_contracts = std::cell::RefCell::new(FxHashMap::default());
     let slot_outlets = if check_options.check_props {
         profile!("canon.virtual_ts.collect_slot_outlets", {
-            SlotOutletChecks::collect(summary, options.template_ast)
+            SlotOutletChecks::collect(summary, options.template_ast, options.generic_parameters)
         })
     } else {
         SlotOutletChecks::default()

@@ -9,6 +9,9 @@ import { downloadFile } from "./release-download.js";
 import { extractReleaseArchive } from "./release-archive.js";
 import { pruneDownloadedServerVersions } from "./server-cache.js";
 import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
+import { serverInvocation } from "./server-command.js";
+import { discoverWorkspaceServers } from "./workspace-server.js";
+import { inspectWorkspaceServerProtocol } from "./workspace-server-protocol.js";
 import type {
   ExtensionRuntimeState,
   InspectedServerCandidate,
@@ -37,10 +40,22 @@ export function createServerDiscovery(
     context: ExtensionContext,
     config: ReturnType<typeof workspace.getConfiguration>,
     generation: number,
+    workspaceFailure?: string,
   ): Promise<string | undefined> {
     const exeName = process.platform === "win32" ? "vize.exe" : "vize";
     const expectedVersion = getExtensionVersion(context);
+    let workspaceFallbackReason = workspaceFailure;
     state.selectedServerCandidate = undefined;
+
+    function select(candidate: InspectedServerCandidate): string {
+      const selected = {
+        ...candidate,
+        ...(workspaceFallbackReason ? { workspaceFallbackReason } : {}),
+      };
+      logSelectedServer(selected, expectedVersion);
+      state.selectedServerCandidate = selected;
+      return selected.path;
+    }
 
     const configuredPath = resolveTrustedServerPath(config);
     if (configuredPath) {
@@ -50,13 +65,34 @@ export function createServerDiscovery(
           source: "configured",
         });
         if (generation !== state.configurationSyncGeneration) return undefined;
-        logSelectedServer(candidate, expectedVersion);
         void warnAboutVersionMismatch(candidate, expectedVersion);
-        state.selectedServerCandidate = candidate;
-        return configuredPath;
+        return select(candidate);
       }
 
       state.outputChannel.appendLine(`Configured server path does not exist: ${configuredPath}`);
+    }
+
+    if (!workspaceFailure && config.get<boolean>("server.preferWorkspace", true)) {
+      const local = discoverWorkspaceServers(
+        (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
+        workspace.isTrusted,
+      );
+      workspaceFallbackReason = local.reason;
+      for (const server of local.candidates) {
+        const candidate = await inspectServerCandidate(server);
+        if (generation !== state.configurationSyncGeneration) return undefined;
+        try {
+          if (!candidate.version)
+            throw new Error(candidate.versionError ?? "Unrecognized Vize version");
+          await inspectWorkspaceServerProtocol(candidate.path);
+          if (generation !== state.configurationSyncGeneration) return undefined;
+          return select(candidate);
+        } catch (error) {
+          workspaceFallbackReason = `Workspace server ${candidate.path} (${candidate.version ?? "unknown version"}) is unavailable or incompatible: ${String(error)}`;
+        }
+        if (generation !== state.configurationSyncGeneration) return undefined;
+      }
+      if (workspaceFallbackReason) state.outputChannel.appendLine(workspaceFallbackReason);
     }
 
     const candidates = await inspectServerCandidates(collectServerCandidates(context, exeName));
@@ -69,9 +105,7 @@ export function createServerDiscovery(
           serverMatchesExtension(candidate.version, expectedVersion),
       );
       if (matchingCandidate) {
-        logSelectedServer(matchingCandidate, expectedVersion);
-        state.selectedServerCandidate = matchingCandidate;
-        return matchingCandidate.path;
+        return select(matchingCandidate);
       }
 
       const releaseCandidate = await resolveReleaseServerCandidate(
@@ -82,18 +116,14 @@ export function createServerDiscovery(
       );
       if (generation !== state.configurationSyncGeneration) return undefined;
       if (releaseCandidate) {
-        logSelectedServer(releaseCandidate, expectedVersion);
-        state.selectedServerCandidate = releaseCandidate;
-        return releaseCandidate.path;
+        return select(releaseCandidate);
       }
     }
 
     const fallbackCandidate = candidates[0];
     if (fallbackCandidate) {
-      logSelectedServer(fallbackCandidate, expectedVersion);
       void warnAboutVersionMismatch(fallbackCandidate, expectedVersion);
-      state.selectedServerCandidate = fallbackCandidate;
-      return fallbackCandidate.path;
+      return select(fallbackCandidate);
     }
 
     state.outputChannel.appendLine("Server not found in any location");
@@ -167,9 +197,17 @@ export function createServerDiscovery(
     candidate: ServerCandidate,
   ): Promise<InspectedServerCandidate> {
     try {
-      const { stdout } = await execFileAsync(candidate.path, ["--version"], {
-        timeout: 3000,
-      });
+      const invocation = serverInvocation(candidate.path);
+      const { stdout } = await execFileAsync(
+        invocation.command,
+        [...invocation.args, "--version"],
+        {
+          timeout: 3000,
+          maxBuffer: 64 * 1024,
+          env: invocation.env,
+          windowsHide: true,
+        },
+      );
       return {
         ...candidate,
         version: parseVizeVersion(stdout),

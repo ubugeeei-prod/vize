@@ -145,6 +145,12 @@ impl CorsaExecutor {
         project: &VirtualProject,
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
+        if profile!(
+            "canon.corsa.diagnostic_route",
+            project.requires_project_session()
+        ) {
+            return self.check_with_project_session(project);
+        }
         let servers = servers.unwrap_or_else(|| auto_server_count(project, self.checkers()));
         if servers > 1 {
             match profile!(

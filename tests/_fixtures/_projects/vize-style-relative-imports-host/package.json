@@ -1,0 +1,7 @@
+{
+  "name": "vize-style-relative-imports-css-host",
+  "private": true,
+  "dependencies": {
+    "lightningcss": "1.33.0"
+  }
+}

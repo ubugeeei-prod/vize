@@ -1,0 +1,556 @@
+{
+  "provider": {
+    "version": "vize 0.565.0",
+    "wrapperSha256": "c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54",
+    "nativeSha256": "3f7af8eac6db36b88af0b71089c257826b30b49a31ed2ba3981c7f65b619d8f3",
+    "consumer": "/tmp/vize-css-hover-565.f97Mp7"
+  },
+  "sourceMainInventory": "813716a1d5acada5b368054771e991325500a9ff",
+  "rows": [
+    {
+      "language": "css",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"css\">\n/* 日本 🧭 */\n#abc { color: #ff0000; }\n#ff0000:hover { background: red; }\nrgb(0 128 255 / 50%) { color: blue; }\n</style>\n",
+      "sourceSha256": "cd27bdfd5e9a7876bcde89d03185443265ce312b04900cfc11bfdec6adf68f61",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue",
+      "hover": [],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 4,
+              "line": 3
+            },
+            "start": {
+              "character": 0,
+              "line": 3
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 21,
+              "line": 3
+            },
+            "start": {
+              "character": 14,
+              "line": 3
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 0,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 31,
+              "line": 4
+            },
+            "start": {
+              "character": 28,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 5
+            },
+            "start": {
+              "character": 0,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 1,
+            "green": 0,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 34,
+              "line": 5
+            },
+            "start": {
+              "character": 30,
+              "line": 5
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.8841249999999832,
+      "presentations": [
+        {
+          "label": "#aabbcc"
+        },
+        {
+          "label": "rgb(170, 187, 204)"
+        },
+        {
+          "label": "hsl(210 25% 73.33%)"
+        }
+      ]
+    },
+    {
+      "language": "sass",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"sass\">\n/* 日本 🧭 */\n#abc\n  color #ff0000\n  background-color rgb(0 128 255 / 50%)\n  border-color hsl(120 100% 25%)\n  outline-color red\n</style>\n",
+      "sourceSha256": "06647dbc3d18db8180a30a1fd078c161f25c8539e16deb18ac8fa0de99001d40",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue",
+      "hover": [],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 4,
+              "line": 3
+            },
+            "start": {
+              "character": 0,
+              "line": 3
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 4
+            },
+            "start": {
+              "character": 8,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 39,
+              "line": 5
+            },
+            "start": {
+              "character": 19,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 32,
+              "line": 6
+            },
+            "start": {
+              "character": 15,
+              "line": 6
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.5161249999999882,
+      "presentations": [
+        {
+          "label": "#aabbcc"
+        },
+        {
+          "label": "rgb(170, 187, 204)"
+        },
+        {
+          "label": "hsl(210 25% 73.33%)"
+        }
+      ]
+    },
+    {
+      "language": "stylus",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"stylus\">\n/* 日本 🧭 */\n#abc\n  color #ff0000\n  background-color rgb(0 128 255 / 50%)\n  border-color hsl(120 100% 25%)\n  outline-color red\n</style>\n",
+      "sourceSha256": "6b47943a90af9072dbadd0ab5c320bb633a280aee50c4e5756f17d612eb0e521",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue",
+      "hover": [],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 4,
+              "line": 3
+            },
+            "start": {
+              "character": 0,
+              "line": 3
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 4
+            },
+            "start": {
+              "character": 8,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 39,
+              "line": 5
+            },
+            "start": {
+              "character": 19,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 32,
+              "line": 6
+            },
+            "start": {
+              "character": 15,
+              "line": 6
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.45699999999999363,
+      "presentations": [
+        {
+          "label": "#aabbcc"
+        },
+        {
+          "label": "rgb(170, 187, 204)"
+        },
+        {
+          "label": "hsl(210 25% 73.33%)"
+        }
+      ]
+    }
+  ],
+  "initialize": {
+    "capabilities": {
+      "codeLensProvider": {
+        "resolveProvider": false
+      },
+      "colorProvider": true,
+      "completionProvider": {
+        "resolveProvider": true,
+        "triggerCharacters": [
+          "\"",
+          "'",
+          ":",
+          "@",
+          ".",
+          "<",
+          "=",
+          "/",
+          ">",
+          "+",
+          "^",
+          "*",
+          "(",
+          ")",
+          "#",
+          "[",
+          "]",
+          "$",
+          "-",
+          "{",
+          "}"
+        ]
+      },
+      "definitionProvider": true,
+      "documentFormattingProvider": true,
+      "documentHighlightProvider": true,
+      "documentLinkProvider": {
+        "resolveProvider": false
+      },
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": ";",
+        "moreTriggerCharacter": [
+          "}",
+          "\n"
+        ]
+      },
+      "documentRangeFormattingProvider": true,
+      "documentSymbolProvider": true,
+      "experimental": {
+        "vize": {
+          "jsxTypecheck": false
+        }
+      },
+      "foldingRangeProvider": true,
+      "hoverProvider": true,
+      "inlayHintProvider": true,
+      "linkedEditingRangeProvider": true,
+      "monikerProvider": true,
+      "referencesProvider": true,
+      "renameProvider": {
+        "prepareProvider": true
+      },
+      "selectionRangeProvider": true,
+      "semanticTokensProvider": {
+        "full": true,
+        "legend": {
+          "tokenModifiers": [
+            "declaration",
+            "definition",
+            "readonly",
+            "static",
+            "deprecated",
+            "abstract",
+            "async",
+            "modification",
+            "documentation",
+            "defaultLibrary"
+          ],
+          "tokenTypes": [
+            "namespace",
+            "type",
+            "class",
+            "enum",
+            "interface",
+            "struct",
+            "typeParameter",
+            "parameter",
+            "variable",
+            "property",
+            "enumMember",
+            "event",
+            "function",
+            "method",
+            "macro",
+            "keyword",
+            "modifier",
+            "comment",
+            "string",
+            "number",
+            "regexp",
+            "operator",
+            "decorator"
+          ]
+        },
+        "range": true
+      },
+      "signatureHelpProvider": {
+        "retriggerCharacters": [
+          ")"
+        ],
+        "triggerCharacters": [
+          "(",
+          ",",
+          "<"
+        ]
+      },
+      "textDocumentSync": {
+        "change": 2,
+        "openClose": true,
+        "save": {
+          "includeText": false
+        },
+        "willSave": false,
+        "willSaveWaitUntil": false
+      },
+      "workspace": {
+        "fileOperations": {
+          "didCreate": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didDelete": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "willRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          }
+        },
+        "workspaceFolders": {
+          "changeNotifications": true,
+          "supported": true
+        }
+      },
+      "workspaceSymbolProvider": true
+    },
+    "serverInfo": {
+      "name": "vize-maestro",
+      "version": "0.565.0"
+    }
+  },
+  "exitCode": 0
+}

@@ -121,6 +121,8 @@ Key options:
 
 `<style lang="scss">`, `sass`, `less` and `stylus` blocks are compiled with the preprocessor installed in your project (`sass` or `sass-embedded`, `less`, `stylus`) before they are scoped, as Vite does. Preprocessor errors point to the line in the `.vue` file. If Node or the package is missing, the block is emitted as written and the build reports a warning.
 
+Scoped CSS preserves native nesting when a nested rule depends on a parent selector list. This retains the list's inherited specificity, including through `:is()`, `:where()` and grouping rules. JSON build output can therefore contain nested CSS; a host CSS pipeline can lower it for its configured browser targets. Do not expand each parent branch separately, which can change the cascade.
+
 ## Format
 
 ```bash

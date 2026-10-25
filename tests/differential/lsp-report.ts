@@ -12,6 +12,7 @@ import {
 } from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";
 import { validateLspWorkspace } from "./lsp-workspace.ts";
+import { sourceSessionUnsupportedLegacy } from "./lsp-source-sessions.ts";
 import {
   hasCapabilities,
   type JsonRpcMessage,
@@ -146,7 +147,20 @@ export function validateLspReport(
 ) {
   validateResultEnvelope(loaded, report, expectedBuild.sourceRevision);
   assert.deepEqual(report.argv, ["lsp"]);
-  if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild);
+  if (report.buildReceipt) {
+    // Receipt-less failed launches carry only the source revision. A claimed
+    // executable observation must supply the complete expected identity.
+    const { sourceRevision, binaryPath, binarySha256, cliVersion } = expectedBuild;
+    assert(typeof binaryPath === "string", "source receipt requires expected binaryPath");
+    assert(typeof binarySha256 === "string", "source receipt requires expected binarySha256");
+    assert(typeof cliVersion === "string", "source receipt requires expected cliVersion");
+    validateBuildReceipt(report.buildReceipt, {
+      sourceRevision,
+      binaryPath,
+      binarySha256,
+      cliVersion,
+    });
+  }
   if (report.binary) {
     assert(report.buildReceipt, "completed executable observations require a source-build receipt");
     assert(report.binaryProbe, "raw executable version probe is required");
@@ -168,6 +182,7 @@ export function validateLspReport(
     plannedCases: loaded.cases.length,
     legacyMatches: 0,
     legacyFailures: 0,
+    legacyUnsupported: 0,
     baselineDrift: 0,
     nativeUnsupported: loaded.cases.length,
     pairedComparisons: 0,
@@ -179,6 +194,15 @@ export function validateLspReport(
     assert(row, "every planned row is required");
     assert.deepEqual(row.native, { state: "unsupported", reason: NATIVE_REASON });
     assert.deepEqual(row.comparison, { state: "not-compared", reason: NATIVE_REASON });
+    if (fixture.data.sourceSession) {
+      assert.deepEqual(
+        row.legacy,
+        sourceSessionUnsupportedLegacy(),
+        "an unsupported source session cannot claim wire or reference credit",
+      );
+      summary.legacyUnsupported += 1;
+      continue;
+    }
     assert.equal(row.legacy.comparator, "complete-jsonrpc-response");
     assert(["completed", "failed"].includes(row.legacy.state));
     validateLspWorkspace(fixture, row.legacy.workspace, row.legacy.state === "completed");

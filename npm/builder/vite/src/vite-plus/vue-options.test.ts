@@ -237,7 +237,7 @@ void test("the documented root and Vue lint layers compose without duplicate nat
   assert.equal(metadata.options.fmt, true);
   const native = await resolveConfigExport(metadata.config!, env);
   assert.deepEqual(native.linter, { preset: "recommended" });
-  assert.deepEqual(native.formatter, { singleQuote: true });
+  assert.deepEqual(native.formatter, { ignorePatterns: ["dist/**"], singleQuote: true });
   assert.deepEqual(native.entries?.at(-1)?.linter, {
     rules: { "vue/no-v-html": "off" },
   });
@@ -293,7 +293,7 @@ void test("the standalone helper delegates to fluent Vue composition", async () 
   );
 });
 
-void test("canonical native leaves retain disabled flags and explicit compiler/formatter presence", () => {
+void test("canonical native leaves retain explicit formatting task opt-out", () => {
   const legacy: VueConfigObject = {
     compiler: false,
     typecheck: false,
@@ -319,7 +319,7 @@ void test("canonical native leaves retain disabled flags and explicit compiler/f
     {},
   );
   assert.equal(selected.compiler, false);
-  assert.deepEqual(selected.metadata.options, { check: true, lint: true, fmt: true });
+  assert.deepEqual(selected.metadata.options, { check: true, lint: true, fmt: false });
 });
 
 void test("canonical version chooses the exact existing native dialect vocabulary", () => {

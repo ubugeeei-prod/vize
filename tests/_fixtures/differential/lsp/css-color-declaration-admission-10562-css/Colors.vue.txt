@@ -1,0 +1,7 @@
+<template><div /></template>
+<style scoped>
+/* 日本 🧭 */
+#abc { color: #ff0000; }
+#ff0000:hover { background: red; }
+rgb(0 0 255) { color: blue; }
+</style>

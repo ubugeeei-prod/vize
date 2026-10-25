@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { assertClosedFormatterManifest } from "./formatter-sole-child-width-reference.mjs";
 
 const INPUT = "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52";
 const OUTPUT = "b2fb731eb8b2376c016442868a4f632d62cc617c53d50e7d4ffa40a073e28b16";
@@ -12,14 +13,7 @@ const AUTHORITY_HASH = "b986b95eecfa3f2df1d653695f27dc330f3229b22ac7c335c15a2ecb
 
 export function expressionWidthReference(root, fixture) {
   if (fixture.id !== "formatter/sfc/directive-prefix-print-width") return {};
-  const manifest = fs.readFileSync(
-    path.join(root, "tests/_fixtures/differential/formatter/manifest.json"),
-  );
-  assert.equal(
-    sha256(manifest),
-    "1c4beb10ea5b444df0a902552f468d7d8f67e70c5d301d9815d930bce6298984",
-    "whole formatter manifest changed",
-  );
+  assertClosedFormatterManifest(root);
   assert.equal(sha256(fixture.input), INPUT, "whole original deep input changed");
   assert.equal(sha256(fixture.expected), INPUT, "whole original partial reference changed");
   assert.deepEqual(fixture.argv, ["fmt", "--no-config", "--write", "App.vue"]);

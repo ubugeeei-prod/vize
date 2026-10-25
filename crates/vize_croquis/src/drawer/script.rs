@@ -152,6 +152,7 @@ impl Drawer {
                 jsx,
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
+                self.track_unused_bindings,
                 self.module_export_capture.as_mut(),
             )
         );

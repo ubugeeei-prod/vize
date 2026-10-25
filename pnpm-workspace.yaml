@@ -101,6 +101,8 @@ catalogs:
   babel-jsx-oracle:
     "@babel/core": "7.29.0"
     "@babel/plugin-syntax-typescript": "7.28.6"
+    # Declaration-only prerequisite for the strict mounted/source oracle tests.
+    "@types/babel__core": "7.20.5"
     "@vue/babel-plugin-jsx": "2.0.1"
 
   # Real vue-jsx-vapor compiler/runtime used only by the mounted JSX semantic

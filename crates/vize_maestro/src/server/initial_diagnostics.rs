@@ -4,8 +4,9 @@
 //! occupy Maestro's single transport executor until a request completes. A
 //! full type-diagnostic pass inside `didOpen` or `didChange` therefore makes an
 //! interactive request wait behind work that is not required to answer it.
-//! This module keeps validation on one bounded background lane and coalesces
-//! repeated edits to the newest document version.
+//! This module keeps native validation on one bounded background lane and
+//! parser/lint feedback on a separate fixed lane. Both coalesce repeated edits
+//! to the newest document version.
 
 use std::sync::mpsc;
 use std::thread;
@@ -39,6 +40,8 @@ struct InitialDiagnosticsJob {
     not_before: Instant,
     sequence: u64,
     sync_pending: bool,
+    sync_running: bool,
+    preparation_pending: bool,
     sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
     continuation: Option<super::state::InitialConfigurationContinuation>,
 }
@@ -111,6 +114,8 @@ impl PendingInitialDiagnostics {
                 not_before,
                 sequence,
                 sync_pending: cause == DiagnosticsJobCause::Open,
+                sync_running: false,
+                preparation_pending: cause == DiagnosticsJobCause::Open,
                 sync,
                 continuation,
             },
@@ -126,18 +131,45 @@ impl PendingInitialDiagnostics {
             .map(|(uri, _)| uri.clone())?;
         let job = self.jobs.get_mut(&uri)?;
         job.sync_pending = false;
+        job.sync_running = true;
+        Some((uri, job.clone()))
+    }
+
+    fn complete_sync(&mut self, uri: &Url, sequence: u64) {
+        if let Some(job) = self
+            .jobs
+            .get_mut(uri)
+            .filter(|job| job.sequence == sequence)
+        {
+            job.sync_running = false;
+        }
+    }
+
+    fn take_preparation(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
+        let uri = self
+            .jobs
+            .iter()
+            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.preparation_pending)
+            .min_by_key(|(_, job)| job.sequence)
+            .map(|(uri, _)| uri.clone())?;
+        let job = self.jobs.get_mut(&uri)?;
+        job.preparation_pending = false;
         Some((uri, job.clone()))
     }
 
     fn next_not_before(&self) -> Option<Instant> {
-        self.jobs.values().map(|job| job.not_before).min()
+        self.jobs
+            .values()
+            .filter(|job| !job.sync_pending && !job.sync_running)
+            .map(|job| job.not_before)
+            .min()
     }
 
     fn take_ready(&mut self, now: Instant) -> Option<(Url, InitialDiagnosticsJob)> {
         let uri = self
             .jobs
             .iter()
-            .filter(|(_, job)| job.not_before <= now)
+            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.not_before <= now)
             .min_by_key(|(_, job)| job.not_before)
             .map(|(uri, _)| uri.clone())?;
         self.jobs.remove(&uri).map(|job| (uri, job))
@@ -147,6 +179,7 @@ impl PendingInitialDiagnostics {
 #[derive(Clone)]
 pub(super) struct InitialDiagnosticsScheduler {
     sender: Option<mpsc::SyncSender<()>>,
+    sync_sender: Option<mpsc::SyncSender<()>>,
     /// The active worker inserts into its queue without retaining a sender.
     worker_owned: bool,
     #[expect(
@@ -166,6 +199,7 @@ impl InitialDiagnosticsScheduler {
         // at most one pending version per URI, so repeated opens cannot build
         // an unbounded FIFO backlog while Corsa is processing another file.
         let (sender, receiver) = mpsc::sync_channel(1);
+        let (sync_sender, sync_receiver) = mpsc::sync_channel(1);
         let pending = std::sync::Arc::new(Mutex::new(PendingInitialDiagnostics::default()));
         let worker_pending = std::sync::Arc::clone(&pending);
         // Importer refreshes can finish a queued document's initial pass. Give
@@ -173,9 +207,31 @@ impl InitialDiagnosticsScheduler {
         // which would prevent shutdown when the foreground server is dropped.
         worker.initial_diagnostics = Some(Self {
             sender: None,
+            sync_sender: None,
             worker_owned: true,
             pending: std::sync::Arc::clone(&pending),
         });
+        let mut sync_worker = MaestroServer::diagnostic_worker(
+            worker.client.clone(),
+            std::sync::Arc::clone(&worker.state),
+        );
+        sync_worker.initial_diagnostics = worker.initial_diagnostics.clone();
+        let sync_pending = std::sync::Arc::clone(&pending);
+        let native_wake = sender.clone();
+        let sync_spawned = thread::Builder::new()
+            .name("vize-sync-diagnostics".into())
+            .spawn(move || {
+                run_sync_worker(&sync_worker, sync_receiver, &sync_pending, native_wake)
+            });
+        if let Err(error) = sync_spawned {
+            tracing::error!("failed to start sync diagnostics worker: {error}");
+            return Self {
+                sender: None,
+                sync_sender: None,
+                worker_owned: false,
+                pending,
+            };
+        }
         let spawned = thread::Builder::new()
             .name("vize-initial-diagnostics".into())
             .spawn(move || run_worker(&worker, receiver, &worker_pending));
@@ -183,6 +239,7 @@ impl InitialDiagnosticsScheduler {
         match spawned {
             Ok(_) => Self {
                 sender: Some(sender),
+                sync_sender: Some(sync_sender),
                 worker_owned: false,
                 pending,
             },
@@ -190,6 +247,7 @@ impl InitialDiagnosticsScheduler {
                 tracing::error!("failed to start initial diagnostics worker: {error}");
                 Self {
                     sender: None,
+                    sync_sender: None,
                     worker_owned: false,
                     pending,
                 }
@@ -217,6 +275,9 @@ impl InitialDiagnosticsScheduler {
             sync,
             continuation,
         );
+        if let Some(sync_sender) = &self.sync_sender {
+            let _ = sync_sender.try_send(());
+        }
         match sender.try_send(()) {
             Ok(()) | Err(mpsc::TrySendError::Full(())) => true,
             Err(mpsc::TrySendError::Disconnected(())) => {
@@ -260,6 +321,39 @@ impl InitialDiagnosticsScheduler {
     }
 }
 
+/// A fixed second lane keeps new-file parser/lint feedback independent of the
+/// one shared native project warm-up. Both queues remain coalesced and bounded.
+fn run_sync_worker(
+    worker: &MaestroServer,
+    receiver: mpsc::Receiver<()>,
+    pending: &Mutex<PendingInitialDiagnostics>,
+    native_wake: mpsc::SyncSender<()>,
+) {
+    while receiver.recv().is_ok() {
+        loop {
+            let sync_job = { pending.lock().take_sync() };
+            let Some((uri, job)) = sync_job else {
+                break;
+            };
+            crate::runtime::block_on(async {
+                let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
+                    "initial_sync_configuration_admission",
+                    1,
+                );
+                let project = worker
+                    .for_initial_document(&uri, job.version, job.continuation.as_ref())
+                    .await;
+                phase.finish();
+                project
+                    .publish_initial_sync_diagnostics(&uri, job.version)
+                    .await;
+            });
+            pending.lock().complete_sync(&uri, job.sequence);
+            let _ = native_wake.try_send(());
+        }
+    }
+}
+
 fn run_worker(
     worker: &MaestroServer,
     receiver: mpsc::Receiver<()>,
@@ -267,30 +361,15 @@ fn run_worker(
 ) {
     while receiver.recv().is_ok() {
         loop {
-            // Parsing and linting can be expensive on a cold SFC. Keep them
-            // off the foreground didOpen handler while still publishing prompt
-            // non-empty feedback before the delayed native type pass.
-            let sync_job = { pending.lock().take_sync() };
-            if let Some((uri, job)) = sync_job {
-                let version = job.version;
+            let preparation = { pending.lock().take_preparation() };
+            if let Some((uri, job)) = preparation {
                 crate::runtime::block_on(async {
-                    let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
-                        "initial_sync_configuration_admission",
-                        1,
-                    );
                     let project = worker
-                        .for_initial_document(&uri, version, job.continuation.as_ref())
+                        .for_initial_document(&uri, job.version, job.continuation.as_ref())
                         .await;
-                    phase.finish();
                     project
-                        .publish_initial_sync_diagnostics(&uri, version)
+                        .prepare_initial_native_document(&uri, job.version)
                         .await;
-                    let prepare = pending.lock().jobs.get(&uri).is_some_and(|job| {
-                        job.version == version && job.not_before > Instant::now()
-                    });
-                    if prepare {
-                        project.prepare_initial_native_document(&uri, version).await;
-                    }
                 });
                 continue;
             }

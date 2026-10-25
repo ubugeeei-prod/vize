@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "id": "lsp/regression/native-diagnostic-warmup-10604",
+  "provenance": {
+    "fixCommit": "416564d1746fee250ba4fd7e57965aac1d25d9de",
+    "witnessPath": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
+    "inputOrigin": "Authored public Ref unwrapping reproduction of issue #10604; eight template TS2739 errors plus an independent script TS2322 settlement control.",
+    "contractOrigin": "CSS literal red is independently authored; the dedicated genuine native stdio test asserts delayed type diagnostics and lifetime/freshness controls.",
+    "originalIssue": {
+      "path": "original-issue.json",
+      "sha256": "b3461d602f569a40c2595e482e64893222e068fc46d59ab04b6dcb3e204a0fcf"
+    },
+    "warmupWitness": {
+      "path": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
+      "sha256": "ba8d53759b8f5fdf771dc8ee0169477ef5bdfe8357c8fa7c5501346eef62031e"
+    }
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "eceeec4925439291f312e7d72771206326cd0079c2ab4feb15de7075d9abb91e"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "165f499150c9cbd451fcc2b649d0b92ac606e84cc2635819132872faae8fcb88"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "031669894f1ea9ff20445e6cc718e74d6380dced98f9bfe43a3574f5fee4938d"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "63330e200323205a7d1d4365a45030e3a61fdd3518b3a8970dda6359cdeef0b4"
+  },
+  "method": "textDocument/documentColor",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "scope": "The manifest documentColor request is a STRUCTURAL CONTROL ONLY and does not represent the native diagnostic fix. The separately pinned full genuine stdio/native transition witness owns the late pending-to-complete result, exact eight TS2739 errors, 1901-file corpus, current-phase gates, two pre-admitted roots, stale version, actual closed read, configuration revocation and hard-error controls. Root-expansion process replacement remains explicitly UNRESOLVED #10622; no native whole-product parity credit is claimed.",
+  "nativeWarmupContract": {
+    "vueSourceFiles": 487,
+    "tsSourceFiles": 1414,
+    "templateErrorCode": 2739,
+    "templateErrorCount": 8,
+    "softThresholdMs": 1,
+    "baselineConfiguration": "environment override",
+    "candidateConfiguration": "initializationOptions.typecheckTimeoutMs; environment override absent",
+    "changedRoots": {
+      "state": "UNRESOLVED",
+      "issue": 10622,
+      "strictFailureRun": "https://github.com/ubugeeei-prod/vize/actions/runs/40183984382"
+    },
+    "sameProcessReuse": "strictly qualified only across two pre-admitted roots with unchanged generated tsconfig roots"
+  }
+}

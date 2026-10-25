@@ -5,6 +5,7 @@ import { loadOriginalHighlightRequests } from "./lsp-highlight-manifest.ts";
 import { loadModuleResolutionLinks } from "./lsp-module-links-manifest.ts";
 import { BINDING_SESSION, loadBindingOccurrences } from "./lsp-binding-occurrences-manifest.ts";
 import { sourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
+import { validateLocalResolveSourceSession } from "./lsp-source-sessions.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -42,10 +43,11 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
   const packRoot = path.dirname(manifestPath);
   loaded.cases = (loaded.cases as PlannedLspFixture[]).map((planned): LspFixture => {
     assert.deepEqual(planned.targets, ["stdio"]);
-    assert(Number.isSafeInteger(planned.requestCount) && planned.requestCount > 0);
     const data = JSON.parse(
       readPinnedArtifact(packRoot, planned.case).toString("utf8"),
     ) as FixtureData;
+    assert(Number.isSafeInteger(planned.requestCount));
+    assert(data.sourceSession ? planned.requestCount === 0 : planned.requestCount > 0);
     assert.equal(data.version, 1);
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
@@ -102,7 +104,14 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       }).toString("utf8"),
     ) as unknown;
     let requests: LspFixture["requests"];
-    if (data.id === BINDING_SESSION) {
+    if (data.sourceSession) {
+      validateLocalResolveSourceSession(
+        data,
+        new Map(files.map((file) => [file.runtimePath, file.bytes])),
+        expected,
+      );
+      requests = [];
+    } else if (data.id === BINDING_SESSION) {
       requests = loadBindingOccurrences(packRoot, data, expected);
     } else if (data.id === "lsp/fix-history/document-link-module-resolution-original") {
       requests = loadModuleResolutionLinks(data, expected);

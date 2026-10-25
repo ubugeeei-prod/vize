@@ -3,6 +3,8 @@ use vize_croquis::{Croquis, macros::ModelDefinition};
 
 use crate::virtual_ts::{helpers::push_ts_string_literal, model_types::model_value_type};
 
+use crate::virtual_ts::generic_parameters::GenericParameters;
+
 use super::template_model_modifiers::{model_modifier_prop_name, model_modifier_type};
 
 fn emit_type_member(ts: &mut String, name: &str, optional: &str, ty: &str) {
@@ -15,11 +17,12 @@ fn emit_model_prop_members(
     ts: &mut String,
     summary: &Croquis,
     model: &ModelDefinition,
+    generic_parameters: Option<&GenericParameters>,
     emitted_names: &mut FxHashSet<String>,
 ) {
     let optional = if model.required { "" } else { "?" };
     let name = model.name.as_str();
-    let prop_type = model_value_type(summary, model);
+    let prop_type = model_value_type(generic_parameters, model);
     if emitted_names.insert(name.into()) {
         emit_type_member(ts, name, optional, prop_type.as_str());
     }
@@ -56,11 +59,12 @@ pub(super) fn append_model_props_type_literal(
     ts: &mut String,
     summary: &Croquis,
     models: &[ModelDefinition],
+    generic_parameters: Option<&GenericParameters>,
 ) {
     ts.push_str("{\n");
     let mut emitted_names: FxHashSet<String> = FxHashSet::default();
     for model in models {
-        emit_model_prop_members(ts, summary, model, &mut emitted_names);
+        emit_model_prop_members(ts, summary, model, generic_parameters, &mut emitted_names);
     }
     ts.push('}');
 }
@@ -69,6 +73,7 @@ pub(super) fn append_macro_props_type_literal(
     ts: &mut String,
     summary: &Croquis,
     models: &[ModelDefinition],
+    generic_parameters: Option<&GenericParameters>,
 ) {
     ts.push_str("{\n");
     let mut emitted_names: FxHashSet<String> = FxHashSet::default();
@@ -79,7 +84,7 @@ pub(super) fn append_macro_props_type_literal(
         emitted_names.insert(prop.name.as_str().into());
     }
     for model in models {
-        emit_model_prop_members(ts, summary, model, &mut emitted_names);
+        emit_model_prop_members(ts, summary, model, generic_parameters, &mut emitted_names);
     }
     ts.push('}');
 }

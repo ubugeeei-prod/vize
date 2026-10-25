@@ -149,16 +149,19 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/dialect/quirks-void-close",
       "compiler/sfc/incomplete-script-setup-recovery-10200",
       "compiler/sfc/ordered-object-props-10458",
+      "compiler/sfc/scoped-list-nesting-10606",
+      "compiler/sfc/sibling-script-import-reads-10616",
+      "compiler/sfc/compact-scoped-at-rules-10639",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   const acceptance = summarizeNativeAcceptance(loaded, report, { sourceRevision });
   assert.deepEqual(acceptance.total, {
-    planned: 23,
+    planned: 26,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 23,
+    unsupported: 26,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -178,7 +181,7 @@ void test("compiler fixture pins a real full-module reference without native cre
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(acceptance.dialectCoverage.unknown.planned, 19);
+  assert.equal(acceptance.dialectCoverage.unknown.planned, 22);
   assert.equal(
     loaded.cases.find((current) => current.id === "compiler/sfc/package-import-prop-type-9894")
       .comparison.scriptLang,

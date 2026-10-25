@@ -1,0 +1,8 @@
+import type Child from './Child.vue'
+declare module 'vue' {
+  export interface GlobalComponents {
+    Comp7: typeof Child
+    GlobalOnly: typeof Child
+  }
+}
+export {}

@@ -31,6 +31,7 @@ use super::{
 };
 
 pub(super) mod generic_attribute;
+mod generic_syntax;
 mod style_modules;
 mod template;
 mod types;
@@ -66,6 +67,28 @@ pub(super) fn generate_vue_virtual_ts(
     let options = &descriptor_options;
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
+    let generic_parameters = descriptor
+        .script_setup
+        .as_ref()
+        .and_then(|block| block.attrs.get("generic"))
+        .map(|value| value.as_ref())
+        .filter(|value: &&str| !value.trim().is_empty())
+        .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
+    let diagnostic_route = if generic_parameters
+        .as_ref()
+        .is_some_and(|plan| !plan.diagnostics.is_empty())
+    {
+        super::DiagnosticRoute::ProjectSessionRequired
+    } else {
+        super::DiagnosticRoute::NativeCliAllowed
+    };
+
+    if generic_parameters.as_ref().is_some_and(|plan| {
+        !plan.diagnostics.is_empty()
+            && (plan.escaped_wrapper || !plan.recoverable_at_closing_delimiter)
+    }) {
+        return Ok(generic_syntax::refuse(path, source, descriptor));
+    }
 
     let view = match vize_atelier_sfc::prepare_root_patterned_template(
         descriptor,
@@ -76,6 +99,8 @@ pub(super) fn generate_vue_virtual_ts(
         Ok(view) => view,
         Err(error) => {
             return Ok(GeneratedVueFile {
+                diagnostic_route,
+                generic_copies: None,
                 typed_router_import: false,
                 empty_module_exports: false,
                 module_exports: None,
@@ -157,6 +182,8 @@ pub(super) fn generate_vue_virtual_ts(
     // AST remains absent; native TypeScript owns syntax diagnostics for that script.
     if !has_script_projection {
         return Ok(GeneratedVueFile {
+            diagnostic_route,
+            generic_copies: None,
             typed_router_import: false,
             empty_module_exports: false,
             module_exports: None,
@@ -252,43 +279,78 @@ pub(super) fn generate_vue_virtual_ts(
     });
 
     let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;
-    let mut output = profile!(
-        "canon.virtual_ts.generate",
-        generate_virtual_ts_with_offsets_and_checks(
+    let generation_options = VirtualTsGenerationOptions {
+        diagnostic_ownership: codegen_options.diagnostic_ownership,
+        generic_parameters: generic_parameters.as_ref(),
+        authored_scripts: Some(AuthoredScriptMetadata::from_descriptor(descriptor)),
+        check_options: codegen_options.check_options,
+        dialect: codegen_options.dialect,
+        preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
+        extra_template_referenced_names: extra_template_referenced_names.as_ref(),
+        options_api: codegen_options.options_api || vue2_compat,
+        preserve_authored_component: codegen_options.preserve_authored_component,
+        component_name: codegen_options.component_name,
+        self_component_name: path.file_stem().and_then(|name| name.to_str()),
+        preserve_event_navigation: codegen_options.preserve_event_navigation,
+        legacy_vue2: vue2_compat,
+        template_syntax_quirks: matches!(
+            codegen_options.template_syntax,
+            TemplateSyntaxMode::Quirks
+        ),
+        hoist_shared_preamble,
+        external_component_attrs_module: codegen_options.external_component_attrs_module,
+        lib_references: None,
+        omit_vite_client_reference: codegen_options.omit_vite_client_reference,
+        split_script_setup_offsets,
+        script_syntax_boundaries: &script_diagnostics.boundaries,
+        experimental_strict_slot_children: codegen_options.experimental_strict_slot_children,
+    };
+    let mut output = if let Some(plan) = generic_parameters
+        .as_ref()
+        .filter(|plan| !plan.diagnostics.is_empty())
+    {
+        let Some(setup) = descriptor.script_setup.as_ref().filter(|_| {
+            descriptor.script.is_none()
+                && !generation_options.legacy_vue2
+                && generation_options.dialect == VueVersion::V3
+        }) else {
+            return Ok(generic_syntax::refuse(path, source, descriptor));
+        };
+        let Some(attribute) =
+            crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)
+                .filter(|range| source.get(range.clone()) == Some(plan.raw()))
+        else {
+            return Ok(generic_syntax::refuse(path, source, descriptor));
+        };
+        let Some(output) = crate::virtual_ts::generic_recovery::generate(
             &croquis,
-            script_content.as_deref(),
-            template_ast.as_ref(),
-            script_offset,
-            template_offset,
+            script_content.as_deref().unwrap_or_default(),
+            (
+                script_offset,
+                crate::script_parse::script_source_type(setup.lang.as_deref()),
+            ),
+            attribute,
+            plan,
             options,
-            VirtualTsGenerationOptions {
-                diagnostic_ownership: codegen_options.diagnostic_ownership,
-                authored_scripts: Some(AuthoredScriptMetadata::from_descriptor(descriptor)),
-                check_options: codegen_options.check_options,
-                dialect: codegen_options.dialect,
-                preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
-                extra_template_referenced_names: extra_template_referenced_names.as_ref(),
-                options_api: codegen_options.options_api || vue2_compat,
-                preserve_authored_component: codegen_options.preserve_authored_component,
-                component_name: codegen_options.component_name,
-                self_component_name: path.file_stem().and_then(|name| name.to_str()),
-                preserve_event_navigation: codegen_options.preserve_event_navigation,
-                legacy_vue2: vue2_compat,
-                template_syntax_quirks: matches!(
-                    codegen_options.template_syntax,
-                    TemplateSyntaxMode::Quirks
-                ),
-                hoist_shared_preamble,
-                external_component_attrs_module: codegen_options.external_component_attrs_module,
-                lib_references: None,
-                omit_vite_client_reference: codegen_options.omit_vite_client_reference,
-                split_script_setup_offsets,
-                script_syntax_boundaries: &script_diagnostics.boundaries,
-                experimental_strict_slot_children: codegen_options
-                    .experimental_strict_slot_children,
-            },
+            generation_options,
+        ) else {
+            return Ok(generic_syntax::refuse(path, source, descriptor));
+        };
+        output
+    } else {
+        profile!(
+            "canon.virtual_ts.generate",
+            generate_virtual_ts_with_offsets_and_checks(
+                &croquis,
+                script_content.as_deref(),
+                template_ast.as_ref(),
+                script_offset,
+                template_offset,
+                options,
+                generation_options,
+            )
         )
-    );
+    };
 
     let typed_router_import = typed_router.apply(
         &mut output,
@@ -312,12 +374,16 @@ pub(super) fn generate_vue_virtual_ts(
     let mut code = output.code;
     let (mut mappings, mut mapping_meta, semantic_links, prop_default_key_links) =
         output.mapping.into_binding_parts_with_metadata();
+    let generic_copies = generic_parameters.as_ref().and_then(|plan| {
+        let attribute =
+            crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)?;
+        generic_attribute::GenericCopies::find(&code, &mappings, plan, attribute)
+    });
     generic_attribute::map_generic_attribute(
         &code,
         &mut mappings,
         &mut mapping_meta,
-        source,
-        descriptor,
+        generic_copies.as_ref(),
     );
     style_modules::append_style_scoped_classes(
         &mut code,
@@ -334,6 +400,8 @@ pub(super) fn generate_vue_virtual_ts(
     );
 
     Ok(GeneratedVueFile {
+        diagnostic_route,
+        generic_copies,
         code,
         mappings,
         mapping_meta,

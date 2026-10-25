@@ -37,6 +37,7 @@ pub(super) const VUE_JSX_REFERENCE_DIRECTIVE: &str = "/// <reference types=\"vue
 /// Result of building a virtual file for a registered path, owned and
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
 pub(super) struct RegisteredFile {
+    pub(super) diagnostic_route: super::DiagnosticRoute,
     pub(super) file: VirtualFile,
     pub(super) extra_virtual_files: Vec<VirtualFile>,
     /// Original source text as registered, retained for offset<->line/col
@@ -170,6 +171,8 @@ pub(super) fn build_vue_registered_file(
         )
     )?;
     let GeneratedVueFile {
+        diagnostic_route,
+        generic_copies: _,
         mut code,
         mut mappings,
         mapping_meta,
@@ -255,6 +258,7 @@ pub(super) fn build_vue_registered_file(
     };
 
     Ok(RegisteredFile {
+        diagnostic_route,
         star_projection,
         file: VirtualFile {
             content: rewritten.code,
