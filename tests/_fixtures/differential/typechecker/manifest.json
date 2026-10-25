@@ -6003,7 +6003,7 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/native_provider.rs",
-          "sha256": "fa52766aace1e77ef65094974e302b34d57feb769ef29ddf0cc0759251451f8e"
+          "sha256": "dbd0e5afeedebacf58c218fd7df3d2e4a5e608b9fe3f8353aa06e7885733c21d"
         },
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::buffered_completion_and_unrelated_notifications_preserve_the_whole_transcript",

@@ -1,7 +1,7 @@
 use crate::{corsa_client::CorsaProjectClient, file_uri::path_to_file_uri};
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
-use vize_carton::cstr;
+use vize_l0::cstr;
 
 const TEST: &str = "lsp_client::editor_lsp::native_shutdown::tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown";
 const PROVIDER: &str = "VIZE_TEST_NATIVE_MAPPER_TSGO";
@@ -18,7 +18,7 @@ fn pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown() {
     let native = std::env::var_os(PROVIDER).expect("the actual pinned mapper provider is required");
     let native = Path::new(&native).canonicalize().unwrap();
     let digest = super::super::image_digest(fs::File::open(&native).unwrap()).unwrap();
-    let digest: vize_carton::String = digest.iter().map(|byte| cstr!("{byte:02x}")).collect();
+    let digest: vize_l0::String = digest.iter().map(|byte| cstr!("{byte:02x}")).collect();
     assert_eq!(digest.as_str(), super::super::MAPPER_LINUX_X64);
     if let Some(receipt) = std::env::var_os(WORKER) {
         run_worker(&native, Path::new(&receipt));
