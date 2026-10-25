@@ -865,11 +865,11 @@
       "type": "object",
       "properties": {
         "ignorePatterns": {
+          "description": "Formatter-only exclusions, relative to the project root; ordered negations are supported",
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "description": "Formatter-only exclusions, relative to the project root; ordered negations are supported"
+          }
         },
         "preset": {
           "description": "Named set of formatter defaults; options set alongside it win",
