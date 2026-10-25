@@ -680,7 +680,8 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     ],
   ];
   for (const [name, text, config] of expectedFailures) {
-    assert.equal(typeof name, "string");
+    if (typeof name !== "string" || typeof text !== "string")
+      throw new TypeError("Invalid failure fixture");
     await fs.writeFile(path.join(consumer, "App.vue"), text);
     await fs.writeFile(path.join(consumer, ".vizerc.parcel.json"), JSON.stringify(config));
     let failure;
