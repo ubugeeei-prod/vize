@@ -53,8 +53,9 @@ function fixture() {
       ".map(name => [name, process.env[name] ?? null]))}));\n",
   );
   const installed = path.join(packageRoot, "dist", "cli.mjs");
-  fs.mkdirSync(path.dirname(installed), { recursive: true });
-  fs.copyFileSync(fileURLToPath(new URL("../dist/cli.mjs", import.meta.url)), installed);
+  fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.dirname(installed), {
+    recursive: true,
+  });
   const run = (args: string[], override: Record<string, string> = {}) => {
     const environment = { ...process.env };
     for (const name of environmentNames) delete environment[name];

@@ -2347,5 +2347,68 @@
         ]
       }
     }
+  ],
+  "runtimeCases": [
+    {
+      "id": "linter/runtime/project-native-runtime-10694",
+      "state": "active",
+      "adapter": "native-runtime-selection-unit-v1",
+      "targets": [
+        "runtime-selection"
+      ],
+      "input": {
+        "path": "tests/_fixtures/runtime/native-runtime-10694/selection.json",
+        "sha256": "20408c95b216c0b655200a5491e3ed0542a13e8db1adaf486274677b375f5463"
+      },
+      "sources": [
+        {
+          "path": "crates/vize_carton/src/corsa_resolver.rs",
+          "before": "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
+          "after": "f195f877677277cd66910e67165fd2c6dd31738cf78113acecfa1fe06ccc381e"
+        },
+        {
+          "path": "crates/vize_carton/src/corsa_resolver/tests.rs",
+          "before": "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
+          "after": "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc"
+        },
+        {
+          "path": "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
+          "before": null,
+          "after": "f869b0a0acb0207661e6f6a403b91850f3241cf6e1b14fc6da326b20affdb83a"
+        },
+        {
+          "path": "crates/vize_patina/src/linter/corsa_session/paths.rs",
+          "before": "520d83c671bf4965de96d35272e97e9b10fe4d98f2e4a96ae389a5934da17e2e",
+          "after": "bc006e0ae6e331206ebf1c0e85cb6fd8d6ae4a298b36e023637636c83e383a00"
+        },
+        {
+          "path": "crates/vize_patina/src/linter/corsa_session/paths/store.rs",
+          "before": "f6b53e7c54bb702a1ba69dc8e906c7f414c1bdcde68c20fe01964f38d1897fd6",
+          "after": "5b5a3fc63a2bf6d7446220171f9b64917f417b784286f4b15641e811cfbff112"
+        },
+        {
+          "path": "crates/vize_patina/src/linter/corsa_session/paths/store/runtime_tests.rs",
+          "before": null,
+          "after": "9adfd1ceac1d790514b13915df0de205cf5b254a087e4bd662aff821d2a6c590"
+        },
+        {
+          "path": "crates/vize_patina/src/linter/corsa_session/session.rs",
+          "before": "bf2aff6b0ed2aa044a39c48cb3280903d76e173da2af931f9416a454edbaeb24",
+          "after": "5cf2c7cbbf2fc36109cb8f4e02e7e02db51902b00d32ce5b3ec04152dd872ee5"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "corsa_resolver::tests::fixture_cases::runtime_selection_fixture_covers_declared_graphs_and_overrides",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
+          "sha256": "f869b0a0acb0207661e6f6a403b91850f3241cf6e1b14fc6da326b20affdb83a"
+        },
+        {
+          "selector": "linter::corsa_session::paths::store::runtime_tests::runtime_selection_fixture_uses_selected_config_roots",
+          "source": "crates/vize_patina/src/linter/corsa_session/paths/store/runtime_tests.rs",
+          "sha256": "9adfd1ceac1d790514b13915df0de205cf5b254a087e4bd662aff821d2a6c590"
+        }
+      ]
+    }
   ]
 }
