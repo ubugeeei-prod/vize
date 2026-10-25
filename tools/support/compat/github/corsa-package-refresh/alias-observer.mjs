@@ -22,6 +22,10 @@ const state = (result) => ({
   stderr: result.stderr ?? "",
 });
 const observer = git("rev-parse", "HEAD");
+const producerFile =
+  "crates/vize_canon/src/corsa_bridge/vue_document_package_config_tests/extensionless_ts_alias.rs";
+const producerParent = "crates/vize_canon/src/corsa_bridge/vue_document_package_config_tests.rs";
+const producerSource = fs.readFileSync(path.join(root, producerFile));
 const test =
   "corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root";
 const testFiles = [
@@ -303,6 +307,96 @@ for (const [label, source] of refs) {
       (file) => file.path.includes("/inputs/") && file.path.endsWith("App.vue"),
     ),
   );
+  if (label === "before-fix") {
+    // Original native observation above ran against an entirely untouched tree.
+    // Add only this closed test observer to exercise the same producer on stock source.
+    const parentPath = path.join(root, producerParent);
+    const childPath = path.join(root, producerFile);
+    const original = fs.readFileSync(parentPath);
+    assert(!fs.existsSync(childPath));
+    assert(!original.toString().includes("mod extensionless_ts_alias;"));
+    const overlay = Buffer.concat([original, Buffer.from("\nmod extensionless_ts_alias;\n")]);
+    const overlayDir = path.join(dir, "test-only-edge-overlay");
+    fs.mkdirSync(overlayDir);
+    fs.writeFileSync(path.join(overlayDir, "parent-before.rs"), original);
+    fs.writeFileSync(path.join(overlayDir, "parent-observed.rs"), overlay);
+    fs.writeFileSync(path.join(overlayDir, "extensionless_ts_alias.rs"), producerSource);
+    row.beforeEdgeOverlay = {
+      parent: producerParent,
+      child: producerFile,
+      productionSource: source,
+      testOnly: true,
+    };
+    try {
+      fs.mkdirSync(path.dirname(childPath), { recursive: true });
+      fs.writeFileSync(parentPath, overlay);
+      fs.writeFileSync(childPath, producerSource);
+      row.beforeEdgeOverlay.parentSha256 = hash(parentPath);
+      row.beforeEdgeOverlay.childSha256 = hash(childPath);
+      const built = spawnSync("cargo", buildArgs, {
+        cwd: root,
+        env: process.env,
+        encoding: "utf8",
+        timeout: 900_000,
+        maxBuffer: 64_000_000,
+      });
+      fs.writeFileSync(path.join(overlayDir, "build.stdout"), built.stdout ?? "");
+      fs.writeFileSync(path.join(overlayDir, "build.stderr"), built.stderr ?? "");
+      row.beforeEdgeOverlay.build = {
+        command: "cargo",
+        args: buildArgs,
+        status: built.status,
+        signal: built.signal,
+        error: built.error?.message ?? null,
+      };
+      save("receipt.json", receipt);
+      assert.equal(built.error, undefined);
+      assert.equal(built.status, 0, built.stderr);
+      const products = built.stdout
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => JSON.parse(line))
+        .filter(
+          (item) =>
+            item.reason === "compiler-artifact" &&
+            item.target.name === "vize_canon" &&
+            item.profile.test &&
+            item.executable,
+        );
+      assert.equal(products.length, 1);
+      const overlayBinary = fs.realpathSync(products[0].executable);
+      row.beforeEdgeOverlay.binary = {
+        path: overlayBinary,
+        sha256: hash(overlayBinary),
+        cargoArtifact: products[0],
+      };
+      const args = [
+        "corsa_bridge::vue_document_package_config_tests::extensionless_ts_alias::",
+        "--nocapture",
+      ];
+      const checked = spawnSync(overlayBinary, args, {
+        cwd: root,
+        env: { ...env, VIZE_EDITOR_ALIAS_CAPTURE: path.join(dir, "producer-capture") },
+        encoding: "utf8",
+        timeout: 180_000,
+        maxBuffer: 32_000_000,
+      });
+      fs.writeFileSync(path.join(overlayDir, "test.stdout"), checked.stdout ?? "");
+      fs.writeFileSync(path.join(overlayDir, "test.stderr"), checked.stderr ?? "");
+      row.beforeEdgeOverlay.execution = { command: overlayBinary, args, ...state(checked) };
+      assert.equal(checked.error, undefined);
+      assert.equal(checked.signal, null);
+      assert.match(checked.stdout, /running 3 tests/);
+    } finally {
+      fs.writeFileSync(parentPath, original);
+      if (fs.existsSync(childPath)) fs.unlinkSync(childPath);
+      row.beforeEdgeOverlay.restoredOriginalSource =
+        hash(parentPath) === sourceInventory.find((file) => file.path === producerParent).sha256 &&
+        git("diff", "--name-only") === "";
+      save("receipt.json", receipt);
+      assert.equal(row.beforeEdgeOverlay.restoredOriginalSource, true);
+    }
+  }
   if (label === "after-fix") {
     row.unitChecks = [];
     for (const [name, filter] of [

@@ -88,6 +88,19 @@ fn fixture(
         )
         .unwrap();
         std::fs::write(capture.join("metadata.json"), serde_json::to_vec_pretty(&json!({"mode":mode,"extension":extension,"specifier":specifier,"directory":directory,"projectRoot":project.session_project_root})).unwrap()).unwrap();
+        let before = greet_imports(&project.host.pre_rewrite_code);
+        let after = greet_imports(&project.host.code);
+        let (_, original) = before.first().unwrap();
+        let (_, rewritten) = after.first().unwrap();
+        std::fs::write(capture.join("actual-geometry.json"), serde_json::to_vec_pretty(&json!({
+            "sourceStart":original.start,"sourceEnd":original.end,
+            "generatedStart":rewritten.start,"generatedEnd":rewritten.end,
+            "mappedFirstContentByte":project.host.import_source_map.get_original_offset(rewritten.start + 1),
+            "expectedFirstContentByte":original.start + 1,
+            "mappedAfterLiteral":project.host.import_source_map.get_original_offset(rewritten.end),
+            "expectedAfterLiteral":original.end,
+            "reverseFirstContentByte":project.host.import_source_map.get_virtual_offset(original.start + 1)
+        })).unwrap()).unwrap();
     }
     (root, project)
 }
