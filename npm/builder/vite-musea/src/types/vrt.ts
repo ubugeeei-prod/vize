@@ -89,6 +89,8 @@ export interface CaptureConfig {
 /**
  * Image comparison configuration.
  */
+export type DiffStyle = "overlay" | "sideBySide" | "diffOnly";
+
 export interface ComparisonConfig {
   /**
    * Per-pixel YIQ color difference threshold from 0 (exact) to 1 (least sensitive).
@@ -101,8 +103,8 @@ export interface ComparisonConfig {
   antiAliasing?: boolean;
   /** Alpha channel comparison */
   alpha?: boolean;
-  /** Diff image output format */
-  diffStyle?: "overlay" | "sideBySide" | "diffOnly" | "animated";
+  /** PNG presentation: overlay (default), baseline/current pair, or transparent unchanged pixels. */
+  diffStyle?: DiffStyle;
   /** Diff highlight color */
   diffColor?: { r: number; g: number; b: number };
 }

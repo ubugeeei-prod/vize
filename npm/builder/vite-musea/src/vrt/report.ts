@@ -228,10 +228,16 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
 
                 let images = "";
                 if (!r.error && !r.passed && r.diffPath) {
+                  const diffLabel =
+                    r.diffStyle === "sideBySide"
+                      ? "Baseline / Current"
+                      : r.diffStyle === "diffOnly"
+                        ? "Diff only"
+                        : "Diff";
                   images = `<div class="result-images" data-baseline="file://${r.snapshotPath}" data-current="file://${r.currentPath}" data-diff="file://${r.diffPath}">
                     ${r.snapshotPath ? `<div class="image-container"><div class="image-label">Baseline</div><div class="image-wrapper"><img src="file://${r.snapshotPath}" alt="Baseline" loading="lazy" /></div></div>` : ""}
                     ${r.currentPath ? `<div class="image-container"><div class="image-label">Current</div><div class="image-wrapper"><img src="file://${r.currentPath}" alt="Current" loading="lazy" /></div></div>` : ""}
-                    ${r.diffPath ? `<div class="image-container"><div class="image-label">Diff</div><div class="image-wrapper"><img src="file://${r.diffPath}" alt="Diff" loading="lazy" /></div></div>` : ""}
+                    ${r.diffPath ? `<div class="image-container"><div class="image-label">${diffLabel}</div><div class="image-wrapper"><img src="file://${r.diffPath}" alt="${diffLabel}" loading="lazy" /></div></div>` : ""}
                   </div>`;
                 }
 
@@ -296,6 +302,7 @@ export function generateVrtJsonReport(results: VrtResult[], summary: VrtSummary)
         snapshotPath: r.snapshotPath,
         currentPath: r.currentPath,
         diffPath: r.diffPath,
+        diffStyle: r.diffStyle,
         diffPixels: r.diffPixels,
         totalPixels: r.totalPixels,
         variant: r.variantName,

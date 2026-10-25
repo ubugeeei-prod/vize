@@ -21,6 +21,7 @@ export type {
   CaptureConfig,
   BeforeCaptureContext,
   ComparisonConfig,
+  DiffStyle,
   CiConfig,
 } from "./vrt.js";
 

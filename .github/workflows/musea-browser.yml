@@ -165,6 +165,7 @@ jobs:
           vp exec tsx --test src/props-permalink.test.ts gallery/components/props-permalink.browser.test.ts
           vp exec tsx --test gallery/components/sidebar-rotation.browser.test.ts
           vp exec tsx --test src/vrt/mask-capture.browser.test.ts
+          vp exec tsx --test src/vrt/diff-style.browser.test.ts
           vp exec tsx --test src/vrt/before-capture.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
@@ -189,6 +190,7 @@ jobs:
             output/playwright/musea-props/*.png
             output/playwright/musea-props/observations.json
             artifacts/musea-vrt-mask/**
+            artifacts/musea-vrt-styles/**
             output/playwright/musea-interactions/**
           if-no-files-found: error
           retention-days: 7
