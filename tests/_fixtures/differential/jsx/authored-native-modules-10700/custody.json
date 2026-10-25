@@ -2,13 +2,23 @@
   "schemaVersion": 1,
   "mappedRoots": {
     "contract": "complete authored source-only packet plus independent complete decoded-token oracle; runtime qualification is separate",
-    "sourceHead": "a7f163db2ae3c9f4e6d6dc66c21a0c84b49a5a32",
     "run": 40217399231,
     "artifact": 12608118087,
     "capture": "packets.json",
     "rawCaptureSha256": "1f47dc14522b43b82f5b85bbc485255a52a6b6f40ebd391ba546515d7d0938df",
     "fixtureSha256": "2bbfc6262f68ff176ce5a0a55eee3087bc9430a8814879e092332e221c9795d7",
-    "derivedTokens": "Only the duplicate decoded tokens array is omitted from this golden; raw arrays remain in the artifact and every decoded segment is independently checked by the test. Whole source/code/map fields are retained."
+    "derivedTokens": "Only the duplicate decoded tokens array is omitted from this golden; raw arrays remain in the artifact and every decoded segment is independently checked by the test. Whole source/code/map fields are retained.",
+    "triggerHead": "a7f163db2ae3c9f4e6d6dc66c21a0c84b49a5a32",
+    "checkoutHead": "86f29ba0e9066cd09f81465f119352a98abbeed8",
+    "checkoutTree": "037795aebaf677e09e0f00401b19661d7b687487",
+    "attribution": "Original capture is a merge-candidate checkout; literal-head equality was independently reobserved below.",
+    "literalHeadValidation": {
+      "run": 40221673116,
+      "artifact": 12609354973,
+      "checkoutHead": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+      "checkoutTree": "3e1d3d673c142beb6653ad8ef47109f81850e99d",
+      "sameWholeRawCaptureSha256": "1f47dc14522b43b82f5b85bbc485255a52a6b6f40ebd391ba546515d7d0938df"
+    }
   },
   "admission": {
     "contract": "complete source packet; runtime coverage is separately attributed, no universal support claim",
