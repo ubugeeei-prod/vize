@@ -208,10 +208,14 @@ function checkProduct(
       readFile,
     );
     const productPaths = paths.filter((path) =>
-      path.startsWith(product === "linter" ? "crates/vize_patina/src/" : "crates/vize_canon/src/"),
+      product === "lsp"
+        ? /^crates\/vize_(?:maestro|resident)\/src\//.test(path)
+        : path.startsWith(
+            product === "linter" ? "crates/vize_patina/src/" : "crates/vize_canon/src/",
+          ),
     );
     const batchRequired =
-      product === "linter" || product === "typechecker"
+      product === "linter" || product === "typechecker" || product === "lsp"
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&

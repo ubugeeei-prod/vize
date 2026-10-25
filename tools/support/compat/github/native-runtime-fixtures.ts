@@ -1,6 +1,10 @@
 // Executable discovery has no authored-language coordinates. These closed
 // source identities and real Rust graph consumers stay outside batch cases.
 import { createHash } from "node:crypto";
+import {
+  nativeRuntimeGuidanceRegistration,
+  unchangedNativeRuntimeGuidance,
+} from "./native-runtime-guidance.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 type SourcePair = { path: string; before: string | null; after: string };
@@ -11,6 +15,7 @@ const runtimeFixtureSha256 = "20408c95b216c0b655200a5491e3ed0542a13e8db1adaf4862
 // Populated with the exact reviewed consumer source pairs, never a directory
 // exemption. A later edit cannot reuse the Issue 10694 registration.
 const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> = {
+  lsp: nativeRuntimeGuidanceRegistration,
   typechecker: {
     sources: [
       {
@@ -26,7 +31,7 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
         before: null,
-        after: "6d2d716232dc934551f2af7b6ef498f033df02e91a3b7a3670939ec302a6ffe1",
+        after: "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -112,7 +117,7 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
         before: null,
-        after: "6d2d716232dc934551f2af7b6ef498f033df02e91a3b7a3670939ec302a6ffe1",
+        after: "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -349,6 +354,13 @@ export function newNativeRuntimeCases(
             before.toString("utf8"),
             after.toString("utf8"),
           ), "unrelated executor test or oracle edit");
+      if (expected.path.startsWith("crates/vize_maestro/"))
+        require(before !== null &&
+          unchangedNativeRuntimeGuidance(
+            expected.path,
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated Maestro diagnostic or oracle edit");
       if (
         expected.path === "crates/vize_patina/src/linter/native_type_aware.rs" ||
         expected.path ===
