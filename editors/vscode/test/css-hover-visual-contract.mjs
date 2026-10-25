@@ -48,7 +48,9 @@ export function workspaceSettings(serverPath) {
 
 export function assertRenderedCss(snapshot) {
   assert.ok(snapshot.hoverText.length > 0, "real editor hover must be visible");
-  assert.ok(snapshot.links.some((link) => link.href.includes("developer.mozilla.org/")));
+  assert.ok(
+    snapshot.links.some((link) => (link.dataHref ?? link.href).includes("developer.mozilla.org/")),
+  );
   assert.ok(
     snapshot.tokens.some((token) => token.text.trim()),
     "CSS fence must be tokenized",

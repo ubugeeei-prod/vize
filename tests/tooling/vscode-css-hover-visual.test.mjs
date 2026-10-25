@@ -9,7 +9,7 @@ import {
   workspaceSettings,
 } from "../../editors/vscode/test/css-hover-visual-contract.mjs";
 
-test("CSS capture disables built-in default color fallback and keeps authored literal controls", () => {
+await test("CSS capture disables built-in default color fallback and keeps authored literal controls", () => {
   const settings = workspaceSettings("/actual/source-built/vize");
   assert.equal(settings["editor.defaultColorDecorators"], "never");
   assert.equal(settings["editor.colorDecorators"], true);
@@ -22,7 +22,7 @@ test("CSS capture disables built-in default color fallback and keeps authored li
   );
 });
 
-test("render acceptance rejects a fence or mock token list without distinct computed colors", () => {
+await test("render acceptance rejects a fence or mock token list without distinct computed colors", () => {
   const snapshot = {
     hoverText: "background-color",
     links: [{ href: "https://developer.mozilla.org/docs/Web/CSS/background-color" }],
@@ -33,9 +33,20 @@ test("render acceptance rejects a fence or mock token list without distinct comp
     ...snapshot,
     tokens: [...snapshot.tokens, { text: "red", color: "rgb(206, 145, 120)" }],
   });
+  assertRenderedCss({
+    ...snapshot,
+    links: [
+      {
+        href: "vscode-file://workbench",
+        attributeHref: "",
+        dataHref: "https://developer.mozilla.org/docs/Web/CSS/background-color",
+      },
+    ],
+    tokens: [...snapshot.tokens, { text: "red", color: "rgb(206, 145, 120)" }],
+  });
 });
 
-test("picker acceptance rejects standalone/default picker and wrong actual RGBA", () => {
+await test("picker acceptance rejects standalone/default picker and wrong actual RGBA", () => {
   const snapshot = {
     decorations: [{ backgroundColor: "rgb(51, 102, 153)" }],
     pickerOriginalColor: "rgb(51, 102, 153)",
@@ -53,7 +64,7 @@ test("picker acceptance rejects standalone/default picker and wrong actual RGBA"
   );
 });
 
-test("visual mechanism observes real Electron DOM and never uses standalone picker or HTML mocks", () => {
+await test("visual mechanism observes real Electron DOM and never uses standalone picker or HTML mocks", () => {
   const capture = fs.readFileSync(
     new URL("../../editors/vscode/test/css-hover-visual-capture.mjs", import.meta.url),
     "utf8",

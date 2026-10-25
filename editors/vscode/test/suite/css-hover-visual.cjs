@@ -144,7 +144,6 @@ exports.run = async function run() {
             ),
           ),
         );
-        await phase(expected.id, position);
       }
     }
 
@@ -164,6 +163,11 @@ exports.run = async function run() {
       params: { textDocument: { uri: document.uri.toString() } },
     });
     retain("colors.json", { publicColors, rawColors });
+    assert.deepEqual(
+      publicColors.map((entry) => entry.source),
+      ["red", "#336699", "rgba(51, 102, 153, 0.5)"],
+    );
+    assert.equal(publicColors[2].color.alpha, 0.5);
     const hex = colors.find((entry) => document.getText(entry.range) === "#336699");
     assert.ok(hex, "real provider must supply the hex color");
     for (const [channel, expected] of Object.entries({
@@ -178,6 +182,12 @@ exports.run = async function run() {
       uri: document.uri,
       range: hex.range,
     });
+    for (const expected of hoverCases.filter((entry) => !entry.baselineNull)) {
+      await phase(
+        expected.id,
+        document.positionAt(fixtureSource.indexOf(expected.needle) + expected.offset),
+      );
+    }
     await phase("picker", hex.range.start);
     assert.equal(document.getText(), fixtureSource);
     retain("complete.json", { unchangedDocument: true, captured: ["property", "named", "picker"] });

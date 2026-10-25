@@ -47,6 +47,8 @@ async function snapshot(page, session, destination, id) {
       links: [...(hover?.querySelectorAll("a") ?? [])].map((node) => ({
         text: node.textContent,
         href: node.href,
+        attributeHref: node.getAttribute("href"),
+        dataHref: node.getAttribute("data-href"),
       })),
       decorations: decorations.map((node, index) => ({
         index,
