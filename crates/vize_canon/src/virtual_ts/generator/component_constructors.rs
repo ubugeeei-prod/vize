@@ -5,7 +5,9 @@
 //! bare reference is legal TypeScript that silently resolves against the
 //! alias's declared defaults instead of the caller's arguments (#3354).
 
+mod emission;
 mod generic_function;
+use emission::AliasReference;
 
 use vize_carton::config::VueVersion;
 use vize_carton::{String, append, cstr};
@@ -37,12 +39,8 @@ pub(super) struct ComponentInstanceAliases<'a> {
 /// instantiated with the SFC's parameters when the alias re-declared them, bare
 /// otherwise. Instantiating an alias that took no parameters is a hard
 /// `TS2315`, so the decision is per alias.
-fn alias_ref(name: &str, is_generic: bool, generic_names: &str) -> String {
-    if is_generic {
-        cstr!("{name}<{generic_names}>")
-    } else {
-        String::from(name)
-    }
+fn alias_ref<'a>(name: &'a str, is_generic: bool, generic_names: &'a str) -> AliasReference<'a> {
+    AliasReference::new(name, is_generic, generic_names)
 }
 
 const LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS: &str = r#"type __VizeVue2ComponentConstructorStatics = {
@@ -71,6 +69,8 @@ pub(super) fn emit_component_constructors<'a>(
     legacy_vue2: bool,
     dialect: VueVersion,
 ) -> Option<GenericComponentContract<'a>> {
+    let _profile = vize_l0::profiler::global_profiler()
+        .global_span("canon.virtual_ts.emit_component_constructors");
     let legacy_component = needs_legacy_vue2_helpers(legacy_vue2, dialect);
     if aliases.jsx_slots {
         ts.push_str("declare global { namespace JSX { interface ElementChildrenAttribute {} } }\ntype __VizeJsxSlotProps<S> = { [K in keyof JSX.ElementChildrenAttribute]?: S };\n");

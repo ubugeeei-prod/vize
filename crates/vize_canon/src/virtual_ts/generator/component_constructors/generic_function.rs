@@ -1,9 +1,10 @@
 //! Vue generic SFCs expose a function, not a constructible public instance.
 
 use super::super::generics::generic_suffix;
+use super::emission::{GenericContext, GenericSignature, SignatureRole};
 use super::{ComponentInstanceAliases, alias_ref};
 use crate::virtual_ts::props::strip_const_modifiers;
-use vize_carton::{String, append, cstr};
+use vize_carton::{String, append};
 
 pub(super) fn emit(
     ts: &mut String,
@@ -21,49 +22,45 @@ pub(super) fn emit(
     let expose = if aliases.has_exposed_type {
         alias_ref("Exposed", aliases.exposed_is_generic, names)
     } else {
-        String::from("{}")
-    };
-    let mut expose = cstr!("import('vue').ShallowUnwrapRef<{expose}>");
-    if aliases.has_root_el {
-        append!(
-            expose,
-            " & {{ $el: Awaited<ReturnType<typeof __setup{arguments}>>['__vize_root_el'] }}"
-        );
-    }
-    if aliases.has_refs {
-        append!(
-            expose,
-            " & {{ $refs: Awaited<ReturnType<typeof __setup{arguments}>>['__vize_refs'] }}"
-        );
-    }
-    let mut listeners = if aliases.has_emits_for_props {
-        cstr!(" & __EmitProps<{emits}>")
-    } else {
-        String::default()
-    };
-    if aliases.jsx_slots {
-        append!(listeners, " & __VizeJsxSlotProps<{slots}>");
-    }
-    let emit = if aliases.has_emits_for_props {
-        cstr!("__VizePublicEmit<{emits}>")
-    } else {
-        String::from("{}")
+        alias_ref("{}", false, names)
     };
     append!(
         *ts,
-        "type __VizeGenericContext{alias_parameters} = {{\n  props: {props_type}{arguments}{listeners} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: {emit};\n  slots: {slots};\n  expose: (exposed: {expose}) => void;\n}};\n"
+        "{}",
+        GenericContext {
+            parameters: &alias_parameters,
+            arguments: &arguments,
+            props_type,
+            emits,
+            slots,
+            exposed: expose,
+            emit_props: aliases.has_emits_for_props,
+            jsx_slots: aliases.jsx_slots,
+            root_element: aliases.has_root_el,
+            template_refs: aliases.has_refs,
+        }
     );
     // Use the authored parameter declaration: erasing a generated `= any`
     // default by spelling cannot distinguish it from an authored default.
     append!(
         *ts,
-        "type __VizeGenericComponent = {authored_parameters}(props: __VizeGenericContext{arguments}['props'], ctx?: Pick<__VizeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: __VizeGenericContext{arguments} }};\n"
+        "{}",
+        GenericSignature {
+            role: SignatureRole::Component,
+            parameters: &authored_parameters,
+            arguments: &arguments
+        }
     );
     // Template-ref probing repeats the authored props only to instantiate this
     // return context. Its mapped component check already owns prop diagnostics,
     // so accept extra attributes here just as the ordinary open checker does.
     append!(
         *ts,
-        "type __VizeGenericRefResolver = {authored_parameters}(props: __VizeGenericContext{arguments}['props'] & Record<string, unknown>, ctx?: Pick<__VizeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: __VizeGenericContext{arguments} }};\n"
+        "{}",
+        GenericSignature {
+            role: SignatureRole::TemplateRefResolver,
+            parameters: &authored_parameters,
+            arguments: &arguments
+        }
     );
 }
