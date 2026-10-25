@@ -72,6 +72,19 @@ const resultPath = path.join(evidence, "host-result.json");
 const vsixPath = path.join(extensionPath, "dist", "vize.vsix");
 const bundlePath = path.join(extensionPath, "dist", "extension.cjs");
 const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+const packageIdentityPath = path.join(extensionPath, "dist", "workspace-server-package.json");
+const producer = fs.existsSync(packageIdentityPath)
+  ? JSON.parse(fs.readFileSync(packageIdentityPath, "utf8"))
+  : undefined;
+if (producer) {
+  assert.equal(producer.sourceSha, sourceSha, "the VSIX producer must match the tested source");
+  assert.equal(
+    producer.vsixSha256,
+    hash(vsixPath),
+    "the consumer must install the producer's VSIX",
+  );
+  assert.equal(producer.bundleSha256, hash(bundlePath), "the producer's bundle bytes must match");
+}
 fs.copyFileSync(
   path.join(workspacePath, "package-lock.json"),
   path.join(evidence, "workspace-package-lock.json"),
@@ -105,21 +118,17 @@ try {
   assert.equal(result.workspace.source, "workspace");
   assert.equal(result.workspace.version, version);
   assert.equal(result.configured.source, "configured");
-  fs.writeFileSync(
-    path.join(evidence, "artifact.json"),
-    JSON.stringify(
-      {
-        sourceSha,
-        vsixSha256: hash(vsixPath),
-        bundleSha256: hash(bundlePath),
-        npmVersion: version,
-        serverPath,
-        result,
-      },
-      null,
-      2,
-    ) + "\n",
-  );
+  const receipt = {
+    sourceSha,
+    vsixSha256: hash(vsixPath),
+    bundleSha256: hash(bundlePath),
+    npmVersion: version,
+    serverPath,
+    result,
+  };
+  const contents = JSON.stringify(receipt, null, 2) + "\n";
+  fs.writeFileSync(path.join(evidence, "artifact.json"), contents);
+  if (!producer) fs.writeFileSync(packageIdentityPath, contents);
 } finally {
   retainHostOutputBeforeCleanup(profile, path.join(evidence, "output-channel"), true);
 }
