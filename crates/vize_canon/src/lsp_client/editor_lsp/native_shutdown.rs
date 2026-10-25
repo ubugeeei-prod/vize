@@ -14,12 +14,14 @@ use std::{
 };
 
 mod completion;
+mod mapper_contract;
 
 const LINUX_X64: &str = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
+const MAPPER_LINUX_X64: &str = "77dd575e73107c00cc95cbccc3764ab7210089b5634f75e219b61632bd5d230b";
 const DARWIN_ARM64: &str = "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2";
 
 pub(super) fn eof_capability(executable: &Path, initialized: &Value) -> bool {
-    if !known_initialize(initialized) {
+    if *initialized != known_contract() && *initialized != mapper_contract::initialize() {
         return false;
     }
     let Ok(digest) = File::open(executable).and_then(image_digest) else {
@@ -29,7 +31,7 @@ pub(super) fn eof_capability(executable: &Path, initialized: &Value) -> bool {
         .iter()
         .map(|byte| vize_l0::cstr!("{byte:02x}"))
         .collect();
-    known_binary(digest.as_str())
+    known_provider_pair(digest.as_str(), initialized)
 }
 
 fn image_digest(mut image: impl Read) -> io::Result<[u8; 32]> {
@@ -66,8 +68,14 @@ pub(super) async fn close(client: &LspClient, shutdown_to_eof: bool) -> corsa_ls
     completed.and(closed)
 }
 
-fn known_initialize(initialized: &Value) -> bool {
-    *initialized == known_contract()
+fn known_provider_pair(digest: &str, initialized: &Value) -> bool {
+    // Image and complete response are inseparable: neither provider may borrow
+    // the other image's independently observed lifecycle contract.
+    match digest {
+        LINUX_X64 | DARWIN_ARM64 => *initialized == known_contract(),
+        MAPPER_LINUX_X64 => *initialized == mapper_contract::initialize(),
+        _ => false,
+    }
 }
 
 fn known_contract() -> Value {
@@ -188,10 +196,6 @@ fn known_contract() -> Value {
             "version": "7.0.2"
         }
     })
-}
-
-fn known_binary(digest: &str) -> bool {
-    matches!(digest, LINUX_X64 | DARWIN_ARM64)
 }
 
 #[cfg(test)]

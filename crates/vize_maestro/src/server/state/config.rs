@@ -52,6 +52,18 @@ impl ServerState {
         self.type_checker_config.read().1
     }
 
+    /// Soft threshold for notifying the editor that native diagnostics are pending.
+    #[cfg(feature = "native")]
+    pub(crate) fn native_diagnostic_timeout(&self) -> std::time::Duration {
+        let configured = self.native_diagnostic_timeout_ms.load(Ordering::SeqCst);
+        let millis = std::env::var("VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS")
+            .ok()
+            .and_then(|value| value.trim().parse::<u64>().ok())
+            .filter(|millis| *millis > 0 && *millis <= u64::from(u32::MAX))
+            .unwrap_or(configured);
+        std::time::Duration::from_millis(millis)
+    }
+
     /// Build the shared virtual TypeScript options from workspace config.
     #[cfg(feature = "native")]
     pub(crate) fn virtual_ts_options(&self) -> vize_canon::virtual_ts::VirtualTsOptions {
@@ -207,6 +219,13 @@ impl ServerState {
         #[cfg(feature = "experimental-source-navigation")]
         if let Some(enabled) = config.native_linked_editing {
             self.native_linked_editing.store(enabled, Ordering::SeqCst);
+        }
+        if let Some(millis) = config
+            .typecheck_timeout_ms
+            .filter(|millis| *millis > 0 && *millis <= u64::from(u32::MAX))
+        {
+            self.native_diagnostic_timeout_ms
+                .store(millis, Ordering::SeqCst);
         }
         let mut features = self.lsp_features.write();
         config.apply_to(&mut features);

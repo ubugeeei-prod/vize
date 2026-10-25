@@ -237,7 +237,7 @@ void test("the documented root and Vue lint layers compose without duplicate nat
   assert.equal(metadata.options.fmt, true);
   const native = await resolveConfigExport(metadata.config!, env);
   assert.deepEqual(native.linter, { preset: "recommended" });
-  assert.deepEqual(native.formatter, { singleQuote: true });
+  assert.deepEqual(native.formatter, { ignorePatterns: ["dist/**"], singleQuote: true });
   assert.deepEqual(native.entries?.at(-1)?.linter, {
     rules: { "vue/no-v-html": "off" },
   });

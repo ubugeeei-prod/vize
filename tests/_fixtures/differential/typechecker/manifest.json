@@ -5977,7 +5977,48 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
-          "sha256": "c598a4f9788ffc0b769fcb754e445f9d018ac6f513a4f6ffbfc3da3df81a4f15"
+          "sha256": "4d8b400d36717738ea23b0fb5580f2a694abbb2e24c51532f488b98b50f78906"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/protocol/native-provider-pairs-10599",
+      "state": "active",
+      "adapter": "native-shutdown-wire-v1",
+      "targets": [
+        "native-shutdown"
+      ],
+      "inputs": [
+        {
+          "path": "native-provider-pairs-10599/provider-pairs.json",
+          "sha256": "c1795d1e122253244673cffc0a32f1db5ae49a71c9e11f07dd4e7b9307024a9d"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::provider_pairs::admission_matches_pinned_complete_provider_pairs",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/provider_pairs.rs",
+          "sha256": "a7c5fd000fef6e2b161e69dc949527983163f7923078b441a4b4ca6ba26663d8"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/native_provider.rs",
+          "sha256": "dbd0e5afeedebacf58c218fd7df3d2e4a5e608b9fe3f8353aa06e7885733c21d"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::buffered_completion_and_unrelated_notifications_preserve_the_whole_transcript",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
+          "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::malformed_missing_stale_and_eof_completion_still_close_the_owned_process",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
+          "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
+          "sha256": "4d8b400d36717738ea23b0fb5580f2a694abbb2e24c51532f488b98b50f78906"
         }
       ]
     }

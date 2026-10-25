@@ -2,6 +2,34 @@ use super::ConfigDocument;
 use crate::config::{LintRuleSeverity, VueVersion};
 
 #[test]
+fn formatter_exclusions_are_ordered_and_do_not_change_global_ignores() {
+    for key in ["formatter", "fmt"] {
+        let document: ConfigDocument = serde_json::from_value(serde_json::json!({
+            (key): { "ignorePatterns": ["generated", "!generated/keep.ts", "日本語/**"] },
+            "ignores": ["global/**"]
+        }))
+        .unwrap();
+        assert_eq!(
+            document.formatter_ignore_patterns(),
+            ["generated", "!generated/keep.ts", "日本語/**"]
+        );
+        assert_eq!(document.entry_ignores().len(), 1);
+        assert_eq!(
+            document.entry_ignores().first().unwrap().pattern,
+            "global/**"
+        );
+    }
+    for value in [serde_json::json!(false), serde_json::json!([42])] {
+        assert!(
+            serde_json::from_value::<ConfigDocument>(serde_json::json!({
+                "formatter": { "ignorePatterns": value }
+            }))
+            .is_err()
+        );
+    }
+}
+
+#[test]
 fn document_retains_only_host_observed_dependency_paths() {
     let mut document: ConfigDocument =
         serde_json::from_str(r#"{"configDependencies":["authored.ts"],"compiler":{"vapor":true}}"#)

@@ -1,0 +1,56 @@
+name: Vite+ configuration consumers
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_carton/src/config/**"
+      - "davinci/vize_l0/src/config/**"
+      - "crates/vize/src/commands/fmt/**"
+      - "crates/vize/src/commands/fmt.rs"
+      - "npm/cli/pkl/**"
+      - "npm/cli/schemas/vize.config.schema.json"
+      - "tests/tooling/viteplus-formatter-*.test.*"
+      - "tests/tooling/support/lsp/launch.ts"
+      - "tests/differential/build-receipt.ts"
+      - ".github/workflows/full-source-cli.yml"
+      - ".github/actions/restore-source-cli/**"
+      - ".github/workflows/viteplus-config-consumers.yml"
+
+permissions: { contents: read }
+
+concurrency:
+  group: viteplus-config-consumers-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cli:
+    uses: ./.github/workflows/full-source-cli.yml
+  consumers:
+    needs: cli
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.cli.outputs.receipt-sha256 }}
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+      VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.cli.outputs) }}" }
+      - name: Verify source CLI configuration transport and file custody
+        run: node --test tests/tooling/viteplus-formatter-settings.test.ts tests/tooling/viteplus-formatter-cli.test.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: viteplus-config-consumers-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/viteplus-formatter-settings
+          if-no-files-found: error
+          retention-days: 14

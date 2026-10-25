@@ -97,6 +97,27 @@ pub fn analyze_props_validation(
             );
         }
 
+        // defineModel declares a public prop and its optional modifier bag,
+        // even when no defineProps call is present in the component.
+        for model in entry.analysis.macros.models() {
+            props_info.props.insert(
+                model.name.clone(),
+                PropInfo {
+                    required: model.required,
+                    prop_type: model.model_type.clone(),
+                },
+            );
+            let modifiers = if model.name == "modelValue" {
+                CompactString::const_new("modelModifiers")
+            } else {
+                cstr!("{}Modifiers", model.name)
+            };
+            props_info.props.entry(modifiers).or_insert(PropInfo {
+                required: false,
+                prop_type: None,
+            });
+        }
+
         component_props.insert(entry.id, props_info);
     }
 
@@ -187,6 +208,17 @@ pub fn analyze_props_validation(
                 let Some((declared_prop_name, prop_info)) =
                     declared_prop(&child_props_info.props, passed_prop.name.as_str())
                 else {
+                    // Undeclared attributes are a supported Vue contract. A
+                    // single root inherits them by default; explicit $attrs
+                    // forwarding also works with fragments or inheritAttrs:false.
+                    // Keep these in the fallthrough facts without scoring a
+                    // correctness problem for a legal component usage.
+                    let template = &child_entry.analysis.template_info;
+                    if template.binds_attrs_explicitly
+                        || (template.root_element_count == 1 && !template.inherit_attrs_disabled)
+                    {
+                        continue;
+                    }
                     let issue = PropsValidationIssue {
                         parent_file: parent_id,
                         child_file: child_id,
@@ -211,14 +243,14 @@ pub fn analyze_props_validation(
                             "**Undeclared Prop**: `{}` is passed to `<{}>` but not declared\n\n\
                             The prop is not defined in the component's `defineProps`.\n\
                             If intentional, it will fall through to the root element via `$attrs`.",
-                            passed_prop.name.as_str(), child_component_name
+                            passed_prop.name.as_str(),
+                            child_component_name
                         ),
                     )
-                    .with_suggestion(cstr!(
-                        "Add to defineProps:\n```typescript\ndefineProps<{{\n  {}: unknown\n}}>()\n```\n\n\
-                        Or use `v-bind=\"$attrs\"` in the child component for fallthrough.",
-                        passed_prop.name.as_str()
-                    ));
+                    .with_suggestion(
+                        "Forward attributes to the intended element with `v-bind=\"$attrs\"`, \
+                        or review the component's `inheritAttrs` setting and root elements.",
+                    );
 
                     diagnostics.push(diagnostic);
                     continue;

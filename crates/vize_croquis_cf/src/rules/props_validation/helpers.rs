@@ -5,9 +5,11 @@ use crate::registry::{ModuleEntry, ModuleRegistry};
 use std::path::Path;
 use vize_carton::{CompactString, FxHashMap, String, camelize};
 use vize_croquis::macros::MacroKind;
-use vize_croquis::types::TypeDefinitions;
 
 mod builtin_attr;
+mod type_compatibility;
+
+pub(super) use type_compatibility::prop_type_accepts_actual;
 
 pub(super) use builtin_attr::is_builtin_attr;
 
@@ -87,7 +89,7 @@ pub(super) fn define_props_offset(entry: &ModuleEntry) -> u32 {
         .macros
         .all_calls()
         .iter()
-        .find(|call| call.kind == MacroKind::DefineProps)
+        .find(|call| matches!(call.kind, MacroKind::DefineProps | MacroKind::DefineModel))
         .map_or(0, |call| call.start)
 }
 
@@ -123,57 +125,16 @@ pub(super) fn actual_literal_type(prop: &PassedPropInfo) -> Option<CompactString
         // `name="check"` is `"check"`, so it can match `"check" | "close"`.
         return Some(match prop.value.as_deref() {
             Some(value) => quote_static_attribute(value),
-            None => CompactString::const_new("boolean"),
+            None => CompactString::const_new("true"),
         });
     }
 
     let value = prop.value.as_deref()?.trim();
-    if is_string_literal(value) {
-        Some(CompactString::const_new("string"))
-    } else if is_boolean_literal(value) {
-        Some(CompactString::const_new("boolean"))
-    } else if is_numeric_literal(value) {
-        Some(CompactString::const_new("number"))
+    if is_string_literal(value) || is_boolean_literal(value) || is_numeric_literal(value) {
+        Some(CompactString::new(value))
     } else {
         None
     }
-}
-
-pub(super) fn prop_type_accepts_actual(
-    expected: &str,
-    actual: &str,
-    definitions: &TypeDefinitions,
-) -> bool {
-    type_accepts(expected, actual, definitions, 0)
-}
-
-fn type_accepts(expected: &str, actual: &str, definitions: &TypeDefinitions, depth: u8) -> bool {
-    let expected = expected.trim();
-    if expected.is_empty() || depth > 8 {
-        return false;
-    }
-    if expected == actual || expected == "unknown" || expected == "any" {
-        return true;
-    }
-    if expected == "string" && is_string_literal(actual) {
-        return true;
-    }
-    if let (Some(expected_literal), Some(actual_literal)) = (unquote(expected), unquote(actual))
-        && expected_literal == actual_literal
-    {
-        return true;
-    }
-    if is_type_name(expected)
-        && let Some(body) = definitions.resolve(expected)
-    {
-        return type_accepts(body.as_str(), actual, definitions, depth + 1);
-    }
-    if expected.contains('|') {
-        return union_members(expected)
-            .into_iter()
-            .any(|member| type_accepts(member, actual, definitions, depth));
-    }
-    false
 }
 
 fn quote_static_attribute(value: &str) -> CompactString {
@@ -190,65 +151,6 @@ fn quote_static_attribute(value: &str) -> CompactString {
     CompactString::new(&quoted)
 }
 
-fn unquote(value: &str) -> Option<&str> {
-    let bytes = value.as_bytes();
-    if bytes.len() < 2 {
-        return None;
-    }
-    let (first, last) = (bytes.first()?, bytes.last()?);
-    ((*first == b'\'' && *last == b'\'') || (*first == b'"' && *last == b'"'))
-        .then(|| value.get(1..value.len() - 1))
-        .flatten()
-}
-
-fn is_type_name(value: &str) -> bool {
-    let mut chars = value.chars();
-    match chars.next() {
-        Some(first) if first == '_' || first.is_ascii_alphabetic() => {
-            chars.all(|character| character == '_' || character.is_ascii_alphanumeric())
-        }
-        _ => false,
-    }
-}
-
-fn union_members(expected: &str) -> Vec<&str> {
-    let mut members = Vec::new();
-    let mut depth = 0i32;
-    let mut quote = None;
-    let mut start = 0usize;
-    let mut chars = expected.char_indices().peekable();
-    while let Some((index, character)) = chars.next() {
-        if let Some(delimiter) = quote {
-            if character == '\\' {
-                chars.next();
-            } else if character == delimiter {
-                quote = None;
-            }
-            continue;
-        }
-        match character {
-            '\'' | '"' | '`' => quote = Some(character),
-            '(' | '[' | '{' | '<' => depth += 1,
-            ')' | ']' | '}' | '>' => depth -= 1,
-            '|' if depth == 0 => {
-                if let Some(member) = expected.get(start..index).map(str::trim)
-                    && !member.is_empty()
-                {
-                    members.push(member);
-                }
-                start = index + character.len_utf8();
-            }
-            _ => {}
-        }
-    }
-    if let Some(member) = expected.get(start..).map(str::trim)
-        && !member.is_empty()
-    {
-        members.push(member);
-    }
-    members
-}
-
 fn is_string_literal(value: &str) -> bool {
     let bytes = value.as_bytes();
     matches!(
@@ -262,7 +164,7 @@ fn is_boolean_literal(value: &str) -> bool {
 }
 
 fn is_numeric_literal(value: &str) -> bool {
-    value.parse::<f64>().is_ok()
+    value.parse::<f64>().is_ok_and(f64::is_finite)
 }
 
 pub(super) fn imported_aliases_for_child(
@@ -352,6 +254,62 @@ mod tests {
     use std::path::Path;
     use vize_carton::CompactString;
     use vize_croquis::types::TypeDefinitions;
+
+    #[test]
+    fn incomplete_types_cannot_prove_a_static_prop_mismatch() {
+        let mut definitions = TypeDefinitions::new();
+        definitions.add_type_alias("Recursive", "Recursive");
+        definitions.add_type_alias("Mixed", "number | ImportedType");
+        definitions.add_type_alias(
+            "ItemProperty",
+            "string | ((item: Record<string, unknown>) => string)",
+        );
+        for expected in [
+            "ImportedType",
+            "Mixed",
+            "Recursive",
+            "ItemProperty",
+            "ImportedType['name']",
+            "T extends true ? string : number",
+            "string & { readonly brand: unique symbol }",
+        ] {
+            assert!(
+                prop_type_accepts_actual(expected, "\"name\"", &definitions),
+                "{expected}"
+            );
+        }
+        assert!(!prop_type_accepts_actual(
+            "number | (() => string)",
+            "\"name\"",
+            &definitions
+        ));
+        assert!(!prop_type_accepts_actual(
+            "('small' | 'large')",
+            "'nope'",
+            &definitions
+        ));
+        assert!(prop_type_accepts_actual(
+            "'small' | 'large'",
+            "'small'",
+            &definitions
+        ));
+        assert!(prop_type_accepts_actual("true", "true", &definitions));
+        assert!(!prop_type_accepts_actual("true", "false", &definitions));
+        assert!(prop_type_accepts_actual("0", "-0", &definitions));
+        assert!(prop_type_accepts_actual("-1", "-1", &definitions));
+        assert!(!prop_type_accepts_actual("-1", "-2", &definitions));
+        for value in ["NaN", "Infinity", "-Infinity"] {
+            let prop = PassedPropInfo {
+                name: CompactString::const_new("number"),
+                name_is_dynamic: false,
+                value: Some(CompactString::new(value)),
+                start: 0,
+                end: 0,
+                is_dynamic: true,
+            };
+            assert_eq!(actual_literal_type(&prop), None);
+        }
+    }
 
     #[test]
     fn static_attribute_text_matches_a_literal_union_member() {

@@ -17,17 +17,17 @@
   "source": "App.vue.txt",
   "expected": "expected.authored.json",
   "contract": {
-    "deadlineSeconds": 10,
-    "timeout": "One complete typecheck-timed-out warning in the actual ClientSocket notification, with authored URI/version and all diagnostic fields.",
+    "softThresholdMilliseconds": 10000,
+    "timeout": "The separate hard native IPC deadline still produces one complete typecheck-timed-out warning in the actual ClientSocket notification, with authored URI/version and all diagnostic fields.",
     "successfulEmpty": "An actually completed empty diagnostic future stays successful and empty.",
     "successfulPositive": "Complete authored diagnostic payloads pass through without field changes; this unit law does not execute a native checker.",
     "answeredError": "A completed backend ResponseError retains its exact code/message and existing fallback classification.",
-    "sourceIdentity": "The timeout law owns the full authored SFC and actual temporary source URI; only that URI is instantiated in the whole expected envelope."
+    "sourceIdentity": "The hard-timeout payload law owns the full authored SFC and actual temporary source URI; only that URI is instantiated in the whole expected envelope."
   },
   "limitations": [
-    "A controlled pending future exercises the unchanged outer deadline; it is not a native backend stub or a claim that the SDK ran.",
+    "The old destructive outer deadline is superseded by #10604. A controlled retained future tests soft progress without a wall-clock wait; the hard-timeout payload and completed native vectors remain byte-exact.",
     "No original release337 failure cause or resolution is established.",
     "Fresh hosted original native parity and non-native qualification remain required.",
-    "No scheduling, deadline, query, retry, readiness, environment epoch or performance-budget change."
+    "The bounded real stdio #10604 regression separately exercises a genuine native runtime, late results, two files, stale source, close and config revocation."
   ]
 }

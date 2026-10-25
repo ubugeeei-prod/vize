@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const keyword = defineModel<string>("keyword", { required: true });
+const filter = defineModel<string>("filter", { required: true });
+const { label } = defineProps<{ label: string }>();
+</script>
+
+<template>
+  <label>{{ label }}<input v-model="keyword" :data-filter="filter" /></label>
+</template>

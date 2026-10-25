@@ -149,6 +149,7 @@ mod doctor_browser_origin_cli;
 mod doctor_browser_ssr_context_cli;
 mod doctor_cli;
 mod doctor_filter_cli;
+mod doctor_prop_accuracy_cli;
 mod doctor_sarif_cli;
 mod doctor_tui_cli;
 mod documented_project_examples;

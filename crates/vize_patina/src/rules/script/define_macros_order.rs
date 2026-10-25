@@ -111,42 +111,45 @@ fn check<'a>(
     macro_order: &[&str],
 ) {
     let body = &program.body;
-    // The last declaration of each ordered macro, in the expected order.
-    let ordered: Vec<(&str, usize)> = macro_order
-        .iter()
-        .filter_map(|name| {
-            body.iter()
-                .rposition(|statement| macro_name(statement) == Some(name))
-                .map(|index| (*name, index))
-        })
-        .collect();
-    if ordered.is_empty() {
-        return;
-    }
     let first = body
         .iter()
         .position(|statement| !is_skipped_statement(statement))
         .unwrap_or(body.len());
-    for (position, &(name, index)) in ordered.iter().enumerate() {
-        let target = first + position;
-        if index == target {
+    // Every occurrence occupies a slot in its configured group. Keeping the
+    // authored order within each group accepts repeated calls without hiding a
+    // group split by another macro or an ordinary statement. No list is needed.
+    let mut target = first;
+    for (group, &name) in macro_order.iter().enumerate() {
+        // Deserialized options are unique; typed callers can also construct them.
+        if macro_order
+            .iter()
+            .take(group)
+            .any(|previous| *previous == name)
+        {
             continue;
         }
-        let before = body
-            .get(target)
-            .and_then(macro_name)
-            .filter(|macro_name| macro_order.contains(macro_name));
-        let message = match before {
-            Some(before) => cstr!("`{name}` should be above `{before}`."),
-            None => cstr!(
-                "`{name}` should be placed at the top of `<script setup>` (after any \
-                     potential import statements or type definitions)."
-            ),
-        };
-        if let Some(statement) = body.get(index) {
+        for (index, statement) in body.iter().enumerate() {
+            if macro_name(statement) != Some(name) {
+                continue;
+            }
+            if index == target {
+                target += 1;
+                continue;
+            }
+            let before = body
+                .get(target)
+                .and_then(macro_name)
+                .filter(|macro_name| macro_order.contains(macro_name));
+            let message = match before {
+                Some(before) => cstr!("`{name}` should be above `{before}`."),
+                None => cstr!(
+                    "`{name}` should be placed at the top of `<script setup>` (after any \
+                         potential import statements or type definitions)."
+                ),
+            };
             report(statement.span(), offset, message, result);
+            return;
         }
-        return;
     }
 }
 

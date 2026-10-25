@@ -11,7 +11,6 @@ use crate::{
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Url};
 
 pub(super) mod timeout;
-use timeout::with_native_diagnostic_timeout;
 
 impl DiagnosticService {
     /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
@@ -48,16 +47,9 @@ impl DiagnosticService {
             {
                 let corsa_bridge = state.get_corsa_bridge().await;
                 let jsx_future = crate::ide::JsxService::diagnostics(&ctx, corsa_bridge);
-                match with_native_diagnostic_timeout(jsx_future).await {
-                    Ok(jsx_type_diags) => {
-                        tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
-                        diagnostics.extend(jsx_type_diags);
-                    }
-                    Err(hints) => {
-                        tracing::warn!("jsx type diagnostics timed out for {}", uri);
-                        diagnostics.extend(hints);
-                    }
-                }
+                let jsx_type_diags = jsx_future.await;
+                tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
+                diagnostics.extend(jsx_type_diags);
             } else {
                 tracing::info!("collect_async: jsx type diagnostics skipped (disabled by config)");
             }
@@ -65,11 +57,9 @@ impl DiagnosticService {
         }
 
         if state.is_lsp_typecheck_enabled() {
-            // Preserve the 10s collection bound and disclose missing native
-            // diagnostics when it expires, even if the bridge is initialized.
             let corsa_future = Self::collect_corsa_diagnostics(state, uri);
-            match with_native_diagnostic_timeout(corsa_future).await {
-                Ok(CorsaDiagnostics::Complete(corsa_diags)) => {
+            match corsa_future.await {
+                CorsaDiagnostics::Complete(corsa_diags) => {
                     #[cfg(test)]
                     super::assembly_parity_custody::record(state, uri, "native_complete", || {
                         serde_json::json!(corsa_diags)
@@ -82,7 +72,7 @@ impl DiagnosticService {
                         super::corsa::collect::configuration_disclosures(state),
                     );
                 }
-                Ok(CorsaDiagnostics::Unavailable(hints)) => {
+                CorsaDiagnostics::Unavailable(hints) => {
                     #[cfg(test)]
                     super::assembly_parity_custody::record(
                         state,
@@ -90,17 +80,6 @@ impl DiagnosticService {
                         "native_unavailable",
                         || serde_json::json!(hints),
                     );
-                    diagnostics.extend(hints);
-                }
-                Err(hints) => {
-                    #[cfg(test)]
-                    super::assembly_parity_custody::record(
-                        state,
-                        uri,
-                        "outer_timeout",
-                        || serde_json::json!({"bound_seconds":10}),
-                    );
-                    tracing::warn!("corsa diagnostics timed out for {}", uri);
                     diagnostics.extend(hints);
                 }
             }
