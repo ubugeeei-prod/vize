@@ -21,8 +21,24 @@ const digest = (value) => createHash("sha256").update(value).digest("hex");
 const hashes = (root) =>
   Object.fromEntries(inputs.map((file) => [file, digest(readFileSync(resolve(root, file)))]));
 
+function githubContext(environment) {
+  assert.match(environment.GITHUB_SHA ?? "", /^[0-9a-f]{40}$/, "current GitHub actor SHA");
+  assert.ok(
+    ["pull_request", "workflow_dispatch"].includes(environment.GITHUB_EVENT_NAME),
+    "allowed GitHub event",
+  );
+  assert.ok(environment.GITHUB_EVENT_PATH, "current GitHub event file");
+  const event = JSON.parse(readFileSync(environment.GITHUB_EVENT_PATH, "utf8"));
+  const triggerHead = event.pull_request?.head?.sha ?? null;
+  if (environment.GITHUB_EVENT_NAME === "pull_request") {
+    assert.match(triggerHead ?? "", /^[0-9a-f]{40}$/, "current PR trigger SHA");
+  } else assert.equal(triggerHead, null, "manual dispatch has no PR trigger");
+  return { githubSha: environment.GITHUB_SHA, event: environment.GITHUB_EVENT_NAME, triggerHead };
+}
+
 async function capture(role, directory, destination) {
   assert.ok(["before", "after"].includes(role));
+  const context = githubContext(process.env);
   const root = resolve(directory);
   const output = resolve(destination);
   mkdirSync(output, { recursive: true });
@@ -40,11 +56,9 @@ async function capture(role, directory, destination) {
     };
   };
   const actor = run("observer", "git", ["rev-parse", "HEAD"], observer).stdout.trim();
-  assert.equal(actor, process.env.GITHUB_SHA);
+  assert.equal(actor, context.githubSha);
   const source = run("source", "git", ["rev-parse", "HEAD"]).stdout.trim();
   assert.equal(source, role === "before" ? baseline : actor);
-  const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
-  const triggerHead = event.pull_request?.head.sha ?? null;
   // The recipe checkout and source checkout are both fresh. No parent install may mask a missing issuer dependency.
   for (let parent = root; ; parent = dirname(parent)) {
     assert.equal(existsSync(resolve(parent, "node_modules")), false, parent);
@@ -128,9 +142,7 @@ async function capture(role, directory, destination) {
     role,
     source,
     observerActor: actor,
-    githubSha: process.env.GITHUB_SHA,
-    event: process.env.GITHUB_EVENT_NAME,
-    triggerHead,
+    ...context,
     node: process.version,
     packageManager: JSON.parse(readFileSync(resolve(root, "package.json"))).packageManager,
     installedPackageManager: manager.stdout.trim(),
@@ -146,14 +158,16 @@ async function capture(role, directory, destination) {
   console.log(JSON.stringify(packet, null, 2));
 }
 
-function compare(directory) {
+export function compareInstallClosure(directory, environment = process.env) {
+  const context = githubContext(environment);
   const packets = ["before", "after"].map((role) => {
     const packet = JSON.parse(readFileSync(resolve(directory, role, "qualification.json")));
     assert.equal(packet.role, role);
     assert.equal(packet.complete, true);
-    assert.equal(packet.observerActor, process.env.GITHUB_SHA);
-    assert.equal(packet.githubSha, process.env.GITHUB_SHA);
-    assert.equal(packet.source, role === "before" ? baseline : process.env.GITHUB_SHA);
+    assert.equal(packet.observerActor, context.githubSha);
+    for (const key of ["githubSha", "event", "triggerHead"])
+      assert.equal(packet[key], context[key], key);
+    assert.equal(packet.source, role === "before" ? baseline : context.githubSha);
     assert.equal(packet.install.status, 0);
     assert.equal(packet.issuer.status, role === "before" ? 1 : 0);
     assert.equal(packet.tests.status, role === "before" ? 1 : 0);
@@ -173,10 +187,13 @@ function compare(directory) {
     assert.equal(after[key], before[key], key);
   assert.equal(before.issuer.code, "ERR_MODULE_NOT_FOUND");
   assert.equal(after.issuer.version, "3.5.1");
-  console.log(
-    "Fresh exact-command before/after install closure and unchanged source-map tests qualified.",
-  );
 }
 
-if (process.argv[2] === "compare") compare(resolve(process.argv[3]));
-else await capture(...process.argv.slice(2));
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  if (process.argv[2] === "compare") {
+    compareInstallClosure(resolve(process.argv[3]));
+    console.log(
+      "Fresh exact-command before/after install closure and unchanged source-map tests qualified.",
+    );
+  } else await capture(...process.argv.slice(2));
+}

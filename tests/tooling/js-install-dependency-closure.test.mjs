@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { testedPackageGroups } from "../../tools/config/vite-plus/tested-package-groups.ts";
 import { jsInstallFilters } from "../../tools/support/compat/github/install-js-checks.ts";
+import { compareInstallClosure } from "../../tools/support/compat/github/js-install-closure.mjs";
 
 const compareNames = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
@@ -101,6 +102,65 @@ void test("the pinned package manager selects private transitive dependencies fo
     assert.throws(() => jsInstallFilters("unknown"), /unknown JS check group/);
   } finally {
     process.chdir(original);
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+void test("paired install receipts are bound to the current event rather than each other's labels", () => {
+  const fixture = mkdtempSync(join(tmpdir(), "vize-install-authority-"));
+  const actor = "a".repeat(40);
+  const trigger = "b".repeat(40);
+  const eventFile = join(fixture, "event.json");
+  const environment = {
+    GITHUB_SHA: actor,
+    GITHUB_EVENT_NAME: "pull_request",
+    GITHUB_EVENT_PATH: eventFile,
+  };
+  const packets = ["before", "after"].map((role) => ({
+    role,
+    complete: true,
+    githubSha: actor,
+    observerActor: actor,
+    source: role === "before" ? "fc745ea5a2c9efcf6b1549d6312c61d4f2770697" : actor,
+    event: "pull_request",
+    triggerHead: trigger,
+    inputs: { lock: "unchanged" },
+    projects: role === "before" ? ["consumer"] : ["@vizejs/builder-shared", "consumer"],
+    install: { status: 0 },
+    issuer:
+      role === "before"
+        ? { status: 1, code: "ERR_MODULE_NOT_FOUND" }
+        : { status: 0, version: "3.5.1" },
+    tests: { status: role === "before" ? 1 : 0 },
+  }));
+  const save = (values) => {
+    for (const packet of values) {
+      mkdirSync(join(fixture, packet.role), { recursive: true });
+      writeFileSync(join(fixture, packet.role, "qualification.json"), JSON.stringify(packet));
+    }
+  };
+  try {
+    writeFileSync(eventFile, JSON.stringify({ pull_request: { head: { sha: trigger } } }));
+    save(packets);
+    compareInstallClosure(fixture, environment);
+    save(packets.map((packet) => ({ ...packet, triggerHead: "c".repeat(40) })));
+    assert.throws(() => compareInstallClosure(fixture, environment), /triggerHead/);
+    save(packets.map((packet) => ({ ...packet, event: "workflow_dispatch", triggerHead: null })));
+    assert.throws(() => compareInstallClosure(fixture, environment), /event/);
+    assert.throws(() => compareInstallClosure(fixture, {}), /current GitHub actor SHA/);
+    assert.throws(
+      () => compareInstallClosure(fixture, { ...environment, GITHUB_EVENT_NAME: "push" }),
+      /allowed GitHub event/,
+    );
+    writeFileSync(eventFile, JSON.stringify({ pull_request: { head: { sha: "bad" } } }));
+    assert.throws(() => compareInstallClosure(fixture, environment), /current PR trigger SHA/);
+    writeFileSync(eventFile, "{}");
+    assert.throws(() => compareInstallClosure(fixture, environment), /current PR trigger SHA/);
+    const manual = { ...environment, GITHUB_EVENT_NAME: "workflow_dispatch" };
+    compareInstallClosure(fixture, manual);
+    save(packets.map((packet) => ({ ...packet, event: "workflow_dispatch" })));
+    assert.throws(() => compareInstallClosure(fixture, manual), /triggerHead/);
+  } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
 });
