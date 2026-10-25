@@ -123,6 +123,27 @@ void test("setup rejects a checker without the generated artifact", async () => 
   );
 });
 
+void test("the real Nuxt 2 version shape registers the default webpack checker", async () => {
+  class Nuxt2 {
+    static version = "v2.17.3";
+    options = { buildDir: "/project/.nuxt", dev: true, rootDir: "/project" };
+  }
+  const registered: string[] = [];
+  const result = await setupNuxtLintChecker(true, new Nuxt2(), generation, {
+    addWebpackPlugin: async () => {
+      registered.push("webpack");
+    },
+    addVitePlugin: async () => {
+      registered.push("vite");
+    },
+    warn: (message) => {
+      registered.push(message);
+    },
+  });
+  assert.equal(result?.builder, "webpack");
+  assert.deepEqual(registered, ["webpack"]);
+});
+
 void test("setup reports an unsupported dev builder without partial registration", async () => {
   const warnings: string[] = [];
   const result = await setupNuxtLintChecker(true, nuxt({ builder: "custom-builder" }), generation, {

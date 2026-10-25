@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { getNuxtBuilderKind } from "../../builder.ts";
+import { getDetectedNuxtBuilderKind } from "../../builder.ts";
 import type { NuxtLintConfigGeneration } from "../generation.ts";
 import {
   resolveNuxtLintCheckerOptions,
@@ -17,6 +17,7 @@ interface NuxtLintCheckerNuxt {
   options: {
     buildDir: string;
     builder?: unknown;
+    bridge?: false | { vite?: boolean };
     dev?: boolean;
     rootDir: string;
     srcDir?: string;
@@ -72,7 +73,7 @@ export async function setupNuxtLintChecker(
   if (options === false) return undefined;
   const rootDir = path.resolve(nuxt.options.rootDir);
   const config = { configFile: generation.configFile, options, rootDir };
-  const builder = getNuxtBuilderKind(nuxt.options.builder);
+  const builder = getDetectedNuxtBuilderKind(nuxt);
 
   if (builder === "vite") {
     const register = dependencies.addVitePlugin ?? addVitePlugin;
