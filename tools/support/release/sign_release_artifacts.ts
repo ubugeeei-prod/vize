@@ -7,6 +7,8 @@ import path from "node:path";
 import { isEntrypoint } from "../command-runtime.ts";
 import { cliReleasePlatforms, parseReleaseVersion } from "../github/release-platforms.ts";
 
+import { editorPlatformAssets } from "./editor-platforms.ts";
+
 const CONCURRENCY = 4;
 const SUFFIXES = [".cosign.bundle", ".pem", ".sig"];
 const EDITORS = ["emacs", "helix", "nvim", "vim", "zed"];
@@ -27,6 +29,7 @@ function assetPaths(tag: string): string[] {
   return [
     ...cliReleasePlatforms.map(({ archive }) => `cli-artifacts/${archive}`),
     "editor-extension-artifacts/editors/vscode/dist/vize.vsix",
+    ...(process.env.VIZE_EDITOR_PLATFORM_ARTIFACTS === "1" ? editorPlatformAssets() : []),
     ...EDITORS.map((editor) => `editor-extension-artifacts/${editor}-vize-extension.tar.gz`),
     `vize-${tag}-cyclonedx.sbom.json`,
     `vize-${tag}-spdx.sbom.json`,
@@ -100,6 +103,8 @@ export async function signReleaseArtifacts(
 ): Promise<void> {
   if (process.platform === "win32")
     throw new Error("Release signing requires POSIX process groups");
+  if (![undefined, "0", "1"].includes(process.env.VIZE_EDITOR_PLATFORM_ARTIFACTS))
+    throw new Error("Unknown editor platform signing cohort");
   const inputs = assetPaths(tag);
   assertClosure(root, inputs, false);
   const before = new Map(inputs.map((file) => [file, digest(path.join(root, file))]));

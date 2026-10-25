@@ -213,7 +213,7 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
         : `${"${{"} needs.version.outputs.${ref} }}`;
     assert.equal(checkout?.with?.ref, expected, name);
   }
-  for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
+  for (const gate of ["smoke", "build-cli", "build-editor-extensions", "build-editor-platforms"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
   }
   assert.match(JSON.stringify(workflow.jobs.tag.steps), /refs\/tags\/\$RELEASE_TAG/);
