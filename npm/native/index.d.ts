@@ -100,6 +100,7 @@ export interface BatchCompileOptionsNapi {
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
@@ -1333,6 +1334,7 @@ export interface SfcCompileOptionsNapi {
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
