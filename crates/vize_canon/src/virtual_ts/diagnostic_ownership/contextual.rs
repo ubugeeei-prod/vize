@@ -104,7 +104,7 @@ mod tests {
                 .collect::<Vec<_>>();
             assert_eq!(
                 unproven_prop_ranges(&root),
-                expected.iter().take(2).copied().collect()
+                expected.iter().take(2).copied().collect::<FxHashSet<_>>()
             );
             for child in &mut root.children {
                 if let TemplateChildNode::Element(element) = child {
@@ -117,7 +117,10 @@ mod tests {
                     }
                 }
             }
-            assert_eq!(unproven_prop_ranges(&root), expected.into_iter().collect());
+            assert_eq!(
+                unproven_prop_ranges(&root),
+                expected.into_iter().collect::<FxHashSet<_>>()
+            );
         }
     }
 }
