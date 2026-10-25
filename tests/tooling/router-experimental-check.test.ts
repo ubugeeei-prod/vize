@@ -175,6 +175,7 @@ await test("published experimental page imports preserve complete native/referen
       ];
       for (const control of cases) {
         fs.writeFileSync(fixture.pagePath, control.source);
+        fs.writeFileSync(path.join(output, `${variant}-${control.name}.vue.txt`), control.source);
         const label = `${variant}/${control.name}`;
         const native = run(`${label}/native`, binary, [
           "check",

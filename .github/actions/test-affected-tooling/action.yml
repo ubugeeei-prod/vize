@@ -58,3 +58,17 @@ runs:
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
       run: vp run --workspace-root test:scripts:pr
+    - name: Retain complete experimental Router observations
+      if: ${{ always() && hashFiles('target/differential/experimental-router-check/provider-processes.json', 'target/differential/experimental-router-params/provider-processes.json', 'target/differential/experimental-router-params/observation.json') != '' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: experimental-router-tooling-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/differential/experimental-router-check/
+          target/differential/experimental-router-params/
+          target/ci/vize.differential-build.json
+          target/ci/vize.source-build.json
+          target/ci/vize.source-use.json
+          !target/differential/**/node_modules/**
+        if-no-files-found: ignore
+        retention-days: 7

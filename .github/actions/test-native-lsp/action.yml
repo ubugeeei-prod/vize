@@ -42,6 +42,18 @@ runs:
           tests/tooling/lsp-project-navigation-8013.test.ts \
           tests/tooling/lsp-workspace-semantic.test.ts \
           tests/tooling/lsp-file-rename-workspace.test.ts
+    - name: Preserve complete experimental route protocol receipts
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: experimental-route-lsp-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+        path: |
+          target/differential/experimental-router-params/observation.json
+          target/differential/experimental-router-params/provider/provider-identity.json
+          target/differential/experimental-router-params/provider/provider-processes.json
+          target/ci/vize.differential-build.json
+        if-no-files-found: ignore
+        retention-days: 7
     - name: Preserve source identity and LSP responses on failure
       if: ${{ failure() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

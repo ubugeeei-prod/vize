@@ -28,7 +28,7 @@ pub(crate) fn prepare(root: &Path, output: &Path, fixtures: &Path) -> PathBuf {
     let value: serde_json::Value =
         serde_json::from_slice(&result.stdout).expect("provider custody must return JSON");
     let project = PathBuf::from(value["root"].as_str().expect("the project root must exist"));
-    assert!(project.starts_with(&output));
+    assert_eq!(project.parent(), Some(output.as_path()));
     assert!(
         project
             .join("node_modules/vue-router/dist/experimental/index.d.ts")
