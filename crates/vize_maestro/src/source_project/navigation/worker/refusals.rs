@@ -13,19 +13,22 @@ pub(in crate::source_project::navigation) fn refused(
         }
         match command {
             Command::IntrinsicTag(request) => request.refuse(refusal.clone()),
+            #[cfg(feature = "experimental-source-navigation")]
             Command::ModuleLinks(request) => request.refuse(refusal.clone()),
+            #[cfg(feature = "experimental-source-navigation")]
             Command::LinkedEditing(request) => request.refuse(refusal.clone()),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
                     let _ = request.reply.send(Err(refusal.clone()));
                 }
             }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::TemplateDefinition(_, reply) => {
                 if !reply.is_canceled() {
                     let _ = reply.send(Err(refusal.clone()));
                 }
             }
-            #[cfg(test)]
+            #[cfg(all(test, feature = "experimental-source-navigation"))]
             Command::SelectedInspect(_, reply) => {
                 let _ = reply.send(Err(refusal.clone()));
             }
@@ -49,7 +52,7 @@ pub(in crate::source_project::navigation) fn refused(
                 let _ = entered.send(());
                 let _ = resumed.recv();
             }
-            #[cfg(test)]
+            #[cfg(all(test, feature = "experimental-source-navigation"))]
             Command::Panic => panic!("actual native worker unwind"),
         }
     }

@@ -1,9 +1,26 @@
-use super::{
-    Arc, DocumentStore, NativeNavigationProject, NavigationRefusal, Position, SourceQueryProject,
-    block_on, cached, coordinates, uri,
-};
-use crate::source_project::navigation::IntrinsicTagTarget;
+use super::{IntrinsicTagTarget, NativeNavigationProject, NavigationRefusal, coordinates};
+use crate::{document::DocumentStore, runtime::block_on, source_project::SourceQueryProject};
+use std::sync::Arc;
+use tower_lsp::lsp_types::{Position, Url};
 use vize_l0::{Span, line_index::LineBreaks};
+
+mod lifecycle;
+
+fn uri() -> Url {
+    Url::parse("file:///native.ts").unwrap()
+}
+fn cached(project: &NativeNavigationProject<'_>) -> Arc<super::worker::NavigationWorker> {
+    Arc::clone(
+        project
+            .workers
+            .lock()
+            .get(&uri())
+            .unwrap()
+            .result
+            .as_ref()
+            .unwrap(),
+    )
+}
 
 #[test]
 fn original_intrinsic_targets_reuse_program_file_and_walk_for_both_headers() {
@@ -64,6 +81,10 @@ fn original_intrinsic_targets_reuse_program_file_and_walk_for_both_headers() {
                 1,
                 "one original File walk across every query"
             );
+            assert_eq!(
+                project.cached_program_worker_for_test(&uri()).unwrap(),
+                (Arc::as_ptr(&first) as usize, (1, 13))
+            );
             let inspect_at = Position::new(2, 30);
             let original = block_on(first.inspect(inspect_at)).unwrap();
             assert_eq!(original, block_on(first.inspect(inspect_at)).unwrap());
@@ -93,11 +114,6 @@ fn intrinsic_targets_refuse_wrong_profiles_and_recovery_without_fallback() {
             "const view = <button>bad</div>;",
             NavigationRefusal::Syntax,
         ),
-        (
-            "typescriptreact",
-            "const view = <><button/><ns:tag/></>;",
-            NavigationRefusal::Projection,
-        ),
     ] {
         let documents = DocumentStore::new();
         documents.open(uri(), source.into(), 1, language.into());
@@ -107,4 +123,31 @@ fn intrinsic_targets_refuse_wrong_profiles_and_recovery_without_fallback() {
             Err(expected)
         );
     }
+}
+
+#[test]
+fn late_unsupported_namespace_keeps_the_complete_original_producer_refusal() {
+    let documents = DocumentStore::new();
+    documents.open(
+        uri(),
+        "const view = <><button/><ns:tag/></>;".into(),
+        1,
+        "typescriptreact".into(),
+    );
+    let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
+    let error = block_on(project.intrinsic_tag(&uri(), Position::new(0, 15))).unwrap_err();
+    let NavigationRefusal::Producer(issues) = error else {
+        panic!("original producer refusal: {error:?}")
+    };
+    assert_eq!(
+        issues
+            .iter()
+            .map(|issue| (issue.unit.index(), issue.span, issue.kind))
+            .collect::<Vec<_>>(),
+        [(
+            0,
+            Span::new(25, 31),
+            vize_l2::file::FileIssueKind::UnsupportedSyntax
+        )]
+    );
 }

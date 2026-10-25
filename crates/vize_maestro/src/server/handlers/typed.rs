@@ -95,6 +95,9 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
             if self.state.jsx_typecheck_enabled() {
+                if let Some(hover) = self.jsx_intrinsic_hover(&ctx, position).await {
+                    return Ok(Some(hover));
+                }
                 let corsa_bridge = self.state.get_corsa_bridge().await;
                 return Ok(crate::ide::JsxService::hover(&ctx, corsa_bridge).await);
             }

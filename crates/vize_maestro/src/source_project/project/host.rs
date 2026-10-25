@@ -22,7 +22,7 @@ pub(super) enum DocumentHost<'host> {
 }
 
 impl DocumentHost<'_> {
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     pub(super) fn project_retired(&self) -> bool {
         #[cfg(feature = "native")]
         if let Self::Server(state) = self {

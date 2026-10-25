@@ -32,7 +32,7 @@ impl NativeNavigationProject<'_> {
         snapshot: Arc<SourceSnapshot>,
         family: QueryFamily,
     ) -> Result<Arc<NavigationWorker>, NavigationRefusal> {
-        #[cfg(test)]
+        #[cfg(all(test, feature = "experimental-source-navigation"))]
         if matches!(family, QueryFamily::Names) {
             let ticket = self.source.capture_names_parser()?;
             return self.names_worker(snapshot, &ticket);
@@ -40,7 +40,7 @@ impl NativeNavigationProject<'_> {
         let cache = match family {
             QueryFamily::Program => &self.workers,
             QueryFamily::Selected => &self.selected_workers,
-            #[cfg(test)]
+            #[cfg(all(test, feature = "experimental-source-navigation"))]
             QueryFamily::Names => &self.names_workers,
         };
         loop {
@@ -52,10 +52,11 @@ impl NativeNavigationProject<'_> {
                 return Err(NavigationRefusal::Host(SnapshotRefusal::Superseded));
             }
             let profile = match (family, self.profile(&snapshot)?) {
+                #[cfg(feature = "experimental-source-navigation")]
                 (QueryFamily::Selected, Profile::Vue(configuration)) => {
                     Profile::SelectedVue(configuration)
                 }
-                #[cfg(test)]
+                #[cfg(all(test, feature = "experimental-source-navigation"))]
                 (QueryFamily::Names, Profile::Vue(configuration)) => {
                     Profile::TemplateNamesVue(configuration)
                 }
@@ -116,6 +117,7 @@ impl NativeNavigationProject<'_> {
                 jsx: true,
                 ..ProgramOptions::module(Lang::Ts)
             })),
+            #[cfg(feature = "experimental-source-navigation")]
             "vue" if !crate::utils::is_standalone_html_path(snapshot.uri().path()) => self
                 .source
                 .native_vue_configuration()
@@ -130,6 +132,9 @@ impl NativeNavigationProject<'_> {
         result: Result<(Profile, Result<T, NavigationRefusal>), NavigationRefusal>,
     ) -> Result<T, NavigationRefusal> {
         let (profile, response) = result?;
+        #[cfg(not(feature = "experimental-source-navigation"))]
+        let _ = profile;
+        #[cfg(feature = "experimental-source-navigation")]
         if let Profile::Vue(configuration)
         | Profile::SelectedVue(configuration)
         | Profile::TemplateNamesVue(configuration) = profile
@@ -140,6 +145,7 @@ impl NativeNavigationProject<'_> {
         response
     }
 
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) fn retire_changed_configuration(&self, uri: &Url) {
         for cache in [&self.workers, &self.selected_workers, &self.names_workers] {
             let retired = {

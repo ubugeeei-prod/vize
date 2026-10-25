@@ -11,7 +11,9 @@ publish = false
 [features]
 default = ["native", "glyph"]
 glyph = ["dep:vize_glyph"]
-native = ["vize_canon/native"]
+native = ["vize_canon/native", "retained-program"]
+# Original Program/File providers; this does not select navigation endpoints.
+retained-program = ["dep:vize_l1"]
 # Explicit native Program projection; existing LSP routing stays independent.
 experimental-source-folding = ["dep:vize_l1"]
 # Original comments from the genuinely admitted producer-owned SFC/File.
@@ -19,7 +21,7 @@ experimental-sfc-folding = ["dep:vize_l1"]
 # Optional genuine native edit and original Program observation adapters.
 experimental-source-project = ["dep:vize_l1"]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.
-experimental-source-navigation = ["experimental-source-project"]
+experimental-source-navigation = ["experimental-source-project", "retained-program"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the
 # default Vue 3 build; turns on the type-checker-side legacy feature too.
 legacy = ["vize_canon/legacy"]

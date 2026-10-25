@@ -5,7 +5,7 @@
 
 use std::sync::Arc;
 
-use tower_lsp::lsp_types::{Hover, Position, Range};
+use tower_lsp::lsp_types::{Hover, Position, Range, Url};
 use vize_canon::{CorsaBridge, LspHover};
 
 use super::{HoverBuilder, HoverService};
@@ -56,14 +56,26 @@ impl HoverService {
     pub(super) fn hover_native_dom_tag(ctx: &IdeContext<'_>) -> Option<Hover> {
         let tag_name =
             crate::ide::definition::helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
-        if crate::ide::is_component_tag(&tag_name) {
+        Self::native_dom_tag_hover(&tag_name)
+    }
+
+    /// Render one already identified source tag, independently of its frontend.
+    #[cfg(feature = "native")]
+    pub(crate) fn hover_dom_tag_at(tag_name: &str, range: Range) -> Option<Hover> {
+        let mut hover = Self::native_dom_tag_hover(tag_name)?;
+        hover.range = Some(range);
+        Some(hover)
+    }
+
+    fn native_dom_tag_hover(tag_name: &str) -> Option<Hover> {
+        if crate::ide::is_component_tag(tag_name) {
             return None;
         }
 
-        let info = crate::ide::corsa_support::native_dom_tag_info(&tag_name)?;
+        let info = crate::ide::corsa_support::native_dom_tag_info(tag_name)?;
         let signature = format!("const element: {}", info.type_expression);
         let docs = if info.category == "HTML element" {
-            elements::lookup(&tag_name)
+            elements::lookup(tag_name)
         } else {
             None
         };
@@ -83,7 +95,7 @@ impl HoverService {
                         "Component resolution is skipped for this tag because it is part of the platform DOM surface.",
                     ],
                 )
-                .example("vue", &native_tag_example(&tag_name));
+                .example("vue", &native_tag_example(tag_name));
         let hover = if let Some(docs) = docs {
             let mut hover = builder.build();
             documentation::append(&mut hover, docs, false);
@@ -130,14 +142,7 @@ impl HoverService {
         hover: LspHover,
     ) -> Hover {
         let mut converted = Self::convert_lsp_hover(hover);
-        converted.range = source_span.map(|(start, end)| {
-            let (line, character) = crate::ide::offset_to_position(&ctx.content, start);
-            let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, end);
-            Range::new(
-                Position::new(line, character),
-                Position::new(end_line, end_character),
-            )
-        });
+        converted.range = source_span.map(|span| authored_range(&ctx.content, span));
         converted
     }
 
@@ -150,7 +155,23 @@ impl HoverService {
                 &ctx.content,
                 ctx.offset,
             )?;
-        if crate::ide::is_component_tag(&tag_name) {
+        Self::hover_dom_tag_at_with_corsa(
+            ctx.uri,
+            &tag_name,
+            authored_range(&ctx.content, source_span),
+            corsa_bridge,
+        )
+        .await
+    }
+
+    /// DOM type and documentation rendering shared by exact source targets.
+    pub(crate) async fn hover_dom_tag_at_with_corsa(
+        uri: &Url,
+        tag_name: &str,
+        range: Range,
+        corsa_bridge: Option<&Arc<CorsaBridge>>,
+    ) -> Option<Hover> {
+        if crate::ide::is_component_tag(tag_name) {
             return None;
         }
 
@@ -159,8 +180,8 @@ impl HoverService {
             return None;
         }
 
-        let doc = crate::ide::corsa_support::html_tag_virtual_document(&tag_name)?;
-        let request_path = crate::ide::corsa_support::html_tag_request_path(ctx.uri);
+        let doc = crate::ide::corsa_support::html_tag_virtual_document(tag_name)?;
+        let request_path = crate::ide::corsa_support::html_tag_request_path(uri);
         let request_uri = bridge
             .open_or_update_virtual_document(&request_path, &doc.content)
             .await
@@ -168,12 +189,23 @@ impl HoverService {
         let (line, character) = crate::ide::offset_to_position(&doc.content, doc.hover_offset);
         let hover = bridge.hover(&request_uri, line, character).await.ok()??;
 
+        let mut converted = Self::convert_lsp_hover(hover);
+        converted.range = Some(range);
         Some(documentation::enrich_native_html(
-            Self::project_native_dom_hover(ctx, Some(source_span), hover),
-            &tag_name,
+            converted,
+            tag_name,
             doc.category,
         ))
     }
+}
+
+fn authored_range(content: &str, (start, end): (usize, usize)) -> Range {
+    let (line, character) = crate::ide::offset_to_position(content, start);
+    let (end_line, end_character) = crate::ide::offset_to_position(content, end);
+    Range::new(
+        Position::new(line, character),
+        Position::new(end_line, end_character),
+    )
 }
 
 fn native_attribute_example(tag_name: &str, attr_name: &str, is_boolean: bool) -> String {

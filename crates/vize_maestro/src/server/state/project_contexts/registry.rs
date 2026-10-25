@@ -7,7 +7,7 @@ use super::{
     Arc, AtomicBool, ObservedLspConfig, Ordering, ProjectContextKey, RetainedConfiguration,
     ServerState,
 };
-#[cfg(feature = "experimental-source-navigation")]
+#[cfg(feature = "retained-program")]
 use crate::source_project::{SourceQueryProject, navigation::NativeNavigationProject};
 use futures::{
     FutureExt,
@@ -21,7 +21,7 @@ pub(super) struct ProjectContext {
     snapshot: OnceLock<(ObservedLspConfig, bool)>,
     prepared: OnceLock<RetainedConfiguration>,
     state: OnceLock<Arc<ServerState>>,
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     navigation: OnceLock<Arc<NativeNavigationProject<'static>>>,
     retired: AtomicBool,
     reload_failed: AtomicBool,
@@ -35,7 +35,7 @@ impl ProjectContext {
             snapshot: OnceLock::new(),
             prepared: OnceLock::new(),
             state: OnceLock::new(),
-            #[cfg(feature = "experimental-source-navigation")]
+            #[cfg(feature = "retained-program")]
             navigation: OnceLock::new(),
             retired: AtomicBool::new(false),
             reload_failed: AtomicBool::new(false),
@@ -183,7 +183,7 @@ impl ProjectContext {
 
     pub(super) fn mark_retired(&self) {
         self.retired.store(true, Ordering::Release);
-        #[cfg(feature = "experimental-source-navigation")]
+        #[cfg(feature = "retained-program")]
         if let Some(navigation) = self.navigation.get() {
             navigation.mark_retired();
         }
@@ -197,7 +197,7 @@ impl ProjectContext {
 
     pub(super) fn retire(&self) {
         self.mark_retired();
-        #[cfg(feature = "experimental-source-navigation")]
+        #[cfg(feature = "retained-program")]
         if let Some(navigation) = self.navigation.get() {
             navigation.retire();
         }
@@ -208,7 +208,7 @@ impl ProjectContext {
         }
     }
 
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     pub(super) fn navigation_for_state(
         &self,
         state: &Arc<ServerState>,
@@ -245,7 +245,7 @@ impl ProjectContext {
     }
 }
 
-#[cfg(feature = "experimental-source-navigation")]
+#[cfg(feature = "retained-program")]
 impl Drop for ProjectContext {
     fn drop(&mut self) {
         self.mark_retired();

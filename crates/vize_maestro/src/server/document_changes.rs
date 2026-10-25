@@ -48,6 +48,11 @@ impl MaestroServer {
         }
         #[cfg(feature = "experimental-source-navigation")]
         self.notify_native_navigation(uri);
+        #[cfg(all(
+            feature = "retained-program",
+            not(feature = "experimental-source-navigation")
+        ))]
+        self.notify_retained_navigation(uri);
 
         let Some(content) = self.state.documents.text(uri) else {
             return;

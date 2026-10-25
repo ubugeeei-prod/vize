@@ -8,13 +8,19 @@ mod cache;
 mod coordinates;
 mod highlights;
 mod intrinsic;
+#[cfg(test)]
+mod intrinsic_tests;
+#[cfg(feature = "experimental-source-navigation")]
 mod linked;
+#[cfg(feature = "experimental-source-navigation")]
 mod module_links;
+#[cfg(feature = "experimental-source-navigation")]
 pub(in crate::source_project) mod names;
 pub(in crate::source_project) mod profile;
 mod retained;
+#[cfg(feature = "experimental-source-navigation")]
 mod selected;
-#[cfg(test)]
+#[cfg(all(test, feature = "experimental-source-navigation"))]
 mod tests;
 mod worker;
 
@@ -28,6 +34,7 @@ use vize_l2::file::{FileIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
 pub use intrinsic::IntrinsicTagTarget;
+#[cfg(feature = "experimental-source-navigation")]
 pub(crate) use module_links::ModuleDocumentLinkError;
 use profile::{Profile, QueryFamily};
 use worker::NavigationWorker;
@@ -163,6 +170,7 @@ impl<'host> NativeNavigationProject<'host> {
         let result = ready
             .publish(|response| self.checked_response(response))
             .map_err(NavigationRefusal::Host)?;
+        #[cfg(feature = "experimental-source-navigation")]
         if matches!(result, Err(NavigationRefusal::ConfigurationChanged)) {
             self.retire_changed_configuration(uri);
         }
@@ -192,6 +200,7 @@ impl<'host> NativeNavigationProject<'host> {
         let result = ready
             .publish(|response| self.checked_response(response))
             .map_err(NavigationRefusal::Host)?;
+        #[cfg(feature = "experimental-source-navigation")]
         if matches!(result, Err(NavigationRefusal::ConfigurationChanged)) {
             self.retire_changed_configuration(uri);
         }

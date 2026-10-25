@@ -19,9 +19,13 @@ use vize_l2::{
 
 mod highlights;
 mod intrinsic;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod linked;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod module_links;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod selected;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod vue;
 
 use super::{
@@ -118,6 +122,7 @@ pub(super) fn run(
         .line_starts(snapshot.source())
         .collect::<Vec<_>>();
     {
+        #[cfg(feature = "experimental-source-navigation")]
         let module_sources = module_links::admit(&syntax, block, &file);
         let query = RetainedNavigation {
             snapshot: &snapshot,
@@ -128,7 +133,10 @@ pub(super) fn run(
             #[cfg(test)]
             original,
         };
+        #[cfg(feature = "experimental-source-navigation")]
         serve(&query, Some(&module_sources), receiver, &control);
+        #[cfg(not(feature = "experimental-source-navigation"))]
+        serve(&query, receiver, &control);
     }
     // Explicit order: borrowed response work, then File, original syntax, arena.
     drop(file);
@@ -137,7 +145,9 @@ pub(super) fn run(
 
 fn serve(
     query: &RetainedNavigation<'_, '_>,
-    module_sources: Option<&module_links::Admission<'_, '_, '_>>,
+    #[cfg(feature = "experimental-source-navigation")] module_sources: Option<
+        &module_links::Admission<'_, '_, '_>,
+    >,
     receiver: Receiver<Command>,
     control: &Control,
 ) {
@@ -161,9 +171,11 @@ fn serve(
                     ));
                 }
             }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::ModuleLinks(request) => {
                 module_links::answer(query, module_sources, request, control);
             }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
@@ -174,12 +186,13 @@ fn serve(
                     let _ = request.reply.send(query.highlights(request.position));
                 }
             }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::TemplateDefinition(_, reply) => {
                 if !reply.is_canceled() {
                     let _ = reply.send(Err(NavigationRefusal::Language));
                 }
             }
-            #[cfg(test)]
+            #[cfg(all(test, feature = "experimental-source-navigation"))]
             Command::SelectedInspect(_, reply) => {
                 let _ = reply.send(Err(NavigationRefusal::Language));
             }
@@ -226,7 +239,7 @@ fn serve(
                 let _ = entered.send(());
                 let _ = resumed.recv();
             }
-            #[cfg(test)]
+            #[cfg(all(test, feature = "experimental-source-navigation"))]
             Command::Panic => panic!("actual native worker unwind"),
         }
     }
