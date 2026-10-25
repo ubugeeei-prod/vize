@@ -180,11 +180,25 @@ export async function projectViteConfigSource(source, env, configDir) {
   }
   if (typeof source.typecheck === "boolean") overrides.typeChecker = { enabled: source.typecheck };
   else if (object(source.typecheck)) overrides.typeChecker = source.typecheck;
+  if (object(source.lint)) {
+    const linter = projectVitePlusLintConfig(source.lint);
+    validateVueOption(linter, { $ref: "#/definitions/LinterConfig" }, "lint");
+    if (Object.keys(linter).length !== 0) overrides.linter = linter;
+    const entries = projectVitePlusLintOverrides(source.lint, "lint");
+    if (entries.length !== 0) {
+      // Entry ignores currently select files for more than the lint command.
+      // Refuse this unrepresentable host scope rather than hide formatter or
+      // checker inputs through a lint-only excludeFiles condition.
+      throw new TypeError(
+        "lint.overrides: scoped vize/* rules cannot yet be shared with native lint; use explicit vue.linter or vue.entries settings",
+      );
+    }
+  }
   const lint = source.lint?.vue;
   if (typeof lint === "boolean") overrides.linter = { enabled: lint };
   else if (object(lint)) {
     const { typecheck: _typecheck, locale: _locale, helpLevel: _helpLevel, ...native } = lint;
-    overrides.linter = native;
+    overrides.linter = overlayVueOptions(overrides.linter ?? {}, native);
   }
   if (object(source.fmt)) {
     const { vue, sortImports } = source.fmt;
@@ -286,9 +300,18 @@ function projectVitePlusLintConfig(lint) {
     if (!id.startsWith("vize/")) continue;
     const name = id.slice("vize/".length);
     const rawSeverity = Array.isArray(entry) ? entry[0] : entry;
-    const severity = rawSeverity === 1 ? "warn" : rawSeverity === 2 ? "error" : rawSeverity;
+    const severity =
+      rawSeverity === 0
+        ? "off"
+        : rawSeverity === 1
+          ? "warn"
+          : rawSeverity === 2
+            ? "error"
+            : rawSeverity;
     if (severity === "off" || severity === "warn" || severity === "error") {
       rules[name] = severity;
+    } else {
+      throw new TypeError(`lint.rules.${id}: unsupported rule severity`);
     }
     if (Array.isArray(entry) && entry[1] !== undefined) {
       ruleOptions[name] = entry[1];
