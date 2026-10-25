@@ -76,6 +76,7 @@ fn evaluate(object: &ObjectExpression<'_>) -> Option<String> {
             })
             || value.contains("/*")
             || value.contains("*/")
+            || !priority_is_proven(key, value)
         {
             return None;
         }
@@ -108,6 +109,21 @@ fn evaluate(object: &ObjectExpression<'_>) -> Option<String> {
         css.push(';');
     }
     Some(css)
+}
+
+fn priority_is_proven(key: &str, value: &str) -> bool {
+    let Some((stem, token)) = value.split_once('!') else {
+        return true;
+    };
+    // Vue's runtime uses the case-sensitive, end-anchored /\s*!important$/,
+    // whereas CSS has a different whitespace and priority-token grammar.
+    // Keep every unproved spelling on the runtime path. ASCII also excludes
+    // NBSP/FEFF and other JS whitespace that CSS does not strip here.
+    // Custom properties and empty stems retain their CSSOM setter behavior.
+    !key.starts_with("--")
+        && value.is_ascii()
+        && token == "important"
+        && stem.bytes().any(|byte| byte != b' ')
 }
 
 fn style_key(key: &str) -> bool {
