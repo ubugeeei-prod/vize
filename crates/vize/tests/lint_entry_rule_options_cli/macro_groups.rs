@@ -234,3 +234,86 @@ fn default_empty_unknown_and_project_orders_reach_the_cli_unchanged() {
         );
     }
 }
+
+#[test]
+fn ambient_declarations_preserve_runtime_groups_and_complete_cli_packets() {
+    let order = json!(["defineOptions", "defineModel", "defineProps", "defineEmits"]);
+    let ambient = [
+        Case {
+            body: &["declare const ambient = defineModel();"],
+            violation: None,
+        },
+        Case {
+            body: &[
+                "declare const ambient = defineModel();",
+                "defineModel();",
+                "defineModel();",
+                "defineProps();",
+            ],
+            violation: None,
+        },
+        Case {
+            body: &[
+                "declare const ambient = withDefaults(defineModel(), {});",
+                "defineModel();",
+                "defineProps();",
+            ],
+            violation: None,
+        },
+        Case {
+            body: &[
+                "defineModel();",
+                "declare const ambient = defineModel();",
+                "defineModel();",
+            ],
+            violation: Some((2, MODEL_TOP)),
+        },
+        Case {
+            body: &[
+                "defineModel();",
+                "declare const ambient: string;",
+                "defineModel();",
+            ],
+            violation: Some((2, MODEL_TOP)),
+        },
+        Case {
+            body: &[
+                "declare const ambient = defineModel();",
+                "defineProps();",
+                "defineModel();",
+            ],
+            violation: Some((2, ABOVE)),
+        },
+    ];
+    for newline in ["\n", "\r\n"] {
+        check(Some(order.clone()), "warn", &ambient, newline, true);
+        check(Some(order.clone()), "error", &ambient, newline, false);
+        check(
+            None,
+            "warn",
+            &[
+                Case {
+                    body: &[
+                        "declare const ambient = defineProps();",
+                        "defineProps();",
+                        "defineEmits();",
+                    ],
+                    violation: None,
+                },
+                Case {
+                    body: &[
+                        "defineProps();",
+                        "declare const ambient = defineProps();",
+                        "defineEmits();",
+                    ],
+                    violation: Some((
+                        2,
+                        "`defineEmits` should be placed at the top of `<script setup>` (after any potential import statements or type definitions).",
+                    )),
+                },
+            ],
+            newline,
+            false,
+        );
+    }
+}

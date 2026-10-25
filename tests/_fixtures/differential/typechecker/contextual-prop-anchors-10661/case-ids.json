@@ -1,0 +1,12 @@
+[
+  "original-from",
+  "all-keyword-props",
+  "authored-contextual-locals",
+  "authored-prop-shadow-imports",
+  "reactive-prop-destructure",
+  "const-enum-import",
+  "unicode-identities",
+  "authored-ts2552-retained",
+  "non-colliding-keyword-props",
+  "authored-undefined-shadow"
+]

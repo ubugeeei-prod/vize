@@ -6,6 +6,49 @@ use vize_croquis::AnalyzerOptions;
 mod nested_callbacks;
 
 #[test]
+fn project_ssr_capability_preserves_the_public_boundary_group_switch() {
+    for (group_enabled, ssr_enabled, expected) in [
+        (false, false, vec![]),
+        (false, true, vec![]),
+        (true, false, vec!["vize:croquis/cf/async-no-suspense"]),
+        (
+            true,
+            true,
+            vec![
+                "vize:croquis/cf/async-no-suspense",
+                "vize:croquis/cf/browser-api-ssr",
+            ],
+        ),
+    ] {
+        let mut analyzer = CrossFileAnalyzer::new(
+            CrossFileOptions::minimal().with_server_client_boundary(group_enabled),
+        );
+        analyzer.set_ssr_enabled(ssr_enabled);
+        let mut single = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
+        single.analyze_script_setup("await Promise.resolve(); window.innerWidth;");
+        let mut analysis = single.finish();
+        // Supply the macro fact directly: this checks group/context policy,
+        // independently of the script parser's await-fact producer.
+        analysis
+            .macros
+            .add_top_level_await("Promise.resolve()".into(), 0, 23);
+        analyzer.add_file_with_analysis(Path::new("App.vue"), "", analysis);
+        let result = analyzer.analyze();
+        let mut codes = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.code())
+            .collect::<Vec<_>>();
+        codes.sort_unstable();
+        assert_eq!(codes, expected);
+        if !group_enabled {
+            assert_eq!(format!("{:?}", result.diagnostics), "[]");
+            assert_eq!(format!("{:?}", result.boundaries), "[]");
+        }
+    }
+}
+
+#[test]
 fn test_reactivity_wrappers_detected() {
     let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal());
 

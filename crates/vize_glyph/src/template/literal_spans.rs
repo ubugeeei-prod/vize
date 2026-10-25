@@ -37,6 +37,13 @@ impl ValueLines {
         )
     }
 
+    pub(crate) fn with_cr(value: &str, representation: Representation) -> Self {
+        parsed_raw_lines_with_separator::<b'\r'>(value, representation).map_or_else(
+            || Self::Lexed(LiteralLineState::from_line("", representation)),
+            |raw| Self::Parsed { raw, next: 0 },
+        )
+    }
+
     /// Ownership for the lines after the first of a rendered `name="value"`.
     pub(crate) fn for_attribute(attr: &str) -> Self {
         let value = attr
@@ -77,7 +84,14 @@ impl ValueLines {
 /// Per-line "starts inside a string or quasi" flags for a value that parses
 /// as one expression (or, outside interpolations, as handler statements).
 pub(crate) fn parsed_raw_lines(value: &str, representation: Representation) -> Option<Vec<bool>> {
-    if !value.contains('\n') {
+    parsed_raw_lines_with_separator::<b'\n'>(value, representation)
+}
+
+fn parsed_raw_lines_with_separator<const NEWLINE: u8>(
+    value: &str,
+    representation: Representation,
+) -> Option<Vec<bool>> {
+    if !value.contains(char::from(NEWLINE)) {
         return None;
     }
     let decoded = match representation {
@@ -105,7 +119,7 @@ pub(crate) fn parsed_raw_lines(value: &str, representation: Representation) -> O
     }
     let mut raw = vec![false];
     for (index, byte) in decoded.bytes().enumerate() {
-        if byte == b'\n' {
+        if byte == NEWLINE {
             let start = (index + 1) as u32;
             raw.push(
                 spans

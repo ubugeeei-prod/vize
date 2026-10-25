@@ -349,7 +349,7 @@ void test("LSP report cannot invent native credit, references, coordinates or so
   }
 });
 
-void test("LSP unavailable executables fail every planned case without trying a fallback", async () => {
+void test("LSP unavailable executables fail every executable case and preserve unsupported transitions", async () => {
   for (const binaryPath of [path.join(pack, "missing-vize"), "vize"]) {
     const report = await runLspPack({
       manifestPath,
@@ -357,11 +357,15 @@ void test("LSP unavailable executables fail every planned case without trying a 
       sourceRevision: build.sourceRevision,
     });
     assert.equal(report.binary, null);
-    assert.equal(report.summary.legacyFailures, inventory.length);
+    const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
+    assert.equal(report.summary.legacyFailures, inventory.length - unsupported);
+    assert.equal(report.summary.legacyUnsupported, unsupported);
     assert.equal(report.summary.nativeHandled, 0);
     assert(
       report.rows.every(
-        (row) => typeof row.legacy.error === "string" && row.legacy.error.length > 0,
+        (row) =>
+          row.legacy.state === "unsupported" ||
+          (typeof row.legacy.error === "string" && row.legacy.error.length > 0),
       ),
     );
   }

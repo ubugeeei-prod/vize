@@ -72,7 +72,8 @@ fn the_committed_planes_agree_with_the_specs() {
             ladder.unused.facts
         ),
         if cfg!(debug_assertions) {
-            (6, 5, 0)
+            // The normal-script case now has an independent module-read oracle.
+            (6, 6, 0)
         } else {
             (6, 0, 0)
         }

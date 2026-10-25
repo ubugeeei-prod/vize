@@ -270,7 +270,9 @@ impl<'a> GlyphFormatter<'a> {
         {
             output.pop();
         }
-        output.extend_from_slice(newline);
+        if !output.is_empty() {
+            output.extend_from_slice(newline);
+        }
 
         // SAFETY: `output` is composed from the original UTF-8 SFC source plus
         // formatter output returned as `&str` and ASCII whitespace/newlines. All

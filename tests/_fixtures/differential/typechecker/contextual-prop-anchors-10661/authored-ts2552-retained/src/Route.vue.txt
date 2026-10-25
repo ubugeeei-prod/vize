@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const localName = "kept";
+void localNmae;
+defineProps<{ from: string }>();
+</script>
+<template><p>{{ from }}</p></template>

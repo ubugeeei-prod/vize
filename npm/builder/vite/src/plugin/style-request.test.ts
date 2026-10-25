@@ -89,6 +89,53 @@ void test("cold style entries leave excluded SFCs to their owning compiler", asy
   }
 });
 
+void test("production style IDs keep stable imports but give CSS a physical relative-import base", async () => {
+  const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "vize-style-origin-雪 "));
+  try {
+    const filename = path.join(root, "src/components/Card.vue");
+    fs.mkdirSync(path.dirname(filename), { recursive: true });
+    fs.writeFileSync(
+      filename,
+      '<template><p class="card">Card</p></template><style>@import "../styles/colors.css";</style>',
+    );
+    const state = createState(root);
+    const compiled = compileFile(filename, state.cache, getCompileOptionsForRequest(state, false));
+    const output = generateOutput(compiled, {
+      root,
+      filePath: filename,
+      isProduction: true,
+      isDev: false,
+      extractCss: false,
+    });
+    const query =
+      "vue=&type=style&index=0&lang=css&vize-root-relative=&vize-file=%2Fsrc%2Fcomponents%2FCard%2Evue";
+    const stable = `/src/components/Card.vue.__vize_style_0.css?${query}`;
+    assert.ok(output.includes(`import "${stable}";`));
+    assert.ok(!output.includes(root), "generated component code must not expose the checkout root");
+    for (const ssr of [false, true]) {
+      for (const suffix of ["", "?inline&used"]) {
+        const resolved = await resolveIdHook(
+          { resolve: async () => null },
+          state,
+          stable + suffix,
+          filename,
+          { ssr },
+        );
+        assert.equal(
+          resolved,
+          `${filename}.__vize_style_0.css?${query}${suffix ? "&inline&used" : ""}`,
+        );
+        assert.deepEqual(loadHook(state, resolved as string, { ssr }), {
+          code: '@import "../styles/colors.css";',
+          map: null,
+        });
+      }
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 void test("Nuxt repeated inline style resolution loads the original scoped SFC blocks", async () => {
   const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "vize-nuxt-style-"));
   try {

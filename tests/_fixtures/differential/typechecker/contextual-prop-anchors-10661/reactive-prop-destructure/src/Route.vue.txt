@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const { from, of: ofAlias, as: asAlias, ...rest } = defineProps<{ from: string; of: string; as: string; tail: string }>();
+</script>
+<template><p>{{ from }} {{ ofAlias }} {{ asAlias }} {{ rest.tail }}</p></template>

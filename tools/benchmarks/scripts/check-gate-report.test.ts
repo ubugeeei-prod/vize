@@ -10,6 +10,105 @@ import {
   renderMarkdown,
 } from "./check-gate-report.ts";
 import type { MeasurementVariant } from "./check-gate-report.ts";
+import {
+  MINIMAL_PLANTS,
+  CORPUS_PLANT_DIAGNOSTICS,
+  CORPUS_PLANT_FILE,
+  vizeReportCatchesPlant,
+  vizeCorpusPlantMatches,
+} from "./check-gate-plants.mjs";
+
+// Complete packets observed with the reported 0.566.0 product and pinned 7.0.2
+// runtime. JSON template context is intentional since a67d5791a706; bare script
+// diagnostics retain their existing contract.
+const templatePackets = [
+  {
+    id: "templateProp",
+    diagnostic:
+      "error:6:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"disabledFlag\">go</button>; binding: 'disabled')",
+  },
+  {
+    id: "templateEvent",
+    diagnostic:
+      "error:6:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'. (source: <button type=\"button\" @click=\"clickHandler\">go</button>; binding: @click)",
+  },
+  {
+    id: "componentProp",
+    diagnostic:
+      'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'. (source: <Child variant="danger" />; binding: variant)',
+  },
+] as const;
+
+function plantReport(diagnostic: string) {
+  return {
+    files: [{ file: "App.vue", diagnostics: [diagnostic] }],
+    errorCount: 1,
+    warningCount: 0,
+    fileCount: 1,
+  };
+}
+
+void test("template readiness requires every byte of the current authored-context packets", () => {
+  const script = MINIMAL_PLANTS.find((plant) => plant.id === "script");
+  assert.equal(
+    script?.expected.diagnostic,
+    "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.",
+  );
+  for (const packet of templatePackets) {
+    const plant = MINIMAL_PLANTS.find((candidate) => candidate.id === packet.id);
+    assert.equal(plant?.expected.diagnostic, packet.diagnostic);
+    assert.ok(
+      vizeReportCatchesPlant(plantReport(packet.diagnostic), "App.vue", [packet.diagnostic]),
+    );
+    for (const changed of [
+      packet.diagnostic.replace(/ \(source:.*\)$/u, ""),
+      packet.diagnostic.replace("source: ", "source: changed "),
+      packet.diagnostic.replace(/; binding:.*\)$/u, ")"),
+      packet.diagnostic.replace(/binding:.*\)$/u, "binding: changed)"),
+      packet.diagnostic.replace("[TS23", "[TS24"),
+    ]) {
+      assert.notEqual(changed, packet.diagnostic);
+      assert.ok(!vizeReportCatchesPlant(plantReport(changed), "App.vue", [packet.diagnostic]));
+    }
+    const stray = plantReport(packet.diagnostic);
+    stray.files.push({ file: "Other.vue", diagnostics: ["error:1:1 [TS2304] unrelated"] });
+    assert.ok(!vizeReportCatchesPlant(stray, "App.vue", [packet.diagnostic]));
+    const wrongCount = plantReport(packet.diagnostic);
+    wrongCount.errorCount++;
+    assert.ok(!vizeReportCatchesPlant(wrongCount, "App.vue", [packet.diagnostic]));
+  }
+});
+
+void test("corpus readiness retains all baseline packets and exact authored template context", () => {
+  const script = "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.";
+  const template =
+    "error:7:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"disabledFlag\">{{ n }}</button>; binding: 'disabled')";
+  assert.deepEqual(CORPUS_PLANT_DIAGNOSTICS, [script, template]);
+  const baselineReport = plantReport(script);
+  const planted = {
+    ...baselineReport,
+    files: [...baselineReport.files, { file: CORPUS_PLANT_FILE, diagnostics: [script, template] }],
+    errorCount: 3,
+    fileCount: 2,
+  };
+  assert.ok(vizeCorpusPlantMatches(baselineReport, planted));
+  for (const changed of [
+    template.replace(/ \(source:.*\)$/u, ""),
+    template.replace("source: ", "source: changed "),
+    template.replace("binding: 'disabled'", "binding: 'other'"),
+  ]) {
+    const mutated = structuredClone(planted);
+    const row = mutated.files.find((file) => file.file === CORPUS_PLANT_FILE);
+    assert.ok(row);
+    row.diagnostics = [script, changed];
+    assert.ok(!vizeCorpusPlantMatches(baselineReport, mutated));
+  }
+  const lostBaseline = structuredClone(planted);
+  const row = lostBaseline.files.find((file) => file.file === "App.vue");
+  assert.ok(row);
+  row.diagnostics = [];
+  assert.ok(!vizeCorpusPlantMatches(baselineReport, lostBaseline));
+});
 
 const baseline = {
   rows: [{ id: "vize-check-max", medianMs: 100 }],

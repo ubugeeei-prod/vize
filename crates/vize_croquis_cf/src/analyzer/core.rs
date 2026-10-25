@@ -18,6 +18,8 @@ use vize_croquis::{AnalyzerOptions, EffectGraphSummary};
 pub struct CrossFileAnalyzer {
     /// Analysis options.
     options: CrossFileOptions,
+    /// Host project capability, separate from enabling the boundary rule group.
+    ssr_enabled: bool,
     /// Module registry.
     registry: ModuleRegistry,
     /// Dependency graph.

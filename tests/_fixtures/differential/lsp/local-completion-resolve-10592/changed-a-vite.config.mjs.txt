@@ -1,0 +1,1 @@
+export default {"vue":{"languageServer":{"hover":false,"completion":true,"ecosystem":true,"typecheck":false,"lint":false},"linter":{"enabled":false}}};
