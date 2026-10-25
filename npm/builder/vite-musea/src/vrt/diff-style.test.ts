@@ -9,6 +9,7 @@ import { readPng, writePng } from "./comparison.ts";
 import { resolveDiffStyle, sideBySidePng, UnsupportedDiffStyleError } from "./diff-style.ts";
 import { compareImages } from "./runner-comparison.ts";
 import { MuseaVrtRunner } from "./runner.ts";
+import { UnsupportedDiffStyleError as PublicUnsupportedDiffStyleError } from "../vrt.ts";
 
 const styles: DiffStyle[] = ["overlay", "diffOnly", "sideBySide"];
 const baseline = [1, 2, 3, 0, 10, 20, 30, 255, 50, 60, 70, 128, 100, 110, 120, 255];
@@ -25,7 +26,7 @@ async function fixture(t: { after: (callback: () => Promise<void>) => void }) {
   t.after(() => rm(root, { recursive: true, force: true }));
   return {
     root,
-    async compare(a: PNG, b: PNG, comparison: ComparisonConfig = {}) {
+    compare: async (a: PNG, b: PNG, comparison: ComparisonConfig = {}) => {
       const aPath = path.join(root, "baseline.png");
       const bPath = path.join(root, "current.png");
       const output = path.join(root, `${comparison.diffStyle ?? "default"}.png`);
@@ -165,6 +166,7 @@ for (const style of ["animated", "bogus", "", null, 42]) {
     const comparison = { diffStyle: style } as unknown as ComparisonConfig;
     const validate = (error: unknown) => {
       assert.ok(error instanceof UnsupportedDiffStyleError);
+      assert.ok(error instanceof PublicUnsupportedDiffStyleError);
       assert.equal(error.code, "ERR_MUSEA_UNSUPPORTED_DIFF_STYLE");
       assert.equal(error.style, style);
       return true;

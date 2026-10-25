@@ -15,7 +15,8 @@ export {
 } from "./vrt/runner.js";
 
 export { generateVrtReport, generateVrtJsonReport } from "./vrt/report.js";
-export type { BeforeCaptureContext, CaptureConfig } from "./types/vrt.js";
+export { UnsupportedDiffStyleError } from "./vrt/diff-style.js";
+export type { BeforeCaptureContext, CaptureConfig, DiffStyle } from "./types/vrt.js";
 
 import { MuseaVrtRunner } from "./vrt/runner.js";
 export default MuseaVrtRunner;
