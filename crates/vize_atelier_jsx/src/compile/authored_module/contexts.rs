@@ -16,8 +16,17 @@ pub(super) fn check(
     if !components.iter().any(|c| c.component_setup().is_some()) {
         return Ok(());
     }
+    let spans: Vec<_> = components
+        .iter()
+        .filter_map(JsxComponent::component_setup)
+        .map(|setup| Span::new(setup.declaration_start, setup.declaration_end))
+        .collect();
+    check_spans(program, &spans)
+}
+
+pub(super) fn check_spans(program: &Program<'_>, spans: &[Span]) -> Result<(), JsxDiagnostic> {
     let mut visitor = Contexts {
-        components,
+        spans,
         missing: None,
         receivers: Vec::new(),
     };
@@ -33,26 +42,21 @@ pub(super) fn check(
 }
 
 struct Contexts<'a> {
-    components: &'a [JsxComponent],
+    spans: &'a [Span],
     missing: Option<(u32, u32)>,
     receivers: Vec<Span>,
 }
 
 impl Contexts<'_> {
     fn record(&mut self, start: u32, end: u32) {
-        if self
-            .components
-            .iter()
-            .filter_map(JsxComponent::component_setup)
-            .any(|setup| {
-                setup.declaration_start <= start
-                    && end <= setup.declaration_end
-                    && self.receivers.last().is_none_or(|receiver| {
-                        receiver.start < setup.declaration_start
-                            || setup.declaration_end < receiver.end
-                    })
-            })
-        {
+        if self.spans.iter().any(|setup| {
+            setup.start <= start
+                && end <= setup.end
+                && self
+                    .receivers
+                    .last()
+                    .is_none_or(|receiver| receiver.start < setup.start || setup.end < receiver.end)
+        }) {
             self.missing = Some((start, end));
         }
     }

@@ -3,15 +3,16 @@
 mod collisions;
 mod contexts;
 mod mapped;
-mod unsupported;
+mod plans;
 
 use vize_l0::{String, ToCompactString};
 
 use super::JsxComponent;
-use crate::{ComponentSetupSpan, JsxDiagnostic, JsxLang, JsxOutputMode};
+use crate::{ComponentSetupSpan, JsxDiagnostic, JsxLang};
 use mapped::ModuleWriter;
 
 struct Renderer {
+    imports: Vec<(usize, usize)>,
     prefix_end: usize,
     params_start: usize,
     params_end: usize,
@@ -21,6 +22,7 @@ struct Renderer {
 
 pub(super) fn emit(
     components: &[JsxComponent],
+    origins: &[crate::emission::RootSourceMap],
     spans: &[(u32, u32)],
     preamble: &str,
     source: &str,
@@ -28,7 +30,7 @@ pub(super) fn emit(
     source_map: bool,
 ) -> Result<Option<(String, Option<String>)>, JsxDiagnostic> {
     if components.is_empty() {
-        let mut writer = ModuleWriter::new(source, components, source_map);
+        let mut writer = ModuleWriter::new(source, components, origins, source_map)?;
         writer.authored(0, source.len() as u32)?;
         return Ok(Some(writer.finish(if lang.is_typescript() {
             "module.tsx"
@@ -36,24 +38,99 @@ pub(super) fn emit(
             "module.jsx"
         })));
     }
-    if components.iter().any(|c| c.mode() != JsxOutputMode::Vdom)
-        || components.iter().any(|c| matches!(c, JsxComponent::Ssr(_)))
-    {
-        unsupported::check(components, spans, source, lang)?;
-        return Ok(None);
-    }
     if components.len() != spans.len() {
         return Err(error(0, 0, "JSX root and component counts differ"));
     }
-    let renderers = collisions::check(components, spans, preamble, source, lang)?;
-    let mut writer = ModuleWriter::new(source, components, source_map);
-    writer.synthetic(preamble);
+    let parse_allocator = oxc_allocator::Allocator::default();
+    let parsed = crate::parse_module(&parse_allocator, source, lang);
+    let native_roots: Vec<_> = components
+        .iter()
+        .zip(spans)
+        .filter_map(|(component, span)| {
+            (!matches!(component, JsxComponent::Vdom(_))).then_some(*span)
+        })
+        .collect();
+    let native_plans = vize_l0::profile!(
+        "atelier.jsx.module.component_plans",
+        plans::collect(&parsed.program, &native_roots)
+    )?;
+    contexts::check_spans(
+        &parsed.program,
+        &native_plans
+            .iter()
+            .map(|plan| plan.span)
+            .collect::<Vec<_>>(),
+    )?;
+    for &(start, end) in &native_roots {
+        if !native_plans
+            .iter()
+            .any(|plan| plan.setup.render_start == start && plan.setup.render_end == end)
+        {
+            return Err(error(
+                start,
+                end,
+                "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+            ));
+        }
+        if native_plans.iter().any(|plan| {
+            plan.span.start <= start
+                && end <= plan.span.end
+                && (plan.setup.render_start, plan.setup.render_end) != (start, end)
+        }) {
+            return Err(error(
+                start,
+                end,
+                "nested native component roots need an explicit nested setup plan",
+            ));
+        }
+    }
+    let renderers = vize_l0::profile!(
+        "atelier.jsx.module.collisions",
+        collisions::check(components, spans, preamble, source, lang)
+    )?;
+    let mut writer = ModuleWriter::new(source, components, origins, source_map)?;
+    // Hashbangs and directives retain their original leading position. Imports
+    // inserted before them would change parsing or the module's directive role.
+    let prefix_end = parsed
+        .program
+        .directives
+        .last()
+        .map(|directive| directive.span.end)
+        .or_else(|| {
+            parsed
+                .program
+                .hashbang
+                .as_ref()
+                .map(|hashbang| hashbang.span.end)
+        })
+        .unwrap_or(0);
+    writer.authored(0, prefix_end)?;
+    if prefix_end > 0 {
+        writer.synthetic("\n");
+    }
+    let mut backend_imports = Vec::new();
+    for (component, renderer) in components.iter().zip(&renderers) {
+        for &(start, end) in &renderer.imports {
+            backend_imports.push(
+                component
+                    .code()
+                    .get(start..end)
+                    .ok_or_else(|| error(0, 0, "invalid generated import span"))?,
+            );
+        }
+    }
+    let preamble =
+        super::preamble::merge_preambles(std::iter::once(preamble).chain(backend_imports));
+    writer.synthetic(&preamble);
     writer.synthetic("\n");
     let mut define = String::from("_defineComponent");
     while source.contains(define.as_str()) {
         define.push('_');
     }
-    if components.iter().any(|c| c.component_setup().is_some()) {
+    if components
+        .iter()
+        .any(|c| matches!(c, JsxComponent::Vdom(_)) && c.component_setup().is_some())
+    {
         writer.synthetic("import { defineComponent as ");
         writer.synthetic(&define);
         writer.synthetic(" } from \"vue\"\n");
@@ -63,10 +140,16 @@ pub(super) fn emit(
         spans,
         renderers,
         define,
+        native_plans,
     };
     let mut replacements = Vec::new();
     for (index, (component, &(root_start, root_end))) in components.iter().zip(spans).enumerate() {
-        if let Some(setup) = component.component_setup() {
+        if !matches!(component, JsxComponent::Vdom(_)) {
+            let plan = cx
+                .native_plan(index)
+                .ok_or_else(|| error(root_start, root_end, "missing native component plan"))?;
+            replacements.push((plan.span.start, plan.span.end, index, true));
+        } else if let Some(setup) = component.component_setup() {
             replacements.push((setup.declaration_start, setup.declaration_end, index, true));
         } else if !components.iter().any(|c| {
             c.component_setup().is_some_and(|setup| {
@@ -77,14 +160,18 @@ pub(super) fn emit(
         }
     }
     replacements.sort_unstable_by_key(|r| r.0);
-    let mut cursor = 0;
+    let mut cursor = prefix_end;
     for (start, end, index, wrapper) in replacements {
         if start < cursor || end < start || end as usize > source.len() {
             return Err(error(start, end, "overlapping JSX module replacements"));
         }
         writer.authored(cursor, start)?;
         if wrapper {
-            cx.wrapper(index, &mut writer)?;
+            if matches!(components.get(index), Some(JsxComponent::Vdom(_))) {
+                cx.wrapper(index, &mut writer)?;
+            } else {
+                cx.native_wrapper(index, &mut writer)?;
+            }
         } else {
             cx.expression(index, true, &mut writer)?;
         }
@@ -103,6 +190,7 @@ struct Context<'a> {
     spans: &'a [(u32, u32)],
     renderers: Vec<Renderer>,
     define: String,
+    native_plans: Vec<plans::Plan>,
 }
 
 impl Context<'_> {
@@ -117,7 +205,15 @@ impl Context<'_> {
             .get(index)
             .ok_or_else(|| error(0, 0, "missing JSX renderer"))?;
         writer.synthetic("(() => {\n");
-        writer.generated(index, 0, renderer.prefix_end)?;
+        let mut prefix = 0;
+        for &(start, end) in &renderer.imports {
+            if end > renderer.prefix_end {
+                return Err(error(0, 0, "generated import overlaps renderer"));
+            }
+            writer.generated(index, prefix, start)?;
+            prefix = end;
+        }
+        writer.generated(index, prefix, renderer.prefix_end)?;
         writer.synthetic("return (");
         writer.generated(index, renderer.params_start, renderer.params_end)?;
         writer.synthetic(" => ");
@@ -127,6 +223,66 @@ impl Context<'_> {
         } else {
             ")\n})()"
         });
+        Ok(())
+    }
+
+    fn native_plan(&self, index: usize) -> Option<&plans::Plan> {
+        let &(start, end) = self.spans.get(index)?;
+        self.native_plans
+            .iter()
+            .find(|plan| plan.setup.render_start == start && plan.setup.render_end == end)
+    }
+
+    fn native_wrapper(
+        &self,
+        index: usize,
+        writer: &mut ModuleWriter<'_>,
+    ) -> Result<(), JsxDiagnostic> {
+        let component = self
+            .components
+            .get(index)
+            .ok_or_else(|| error(0, 0, "missing native component"))?;
+        let plan = self
+            .native_plan(index)
+            .ok_or_else(|| error(0, 0, "missing native component plan"))?;
+        let setup = &plan.setup;
+        writer.synthetic("({\n");
+        writer.synthetic(if matches!(component, JsxComponent::Ssr(_)) {
+            "__ssrInlineRender: true,\n"
+        } else {
+            "__vapor: true,\n"
+        });
+        if let Some(name) = component.component_name() {
+            writer.synthetic("name: ");
+            writer.synthetic(&js_string(name));
+            writer.synthetic(",\n");
+        }
+        if !setup.destructured_props.is_empty() {
+            writer.synthetic("props: [");
+            for (i, prop) in setup.destructured_props.iter().enumerate() {
+                if i > 0 {
+                    writer.synthetic(", ");
+                }
+                writer.synthetic(&js_string(prop));
+            }
+            writer.synthetic("],\n");
+        }
+        if setup.is_async {
+            writer.synthetic("async ");
+        }
+        writer.synthetic("setup");
+        if setup.type_params_start != setup.type_params_end {
+            writer.synthetic("<");
+            writer.authored(setup.type_params_start, setup.type_params_end)?;
+            writer.synthetic(">");
+        }
+        writer.synthetic("(");
+        writer.authored(setup.params_start, setup.params_end)?;
+        writer.synthetic(") {\n");
+        self.authored_range(setup.setup_start, setup.setup_end, index, writer)?;
+        writer.synthetic("return ");
+        self.expression(index, !matches!(component, JsxComponent::Ssr(_)), writer)?;
+        writer.synthetic("\n}\n})");
         Ok(())
     }
 
