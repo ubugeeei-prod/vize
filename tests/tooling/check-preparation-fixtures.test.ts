@@ -20,7 +20,7 @@ function source(side: "base" | "head", path: string): Buffer | null {
   if (side === "base") {
     assert(Object.hasOwn(before, path), path);
     const original = before[path];
-    assert.notEqual(original, undefined, path);
+    assert(original !== undefined, path);
     return original === null ? null : Buffer.from(original);
   }
   try {
