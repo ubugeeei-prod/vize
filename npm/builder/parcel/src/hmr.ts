@@ -48,6 +48,15 @@ export async function instrumentHmr(
   const program = parsed.program as unknown as Node;
   if (!Array.isArray(program.body)) return code;
   const body = program.body.filter(node);
+  if (
+    body.some(
+      (statement) =>
+        (statement.type === "ExportAllDeclaration" ||
+          statement.type === "ExportNamedDeclaration") &&
+        statement.source,
+    )
+  )
+    return code;
   const names = new Set<string>();
   let dynamic = false;
   const visit = (value: unknown): void => {

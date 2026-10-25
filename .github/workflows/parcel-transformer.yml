@@ -85,4 +85,5 @@ jobs:
           path: |
             ${{ runner.temp }}/parcel-proof/
             !${{ runner.temp }}/parcel-proof/**/node_modules/**
+            ${{ runner.temp }}/parcel-cpu/
             npm/native/.artifacts/native/formatter-history/

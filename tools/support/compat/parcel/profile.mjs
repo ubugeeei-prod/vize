@@ -12,17 +12,30 @@ const receipt = JSON.parse(
 const output = path.join(destination, "cpu-profiles");
 await fs.mkdir(output);
 const results = [];
+const inputs = [];
 for (const filename of (await fs.readdir(profiles))
   .filter((name) => name.endsWith(".cpuprofile"))
   .sort()) {
   const bytes = await fs.readFile(path.join(profiles, filename));
   await fs.writeFile(path.join(output, filename), bytes, { flag: "wx" });
+  inputs.push({ filename, sha256: sha(bytes), bytes: bytes.length });
+}
+// Capture the entire producer directory before validating any individual file.
+// A malformed later profile must not discard the remaining original profiles.
+await fs.writeFile(
+  path.join(destination, "cpu-producer-manifest.json"),
+  JSON.stringify({ source: receipt?.source, files: inputs }, null, 2) + "\n",
+);
+for (const input of inputs) {
+  const { filename } = input;
+  const bytes = await fs.readFile(path.join(output, filename));
+  assert.equal(sha(bytes), input.sha256);
   const profile = JSON.parse(bytes);
   const analysis = analyseProfile(profile);
   results.push({
     filename,
-    sha256: sha(bytes),
-    bytes: bytes.length,
+    sha256: input.sha256,
+    bytes: input.bytes,
     recordingSpanMicros: profile.endTime - profile.startTime,
     ...analysis,
   });

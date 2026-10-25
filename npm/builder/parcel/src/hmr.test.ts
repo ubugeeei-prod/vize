@@ -72,6 +72,8 @@ void test("Unicode and escaped private-name collisions do not change authored bi
 void test("side effects, dynamic imports and malformed output disable state preservation", async () => {
   for (const code of [
     "import './side-effect.js'; export default {};",
+    "export * from './side-effect.js'; export default {};",
+    "export { value } from './side-effect.js'; export default {};",
     "export default { later: () => import('./dynamic.js') };",
     "export default { invalid",
   ]) {
