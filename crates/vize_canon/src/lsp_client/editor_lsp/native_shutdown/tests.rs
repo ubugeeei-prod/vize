@@ -170,3 +170,7 @@ fn null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes()
 
 #[cfg(unix)]
 mod completion;
+
+mod beta_pairs;
+#[cfg(unix)]
+mod beta_provider;

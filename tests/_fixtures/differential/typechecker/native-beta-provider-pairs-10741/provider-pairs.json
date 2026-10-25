@@ -1,0 +1,1636 @@
+[
+  {
+    "id": "beta-linux-complete",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "admitted"
+    }
+  },
+  {
+    "id": "beta-darwin-complete",
+    "input": {
+      "imageSha256": "29f5eb8daa5c8cf6ef1c0cb79fbcf47c0cfdf26edabdf148bb779d0b2d56cebc",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "admitted"
+    }
+  },
+  {
+    "id": "beta-linux-with-npm-contract",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports",
+                "source.removeUnusedImports",
+                "source.sortImports",
+                "source.fixAll"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript-go",
+            "version": "7.0.2"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "beta-linux-with-mapper-contract",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports",
+                "source.removeUnusedImports",
+                "source.sortImports",
+                "source.fixAll"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-dev"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "beta-darwin-with-npm-contract",
+    "input": {
+      "imageSha256": "29f5eb8daa5c8cf6ef1c0cb79fbcf47c0cfdf26edabdf148bb779d0b2d56cebc",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports",
+                "source.removeUnusedImports",
+                "source.sortImports",
+                "source.fixAll"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript-go",
+            "version": "7.0.2"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "beta-darwin-with-mapper-contract",
+    "input": {
+      "imageSha256": "29f5eb8daa5c8cf6ef1c0cb79fbcf47c0cfdf26edabdf148bb779d0b2d56cebc",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports",
+                "source.removeUnusedImports",
+                "source.sortImports",
+                "source.fixAll"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-dev"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "npm-linux-with-beta-contract",
+    "input": {
+      "imageSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "npm-darwin-with-beta-contract",
+    "input": {
+      "imageSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "mapper-linux-with-beta-contract",
+    "input": {
+      "imageSha256": "77dd575e73107c00cc95cbccc3764ab7210089b5634f75e219b61632bd5d230b",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "unknown-image-with-beta-contract",
+    "input": {
+      "imageSha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "changed-version",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "changed-name",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript-go",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "changed-encoding",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-8",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "missing-diagnostics",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "extra-capability",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "capabilities": {
+            "positionEncoding": "utf-16",
+            "textDocumentSync": {
+              "openClose": true,
+              "change": 2,
+              "save": true
+            },
+            "completionProvider": {
+              "triggerCharacters": [".", "\"", "'", "`", "/", "@", "<", "#", " ", "*"],
+              "resolveProvider": true,
+              "completionItem": {
+                "labelDetailsSupport": true
+              }
+            },
+            "hoverProvider": true,
+            "signatureHelpProvider": {
+              "triggerCharacters": ["(", ",", "<"],
+              "retriggerCharacters": [")"]
+            },
+            "definitionProvider": true,
+            "typeDefinitionProvider": true,
+            "implementationProvider": true,
+            "referencesProvider": true,
+            "documentHighlightProvider": true,
+            "documentSymbolProvider": true,
+            "codeActionProvider": {
+              "codeActionKinds": [
+                "quickfix",
+                "source.organizeImports.ts",
+                "source.removeUnusedImports.ts",
+                "source.sortImports.ts",
+                "source.fixAll.ts"
+              ]
+            },
+            "codeLensProvider": {
+              "resolveProvider": true
+            },
+            "workspaceSymbolProvider": true,
+            "documentFormattingProvider": true,
+            "documentRangeFormattingProvider": true,
+            "documentOnTypeFormattingProvider": {
+              "firstTriggerCharacter": "{",
+              "moreTriggerCharacter": ["}", ";", "\n"]
+            },
+            "renameProvider": {
+              "prepareProvider": true
+            },
+            "foldingRangeProvider": true,
+            "selectionRangeProvider": true,
+            "callHierarchyProvider": true,
+            "linkedEditingRangeProvider": true,
+            "semanticTokensProvider": {
+              "legend": {
+                "tokenTypes": [],
+                "tokenModifiers": []
+              },
+              "range": true,
+              "full": true
+            },
+            "inlayHintProvider": true,
+            "diagnosticProvider": {
+              "identifier": "typescript",
+              "interFileDependencies": true,
+              "workspaceDiagnostics": false
+            },
+            "workspace": {
+              "fileOperations": {
+                "willRename": {
+                  "filters": [
+                    {
+                      "scheme": "file",
+                      "pattern": {
+                        "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "experimental": {
+              "customSourceDefinitionProvider": true,
+              "customMultiDocumentHighlightProvider": true
+            },
+            "_vs_onAutoInsertProvider": {
+              "_vs_triggerCharacters": [">"]
+            },
+            "_vs_referencesProvider": true,
+            "unproven": true
+          },
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "server-info-only",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "serverInfo": {
+            "name": "typescript",
+            "version": "7.1.0-beta"
+          }
+        }
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  },
+  {
+    "id": "null-initialize",
+    "input": {
+      "imageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": null
+      }
+    },
+    "expected": {
+      "kind": "rejected"
+    }
+  }
+]
