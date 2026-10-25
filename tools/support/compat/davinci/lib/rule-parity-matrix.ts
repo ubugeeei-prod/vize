@@ -110,6 +110,12 @@ export function buildMatrix() {
           rule.jsx = "no";
           rule.jsxLane = "no-jsx-hooks";
         }
+        if (model.plainTypes.rules.includes(meta.name)) {
+          if (!corsa)
+            throw new Error(`plain-module rule ${meta.name} is absent from TYPE_AWARE_RULES`);
+          rule.jsxLane = rule.jsx === "yes" ? `${rule.jsxLane}+plain-types` : "plain-types";
+          rule.jsx = "yes";
+        }
       }
     } else if (family === "script") {
       rule.surfaces.push(f.scriptUsesAst ? "script-oxc" : "script-source");

@@ -63,10 +63,14 @@ function summarySection(stats: RuleStats): string[] {
         .join(", "),
   );
   lines.push(
-    `- path membership: SFC \`lint_sfc\` ${sfcSet.length} · JSX \`lint_jsx\` ${jsxSet.length}` +
+    `- admitted path membership: SFC \`lint_sfc\` ${sfcSet.length} · JSX/TSX \`lint_jsx\` ${jsxSet.length}` +
       ` · **SFC∩JSX ${both.length}** · SFC-only ${sfcOnly.length} · JSX-only ${jsxOnly.length}` +
       ` · neither ${neither.length} (${count((r) => r.family === "musea")} musea +` +
       ` ${unregistered.length} unregistered)`,
+  );
+  lines.push(
+    `- conditional native plain-module type rules in JSX/TSX: ${count((r) => r.jsxLane.includes("plain-types"))}` +
+      " (included in admitted path membership; default opt-out, skipped inputs and unavailable checker work are not successful executions)",
   );
   lines.push(
     "- JSX lanes: " +

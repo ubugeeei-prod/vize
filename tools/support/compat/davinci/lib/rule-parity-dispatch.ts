@@ -8,6 +8,8 @@ import path from "node:path";
 
 import { byKey } from "./ordering.ts";
 import { PATINA_SRC } from "./rule-parity-paths.ts";
+import { loadPlainTypeDispatch } from "./rule-parity-plain-types.ts";
+import type { PlainTypeDispatch } from "./rule-parity-plain-types.ts";
 import { matchBraceBlock, stripRustComments } from "./rule-parity-rust-text.ts";
 import { stripRust } from "./rust-source.ts";
 
@@ -17,6 +19,7 @@ export interface DispatchModel {
   semanticTemplateRules: string[];
   sharedSfcDescriptorRules: string[];
   typeAwareRules: string[];
+  plainTypes: PlainTypeDispatch;
 }
 
 export function traitFnNames(stripped: string, traitName: string): string[] {
@@ -171,7 +174,7 @@ export function loadDispatchModel(): DispatchModel {
     return [...body.matchAll(/"([^"]+)"/g)].map((x) => x[1]).sort(byKey);
   };
 
-  // Rules served by the corsa type-aware session (SFC-only, native-only): the
+  // Rules served by the native type-aware session: the
   // TYPE_AWARE_RULES list names const idents whose string values live in the
   // same file.
   const typeAwareRs = stripRustComments(
@@ -197,5 +200,6 @@ export function loadDispatchModel(): DispatchModel {
     semanticTemplateRules: readSet(ruleSets, "SEMANTIC_TEMPLATE_RULES"),
     sharedSfcDescriptorRules: readSet(ruleSets, "SHARED_SFC_DESCRIPTOR_RULES"),
     typeAwareRules,
+    plainTypes: loadPlainTypeDispatch(typeAwareConsts),
   };
 }

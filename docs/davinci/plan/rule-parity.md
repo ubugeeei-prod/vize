@@ -24,6 +24,12 @@ The generator derives rule identity, registration surfaces, SFC/JSX dispatch,
 Croquis use and precision tiers from sources. It still rejects duplicate
 rule names, missing identities, changed dispatch anchors, inconsistent tier
 declarations and invalid authored overrides.
+The JSX/TSX report includes the conditional native plain-module type lane. Its
+rule identities, admitted filename extensions, declaration exclusions and
+configuration guards come from the actual preparation and diagnostic branches.
+The report distinguishes admitted paths from default opt-out, query-free input,
+and project or runtime failures; membership does not certify a successful type
+query. The markup partitions and native type completion are checked separately.
 [Rule classification overrides](./rule-parity-overrides.toml) remain reviewed,
 committed input. Classification remains heuristic and dispatch membership does
 not prove a runtime effect or production fact adoption.

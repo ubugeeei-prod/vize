@@ -15,7 +15,7 @@ export function preambleSection(): string[] {
   lines.push("     Generator:  tools/support/compat/davinci/rule-parity.ts");
   lines.push(`     Overrides:  ${OVERRIDES_REL} (hand-corrections; applied last) -->`);
   lines.push("");
-  lines.push("# Rule-parity matrix (SFC × JSX)");
+  lines.push("# Rule-parity matrix (SFC × JSX/TSX)");
   lines.push("");
   lines.push(
     "Per-rule registration surface, SFC/JSX path membership, croquis usage, and" +
@@ -67,21 +67,49 @@ export function derivationSection(model: DispatchModel): string[] {
       " rules run only under `MuseaLinter` (Art files) — neither path here.",
   );
   lines.push(
-    "- **lint_jsx() (JSX path)** — derived from the three-lane partition in" +
-      " `Linter::lint_jsx` (`linter/engine.rs`): `ir` = overrides" +
+    "- **lint_jsx() (JSX/TSX path)** — markup membership is derived from the" +
+      " three-lane partition in `Linter::lint_jsx_without_types`" +
+      " (`linter/engine.rs`): `ir` = overrides" +
       " `as_markup_rule` → runs over the zero-cost OXC projection;" +
       " `ir-lowered` = additionally `jsx_needs_lowering() == true` → runs over" +
       " the lowered relief AST via the markup visitor; `fallback` = no markup" +
       " projection but has template-visitor hooks → runs over the lowered" +
       " relief AST via the legacy visitor (`legacy_keep_mask`). A registered" +
-      " rule with no markup projection and no template-visitor hook —" +
-      " `run_on_sfc`-only rules and corsa-only rules — is dispatched but can" +
-      " never fire (`lint_jsx` calls neither `run_on_sfc` nor the corsa" +
-      " session) — shown as `no (no JSX-reachable hooks)`. The script" +
-      " registry runs on the JSX program (`lint_jsx_script`). CSS" +
-      " registries, the corsa session, and `MuseaLinter` are never invoked" +
-      " from `lint_jsx`; the generator asserts that (and the lane anchors)" +
-      " against the current dispatch source and fails on drift.",
+      " rule with no markup projection and no template-visitor hook has" +
+      " no markup work. The script registry runs on the JSX program" +
+      " (`lint_jsx_script`). The public wrapper then appends conditional" +
+      " native plain-module types; owned `prepare_jsx` work uses the same" +
+      " preparation and query branches. These are separate from markup" +
+      " visitation. `run_on_sfc`, CSS registries and `MuseaLinter` remain" +
+      " absent from the JSX markup phase. Rules with neither markup hooks" +
+      " nor an admitted plain-type branch are shown as" +
+      " `no (no JSX-reachable hooks)`; the generator verifies the actual" +
+      " wrapper, partitions, native boundaries and type guards against source.",
+  );
+  lines.push(
+    "- **plain-types (conditional native lane)** — the actual" +
+      " `prepare_plain_module` branches and corresponding diagnostic paths admit " +
+      model.plainTypes.rules.map((name) => `\`${name}\``).join(" and ") +
+      ". The filename guard admits " +
+      model.plainTypes.extensions.map((ext) => `\`.${ext}\``).join(", ") +
+      "; it excludes declaration suffixes " +
+      model.plainTypes.declarationSuffixes.map((suffix) => `\`${suffix}\``).join(", ") +
+      ". Admission follows the filename, not the `JsxLang` parameter;" +
+      (model.plainTypes.extensions.includes("jsx")
+        ? " `.jsx` is admitted by this guard."
+        : " `.jsx` is not admitted by this guard.") +
+      " This subset does not make the remaining native type-query" +
+      " branches run on JSX. Native targets must" +
+      " enable type-aware lint (constructors default to off; the host" +
+      " builder or an explicit type-rule registration can opt in), register" +
+      " the rule and admit it through the configured enabled-rule filter" +
+      " without disabling it. No candidate query means no checker session:" +
+      " static findings may remain, but that is not successful type-query" +
+      " execution. Query work additionally needs a valid selected project" +
+      " and an available, successful checker; project-configuration and" +
+      " runtime failures report their own diagnostics. Membership counts" +
+      " describe this conditional source path, not defaults, query counts" +
+      " or successful runtime completion.",
   );
   lines.push(
     "- **croquis** — symbol-aware, per P0-7's use-declaration resolution:" +
