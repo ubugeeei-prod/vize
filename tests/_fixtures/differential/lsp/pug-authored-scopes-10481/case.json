@@ -2,7 +2,7 @@
   "version": 1,
   "id": "lsp/regression/pug-authored-scopes-10481",
   "provenance": {
-    "fixCommit": "a87c897a11a1829e69a97e884536494d4764bd24",
+    "fixCommit": "766240a6c118fb2dc6c8cfd76b1a4c582350062e",
     "witnessPath": "tests/tooling/lsp-pug-authored-scopes.test.ts",
     "witnessTest": "Pug authored scopes preserve local identity, nearest shadowing and exact hover excerpts",
     "inputOrigin": "Minimal derivative of the public v0.560.0 Pug local-alias hover/definition failure in #10481",

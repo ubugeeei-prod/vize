@@ -2011,7 +2011,7 @@
       },
       "case": {
         "path": "pug-authored-scopes-10481/case.json",
-        "sha256": "d01e42eef3798b0b156bda55d3568dee20ae53201daddc1b0ec18103446aaa89"
+        "sha256": "dae77f07cd6b38eae65821ce2cb7c5aa2714f464c743affc22af82939564aa4b"
       },
       "requestCount": 1,
       "initializationOptions": {
