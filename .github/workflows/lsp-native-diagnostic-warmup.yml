@@ -1,0 +1,118 @@
+name: Native diagnostic warm-up
+run-name: Native diagnostic warm-up @ ${{ github.event.pull_request.head.sha }}
+on:
+  pull_request:
+    paths:
+      - crates/vize_maestro/src/ide/diagnostics/**
+      - crates/vize_maestro/src/server/**
+      - editors/vscode/src/extension-core.ts
+      - tests/tooling/lsp-native-diagnostic-warmup.test.ts
+      - .github/workflows/lsp-native-diagnostic-warmup.yml
+permissions:
+  contents: read
+concurrency:
+  group: native-diagnostic-warmup-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VIZE_TEST_REQUIRE_TSGO: "1"
+  VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS: "1"
+  VIZE_TRACE_EDITOR_PREPARATION: "1"
+  VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+  RAYON_NUM_THREADS: "4"
+jobs:
+  retained-native-answer:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [baseline, candidate]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Build each exact source in its own initially absent role and SHA target
+        id: producer
+        env:
+          ROLE: ${{ matrix.role }}
+          # Immutable pre-fix source: future rebases must still reproduce the original drop.
+          BASE_SHA: 3a4bf713f85589a50da5d0a7aaf8ae33fdcdc004
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          source_root="$GITHUB_WORKSPACE"
+          source_sha="$HEAD_SHA"
+          if [ "$ROLE" = baseline ]; then
+            source_sha="$BASE_SHA"
+            source_root="$RUNNER_TEMP/native-diagnostics-baseline-$source_sha"
+            git worktree add --detach "$source_root" "$source_sha"
+            ln -s "$GITHUB_WORKSPACE/node_modules" "$source_root/node_modules"
+            ln -s "$GITHUB_WORKSPACE/tests/node_modules" "$source_root/tests/node_modules"
+          fi
+          target_dir="$RUNNER_TEMP/native-diagnostics-target-$ROLE-$source_sha"
+          test ! -e "$target_dir"
+          export CARGO_TARGET_DIR="$target_dir"
+          cd "$source_root"
+          cargo build --locked --profile ci -p vize
+          mkdir -p target/ci
+          cp "$target_dir/ci/vize" target/ci/vize
+          node tests/differential/build-receipt.ts
+          echo "VIZE_WARMUP_ROLE=$ROLE" >> "$GITHUB_ENV"
+          echo "VIZE_WARMUP_SOURCE_ROOT=$source_root" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$target_dir" >> "$GITHUB_ENV"
+          echo "VIZE_LSP_BIN=$source_root/target/ci/vize" >> "$GITHUB_ENV"
+      - name: Reproduce the old drop or retain the complete real native answer
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        run: |
+          if [ "$VIZE_WARMUP_ROLE" = baseline ]; then
+            node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
+          else
+            # Exercise the editor initialization setting itself, without an env override.
+            env -u VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
+          fi
+      - name: Preserve source freshness, assembly oracles, recovery and editor controls
+        if: ${{ !cancelled() && matrix.role == 'candidate' && steps.producer.outcome == 'success' }}
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS: "120000"
+        run: |
+          cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics::
+          cargo test --locked --profile ci -p vize_maestro --lib ide::diagnostics::native::timeout::
+          cargo test --locked --profile ci -p vize_maestro --lib server::diagnostic_publishing::
+          cargo test --locked --profile ci -p vize_maestro --lib ide::diagnostics::assembly_parity_tests::
+          cargo test --locked --profile ci -p vize_maestro --lib server::state::config_tests::
+          cargo clippy --locked --profile ci -p vize_maestro --all-targets -- -D warnings
+          node --test --test-concurrency=1 tests/tooling/lsp-initial-diagnostics-version.test.ts tests/tooling/lsp-responsive-lint-diagnostics.test.ts tests/tooling/vscode-extension-core-behavior.test.ts tests/tooling/vscode-extension-manifest.test.ts tests/tooling/lsp-startup-local-interactive.test.ts
+      - name: Stage each exact producer's receipt and actual raw stdio captures
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          retained="$GITHUB_WORKSPACE/target/vize-tests/native-diagnostic-warmup-10604/$VIZE_WARMUP_ROLE-source"
+          mkdir -p "$retained"
+          cp "$VIZE_WARMUP_SOURCE_ROOT/target/ci/vize.differential-build.json" "$retained/"
+          cp -R "$VIZE_WARMUP_SOURCE_ROOT/target/differential/lsp-sessions" "$retained/"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: native-diagnostic-warmup-${{ matrix.role }}-${{ github.run_id }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            target/vize-tests/native-diagnostic-warmup-10604/
+          if-no-files-found: error
+          retention-days: 3

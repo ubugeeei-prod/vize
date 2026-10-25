@@ -1,42 +1,47 @@
-//! The outer collection deadline must disclose an incomplete native result.
+//! A diagnostic progress threshold never cancels the warm native request.
 
 use std::{future::Future, time::Duration};
-use tower_lsp::lsp_types::Diagnostic;
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range};
 
-/// Production bound for one native diagnostics pass.
-const DEFAULT_NATIVE_DIAGNOSTIC_TIMEOUT: Duration = Duration::from_secs(10);
-
-/// Overrides the bound in milliseconds. Integration tests on loaded CI runners
-/// raise it so a slow type-check backend is not mistaken for a wrong result
-/// (#9012); editors keep the ten-second default.
-const NATIVE_DIAGNOSTIC_TIMEOUT_ENV: &str = "VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS";
-
-fn native_diagnostic_timeout() -> Duration {
-    std::env::var(NATIVE_DIAGNOSTIC_TIMEOUT_ENV)
-        .ok()
-        .and_then(|value| value.trim().parse::<u64>().ok())
-        .filter(|millis| *millis > 0)
-        .map_or(DEFAULT_NATIVE_DIAGNOSTIC_TIMEOUT, Duration::from_millis)
-}
-
-pub(crate) async fn with_native_diagnostic_timeout<F>(
+/// Poll the same future before and after the soft threshold. The bridge keeps
+/// its separate hard IPC bound and recovery policy. In particular, do not drop
+/// an initial API read whose native project is still warming (#10604).
+pub(crate) async fn with_native_diagnostic_progress<F, P>(
+    bound: Duration,
     future: F,
-) -> Result<F::Output, Vec<Diagnostic>>
+    pending: impl FnOnce() -> P,
+) -> F::Output
 where
     F: Future,
+    P: Future<Output = ()>,
 {
-    let bound = native_diagnostic_timeout();
-    let started = std::time::Instant::now();
-    crate::runtime::timeout(bound, future).await.map_err(|_| {
-        // Name the bound and the elapsed time so a slow backend can be told
-        // apart from a request that never returns.
-        tracing::warn!(
-            "native diagnostics outran the {}ms bound after {}ms; publishing the timeout hint",
-            bound.as_millis(),
-            started.elapsed().as_millis()
-        );
-        vec![super::super::corsa::collect::typecheck_timed_out_hint()]
-    })
+    futures::pin_mut!(future);
+    match crate::runtime::timeout(bound, future.as_mut()).await {
+        Ok(result) => result,
+        Err(_) => {
+            tracing::warn!(
+                "native diagnostics are still running after {}ms; retaining the shared project warm-up",
+                bound.as_millis()
+            );
+            pending().await;
+            future.await
+        }
+    }
+}
+
+pub(crate) fn typecheck_pending_hint() -> Diagnostic {
+    Diagnostic {
+        range: Range::default(),
+        severity: Some(DiagnosticSeverity::INFORMATION),
+        code: Some(NumberOrString::String("typecheck-pending".into())),
+        source: Some(super::super::sources::TYPE_CHECKER.into()),
+        message: "Type checking is still running while the shared project warms up. \
+            Type diagnostics will appear when it finishes. Change `vize.typecheck.timeoutMs` \
+            (initialization option `typecheckTimeoutMs`) or \
+            `VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS` to adjust this notification threshold."
+            .into(),
+        ..Default::default()
+    }
 }
 
 #[cfg(test)]

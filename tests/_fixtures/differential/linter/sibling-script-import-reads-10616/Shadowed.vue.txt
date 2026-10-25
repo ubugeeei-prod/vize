@@ -1,0 +1,15 @@
+<script lang="ts">
+export function describe(helper: string): string {
+  return helper;
+}
+</script>
+
+<script setup lang="ts">
+import { helper } from "./helper";
+import { ref } from "vue";
+const count = ref(0);
+</script>
+
+<template>
+  <div>{{ describe("x") }} {{ count }}</div>
+</template>

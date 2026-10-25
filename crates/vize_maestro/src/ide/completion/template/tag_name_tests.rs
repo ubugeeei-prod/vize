@@ -98,3 +98,28 @@ fn attribute_values_comments_and_expressions_do_not_use_tag_candidates() {
         assert_eq!(items(source, needle), None);
     }
 }
+
+#[test]
+fn native_candidates_keep_both_colliding_labels_without_changing_case_policy() {
+    for (name, prefix, expected) in [
+        ("FooBar", "Foo", true),
+        ("FooBar", "foo-b", true),
+        ("fooBar", "foo-b", true),
+        ("FooBar", "FOO", false),
+        ("FooBar", "foob", false),
+        ("FooBar", "Foo-Bar", false),
+        ("FooBar", "Other", false),
+        ("FooBar", "", true),
+        ("fooBar", "", true),
+        ("ÉlémentCarte", "É", true),
+        ("ÉlémentCarte", "é", false),
+        ("日本語Card", "日本語", true),
+        ("日本語Card", "", true),
+    ] {
+        assert_eq!(
+            tag_names::component_matches_prefix(name, prefix),
+            expected,
+            "{name:?} at {prefix:?}"
+        );
+    }
+}

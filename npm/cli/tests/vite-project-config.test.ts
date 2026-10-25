@@ -46,7 +46,7 @@ test("Vite settings retain shared values, overrides and explicit feature disable
     languageServer: { formatting: false },
     compiler: { whitespace: "preserve", compatibility: { vueVersion: "2.7" } },
     linter: { preset: "essential", rules: { "a11y/img-alt": "error" } },
-    formatter: { singleQuote: true, tabWidth: 4 },
+    formatter: { printWidth: 90, singleQuote: true, tabWidth: 4 },
   });
   assert.equal(JSON.stringify(source), original);
 });
