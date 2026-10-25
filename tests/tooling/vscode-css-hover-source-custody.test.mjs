@@ -9,6 +9,7 @@ import {
   assertExactCssTree,
   assertCleanCssSourceWorkingTree,
   composeReviewedCssTrees,
+  composeCurrentVsixInputs,
   verifyPinnedCssHoverProduct,
 } from "../../editors/vscode/test/css-hover-source-custody.mjs";
 
@@ -40,6 +41,26 @@ await test("new paths, allowed-path tampering and mode changes cannot pass sourc
     [],
   ])
     assert.throws(() => assertExactCssTree(actual, expected), /reviewed blob\/mode/);
+});
+
+await test("current tooling alignment admits only its exact preimage and complete postimage", () => {
+  const file = "tests/tooling/differential-lsp-source-sessions.test.ts";
+  const before = row(file, "1".repeat(40));
+  const after = row(file, "2".repeat(40));
+  const change = { path: file, before, after };
+  assertExactCssTree([after], composeCurrentVsixInputs([before], [change]));
+  for (const changes of [
+    [],
+    [{ ...change, path: "tests/tooling/unreviewed.ts" }],
+    [{ ...change, before: after }],
+  ])
+    assert.throws(() => composeCurrentVsixInputs([before], changes));
+  assert.throws(() =>
+    assertExactCssTree(
+      [after],
+      composeCurrentVsixInputs([before], [{ ...change, after: row(file, after.oid, "100755") }]),
+    ),
+  );
 });
 
 await test("dirty and staged approved sources, untracked source and dirty build inputs fail closed", () => {

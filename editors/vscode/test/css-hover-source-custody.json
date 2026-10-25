@@ -2,7 +2,7 @@
   "schema": "vize.css-hover.source-custody",
   "version": 1,
   "historicalBaselineRevision": "2934b35b18393c188b3da5f8e50595299589fb8c",
-  "productTreeRevision": "c3e833ce4d6a90652442e8f1b704dd39c5413902",
+  "productTreeRevision": "3be9e876959a79bcd7b039386325a6840dd372ab",
   "baselineCratesTreeOid": "3963f87b333566d98319039ce43fcd3714dd02fa",
   "baselineCratesSha256": "981087aca813963e627a19d46a458c3dd151cb0a11bb395b4c50e46d410475b4",
   "historicalCapture": {
@@ -2508,6 +2508,23 @@
       {
         "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/local-completion-resolve.expected-current.json",
         "sha256": "33f35ddde74f1bc0221e47d07d891d594bac2c86fdaea0c21b3ae2539a667035"
+      }
+    ],
+    "toolingChanges": [
+      {
+        "path": "tests/tooling/differential-lsp-source-sessions.test.ts",
+        "before": {
+          "path": "tests/tooling/differential-lsp-source-sessions.test.ts",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "168d90b1a84b73945c35019e9baa8e4c81421ff3"
+        },
+        "after": {
+          "path": "tests/tooling/differential-lsp-source-sessions.test.ts",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "dde76ae9ebbe7f88cda815ff21dee6cb592b7d41"
+        }
       }
     ]
   },

@@ -97,6 +97,20 @@ export function assertExactCssTree(actual, expected) {
   );
 }
 
+export function composeCurrentVsixInputs(inputs, changes) {
+  assert.deepEqual(
+    changes.map(({ path }) => path),
+    ["tests/tooling/differential-lsp-source-sessions.test.ts"],
+  );
+  const current = new Map(inputs.map((entry) => [entry.path, entry]));
+  for (const change of changes) {
+    assert.deepEqual(current.get(change.path), change.before, "current tooling preimage");
+    assert.equal(change.after.path, change.path);
+    current.set(change.path, change.after);
+  }
+  return sorted(current.values());
+}
+
 export function assertCleanCssSourceWorkingTree(repoRoot) {
   const status = execFileSync(
     "git",
@@ -258,7 +272,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   assert.deepEqual(sorted(readTree(vsixInfrastructureRevision, reviewedVsixPaths)), vsixInputs);
   assert.deepEqual(
     sorted(readTree(revision, reviewedVsixPaths)),
-    vsixInputs,
+    composeCurrentVsixInputs(vsixInputs, currentContracts.toolingChanges),
     "VSIX infrastructure inputs changed",
   );
   assert.deepEqual(
