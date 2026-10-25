@@ -96,7 +96,7 @@ async function launch(mode, label) {
       await saveExit({ ...result, shutdown });
       assert.ok(
         normalHostShutdown(result, shutdown),
-        `host process must close normally: ${JSON.stringify({ ...result, shutdown })}\n${Buffer.concat(stdout)}\n${Buffer.concat(stderr)}`,
+        `host process must close normally: ${JSON.stringify({ ...result, shutdown })}\n${Buffer.concat(stdout).toString("utf8")}\n${Buffer.concat(stderr).toString("utf8")}`,
       );
     },
   };
@@ -140,7 +140,7 @@ async function exercise(mode, label = mode) {
   const errors = [];
   const warnings = [];
   const requests = [];
-  let primaryFailure;
+  const failures = [];
   page.on("pageerror", (error) => errors.push(error.stack ?? error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
@@ -247,32 +247,37 @@ async function exercise(mode, label = mode) {
       JSON.stringify(requests, null, 2) + "\n",
     );
   } catch (error) {
-    primaryFailure = error;
+    failures.push(error);
+  } finally {
+    for (const cleanup of [
+      async () =>
+        fs.writeFile(
+          path.join(output, `${label}-final.html`),
+          await page.content().catch((error) => String(error)),
+        ),
+      () =>
+        fs.writeFile(
+          path.join(output, `${label}-browser-errors.json`),
+          JSON.stringify({ errors, warnings }, null, 2) + "\n",
+        ),
+      () => page.close(),
+      () => server.stop(),
+    ]) {
+      try {
+        await cleanup();
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+  }
+  if (failures.length > 0) {
+    const failure =
+      failures.length === 1 ? failures[0] : new AggregateError(failures, `${label} failed`);
     await fs.writeFile(
       path.join(output, `${label}-failure.stderr`),
-      inspectError(error, { depth: 8, colors: false }) + "\n",
+      inspectError(failure, { depth: 8, colors: false }) + "\n",
     );
-    throw error;
-  } finally {
-    await fs.writeFile(
-      path.join(output, `${label}-final.html`),
-      await page.content().catch((error) => String(error)),
-    );
-    await fs.writeFile(
-      path.join(output, `${label}-browser-errors.json`),
-      JSON.stringify({ errors, warnings }, null, 2) + "\n",
-    );
-    await page.close();
-    try {
-      await server.stop();
-    } catch (error) {
-      if (primaryFailure)
-        throw new AggregateError(
-          [primaryFailure, error],
-          `${label} failed and host shutdown failed`,
-        );
-      throw error;
-    }
+    throw failure;
   }
 }
 

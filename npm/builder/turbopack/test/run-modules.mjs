@@ -8,12 +8,17 @@ import { consumer, output, sha256 } from "./prepare-consumer.mjs";
 export async function checkPackedModules(filename, source, measurements) {
   const require = createRequire(path.join(consumer, "package.json"));
   const { compileTurbopackSfc } = require("@vizejs/turbopack-plugin/loader");
-  for (const [label, options] of [
-    ["client-development", { ssr: false, isProduction: false }],
-    ["server-development", { ssr: true, isProduction: false }],
-    ["client-production", { ssr: false, isProduction: true }],
-    ["server-production", { ssr: true, isProduction: true }],
-    ["client-production-without-maps", { ssr: false, isProduction: true, sourceMap: false }],
+  for (const { label, ...options } of [
+    { label: "client-development", ssr: false, isProduction: false },
+    { label: "server-development", ssr: true, isProduction: false },
+    { label: "client-production", ssr: false, isProduction: true },
+    { label: "server-production", ssr: true, isProduction: true },
+    {
+      label: "client-production-without-maps",
+      ssr: false,
+      isProduction: true,
+      sourceMap: false,
+    },
   ]) {
     const samplesMs = [];
     let baseline;
