@@ -77,6 +77,62 @@ fn load_path_identity_coordinates_retain_the_complete_existing_fact_shape() {
 }
 
 #[test]
+fn identity_projection_keeps_utf8_bounds_and_authored_overflow_refusals() {
+    let a = Allocator::default();
+    let expression = "ready && '😀'";
+    let inside_unicode = expression.find('😀').unwrap() as u32 + 1;
+    for (ast_span, authored) in [
+        (
+            oxc_span::Span::new(inside_unicode, expression.len() as u32),
+            Span::new(10, 10 + expression.len() as u32),
+        ),
+        (
+            oxc_span::Span::new(0, expression.len() as u32 + 1),
+            Span::new(10, 10 + expression.len() as u32),
+        ),
+        (
+            oxc_span::Span::new(0, expression.len() as u32),
+            Span::new(u32::MAX - 1, u32::MAX),
+        ),
+        (
+            oxc_span::Span::new(0, expression.len() as u32),
+            Span::new(10, 11),
+        ),
+    ] {
+        let mut ast = JsExpr::parse_ast_in(&a, expression).unwrap();
+        let Expression::LogicalExpression(logical) = &mut ast else {
+            panic!("logical test expression");
+        };
+        logical.span = ast_span;
+        let js = JsExpr {
+            ast: a.alloc(ast),
+            source: expression,
+            span: authored,
+            coordinates: None,
+        };
+        let mut facts = ComplexityFacts::empty();
+        score(ExprRef::Js(&js), NodeId::from_index(3), 2, &mut facts);
+        assert_eq!(
+            facts,
+            ComplexityFacts {
+                cyclomatic: 1,
+                cognitive: 0,
+                unknown: 1,
+                max_nesting: 0,
+                contributions: alloc::vec![Contribution {
+                    span: authored,
+                    kind: DecisionKind::Unknown,
+                    op: NodeId::from_index(3),
+                    nesting: 2,
+                    cyclomatic: 0,
+                    cognitive: 0,
+                }],
+            }
+        );
+    }
+}
+
+#[test]
 fn entity_interiors_refuse_the_whole_expression_instead_of_publishing_partial_facts() {
     let a = Allocator::default();
     let expression = "ready && (yes ? '😀' : 'no')";

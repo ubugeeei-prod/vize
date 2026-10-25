@@ -88,10 +88,15 @@ struct Run {
 
 impl<'a> Scorer<'_, 'a> {
     fn file_span(&mut self, span: oxc_span::Span) -> Option<Span> {
-        let authored = self
-            .js
-            .ast_span_to_source(span)
-            .and_then(|decoded| self.js.authored_span(decoded));
+        // Identity load-path AST offsets already address the decoded text.
+        // `authored_span` checks that range and its UTF-8 boundaries, so avoid
+        // doing the same validation again through `ast_span_to_source`.
+        let decoded = if self.js.coordinates.is_none() {
+            Some(Span::new(span.start, span.end))
+        } else {
+            self.js.ast_span_to_source(span)
+        };
+        let authored = decoded.and_then(|decoded| self.js.authored_span(decoded));
         self.unprojectable |= authored.is_none();
         authored
     }
