@@ -1,0 +1,33 @@
+{
+  "schema": "vize.queued-normal-retirement.validation-leaf",
+  "version": 1,
+  "pinnedSourceRevision": "ed44709453b1561a0420507b6d79284f3e507357",
+  "sourceBeforeRevision": "f1784ab8a8c99f224fd1d52423aa322827205a58",
+  "method": {
+    "path": "method.rs.txt",
+    "sha256": "bfc1b1b6f6656e74adf274f5ba90ab461d89947ea99528318890fdd957141e5c",
+    "sourcePath": "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    "pinnedWholeSourceSha256": "47f5e5f0c560723aa2b226a3ac3cb191d3465336ba8ad93bf287ba0b80e51ee5"
+  },
+  "bridge": {
+    "path": "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+    "before": "d34e785609a2f24591fb0a459fcdac7ed1baff8ab2301c9e118f2e216052a110",
+    "after": "d7f067540c08fc358fb56026b584a1919ae025f703ea3177e146984ca8e19541"
+  },
+  "patch": {
+    "path": "queued-normal-retirement.patch",
+    "sha256": "4f9b7fbbf00e9d5d28294c42e70ab7dedab07f1904e24f7c66c00564a01890f9",
+    "clientBeforeSha256": "7d67741d6da1d3f0e4ef1083f617b409d2f40bd8ae83e9e77ac9e7a0f1f4c781",
+    "clientMinimalAfterSha256": "b6b905c964d6566cb3a3c2429073b09606a0e7bcb0d88d69ffcf9490dfa9e274"
+  },
+  "scope": "ONLY exact private method and queued bridge callsite. No initial diagnostics, trace helper, wholeclient overwrite, test/body overlay or10760 barrier. Context of patch is f178; apply method between existing retire_editor_lsp and next method while preserving DIA guards/currentbytecontext, record own actualbefore/head hashes.",
+  "source702Proof": {
+    "run": 40236744061,
+    "actor": "b224d5a5e4dca0855d564a09458c51d0c88c29fc",
+    "sdk": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "owners": 16,
+    "betaCredit": false
+  },
+  "qualificationOnly": true,
+  "currentSdkRole": "LOCALPATCHED validation, no stockSDK/main acceptance"
+}

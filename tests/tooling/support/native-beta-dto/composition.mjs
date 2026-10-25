@@ -28,6 +28,9 @@ const paths = [
     "crates/vize_canon/src/lsp_client/editor_lsp/project_configuration.rs",
     ".cargo/config.toml",
     "Cargo.lock",
+    "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+    "tests/tooling/support/native-beta-dto/queued-retirement/composition.json",
     ".github/workflows/native-beta-diagnostic-dto.yml",
     ...borrowed.shutdownSourceFiles.map((row) => row.path),
   ]),
@@ -47,15 +50,34 @@ const files = paths.map((file) => {
     observerDelta: original ? hash(current) !== original.sha256 : null,
   };
 });
-for (const file of [
-  "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
-  "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
-])
-  assert.deepEqual(
-    fs.readFileSync(file),
-    execFileSync("git", ["show", `${base}:${file}`]),
-    "no 10733 production injection",
-  );
+assert.deepEqual(
+  fs.readFileSync("crates/vize_canon/src/lsp_client/initial_diagnostics.rs"),
+  execFileSync("git", ["show", `${base}:crates/vize_canon/src/lsp_client/initial_diagnostics.rs`]),
+  "no 10733 initial diagnostics injection",
+);
+const queued = JSON.parse(
+  fs.readFileSync(
+    "tests/tooling/support/native-beta-dto/queued-retirement/composition.json",
+    "utf8",
+  ),
+);
+const queuedMethod = fs.readFileSync(
+  "tests/tooling/support/native-beta-dto/queued-retirement/method.rs.txt",
+  "utf8",
+);
+assert.equal(hash(Buffer.from(queuedMethod)), queued.methodSha256);
+const clientPath = "crates/vize_canon/src/lsp_client/editor_lsp/client.rs";
+const clientBefore = execFileSync("git", ["show", `${base}:${clientPath}`], { encoding: "utf8" });
+assert.equal(
+  fs.readFileSync(clientPath, "utf8"),
+  clientBefore.replace(
+    "    /// Drop the editor session immediately after an external project-shape\n",
+    queuedMethod + "    /// Drop the editor session immediately after an external project-shape\n",
+  ),
+  "only the exact approved private queued retirement method is added",
+);
+for (const row of queued.files) assert.equal(hash(fs.readFileSync(row.path)), row.afterSha256);
+
 const out = "target/vize-tests/native-beta-dto-composition";
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(
@@ -69,6 +91,7 @@ fs.writeFileSync(
       shutdownSourceLeaf: shutdown,
       harnessReference: harness,
       streamingReference: streaming,
+      queuedNormalRetirement: queued,
       immutableBefore: "13fa41356d075047a229f580014b637d3bbeb57f",
       files,
     },

@@ -1,0 +1,32 @@
+--- a/crates/vize_canon/src/lsp_client/editor_lsp/client.rs
++++ b/crates/vize_canon/src/lsp_client/editor_lsp/client.rs
+@@ -295,6 +295,16 @@
+         result
+     }
+ 
++    /// Queued bridge work retires its initialized owner through normal shutdown.
++    pub(crate) fn retire_queued_disk_project_state(&mut self) -> Result<(), String> {
++        let phase =
++            crate::corsa_bridge::preparation_trace::Phase::start("queued_editor_retirement", 1);
++        self.clear_diagnostics_cache();
++        let result = self.retire_editor_lsp();
++        phase.finish();
++        result
++    }
++
+     /// Drop the editor session immediately after an external project-shape
+     /// change. Unlike [`Self::retire_editor_lsp`], this does not wait for a
+     /// protocol `shutdown` response from the stale process, so file-operation
+--- a/crates/vize_canon/src/corsa_bridge/bridge/documents.rs
++++ b/crates/vize_canon/src/corsa_bridge/bridge/documents.rs
+@@ -121,8 +121,9 @@
+     /// request re-reads workspace files that changed outside the overlays.
+     pub async fn invalidate_disk_project_state(&self) -> Result<(), CorsaBridgeError> {
+         self.with_client(|client| {
++            // The owning worker completes normal retirement before replacement.
+             client
+-                .invalidate_disk_project_state()
++                .retire_queued_disk_project_state()
+                 .map_err(CorsaBridgeError::CommunicationError)
+         })
+         .await

@@ -1,0 +1,32 @@
+--- a/crates/vize_canon/src/lsp_client/editor_lsp/client.rs
++++ b/crates/vize_canon/src/lsp_client/editor_lsp/client.rs
+@@ -324,6 +324,16 @@
+         result
+     }
+ 
++    /// Queued bridge work retires its initialized owner through normal shutdown.
++    pub(crate) fn retire_queued_disk_project_state(&mut self) -> Result<(), String> {
++        let phase =
++            crate::corsa_bridge::preparation_trace::Phase::start("queued_editor_retirement", 1);
++        self.clear_diagnostics_cache();
++        let result = self.retire_editor_lsp();
++        phase.finish();
++        result
++    }
++
+     /// Record the exact discard caller only under the existing opt-in gate.
+     pub(super) fn trace_editor_discard(&self, caller: impl FnOnce() -> String) {
+         super::inlay_hint::trace_native_inlay("editorDiscard", || {
+--- a/crates/vize_canon/src/corsa_bridge/bridge/documents.rs
++++ b/crates/vize_canon/src/corsa_bridge/bridge/documents.rs
+@@ -121,8 +121,9 @@
+     /// request re-reads workspace files that changed outside the overlays.
+     pub async fn invalidate_disk_project_state(&self) -> Result<(), CorsaBridgeError> {
+         self.with_client(|client| {
++            // The owning worker completes normal retirement before replacement.
+             client
+-                .invalidate_disk_project_state()
++                .retire_queued_disk_project_state()
+                 .map_err(CorsaBridgeError::CommunicationError)
+         })
+         .await

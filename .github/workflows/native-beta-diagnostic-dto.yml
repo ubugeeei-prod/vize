@@ -147,7 +147,7 @@ jobs:
         with: { producer: "${{ toJSON(needs.source-workspace.outputs) }}" }
       - name: Pin validation composition and observer law controls
         run: |
-          git diff --exit-code b3ef5520644577a1a636e1d33026991bb29b0c9c -- crates/vize_canon/src/lsp_client/initial_diagnostics.rs crates/vize_canon/src/lsp_client/editor_lsp/client.rs
+          git diff --exit-code b3ef5520644577a1a636e1d33026991bb29b0c9c -- crates/vize_canon/src/lsp_client/initial_diagnostics.rs
           node --test tests/tooling/native-runtime-selection-lsp-strace.test.mjs tests/tooling/native-beta-workspace-packets.test.mjs tests/tooling/native-beta-snapshot-drain.test.mjs
           node tests/tooling/support/native-beta-dto/composition.mjs
           node tests/tooling/support/native-beta-dto/sdk-split-drain/custody.mjs

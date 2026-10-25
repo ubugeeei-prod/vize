@@ -52,3 +52,10 @@ or emergency discard paths are unchanged. Maestro's final worker/owner barrier
 (#10760) is separate. The original materialized dependency-close/import failure
 2307 remains an explicit strict failure; this experiment does not readmit that
 closed dependency or claim a complete beta editor qualification.
+
+The later validation composition adds only the exact queued normal-retirement
+private method and bridge callsite from `ed44709453b1561a0420507b6d79284f3e507357`.
+`../queued-retirement` retains its 702-only source authority and the actual two
+hunk composition hashes. No whole client file, initial-diagnostics change or
+10760 final outer barrier is inherited. Existing immediate/emergency discard
+callers retain their behavior. This dependency is not itself beta acceptance.

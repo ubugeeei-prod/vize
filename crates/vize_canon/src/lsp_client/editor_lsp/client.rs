@@ -295,6 +295,16 @@ impl CorsaProjectClient {
         result
     }
 
+    /// Queued bridge work retires its initialized owner through normal shutdown.
+    pub(crate) fn retire_queued_disk_project_state(&mut self) -> Result<(), String> {
+        let phase =
+            crate::corsa_bridge::preparation_trace::Phase::start("queued_editor_retirement", 1);
+        self.clear_diagnostics_cache();
+        let result = self.retire_editor_lsp();
+        phase.finish();
+        result
+    }
+
     /// Drop the editor session immediately after an external project-shape
     /// change. Unlike [`Self::retire_editor_lsp`], this does not wait for a
     /// protocol `shutdown` response from the stale process, so file-operation

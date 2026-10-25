@@ -121,8 +121,9 @@ impl CorsaBridge {
     /// request re-reads workspace files that changed outside the overlays.
     pub async fn invalidate_disk_project_state(&self) -> Result<(), CorsaBridgeError> {
         self.with_client(|client| {
+            // The owning worker completes normal retirement before replacement.
             client
-                .invalidate_disk_project_state()
+                .retire_queued_disk_project_state()
                 .map_err(CorsaBridgeError::CommunicationError)
         })
         .await

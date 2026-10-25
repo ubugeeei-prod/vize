@@ -66,7 +66,10 @@ export function assertSnapshotDrainBeforeOwnerShutdown(input, output, shutdown) 
     .map((frame) => {
       const reply = response(frame);
       const handle = reply.packet.result?.snapshot;
-      assert(["number", "string"].includes(typeof handle), "known actual snapshot handle");
+      assert(
+        Number.isSafeInteger(handle) && handle >= 0,
+        "exact known beta numeric snapshot handle",
+      );
       return { request: frame, response: reply, handle };
     });
   assert(heads.length > 0, "actual API-owned snapshot heads are required");
@@ -84,7 +87,11 @@ export function assertSnapshotDrainBeforeOwnerShutdown(input, output, shutdown) 
     assert.equal(matches.length, 1, `one release for actual snapshot ${head.handle}`);
     const request = matches[0],
       reply = response(request);
-    assert.equal(request.packet.params.handle, String(head.handle));
+    assert.deepEqual(
+      request.packet.params,
+      { handle: String(head.handle), snapshot: head.handle },
+      "whole exact beta release parameters",
+    );
     assert.equal(reply.packet.result, null, "release ACK is the whole null result");
     assert(
       BigInt(head.response.interval.endNanoseconds) < BigInt(request.interval.startNanoseconds),

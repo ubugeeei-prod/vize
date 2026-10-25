@@ -1,0 +1,20 @@
+{
+  "role": "LOCAL PATCHED SDK validation-only exact queued normal retirement hunk composition; no whole10733 or beta acceptance credit",
+  "beforeRevision": "ff779ec9f41ba6aef3b1428eac04e57bbb343193",
+  "pinnedSource": "ed44709453b1561a0420507b6d79284f3e507357",
+  "methodSha256": "bfc1b1b6f6656e74adf274f5ba90ab461d89947ea99528318890fdd957141e5c",
+  "upstreamPatchSha256": "4f9b7fbbf00e9d5d28294c42e70ab7dedab07f1904e24f7c66c00564a01890f9",
+  "composedPatchSha256": "075e1df4f7e5663f677d376acad5229cdbe593d0f89676b95ff4a6b261a422ac",
+  "files": [
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+      "beforeSha256": "02601e1d2bb3eee642b663fd3336156f32791a35cf5999e689c69956626357fb",
+      "afterSha256": "e25a0a2238c8abcd992ca546542195d786ec5a4a6b7921bcd1ed3f4ff76ce510"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+      "beforeSha256": "d34e785609a2f24591fb0a459fcdac7ed1baff8ab2301c9e118f2e216052a110",
+      "afterSha256": "d7f067540c08fc358fb56026b584a1919ae025f703ea3177e146984ca8e19541"
+    }
+  ]
+}

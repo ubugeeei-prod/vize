@@ -45,6 +45,12 @@ void test("actual head release requires the whole same-ID ACK before native shut
   assert.throws(() =>
     assertSnapshotDrainBeforeOwnerShutdown([...input, input[1]], output, shutdown),
   );
+  const wrongType = structuredClone(input);
+  wrongType[1].packet.params.snapshot = "3";
+  assert.throws(
+    () => assertSnapshotDrainBeforeOwnerShutdown(wrongType, output, shutdown),
+    /whole exact beta release/u,
+  );
 });
 void test("framing retains conservative complete syscall interval across partial bytes", () => {
   const body = Buffer.from(JSON.stringify({ jsonrpc: "2.0", id: 1, result: null }));
