@@ -168,7 +168,28 @@ for (const [label, source] of refs) {
         version: execFileSync(strace, ["--version"], { encoding: "utf8" }),
       },
     };
-    for (const [name, , test] of cases) {
+    const checks =
+      label === "fixed"
+        ? [
+            ...cases,
+            [
+              "physical-retirement",
+              null,
+              "corsa_bridge::vue_document_package_negative_tests::deleted_package_targets_leave_no_root_or_importer_shadow_companions",
+            ],
+            [
+              "owned-leaf",
+              null,
+              "batch::materialize_fs::tests::snapshot_retirement_removes_only_its_owned_leaf_and_is_idempotent",
+            ],
+            [
+              "external-store",
+              null,
+              "batch::materialize_fs::tests::snapshot_retirement_preserves_external_store_links_and_new_directory_owners",
+            ],
+          ]
+        : cases;
+    for (const [name, , test] of checks) {
       assert.equal(
         hash(executable),
         expectedImage,

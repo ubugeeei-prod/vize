@@ -125,6 +125,59 @@ void Missing
     });
 }
 
+#[test]
+fn deleted_package_targets_leave_no_root_or_importer_shadow_companions() {
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("app");
+    let host = app.join("src/Host.vue");
+    let package = app.join("node_modules/@scope/dynamic");
+    let target = package.join("Widget.vue");
+    let source =
+        "<script setup lang=\"ts\">\nimport Widget from '@scope/dynamic'\nvoid Widget\n</script>\n";
+    write(
+        &app.join("tsconfig.json"),
+        r#"{"compilerOptions":{"strict":true,"moduleResolution":"Bundler","module":"ESNext","allowArbitraryExtensions":true}}"#,
+    );
+    write(
+        &package.join("package.json"),
+        r#"{"name":"@scope/dynamic","exports":"./Widget.vue"}"#,
+    );
+    write(
+        &target,
+        "<script setup lang=\"ts\">defineProps<{ created: true }>()</script>\n",
+    );
+    write(&host, source);
+    install_runtime_stubs(&app);
+    let created =
+        super::vue_document::build_vue_virtual_project(&host, source, Default::default()).unwrap();
+    let mirror = created.session_project_root.unwrap();
+    let scopes = [mirror.clone(), mirror.join("src")];
+    for scope in &scopes {
+        for companion in ["Widget.vue.ts", "Widget.d.vue.ts"] {
+            assert!(
+                scope
+                    .join("node_modules/@scope/dynamic")
+                    .join(companion)
+                    .is_file()
+            );
+        }
+    }
+    std::fs::remove_file(&target).unwrap();
+    let deleted =
+        super::vue_document::build_vue_virtual_project(&host, source, Default::default()).unwrap();
+    for scope in &scopes {
+        for companion in ["Widget.vue.ts", "Widget.d.vue.ts"] {
+            let path = scope.join("node_modules/@scope/dynamic").join(companion);
+            assert!(deleted.materialized_changes.deleted.contains(&path));
+            assert!(
+                !path.exists(),
+                "retired generated companion remains resolvable: {}",
+                path.display()
+            );
+        }
+    }
+}
+
 fn write(path: &Path, content: &str) {
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(path, content).unwrap();
