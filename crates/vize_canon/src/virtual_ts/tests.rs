@@ -709,11 +709,11 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
     );
 
     assert!(
-        output.code.contains("const $t = __ctx.$t;"),
+        output.code.contains("= (__ctx.$t('hello'));"),
         "{}",
         output.code
     );
-    assert!(output.code.contains("= ($t('hello'));")); // native prop check initializer
+    assert_eq!(output.code.matches("const $t =").count(), 0);
     assert!(output.code.contains("void (missing);"));
     assert!(!output.code.contains("void ($t);"));
 

@@ -90,7 +90,7 @@ struct EventNavigationContext<'a> {
     scopes: &'a vize_croquis::ScopeChain,
     template_source: Option<&'a str>,
     template_offset: u32,
-    template_binding_access: &'a TemplateBindingAccess,
+    template_binding_access: &'a TemplateBindingAccess<'a>,
     preserve_event_navigation: bool,
     check_unknown_events: bool,
 }

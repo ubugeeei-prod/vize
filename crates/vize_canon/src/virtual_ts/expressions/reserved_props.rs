@@ -16,7 +16,35 @@ pub(crate) fn rewrite_reserved_template_binding(
     expression: &str,
     template_binding_access: &TemplateBindingAccess,
 ) -> Option<String> {
+    if template_binding_access.has_instance_globals() && expression.contains('$') {
+        return super::instance_rewrite::rewrite(expression, template_binding_access).map(
+            |rewrite| {
+                vize_carton::profiler::global_profiler()
+                    .record_counter("canon.instance_global_rewrite.output_buffers", 1);
+                String::from(rewrite.code.as_str())
+            },
+        );
+    }
     rewrite_binding(expression, template_binding_access, &mut None)
+}
+
+pub(super) fn rewrite_reserved_with_segments(
+    expression: &str,
+    bindings: &TemplateBindingAccess,
+) -> Option<super::spread_reserved_props::BindingRewrite> {
+    let mut spans = Some(Vec::new());
+    let code = rewrite_binding(expression, bindings, &mut spans)?;
+    Some(super::spread_reserved_props::BindingRewrite {
+        code,
+        segments: spans
+            .unwrap_or_default()
+            .into_iter()
+            .map(|span| super::spread_reserved_props::SpreadRewriteSegment {
+                generated: span.gen_range,
+                source: span.src_range,
+            })
+            .collect(),
+    })
 }
 
 /// Compose the same rewrite with authored offsets. Synthetic receivers have no
@@ -29,6 +57,25 @@ pub(crate) fn map_rewritten_template_binding(
     expression: &str,
     bindings: &TemplateBindingAccess,
 ) {
+    if bindings.has_instance_globals() && expression.contains('$') {
+        if let Some(rewrite) = super::instance_rewrite::rewrite(expression, bindings) {
+            for (relative, _) in ts
+                .get(generated_start..)
+                .unwrap_or_default()
+                .match_indices(rewrite.code.as_str())
+            {
+                let base = generated_start + relative;
+                for span in &rewrite.segments {
+                    mappings.push(VizeMapping {
+                        gen_range: base + span.generated.start..base + span.generated.end,
+                        src_range: source_start + span.source.start..source_start + span.source.end,
+                        sub_spans: Vec::new(),
+                    });
+                }
+            }
+        }
+        return;
+    }
     let mut spans = Some(Vec::new());
     let Some(rewritten) = rewrite_binding(expression, bindings, &mut spans) else {
         return;
@@ -54,7 +101,7 @@ fn rewrite_binding(
     template_binding_access: &TemplateBindingAccess,
     spans: &mut Option<Vec<VizeSubSpan>>,
 ) -> Option<String> {
-    if template_binding_access.is_empty() {
+    if !template_binding_access.has_reserved_bindings() {
         return None;
     }
 

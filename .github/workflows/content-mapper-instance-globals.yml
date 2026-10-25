@@ -12,6 +12,7 @@ on:
       - tests/fixtures/typechecker/undeclared-instance-globals-10617/**
       - tests/tooling/content-mapper-instance-globals-10617.test.ts
       - tests/tooling/support/content-mapper-instance-globals-10617.ts
+      - tests/tooling/support/content-mapper-instance-globals-hosts-10617.ts
       - npm/cli/content-mapper-helpers*
       - Cargo.lock
   workflow_dispatch:
@@ -81,6 +82,18 @@ jobs:
           git diff --exit-code HEAD
           mkdir -p "$RUNNER_TEMP/instance-globals-10617"
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/instance-globals-10617/source-identity.txt"
+      - name: Checkout the pinned source host
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: microsoft/TypeScript
+          ref: d6c4afddb2c55f4a9dea7b59293a99a8fdea1799
+          path: typescript-content-mapper
+          persist-credentials: false
+      - name: Setup the source host Go runtime
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: typescript-content-mapper/tsc/go.mod
+          cache-dependency-path: typescript-content-mapper/tsc/go.sum
       - name: Setup the producer Rust runtime
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
@@ -100,12 +113,46 @@ jobs:
         run: |
           cp target/ci/vize.differential-build.json "$RUNNER_TEMP/instance-globals-10617/source-build.json"
           sha256sum target/ci/vize > "$RUNNER_TEMP/instance-globals-10617/source-cli.sha256"
+      - name: Build the real source host and retain its complete authority
+        working-directory: typescript-content-mapper/tsc
+        run: |
+          mkdir -p "$RUNNER_TEMP/instance-globals-source-host"
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/instance-globals-source-host/tsgo" ./cmd/tsc
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/instance-globals-source-host/"
+      - name: Bind the source host receipt to this source and run
+        run: |
+          vp node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { execFileSync, spawnSync } from 'node:child_process';
+          const upstream = execFileSync('git', ['-C', 'typescript-content-mapper', 'rev-parse', 'HEAD'], {encoding:'utf8'}).trim();
+          assert.equal(upstream, 'd6c4afddb2c55f4a9dea7b59293a99a8fdea1799');
+          const binary = realpathSync(`${process.env.RUNNER_TEMP}/instance-globals-source-host/tsgo`);
+          const bytes = readFileSync(binary);
+          const result = spawnSync(binary, ['--version'], {encoding:'utf8'});
+          assert.equal(result.status, 0);
+          assert.equal(result.stderr, '');
+          const receipt = {
+            schema:'vize.instance-globals-source-host', version:1,
+            repository:'microsoft/TypeScript', upstream,
+            source:execFileSync('git', ['rev-parse','HEAD'], {encoding:'utf8'}).trim(),
+            run:process.env.GITHUB_RUN_ID, binary,
+            sha256:createHash('sha256').update(bytes).digest('hex'), size:bytes.length,
+            compilerVersion:{status:result.status,signal:result.signal,error:null,stdout:result.stdout,stderr:result.stderr},
+          };
+          writeFileSync(`${process.env.RUNNER_TEMP}/instance-globals-10617/source-host.json`, JSON.stringify(receipt,null,2)+'\n');
+          JS
+          tar -C "$RUNNER_TEMP" -czf "$RUNNER_TEMP/instance-globals-10617/source-host.tar.gz" instance-globals-source-host
       - name: Capture real consumer packets with explicit discovery status
         env:
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_TEST_GLOBALS_REQUIRED: "1"
           VIZE_TEST_GLOBALS_DISCOVERY: "1"
+          VIZE_TEST_GLOBALS_SOURCE_HOST: ${{ runner.temp }}/instance-globals-source-host/tsgo
+          VIZE_TEST_GLOBALS_SOURCE_HOST_RECEIPT: ${{ runner.temp }}/instance-globals-10617/source-host.json
+          VIZE_TEST_GLOBALS_HOST_MATRIX_REQUIRED: "1"
           VIZE_TEST_GLOBALS_OUTPUT: ${{ runner.temp }}/instance-globals-10617/consumer
         run: vp node --test --test-concurrency=1 tests/tooling/content-mapper-instance-globals-10617.test.ts
       - name: Retain complete packets, generated code and format discoveries

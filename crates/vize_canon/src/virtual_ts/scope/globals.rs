@@ -323,7 +323,7 @@ fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
     None
 }
 
-pub(super) fn is_template_instance_global_name(name: &str) -> bool {
+pub(crate) fn is_template_instance_global_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix('$') else {
         return false;
     };
@@ -333,7 +333,7 @@ pub(super) fn is_template_instance_global_name(name: &str) -> bool {
         .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
 }
 
-pub(super) fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
+pub(crate) fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
     matches!(name, "$attrs" | "$slots" | "$refs" | "$emit" | "$event")
         || options
             .template_globals

@@ -73,20 +73,18 @@ fn the_legacy_vue2_form_declares_the_name_once_with_an_any_fallback() {
 #[test]
 fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
     let output = generate(false);
-    let statements = output
-        .code
-        .lines()
-        .filter(|line| line.contains("__ctx.$missing"))
-        .collect::<Vec<_>>();
-
     assert_eq!(
-        statements,
-        vec![
-            "  const $missing = __ctx.$missing;",
-            "  void (__ctx.$missing);",
-            "  void (__ctx.$missing);",
+        [
+            "__ctx.$missing('c')",
+            "__ctx.$missing('a')",
+            "__ctx.$missing('b')"
         ]
+        .map(|access| output.code.matches(access).count()),
+        [1, 1, 1],
+        "{}",
+        output.code
     );
+    assert_eq!(output.code.matches("const $missing =").count(), 0);
     let context_helpers = output
         .code
         .lines()

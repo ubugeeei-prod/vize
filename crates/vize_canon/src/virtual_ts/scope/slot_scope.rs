@@ -44,7 +44,7 @@ struct SlotPayloadContext<'a> {
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
     syntactic_type_only_imported_names: &'a FxHashSet<vize_carton::CompactString>,
-    template_binding_access: &'a TemplateBindingAccess,
+    template_binding_access: &'a TemplateBindingAccess<'a>,
     source_context: ComponentPropSource<'a>,
     /// Name prefix of the emitted host binding. The two emitters share a block
     /// scope, so each needs its own or the second would redeclare the first.

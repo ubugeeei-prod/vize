@@ -95,12 +95,6 @@ fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
             "    const $slots = __ctx.$slots;",
             "    const $refs = __ctx.$refs;",
             "    const $emit = __ctx.$emit;",
-            "  const $before = __ctx.$before;",
-            "  const $after = __ctx.$after;",
-            "  const $form = __ctx.$form;",
-            "  const $field = __ctx.$field;",
-            "  const $unknown = __ctx.$unknown;",
-            "  const $self = __ctx.$self;",
         ]
     );
 }

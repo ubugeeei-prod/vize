@@ -5,8 +5,12 @@
 //! reserved names through the same typed object.
 
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
+use std::{borrow::Cow, cell::RefCell, rc::Rc};
 use vize_carton::{FxHashMap, FxHashSet, String};
-use vize_croquis::{BindingType, Croquis};
+use vize_croquis::{BindingType, Croquis, ScopeId};
+
+use super::expressions::BindingRewrite;
+use super::types::VirtualTsOptions;
 
 #[derive(Clone, Copy, Debug)]
 enum Receiver {
@@ -14,10 +18,52 @@ enum Receiver {
     OptionsInstance,
 }
 
-#[derive(Default, Debug)]
-pub(crate) struct TemplateBindingAccess(FxHashMap<String, Receiver>);
+type RewriteCache = FxHashMap<ScopeId, FxHashMap<String, Option<Rc<BindingRewrite>>>>;
 
-impl TemplateBindingAccess {
+/// Immutable admission and relative rewrite results for one generated file.
+/// Scope-specific views borrow this value; no emission offset enters the cache.
+#[derive(Debug)]
+struct InstanceAccess<'a> {
+    summary: &'a Croquis,
+    options: &'a VirtualTsOptions,
+    setup_spread_bindings: &'a [String],
+    infer_dollar_el: bool,
+    cache: RefCell<RewriteCache>,
+}
+
+#[derive(Debug)]
+enum InstanceStorage<'a> {
+    Owned(InstanceAccess<'a>),
+    Borrowed(&'a InstanceAccess<'a>),
+}
+
+impl InstanceStorage<'_> {
+    fn get(&self) -> &InstanceAccess<'_> {
+        match self {
+            Self::Owned(value) => value,
+            Self::Borrowed(value) => value,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct TemplateBindingAccess<'a> {
+    names: Cow<'a, FxHashMap<String, Receiver>>,
+    instance: Option<InstanceStorage<'a>>,
+    scope_id: ScopeId,
+}
+
+impl Default for TemplateBindingAccess<'_> {
+    fn default() -> Self {
+        Self {
+            names: Cow::Owned(FxHashMap::default()),
+            instance: None,
+            scope_id: ScopeId::ROOT,
+        }
+    }
+}
+
+impl<'a> TemplateBindingAccess<'a> {
     pub(crate) fn collect(summary: &Croquis, options_api: bool) -> Self {
         let mut result = Self::from_props(collect_template_prop_names(summary));
         if options_api {
@@ -28,7 +74,10 @@ impl TemplateBindingAccess {
                         || (binding == BindingType::Props && !script_setup))
                         && is_reserved_identifier(name)
                     {
-                        result.0.insert(name.into(), Receiver::OptionsInstance);
+                        result
+                            .names
+                            .to_mut()
+                            .insert(name.into(), Receiver::OptionsInstance);
                     }
                 }
             });
@@ -37,24 +86,131 @@ impl TemplateBindingAccess {
     }
 
     pub(crate) fn from_props(names: FxHashSet<String>) -> Self {
-        Self(
-            names
-                .into_iter()
-                .map(|name| (name, Receiver::Props))
-                .collect(),
-        )
+        Self {
+            names: Cow::Owned(
+                names
+                    .into_iter()
+                    .map(|name| (name, Receiver::Props))
+                    .collect(),
+            ),
+            ..Self::default()
+        }
+    }
+
+    pub(crate) fn with_instance_globals(
+        mut self,
+        summary: &'a Croquis,
+        options: &'a VirtualTsOptions,
+        setup_spread_bindings: &'a [String],
+        infer_dollar_el: bool,
+        enabled: bool,
+    ) -> Self {
+        if enabled {
+            self.instance = Some(InstanceStorage::Owned(InstanceAccess {
+                summary,
+                options,
+                setup_spread_bindings,
+                infer_dollar_el,
+                cache: RefCell::default(),
+            }));
+        }
+        self
+    }
+
+    pub(crate) fn for_scope(&self, scope_id: ScopeId) -> TemplateBindingAccess<'_> {
+        TemplateBindingAccess {
+            names: Cow::Borrowed(self.names.as_ref()),
+            instance: self
+                .instance
+                .as_ref()
+                .map(|instance| InstanceStorage::Borrowed(instance.get())),
+            scope_id,
+        }
+    }
+
+    pub(crate) fn scope_id(&self) -> ScopeId {
+        self.scope_id
+    }
+
+    pub(crate) fn instance_summary(&self) -> Option<&Croquis> {
+        self.instance
+            .as_ref()
+            .map(|instance| instance.get().summary)
+    }
+
+    pub(crate) fn has_instance_globals(&self) -> bool {
+        self.instance.is_some()
+    }
+
+    pub(crate) fn is_instance_global(&self, name: &str) -> bool {
+        let Some(instance) = self.instance.as_ref().map(InstanceStorage::get) else {
+            return false;
+        };
+        super::scope::is_template_instance_global_name(name)
+            && name != "$props"
+            && !(name == "$el" && instance.infer_dollar_el)
+            && !super::scope::is_declared_template_context_name(name, instance.options)
+            && !super::script_facts::contains_binding(instance.summary, name)
+            && !instance
+                .setup_spread_bindings
+                .iter()
+                .any(|binding| binding.as_str() == name)
+            && !instance
+                .summary
+                .type_exports
+                .iter()
+                .any(|export| export.name.as_str() == name)
+    }
+
+    /// Parse at most once per expression and actual template scope in this
+    /// immutable admission context. The caller still maps every emitted copy.
+    pub(crate) fn cached_instance_rewrite(
+        &self,
+        expression: &str,
+        build: impl FnOnce() -> Option<BindingRewrite>,
+    ) -> Option<Rc<BindingRewrite>> {
+        let instance = self.instance.as_ref()?.get();
+        if let Some(cached) = instance
+            .cache
+            .borrow()
+            .get(&self.scope_id)
+            .and_then(|scope| scope.get(expression))
+        {
+            vize_carton::profiler::global_profiler()
+                .record_counter("canon.instance_global_rewrite.cache_hits", 1);
+            return cached.clone();
+        }
+        vize_carton::profiler::global_profiler()
+            .record_counter("canon.instance_global_rewrite.cache_misses", 1);
+        let result = build().map(Rc::new);
+        vize_carton::profiler::global_profiler()
+            .record_counter("canon.instance_global_rewrite.cache_entries", 1);
+        instance
+            .cache
+            .borrow_mut()
+            .entry(self.scope_id)
+            .or_default()
+            .insert(String::from(expression), result.clone());
+        result
     }
 
     pub(crate) fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.names.is_empty() && self.instance.is_none()
+    }
+
+    pub(crate) fn has_reserved_bindings(&self) -> bool {
+        !self.names.is_empty()
     }
 
     pub(crate) fn contains(&self, name: &str) -> bool {
-        self.0.contains_key(name)
+        self.names.contains_key(name) || self.is_instance_global(name)
     }
 
     pub(crate) fn receiver(&self, name: &str) -> Option<&'static str> {
-        self.0.get(name).map(|receiver| match receiver {
+        if self.is_instance_global(name) {
+            return Some("__ctx");
+        }
+        self.names.get(name).map(|receiver| match receiver {
             Receiver::Props => "props",
             Receiver::OptionsInstance => "__vize_options_instance",
         })

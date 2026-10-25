@@ -22,7 +22,7 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) component_type_name: &'a str,
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
-    pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) enclosing_vif_guard: Option<&'a str>,

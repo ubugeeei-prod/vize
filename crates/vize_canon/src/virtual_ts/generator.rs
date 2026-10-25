@@ -697,7 +697,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
             let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
-                TemplateBindingAccess::collect(summary, options_api)
+                TemplateBindingAccess::collect(summary, options_api).with_instance_globals(
+                    summary,
+                    options,
+                    template_ref_unwraps.setup_spread_bindings(),
+                    check_options.infer_template_dollar_el,
+                    check_options.check_template_bindings
+                        && !legacy_vue2
+                        && !options.strict_instance_globals
+                        && template_ast.is_some_and(|root| root.source.contains('$')),
+                )
             );
             if check_options.any_enabled() {
                 profile!(

@@ -70,6 +70,17 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         if !expr.content.as_str().contains('$') {
             continue;
         }
+        // Ordinary Vue 3 instance references are rewritten at their authored
+        // expressions. Only the special own-props/root-element aliases still
+        // require this prelude; do not parse every dollar expression twice.
+        if !scope_options.legacy_vue2
+            && !scope_options.virtual_ts_options.strict_instance_globals
+            && !expr.content.as_str().contains("$props")
+            && !(scope_options.check_options.infer_template_dollar_el
+                && expr.content.as_str().contains("$el"))
+        {
+            continue;
+        }
         // The identifier's own span, not `content.find(name)`: the first
         // occurrence of `$props` in `$propsList && $props` is the `$propsList`
         // prefix, and mapping to it would point diagnostics at the wrong
@@ -93,7 +104,13 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         let Some(offset) = summary.scopes.v_for_source_offset(scope.id) else {
             continue;
         };
-        if !data.source.contains('$') {
+        if !data.source.contains('$')
+            || (!scope_options.legacy_vue2
+                && !scope_options.virtual_ts_options.strict_instance_globals
+                && !data.source.contains("$props")
+                && !(scope_options.check_options.infer_template_dollar_el
+                    && data.source.contains("$el")))
+        {
             continue;
         }
         for reference in extract_identifier_refs_oxc(data.source.as_str()) {
@@ -262,6 +279,14 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         } else {
             None
         };
+
+        if !self.scope_options.legacy_vue2
+            && !self.options.strict_instance_globals
+            && declared_type.is_none()
+            && name != "$props"
+        {
+            return;
+        }
 
         let receiver = if self.options.strict_instance_globals {
             Some("__vize_strict_template_context")

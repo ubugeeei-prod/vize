@@ -98,7 +98,7 @@ pub(super) struct PatternContext<'a> {
     pub children: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub template_source: Option<&'a str>,
     pub template_offset: u32,
-    pub template_binding_access: &'a TemplateBindingAccess,
+    pub template_binding_access: &'a TemplateBindingAccess<'a>,
     pub verification: bool,
 }
 

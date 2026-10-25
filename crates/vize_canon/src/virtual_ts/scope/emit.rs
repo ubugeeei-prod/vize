@@ -142,6 +142,9 @@ pub(super) fn emit_v_for_loop_open(
     let source_name = cstr!("__vize_v_for_source_{}", scope.id.as_u32());
     append!(*ts, "{indent}const {source_name} = __vForList(");
     let source_gen_start = ts.len();
+    // A loop source runs before that loop's own aliases are introduced.
+    let parent_access = template_binding_access.for_scope(scope.parent().unwrap_or(scope.id));
+    let template_binding_access = &parent_access;
     let rewritten_source =
         rewrite_reserved_template_binding(data.source.as_str(), template_binding_access);
     let source_text = rewritten_source

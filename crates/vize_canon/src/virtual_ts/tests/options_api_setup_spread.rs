@@ -138,7 +138,7 @@ export default defineComponent({
     );
 
     assert!(
-        output.code.contains("const $fetch = __ctx.$fetch;"),
+        output.code.contains("(__ctx.$fetch)"),
         "instance globals should remain available without a spread setup return:\n{}",
         output.code
     );

@@ -63,7 +63,7 @@ impl<'a> ComponentPropSource<'a> {
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) ts: &'b mut String,
     pub(crate) mappings: &'b mut Vec<VizeMapping>,
-    pub(crate) template_binding_access: &'a TemplateBindingAccess,
+    pub(crate) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) indent: &'b str,
     pub(crate) strict_v_model: bool,
@@ -74,7 +74,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     pub(crate) fn new(
         ts: &'b mut String,
         mappings: &'b mut Vec<VizeMapping>,
-        template_binding_access: &'a TemplateBindingAccess,
+        template_binding_access: &'a TemplateBindingAccess<'a>,
         source_context: ComponentPropSource<'a>,
         indent: &'b str,
     ) -> Self {
@@ -163,7 +163,8 @@ pub(crate) fn generate_component_prop_checks(
 ) {
     let ts = &mut *ctx.ts;
     let mappings = &mut *ctx.mappings;
-    let template_binding_access = ctx.template_binding_access;
+    let scoped_access = ctx.template_binding_access.for_scope(usage.scope_id);
+    let template_binding_access = &scoped_access;
     let source_context = ctx.source_context;
     let indent = ctx.indent;
     let strict_v_model = ctx.strict_v_model;
