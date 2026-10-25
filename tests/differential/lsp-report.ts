@@ -4,7 +4,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { validateBuildReceipt } from "./build-receipt.ts";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
-import { initializeCapabilities, materializeWorkspace, NATIVE_REASON } from "./lsp-manifest.ts";
+import {
+  fixtureLanguageId,
+  initializeCapabilities,
+  materializeWorkspace,
+  NATIVE_REASON,
+} from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";
 import { validateLspWorkspace } from "./lsp-workspace.ts";
 import {
@@ -82,7 +87,7 @@ export function inspectLspObservation(
       params: {
         textDocument: {
           uri: entryUri,
-          languageId: "vue",
+          languageId: fixtureLanguageId(fixture.data),
           version: fixture.data.documentVersion,
           text: fixture.files
             .find((file) => file.runtimePath === fixture.entry)
@@ -141,7 +146,20 @@ export function validateLspReport(
 ) {
   validateResultEnvelope(loaded, report, expectedBuild.sourceRevision);
   assert.deepEqual(report.argv, ["lsp"]);
-  if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild);
+  if (report.buildReceipt) {
+    // Receipt-less failed launches carry only the source revision. A claimed
+    // executable observation must supply the complete expected identity.
+    const { sourceRevision, binaryPath, binarySha256, cliVersion } = expectedBuild;
+    assert(typeof binaryPath === "string", "source receipt requires expected binaryPath");
+    assert(typeof binarySha256 === "string", "source receipt requires expected binarySha256");
+    assert(typeof cliVersion === "string", "source receipt requires expected cliVersion");
+    validateBuildReceipt(report.buildReceipt, {
+      sourceRevision,
+      binaryPath,
+      binarySha256,
+      cliVersion,
+    });
+  }
   if (report.binary) {
     assert(report.buildReceipt, "completed executable observations require a source-build receipt");
     assert(report.binaryProbe, "raw executable version probe is required");

@@ -7,6 +7,7 @@
 //!
 //! Based on eslint-plugin-vuejs-accessibility alt-text rule.
 
+use crate::attribute_policy::{ImageAltMessages, ImageAltPolicy};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
@@ -38,7 +39,8 @@ impl MarkupRule for ImgAlt {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_tag("img") {
+        let policy = ImageAltPolicy::for_tag(element.tag());
+        if !policy.applies() {
             return;
         }
 
@@ -56,10 +58,10 @@ impl MarkupRule for ImgAlt {
             }
         });
 
-        if !has_alt {
-            let message = ctx.lint().t("a11y/img-alt.message");
-            let help = ctx.lint().t("a11y/img-alt.help");
-            ctx.lint().warn_at_with_help(message, element.range(), help);
+        if policy.is_missing(has_alt) {
+            let text = ImageAltMessages::from_lookup(|key| ctx.lint().t(key));
+            ctx.lint()
+                .warn_at_with_help(text.message(), element.range(), text.help());
         }
     }
 }
@@ -93,12 +95,9 @@ impl Rule for ImgAlt {
             }
         });
 
-        if !has_alt {
-            ctx.warn_with_help(
-                ctx.t("a11y/img-alt.message"),
-                &element.loc,
-                ctx.t("a11y/img-alt.help"),
-            );
+        if ImageAltPolicy::for_tag(element.tag).is_missing(has_alt) {
+            let text = ImageAltMessages::from_lookup(|key| ctx.t(key));
+            ctx.warn_with_help(text.message(), &element.loc, text.help());
         }
     }
 }

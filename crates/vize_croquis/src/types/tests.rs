@@ -1,6 +1,24 @@
 use super::{TypeDefinitions, TypeResolver};
 
 #[test]
+fn literal_members_preserve_cooked_names_and_demand_only_exotic_parses() {
+    let resolver = TypeResolver::new();
+    let ascii = resolver.extract_properties("{ label: string; count?: number }");
+    assert_eq!(ascii.len(), 2);
+    assert_eq!(resolver.literal_member_parse_calls(), 0);
+    let props = resolver.extract_properties(r#"{ "scope.name"?: string; ['a:b']?: number; café?: boolean; "\u006cabel": string; [key]: string; [sideEffect()]: number }"#);
+    assert_eq!(
+        props
+            .iter()
+            .map(|prop| prop.name.as_str())
+            .collect::<Vec<_>>(),
+        ["scope.name", "a:b", "café", "label"]
+    );
+    assert_eq!(resolver.literal_member_parse_calls(), 6);
+    assert!(!props[3].optional);
+}
+
+#[test]
 fn test_extract_inline_props() {
     let resolver = TypeResolver::new();
     let props = resolver.extract_properties("{ msg: string, count?: number }");

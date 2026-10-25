@@ -1,0 +1,1801 @@
+{
+  "schema_version": 1,
+  "issue": 10522,
+  "environment": {
+    "cpu": "Apple M2 Max",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "rust": "rustc1.99.1(58cf8f9c3)",
+    "profile": "ci-opt:release,thinLTO,16codegenunits",
+    "rust_flags": {
+      "RUSTFLAGS": null,
+      "CARGO_ENCODED_RUSTFLAGS": null,
+      "RUSTUP_TOOLCHAIN": null
+    }
+  },
+  "method": {
+    "startedAt": "2026-10-25T06:02:55.988237+00:00",
+    "finishedAt": "2026-10-25T06:03:00.597051+00:00",
+    "elapsedSeconds": 4.47710425,
+    "samples": 9,
+    "roundsPerProcess": 300,
+    "order": "alternating paired order across four groups at8/64/256children",
+    "profile": "separate100roundinstrumentedruns excluded from medians",
+    "scope": "source parse/walk/canonical publication/sharedanalysis/boundaryquery capability cost only; no publicruntime or end-to-end speed claim",
+    "qualification": "No competing cargo/rustc/criterion/nativeprofile process detected beforeeachpairedsample; coordinated root/Musea/art hold. Ordinary browser/macOS background processes remain; localpaired evidence, not isolatedhardware."
+  },
+  "baseline": {
+    "head": "141737080fdae28a5241e30218c60aeff1c0c9b5",
+    "sha256": "782bcaebf2d505b3d6358a24db98950a2ef072444022711a85ac3a5ea25dda37",
+    "relation": "All L0/L1/L2/parser/rootCargo.toml+lock source bytes unchanged from141737 toaec516 before this fragment change; exact gitdiff verified."
+  },
+  "candidate": {
+    "base": "aec516cfa30fadde364f7f4ca0314db3995f56d9",
+    "executableSha256": "8c7f6eb9ef65ffe7c7003fb126789f546ad693246415dcee59959c02476656e5",
+    "files": [
+      {
+        "file": "Cargo.lock",
+        "sha256": "ca9d3136e7a71cd99f7a726ac6f69810fa295b17e850fd671169cf60837ed8fe"
+      },
+      {
+        "file": "Cargo.toml",
+        "sha256": "3f0d76d0ded21ba750c120debca24061635b9b026491dd80926fcc80f17a4c4d"
+      },
+      {
+        "file": "davinci/vize_l2/examples/jsx_markup_profile.rs",
+        "sha256": "52e61ac0d65ae9fa667d4767c68fa1967b090b737e08810f90e43b6def18565e"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup.rs",
+        "sha256": "0ffcdba07565bdb92d12c27f47cd1959c95e8a7c89dc972ba3a0ad4ce45d4b63"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/emit.rs",
+        "sha256": "b5a73483d1b325904a56f2a0e46c30886545ba226f988ee4f151bca5803f021f"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/prepare.rs",
+        "sha256": "a66f003e4d66da203e7bc3fa6f661c13859fb2261def0e90dee152b4bc310dfa"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests.rs",
+        "sha256": "8f95b1573534ca18323068a7781d443afd185bffd16c6538a3f3122013fcc25c"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/formatting.rs",
+        "sha256": "87a9464d8687ffb5596c82385a2e677c8e615f3158e780eccdbe6dd00d2bf308"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments.rs",
+        "sha256": "bcac6a77e3599c1cded575a9a3a0517c4a69ea82d048ddc59cc3176a7006d5a3"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/coordinates.rs",
+        "sha256": "69dfb294aed7ef3d0d67d1e28dfe88d6791955f65f16952a42c93744bb0d5204"
+      },
+      {
+        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/realize.rs",
+        "sha256": "284231cd3385500680be85be75b92dac7dd8812cd3dde86f061e7cb0be265638"
+      },
+      {
+        "file": "davinci/vize_l2/tests/fixtures/jsx-static-fragments/cases.json",
+        "sha256": "efcc44bdda2c2215f898c97f90cff185435eec9c2d5dbeab17d957596878330f"
+      },
+      {
+        "file": "davinci/vize_l2/tests/fixtures/jsx-static-fragments/oracle-dom-21.0.4.json",
+        "sha256": "7ef2eed29a896729987b5b31a1967e9bf66e0b55cd6e926f621d80671c5df22d"
+      },
+      {
+        "file": "davinci/vize_l2/tests/fixtures/jsx-static-fragments/oracle.json",
+        "sha256": "98bcc3c9b1d05641e682608da02bcadd5739f97cc4b913686a91d401dea22fb5"
+      },
+      {
+        "file": "docs/davinci/plan/storage-inventory.tsv",
+        "sha256": "15499b3c6b84cdad20f2fa0bbad4c4ab8504e321de2f148821d5d292977c22c2"
+      },
+      {
+        "file": "rust-toolchain.toml",
+        "sha256": "cf13b173bea8eb5e0dfca16b32c015341369c3706301cf329415e96567ac9c71"
+      },
+      {
+        "file": "tests/tooling/native-jsx-fragments.test.ts",
+        "sha256": "f37f237c4b332414a9503c1e1341a9e4c6c30e359d0db9bd6a82c0a3a4927566"
+      }
+    ]
+  },
+  "median_us": {
+    "8": {
+      "base_compact": {
+        "parse_us": 1.3722333333333334,
+        "walk_us": 2.3785,
+        "canonical_us": 0.9741699999999999,
+        "analysis_us": 0.08957333333333334
+      },
+      "head_compact": {
+        "parse_us": 1.3250033333333333,
+        "walk_us": 2.35697,
+        "canonical_us": 0.9602733333333333,
+        "analysis_us": 0.08539666666666666,
+        "boundary_query_us": 0.030690000000000002
+      },
+      "head_layout": {
+        "parse_us": 1.4334766666666667,
+        "walk_us": 2.4408333333333334,
+        "canonical_us": 1.1388433333333334,
+        "analysis_us": 0.08512,
+        "boundary_query_us": 0.030733333333333335
+      },
+      "head_fragments": {
+        "parse_us": 1.7551433333333333,
+        "walk_us": 3.05093,
+        "canonical_us": 1.15848,
+        "analysis_us": 0.08453333333333334,
+        "boundary_query_us": 0.038156666666666665
+      }
+    },
+    "64": {
+      "base_compact": {
+        "parse_us": 6.65043,
+        "walk_us": 12.510390000000001,
+        "canonical_us": 4.749036666666667,
+        "analysis_us": 0.3834766666666667
+      },
+      "head_compact": {
+        "parse_us": 6.377353333333333,
+        "walk_us": 12.34208,
+        "canonical_us": 4.631726666666666,
+        "analysis_us": 0.3794166666666667,
+        "boundary_query_us": 0.16709666666666667
+      },
+      "head_layout": {
+        "parse_us": 7.245823333333333,
+        "walk_us": 13.499166666666667,
+        "canonical_us": 5.8255300000000005,
+        "analysis_us": 0.37765666666666664,
+        "boundary_query_us": 0.19779333333333335
+      },
+      "head_fragments": {
+        "parse_us": 9.547789999999999,
+        "walk_us": 17.179993333333332,
+        "canonical_us": 6.157613333333334,
+        "analysis_us": 0.38205,
+        "boundary_query_us": 0.24067333333333332
+      }
+    },
+    "256": {
+      "base_compact": {
+        "parse_us": 24.107503333333334,
+        "walk_us": 42.772106666666666,
+        "canonical_us": 17.78182,
+        "analysis_us": 1.4166833333333333
+      },
+      "head_compact": {
+        "parse_us": 23.06974,
+        "walk_us": 42.34453666666667,
+        "canonical_us": 17.68902,
+        "analysis_us": 1.3979199999999998,
+        "boundary_query_us": 1.34804
+      },
+      "head_layout": {
+        "parse_us": 27.124013333333334,
+        "walk_us": 46.553893333333335,
+        "canonical_us": 22.886210000000002,
+        "analysis_us": 1.4081733333333333,
+        "boundary_query_us": 1.6674833333333334
+      },
+      "head_fragments": {
+        "parse_us": 34.46652666666667,
+        "walk_us": 60.110996666666665,
+        "canonical_us": 24.386216666666666,
+        "analysis_us": 1.3970033333333334,
+        "boundary_query_us": 2.1680433333333333
+      }
+    }
+  },
+  "samples": {
+    "8": {
+      "base_compact": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 2.2530366666666666,
+          "walk_us": 2.650983333333333,
+          "canonical_us": 0.9915499999999999,
+          "analysis_us": 0.13239666666666666
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3722333333333334,
+          "walk_us": 2.42334,
+          "canonical_us": 0.9911366666666667,
+          "analysis_us": 0.09140000000000001
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3321,
+          "walk_us": 2.29639,
+          "canonical_us": 0.9455666666666667,
+          "analysis_us": 0.089
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3326433333333334,
+          "walk_us": 2.34199,
+          "canonical_us": 0.9720733333333333,
+          "analysis_us": 0.08957333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.35238,
+          "walk_us": 2.3785,
+          "canonical_us": 0.9945666666666667,
+          "analysis_us": 0.08886666666666666
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.38386,
+          "walk_us": 2.4322133333333333,
+          "canonical_us": 0.9873433333333332,
+          "analysis_us": 0.09014666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3894333333333333,
+          "walk_us": 2.3566533333333335,
+          "canonical_us": 0.9634966666666666,
+          "analysis_us": 0.08597666666666666
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3831633333333333,
+          "walk_us": 2.4108433333333337,
+          "canonical_us": 0.9651666666666667,
+          "analysis_us": 0.09056
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3363933333333333,
+          "walk_us": 2.3362366666666667,
+          "canonical_us": 0.9741699999999999,
+          "analysis_us": 0.08697333333333333
+        }
+      ],
+      "head_compact": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 4.04685,
+          "walk_us": 4.792966666666667,
+          "canonical_us": 1.6762533333333332,
+          "analysis_us": 0.21485666666666664,
+          "boundary_query_us": 0.06387000000000001
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.28206,
+          "walk_us": 2.3624899999999998,
+          "canonical_us": 0.9602733333333333,
+          "analysis_us": 0.09014333333333333,
+          "boundary_query_us": 0.03109666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3250033333333333,
+          "walk_us": 2.36556,
+          "canonical_us": 0.9804233333333333,
+          "analysis_us": 0.08721333333333334,
+          "boundary_query_us": 0.030010000000000002
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.2587933333333332,
+          "walk_us": 2.2696066666666663,
+          "canonical_us": 0.9387800000000001,
+          "analysis_us": 0.08516666666666667,
+          "boundary_query_us": 0.029436666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3413899999999999,
+          "walk_us": 2.3331933333333335,
+          "canonical_us": 0.9696133333333333,
+          "analysis_us": 0.08320666666666666,
+          "boundary_query_us": 0.028723333333333337
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.2630533333333334,
+          "walk_us": 2.289153333333333,
+          "canonical_us": 0.93528,
+          "analysis_us": 0.08352,
+          "boundary_query_us": 0.03093333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.45627,
+          "walk_us": 2.35697,
+          "canonical_us": 1.0238766666666668,
+          "analysis_us": 0.08734666666666667,
+          "boundary_query_us": 0.030433333333333337
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3285,
+          "walk_us": 2.37541,
+          "canonical_us": 0.9514033333333333,
+          "analysis_us": 0.08539666666666666,
+          "boundary_query_us": 0.03124333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3139,
+          "walk_us": 2.2832166666666667,
+          "canonical_us": 0.94971,
+          "analysis_us": 0.08405333333333334,
+          "boundary_query_us": 0.030690000000000002
+        }
+      ],
+      "head_layout": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.8418200000000002,
+          "walk_us": 3.1890066666666668,
+          "canonical_us": 1.4955633333333334,
+          "analysis_us": 0.11055999999999999,
+          "boundary_query_us": 0.03930666666666666
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4472699999999998,
+          "walk_us": 2.503486666666667,
+          "canonical_us": 1.17362,
+          "analysis_us": 0.08585666666666668,
+          "boundary_query_us": 0.031003333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4044666666666665,
+          "walk_us": 2.4224933333333336,
+          "canonical_us": 1.1354133333333334,
+          "analysis_us": 0.08209,
+          "boundary_query_us": 0.029740000000000003
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.3984633333333334,
+          "walk_us": 2.435033333333333,
+          "canonical_us": 1.13039,
+          "analysis_us": 0.08123666666666667,
+          "boundary_query_us": 0.030733333333333335
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4334766666666667,
+          "walk_us": 2.4131799999999997,
+          "canonical_us": 1.1388433333333334,
+          "analysis_us": 0.08512,
+          "boundary_query_us": 0.02903666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.3983700000000001,
+          "walk_us": 2.3747200000000004,
+          "canonical_us": 1.1186566666666666,
+          "analysis_us": 0.08019666666666667,
+          "boundary_query_us": 0.02843333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4634866666666666,
+          "walk_us": 2.5154866666666664,
+          "canonical_us": 1.15234,
+          "analysis_us": 0.08223,
+          "boundary_query_us": 0.03109333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.5038799999999999,
+          "walk_us": 2.54709,
+          "canonical_us": 1.1797366666666667,
+          "analysis_us": 0.09158666666666666,
+          "boundary_query_us": 0.032883333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4186066666666666,
+          "walk_us": 2.4408333333333334,
+          "canonical_us": 1.1324866666666666,
+          "analysis_us": 0.08788333333333333,
+          "boundary_query_us": 0.025973333333333334
+        }
+      ],
+      "head_fragments": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.7038533333333334,
+          "walk_us": 3.0759366666666663,
+          "canonical_us": 1.15401,
+          "analysis_us": 0.08487,
+          "boundary_query_us": 0.038156666666666665
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.8130633333333332,
+          "walk_us": 3.11096,
+          "canonical_us": 1.18556,
+          "analysis_us": 0.08710999999999999,
+          "boundary_query_us": 0.04013666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.74061,
+          "walk_us": 3.050266666666667,
+          "canonical_us": 1.14614,
+          "analysis_us": 0.08325333333333333,
+          "boundary_query_us": 0.03570333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.7861233333333333,
+          "walk_us": 3.0676466666666666,
+          "canonical_us": 1.16307,
+          "analysis_us": 0.08505,
+          "boundary_query_us": 0.03809
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.7573299999999998,
+          "walk_us": 3.021236666666667,
+          "canonical_us": 1.13959,
+          "analysis_us": 0.08109000000000001,
+          "boundary_query_us": 0.04044333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.7326633333333332,
+          "walk_us": 3.0283466666666667,
+          "canonical_us": 1.1204333333333334,
+          "analysis_us": 0.08453333333333334,
+          "boundary_query_us": 0.03705
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.7551433333333333,
+          "walk_us": 3.0461300000000002,
+          "canonical_us": 1.1865033333333335,
+          "analysis_us": 0.08249,
+          "boundary_query_us": 0.03990666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.7929399999999998,
+          "walk_us": 3.05093,
+          "canonical_us": 1.15848,
+          "analysis_us": 0.08630333333333333,
+          "boundary_query_us": 0.03567666666666666
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 226,
+          "nodes": 9,
+          "parse_us": 1.71753,
+          "walk_us": 3.1306933333333333,
+          "canonical_us": 1.1725133333333333,
+          "analysis_us": 0.08253,
+          "boundary_query_us": 0.03860333333333333
+        }
+      ]
+    },
+    "64": {
+      "base_compact": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.46567,
+          "walk_us": 12.14198,
+          "canonical_us": 4.6302433333333335,
+          "analysis_us": 0.3721
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.65043,
+          "walk_us": 12.321113333333333,
+          "canonical_us": 4.69237,
+          "analysis_us": 0.3778166666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.68377,
+          "walk_us": 12.532213333333335,
+          "canonical_us": 4.749036666666667,
+          "analysis_us": 0.38722999999999996
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.470573333333333,
+          "walk_us": 12.121273333333333,
+          "canonical_us": 4.594443333333333,
+          "analysis_us": 0.37306666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.716836666666667,
+          "walk_us": 12.899316666666667,
+          "canonical_us": 4.868503333333333,
+          "analysis_us": 0.3933466666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.720916666666667,
+          "walk_us": 12.536106666666667,
+          "canonical_us": 4.917483333333333,
+          "analysis_us": 0.3834766666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.670153333333333,
+          "walk_us": 12.510390000000001,
+          "canonical_us": 4.73101,
+          "analysis_us": 0.3916633333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.615386666666667,
+          "walk_us": 12.574983333333334,
+          "canonical_us": 4.77734,
+          "analysis_us": 0.3872
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.609286666666667,
+          "walk_us": 12.380686666666668,
+          "canonical_us": 4.783616666666667,
+          "analysis_us": 0.38054333333333334
+        }
+      ],
+      "head_compact": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.32654,
+          "walk_us": 12.110816666666667,
+          "canonical_us": 4.475323333333333,
+          "analysis_us": 0.37264,
+          "boundary_query_us": 0.16653333333333334
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.377353333333333,
+          "walk_us": 12.34208,
+          "canonical_us": 4.708853333333333,
+          "analysis_us": 0.37931000000000004,
+          "boundary_query_us": 0.16474999999999998
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.587676666666667,
+          "walk_us": 12.607106666666667,
+          "canonical_us": 4.648853333333333,
+          "analysis_us": 0.39137,
+          "boundary_query_us": 0.16709666666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.62862,
+          "walk_us": 12.729296666666668,
+          "canonical_us": 4.810020000000001,
+          "analysis_us": 0.3908433333333333,
+          "boundary_query_us": 0.16998666666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.785446666666667,
+          "walk_us": 12.888760000000001,
+          "canonical_us": 4.67878,
+          "analysis_us": 0.3965666666666667,
+          "boundary_query_us": 0.16848666666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.262253333333333,
+          "walk_us": 12.127220000000001,
+          "canonical_us": 4.607756666666667,
+          "analysis_us": 0.37372333333333335,
+          "boundary_query_us": 0.17054333333333332
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.455943333333333,
+          "walk_us": 12.439403333333333,
+          "canonical_us": 4.631726666666666,
+          "analysis_us": 0.3794166666666667,
+          "boundary_query_us": 0.16569333333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.3768633333333336,
+          "walk_us": 12.286693333333332,
+          "canonical_us": 4.520003333333333,
+          "analysis_us": 0.3797333333333333,
+          "boundary_query_us": 0.16825333333333334
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.269716666666667,
+          "walk_us": 12.007366666666666,
+          "canonical_us": 4.47526,
+          "analysis_us": 0.36679666666666666,
+          "boundary_query_us": 0.1643
+        }
+      ],
+      "head_layout": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.123196666666666,
+          "walk_us": 13.38843,
+          "canonical_us": 5.8255300000000005,
+          "analysis_us": 0.3691566666666667,
+          "boundary_query_us": 0.18417666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.2653099999999995,
+          "walk_us": 13.40845,
+          "canonical_us": 5.81774,
+          "analysis_us": 0.37498333333333334,
+          "boundary_query_us": 0.20029333333333332
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.381803333333334,
+          "walk_us": 13.62098,
+          "canonical_us": 6.0011,
+          "analysis_us": 0.3819266666666667,
+          "boundary_query_us": 0.19330333333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.245823333333333,
+          "walk_us": 13.417603333333334,
+          "canonical_us": 5.8153266666666665,
+          "analysis_us": 0.37765666666666664,
+          "boundary_query_us": 0.19779333333333335
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.364879999999999,
+          "walk_us": 13.760003333333334,
+          "canonical_us": 6.0207033333333335,
+          "analysis_us": 0.3897366666666667,
+          "boundary_query_us": 0.19515333333333332
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.132243333333332,
+          "walk_us": 13.372773333333333,
+          "canonical_us": 5.72596,
+          "analysis_us": 0.36888,
+          "boundary_query_us": 0.19568666666666668
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.375146666666666,
+          "walk_us": 13.649579999999998,
+          "canonical_us": 5.8741900000000005,
+          "analysis_us": 0.38266333333333336,
+          "boundary_query_us": 0.19985666666666668
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.204596666666666,
+          "walk_us": 13.50602,
+          "canonical_us": 5.876013333333334,
+          "analysis_us": 0.38280000000000003,
+          "boundary_query_us": 0.19875666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.185583333333334,
+          "walk_us": 13.499166666666667,
+          "canonical_us": 5.817496666666667,
+          "analysis_us": 0.37568999999999997,
+          "boundary_query_us": 0.19805999999999999
+        }
+      ],
+      "head_fragments": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.41014,
+          "walk_us": 16.88461,
+          "canonical_us": 5.97931,
+          "analysis_us": 0.3729166666666667,
+          "boundary_query_us": 0.24067333333333332
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.64081,
+          "walk_us": 17.384016666666668,
+          "canonical_us": 6.220673333333333,
+          "analysis_us": 0.38487666666666664,
+          "boundary_query_us": 0.23832333333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.711373333333333,
+          "walk_us": 17.34336,
+          "canonical_us": 6.1784566666666665,
+          "analysis_us": 0.38761333333333337,
+          "boundary_query_us": 0.24890666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.547789999999999,
+          "walk_us": 17.177226666666666,
+          "canonical_us": 6.021403333333334,
+          "analysis_us": 0.37822999999999996,
+          "boundary_query_us": 0.24556333333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.776396666666667,
+          "walk_us": 17.390856666666664,
+          "canonical_us": 6.234506666666667,
+          "analysis_us": 0.38958333333333334,
+          "boundary_query_us": 0.25078999999999996
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.39123,
+          "walk_us": 16.85426,
+          "canonical_us": 6.155966666666666,
+          "analysis_us": 0.37237333333333333,
+          "boundary_query_us": 0.23374
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.534156666666666,
+          "walk_us": 17.210153333333334,
+          "canonical_us": 6.157613333333334,
+          "analysis_us": 0.38205,
+          "boundary_query_us": 0.23861333333333334
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.553053333333335,
+          "walk_us": 17.179993333333332,
+          "canonical_us": 6.1708533333333335,
+          "analysis_us": 0.38557,
+          "boundary_query_us": 0.24067333333333332
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 1624,
+          "nodes": 65,
+          "parse_us": 9.271406666666667,
+          "walk_us": 16.874983333333333,
+          "canonical_us": 6.01666,
+          "analysis_us": 0.38043666666666665,
+          "boundary_query_us": 0.2380533333333333
+        }
+      ]
+    },
+    "256": {
+      "base_compact": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.240146666666668,
+          "walk_us": 41.67765333333333,
+          "canonical_us": 17.342796666666665,
+          "analysis_us": 1.3744866666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.107503333333334,
+          "walk_us": 42.772106666666666,
+          "canonical_us": 17.689153333333334,
+          "analysis_us": 1.4166833333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.359466666666666,
+          "walk_us": 43.22499333333333,
+          "canonical_us": 17.96638666666667,
+          "analysis_us": 1.4450166666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.307479999999998,
+          "walk_us": 43.79584333333334,
+          "canonical_us": 18.10417,
+          "analysis_us": 1.4502933333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.405976666666664,
+          "walk_us": 42.63250666666667,
+          "canonical_us": 17.78182,
+          "analysis_us": 1.39975
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.37177666666667,
+          "walk_us": 41.71237333333333,
+          "canonical_us": 17.34834,
+          "analysis_us": 1.37596
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.75250666666667,
+          "walk_us": 42.2717,
+          "canonical_us": 17.54373,
+          "analysis_us": 1.3937933333333332
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 27.968073333333336,
+          "walk_us": 44.497793333333334,
+          "canonical_us": 20.32377,
+          "analysis_us": 1.4287699999999999
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.247656666666664,
+          "walk_us": 43.31068333333333,
+          "canonical_us": 17.94388,
+          "analysis_us": 1.4404433333333333
+        }
+      ],
+      "head_compact": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 22.33054,
+          "walk_us": 41.40959666666667,
+          "canonical_us": 17.28986666666667,
+          "analysis_us": 1.3562699999999999,
+          "boundary_query_us": 1.3428066666666667
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.164686666666668,
+          "walk_us": 42.686530000000005,
+          "canonical_us": 17.847060000000003,
+          "analysis_us": 1.42234,
+          "boundary_query_us": 1.35279
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.56916,
+          "walk_us": 43.029270000000004,
+          "canonical_us": 17.894759999999998,
+          "analysis_us": 1.43292,
+          "boundary_query_us": 1.3566566666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.174036666666666,
+          "walk_us": 42.317816666666666,
+          "canonical_us": 17.64946666666667,
+          "analysis_us": 1.39249,
+          "boundary_query_us": 1.34804
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 22.86544333333333,
+          "walk_us": 42.388913333333335,
+          "canonical_us": 17.778906666666664,
+          "analysis_us": 1.3995333333333333,
+          "boundary_query_us": 1.3612133333333332
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 22.375703333333334,
+          "walk_us": 41.33638666666666,
+          "canonical_us": 17.284010000000002,
+          "analysis_us": 1.35069,
+          "boundary_query_us": 1.3382033333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.06974,
+          "walk_us": 42.34453666666667,
+          "canonical_us": 17.68902,
+          "analysis_us": 1.3979199999999998,
+          "boundary_query_us": 1.3435766666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 22.860856666666667,
+          "walk_us": 42.19027333333334,
+          "canonical_us": 17.68458,
+          "analysis_us": 1.3900066666666666,
+          "boundary_query_us": 1.3448533333333335
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.80959,
+          "walk_us": 43.61611,
+          "canonical_us": 18.095446666666668,
+          "analysis_us": 1.4554266666666666,
+          "boundary_query_us": 1.3616733333333333
+        }
+      ],
+      "head_layout": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.124013333333334,
+          "walk_us": 46.553893333333335,
+          "canonical_us": 22.886210000000002,
+          "analysis_us": 1.4093966666666666,
+          "boundary_query_us": 1.66378
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 26.843616666666666,
+          "walk_us": 46.22360666666667,
+          "canonical_us": 22.694709999999997,
+          "analysis_us": 1.3895533333333332,
+          "boundary_query_us": 1.6630666666666667
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.47805333333333,
+          "walk_us": 47.13191666666667,
+          "canonical_us": 23.00252,
+          "analysis_us": 1.42254,
+          "boundary_query_us": 1.6667866666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.37777666666667,
+          "walk_us": 46.624586666666666,
+          "canonical_us": 22.89791333333333,
+          "analysis_us": 1.4081733333333333,
+          "boundary_query_us": 1.6689066666666668
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.266536666666667,
+          "walk_us": 46.722366666666666,
+          "canonical_us": 22.951520000000002,
+          "analysis_us": 1.4105833333333333,
+          "boundary_query_us": 1.6674833333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 26.545696666666664,
+          "walk_us": 45.58263,
+          "canonical_us": 22.458763333333334,
+          "analysis_us": 1.3627366666666667,
+          "boundary_query_us": 1.6692933333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 26.827076666666667,
+          "walk_us": 46.125836666666665,
+          "canonical_us": 22.69459,
+          "analysis_us": 1.3851566666666668,
+          "boundary_query_us": 1.65859
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.03766,
+          "walk_us": 46.406666666666666,
+          "canonical_us": 22.80609,
+          "analysis_us": 1.3848666666666667,
+          "boundary_query_us": 1.6715433333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.46389,
+          "walk_us": 47.288439999999994,
+          "canonical_us": 23.150703333333333,
+          "analysis_us": 1.41678,
+          "boundary_query_us": 1.6733233333333333
+        }
+      ],
+      "head_fragments": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.232056666666665,
+          "walk_us": 60.110996666666665,
+          "canonical_us": 24.291330000000002,
+          "analysis_us": 1.3892933333333333,
+          "boundary_query_us": 2.159333333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.55515333333334,
+          "walk_us": 60.38246,
+          "canonical_us": 24.424043333333334,
+          "analysis_us": 1.4018000000000002,
+          "boundary_query_us": 2.1662433333333335
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.165803333333336,
+          "walk_us": 59.57276999999999,
+          "canonical_us": 24.178166666666666,
+          "analysis_us": 1.3882066666666666,
+          "boundary_query_us": 2.16041
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.50251,
+          "walk_us": 60.12324,
+          "canonical_us": 24.443466666666666,
+          "analysis_us": 1.3970033333333334,
+          "boundary_query_us": 2.1719833333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.72958,
+          "walk_us": 60.726949999999995,
+          "canonical_us": 24.515853333333336,
+          "analysis_us": 1.4148166666666666,
+          "boundary_query_us": 2.1751166666666664
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.93071333333333,
+          "walk_us": 60.668499999999995,
+          "canonical_us": 24.51,
+          "analysis_us": 1.4113766666666667,
+          "boundary_query_us": 2.1680433333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.400423333333336,
+          "walk_us": 59.86434,
+          "canonical_us": 24.386216666666666,
+          "analysis_us": 1.3920566666666667,
+          "boundary_query_us": 2.1737566666666663
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.45539333333333,
+          "walk_us": 59.75028,
+          "canonical_us": 24.25362,
+          "analysis_us": 1.3981999999999999,
+          "boundary_query_us": 2.17335
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.46652666666667,
+          "walk_us": 60.06400333333334,
+          "canonical_us": 24.35501,
+          "analysis_us": 1.3853133333333334,
+          "boundary_query_us": 2.1647233333333333
+        }
+      ]
+    }
+  },
+  "instrumented_profiles": [
+    {
+      "mode": "compact",
+      "rows": [
+        {
+          "children": 256,
+          "rounds": 100,
+          "layout": false,
+          "fragments": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.4846,
+          "walk_us": 43.05753,
+          "canonical_us": 18.24043,
+          "analysis_us": 1.41124,
+          "boundary_query_us": 1.3658299999999999
+        },
+        {
+          "span": "l2.jsx_markup.emit",
+          "count": 100,
+          "total_us": 900.705
+        },
+        {
+          "span": "l2.jsx_markup.prepare",
+          "count": 100,
+          "total_us": 845.2489999999999
+        },
+        {
+          "span": "l2.jsx_markup.finish_file",
+          "count": 100,
+          "total_us": 28.127
+        }
+      ]
+    },
+    {
+      "mode": "layout",
+      "rows": [
+        {
+          "children": 256,
+          "rounds": 100,
+          "layout": true,
+          "fragments": false,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.47502,
+          "walk_us": 46.5175,
+          "canonical_us": 23.190430000000003,
+          "analysis_us": 1.38869,
+          "boundary_query_us": 1.6699899999999999
+        },
+        {
+          "span": "l2.jsx_markup.prepare",
+          "count": 100,
+          "total_us": 1230
+        },
+        {
+          "span": "l2.jsx_markup.emit",
+          "count": 100,
+          "total_us": 1002.752
+        },
+        {
+          "span": "l2.jsx_markup.finish_file",
+          "count": 100,
+          "total_us": 26.997
+        }
+      ]
+    },
+    {
+      "mode": "fragments",
+      "rows": [
+        {
+          "children": 256,
+          "rounds": 100,
+          "layout": false,
+          "fragments": true,
+          "source_bytes": 6580,
+          "nodes": 257,
+          "parse_us": 34.61713,
+          "walk_us": 60.3566,
+          "canonical_us": 24.808739999999997,
+          "analysis_us": 1.4137700000000002,
+          "boundary_query_us": 2.1696
+        },
+        {
+          "span": "l2.jsx_markup.prepare",
+          "count": 100,
+          "total_us": 1355.256
+        },
+        {
+          "span": "l2.jsx_markup.emit",
+          "count": 100,
+          "total_us": 1052.6699999999998
+        },
+        {
+          "span": "l2.jsx_markup.finish_file",
+          "count": 100,
+          "total_us": 27.464
+        }
+      ]
+    }
+  ],
+  "process_before": [
+    {
+      "pid": 50321,
+      "cpu": 79.1,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+    },
+    {
+      "pid": 2608,
+      "cpu": 66.0,
+      "command": "git"
+    },
+    {
+      "pid": 358,
+      "cpu": 20.1,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds"
+    },
+    {
+      "pid": 2666,
+      "cpu": 17.2,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2665,
+      "cpu": 16.2,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2671,
+      "cpu": 15.2,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2670,
+      "cpu": 14.7,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2668,
+      "cpu": 14.3,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2662,
+      "cpu": 14.0,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2667,
+      "cpu": 14.0,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2664,
+      "cpu": 13.6,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2647,
+      "cpu": 10.9,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    }
+  ],
+  "process_after": [
+    {
+      "pid": 50321,
+      "cpu": 82.6,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+    },
+    {
+      "pid": 358,
+      "cpu": 45.0,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds"
+    },
+    {
+      "pid": 3030,
+      "cpu": 18.4,
+      "command": "ps"
+    },
+    {
+      "pid": 2665,
+      "cpu": 13.1,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2573,
+      "cpu": 11.1,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2613,
+      "cpu": 11.0,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2616,
+      "cpu": 10.6,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2670,
+      "cpu": 10.1,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 1297,
+      "cpu": 9.6,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2698,
+      "cpu": 8.8,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2700,
+      "cpu": 8.5,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+      "pid": 2612,
+      "cpu": 8.4,
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    }
+  ]
+}

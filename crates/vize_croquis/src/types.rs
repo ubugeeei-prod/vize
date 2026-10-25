@@ -170,9 +170,17 @@ pub struct TypeResolver {
     resolved_props_complete: Option<bool>,
     resolved_prop_modules: FxHashMap<CompactString, CompactString>,
     builtin_reactive: Option<Box<builtin_reactive::BuiltinReactiveTypes>>,
+    /// Actual parser demand from literal/Unicode member syntax; ASCII members
+    /// never increment this counter or enter the parser fallback.
+    literal_member_parse_calls: std::sync::atomic::AtomicU32,
 }
 
 impl TypeResolver {
+    pub fn literal_member_parse_calls(&self) -> u32 {
+        self.literal_member_parse_calls
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+
     pub fn resolved_world(&self) -> Option<&ResolvedTypeWorld> {
         self.resolved_world.as_ref()
     }
@@ -236,6 +244,10 @@ impl TypeResolver {
     /// local types into a `<script setup>` summary.
     #[inline]
     pub fn merge_keep_existing(&mut self, other: TypeResolver) {
+        self.literal_member_parse_calls.fetch_add(
+            other.literal_member_parse_calls(),
+            std::sync::atomic::Ordering::Relaxed,
+        );
         self.definitions.merge_keep_existing(other.definitions);
         self.merge_builtin_reactive_types(other.builtin_reactive);
     }

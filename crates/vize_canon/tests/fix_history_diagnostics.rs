@@ -847,6 +847,7 @@ fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
+            | "unicode-prop-bindings-10573"
             | "experimental-router-import-10520" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
@@ -1135,6 +1136,29 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
         "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
         Some(10494),
         &["tsx-invalid-and-valid-props", "jsx-invalid-and-valid-props"],
+    );
+}
+
+#[test]
+fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "unicode-prop-bindings-10573",
+        "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+        "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+        Some(10573),
+        &[
+            "reported-optional-unused",
+            "unicode-ascii-collision",
+            "unicode-ascii-number",
+            "quoted-cooked-unicode",
+            "escaped-identifier",
+            "supplementary-crlf",
+            "runtime-japanese",
+            "defaulted-unicode",
+            "keyed-unicode",
+            "reserved-hyphen-ascii",
+            "unicode-continue",
+        ],
     );
 }
 

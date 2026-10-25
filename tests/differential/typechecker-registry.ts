@@ -83,6 +83,7 @@ export const TYPECHECKER_TESTS = {
   "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+  "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
 } as const;
@@ -153,5 +154,6 @@ export const sourceRevisions = {
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
+  "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;

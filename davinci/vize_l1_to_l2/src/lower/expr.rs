@@ -18,10 +18,11 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::{Span, String, cstr};
-use vize_l1::markup::entity::EntityContext;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
 
 use super::cx::Cx;
+
+mod coordinates;
 
 /// Trim `text` and return the trimmed slice with its authored span.
 /// Trimming keeps the slice a source slice, so spans stay exact.
@@ -34,14 +35,7 @@ pub(crate) fn trimmed<'a>(cx: &Cx<'a>, text: &'a str) -> (&'a str, Span) {
 /// JS rule. Total — refused text comes back as the classified escape.
 pub(crate) fn expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     let (slice, span) = trimmed(cx, text);
-    expression_in(cx, decoded(cx, slice), span)
-}
-
-/// The expression the shipped HTML parser hands the compiler: character
-/// references in the attribute value or text are decoded. Text without one
-/// stays the authored slice; the expression keeps its authored span.
-fn decoded<'a>(cx: &Cx<'a>, raw: &'a str) -> &'a str {
-    crate::native::text::decode_references(cx.allocator, raw, EntityContext::Attribute)
+    coordinates::expression(cx, slice, span, false)
 }
 
 /// The same dialect selection for synthesized shorthand text at an authored
@@ -122,13 +116,7 @@ pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
         return expr_at(cx, text);
     }
     let (slice, span) = trimmed(cx, text);
-    let slice = decoded(cx, slice);
-    if cx.caps.supports_filters
-        && let Some(filter) = VueFilterExpr::parse_in(cx.allocator, slice, span)
-    {
-        return ExprRef::Filter(filter);
-    }
-    ExprRef::parse_js_in(cx.allocator, slice, span)
+    coordinates::expression(cx, slice, span, cx.caps.supports_filters)
 }
 
 /// A position-classified escape at an exact place: the reasons only the

@@ -47,22 +47,46 @@ pub(super) fn element<'a>(
             if error.is_some() {
                 break;
             }
-            let Some(row) = records.get(child) else {
-                error = Some(invalid());
-                break;
-            };
-            error = match row.kind {
-                Syntax::Element => element(records, child, region).err(),
-                Syntax::Text(text) if super::whitespace::ignored(text) => None,
-                Syntax::Text(text) => region.text(text, row.span).err(),
-                // Original JSX comments are retained in ProgramObservation;
-                // they do not create rendered markup nodes.
-                Syntax::Container | Syntax::Closing => None,
-                _ => Some(invalid()),
-            };
+            error = self::child(records, child, region).err();
         }
     })?;
     error.map_or(Ok(()), Err)
+}
+
+pub(super) fn node<'a>(
+    records: &[Record<'a>],
+    index: usize,
+    region: &mut RegionBuilder<'_, 'a>,
+) -> Result<(), ArtifactError> {
+    match records.get(index).ok_or_else(invalid)?.kind {
+        Syntax::Element => element(records, index, region),
+        Syntax::Fragment => {
+            for index in children(records, index) {
+                child(records, index, region)?;
+            }
+            Ok(())
+        }
+        _ => Err(invalid()),
+    }
+}
+
+fn child<'a>(
+    records: &[Record<'a>],
+    index: usize,
+    region: &mut RegionBuilder<'_, 'a>,
+) -> Result<(), ArtifactError> {
+    let row = records.get(index).ok_or_else(invalid)?;
+    match row.kind {
+        Syntax::Element | Syntax::Fragment => node(records, index, region),
+        Syntax::Text(text) if super::whitespace::ignored(text) => Ok(()),
+        Syntax::Text(text) => region.text(text, row.span).map(|_| ()),
+        // Boundary records stay with the actual original owner. Backend anchor
+        // realization is not a generic semantic text node or HTML element.
+        Syntax::Container | Syntax::Closing | Syntax::FragmentOpening | Syntax::FragmentClosing => {
+            Ok(())
+        }
+        _ => Err(invalid()),
+    }
 }
 
 fn invalid() -> ArtifactError {

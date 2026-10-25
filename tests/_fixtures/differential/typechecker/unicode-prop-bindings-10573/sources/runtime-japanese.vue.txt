@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps({ 日本語: { type: String, required: true } })
+</script>
+<template>
+  <div>{{ 日本語 }}</div>
+</template>

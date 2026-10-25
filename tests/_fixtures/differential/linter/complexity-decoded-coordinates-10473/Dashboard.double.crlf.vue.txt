@@ -1,0 +1,2 @@
+<!-- 作者😀 -->
+<template><p :class="a &amp;&amp; (b ? '😀' : c)"><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b><b>{{ x ? y : z }}</b></p></template>

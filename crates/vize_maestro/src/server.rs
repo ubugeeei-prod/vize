@@ -25,6 +25,8 @@ mod helpers;
 mod importers;
 #[cfg(feature = "native")]
 mod initial_diagnostics;
+#[cfg(feature = "retained-program")]
+mod intrinsic_hover;
 #[cfg(feature = "experimental-source-navigation")]
 mod module_input;
 #[cfg(feature = "experimental-source-navigation")]
@@ -85,7 +87,7 @@ pub struct MaestroServer {
         reason = "the diagnostics worker and optional native navigation retain the same real server owner"
     )]
     state: std::sync::Arc<ServerState>,
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     #[expect(
         clippy::disallowed_types,
         reason = "request views retain the same navigation owner"
@@ -128,7 +130,7 @@ impl MaestroServer {
             ))
         };
 
-        #[cfg(feature = "experimental-source-navigation")]
+        #[cfg(feature = "retained-program")]
         let navigation = Some(std::sync::Arc::new(
             crate::source_project::navigation::NativeNavigationProject::new(
                 crate::source_project::SourceQueryProject::new_server(state.clone()),
@@ -150,7 +152,7 @@ impl MaestroServer {
             configuration_watchers: Some(ConfigurationWatchControl::new(Default::default())),
             #[cfg(feature = "native")]
             configuration_admission: Default::default(),
-            #[cfg(feature = "experimental-source-navigation")]
+            #[cfg(feature = "retained-program")]
             navigation,
             #[cfg(feature = "experimental-source-navigation")]
             module_link_termination,
@@ -169,11 +171,12 @@ impl MaestroServer {
         }
         #[cfg(feature = "native")]
         self.state.retire_project_contexts();
+        #[cfg(feature = "retained-program")]
+        if let Some(navigation) = &self.navigation {
+            navigation.retire();
+        }
         #[cfg(feature = "experimental-source-navigation")]
         {
-            if let Some(navigation) = &self.navigation {
-                navigation.retire();
-            }
             self.state
                 .retire_module_links(ModuleLinkRetirement::Shutdown);
         }
@@ -192,7 +195,7 @@ impl MaestroServer {
             initial_diagnostics: None,
             configuration_watchers: None,
             configuration_admission: Default::default(),
-            #[cfg(feature = "experimental-source-navigation")]
+            #[cfg(feature = "retained-program")]
             navigation: None,
             #[cfg(feature = "experimental-source-navigation")]
             module_link_termination: None,
