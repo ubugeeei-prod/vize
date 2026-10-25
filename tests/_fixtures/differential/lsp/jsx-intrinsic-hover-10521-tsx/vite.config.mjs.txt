@@ -1,0 +1,1 @@
+export default { vue: { languageServer: { hover: true, lint: false, typecheck: true }, typeChecker: { jsxTypecheck: true } } };

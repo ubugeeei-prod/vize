@@ -2144,6 +2144,102 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/jsx-intrinsic-hover-10521-jsx",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "jsx-intrinsic-hover-10521-jsx",
+        "files": [
+          {
+            "path": "Intrinsic.jsx.txt",
+            "sha256": "3b9b6eaef17a296bf4fc3326dd5c50a5005fbaa4db13c6eac6cc6a891c4d7182"
+          },
+          {
+            "path": "Counter.vue.txt",
+            "sha256": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "7a00cd579e1e4b437532532d2d4836c87d1053ff7318581d6abf96893bf6a7f7"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "b300afac4d67314c6f337889dcb3bfbe51efb4821c18cf0284e4ef200c12b0f6"
+          }
+        ]
+      },
+      "case": {
+        "path": "jsx-intrinsic-hover-10521-jsx/case.json",
+        "sha256": "f1d1befca9e4331f2cab442689289209710692e51eb2a034b0a2f7a8026a4870"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "js", "ts", "jsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/jsx-intrinsic-hover-10521-tsx",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "jsx-intrinsic-hover-10521-tsx",
+        "files": [
+          {
+            "path": "Intrinsic.tsx.txt",
+            "sha256": "dc3aa620a3b983b06ee16382146ee58d9c74aa9e50426b4cdf818830cf0bd6e0"
+          },
+          {
+            "path": "Counter.vue.txt",
+            "sha256": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "7a00cd579e1e4b437532532d2d4836c87d1053ff7318581d6abf96893bf6a7f7"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "b300afac4d67314c6f337889dcb3bfbe51efb4821c18cf0284e4ef200c12b0f6"
+          }
+        ]
+      },
+      "case": {
+        "path": "jsx-intrinsic-hover-10521-tsx/case.json",
+        "sha256": "e1cc53c025543f1aaf69d85a7efe271a295989e4a83f23cdcb6efc1b9a99504e"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "js", "ts", "tsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

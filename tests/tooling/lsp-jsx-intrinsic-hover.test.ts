@@ -60,9 +60,10 @@ test("JSX intrinsic hovers share complete DOM packets and preserve resolved proj
             lint: false,
             typecheck: true,
           })) as { capabilities: unknown };
-          // This global routing hint overapproximates configured document roles.
-          // The primitive packet below independently proves the explicit opt-out.
-          assert.deepEqual(initialize.capabilities, FRESH_EDITOR_CAPABILITIES);
+          assert.deepEqual(initialize.capabilities, {
+            ...FRESH_EDITOR_CAPABILITIES,
+            experimental: { vize: { jsxTypecheck: enabled } },
+          });
           let unavailableId = 0;
           await assert.rejects(
             session.request("vize/nativeReferences", {
@@ -83,7 +84,7 @@ test("JSX intrinsic hovers share complete DOM packets and preserve resolved proj
                 {
                   method: "vize/nativeReferences",
                   code: -32601,
-                  data: undefined,
+                  data: "vize/nativeReferences",
                   message: "vize/nativeReferences: Method not found",
                 },
               );
@@ -95,7 +96,11 @@ test("JSX intrinsic hovers share complete DOM packets and preserve resolved proj
             {
               jsonrpc: "2.0",
               id: unavailableId,
-              error: { code: -32601, message: "Method not found" },
+              error: {
+                code: -32601,
+                message: "Method not found",
+                data: "vize/nativeReferences",
+              },
             },
           );
           const observations: unknown[] = [{ initialize }];

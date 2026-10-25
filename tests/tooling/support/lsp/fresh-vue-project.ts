@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import type { TestContext } from "node:test";
@@ -6,12 +7,26 @@ import { requireTypecheckDependency, resolveTypecheckRuntime } from "../typechec
 import { readPolicyFixture } from "./fresh-capability-policy.ts";
 import { root, testOutputRoot } from "./paths.ts";
 import { LspSession } from "./session.ts";
+import type { BoundLspSession, PublishedSessionBinding } from "./session-process.ts";
+
+export function freshVueSessionBinding(
+  binary: string,
+  published?: PublishedSessionBinding,
+  sourceRequired = process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD === "1",
+): BoundLspSession {
+  assert.ok(
+    !published || !sourceRequired,
+    "published authority cannot satisfy requested source-built custody",
+  );
+  return { repoRoot: root, binary, ...(published ? { published } : {}) };
+}
 
 /** Real Vue declarations are required; a synthetic Vue module cannot qualify this policy. */
 export async function withFreshVueProject(
   t: TestContext,
   label: string,
   run: (session: LspSession, workspaceDir: string) => Promise<void>,
+  published?: PublishedSessionBinding,
 ): Promise<void> {
   const runtime = requireTypecheckDependency(
     t,
@@ -39,10 +54,12 @@ export async function withFreshVueProject(
   const workspaces = path.join(output, "workspaces");
   fs.mkdirSync(workspaces, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(workspaces, `${label}-`));
-  const session = new LspSession({
-    repoRoot: root,
-    binary: process.env.VIZE_LSP_BIN ?? path.join(root, binaryRelativePath()),
-  });
+  const session = new LspSession(
+    freshVueSessionBinding(
+      process.env.VIZE_LSP_BIN ?? path.join(root, binaryRelativePath()),
+      published,
+    ),
+  );
   const publications: unknown[] = [];
   session.notificationObservers.push((method, params) => {
     publications.push({ method, params });

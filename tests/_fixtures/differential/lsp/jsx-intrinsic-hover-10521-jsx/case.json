@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "id": "lsp/regression/jsx-intrinsic-hover-10521-jsx",
+  "provenance": {
+    "fixCommit": "473c4cb0e84636a9d858e2e52e786925e2311ac3",
+    "witnessPath": "tests/tooling/lsp-jsx-intrinsic-hover.test.ts",
+    "witnessTest": "JSX intrinsic hovers share complete DOM packets and preserve resolved project gates",
+    "inputOrigin": "Minimal authored derivative of complete public v0.560.0 JSX/TSX null hover packets; LF or CRLF and same-line astral Unicode retained",
+    "contractOrigin": "Complete shared DOM packets frozen independently from public HTML hover responses; independently authored physical UTF-16 tag-name ranges"
+  },
+  "files": [
+    {
+      "source": "Intrinsic.jsx.txt",
+      "runtimePath": "Intrinsic.jsx",
+      "sha256": "3b9b6eaef17a296bf4fc3326dd5c50a5005fbaa4db13c6eac6cc6a891c4d7182"
+    },
+    {
+      "source": "Counter.vue.txt",
+      "runtimePath": "Counter.vue",
+      "sha256": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "7a00cd579e1e4b437532532d2d4836c87d1053ff7318581d6abf96893bf6a7f7"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "b300afac4d67314c6f337889dcb3bfbe51efb4821c18cf0284e4ef200c12b0f6"
+    }
+  ],
+  "entry": "Intrinsic.jsx",
+  "languageId": "javascriptreact",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "1dfd99ce5433edf8a89a1dd89826b9926f399ef1b5ed1006a1bb508c0d867427"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Actual retained original Program/File intrinsic targets rendered through shared DOM metadata; source-inspected input custody does not establish native whole-product LSP parity"
+}
