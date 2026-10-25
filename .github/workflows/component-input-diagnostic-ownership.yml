@@ -5,6 +5,7 @@ on:
     paths:
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership/**"
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership.rs"
+      - "crates/vize_canon/tests/component_input_ownership_profile.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
       - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
@@ -183,6 +184,13 @@ jobs:
           writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
           JS
+      - name: Observe actual mapper generation and gated parser allocations
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
+          export VIZE_INPUT_OWNERSHIP_PROFILE_CAPTURE="$RUNNER_TEMP/component-input-parity/generation-profile.json"
+          cargo test --locked --profile ci -p vize_canon --test component_input_ownership_profile actual_mapper_generation_reports_gated_parse_and_allocation_costs -- --exact --nocapture > "$RUNNER_TEMP/component-input-parity/generation-profile.log" 2>&1
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
