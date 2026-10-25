@@ -26,4 +26,4 @@ The original all-84 source is retained unchanged as a known unresolved global-
 undefined collision control. Its full raw TS2448/TS2454 outputs are pinned from
 source 6f67317c; it is not classified as a clean keyword result. Independent
 non-colliding-keyword-props covers 83 synthetic prop names, and
-authored-undefined-shadow covers the actual local binding authority.
+authored-undefined-shadow covers a hoisted var binding, whose native and mapper\nprograms are independently clean with public 0.569.0. A const binding exposes an\nadditional existing mapper preamble capture and is retained as a separate failing\npacket for #10667; this control does not claim const-shadow support.
