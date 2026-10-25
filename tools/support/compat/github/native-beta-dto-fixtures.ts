@@ -12,6 +12,8 @@ const production = [
   `${dto}native_diagnostics.rs`,
   `${snapshot}protocol.rs`,
   `${snapshot}protocol/protocol9.rs`,
+  "crates/vize_canon/src/lsp_client/session/capabilities.rs",
+  "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
 ];
 const tests = [
   {
@@ -177,7 +179,7 @@ export function newNativeBetaDtoProtocolCases(
     const pairs = JSON.parse(data[3]!.toString("utf8"));
     require(pairs.beforeRevision === before &&
       pairs.candidateProductionRevision ===
-        "bb448dfe260abc982ecc278894d26725f30da6ee", "pinned source pair required");
+        "a0e92ca5488fd4f04dabd282f1e437a98a3061c5", "pinned source pair required");
     require(Array.isArray(pairs.production) &&
       pairs.production.length === production.length, "all exact production blobs required");
     for (const [index, path] of production.entries()) {
@@ -220,6 +222,14 @@ export function newNativeBetaDtoProtocolCases(
       "NEIGHBOR",
       "expected_refusal",
       "snapshot.release()",
+      "FileChanges::Summary(",
+      "request_diagnostics_full(",
+      "dependency-error",
+      "dependency-close",
+      "component_types_raw(",
+      "completion_raw(",
+      "definition_raw(",
+      "rename_raw(",
     ])
       require(actual.includes(
         marker === "expected_refusal" ? "expect_refusal" : marker,
