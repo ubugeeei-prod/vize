@@ -46,6 +46,12 @@ export function comparePackets(left, right) {
 const git = (root, ...args) =>
   execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
 const digest = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+export function buildTarget(root, sha, side) {
+  assert.match(sha, /^[a-f0-9]{40}$/);
+  assert.ok(["base", "head"].includes(side));
+  assert.ok(path.isAbsolute(root));
+  return path.join(root, `${side}-${sha}`);
+}
 function command(args, cwd, env, log) {
   const fd = fs.openSync(log, "w");
   try {
@@ -73,6 +79,12 @@ export function runProfile(base, head, output) {
   execFileSync("git", ["-C", head, "merge-base", "--is-ancestor", baseSha, headSha]);
   for (const file of ["Cargo.lock", "pnpm-lock.yaml"])
     assert.equal(digest(path.join(base, file)), digest(path.join(head, file)), file + " differs");
+  // Never restore or share compiled dependencies: Cargo freshness across two
+  // checkouts is not proof that an rlib belongs to the requested source.
+  assert.ok(process.env.RUNNER_TEMP && path.isAbsolute(process.env.RUNNER_TEMP));
+  const targets = fs.mkdtempSync(
+    path.join(fs.realpathSync(process.env.RUNNER_TEMP), "sfc-members-"),
+  );
   const productionDiff = git(
     head,
     "diff",
@@ -112,6 +124,11 @@ export function runProfile(base, head, output) {
       assert.equal(git(root, "diff", "--name-only", "HEAD"), "", "source dirty before build");
       const native = path.join(root, "npm/native"),
         token = randomBytes(16).toString("hex");
+      const sha = side === "base" ? baseSha : headSha;
+      const target = buildTarget(targets, sha, side);
+      assert.equal(fs.existsSync(target), false, "compiled target must start absent");
+      fs.mkdirSync(target);
+      assert.deepEqual(fs.readdirSync(target), []);
       if (side === "base") {
         const modules = path.join(native, "node_modules");
         assert.equal(fs.existsSync(modules), false);
@@ -146,8 +163,17 @@ export function runProfile(base, head, output) {
       const identity = {
         side,
         root,
-        sha: side === "base" ? baseSha : headSha,
+        sha,
         token,
+        target,
+        targetInitiallyEmpty: true,
+        sourceTrees: Object.fromEntries(
+          ["crates", "davinci", "vendor", "npm/native"].map((entry) => [
+            entry,
+            git(root, "rev-parse", `HEAD:${entry}`),
+          ]),
+        ),
+        cargoLockSha256: digest(path.join(root, "Cargo.lock")),
         command: args,
       };
       receipt.builds.push(identity);
@@ -155,7 +181,7 @@ export function runProfile(base, head, output) {
       command(
         args,
         native,
-        { ...process.env, VIZE_NATIVE_BUILD_TOKEN: token },
+        { ...process.env, CARGO_TARGET_DIR: target, VIZE_NATIVE_BUILD_TOKEN: token },
         path.join(output, side + "-build.log"),
       );
       const binaries = fs.readdirSync(native).filter((file) => file.endsWith(".node"));

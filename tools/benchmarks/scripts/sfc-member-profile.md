@@ -13,7 +13,10 @@ this flag is false. This report never replaces normal source CI, correctness or 
 
 Both N-API images are built before measurement using the same optimized `ci-opt` recipe
 (`opt-level=3`, thin LTO, 16 codegen units). The actual loaded image must match its build token and
-SHA-256. Dependencies/lockfiles, immutable source SHAs, driver/input hashes and build logs are
+SHA-256. Every side uses an initially absent, role/SHA-specific target directory in a fresh runner
+temporary namespace. Compiled targets are never restored or shared, including when the two source
+SHAs are identical; only downloaded Cargo registry/git sources are reused. Source-tree IDs,
+target directories, dependencies/lockfiles, immutable source SHAs, driver/input hashes and build logs are
 retained. A driver-only control must first report `productionIdentical: true`; production tuning
 then compares against the same baseline with the same frozen corpus.
 
@@ -29,3 +32,5 @@ measures source-analysis demand separately from process startup, file IO and res
 Raw phase vectors and actual work counts are retained, together with p50/p95. Timing differences
 are observations, with no relative threshold or release-throughput claim. A source optimization
 must also prove its intended parse-count reduction in normal correctness tests.
+A production-identical run only qualifies the driver. An optimization must include an actual
+changed-counter negative control so accidentally loading the baseline image cannot pass as its head.

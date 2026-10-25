@@ -16,7 +16,6 @@ jobs:
       MEMBER_BASE_SHA: ${{ inputs.base_sha }}
       MEMBER_HEAD_SHA: ${{ inputs.head_sha }}
       MEMBER_CONFLICTING_MODES: ${{ inputs.conflicting_modes }}
-      CARGO_TARGET_DIR: ${{ github.workspace }}/target
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
     steps:
@@ -50,13 +49,9 @@ jobs:
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
-      - name: Expose the nested target action at the workspace root
-        run: mkdir -p .github/actions && cp -R head/.github/actions/reuse-rust-target .github/actions/
-      - uses: ./head/.github/actions/setup-rust-sticky-cache
-        with:
-          key: sfc-member-profile-ci-opt
-          target-path: target
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      # Both builds share downloaded Cargo registry/git sources in CARGO_HOME,
+      # but the driver creates fresh, role/SHA-specific compiled target trees.
+      # Restored or sticky compiled targets must never enter this measurement.
       - name: Install exact native build tools
         working-directory: head
         run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline

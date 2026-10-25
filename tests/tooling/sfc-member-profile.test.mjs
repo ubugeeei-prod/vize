@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { comparePackets } from "../../tools/benchmarks/scripts/sfc-member-profile.mjs";
+import { readFileSync } from "node:fs";
+import { buildTarget, comparePackets } from "../../tools/benchmarks/scripts/sfc-member-profile.mjs";
 import {
   memberCases,
   controlCases,
@@ -64,4 +65,18 @@ void test("closed matrix covers every size/shape and invalid timing vectors fail
     assert.equal(memberCases().filter((value) => value.count === count).length, 6);
   assert.deepEqual(percentiles([4, 1, 3, 2]), { p50: 2, p95: 4, min: 1, max: 4 });
   for (const invalid of [[], [NaN], [Infinity], [-1]]) assert.throws(() => percentiles(invalid));
+});
+void test("compiled targets cannot alias across roles or immutable source identities", () => {
+  const sha = "a".repeat(40);
+  const base = buildTarget("/runner/isolated", sha, "base");
+  assert.notEqual(base, buildTarget("/runner/isolated", sha, "head"));
+  assert.notEqual(base, buildTarget("/runner/isolated", "b".repeat(40), "base"));
+  assert.throws(() => buildTarget("relative", sha, "base"));
+  assert.throws(() => buildTarget("/runner", "../unsafe", "head"));
+  assert.throws(() => buildTarget("/runner", sha, "../base"));
+  const workflow = readFileSync(
+    new URL("../../.github/workflows/sfc-member-profile.yml", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(workflow, /setup-rust-sticky-cache|reuse-rust-target|CARGO_TARGET_DIR:/);
 });
