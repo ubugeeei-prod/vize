@@ -1,0 +1,448 @@
+{
+  "source": "<script setup lang=\"ts\">\n// 雪😀\nimport { useRoute } from 'vue-router'\nimport { definePage } from 'vue-router/experimental'\ndefinePage({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n})\nconst route = useRoute()\nconst id: number = route.params.id\nconst page: number = route.params.page\nconst tags: string[] | undefined = route.params.tags\nconst at: Date | undefined = route.params.at\nconst heading: string | undefined = route.params.heading\n</script>\n<template><div>{{ route.params.id.toFixed() }} {{ route.params.page.toFixed() }}</div></template>\n",
+  "diagnostics": {
+    "diagnostics": [],
+    "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue",
+    "version": 1
+  },
+  "requests": [
+    {
+      "method": "textDocument/hover",
+      "params": {
+        "textDocument": {
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        },
+        "position": {
+          "line": 12,
+          "character": 35
+        }
+      },
+      "response": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\n(property) 'page': number\n```"
+        },
+        "range": {
+          "end": {
+            "character": 38,
+            "line": 12
+          },
+          "start": {
+            "character": 34,
+            "line": 12
+          }
+        }
+      }
+    },
+    {
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        },
+        "position": {
+          "line": 12,
+          "character": 34
+        }
+      },
+      "response": [
+        {
+          "data": {
+            "vizeCompletion": {
+              "item": {
+                "data": {
+                  "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+                  "name": "at",
+                  "position": 16161
+                },
+                "kind": 5,
+                "label": "at",
+                "sortText": "11"
+              },
+              "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+              "revision": 1,
+              "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+            }
+          },
+          "kind": 5,
+          "label": "at",
+          "sortText": "11"
+        },
+        {
+          "data": {
+            "vizeCompletion": {
+              "item": {
+                "data": {
+                  "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+                  "name": "heading",
+                  "position": 16161
+                },
+                "kind": 5,
+                "label": "heading",
+                "sortText": "11"
+              },
+              "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+              "revision": 1,
+              "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+            }
+          },
+          "kind": 5,
+          "label": "heading",
+          "sortText": "11"
+        },
+        {
+          "data": {
+            "vizeCompletion": {
+              "item": {
+                "data": {
+                  "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+                  "name": "id",
+                  "position": 16161
+                },
+                "kind": 5,
+                "label": "id",
+                "sortText": "11"
+              },
+              "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+              "revision": 1,
+              "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+            }
+          },
+          "kind": 5,
+          "label": "id",
+          "sortText": "11"
+        },
+        {
+          "data": {
+            "vizeCompletion": {
+              "item": {
+                "data": {
+                  "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+                  "name": "page",
+                  "position": 16161
+                },
+                "kind": 5,
+                "label": "page",
+                "sortText": "11"
+              },
+              "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+              "revision": 1,
+              "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+            }
+          },
+          "kind": 5,
+          "label": "page",
+          "sortText": "11"
+        },
+        {
+          "data": {
+            "vizeCompletion": {
+              "item": {
+                "data": {
+                  "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+                  "name": "tags",
+                  "position": 16161
+                },
+                "kind": 5,
+                "label": "tags",
+                "sortText": "11"
+              },
+              "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+              "revision": 1,
+              "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+            }
+          },
+          "kind": 5,
+          "label": "tags",
+          "sortText": "11"
+        }
+      ]
+    },
+    {
+      "method": "textDocument/definition",
+      "params": {
+        "textDocument": {
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        },
+        "position": {
+          "line": 12,
+          "character": 35
+        }
+      },
+      "response": {
+        "range": {
+          "end": {
+            "character": 116,
+            "line": 49
+          },
+          "start": {
+            "character": 110,
+            "line": 49
+          }
+        },
+        "uri": "file://$PROJECT/typed-router.d.ts"
+      }
+    },
+    {
+      "method": "textDocument/references",
+      "params": {
+        "textDocument": {
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        },
+        "position": {
+          "line": 12,
+          "character": 35
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "response": [
+        {
+          "range": {
+            "end": {
+              "character": 38,
+              "line": 12
+            },
+            "start": {
+              "character": 34,
+              "line": 12
+            }
+          },
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        },
+        {
+          "range": {
+            "end": {
+              "character": 67,
+              "line": 17
+            },
+            "start": {
+              "character": 63,
+              "line": 17
+            }
+          },
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        },
+        {
+          "range": {
+            "end": {
+              "character": 115,
+              "line": 49
+            },
+            "start": {
+              "character": 111,
+              "line": 49
+            }
+          },
+          "uri": "file://$PROJECT/typed-router.d.ts"
+        }
+      ]
+    }
+  ],
+  "resolved": [
+    {
+      "data": {
+        "vizeCompletion": {
+          "item": {
+            "data": {
+              "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+              "name": "at",
+              "position": 16161
+            },
+            "kind": 5,
+            "label": "at",
+            "sortText": "11"
+          },
+          "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+          "revision": 1,
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        }
+      },
+      "detail": "(property) 'at': Date | undefined",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) 'at': Date | undefined\n```"
+      },
+      "kind": 5,
+      "label": "at",
+      "sortText": "11"
+    },
+    {
+      "data": {
+        "vizeCompletion": {
+          "item": {
+            "data": {
+              "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+              "name": "heading",
+              "position": 16161
+            },
+            "kind": 5,
+            "label": "heading",
+            "sortText": "11"
+          },
+          "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+          "revision": 1,
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        }
+      },
+      "detail": "(property) 'heading': string | undefined",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) 'heading': string | undefined\n```"
+      },
+      "kind": 5,
+      "label": "heading",
+      "sortText": "11"
+    },
+    {
+      "data": {
+        "vizeCompletion": {
+          "item": {
+            "data": {
+              "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+              "name": "id",
+              "position": 16161
+            },
+            "kind": 5,
+            "label": "id",
+            "sortText": "11"
+          },
+          "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+          "revision": 1,
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        }
+      },
+      "detail": "(property) 'id': number",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) 'id': number\n```"
+      },
+      "kind": 5,
+      "label": "id",
+      "sortText": "11"
+    },
+    {
+      "data": {
+        "vizeCompletion": {
+          "item": {
+            "data": {
+              "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+              "name": "page",
+              "position": 16161
+            },
+            "kind": 5,
+            "label": "page",
+            "sortText": "11"
+          },
+          "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+          "revision": 1,
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        }
+      },
+      "detail": "(property) 'page': number",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) 'page': number\n```"
+      },
+      "kind": 5,
+      "label": "page",
+      "sortText": "11"
+    },
+    {
+      "data": {
+        "vizeCompletion": {
+          "item": {
+            "data": {
+              "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
+              "name": "tags",
+              "position": 16161
+            },
+            "kind": 5,
+            "label": "tags",
+            "sortText": "11"
+          },
+          "requestUri": "file://$VIRTUAL/src/pages/products/%5Bid%3Dint%5D.vue.ts",
+          "revision": 1,
+          "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue"
+        }
+      },
+      "detail": "(property) 'tags': string[] | undefined",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) 'tags': string[] | undefined\n```"
+      },
+      "kind": 5,
+      "label": "tags",
+      "sortText": "11"
+    }
+  ],
+  "locals": [
+    {
+      "position": {
+        "line": 11,
+        "character": 6
+      },
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\nconst id: number\n```"
+        },
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 11
+          },
+          "start": {
+            "character": 6,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "position": {
+        "line": 12,
+        "character": 6
+      },
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\nconst page: number\n```"
+        },
+        "range": {
+          "end": {
+            "character": 10,
+            "line": 12
+          },
+          "start": {
+            "character": 6,
+            "line": 12
+          }
+        }
+      }
+    }
+  ],
+  "invalidDiagnostics": {
+    "diagnostics": [
+      {
+        "code": 2339,
+        "message": "Property 'toUpperCase' does not exist on type 'number'.",
+        "range": {
+          "end": {
+            "character": 79,
+            "line": 17
+          },
+          "start": {
+            "character": 68,
+            "line": 17
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ],
+    "uri": "file://$PROJECT/src/pages/products/%5Bid=int%5D.vue",
+    "version": 2
+  }
+}

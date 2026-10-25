@@ -2034,6 +2034,48 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/experimental-router-params-10518",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "experimental-router-params-10518",
+        "files": [
+          {
+            "path": "Page.vue.txt",
+            "sha256": "dfa38d4e9c1cf94a0a6d02bf31a80419d608a0a8b7376cfb360491245a81cbe6"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+          }
+        ]
+      },
+      "case": {
+        "path": "experimental-router-params-10518/case.json",
+        "sha256": "70bffee87b94ff747140cde41d14dc6add74a0463dd5dd96e91ffb42c84d3cc7"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "completion": true,
+        "editor": true,
+        "ecosystem": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

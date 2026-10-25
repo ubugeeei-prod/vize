@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "lsp/regression/experimental-router-params-10518",
+  "provenance": {
+    "fixCommit": "deba37ce6642285752db6129e10144256a00eae5",
+    "witnessPath": "crates/vize_maestro/src/server/state/corsa/typed_router_tests.rs",
+    "witnessTest": "typed_route_editor_authority_requires_both_native_typecheck_and_project_opt_in",
+    "inputOrigin": "actual published Vue Router 5.4.0 generated project; source-inspected page and explicit typed-page opt-in configuration",
+    "contractOrigin": "two complete explicit number-declaration hovers preserved from public 0.562.0; real-provider whole diagnostics/completion/navigation qualification belongs to the dedicated test"
+  },
+  "files": [
+    {
+      "source": "Page.vue.txt",
+      "runtimePath": "src/pages/products/[id=int].vue",
+      "sha256": "dfa38d4e9c1cf94a0a6d02bf31a80419d608a0a8b7376cfb360491245a81cbe6"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+    }
+  ],
+  "entry": "src/pages/products/[id=int].vue",
+  "expected": {
+    "source": "hover.expected.json",
+    "sha256": "e3ef9df44a3b8b0f273dd89faf6c864f4a5c8fa9e365b81827669490b8843b21"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "completion": true,
+    "editor": true,
+    "ecosystem": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "authored source custody and two explicit number-declaration hover controls only; this manifest adapter does not install the provider and does not qualify experimental route params"
+}
