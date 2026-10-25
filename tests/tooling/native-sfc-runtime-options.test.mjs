@@ -93,6 +93,7 @@ if (selected) {
 const cases = [];
 const authoredStandalone = [];
 let pinnedModule;
+let parcelPacket;
 await test("capture all native runtime configurations before semantic assertions", skip, () => {
   const fixtures = mkdtempSync(join(tmpdir(), "vize-runtime-options-"));
   const previous = process.cwd();
@@ -289,6 +290,33 @@ export default { data() { return { n: 1 } } }</script><template><button @click="
         stats,
       });
     }
+    const source =
+      '<script setup lang="ts">import {ref} from "vue-vapor";const n=ref<number>(1)</script><template><button @click="n++">Vapor: {{ n }}</button></template>';
+    const options = {
+      filename: "App.vue",
+      vapor: true,
+      runtimeModuleName: "vue-vapor",
+      sourceMap: true,
+    };
+    const file = { path: "App.vue", source };
+    writeFileSync(file.path, source);
+    const single = observe("parcel-reproduction-single", options, () =>
+      native.compileSfc(source, options),
+    );
+    const batch = observe("parcel-reproduction-files", options, () =>
+      native.compileSfcBatchWithResults([file], {
+        ...options,
+        includeSourceMap: true,
+        includeHashes: true,
+        includeStyles: true,
+        includeCustomBlocks: true,
+        includeMacroArtifacts: true,
+      }),
+    );
+    const stats = observe("parcel-reproduction-stats", options, () =>
+      native.compileSfcBatch("./App.vue", options),
+    );
+    parcelPacket = { source, options, single, batch, stats };
   } finally {
     process.chdir(previous);
   }
@@ -297,11 +325,15 @@ export default { data() { return { n: 1 } } }</script><template><button @click="
     join(proof, "authored-standalone.json"),
     JSON.stringify(authoredStandalone, null, 2) + "\n",
   );
+  writeFileSync(
+    join(proof, "parcel-runtime-module.json"),
+    JSON.stringify(parcelPacket, null, 2) + "\n",
+  );
 });
 
 function completeCases() {
   assert.equal(cases.length, 144, "all 72 module and 72 standalone configurations were captured");
-  assert.equal(observations.length, 925, "every native API return was retained");
+  assert.equal(observations.length, 928, "every native API return was retained");
   return cases;
 }
 
@@ -623,5 +655,23 @@ await test(
         assert.equal(component.render(state, [], {}, {}, state, component).children, "2");
       }
     }
+  },
+);
+
+await test(
+  "the original custom Vapor runtime reproduction uses only its selected module",
+  skip,
+  () => {
+    completeCases();
+    const { path, scopeId: _scopeId, ...file } = parcelPacket.batch.results[0];
+    assert.equal(path, parcelPacket.options.filename);
+    assert.deepEqual(file, parcelPacket.single);
+    assert.deepEqual(file.errors, []);
+    assert.deepEqual(file.warnings, []);
+    assert.deepEqual(new vm.SourceTextModule(file.code).dependencySpecifiers, ["vue-vapor"]);
+    assert.deepEqual(JSON.parse(file.map).sourcesContent, [parcelPacket.source]);
+    assert.equal(parcelPacket.stats.success, 1);
+    assert.equal(parcelPacket.stats.failed, 0);
+    assert.equal(parcelPacket.stats.outputBytes, Buffer.byteLength(file.code));
   },
 );

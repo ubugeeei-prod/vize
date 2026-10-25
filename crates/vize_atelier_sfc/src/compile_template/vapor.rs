@@ -6,7 +6,7 @@ use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions,
     compile_vapor_with_sfc_context_and_codegen_options,
 };
-use vize_l0::dump::capture::StageCapture;
+use vize_l0::dump::capture::{NoCapture, StageCapture};
 use vize_l0::{Allocator, String, ToCompactString};
 
 use crate::{
@@ -84,7 +84,7 @@ pub(crate) fn compile_template_block_vapor(
             experimental_options,
             scope_attr.as_deref(),
             codegen_options,
-            &mut vize_l0::dump::capture::NoCapture,
+            &mut NoCapture,
         )
     };
 
