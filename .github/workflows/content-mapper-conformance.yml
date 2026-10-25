@@ -228,26 +228,39 @@ jobs:
             if (label === 'original-version') assert.equal(stderr.length, 0);
             return stdout.toString('utf8');
           }
-          function names(text) {
+          function names(text, producer = 'libtest') {
             const result = [];
+            let timingRows = 0;
             for (const line of text.split('\n').filter(Boolean)) {
               const match = /^(.*): test$/u.exec(line);
-              assert.ok(match, `unexpected complete terse inventory row: ${line}`);
-              result.push(match[1]);
+              if (match) {
+                assert.equal(timingRows, 0, 'Rustdoc timing must follow all case rows');
+                result.push(match[1]);
+              } else {
+                assert.equal(producer, 'rustdoc', `unexpected complete terse inventory row: ${line}`);
+                assert.match(line, /^all doctests ran in \d+\.\d{2}s; merged doctests compilation took \d+\.\d{2}s$/u);
+                assert.equal(++timingRows, 1, 'one exact Rustdoc timing record');
+              }
             }
             // Terse inventories contain case rows only. Each full execution below
             // independently proves the exact same names and its complete summary count.
             assert.equal(new Set(result).size, result.length, 'inventory names must be unique per target');
             return result.sort();
           }
-          function executions(text, inventory, ignored, selected) {
-            const events = [...text.matchAll(/^test (.+) \.\.\. (ok|FAILED|ignored(?:,.*)?)$/gmu)].map(match => ({ name: match[1], state: match[2].startsWith('ignored') ? 'ignored' : match[2] }));
+          function executions(text, inventory, ignored, selected, producer = 'libtest') {
+            const events = [...text.matchAll(/^test (.+) \.\.\. (ok|FAILED|ignored(?:,.*)?)$/gmu)].map(match => {
+              const rawName = match[1];
+              const compile = producer === 'rustdoc' && rawName.endsWith(' - compile');
+              const state = match[2].startsWith('ignored') ? 'ignored' : match[2];
+              return { name: compile ? rawName.slice(0, -' - compile'.length) : rawName, rawName, mode: state === 'ignored' ? 'ignored' : compile ? 'compile' : 'run', state };
+            });
             assert.deepEqual(events.map(event => event.name).sort(), [...selected].sort(), 'all selected cases must produce exactly one complete result');
             assert.deepEqual(events.filter(event => event.state === 'ignored').map(event => event.name).sort(), ignored.filter(name => selected.includes(name)), 'declared ignored-case policy must remain unchanged');
             assert.equal(events.some(event => event.state === 'FAILED'), false);
             const summaries = [...text.matchAll(/^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;/gmu)];
-            assert.equal(summaries.length, 1, 'each target must finish with one complete summary');
-            const actual = summaries[0].slice(1).map(Number);
+            if (producer === 'libtest') assert.equal(summaries.length, 1, 'one complete libtest summary');
+            else assert.ok(summaries.length > 0, 'every Rustdoc harness must complete');
+            const actual = summaries.reduce((total, summary) => total.map((value, index) => value + Number(summary[index + 1])), [0, 0, 0, 0, 0]);
             const ignoredCount = ignored.filter(name => selected.includes(name)).length;
             assert.deepEqual(actual, [selected.length - ignoredCount, 0, ignoredCount, 0, inventory.length - selected.length], 'complete inventory and summary counts must agree');
             return events;
@@ -269,12 +282,15 @@ jobs:
           reject('changed ignore policy', () => executions(sample, ['a', 'b'], [], ['a', 'b']));
           reject('changed total', () => executions(sample.replace('1 passed', '2 passed'), ['a', 'b'], ['b'], ['a', 'b']));
           reject('undeclared filtering', () => executions(sample.replace('0 filtered out', '1 filtered out'), ['a', 'b'], ['b'], ['a', 'b']));
-          const docs = names('doc_a: test\ndoc_b: test\n');
-          const docSample = 'test doc_a ... ok\ntest doc_b ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;\n';
-          executions(docSample, docs, [], docs);
-          reject('empty Rustdoc inventory', () => executions(docSample, names(''), [], []));
-          reject('omitted Rustdoc row', () => { const partial = names('doc_a: test\n'); executions(docSample, partial, [], partial); });
-          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected', emptyRustdoc: 'rejected', omittedRustdoc: 'rejected' });
+          const docs = names('doc_a: test\ndoc_b: test\nall doctests ran in 0.01s; merged doctests compilation took 0.00s\n', 'rustdoc');
+          const docSample = 'test doc_a - compile ... ok\ntest doc_b - compile ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;\n';
+          executions(docSample, docs, [], docs, 'rustdoc');
+          reject('empty Rustdoc inventory', () => executions(docSample, names('', 'rustdoc'), [], [], 'rustdoc'));
+          reject('omitted Rustdoc row', () => { const partial = names('doc_a: test\n', 'rustdoc'); executions(docSample, partial, [], partial, 'rustdoc'); });
+          reject('wrong timing producer', () => names('all doctests ran in 0.01s; merged doctests compilation took 0.00s\n'));
+          reject('invalid Rustdoc timing', () => names('all doctests ran in NaNs; merged doctests compilation took 0.00s\n', 'rustdoc'));
+          reject('unknown compile case', () => executions(docSample.replace('doc_a - compile', 'doc_c - compile'), docs, [], docs, 'rustdoc'));
+          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected', emptyRustdoc: 'rejected', omittedRustdoc: 'rejected', wrongTimingProducer: 'rejected', invalidRustdocTiming: 'rejected', unknownCompileCase: 'rejected' });
 
           try {
             const mapper = realpathSync(path.join(process.env.RUNNER_TEMP, 'tsgo'));
@@ -311,8 +327,9 @@ jobs:
             assert.equal(new Set(targets.map(target => target.key)).size, targets.length);
             for (const target of targets) {
               const command = ['test', '--locked', '-p', 'vize_maestro', ...target.selector, '--'];
-              target.inventory = names(run(`list-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--list', '--format', 'terse'], mapper));
-              target.ignored = names(run(`ignored-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--ignored', '--list', '--format', 'terse'], mapper));
+              const producer = target.key.startsWith('doctest:') ? 'rustdoc' : 'libtest';
+              target.inventory = names(run(`list-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--list', '--format', 'terse'], mapper), producer);
+              target.ignored = names(run(`ignored-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--ignored', '--list', '--format', 'terse'], mapper), producer);
               assert.ok(target.ignored.every(name => target.inventory.includes(name)));
               for (const name of target.inventory) receipt.inventory.push({ target: target.key, name, ignored: target.ignored.includes(name), provider: name === legacy ? 'original' : 'mapper' });
             }
@@ -321,6 +338,9 @@ jobs:
             const legacyTarget = targets.find(target => target.inventory.includes(legacy));
             assert.equal(legacyTarget.key, 'lib:vize_maestro');
             receipt.targets = targets;
+            const identity = test => `${test.target}\0${test.name}`;
+            const expectedByIdentity = new Map(receipt.inventory.map(test => [identity(test), test]));
+            assert.equal(expectedByIdentity.size, receipt.inventory.length);
             write('receipt.json', receipt);
             for (let cycle = 1; cycle <= 20; cycle++) {
               const completed = [];
@@ -328,15 +348,15 @@ jobs:
                 const selected = target.inventory.filter(name => name !== legacy);
                 const command = ['test', '--locked', '-p', 'vize_maestro', ...target.selector, '--', '--format', 'pretty', '--color', 'never', '--skip', legacy];
                 const stdout = run(`cycle-${cycle}-${target.key.replaceAll(':', '-')}`, 'cargo', command, mapper);
-                completed.push(...executions(stdout, target.inventory, target.ignored, selected).map(event => ({ target: target.key, ...event, provider: 'mapper' })));
+                const producer = target.key.startsWith('doctest:') ? 'rustdoc' : 'libtest';
+                completed.push(...executions(stdout, target.inventory, target.ignored, selected, producer).map(event => ({ target: target.key, ...event, provider: 'mapper' })));
               }
               const fixtureCapture = path.join(capture, `cycle-${cycle}-original-fixtures`);
               const stdout = run(`cycle-${cycle}-original`, 'cargo', ['test', '--locked', '-p', 'vize_maestro', ...legacyTarget.selector, '--', '--exact', legacy, '--format', 'pretty', '--color', 'never'], original, fixtureCapture);
               completed.push(...executions(stdout, legacyTarget.inventory, legacyTarget.ignored, [legacy]).map(event => ({ target: legacyTarget.key, ...event, provider: 'original' })));
-              const identity = test => `${test.target}\0${test.name}`;
               assert.deepEqual(completed.map(identity).sort(), receipt.inventory.map(identity).sort(), 'combined providers must execute the complete original inventory exactly once per cycle');
               assert.equal(completed.filter(test => test.provider === 'original').length, 1);
-              for (const test of completed) assert.equal(test.provider, receipt.inventory.find(expected => identity(expected) === identity(test)).provider);
+              for (const test of completed) assert.equal(test.provider, expectedByIdentity.get(identity(test)).provider);
               assert.equal(fileHash(mapper), mapperReceipt.sha256);
               assert.equal(fileHash(original), receipt.providers.original.sha256);
               for (const target of targets.filter(target => target.executable)) assert.equal(fileHash(target.executable), target.executableSha256, 'test executable must remain the once-built image');
