@@ -288,9 +288,9 @@ if (mode === "prepare") {
   json(join(out, "verification.json"), {
     source: sourceSha,
     beforeSource: readFileSync(join(out, "before.sha"), "utf8").trim(),
-    beforePackets: 4,
-    afterPackets: 240,
-    optionPackets: 48,
+    beforePackets: before.length,
+    afterPackets: after.length,
+    optionPackets: options.length,
     unfilteredRawOutcomes: true,
     oldCliFalseCleanPreserved: true,
     wholeNativeCodeOnlyContextLiteralChanged: true,
