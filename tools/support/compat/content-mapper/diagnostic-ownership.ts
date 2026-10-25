@@ -358,14 +358,16 @@ for (const project of projects)
     }
 write(path.join(output, "inventory.json"), {
   cases: rows.length,
+  originalCases: 60,
+  additionalEdgeCases: 8,
   executedProcesses: rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
   ids: rows.map((row) => row.id),
   mode: baselineOnly ? "baseline-only" : "candidate-and-baseline",
 });
-assert.equal(rows.length, 60);
+assert.equal(rows.length, 68);
 assert.equal(
   rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
-  baselineOnly ? 180 : 360,
+  baselineOnly ? 204 : 408,
 );
 // Every full protocol/check/official-host observation is durable before comparisons.
 for (const row of rows) {

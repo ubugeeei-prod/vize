@@ -82,6 +82,11 @@ export function formDirectiveControls(base: Project): Project[] {
       '  <GenericForm :initial-state="{ role: null',
       '  <!-- @vue-expect-error -->\n  <GenericForm :initial-state="{ role: null',
     );
+  const callback = (source: string) =>
+    expect(source).replace(
+      ':initial-state="{ role: null, tags: [] }" :schema="schema"',
+      ':initial-state="{ role: null, tags: [] }" :schema="schema" :validate-form-field-on="(field) => !!field"',
+    );
   return [
     { ...base, ordinaryForm: true, id: "form-expect-used", replaceParent: expect, diagnostics: [] },
     {
@@ -105,12 +110,48 @@ export function formDirectiveControls(base: Project): Project[] {
       ...base,
       id: "form-callback-expect-used",
       ordinaryForm: true,
-      replaceParent: (source) =>
-        expect(source).replace(
-          ':initial-state="{ role: null, tags: [] }" :schema="schema"',
-          ':initial-state="{ role: null, tags: [] }" :schema="schema" :validate-form-field-on="(field) => !!field"',
-        ),
+      replaceParent: callback,
       diagnostics: [],
+    },
+    {
+      ...base,
+      id: "form-callback-expect-unused",
+      ordinaryForm: true,
+      replaceParent: (source) => callback(source).replace("role: null", "role: 'ok'"),
+      diagnostics: [
+        {
+          file: "src/Form.vue",
+          line: 13,
+          column: 3,
+          severity: 1,
+          code: 2578,
+          message: "Unused '@vue-expect-error' directive.",
+        },
+      ],
+      mapperStdout: "src/Form.vue(13,8): error vize4: Unused '@vue-expect-error' directive\n",
+    },
+    {
+      ...base,
+      id: "form-callback-expect-foreign-sibling",
+      ordinaryForm: true,
+      replaceParent: (source) => {
+        const lines = callback(source).split("\n");
+        const owner = lines.findIndex((line) => line.includes("role: null"));
+        if (owner < 0) throw new Error("missing independently authored middle Form owner");
+        lines.splice(owner + 1, 0, "  <div>{{ schema.missing }}</div>");
+        return lines.join("\n");
+      },
+      diagnostics: [
+        {
+          file: "src/Form.vue",
+          line: 15,
+          column: 18,
+          severity: 1,
+          code: 2339,
+          message:
+            "Property 'missing' does not exist on type 'Schema<{ role: string; tags: string[]; }>'.",
+        },
+      ],
     },
   ];
 }
