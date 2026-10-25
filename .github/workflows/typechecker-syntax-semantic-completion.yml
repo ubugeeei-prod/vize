@@ -6,6 +6,16 @@ on:
         description: Complete immutable commit SHA for the composed source
         required: true
         type: string
+      handoff_only:
+        description: Replay the unchanged native handoff test at an exact baseline and source
+        required: false
+        default: false
+        type: boolean
+      baseline_ref:
+        description: Complete immutable baseline SHA required by handoff_only
+        required: false
+        default: ""
+        type: string
 permissions:
   contents: read
 concurrency:
@@ -17,6 +27,7 @@ env:
   QUALIFIER_SHA: ${{ inputs.source_ref }}
 jobs:
   native-syntax-completion:
+    if: ${{ !inputs.handoff_only }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 105
     steps:
@@ -83,3 +94,84 @@ jobs:
             tests/snapshots/check/**/__snapshots__/*.snap.actual
           if-no-files-found: error
           retention-days: 7
+
+  native-handoff-replay:
+    if: ${{ inputs.handoff_only }}
+    name: Native shutdown baseline (${{ matrix.side }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - side: baseline
+            source: ${{ inputs.baseline_ref }}
+          - side: head
+            source: ${{ inputs.source_ref }}
+    env:
+      SOURCE_SHA: ${{ matrix.source }}
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+      VIZE_TEST_REQUIRE_TSGO: "1"
+      VIZE_TEST_REQUIRE_PIN_INPUT_FIXTURE: "1"
+      VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/native-handoff-replay/packets
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Authenticate the immutable source input
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          mkdir -p "$RUNNER_TEMP/native-handoff-replay"
+          git rev-parse HEAD > "$RUNNER_TEMP/native-handoff-replay/driver.sha"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: source
+          persist-credentials: false
+      - name: Authenticate the complete original source
+        working-directory: source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git ls-files -s > "$RUNNER_TEMP/native-handoff-replay/whole-source-index.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/native-handoff-replay/source.sha"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: source/package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install the source's locked runtime and Vue dependency
+        working-directory: source
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/builder/vite...'
+      - name: Build the unchanged original test binary
+        working-directory: source
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics --no-run --message-format=json > "$RUNNER_TEMP/native-handoff-replay/build.stdout" 2> "$RUNNER_TEMP/native-handoff-replay/build.stderr"
+      - name: Replay the original handoff with whole output custody
+        working-directory: source
+        run: node ../tools/support/github/native-handoff-replay.mjs "$RUNNER_TEMP/native-handoff-replay"
+      - name: Retain original source, provider, executable and whole packets
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-handoff-replay-${{ matrix.side }}-${{ env.SOURCE_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-handoff-replay/
+          if-no-files-found: error
+          retention-days: 14
