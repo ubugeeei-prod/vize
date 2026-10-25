@@ -42,7 +42,11 @@ impl<L: LinkSink> Emitter<'_, '_, '_, L> {
                 quoted(&mut attributes, attr.value.unwrap_or(""), attr.span);
             }
             self.writer.push("{");
-            if let Some(class) = class {
+            // Vue 2 keeps the element's data object for an authored class,
+            // but its class transform omits a falsy staticClass field.
+            if let Some(class) =
+                class.filter(|class| class.value.is_some_and(|value| !value.is_empty()))
+            {
                 self.writer.push("staticClass: ");
                 quoted(&mut self.writer, class.value.unwrap_or(""), class.span);
                 if !attributes.is_empty() {

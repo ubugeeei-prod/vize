@@ -93,6 +93,14 @@ fn actual_retained_vue2_source_uses_instance_helpers_and_complete_vue2_exports()
 }
 
 #[test]
+fn empty_authored_class_keeps_data_without_a_static_class_field() {
+    assert_eq!(
+        module("<div class=''>{{ count }}</div>"),
+        "export function render() {\n  const _vm = this;\n  return _vm._c(\"div\", {}, [_vm._v(_vm._s(_vm.count)))]);\n}\nrender._withStripped = true;\nexport const staticRenderFns = [];\n"
+    );
+}
+
+#[test]
 fn explicit_context_global_and_shorthand_access_preserve_authored_meaning() {
     assert_eq!(
         module("<div>{{ Math.round(count) }}</div>"),
