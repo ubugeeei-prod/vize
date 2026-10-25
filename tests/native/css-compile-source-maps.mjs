@@ -67,7 +67,6 @@ const unqualified = new Set([
   "scoped-flat",
   "scoped-nested",
   "scoped-slotted",
-  "v-bind",
   "empty",
   "comment",
   "parse-error",
@@ -129,6 +128,16 @@ await test("real source native CSS preserves every frozen public field and emits
           }
           if (entry.id === "same-line-astral" && options.minify) {
             assert.equal(value.mappings, "AAAA,mBAAmB");
+          }
+          if (entry.id === "v-bind") {
+            assert.deepEqual(value, {
+              version: 3,
+              file: "style.css",
+              sources: ["style.css"],
+              sourcesContent: [entry.source],
+              names: [],
+              mappings: options.minify ? "AAAA,6BAAuB" : "AAAA;;;;AAAuB",
+            });
           }
         }
       } catch (error) {
