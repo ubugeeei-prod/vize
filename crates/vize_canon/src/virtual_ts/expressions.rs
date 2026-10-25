@@ -3,6 +3,7 @@
 //! Handles generating TypeScript code for template expressions (with optional
 //! v-if narrowing) and component prop value type assertions.
 
+mod binding_mapping;
 mod callback_prop_resolution;
 #[cfg(test)]
 mod callback_prop_resolution_tests;
@@ -33,7 +34,10 @@ pub(crate) use props_literal::{
     NAMED_PROP_DIAGNOSTIC_MARKER, append_inference_props_literal, append_props_literal,
     append_spread_value, prop_entry_sub_spans,
 };
+mod instance_rewrite;
+pub(crate) use instance_rewrite::{PreparedInstanceRewrite, prepare_instance_rewrite};
 mod reserved_props;
+pub(crate) use spread_reserved_props::BindingRewrite;
 #[cfg(test)]
 mod sequence_prop_tests;
 mod spread_reserved_props;

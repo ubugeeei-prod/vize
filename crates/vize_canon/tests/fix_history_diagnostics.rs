@@ -939,6 +939,7 @@ fn check_pack(
             | "quoted-generic-parameters-10540"
             | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
+            | "undeclared-instance-globals-10617"
             | "narrowed-slot-host-guard-10660"
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607" => regression,
@@ -1333,5 +1334,16 @@ fn undefined_context_keeps_complete_authored_diagnostics() {
         "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
         Some(10667),
         &["prop-used"],
+    );
+}
+
+#[test]
+fn undeclared_instance_globals_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+        "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+        Some(10617),
+        &["original", "undeclared-only", "repaired"],
     );
 }

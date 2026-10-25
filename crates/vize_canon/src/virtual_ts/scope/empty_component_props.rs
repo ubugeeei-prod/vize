@@ -71,7 +71,7 @@ struct EmptyChecksContext<'a, 'template, 'b> {
     options: &'a VirtualTsOptions,
     template_ast: Option<&'a vize_relief::RootNode<'template>>,
     syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
-    template_binding_access: &'a TemplateBindingAccess,
+    template_binding_access: &'a TemplateBindingAccess<'a>,
     source_context: ComponentPropSource<'a>,
     indent: &'b str,
     typed_fallthrough_values: bool,

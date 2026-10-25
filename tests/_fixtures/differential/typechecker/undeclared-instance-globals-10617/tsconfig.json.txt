@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "types": []
+  },
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [
+        ".vue"
+      ]
+    }
+  ],
+  "include": [
+    "src"
+  ]
+}

@@ -104,6 +104,8 @@ export const TYPECHECKER_TESTS = {
   "planned-generic-syntax-route-10598":
     "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
   "template-context-undefined-10667": "undefined_context_keeps_complete_authored_diagnostics",
+  "undeclared-instance-globals-10617":
+    "undeclared_instance_globals_preserve_complete_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -142,6 +144,7 @@ const sourceRevisions = {
   "native-pointer-events-original": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
   "workspace-alias-cache-10063": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+  "content-mapper-diagnostics-10187": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
   "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
@@ -149,10 +152,6 @@ const sourceRevisions = {
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
-  "content-mapper-multiline-callback-10191": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
-  "content-mapper-define-slots-typeof-10197": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
-  "content-mapper-nested-vfor-guard-10216": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
-  "content-mapper-diagnostics-10187": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "content-mapper-javascript-checkjs-10217": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
@@ -163,6 +162,9 @@ const sourceRevisions = {
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "workspace-package-import-alias-10175": "c935e00211b3d6ca271e53658f88156921a639a7",
   "strict-fallthrough-default-7856": "d32790c869ac18c1e0e24e82a8876d796190133a",
+  "content-mapper-multiline-callback-10191": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "content-mapper-define-slots-typeof-10197": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "content-mapper-nested-vfor-guard-10216": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "content-mapper-filename-globals-10190": "55f388568ab900f5b0076d8c34280024ba988044",
   "content-mapper-global-component-10185": "10a9eaa743e3fb92b6372daa64c509bce2b204f1",
   "component-listener-prop-duplicate-10397": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
@@ -180,6 +182,7 @@ const sourceRevisions = {
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
   "template-context-undefined-10667": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+  "undeclared-instance-globals-10617": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

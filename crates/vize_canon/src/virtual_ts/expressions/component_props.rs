@@ -151,7 +151,7 @@ pub(crate) struct ComponentPropCheckContext<'a, 'b> {
         Option<&'a std::cell::RefCell<super::super::scope::RootOwnerBuffer>>,
     pub(crate) ts: &'b mut String,
     pub(crate) mappings: &'b mut Vec<VizeMapping>,
-    pub(crate) template_binding_access: &'a TemplateBindingAccess,
+    pub(crate) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) indent: &'b str,
     pub(crate) strict_v_model: bool,
@@ -162,7 +162,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     pub(crate) fn new(
         ts: &'b mut String,
         mappings: &'b mut Vec<VizeMapping>,
-        template_binding_access: &'a TemplateBindingAccess,
+        template_binding_access: &'a TemplateBindingAccess<'a>,
         source_context: ComponentPropSource<'a>,
         indent: &'b str,
     ) -> Self {
@@ -252,7 +252,8 @@ pub(crate) fn generate_component_prop_checks(
 ) {
     let ts = &mut *ctx.ts;
     let mappings = &mut *ctx.mappings;
-    let template_binding_access = ctx.template_binding_access;
+    let scoped_access = ctx.template_binding_access.for_scope(usage.scope_id);
+    let template_binding_access = &scoped_access;
     let source_context = ctx.source_context;
     let indent = ctx.indent;
     let strict_v_model = ctx.strict_v_model;
@@ -405,7 +406,7 @@ pub(crate) fn generate_component_prop_checks(
                 sub_spans.extend(spans);
             } else if let Some(src_range) = value_src_range.clone() {
                 sub_spans.push(VizeSubSpan {
-                    gen_range: value_span,
+                    gen_range: value_span.clone(),
                     src_range,
                 });
             }
@@ -414,6 +415,15 @@ pub(crate) fn generate_component_prop_checks(
                 src_range: prop_src_start..prop_src_end,
                 sub_spans,
             });
+            if let Some(source) = value_src_range.as_ref() {
+                generated_value.map_instance_binding(
+                    ts,
+                    mappings,
+                    value_span,
+                    source.start,
+                    template_binding_access,
+                );
+            }
             source_context.record_prop_projection(
                 usage,
                 prop,

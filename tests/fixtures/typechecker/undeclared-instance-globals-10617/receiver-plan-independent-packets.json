@@ -1,0 +1,66 @@
+[
+  {
+    "id": "unresolved-value",
+    "host": "beta",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(7,54): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\noracle/Context.ts(7,68): error TS2552: Cannot find name '__vize_template_instance'. Did you mean '__vize_template_instance_'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "unresolved-value",
+    "host": "ts5",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(7,54): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\noracle/Context.ts(7,68): error TS2552: Cannot find name '__vize_template_instance'. Did you mean '__vize_template_instance_'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "unresolved-type-query",
+    "host": "beta",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(7,36): error TS2552: Cannot find name '__vize_template_instance'. Did you mean '__vize_template_instance_'?\noracle/Context.ts(7,95): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "unresolved-type-query",
+    "host": "ts5",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(7,36): error TS2552: Cannot find name '__vize_template_instance'. Did you mean '__vize_template_instance_'?\noracle/Context.ts(7,95): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "unrelated-function-name",
+    "host": "beta",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(6,52): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "unrelated-function-name",
+    "host": "ts5",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(6,52): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "outer-script-binding",
+    "host": "beta",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(6,7): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\n",
+    "stderr": ""
+  },
+  {
+    "id": "outer-script-binding",
+    "host": "ts5",
+    "status": 2,
+    "signal": null,
+    "stdout": "oracle/Context.ts(6,7): error TS2551: Property '$ghost' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$host'?\n",
+    "stderr": ""
+  }
+]

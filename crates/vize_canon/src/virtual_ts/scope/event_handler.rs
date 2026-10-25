@@ -5,7 +5,9 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 
-use crate::virtual_ts::expressions::rewrite_reserved_template_binding;
+use crate::virtual_ts::expressions::{
+    map_rewritten_template_binding, rewrite_reserved_template_binding,
+};
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::context::EventHandlerExprContext;
@@ -22,13 +24,16 @@ pub(super) fn generate_event_handler_expressions(
 ) {
     if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
         for expr in exprs {
-            let content = expr.content.as_str();
+            let authored_content = expr.content.as_str();
+            let scoped_access = ctx.template_binding_access.for_scope(expr.scope_id);
+            let rewritten = rewrite_reserved_template_binding(authored_content, &scoped_access);
+            let content = rewritten.as_deref().unwrap_or(authored_content);
             // Croquis already established that an inline body owns `$event`.
             // Classify only the remaining reference/callback shapes, once.
             let shape = if ctx.data.has_implicit_event {
                 EventHandlerExpression::Inline
             } else {
-                classify_event_handler(content)
+                classify_event_handler(authored_content)
             };
             let is_callable_reference = matches!(shape, EventHandlerExpression::Reference);
             let is_reference = ctx.check_emits && is_callable_reference;
@@ -47,7 +52,7 @@ pub(super) fn generate_event_handler_expressions(
             let src_end = (ctx.template_offset + expr.end) as usize;
             let guard = expr.vif_guard.as_ref().map(|guard| {
                 let trimmed_guard = guard.as_str().trim();
-                rewrite_reserved_template_binding(trimmed_guard, ctx.template_binding_access)
+                rewrite_reserved_template_binding(trimmed_guard, &scoped_access)
                     .unwrap_or_else(|| String::from(guard.as_str()))
             });
             let guard = match (guard, ctx.enclosing_vif_guard) {
@@ -175,7 +180,7 @@ pub(super) fn generate_event_handler_expressions(
                 mapped_start..mapped_end
             } else if ctx.return_single_expression
                 && exprs.len() == 1
-                && is_single_expression_statement(content)
+                && is_single_expression_statement(authored_content)
             {
                 append!(*ts, "{indent}return (", indent = handler_indent);
                 let mapped_start = ts.len();
@@ -222,10 +227,18 @@ pub(super) fn generate_event_handler_expressions(
                 None => (gen_range, Vec::new()),
             };
             mappings.push(VizeMapping {
-                gen_range,
+                gen_range: gen_range.clone(),
                 src_range: src_start..src_end,
                 sub_spans,
             });
+            map_rewritten_template_binding(
+                ts,
+                mappings,
+                gen_range.start,
+                src_start,
+                authored_content,
+                &scoped_access,
+            );
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",

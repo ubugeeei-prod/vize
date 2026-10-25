@@ -1,0 +1,26 @@
+{
+  "schema": "vize.instance-globals-host-authority",
+  "version": 1,
+  "officialNightly": {
+    "package": "typescript",
+    "version": "7.1.0-dev.20261024.1",
+    "integrity": "sha512-lgyZ2EbVSycmlLPUh6OFEy8D+ITVkygqskqkVExyfmbbH33SU3LI4KWuiYaTks5y1K6JaOgbIORFCgjQ672guA==",
+    "registry": "https://registry.npmjs.org"
+  },
+  "sourceHost": {
+    "repository": "microsoft/TypeScript",
+    "revision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+    "receiptSchema": "vize.instance-globals-source-host",
+    "recipe": "go build -tags=noembed -trimpath -o \"$RUNNER_TEMP/tsgo\" ./cmd/tsc",
+    "workingDirectory": "tsc",
+    "libs": "tsc/internal/bundled/libs/*.d.ts"
+  },
+  "priorDiscovery": {
+    "fixtureCommit": "a3404e1c1d5a82640c383ef70c3e13780fcd6b99",
+    "captureRun": 40188442483,
+    "artifactId": 12596878089,
+    "artifactDigest": "961cc91d7202cf7430a5d94274c851ee983d1327740b797a12185e83bd39ae21",
+    "caseCount": 26,
+    "credit": "discovery only; complete raw outputs preserved independently"
+  }
+}

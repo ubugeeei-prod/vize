@@ -252,12 +252,11 @@ crates/vize_canon/src/virtual_ts/interface_extends_tests.rs	1
 crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs	23
 crates/vize_canon/src/virtual_ts/mapping/tests.rs	2
 crates/vize_canon/src/virtual_ts/public_instance_guard_tests.rs	12
-crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs	3
 crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2
 crates/vize_canon/src/virtual_ts/strict_template_global_fallback_tests.rs	3
 crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs	27
 crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	4
-crates/vize_canon/src/virtual_ts/tests.rs	95
+crates/vize_canon/src/virtual_ts/tests.rs	94
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
 crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	7
 crates/vize_canon/src/virtual_ts/tests/define_props_scope.rs	21

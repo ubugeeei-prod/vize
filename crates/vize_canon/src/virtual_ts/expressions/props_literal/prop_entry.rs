@@ -166,9 +166,16 @@ pub(super) fn append_prop_entry(
         && !merge_named_bindings
         && let Some(value) = prop.value.as_ref()
         && let Some(source) = prop_value_source_range(source_context, prop)
+        && !generated_value.map_instance_binding(
+            ts,
+            mappings,
+            value_span.clone(),
+            source.start,
+            template_binding_access,
+        )
     {
         map_rewritten_template_binding(
-            ts,
+            ts.get(..value_span.end).unwrap_or_default(),
             mappings,
             value_span.start,
             source.start,

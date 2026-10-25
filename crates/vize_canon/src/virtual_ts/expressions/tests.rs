@@ -1,7 +1,7 @@
 use super::reserved_props::rewrite_reserved_template_binding;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 
-fn reserved_props() -> TemplateBindingAccess {
+fn reserved_props() -> TemplateBindingAccess<'static> {
     TemplateBindingAccess::from_props(
         ["static", "default", "class"]
             .into_iter()
