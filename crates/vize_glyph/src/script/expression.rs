@@ -28,13 +28,12 @@ fn trim_expression(expression: &str) -> &str {
     }
 }
 
-fn strip_generated_group_indent(expression: &str, options: &FormatOptions) -> String {
+fn strip_generated_group_indent<const CR: bool>(
+    expression: &str,
+    options: &FormatOptions,
+) -> String {
     let expression = trim_expression(expression);
-    let separator = if options.end_of_line == crate::EndOfLine::Cr {
-        '\r'
-    } else {
-        '\n'
-    };
+    let separator = if CR { '\r' } else { '\n' };
     let Some((first, rest)) = expression.split_once(separator) else {
         return expression.to_compact_string();
     };
@@ -225,7 +224,34 @@ pub(crate) fn format_js_expression_with_quote_style(
     format_expression_with_layout(expr, options, quote_style, None, None)
 }
 
+#[inline]
 fn format_expression_with_layout(
+    expr: &str,
+    options: &FormatOptions,
+    quote_style: Option<QuoteStyle>,
+    attribute_depth: Option<usize>,
+    attribute_layout: Option<(&str, &str, &str)>,
+) -> Option<FormattedExpression> {
+    if options.end_of_line == crate::EndOfLine::Cr {
+        format_expression_with_line_ending::<true>(
+            expr,
+            options,
+            quote_style,
+            attribute_depth,
+            attribute_layout,
+        )
+    } else {
+        format_expression_with_line_ending::<false>(
+            expr,
+            options,
+            quote_style,
+            attribute_depth,
+            attribute_layout,
+        )
+    }
+}
+
+fn format_expression_with_line_ending<const CR: bool>(
     expr: &str,
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
@@ -313,18 +339,17 @@ fn format_expression_with_layout(
             let code = if removed_generated_group
                 && !matches!(&unary.argument, Expression::ConditionalExpression(_))
             {
-                strip_generated_group_indent(inner.text, options)
+                strip_generated_group_indent::<CR>(inner.text, options)
             } else {
                 trim_expression(inner.text).to_compact_string()
             };
-            let code = if options.end_of_line == crate::EndOfLine::Cr {
+            let code = if CR {
                 preserve_cr_template_text(oxc_allocator, &parsed.program, code)?
             } else {
                 code
             };
             let owns_attribute_lines = !matches!(&unary.argument, Expression::ObjectExpression(_))
-                && (code.contains('\n')
-                    || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r')));
+                && (code.contains('\n') || (CR && code.contains('\r')));
             return Some(FormattedExpression {
                 code,
                 retained_bare_sequence: inner.retained_bare_sequence,
@@ -348,7 +373,7 @@ fn format_expression_with_layout(
         let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
 
         let code = trim_expression(inner.text).to_compact_string();
-        let code = if options.end_of_line == crate::EndOfLine::Cr {
+        let code = if CR {
             preserve_cr_template_text(oxc_allocator, &parsed.program, code)?
         } else {
             code

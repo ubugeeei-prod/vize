@@ -77,7 +77,7 @@ fn span_text(source: &str, span: vize_l0::Span) -> Option<&str> {
 }
 
 /// Format a directive value expression.
-#[inline]
+#[inline(always)]
 pub(super) fn format_directive_value(
     name: &str,
     value: &str,
@@ -86,17 +86,23 @@ pub(super) fn format_directive_value(
     attribute_depth: usize,
 ) -> (String, bool, bool) {
     if options.end_of_line != crate::EndOfLine::Cr {
-        return format_directive_value_inner(name, value, options, vue_version, attribute_depth);
+        return format_directive_value_inner::<false>(
+            name,
+            value,
+            options,
+            vue_version,
+            attribute_depth,
+        );
     }
     let (mut value, indent, owns_lines) =
-        format_directive_value_inner(name, value, options, vue_version, attribute_depth);
-    if options.end_of_line == crate::EndOfLine::Cr && value.contains('\n') {
+        format_directive_value_inner::<true>(name, value, options, vue_version, attribute_depth);
+    if value.contains('\n') {
         value = super::literal_spans::normalize_layout_lf_to_cr(&value, Representation::Html);
     }
     (value, indent, owns_lines)
 }
 
-fn format_directive_value_inner(
+fn format_directive_value_inner<const CR: bool>(
     name: &str,
     value: &str,
     options: &FormatOptions,
@@ -107,7 +113,7 @@ fn format_directive_value_inner(
     // pass may have emitted the same attribute with lone CR terminators; feed
     // the parser the equivalent LF spelling so its wrap decision is stable.
     let normalized;
-    let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
+    let value = if CR && value.contains('\r') {
         normalized = super::literal_spans::normalize_layout_cr(value, Representation::Html);
         normalized.as_str()
     } else {
@@ -177,8 +183,8 @@ fn format_directive_value_inner(
             (value, indent, false)
         }
         Some(formatted) => {
-            let indent_multiline_value = formatted.code.contains('\n')
-                || (options.end_of_line == crate::EndOfLine::Cr && formatted.code.contains('\r'));
+            let indent_multiline_value =
+                formatted.code.contains('\n') || (CR && formatted.code.contains('\r'));
             (
                 formatted.code,
                 indent_multiline_value,
