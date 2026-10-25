@@ -95,6 +95,11 @@ overrides:
   "zod@>=4.0.0 <4.6.6": "4.6.6"
 
 catalogs:
+  # Plugin consumer host; the frozen differential Babel oracle stays separate.
+  babel-plugin-host:
+    "@babel/core": "8.0.9"
+    "@types/convert-source-map": "2.0.3"
+
   # Real @vue/babel-plugin-jsx toolchain, used only as the differential oracle
   # for JSX/TSX babel-compatibility tests (crates/vize_atelier_jsx/tests/babel_compat).
   # Bump deliberately: a version change re-records the committed ground truth.
