@@ -8,8 +8,36 @@ import {
   prepareSharedApiCampaign,
   assertSharedApiWirePackets,
 } from "./support/native-runtime-selection/lsp-shared-api-campaign.mjs";
+import { observeSharedApiCampaigns } from "./support/native-runtime-selection/lsp-shared-api-reopen.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+void test("independent original and extended campaigns both run while every failure remains fatal", async () => {
+  const campaigns = ["shared-api-reopen-original-702", "shared-api-reopen-702"];
+  for (const failed of [[], [0], [1], [0, 1]]) {
+    const calls = [];
+    const errors = campaigns.map((campaign) => new Error(`retained failure: ${campaign}`));
+    const observe = async ({ campaign }) => {
+      calls.push(campaign);
+      const index = campaigns.indexOf(campaign);
+      if (failed.includes(index)) throw errors[index];
+    };
+    if (failed.length === 0) await observeSharedApiCampaigns(observe);
+    else
+      await assert.rejects(
+        () => observeSharedApiCampaigns(observe),
+        (error) => {
+          assert.ok(error instanceof AggregateError);
+          assert.deepEqual(
+            error.errors,
+            failed.map((index) => errors[index]),
+          );
+          return true;
+        },
+      );
+    assert.deepEqual(calls, campaigns);
+  }
+});
 
 void test("shared snapshot campaign uses the ordinary pinned language fixture and explicit transitions", () => {
   const workspace = fs.realpathSync(

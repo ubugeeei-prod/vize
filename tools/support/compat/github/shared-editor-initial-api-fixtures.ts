@@ -48,7 +48,7 @@ const registration = {
     },
     entry: {
       path: "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
-      sha256: "17930e2ea156a5775403888bf20a70e91b12048291294a7d343fd8eaaeb3a2fa",
+      sha256: "31181b2513668b9d7031ed5dc3f11cc83fab4d2b4346dc1bae0729881b56b470",
     },
     driver: {
       path: "tests/tooling/support/native-runtime-selection/lsp.mjs",
@@ -76,7 +76,7 @@ const registration = {
     },
     fixtureTest: {
       path: "tests/tooling/lsp-shared-api-campaign.test.mjs",
-      sha256: "3a668098059a393e107f745c0d714d621c2982078abd70d8c0e0c0c43320fa7d",
+      sha256: "f85eaebd7620ddb2b24491730a0f582a9664fed4cfad7481deb82a8684b4a3a9",
     },
     sdk: {
       package: "typescript",
