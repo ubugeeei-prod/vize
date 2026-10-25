@@ -42,15 +42,8 @@ void test("the pinned package manager selects private transitive dependencies fo
   const select = (filters) =>
     JSON.parse(
       execFileSync(
-        "vp",
-        [
-          "list",
-          "--",
-          ...filters.flatMap((filter) => ["--filter", filter]),
-          "--depth",
-          "-1",
-          "--json",
-        ],
+        "pnpm",
+        ["list", ...filters.flatMap((filter) => ["--filter", filter]), "--depth", "-1", "--json"],
         { cwd: fixture, encoding: "utf8" },
       ),
     )
@@ -75,6 +68,12 @@ void test("the pinned package manager selects private transitive dependencies fo
     write("packages/optional", { name: "fixture-optional", private: true });
     write("packages/unrelated", { name: "fixture-unrelated", private: true });
     process.chdir(fixture);
+    // `vp run` exposes the package-local `vp`, which has no package-manager commands.
+    // Invoke pnpm itself and prove its actual version still honors the fixture's pin.
+    assert.equal(
+      execFileSync("pnpm", ["--version"], { cwd: fixture, encoding: "utf8" }).trim(),
+      manager.slice("pnpm@".length),
+    );
 
     // Preserve the original failure as a causal control against the actual pnpm matcher.
     const rspack = "./npm/builder/rspack";
