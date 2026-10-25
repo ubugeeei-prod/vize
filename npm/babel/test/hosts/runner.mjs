@@ -155,6 +155,29 @@ export async function runHost(input, load) {
           },
         });
         const normal = [];
+        if (fixture.latePost)
+          normal.push(() => ({
+            name: "late-jsx-host-post",
+            post(file) {
+              const extra = core.parseSync("<aside />;", {
+                babelrc: false,
+                configFile: false,
+                parserOpts: { plugins: ["jsx"] },
+              });
+              file.path.pushContainer("body", extra.program.body);
+            },
+          }));
+        if (fixture.generatorOverrides) {
+          item.generatorCalls = [];
+          for (let index = 0; index < fixture.generatorOverrides; index++)
+            normal.push(() => ({
+              name: "real-host-generator-" + index,
+              generatorOverride(ast, generatorOptions, code, generate) {
+                item.generatorCalls.push(index);
+                return generate(ast, generatorOptions, code);
+              },
+            }));
+        }
         if (fixture.typescript) normal.push([typescript, { isTSX: true }]);
         if (fixture.decorators) normal.push([decorators, { version: "2023-11" }]);
         if (fixture.classProperties) normal.push(classProperties);
@@ -229,7 +252,7 @@ export async function runHost(input, load) {
         if (fixture.fromAst) {
           ast = core.parseSync(fixture.source, { ...freshParserOptions(options), plugins: [] });
           if (fixture.fromAst === "remove") removeJsx(core, ast);
-          else editJsx(ast, "ast-edited");
+          else if (fixture.fromAst === "edit") editJsx(ast, "ast-edited");
         }
         const beforeAst = ast ? astPacket(ast) : null;
         let actualError;
@@ -255,6 +278,8 @@ export async function runHost(input, load) {
         }
         if (actualError) throw actualError;
         assert(item.result);
+        if (fixture.generatorOverrides) assert.deepEqual(item.generatorCalls, [0]);
+        if (fixture.upstream) assertUpstream(await load.trace(), item.result, fixture.source);
         if (beforeAst && fixture.cloneInputAst !== false)
           assert.equal(
             astPacket(ast),
@@ -283,14 +308,13 @@ export async function runHost(input, load) {
               plugins: [],
             });
             if (fixture.fromAst === "remove") removeJsx(core, baselineAst);
-            else editJsx(baselineAst, "ast-edited");
+            else if (fixture.fromAst === "edit") editJsx(baselineAst, "ast-edited");
           }
           const baseline = beforeAst
-            ? core.transformFromAstSync(
-                baselineAst,
-                fixture.source,
-                freshParserOptions(baselineOptions),
-              )
+            ? core.transformFromAstSync(baselineAst, fixture.source, {
+                ...freshParserOptions(baselineOptions),
+                cloneInputAst: fixture.cloneInputAst ?? true,
+              })
             : core.transformSync(fixture.source, freshParserOptions(baselineOptions));
           item.baseline = baseline;
           assert.deepEqual(
@@ -317,7 +341,6 @@ export async function runHost(input, load) {
           );
           assert.equal(new Set(item.reservations.map((r) => r.name)).size, 2);
         }
-        if (fixture.upstream) assertUpstream(await load.trace(), item.result, fixture.source);
         const runtimeDir = path.join(input.host.root, "node_modules/.vize-babel-runtime");
         fs.mkdirSync(runtimeDir, { recursive: true });
         const runtimeFile = path.join(
