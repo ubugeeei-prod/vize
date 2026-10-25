@@ -85,6 +85,7 @@ export function parseStraceCapture(traces) {
   const attempts = [];
   const unfinished = [];
   const exitEntries = [];
+  const readEntries = [];
   for (const { tid, text } of traces) {
     let pending;
     for (const line of text.split("\n").filter(Boolean)) {
@@ -110,6 +111,7 @@ export function parseStraceCapture(traces) {
     }
     if (pending) {
       if (pending.call.trim() === "???(") unfinished.push(pending);
+      else if (/^read\(\d+,\s*$/u.test(pending.call)) readEntries.push(pending);
       else {
         assert.match(
           pending.call,
@@ -188,6 +190,7 @@ export function parseStraceCapture(traces) {
     owners,
     unfinished,
     exitEntries,
+    readEntries,
     parents,
     leader,
     clock,
@@ -358,6 +361,7 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
     syscallsComplete: capture.syscallsComplete,
     terminalUnknownSyscalls: capture.terminalUnknownSyscalls,
     terminalExitEntries: capture.terminalExitEntries,
+    terminalReadEntries: capture.terminalReadEntries,
   };
   fs.writeFileSync(
     path.join(directory, "exec-inventory.json"),
@@ -403,9 +407,12 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
       ioFailures: owner.events.filter((event) => event.count < 0),
       ioRestarts: owner.events.filter((event) => event.returnKind === "kernel-restart"),
       syscallsComplete:
-        !owner.terminalUnknownSyscalls?.length && !owner.terminalExitEntries?.length,
+        !owner.terminalUnknownSyscalls?.length &&
+        !owner.terminalExitEntries?.length &&
+        !owner.terminalReadEntries?.length,
       terminalUnknownSyscalls: owner.terminalUnknownSyscalls ?? [],
       terminalExitEntries: owner.terminalExitEntries ?? [],
+      terminalReadEntries: owner.terminalReadEntries ?? [],
     };
     fs.writeFileSync(
       path.join(directory, `${owner.process}.json`),
@@ -418,6 +425,7 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
     syscallsComplete: capture.syscallsComplete,
     terminalUnknownSyscalls: capture.terminalUnknownSyscalls,
     terminalExitEntries: capture.terminalExitEntries,
+    terminalReadEntries: capture.terminalReadEntries,
     execInventory: path.join(directory, "exec-inventory.json"),
     qualifiedExecInventory: path.join(directory, "qualified-exec-inventory.json"),
   };

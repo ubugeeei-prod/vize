@@ -4,6 +4,7 @@ export function classifyTerminalSyscalls({
   owners,
   unfinished,
   exitEntries,
+  readEntries,
   parents,
   leader,
   clock,
@@ -75,9 +76,27 @@ export function classifyTerminalSyscalls({
       syscallBytesCaptured: false,
     });
   }
+  for (const entry of readEntries) {
+    const { owner, process, exit, code, members } = certify(entry);
+    assert.equal(code, 0, "terminal read observation requires the observed exit_group(0)");
+    // The trace reports this entry after exit_group; it does not establish
+    // when the kernel read began, returned bytes, or a zero return count.
+    (owner.terminalReadEntries ??= []).push({
+      ...entry,
+      process,
+      classification: "UNKNOWN_UNCAPTURED_TERMINAL_READ",
+      exitGroup: exit,
+      sameCodeThreadTerminals: [...members],
+      syscallBytesCaptured: false,
+      syscallReturnCountCaptured: false,
+      actualKernelReadStartKnown: false,
+    });
+  }
   return {
-    syscallsComplete: unfinished.length === 0 && exitEntries.length === 0,
+    syscallsComplete:
+      unfinished.length === 0 && exitEntries.length === 0 && readEntries.length === 0,
     terminalUnknownSyscalls: owners.flatMap((owner) => owner.terminalUnknownSyscalls ?? []),
     terminalExitEntries: owners.flatMap((owner) => owner.terminalExitEntries ?? []),
+    terminalReadEntries: owners.flatMap((owner) => owner.terminalReadEntries ?? []),
   };
 }

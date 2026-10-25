@@ -7074,7 +7074,7 @@
         },
         "driver": {
           "path": "tests/tooling/support/native-runtime-selection/lsp.mjs",
-          "sha256": "e074a5caeb6cca1ede78091f57e61e59ab4a05d82ab241f47f634ed33dfab11c"
+          "sha256": "4aabacbc18a702aaeb212a2ee276b07a8605554b4a4b021d2f70c4c73e8a334b"
         },
         "custody": {
           "path": "tests/tooling/support/native-runtime-selection/lsp-source-custody.mjs",
@@ -7094,7 +7094,7 @@
         },
         "strace": {
           "path": "tests/tooling/support/native-runtime-selection/lsp-strace.mjs",
-          "sha256": "afca55e47efef1a1f34e1847b6a7872291afbffdf67dae5781332c1295b6e9e9"
+          "sha256": "79f12dd5d444c85636a444317a2cd2ca4b68193befcdc0b0fb3a20f3b58f975e"
         },
         "fixtureTest": {
           "path": "tests/tooling/lsp-shared-api-campaign.test.mjs",
@@ -7108,7 +7108,7 @@
         },
         "straceTerminal": {
           "path": "tests/tooling/support/native-runtime-selection/lsp-strace-terminal.mjs",
-          "sha256": "c951dacdae6db634bb7a8b2ed006095a64838718946b957414e756ad202d47b7"
+          "sha256": "006e6ba72071b008f4c9b08a816fc00d243bca657340f6fb6cf5c293edd58d8c"
         },
         "registryTest": {
           "path": "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",

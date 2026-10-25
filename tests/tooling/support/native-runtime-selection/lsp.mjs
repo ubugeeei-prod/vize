@@ -351,6 +351,7 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
           syscallsComplete: nativeCapture.syscallsComplete,
           terminalUnknownSyscalls: nativeCapture.terminalUnknownSyscalls,
           terminalExitEntries: nativeCapture.terminalExitEntries,
+          terminalReadEntries: nativeCapture.terminalReadEntries,
           execInventory: nativeCapture.execInventory,
           qualifiedExecInventory: nativeCapture.qualifiedExecInventory,
         };

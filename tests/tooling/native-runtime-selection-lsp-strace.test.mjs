@@ -311,8 +311,69 @@ void test("an unfinished exit entry remains uncaptured and needs its earlier sam
       "2.200000 exit_group(0 <unfinished ...>",
       `2.250000 read(0, ${hex("a")}, 1) = 1 <0.000001>\n`,
     ),
-    trace("2.200000 read(0, <unfinished ...>"),
     trace().map((row) => (row.tid === 101 ? { ...row, tid: 102 } : row)),
+  ])
+    assert.throws(() => parseStraceCapture(malformed));
+});
+
+void test("terminal reads retain unknown bytes and kernel timing only after the observed same-group exit", () => {
+  const traces = (
+    entry = "2.200000 read(7,  <unfinished ...>",
+    later = "",
+    normal = "2.100000 exit_group(0) = ?\n",
+  ) => [
+    {
+      tid: 100,
+      text: `${exec}\n1.100000 clone(child_stack=NULL, flags=CLONE_VM|CLONE_THREAD) = 101 <0.000001>\n${normal}2.300000 +++ exited with 0 +++\n`,
+    },
+    { tid: 101, text: `${entry}\n${later}2.310000 +++ exited with 0 +++\n` },
+  ];
+  const capture = parseStraceCapture(traces());
+  assert.equal(capture.syscallsComplete, false);
+  assert.equal(capture.terminalReadEntries.length, 1);
+  const entry = capture.terminalReadEntries[0];
+  assert.deepEqual(
+    {
+      classification: entry.classification,
+      raw: entry.raw,
+      process: entry.process,
+      members: entry.sameCodeThreadTerminals,
+      bytes: entry.syscallBytesCaptured,
+      count: entry.syscallReturnCountCaptured,
+      kernelStart: entry.actualKernelReadStartKnown,
+    },
+    {
+      classification: "UNKNOWN_UNCAPTURED_TERMINAL_READ",
+      raw: "2.200000 read(7,  <unfinished ...>",
+      process: 100,
+      members: [100, 101],
+      bytes: false,
+      count: false,
+      kernelStart: false,
+    },
+  );
+  assert.equal(entry.count, undefined);
+  assert.equal(entry.bytes, undefined);
+  for (const malformed of [
+    traces("2.000000 read(7, <unfinished ...>"),
+    traces("2.200000 read(7, <unfinished ...>", "", ""),
+    traces("2.200000 read(7, <unfinished ...>", "", "2.100000 exit_group(0) = ? <0.200000>\n"),
+    traces(
+      "2.200000 read(7, <unfinished ...>",
+      `2.250000 write(1, ${hex("a")}, 1) = 1 <0.000001>\n`,
+    ),
+    traces("2.200000 read(7, <unfinished ...>", "2.250000 <... write resumed>1) = 1\n"),
+    traces(`2.200000 read(7, ${hex("a")} <unfinished ...>`),
+    traces("2.200000 read(-1, <unfinished ...>"),
+    traces("2.200000 write(7, <unfinished ...>"),
+    traces("2.200000 readv(7, <unfinished ...>"),
+    traces().map((row) => (row.tid === 101 ? { ...row, tid: 102 } : row)),
+    traces().map((row) => ({
+      ...row,
+      text: row.text
+        .replace(/exited with 0/gu, "exited with 1")
+        .replace("exit_group(0)", "exit_group(1)"),
+    })),
   ])
     assert.throws(() => parseStraceCapture(malformed));
 });
