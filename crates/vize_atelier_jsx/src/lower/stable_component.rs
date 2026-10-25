@@ -34,7 +34,8 @@ impl Lowerer<'_, '_, '_> {
                     if profiling {
                         symbols += 1;
                     }
-                    if !scoping.symbol_flags(candidate).is_const_variable() {
+                    let flags = scoping.symbol_flags(candidate);
+                    if !flags.is_const_variable() || flags.is_ambient() {
                         continue;
                     }
                     // `symbol_is_mutated` assumes const assignments are absent;

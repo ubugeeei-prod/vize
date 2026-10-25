@@ -106,6 +106,11 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
             false,
         ),
         (
+            "ambient",
+            "declare const Child: unknown; export const App=()=> <section><Child/></section>;",
+            false,
+        ),
+        (
             "escaped",
             "const \\u0043hild={}; export const App=()=> <section><Child/></section>;",
             true,
@@ -188,7 +193,7 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                 );
                 assert_eq!(
                     calls.resolutions,
-                    [],
+                    Vec::<String>::new(),
                     "lexical values never become named assets: {name}"
                 );
                 for (helper, _) in &calls.creations {
