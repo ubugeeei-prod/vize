@@ -287,11 +287,12 @@ fire(key, true);
         let plan = SetupHelperPlan::collect(&summary, Some(source), true);
         let mut generated = String::default();
         let mut mappings = Vec::new();
+        let generic = crate::virtual_ts::generic_parameters::GenericParameters::parse("T");
         plan.emit_event_navigation(
             &mut generated,
             &mut mappings,
             &summary,
-            Some("T"),
+            Some(&generic),
             &|offset| offset,
         );
         let source_start = source.find("emit('change'").unwrap() + 6;

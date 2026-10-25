@@ -236,6 +236,7 @@ impl GenericParameters {
         plan
     }
 
+    #[cfg(test)]
     pub(crate) fn raw(&self) -> &str {
         &self.raw
     }
