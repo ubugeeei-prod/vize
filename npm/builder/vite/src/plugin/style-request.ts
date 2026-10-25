@@ -2,8 +2,37 @@ import path from "node:path";
 
 const STYLE_MARKER = ".__vize_style_";
 
+function normalizeInlineStyleModifiers(id: string): string {
+  const query = id.indexOf("?");
+  const appended = id.lastIndexOf("?inline&used");
+  if (
+    query < 0 ||
+    appended <= query ||
+    !id.endsWith("?inline&used") ||
+    !id.slice(0, query).includes(STYLE_MARKER)
+  ) {
+    return id;
+  }
+  const params = new URLSearchParams(id.slice(query + 1, appended));
+  let lastKey: string | undefined;
+  for (const key of params.keys()) lastKey = key;
+  if (
+    !params.has("vue") ||
+    params.get("type") !== "style" ||
+    params.getAll("type").length !== 1 ||
+    lastKey !== "vize-file" ||
+    params.getAll("vize-file").length !== 1 ||
+    !params.get("vize-file")?.endsWith(".vue")
+  )
+    return id;
+  // Nuxt appends this CSS transport suffix even when the ID already has a
+  // query. Keep it out of the preceding vize-file value before reconstruction.
+  return `${id.slice(0, appended)}&inline&used`;
+}
+
 /** Keep the CSS extension in the path, outside Vue/Nuxt's query metadata. */
 export function createStyleVirtualId(id: string): string {
+  id = normalizeInlineStyleModifiers(id);
   const start = id.indexOf("?");
   const filename = id.slice(0, start);
   const params = new URLSearchParams(id.slice(start + 1));
@@ -27,11 +56,13 @@ export function createStyleVirtualId(id: string): string {
 export function resolveStyleVirtualId(id: string, root: string): string {
   const styleId = createStyleVirtualId(id);
   const queryStart = styleId.indexOf("?");
+  const marker = styleId.slice(0, queryStart).lastIndexOf(STYLE_MARKER);
+  if (marker < 0) return id;
   const params = new URLSearchParams(styleId.slice(queryStart + 1));
   const source = params.get("vize-file");
+  if (source?.includes("?")) return id;
   if (!params.has("vize-root-relative") || !source?.startsWith("/")) return styleId;
 
-  const marker = styleId.slice(0, queryStart).lastIndexOf(STYLE_MARKER);
   const physicalSource = path.resolve(root, source.slice(1)).split(path.sep).join("/");
   return `${physicalSource}${styleId.slice(marker)}`;
 }

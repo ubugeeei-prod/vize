@@ -54,6 +54,7 @@ import "./plugin/shared-config.test.ts";
 import "./plugin/source-map.test.ts";
 import "./plugin/style-request.test.ts";
 import "./plugin/style-request-normalization.test.ts";
+import "./plugin/style-request-inline-modifiers.test.ts";
 import "./plugin/precompile.test.ts";
 import "./plugin/precompile-cache.test.ts";
 import "./plugin/precompile-cache-corrupt.test.ts";

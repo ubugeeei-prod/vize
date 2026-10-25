@@ -113,14 +113,23 @@ void test("production style IDs keep stable imports but give CSS a physical rela
     assert.ok(output.includes(`import "${stable}";`));
     assert.ok(!output.includes(root), "generated component code must not expose the checkout root");
     for (const ssr of [false, true]) {
-      const resolved = await resolveIdHook({ resolve: async () => null }, state, stable, filename, {
-        ssr,
-      });
-      assert.equal(resolved, `${filename}.__vize_style_0.css?${query}`);
-      assert.deepEqual(loadHook(state, resolved as string, { ssr }), {
-        code: '@import "../styles/colors.css";',
-        map: null,
-      });
+      for (const suffix of ["", "?inline&used"]) {
+        const resolved = await resolveIdHook(
+          { resolve: async () => null },
+          state,
+          stable + suffix,
+          filename,
+          { ssr },
+        );
+        assert.equal(
+          resolved,
+          `${filename}.__vize_style_0.css?${query}${suffix ? "&inline&used" : ""}`,
+        );
+        assert.deepEqual(loadHook(state, resolved as string, { ssr }), {
+          code: '@import "../styles/colors.css";',
+          map: null,
+        });
+      }
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
