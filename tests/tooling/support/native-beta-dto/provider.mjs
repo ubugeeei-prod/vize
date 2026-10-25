@@ -18,13 +18,6 @@ assert.equal(
   execFileSync(executable, ["--version"], { encoding: "utf8" }),
   `Version ${SDK_VERSION}\n`,
 );
-const wrapper = path.join(VIZE_NATIVE_DTO_CAPTURE, "actual-native");
-// Each actual process is traced separately. The wrapper emits no protocol bytes.
-fs.writeFileSync(
-  wrapper,
-  '#!/bin/sh\nexec strace -ff -ttt -s 16777216 -xx -e trace=read,write,readv,writev,process -o "$VIZE_NATIVE_DTO_CAPTURE/syscalls" "$VIZE_NATIVE_DTO_ACTUAL_RUNTIME_PATH" "$@"\n',
-  { mode: 0o755 },
-);
 fs.copyFileSync(
   path.join(SDK_ROOT, "package-lock.json"),
   path.join(VIZE_NATIVE_DTO_CAPTURE, "provider-package-lock.json"),
@@ -45,7 +38,7 @@ fs.writeFileSync(
   JSON.stringify(metadata, null, 2) + "\n",
 );
 for (const [name, value] of Object.entries({
-  VIZE_NATIVE_DTO_RUNTIME_PATH: wrapper,
+  VIZE_NATIVE_DTO_RUNTIME_PATH: executable,
   VIZE_NATIVE_DTO_ACTUAL_RUNTIME_PATH: executable,
   VIZE_NATIVE_DTO_SDK_VERSION: SDK_VERSION,
   VIZE_NATIVE_DTO_SDK_SHA256: SDK_SHA256,
