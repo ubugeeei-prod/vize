@@ -14,7 +14,7 @@ const frame = (packet) => {
 };
 const exec = `1.000000 execve(${hex("/actual/compiler")}, [${hex("/actual/compiler")}, ${hex("--lsp")}, ${hex("--stdio")}], 0x1 /* 3 vars */) = 0 <0.000001>`;
 
-test("native syscall custody preserves complete framed bytes and original Go thread ownership", () => {
+void test("native syscall custody preserves complete framed bytes and original Go thread ownership", () => {
   const packet = {
     jsonrpc: "2.0",
     id: 7,
@@ -39,7 +39,7 @@ test("native syscall custody preserves complete framed bytes and original Go thr
   assert.deepEqual(decodeStraceString(hex(bytes)), bytes);
 });
 
-test("native syscall custody joins only its actual unfinished call and honors partial-write counts", () => {
+void test("native syscall custody joins only its actual unfinished call and honors partial-write counts", () => {
   const owners = parseStraceTexts([
     {
       tid: 100,
@@ -58,7 +58,7 @@ test("native syscall custody joins only its actual unfinished call and honors pa
   );
 });
 
-test("native syscall custody refuses truncated buffers, unsupported successful IO and malformed frames", () => {
+void test("native syscall custody refuses truncated buffers, unsupported successful IO and malformed frames", () => {
   for (const call of [
     `write(1, ${hex("abc")}..., 30) = 30`,
     `writev(1, [{iov_base=${hex("a")}, iov_len=1}], 1) = 1`,
@@ -78,7 +78,7 @@ test("native syscall custody refuses truncated buffers, unsupported successful I
     assert.throws(() => decodeNativeFrames(bytes));
 });
 
-test("kernel-restarted native reads remain explicit and never manufacture input bytes", () => {
+void test("kernel-restarted native reads remain explicit and never manufacture input bytes", () => {
   const owners = parseStraceTexts([
     {
       tid: 100,

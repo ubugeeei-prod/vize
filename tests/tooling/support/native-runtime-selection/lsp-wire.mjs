@@ -160,7 +160,12 @@ export class SourceLspWire {
       clearTimeout(timer);
       if (!this.status) {
         this.forcedTermination = true;
-        process.kill(-this.child.pid, "SIGKILL");
+        const pid = this.child.pid;
+        assert.ok(
+          typeof pid === "number" && Number.isSafeInteger(pid) && pid > 0,
+          "forced cleanup requires the actual positive owned process-group PID",
+        );
+        process.kill(-pid, "SIGKILL");
         await this.closed;
       }
       this.save();

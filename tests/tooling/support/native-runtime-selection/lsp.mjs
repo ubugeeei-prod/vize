@@ -210,7 +210,8 @@ function validateNativeLifecycle(owners, consumer, knownContract) {
     betaStandardExitFrontier: !consumer.kind.endsWith("702"),
     apiCompatibilityCredit: false,
     actualApiErrors: apiErrors,
-    semanticCredit: true,
+    actualNativeSemanticTraffic: true,
+    semanticCredit: false,
   };
 }
 
@@ -404,6 +405,17 @@ export async function observeSourceLspSelection() {
     } catch (error) {
       profile.failure = { message: String(error), stack: error.stack };
     } finally {
+      // A failed functional oracle remains failed, but its owned server still
+      // receives the real shutdown protocol before administrative cleanup.
+      if (!wire.status && !profile.shutdown) {
+        try {
+          profile.cleanupShutdown = await wire.request("shutdown");
+          assert.equal(result(profile.cleanupShutdown), null);
+          wire.notify("exit");
+        } catch (error) {
+          profile.cleanupProtocolFailure = String(error);
+        }
+      }
       try {
         if (!wire.status) await wire.end();
         else wire.save();
@@ -450,12 +462,23 @@ export async function observeSourceLspSelection() {
       } catch (error) {
         profile.auditFailure = { message: String(error), stack: error.stack };
       }
+      profile.functionalQualified = Boolean(
+        consumer.expectedExecutable &&
+        !profile.failure &&
+        !profile.closeFailure &&
+        !profile.cleanupProtocolFailure &&
+        !profile.auditFailure,
+      );
       report.profiles.push(profile);
       write(path.join(output, "source-lsp-selection.json"), report);
     }
   }
   const failures = report.profiles.filter(
-    (profile) => profile.failure || profile.closeFailure || profile.auditFailure,
+    (profile) =>
+      profile.failure ||
+      profile.closeFailure ||
+      profile.cleanupProtocolFailure ||
+      profile.auditFailure,
   );
   assert.equal(
     failures.length,
@@ -465,6 +488,7 @@ export async function observeSourceLspSelection() {
         kind: profile.kind,
         failure: profile.failure,
         closeFailure: profile.closeFailure,
+        cleanupProtocolFailure: profile.cleanupProtocolFailure,
         auditFailure: profile.auditFailure,
       })),
       null,
