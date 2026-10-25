@@ -72,6 +72,9 @@ pub(super) fn collect_component_prop_expression_ranges(
         if !has_checkable_binding && !options.legacy_vue2 {
             continue;
         }
+        if let Some(collector) = options.diagnostic_ownership {
+            refuse_ambiguous_prop_spans(collector, &usage);
+        }
         for spread in &usage.spread_props {
             // The generic props call checks the entire bag and owns its precise
             // rewrite mapping. A duplicate bare statement would route the same
@@ -92,7 +95,7 @@ pub(super) fn collect_component_prop_expression_ranges(
                 && let Some(collector) = options.diagnostic_ownership
                 && let Some(owner) = InputOwner::for_expected_projection(&usage, prop)
             {
-                collector.borrow_mut().block_contextual_owner(owner);
+                collector.borrow_mut().refuse_owner(owner);
             }
             if options.diagnostic_ownership.is_some()
                 && let Some(owner) = InputOwner::for_prop(&usage, prop)
@@ -138,4 +141,33 @@ pub(super) fn collect_component_prop_expression_ranges(
         }
     }
     plan
+}
+
+/// One authored v-model can produce both a value and a modifier prop. Sharing
+/// their source range does not make them the same semantic diagnostic input.
+/// Production rows follow authored order; refuse the whole usage if a caller
+/// supplies an ordering for which this linear identity proof cannot hold.
+fn refuse_ambiguous_prop_spans(
+    collector: &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    usage: &vize_croquis::croquis::ComponentUsage,
+) {
+    let mut previous = None;
+    for prop in &usage.props {
+        let span = (prop.start, prop.end);
+        if previous.is_some_and(|previous| span < previous) {
+            let mut ledger = collector.borrow_mut();
+            for prop in &usage.props {
+                if let Some(owner) = InputOwner::for_expected_projection(usage, prop) {
+                    ledger.refuse_owner(owner);
+                }
+            }
+            return;
+        }
+        if previous == Some(span)
+            && let Some(owner) = InputOwner::for_expected_projection(usage, prop)
+        {
+            collector.borrow_mut().refuse_owner(owner);
+        }
+        previous = Some(span);
+    }
 }

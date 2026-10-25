@@ -89,7 +89,7 @@ pub(crate) struct DiagnosticOwnership {
 }
 
 impl DiagnosticOwnership {
-    pub(crate) fn block_contextual_owner(&mut self, owner: InputOwner) {
+    pub(crate) fn refuse_owner(&mut self, owner: InputOwner) {
         self.unproven.insert(owner.with_role(InputRole::Value));
     }
     pub(crate) fn record(

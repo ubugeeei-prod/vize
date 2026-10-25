@@ -99,7 +99,7 @@ fn contextual_geometry_requires_its_primary_but_never_suppresses_diagnostics() {
 fn contextual_refusals_survive_deferred_buffers_and_name_role_normalization() {
     for role in [InputRole::Name, InputRole::Value] {
         let mut main = DiagnosticOwnership::default();
-        main.block_contextual_owner(owner());
+        main.refuse_owner(owner());
         let mut buffer = DiagnosticOwnership::default();
         buffer.record(owner().with_role(role), 2..7, 22..27, true);
         buffer.record(owner().with_role(role), 12..17, 22..27, false);

@@ -201,6 +201,20 @@ fn contextual_object_methods_keep_every_preexisting_diagnostic_surface() {
 }
 
 #[test]
+fn model_value_and_generated_modifiers_cannot_authorize_each_others_echoes() {
+    for binding in ["v-model.number=\"value\"", "v-model:title.trim=\"value\""] {
+        let source = format!(
+            "<script setup lang=\"ts\">import Child from './Child.vue'; const value = 1;</script><template><Child {binding} /></template>"
+        );
+        assert_eq!(
+            packet("Model.vue", &source, true),
+            packet("Model.vue", &source, false),
+            "distinct generated model inputs sharing an authored directive remain diagnostic-visible"
+        );
+    }
+}
+
+#[test]
 fn proved_expected_callback_geometry_never_hides_its_contextual_body() {
     let source = "<script setup lang=\"ts\">import Comp from './Comp.vue'; const noop = () => {};</script><template><!-- @vue-expect-error --><Comp :id=\"{ a: 1 }\" :pick=\"(field) => !!field\" @save=\"noop\" /></template>";
     let mut before = packet("Callback.vue", source, false);
