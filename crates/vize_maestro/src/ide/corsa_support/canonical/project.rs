@@ -255,7 +255,7 @@ async fn open_canonical_virtual_project_document_with_scope(
                 .materialized_sources
                 .iter()
                 .filter(|source| source.mapping_kind.is_mappable())
-                .filter(|source| !existing.contains(ctx.state, &source.request_uri))
+                .filter(|source| !existing.has_equivalent_owner(ctx.state, &source.request_uri))
                 .map(|source| {
                     (
                         source.request_uri.clone(),

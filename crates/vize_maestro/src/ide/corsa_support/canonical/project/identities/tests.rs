@@ -99,17 +99,29 @@ fn uncommitted_physical_observation_cannot_produce_an_indexed_decision() {
 }
 
 #[test]
+fn remote_file_authority_keeps_the_legacy_path_match_without_network_lookup() {
+    let state = ServerState::new();
+    let local = "file:///folder/source.ts";
+    let remote = "file://remote.example/folder/source.ts";
+    assert!(FileIdentity::parse(remote).is_none());
+    assert!(location_matches_uri_cached(&state, remote, local));
+    let mut membership = UriMembership::candidate_first([local]);
+    assert!(membership.has_equivalent_owner(&state, remote));
+    assert_eq!(membership.work.legacy_comparisons, 1);
+    assert_eq!(membership.work.physical_resolutions, 0);
+}
+
+#[test]
 fn real_legacy_relation_matches_every_uri_pair_and_ordered_triple() {
     let directory = tempfile::tempdir().expect("directory");
     let real = file_uri(&directory.path().join("real.ts"));
     let quoted = file_uri(&directory.path().join("a space \"🧭.ts"));
     let real_path = Url::parse(&real).expect("URI").path().to_owned();
-    let corpus: Vec<String> = vec![
+    let mut corpus: Vec<String> = vec![
         real.clone(),
         cstr!("{real}?query=one"),
         cstr!("{real}#fragment"),
         cstr!("file://localhost{real_path}"),
-        cstr!("file://remote.example{real_path}"),
         cstr!("https://first.example{real_path}"),
         cstr!("https://second.example{real_path}?different#fragment"),
         real.replace("real.ts", "%72eal.ts").as_str().into(),
@@ -123,6 +135,11 @@ fn real_legacy_relation_matches_every_uri_pair_and_ordered_triple() {
         "unparseable relative.ts".into(),
         "".into(),
     ];
+    // Unix rejects remote file authorities before filesystem lookup. Windows
+    // treats them as UNC paths; keep this pure relation test off the network.
+    if !cfg!(target_os = "windows") {
+        corpus.push(cstr!("file://remote.example{real_path}"));
+    }
     let legacy = ServerState::new();
     let indexed = ServerState::new();
     for first in &corpus {
@@ -164,7 +181,7 @@ fn independent_vectors_keep_their_existing_payload_and_filter_denominators() {
     // materialized duplicates retain their original order and multiplicity.
     let remaining = [dependency, extra, extra]
         .into_iter()
-        .filter(|uri| !dependencies.contains(&state, uri))
+        .filter(|uri| !dependencies.has_equivalent_owner(&state, uri))
         .collect::<Vec<_>>();
     assert_eq!(remaining, vec![extra, extra]);
 }
@@ -217,7 +234,7 @@ fn actual_identity_work_is_linear_for_repeated_file_membership() {
                 legacy_comparisons += 1;
                 location_matches_uri_cached(&legacy_state, uri, prior)
             });
-            assert_eq!(indexed.contains(&indexed_state, uri), original);
+            assert_eq!(indexed.has_equivalent_owner(&indexed_state, uri), original);
         }
         assert_eq!(legacy_comparisons, count * (count + 1) / 2);
         assert_eq!(indexed.work.parses, count * 2);

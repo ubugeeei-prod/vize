@@ -22,6 +22,9 @@ struct FileIdentity {
 impl FileIdentity {
     fn parse(raw: &str) -> Option<Self> {
         let uri = Url::parse(raw).ok()?;
+        if uri.host_str().is_some_and(|host| host != "localhost") {
+            return None;
+        }
         Some(Self {
             path: uri.to_file_path().ok()?,
             virtual_path: uri.path().into(),
@@ -130,7 +133,7 @@ impl UriMembership {
         !location_matches_uri_cached(state, raw, primary) && self.insert_if_absent(state, raw)
     }
 
-    pub(super) fn contains(&mut self, state: &ServerState, raw: &str) -> bool {
+    pub(super) fn has_equivalent_owner(&mut self, state: &ServerState, raw: &str) -> bool {
         let file = FileIdentity::parse(raw);
         self.work.parses += 1;
         self.contains_parsed(state, raw, file.as_ref())

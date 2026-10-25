@@ -48,12 +48,12 @@ fn early_raw_hit_does_not_observe_later_seed_symlinks() {
     let alias = file_uri(&alias_path);
     let state = ServerState::new();
     let mut owners = UriMembership::candidate_first([first.as_str(), alias.as_str()]);
-    assert!(owners.contains(&state, &first));
+    assert!(owners.has_equivalent_owner(&state, &first));
     assert_eq!(owners.work.physical_resolutions, 0);
     fs::remove_file(&alias_path).expect("remove first alias");
     link(&other_path, &alias_path);
     // No notification/clear: the legacy early hit never observed this alias.
-    assert!(owners.contains(&state, &other));
+    assert!(owners.has_equivalent_owner(&state, &other));
 }
 
 #[test]
@@ -70,10 +70,13 @@ fn observed_symlink_keeps_legacy_sticky_identity_until_cache_clear() {
     let alias = file_uri(&alias_path);
     let state = ServerState::new();
     let mut owners = UriMembership::candidate_first([alias.as_str()]);
-    assert!(owners.contains(&state, &first));
+    assert!(owners.has_equivalent_owner(&state, &first));
     fs::remove_file(&alias_path).expect("remove alias");
     link(&other_path, &alias_path);
-    assert!(!owners.contains(&state, &other), "unnotified legacy cache");
+    assert!(
+        !owners.has_equivalent_owner(&state, &other),
+        "unnotified legacy cache"
+    );
 
     // Clear on another thread, without an await or a fresh native request.
     // Reusing this exact index must discard its old physical membership.
@@ -83,6 +86,6 @@ fn observed_symlink_keeps_legacy_sticky_identity_until_cache_clear() {
             .join()
             .expect("cache clear worker");
     });
-    assert!(owners.contains(&state, &other));
+    assert!(owners.has_equivalent_owner(&state, &other));
     assert_eq!(owners.work.physical_resets, 2);
 }

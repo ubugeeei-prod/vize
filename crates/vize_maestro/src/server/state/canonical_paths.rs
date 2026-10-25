@@ -93,12 +93,14 @@ mod tests {
         let alias = directory.path().join("alias.ts");
         fs::write(&first, "first").expect("first source");
         fs::write(&second, "second").expect("second source");
+        let first_physical = first.canonicalize().expect("first physical path");
+        let second_physical = second.canonicalize().expect("second physical path");
         std::os::unix::fs::symlink(&first, &alias).expect("first alias");
         let state = ServerState::new();
         thread::scope(|scope| {
             let observation = state.canonical_path_read();
             let epoch = observation.epoch();
-            assert_eq!(observation.resolve(&alias), first);
+            assert_eq!(observation.resolve(&alias), first_physical);
             let (attempted, waiting) = mpsc::sync_channel(0);
             let worker_state = &state;
             let worker_alias = alias.clone();
@@ -124,14 +126,14 @@ mod tests {
             assert_eq!(observation.epoch(), epoch);
             // This must use the lease's inner lookup. Acquiring another read lock
             // behind the waiting writer could deadlock an otherwise warm query.
-            assert_eq!(observation.resolve(&alias), first);
+            assert_eq!(observation.resolve(&alias), first_physical);
             drop(observation);
             worker.join().expect("clear worker");
             let current = state.canonical_path_read();
             assert_eq!(current.epoch(), epoch.wrapping_add(1));
-            assert_eq!(current.resolve(&alias), second);
-            assert!(current.matches_observation(&alias, &second));
-            assert!(!current.matches_observation(&alias, &first));
+            assert_eq!(current.resolve(&alias), second_physical);
+            assert!(current.matches_observation(&alias, &second_physical));
+            assert!(!current.matches_observation(&alias, &first_physical));
         });
     }
 
