@@ -17,6 +17,17 @@ export const consumer = path.join(output, "consumer");
 const requireNative = createRequire(path.join(repoRoot, "npm/native/package.json"));
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
+export async function assertBundledHelpers(directory) {
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const filename = path.join(directory, entry.name);
+    if (entry.isDirectory()) await assertBundledHelpers(filename);
+    else {
+      const content = await fs.readFile(filename, "utf8");
+      assert.doesNotMatch(content, /(?:from|require\(|import\()\s*["']@vizejs\/builder-shared/);
+    }
+  }
+}
+
 export async function run(name, executable, args, cwd = repoRoot, extraEnv = {}) {
   const start = performance.now();
   const result = await new Promise((resolve, reject) => {
@@ -169,10 +180,7 @@ export async function prepareConsumer() {
   assert.equal(typeof installed("@vizejs/rspack-plugin").VizePlugin, "function");
   for (const name of ["turbopack", "rspack"]) {
     const directory = path.join(consumer, `node_modules/@vizejs/${name}-plugin/dist`);
-    for (const file of await fs.readdir(directory)) {
-      const content = await fs.readFile(path.join(directory, file), "utf8");
-      assert.doesNotMatch(content, /(?:from|require\()\s*["']@vizejs\/builder-shared/);
-    }
+    await assertBundledHelpers(directory);
   }
   await fs.writeFile(
     path.join(consumer, "public-types.mts"),
