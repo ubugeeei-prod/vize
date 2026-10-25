@@ -40,6 +40,87 @@ export function traitFnNames(stripped: string, traitName: string): string[] {
   return names;
 }
 
+/** Verify the real markup phase and its public type-completion wrapper. */
+export function validateJsxDispatch(source: string): void {
+  const engine = stripRust(source);
+  const body = (name: string, publicOnly = false): string => {
+    const pattern = new RegExp(`\\b${publicOnly ? "pub\\s+" : ""}fn\\s+${name}\\b`, "gu");
+    const matches = [...engine.matchAll(pattern)];
+    if (matches.length !== 1) {
+      throw new Error(`dispatch model drift: expected one ${name} function`);
+    }
+    const open = engine.indexOf("{", matches[0].index);
+    return engine.slice(open + 1, matchBraceBlock(engine, open));
+  };
+  const wrapper = body("lint_jsx", true);
+  let markup = wrapper;
+  if (/\.\s*lint_jsx_without_types\s*\(/u.test(wrapper)) {
+    const delegate =
+      /let\s+mut\s+result\s*=\s*self\s*\.\s*lint_jsx_without_types\s*\(\s*source\s*,\s*filename\s*,\s*lang\s*,?\s*\)/gu;
+    const append =
+      /super\s*::\s*native_type_aware\s*::\s*plain_module\s*::\s*append_plain_module_type_diagnostics\s*\(\s*self\s*,\s*source\s*,\s*filename\s*,\s*&\s*mut\s+result\s*,?\s*\)/gu;
+    const finish = /self\s*\.\s*apply_diagnostic_policy\s*\(\s*result\s*\)/gu;
+    const delegates = [...wrapper.matchAll(delegate)];
+    const appends = [...wrapper.matchAll(append)];
+    const finishes = [...wrapper.matchAll(finish)];
+    if (
+      delegates.length !== 1 ||
+      appends.length !== 1 ||
+      finishes.length !== 1 ||
+      (wrapper.match(/\.\s*lint_jsx_without_types\s*\(/gu) ?? []).length !== 1 ||
+      (wrapper.match(/\bappend_plain_module_type_diagnostics\s*\(/gu) ?? []).length !== 1 ||
+      !(delegates[0].index < appends[0].index && appends[0].index < finishes[0].index)
+    ) {
+      throw new Error(
+        "dispatch model drift: JSX wrapper must prepare, append plain types and finish exactly once in order",
+      );
+    }
+    const remaining = wrapper.replace(append, "plain_type_completion");
+    for (const forbidden of [
+      "run_on_sfc",
+      "css_rules",
+      "native_type_aware",
+      "CorsaTypeAwareSession",
+      "with_corsa_session",
+    ]) {
+      if (remaining.includes(forbidden)) {
+        throw new Error(`dispatch model drift: JSX wrapper gained unsupported ${forbidden}`);
+      }
+    }
+    markup = body("lint_jsx_without_types");
+  }
+  for (const anchor of [
+    "as_markup_rule",
+    "jsx_needs_lowering",
+    "legacy_keep_mask",
+    "lint_jsx_over_ir",
+    "lint_jsx_lowered_markup_root",
+    "lint_jsx_fallback_root",
+  ]) {
+    if (!markup.includes(anchor)) {
+      throw new Error(`dispatch model drift: JSX markup phase lost anchor ${anchor}`);
+    }
+  }
+  if ((markup.match(/\.\s*lint_jsx_script\s*\(/gu) ?? []).length !== 1) {
+    throw new Error("dispatch model drift: JSX markup phase must invoke script rules exactly once");
+  }
+  // These are markup-phase exclusions. The public wrapper deliberately invokes
+  // plain-module type completion; this is not a claim that all JSX is Corsa-free.
+  for (const absent of [
+    "run_on_sfc",
+    "css_rules",
+    "native_type_aware",
+    "CorsaTypeAwareSession",
+    "with_corsa_session",
+  ]) {
+    if (markup.includes(absent)) {
+      throw new Error(
+        `dispatch model drift: JSX markup phase now references ${absent}; re-derive path membership`,
+      );
+    }
+  }
+}
+
 export function loadDispatchModel(): DispatchModel {
   const ruleRs = stripRust(readFileSync(path.join(PATINA_SRC, "rule.rs"), "utf8"));
   const markupRs = stripRust(readFileSync(path.join(PATINA_SRC, "markup", "rule.rs"), "utf8"));
@@ -62,36 +143,7 @@ export function loadDispatchModel(): DispatchModel {
   }
   const markupHooks = markupFns.filter((f) => f !== "name");
 
-  // lint_jsx dispatch anchors: the three-lane partition this matrix models.
-  const jsxStart = /pub\s+fn\s+lint_jsx\b/.exec(engineStripped);
-  if (!jsxStart) throw new Error("dispatch model drift: Linter::lint_jsx not found in engine.rs");
-  const jsxOpen = engineStripped.indexOf("{", jsxStart.index);
-  const jsxClose = matchBraceBlock(engineStripped, jsxOpen);
-  const jsxBody = engineStripped.slice(jsxOpen + 1, jsxClose);
-  for (const anchor of [
-    "as_markup_rule",
-    "jsx_needs_lowering",
-    "legacy_keep_mask",
-    "lint_jsx_over_ir",
-    "lint_jsx_lowered_markup_root",
-    "lint_jsx_fallback_root",
-  ]) {
-    if (!jsxBody.includes(anchor)) {
-      throw new Error(`dispatch model drift: lint_jsx body lost anchor ${anchor}`);
-    }
-  }
-  // The JSX path must not drive SFC hooks, the CSS registry, or the corsa
-  // session. The script registry runs through `lint_jsx_script`.
-  if (!jsxBody.includes("lint_jsx_script")) {
-    throw new Error("dispatch model drift: lint_jsx lost lint_jsx_script");
-  }
-  for (const absent of ["run_on_sfc", "css_rules", "native_type_aware"]) {
-    if (jsxBody.includes(absent)) {
-      throw new Error(
-        `dispatch model drift: lint_jsx body now references ${absent}; re-derive path membership`,
-      );
-    }
-  }
+  validateJsxDispatch(engineRs);
   if ((engineStripped.match(/\.run_on_sfc\(/g) ?? []).length !== 1) {
     throw new Error("dispatch model drift: expected exactly one run_on_sfc dispatch in engine.rs");
   }
