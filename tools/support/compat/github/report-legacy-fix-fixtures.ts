@@ -16,6 +16,10 @@ import {
 } from "./native-shutdown-protocol-fixtures.ts";
 
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import {
+  newOwnedEditorShutdownCases,
+  OWNED_EDITOR_SHUTDOWN_PROTOCOL_ID,
+} from "./owned-editor-shutdown-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -132,6 +136,18 @@ function checkCompilerCase(
   );
 }
 
+function ownedEditorShutdownRows(value: unknown, owned: boolean): unknown {
+  if (!Array.isArray(value)) return owned ? undefined : value;
+  return value.filter((row: unknown) => {
+    const matches =
+      typeof row === "object" &&
+      row !== null &&
+      "id" in row &&
+      row.id === OWNED_EDITOR_SHUTDOWN_PROTOCOL_ID;
+    return matches === owned;
+  });
+}
+
 function checkProduct(
   product: Product,
   paths: readonly string[],
@@ -212,6 +228,17 @@ function checkProduct(
       manifest.runtimeCases,
       readFile,
     );
+    const ownedEditorShutdown =
+      product === "typechecker"
+        ? newOwnedEditorShutdownCases(
+            ownedEditorShutdownRows(before?.protocolCases, true),
+            ownedEditorShutdownRows(manifest.protocolCases, true),
+            readFile,
+          )
+        : { ids: [], sources: new Set<string>() };
+    const ownedEditorShutdownIds = canonPaths.some((path) => ownedEditorShutdown.sources.has(path))
+      ? ownedEditorShutdown.ids
+      : [];
     const productPaths = paths.filter((path) =>
       path.startsWith(product === "linter" ? "crates/vize_patina/src/" : "crates/vize_canon/src/"),
     );
@@ -220,12 +247,17 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !ownedEditorShutdown.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
     const protocols =
       product === "typechecker"
-        ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
+        ? newNativeShutdownProtocolCases(
+            ownedEditorShutdownRows(before?.protocolCases, false),
+            ownedEditorShutdownRows(manifest.protocolCases, false),
+            readFile,
+          )
         : [];
     const cssApi =
       product === "compiler"
@@ -238,7 +270,7 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi],
+      cases: [...cases, ...protocols, ...ownedEditorShutdownIds, ...runtime.ids, ...cssApi],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
