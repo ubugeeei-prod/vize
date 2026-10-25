@@ -71,7 +71,7 @@ impl Rule for TabindexNoPositive {
             if let PropNode::Attribute(attr) = prop
                 && attr.name == "tabindex"
                 && let Some(value) = &attr.value
-                && crate::attribute_policy::positive_tabindex(&value.content)
+                && crate::attribute_policy::positive_tabindex(value.content)
             {
                 ctx.warn_with_help(
                     ctx.t("a11y/tabindex-no-positive.message"),

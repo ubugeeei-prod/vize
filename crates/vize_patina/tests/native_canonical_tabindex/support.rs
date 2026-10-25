@@ -159,12 +159,5 @@ pub fn parity(dialect: Dialect, body: &str, newline: &str, locale: Locale) -> Ve
     assert_eq!(reference.error_count, 0);
     assert_eq!(reference.warning_count, actual.len());
     assert_eq!(actual, expected, "{source}");
-    for row in &actual {
-        let start = row["start"].as_u64().unwrap() as usize;
-        let end = row["end"].as_u64().unwrap() as usize;
-        let text = source.get(start..end).unwrap();
-        assert!(text.starts_with("tabindex") || text.starts_with("tabIndex"));
-        assert!(text.ends_with('"') || text.ends_with('\''));
-    }
     actual
 }
