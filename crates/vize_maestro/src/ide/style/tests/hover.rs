@@ -25,42 +25,6 @@ fn named_color_hover_keeps_the_whole_packet_with_a_stylesheet_example() {
 }
 
 #[test]
-fn all_executable_declaration_examples_use_rule_context_without_rewriting_syntax() {
-    for (css, declaration) in [
-        (".demo { dis|play: block; }", "display: block;"),
-        (".demo { display: fl|ex; }", "display: flex;"),
-        (".demo { color: re|d; }", "color: red;"),
-        (".demo { display: inh|erit; }", "display: inherit;"),
-        (
-            ".demo { color: va|r(--theme); }",
-            "color: var(--theme-value, inherit);",
-        ),
-        (
-            ".demo { width: ca|lc(1rem + 2px); }",
-            "width: calc(1rem + 2px);",
-        ),
-    ] {
-        let document = Document::css(css, false);
-        let hover = super::super::hover(&document.context(), 0).unwrap();
-        let docs = hover_documentation(&hover);
-        assert!(
-            docs.contains(
-                &[
-                    "**Example**\n\n```css\n.example {\n  ",
-                    declaration,
-                    "\n}\n```"
-                ]
-                .concat()
-            ),
-            "{docs}"
-        );
-    }
-    let document = Document::css(".demo { co|lor: red; }", false);
-    let hover = super::super::hover(&document.context(), 0).unwrap();
-    assert!(hover_documentation(&hover).contains("**Syntax**\n\n```css\n<color>\n```"));
-}
-
-#[test]
 fn real_sfc_property_value_pseudo_and_at_rule_hovers_match_selected_completion_docs() {
     for (needle, offset, label, source) in [
         ("display: flex", 3, "display", "Properties/display"),

@@ -145,7 +145,7 @@ exports.run = async function run() {
         assert.deepEqual(
           expanded.map((hover) => ({
             range: hover.range,
-            contents: hover.contents.map(({ constructor, ...fields }) => fields),
+            contents: hover.contents.map(({ constructor: _constructor, ...fields }) => fields),
           })),
           [
             {
