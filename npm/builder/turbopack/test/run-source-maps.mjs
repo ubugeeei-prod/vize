@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { AnyMap, originalPositionFor } from "@jridgewell/trace-mapping";
 import { consumer, output, sha256 } from "./prepare-consumer.mjs";
+import { readPublishedMap } from "./output-source-map.mjs";
 
 /** Check final host maps, including the production scope-hoisting composition. */
 export async function checkAuthoredMaps(sourcePath, original) {
@@ -15,8 +16,10 @@ export async function checkAuthoredMaps(sourcePath, original) {
     for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
       const filename = path.join(directory, entry.name);
       if (entry.isDirectory()) await visit(filename, target);
-      else if (entry.name.endsWith(".map")) {
-        const bytes = await fs.readFile(filename);
+      else if (entry.name.endsWith(".js") || entry.name.endsWith(".css")) {
+        const published = await readPublishedMap(filename);
+        if (!published) continue;
+        const { bytes, bundle, reference, mapFile } = published;
         const traced = AnyMap(JSON.parse(bytes.toString("utf8")));
         const authored = new Set();
         const candidates = [];
@@ -34,13 +37,14 @@ export async function checkAuthoredMaps(sourcePath, original) {
         if (!candidates.length) continue;
         const artifact = `next-${target}-${maps.length}`;
         await fs.writeFile(path.join(output, "maps", `${artifact}.map`), bytes);
-        const bundle = await fs.readFile(filename.slice(0, -4), "utf8");
         await fs.writeFile(
-          path.join(output, "maps", `${artifact}${path.extname(filename.slice(0, -4))}`),
+          path.join(output, "maps", `${artifact}${path.extname(filename)}`),
           bundle,
         );
         const packet = {
           file: path.relative(consumer, filename),
+          mapFile: path.relative(consumer, mapFile),
+          reference,
           target,
           sha256: sha256(bytes),
           generatedSha256: sha256(bundle),
@@ -49,7 +53,7 @@ export async function checkAuthoredMaps(sourcePath, original) {
           token: null,
         };
         maps.push(packet);
-        if (!filename.endsWith(".js.map") || !authored.size) continue;
+        if (!filename.endsWith(".js") || !authored.size) continue;
         for (const marker of bundle.matchAll(/🐱|\\u[dD]83[dD]\\u[dD][cC]31|\\u\{1[fF]431\}/g)) {
           const prefix = bundle.slice(0, marker.index);
           const generated = {
@@ -73,7 +77,7 @@ export async function checkAuthoredMaps(sourcePath, original) {
       `${target} production JavaScript must map the surviving Unicode string to its original SFC declaration`,
     );
   assert.ok(
-    maps.some((map) => map.file.endsWith(".css.map") && map.authored.length),
+    maps.some((map) => map.file.endsWith(".css") && map.authored.length),
     "production CSS maps retain the complete original SFC",
   );
   return maps;

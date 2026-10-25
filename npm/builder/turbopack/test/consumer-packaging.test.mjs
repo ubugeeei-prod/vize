@@ -8,6 +8,34 @@ import { sourceNativeResolutions } from "./consumer-lock.mjs";
 import { normalHostShutdown } from "./host-process.mjs";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { readPublishedMap } from "./output-source-map.mjs";
+
+void test("host map custody follows live JS/CSS footers and refuses missing maps", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "vize-turbopack-maps-"));
+  try {
+    const javascript = path.join(root, "组件 space.js");
+    const stylesheet = path.join(root, "组件 space.css");
+    const live = Buffer.from('{"version":3,"sources":["authored.vue"]}');
+    await fs.writeFile(path.join(root, "live map.js.map"), live);
+    await fs.writeFile(path.join(root, "live map.css.map"), live);
+    await fs.writeFile(`${javascript}.map`, "an orphan from the previous build");
+    await fs.writeFile(javascript, "globalThis.value=1;\n//# sourceMappingURL=live%20map.js.map\n");
+    await fs.writeFile(stylesheet, ".a{}\n/*# sourceMappingURL=live%20map.css.map */\n");
+    for (const filename of [javascript, stylesheet]) {
+      const result = await readPublishedMap(filename);
+      assert.deepEqual(result.bytes, live);
+      assert.notEqual(result.mapFile, `${filename}.map`);
+    }
+    await fs.writeFile(javascript, "globalThis.value=1;");
+    assert.equal(await readPublishedMap(javascript), null);
+    await fs.writeFile(javascript, "//# sourceMappingURL=missing.js.map\n");
+    await assert.rejects(readPublishedMap(javascript), { code: "ENOENT" });
+    await fs.writeFile(javascript, "//# sourceMappingURL=https://example.invalid/map\n");
+    await assert.rejects(readPublishedMap(javascript), /must publish a local source map/);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
 
 void test("public bundle inspection visits nested loader entries and rejects private imports", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "vize-turbopack-packaging-"));
