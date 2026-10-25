@@ -1,5 +1,5 @@
 use super::MaxTemplateComplexity;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::linter::Linter;
 use crate::preset::LintPreset;
 use crate::rule::RuleRegistry;
@@ -113,6 +113,62 @@ fn a_component_within_the_thresholds_is_silent() {
 "#;
     let result = lint(source);
     assert_eq!(result.diagnostics.len(), 0);
+}
+
+#[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "compare complete diagnostic packets"
+)]
+fn unicode_and_line_endings_preserve_the_complete_product_diagnostic() {
+    for newline in ["\n", "\r\n"] {
+        let source = format!("<!-- 作者😀 -->{newline}{}", COMPLEX.replace('\n', newline));
+        let result = lint(&source);
+        assert_eq!((result.error_count, result.warning_count), (0, 1));
+        assert_eq!(result.filename, "Dashboard.vue");
+        let tag = source.find("<template>").unwrap() as u32;
+        let mut expected = LintDiagnostic::warn(
+            RULE,
+            "Template complexity is too high: cyclomatic 13 (limit 11), cognitive 25 (limit 16)",
+            tag,
+            tag + "<template>".len() as u32,
+        )
+        .with_help(
+            "Move the deepest branches or loops into child components: a child's complexity \
+             never counts toward this component's own score",
+        );
+        for (text, message) in [
+            (
+                "column.key === 'status'",
+                "v-if at nesting 1: +2 cognitive, +1 cyclomatic",
+            ),
+            (
+                "row.active ? 'on' : 'off'",
+                "conditional at nesting 2: +3 cognitive, +1 cyclomatic",
+            ),
+            (
+                "row.tags",
+                "v-for at nesting 2: +3 cognitive, +1 cyclomatic",
+            ),
+            (
+                "tag.pinned || tag.starred",
+                "v-if at nesting 3: +4 cognitive, +1 cyclomatic",
+            ),
+            (
+                "tag.hot ? '!' : ''",
+                "conditional at nesting 4: +5 cognitive, +1 cyclomatic",
+            ),
+        ] {
+            let start = source.find(text).unwrap() as u32;
+            expected = expected.with_label(message, start, start + text.len() as u32);
+        }
+        // Includes rule, severity, message, primary/secondary ranges, help,
+        // fix absence and every remaining packet field in original order.
+        assert_eq!(
+            format!("{:?}", result.diagnostics),
+            format!("{:?}", [expected])
+        );
+    }
 }
 
 #[test]

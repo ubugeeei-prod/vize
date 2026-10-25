@@ -90,7 +90,8 @@ pub enum DecisionKind {
     /// One `?:`: one decision, a structure (+1 + nesting).
     Conditional,
     /// An evaluated expression position without a retained AST (opaque,
-    /// foreign, or a Vue 2 filter chain): adds nothing, counted.
+    /// foreign, or a Vue 2 filter chain), or without exact authored ranges
+    /// for its contributions: adds nothing, counted.
     Unknown,
 }
 
