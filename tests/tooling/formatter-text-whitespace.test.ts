@@ -126,4 +126,18 @@ void test("source CLI text layouts preserve parsed markup and rendered whitespac
       }
     }
   }
+
+  const empty = path.join(directory, "Empty.vue");
+  fs.writeFileSync(empty, "");
+  for (const preset of [[], ["--preset", "prettier"]]) {
+    for (const mode of ["--check", "--write", "--check"]) {
+      const result = spawnSync(binary, ["fmt", mode, "--no-config", ...preset, empty], {
+        encoding: "utf8",
+        timeout: 60_000,
+      });
+      assert.ifError(result.error);
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(fs.readFileSync(empty), Buffer.alloc(0));
+    }
+  }
 });

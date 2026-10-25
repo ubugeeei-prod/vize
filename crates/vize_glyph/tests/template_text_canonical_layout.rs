@@ -18,6 +18,7 @@ fn text_wraps_only_at_existing_whitespace_and_reaches_one_fixed_point()
 -> Result<(), Box<dyn std::error::Error>> {
     let cases: Vec<Case> =
         serde_json::from_str(include_str!("fixtures/preset-layout-10609/text.json"))?;
+    let mut deep_layouts = std::collections::BTreeMap::new();
     for case in cases {
         for (ending, newline) in [(EndOfLine::Lf, "\n"), (EndOfLine::Crlf, "\r\n")] {
             let mut options = FormatOptions::prettier_compat();
@@ -27,6 +28,13 @@ fn text_wraps_only_at_existing_whitespace_and_reaches_one_fixed_point()
             options.end_of_line = ending;
             let source = case.input.replace('\n', newline);
             let first = format_sfc(&source, &options)?;
+            if case.id.starts_with("deep-plain") {
+                if let Some(previous) = deep_layouts.get(newline) {
+                    assert_eq!(&first.code, previous, "deep text input-layout canonicality");
+                } else {
+                    deep_layouts.insert(newline, first.code.clone());
+                }
+            }
             if let Some(expected) = &case.expected {
                 assert_eq!(
                     first.code.as_str(),
