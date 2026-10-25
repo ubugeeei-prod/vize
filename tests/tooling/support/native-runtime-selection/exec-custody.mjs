@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { sha256 } from "./providers.mjs";
+import { CORSA_OVERRIDES, sha256 } from "./providers.mjs";
 
 export function parseExecTrace(text) {
   const rows = [];
@@ -94,6 +94,14 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
   const receipt = {
     argv: [strace, ...argv],
     cwd,
+    childEnvironment: {
+      HOME: env.HOME ?? null,
+      PATH: env.PATH ?? null,
+      VIZE_CORSA_DEV_PATHS: env.VIZE_CORSA_DEV_PATHS ?? null,
+      overrides: Object.fromEntries(
+        [...CORSA_OVERRIDES, "CORSA_BIN"].map((key) => [key, env[key] ?? null]),
+      ),
+    },
     status: result.status,
     signal: result.signal,
     error: result.error?.message ?? null,

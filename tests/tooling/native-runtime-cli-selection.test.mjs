@@ -83,6 +83,19 @@ test("native CLI exec custody preserves full argv and rejects incomplete trace f
   } finally {
     fs.rmSync(invalid, { recursive: true, force: true });
   }
+  const isolated = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-child-env-"));
+  const originalHome = process.env.HOME;
+  try {
+    const original = { HOME: "parent-home", CORSA_PATH: "forbidden" };
+    const child = runtimeChildEnvironment(original, isolated);
+    assert.equal(child.HOME, path.join(isolated, "empty-home"));
+    assert.equal(fs.statSync(child.HOME).isDirectory(), true);
+    assert.equal(child.CORSA_PATH, undefined);
+    assert.equal(original.HOME, "parent-home");
+    assert.equal(process.env.HOME, originalHome);
+  } finally {
+    fs.rmSync(isolated, { recursive: true, force: true });
+  }
   const dummy = {
     workspace: "/project",
     configRoot: "/project",

@@ -118,6 +118,10 @@ export function runtimeChildEnvironment(base = process.env, directory) {
     const emptyPath = path.join(directory, "empty-path");
     fs.mkdirSync(emptyPath, { recursive: true });
     env.PATH = emptyPath;
+    // Isolate only the returned child environment; caller/shell HOME is untouched.
+    const childHomeDirectory = path.join(directory, "empty-home");
+    fs.mkdirSync(childHomeDirectory, { recursive: true });
+    env.HOME = childHomeDirectory;
   }
   for (const key of CORSA_OVERRIDES) assert.equal(env[key], undefined);
   return env;
@@ -147,6 +151,7 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
   const entry = path.join(configRoot, "src/App.vue"),
     configFile = path.join(configRoot, "tsconfig.json"),
     inputPaths = [];
+  const cacheDecoys = [];
   const write = (file, text) => {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, text);
@@ -200,17 +205,57 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
     link(providers.six.path, path.join(workspace, "node_modules/typescript"));
   }
   if (kind === "stale-decoys") {
-    const platform = `@typescript/typescript-${process.platform}-${process.arch}`;
+    const old = providers.frozen702;
+    assert.ok(old, "real stale-cache controls require the separate official 7.0.2 provider");
+    const platform = old.platform.name;
     const nested = path.join(configRoot, "node_modules/vize/node_modules");
-    link(providers.beta.meta.path, path.join(nested, "typescript"));
-    link(providers.beta.platform.path, path.join(nested, platform));
+    link(old.meta.path, path.join(nested, "typescript"));
+    link(old.platform.path, path.join(nested, platform));
     const store = path.join(
       configRoot,
       "node_modules/.pnpm",
-      `@typescript+typescript-${process.platform}-${process.arch}@7.1.0-beta/node_modules`,
+      `@typescript+typescript-${process.platform}-${process.arch}@7.0.2/node_modules`,
     );
-    link(providers.beta.platform.path, path.join(store, platform));
+    link(old.platform.path, path.join(store, platform));
+    const globalStoragePath = path.join(workspace, "legacy-vscode-global-storage");
+    const legacyCacheRoot = path.join(
+      globalStoragePath,
+      "corsa",
+      "7.0.2",
+      `${process.platform}-${process.arch}`,
+    );
+    link(old.platform.path, legacyCacheRoot);
+    cacheDecoys.push(
+      {
+        kind: "legacy-editor-global-storage",
+        globalStoragePath,
+        packageRoot: legacyCacheRoot,
+        manifestPath: path.join(legacyCacheRoot, "package.json"),
+        manifestSha256: old.platform.manifestSha256,
+        executablePath: path.join(
+          legacyCacheRoot,
+          "lib",
+          process.platform === "win32" ? "tsc.exe" : "tsc",
+        ),
+        physicalExecutable: old.executable,
+        legacySource:
+          "editors/vscode/src/corsa-runtime.ts: resolveCorsaServerEnv cached globalStoragePath/corsa/version/platform-arch",
+        scope:
+          "Real cache-present direct CLI/LSP selection refusal only; no editor globalStorage dispatch or cache-read credit",
+      },
+      {
+        kind: "vize-owned-runtime",
+        packageRoot: path.join(nested, platform),
+        physicalExecutable: old.executable,
+      },
+      {
+        kind: "unlinked-pnpm-store",
+        packageRoot: path.join(store, platform),
+        physicalExecutable: old.executable,
+      },
+    );
   }
+
   const consumer = {
     kind,
     workspace,
@@ -218,6 +263,7 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
     configFile,
     entry,
     expectedExecutable,
+    cacheDecoys,
     explicitExecutable: explicit ? expectedExecutable : null,
     inputPaths,
     providers,
