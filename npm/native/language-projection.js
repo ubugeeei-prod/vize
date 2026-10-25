@@ -127,4 +127,65 @@ function applyDiagnosticDirectives(projection, generatedDiagnostics) {
   return { diagnostics, sourceDiagnostics };
 }
 
-module.exports = { LanguageFeature, toUtf16LanguageProjection, applyDiagnosticDirectives };
+/**
+ * Content Mapper VirtualToOriginalSpan law in the normalized UTF-16 spaces.
+ * Diagnostic boundaries may surround mapped tokens with synthetic punctuation.
+ * This does not make those gaps eligible for navigation or edit write-back.
+ */
+function mapLanguageDiagnosticRange(projection, start, length) {
+  if (!Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(length) || length < 0)
+    throw new RangeError("Invalid generated diagnostic range");
+  const rows = projection.mappings;
+  const at = (position) => {
+    let low = 0;
+    let high = rows.length;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (rows[middle][0] <= position) low = middle + 1;
+      else high = middle;
+    }
+    const index = low - 1;
+    const row = rows[index];
+    const inside =
+      !!row &&
+      (position < row[0] + row[1] || (index === rows.length - 1 && position === row[0] + row[1]));
+    return { index, inside };
+  };
+  const boundary = (position, segment, high) => {
+    const row = rows[segment.index];
+    if (!segment.inside) return row ? row[2] + row[3] : 0;
+    if (row[4] !== 0) return row[2] + (high ? row[3] : 0);
+    return Math.min(row[2] + row[3], Math.max(row[2], row[2] + position - row[0]));
+  };
+  const first = at(start);
+  if (length === 0)
+    return {
+      start: boundary(start, first, false),
+      length: 0,
+      fidelity: !first.inside ? "none" : rows[first.index][4] === 0 ? "exact" : "atom",
+    };
+  const end = start + length;
+  const last = at(end - 1);
+  if (first.index === last.index && first.inside === last.inside) {
+    const originalStart = boundary(start, first, false);
+    if (!first.inside) return { start: originalStart, length: 0, fidelity: "none" };
+    return {
+      start: originalStart,
+      length: boundary(end, last, true) - originalStart,
+      fidelity: rows[first.index][4] === 0 ? "exact" : "atom",
+    };
+  }
+  const originalStart = boundary(start, first, false);
+  return {
+    start: originalStart,
+    length: Math.max(originalStart, boundary(end, last, true)) - originalStart,
+    fidelity: "approximate",
+  };
+}
+
+module.exports = {
+  LanguageFeature,
+  toUtf16LanguageProjection,
+  applyDiagnosticDirectives,
+  mapLanguageDiagnosticRange,
+};
