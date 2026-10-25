@@ -115,9 +115,13 @@ export function runtimeChildEnvironment(base = process.env, directory) {
   env.NO_COLOR = "1";
   env.FORCE_COLOR = "0";
   if (directory) {
-    const emptyPath = path.join(directory, "empty-path");
-    fs.mkdirSync(emptyPath, { recursive: true });
-    env.PATH = emptyPath;
+    const toolPath = path.join(directory, "tool-path");
+    fs.mkdirSync(toolPath, { recursive: true });
+    const node = path.join(toolPath, process.platform === "win32" ? "node.exe" : "node");
+    if (!fs.existsSync(node)) fs.symlinkSync(process.execPath, node, "file");
+    assert.equal(fs.realpathSync(node), fs.realpathSync(process.execPath));
+    // Config evaluation needs Node; compiler/global npm launchers remain absent.
+    env.PATH = toolPath;
     // Isolate only the returned child environment; caller/shell HOME is untouched.
     const childHomeDirectory = path.join(directory, "empty-home");
     fs.mkdirSync(childHomeDirectory, { recursive: true });

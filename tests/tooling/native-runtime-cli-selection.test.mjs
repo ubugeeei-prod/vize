@@ -91,6 +91,13 @@ test("native CLI exec custody preserves full argv and rejects incomplete trace f
     assert.equal(child.HOME, path.join(isolated, "empty-home"));
     assert.equal(fs.statSync(child.HOME).isDirectory(), true);
     assert.equal(child.CORSA_PATH, undefined);
+    assert.deepEqual(fs.readdirSync(child.PATH), [
+      process.platform === "win32" ? "node.exe" : "node",
+    ]);
+    assert.equal(
+      fs.realpathSync(path.join(child.PATH, process.platform === "win32" ? "node.exe" : "node")),
+      fs.realpathSync(process.execPath),
+    );
     assert.equal(original.HOME, "parent-home");
     assert.equal(process.env.HOME, originalHome);
   } finally {
