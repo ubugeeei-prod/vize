@@ -1,0 +1,5 @@
+minimumReleaseAgeExclude:
+  - "@vizejs/*"
+  - "@typescript/*"
+  - typescript
+  - vize

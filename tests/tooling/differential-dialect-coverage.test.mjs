@@ -170,19 +170,19 @@ void test("linter and LSP coverage record every pinned authored source dialect",
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
-    plannedCases: 59,
+    plannedCases: 61,
     verifiedCases: 0,
-    provisionalCases: 59,
-    unknownReadinessCases: 59,
+    provisionalCases: 61,
+    unknownReadinessCases: 61,
     verified: {},
     provisional: {
-      "html-template": 50,
+      "html-template": 52,
       js: 9,
       jsx: 4,
       "pug-template": 4,
       ts: 43,
       tsx: 4,
-      "vue3-sfc": 58,
+      "vue3-sfc": 60,
     },
   });
 });
@@ -203,19 +203,19 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 141,
+    plannedCases: 142,
     verifiedCases: 0,
-    provisionalCases: 140,
-    unknownReadinessCases: 141,
+    provisionalCases: 141,
+    unknownReadinessCases: 142,
     verified: {},
     provisional: {
-      "html-template": 135,
+      "html-template": 136,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 139,
+      ts: 140,
       tsx: 4,
-      "vue3-sfc": 138,
+      "vue3-sfc": 139,
     },
   });
   assert.deepEqual(
