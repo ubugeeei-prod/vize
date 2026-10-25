@@ -396,7 +396,8 @@ void [transformer, styles, resolver, read, remember, standard, vapor, badMap, ba
     ...(process.env.VIZE_PARCEL_BROWSER ? { executablePath: process.env.VIZE_PARCEL_BROWSER } : {}),
   };
   browser = await chromium.launch(browserOptions);
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => {
     errors.push(error.message);

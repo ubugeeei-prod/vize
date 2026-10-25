@@ -131,13 +131,15 @@ export default new Transformer<VizeParcelOptions>({
     // from re-executing authored script module side effects. Native source maps
     // travel as an inline map, consumed by Parcel before its JS pipeline runs.
     if (map) {
-      code += `\n//# sourceMappingURL=${await map.stringify({
+      const inline = await map.stringify({
         file: path.basename(asset.filePath),
         sourceRoot:
           path.relative(path.dirname(asset.filePath), options.projectRoot).replaceAll("\\", "/") ||
           ".",
         format: "inline",
-      })}\n`;
+      });
+      if (typeof inline !== "string") throw new Error("Expected an inline Parcel source map.");
+      code += `\n//# sourceMappingURL=${inline}\n`;
     }
     const digest = createHash("sha256").update(code).digest("hex");
     const componentKey = `vize-generated-${digest}.js`;
