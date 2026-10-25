@@ -1,0 +1,353 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "cpu": "Apple M2 Max",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "rust": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "profile": "ci-opt (thin LTO, codegen units 16)",
+    "base": "2724a6b627e437cc08efcc7855617d60b165abac"
+  },
+  "method": {
+    "warmup_processes_per_size": 2,
+    "samples_per_size": 9,
+    "rounds_per_process": 300,
+    "scenario": "static intrinsic main with 8/64/256 static i children, each with data-index; one original parser and File walk, then canonical Region and shared complexity",
+    "timing": "per-process mean microseconds per round; summary median of nine processes; unprofiled timing and instrumented source buckets separate",
+    "scope": "local new native capability cost; no prior-path equivalence, whole compiler throughput, allocation, LSP latency or universal speed claim"
+  },
+  "source_sha256": {
+    "davinci/vize_l2/src/artifact/builder/region.rs": "857678eb1f2dac172ed047bc37854312301ce2e13888e40a662bad8137fd5e62",
+    "davinci/vize_l2/src/lang/js/file.rs": "19e9b1f9b43845b244da20c9c970bde9b817467d683e47b21395faf492a5c222",
+    "davinci/vize_l2/src/lang/js/jsx_body.rs": "a1796e1224772fa7a293db7b3519aeec2b3ccc90370bdde89122c0025bc199c6",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup/emit.rs": "2952e08a6d056faff926207d641c5ce55c9fd2d01405f4e7c2eb9879fb67de2a",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup/prepare.rs": "5c68ad1cc8e04b4770a482ff63e863de0da8813999118fd34d771bd4bc7e83e1",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup.rs": "21057e4563246f76bd5af65c513d4d1f8aaf5ee12bd5976396beeca400ae7ce2",
+    "davinci/vize_l2/examples/jsx_markup_profile.rs": "3a6dc87f69d796eeab9975188908058f73034a628798b949a769e2db8c41c1cc"
+  },
+  "binary_sha256": "05472bdddef5c2c1834c71a645eb491a2c807be7501abeb73b500266d9a5b0cb",
+  "median_us": {
+    "8": {
+      "parse_us": 1.3491366666666667,
+      "walk_us": 2.3395633333333334,
+      "canonical_us": 0.95151,
+      "analysis_us": 0.08475333333333333
+    },
+    "64": {
+      "parse_us": 6.419543333333333,
+      "walk_us": 12.292363333333332,
+      "canonical_us": 4.642216666666666,
+      "analysis_us": 0.38014666666666663
+    },
+    "256": {
+      "parse_us": 23.0559,
+      "walk_us": 45.808483333333335,
+      "canonical_us": 17.324543333333335,
+      "analysis_us": 1.38429
+    }
+  },
+  "samples": {
+    "8": [
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3318166666666666,
+        "walk_us": 2.38166,
+        "canonical_us": 0.9506766666666666,
+        "analysis_us": 0.08443
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.31792,
+        "walk_us": 2.30986,
+        "canonical_us": 0.9381766666666665,
+        "analysis_us": 0.08472
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3126966666666668,
+        "walk_us": 2.2992,
+        "canonical_us": 0.95151,
+        "analysis_us": 0.08620666666666667
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.32819,
+        "walk_us": 2.3517733333333335,
+        "canonical_us": 0.9527899999999999,
+        "analysis_us": 0.08389
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3575733333333333,
+        "walk_us": 2.2817499999999997,
+        "canonical_us": 0.9215233333333334,
+        "analysis_us": 0.08509666666666667
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3548566666666666,
+        "walk_us": 2.3395633333333334,
+        "canonical_us": 0.9373466666666667,
+        "analysis_us": 0.08446666666666666
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3659666666666668,
+        "walk_us": 2.40169,
+        "canonical_us": 0.9797233333333333,
+        "analysis_us": 0.08679333333333333
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3830666666666667,
+        "walk_us": 2.3370866666666665,
+        "canonical_us": 0.96207,
+        "analysis_us": 0.08740666666666667
+      },
+      {
+        "children": 8,
+        "rounds": 300,
+        "source_bytes": 186,
+        "nodes": 9,
+        "parse_us": 1.3491366666666667,
+        "walk_us": 2.3612233333333332,
+        "canonical_us": 1.0048666666666666,
+        "analysis_us": 0.08475333333333333
+      }
+    ],
+    "64": [
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.51042,
+        "walk_us": 12.337923333333332,
+        "canonical_us": 4.6846033333333335,
+        "analysis_us": 0.38055
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.385573333333333,
+        "walk_us": 12.184843333333333,
+        "canonical_us": 4.669176666666666,
+        "analysis_us": 0.3752733333333333
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.352926666666667,
+        "walk_us": 12.126656666666666,
+        "canonical_us": 4.633873333333334,
+        "analysis_us": 0.3710833333333333
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.4218,
+        "walk_us": 12.357046666666667,
+        "canonical_us": 4.699303333333333,
+        "analysis_us": 0.38014666666666663
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.455,
+        "walk_us": 12.289746666666666,
+        "canonical_us": 4.6673366666666665,
+        "analysis_us": 0.38067666666666666
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.419286666666667,
+        "walk_us": 12.314706666666666,
+        "canonical_us": 4.618873333333333,
+        "analysis_us": 0.3729033333333333
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.419543333333333,
+        "walk_us": 12.185526666666666,
+        "canonical_us": 4.618333333333333,
+        "analysis_us": 0.3770866666666667
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.43625,
+        "walk_us": 12.292363333333332,
+        "canonical_us": 4.611253333333333,
+        "analysis_us": 0.38016666666666665
+      },
+      {
+        "children": 64,
+        "rounds": 300,
+        "source_bytes": 1304,
+        "nodes": 65,
+        "parse_us": 6.418613333333334,
+        "walk_us": 12.40597,
+        "canonical_us": 4.642216666666666,
+        "analysis_us": 0.3804166666666667
+      }
+    ],
+    "256": [
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 22.89488,
+        "walk_us": 45.545406666666665,
+        "canonical_us": 17.292636666666667,
+        "analysis_us": 1.3751366666666667
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.118153333333332,
+        "walk_us": 46.01029,
+        "canonical_us": 17.344143333333335,
+        "analysis_us": 1.3877766666666667
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.01389,
+        "walk_us": 45.71154,
+        "canonical_us": 17.29182,
+        "analysis_us": 1.4049833333333333
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.080386666666666,
+        "walk_us": 45.63886333333333,
+        "canonical_us": 17.297250000000002,
+        "analysis_us": 1.3797233333333332
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.0559,
+        "walk_us": 45.69806,
+        "canonical_us": 17.27484,
+        "analysis_us": 1.3771133333333334
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.060153333333336,
+        "walk_us": 45.808483333333335,
+        "canonical_us": 17.48403,
+        "analysis_us": 1.3892933333333333
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 22.841643333333334,
+        "walk_us": 45.857353333333336,
+        "canonical_us": 17.357063333333333,
+        "analysis_us": 1.38429
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.679759999999998,
+        "walk_us": 47.01849333333334,
+        "canonical_us": 17.729476666666667,
+        "analysis_us": 1.43485
+      },
+      {
+        "children": 256,
+        "rounds": 300,
+        "source_bytes": 5300,
+        "nodes": 257,
+        "parse_us": 23.009153333333334,
+        "walk_us": 45.8403,
+        "canonical_us": 17.324543333333335,
+        "analysis_us": 1.38343
+      }
+    ]
+  },
+  "instrumented_profile": [
+    {
+      "children": 256,
+      "rounds": 100,
+      "source_bytes": 5300,
+      "nodes": 257,
+      "parse_us": 23.484160000000003,
+      "walk_us": 43.19912,
+      "canonical_us": 18.30915,
+      "analysis_us": 1.43332
+    },
+    {
+      "span": "l2.jsx_markup.emit",
+      "count": 100,
+      "total_us": 970.721
+    },
+    {
+      "span": "l2.jsx_markup.prepare",
+      "count": 100,
+      "total_us": 778.0849999999999
+    },
+    {
+      "span": "l2.jsx_markup.finish_file",
+      "count": 100,
+      "total_us": 30.667
+    }
+  ]
+}

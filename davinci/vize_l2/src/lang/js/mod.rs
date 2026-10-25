@@ -32,3 +32,4 @@ pub use handler::{
     RejectedNativeHandlerInput,
 };
 pub use jsx_body::{JsxChildren, JsxFile, JsxFileError, JsxFileProducer, JsxNode, RejectedJsxFile};
+pub use jsx_body::{JsxMarkupFile, JsxMarkupIssue, JsxMarkupIssueKind, RejectedJsxMarkupFile};

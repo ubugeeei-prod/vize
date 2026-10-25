@@ -186,6 +186,11 @@ impl<'a> FileProducer<'a> {
         self.builder.finish()
     }
 
+    /// Only the original-owning JSX producer may populate this File's markup.
+    pub(super) fn jsx_region(&mut self) -> crate::artifact::RegionBuilder<'_, 'a> {
+        self.builder.canonical.region()
+    }
+
     /// Original sole completed ordinary script facts, before template custody.
     /// This borrows the producer and grants no finished File or product authority.
     #[must_use]

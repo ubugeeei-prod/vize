@@ -12,6 +12,10 @@ pub struct RegionBuilder<'s, 'a> {
 }
 
 impl<'a> RegionBuilder<'_, 'a> {
+    pub(crate) fn allocator(&self) -> &'a vize_l0::Allocator {
+        self.builder.allocator
+    }
+
     pub(crate) fn native_text(
         &mut self,
         content: &'a str,

@@ -7,8 +7,10 @@ use alloc::boxed::Box;
 use oxc_parser::ProgramObservation;
 use vize_l0::{Allocator, SourceBlock};
 
+mod markup;
 mod recorder;
 mod records;
+pub use markup::{JsxMarkupFile, JsxMarkupIssue, JsxMarkupIssueKind, RejectedJsxMarkupFile};
 use recorder::Recorder;
 pub use records::{JsxChildren, JsxNode};
 
