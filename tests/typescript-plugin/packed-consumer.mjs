@@ -189,7 +189,7 @@ for (const [file, source] of [
   );
 }
 const navigation = createNavigationFixtures(src, output);
-const inherited = createInheritedConfig(consumer, src, output, config);
+const inherited = createInheritedConfig(consumer, src, output, typescriptVersion);
 const tsserver = path.join(consumer, "node_modules/typescript/lib/tsserver.js");
 const client = startTsserver(tsserver, consumer, output);
 const results = {};

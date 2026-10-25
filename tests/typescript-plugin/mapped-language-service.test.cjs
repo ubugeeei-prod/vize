@@ -549,6 +549,90 @@ void test("one project fingerprints its native closure once per epoch and dispos
     assert.deepEqual(closed, [config, base, missing]);
     assert.equal(host.getProjectVersion, originalVersion);
     assert.equal(support.snapshots.size, 0);
+    const file = [...sources.keys()][0];
+    const authored = "// 😀\r\nconst missing = Missing;\r\n";
+    const prefix = "declare const generated: unknown;\n";
+    sources.set(file, authored);
+    native.generateVueLanguageCode = () =>
+      JSON.stringify({
+        text: prefix + authored,
+        extension: ".tsx",
+        mappings: [
+          [
+            Buffer.byteLength(prefix),
+            Buffer.byteLength(authored),
+            0,
+            Buffer.byteLength(authored),
+            0,
+            0xfffff,
+          ],
+        ],
+        diagnostics: [],
+      });
+    let rawDisposals = 0,
+      outerCalls = 0;
+    const raw = {
+      getSyntacticDiagnostics: () => [],
+      getSemanticDiagnostics: () => [
+        {
+          start: prefix.length + authored.indexOf("Missing"),
+          length: 7,
+          code: 2339,
+          messageText: "authored missing name",
+          category: ts.DiagnosticCategory.Error,
+        },
+      ],
+      dispose: () => rawDisposals++,
+    };
+    const activate = (languageService) =>
+      require("../../npm/typescript-plugin/index.cjs")({ typescript: ts }).create({
+        languageService,
+        languageServiceHost: host,
+        config: { nativePath: nativeRoot },
+        serverHost: {
+          watchFile(file, callback) {
+            watches.set(file, callback);
+            return {
+              close() {
+                watches.delete(file);
+              },
+            };
+          },
+        },
+      });
+    const first = activate(raw);
+    const expected = first.getSemanticDiagnostics(file);
+    assert.equal(expected[0].start, authored.indexOf("Missing"));
+    assert.equal(expected[0].messageText, "authored missing name");
+    assert.equal(
+      activate(first),
+      first,
+      "a real configured-project reactivation does not map the same packet twice",
+    );
+    const foreign = {
+      ...first,
+      getSemanticDiagnostics(name) {
+        outerCalls++;
+        return first.getSemanticDiagnostics(name);
+      },
+    };
+    const reloaded = activate(foreign);
+    assert.equal(
+      reloaded,
+      foreign,
+      "another plugin's complete outer wrapper stays in the live chain",
+    );
+    assert.deepEqual(reloaded.getSemanticDiagnostics(file), expected);
+    assert.equal(outerCalls, 1);
+    reloaded.dispose();
+    assert.equal(rawDisposals, 1);
+    assert.equal(watches.size, 0);
+    const reopened = activate(raw);
+    assert.notEqual(reopened, raw, "a fresh project lifetime owns a fresh mapper");
+    assert.deepEqual(reopened.getSemanticDiagnostics(file), expected);
+    reopened.dispose();
+    assert.equal(rawDisposals, 2);
+    assert.equal(watches.size, 0);
   } finally {
     crypto.createHash = originalHash;
     support.dispose();

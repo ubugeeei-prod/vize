@@ -104,31 +104,23 @@ async function run() {
 
 async function checkInheritedConfiguration(workspace) {
   const crypto = require("node:crypto");
+  const { files, expected, pack } =
+    require("../../../../tests/typescript-plugin/project-fixture.cjs").readProjectFixture();
   const root = path.join(workspace, "継承設定");
   const src = path.join(root, "src");
   fs.mkdirSync(src, { recursive: true });
   const config = path.join(root, "tsconfig.json");
-  const base = path.join(root, "base.json");
-  const vue = path.join(src, "Guarded.vue");
+  const base = path.join(root, "inherited.json");
+  const vue = path.join(src, "Inherited.vue");
   const control = path.join(src, "control.ts");
   const entry = path.join(src, "entry.ts");
   const inputs = {
-    config: JSON.stringify({
-      ...JSON.parse(fs.readFileSync(path.join(workspace, "tsconfig.json"), "utf8")),
-      extends: "./base.json",
-    }),
-    vue: '<script setup lang="ts">\nconst known = 1;\n</script>\n<template><UnknownClosureProbe :n="known"/></template>\n',
-    control:
-      'export function fallthrough(kind: string) {\n  switch (kind) {\n    case "one": kind.trim();\n    case "two": break;\n  }\n}\n',
-    entry: 'import "./Guarded.vue";\nexport const marker = 1;\n',
-    before: {
-      compilerOptions: { noFallthroughCasesInSwitch: false },
-      vueCompilerOptions: { strictTemplates: false },
-    },
-    after: {
-      compilerOptions: { noFallthroughCasesInSwitch: true },
-      vueCompilerOptions: { strictTemplates: true },
-    },
+    config: files.get("tsconfig-5.7.json.txt"),
+    vue: files.get("src/Inherited.vue.txt"),
+    control: files.get("src/control.ts.txt"),
+    entry: 'import "./Inherited.vue";\nexport const marker = 1;\n',
+    before: JSON.parse(files.get("inherited-before.json.txt")),
+    after: JSON.parse(files.get("inherited-after.json.txt")),
   };
   for (const [file, text] of [
     [config, inputs.config],
@@ -141,7 +133,7 @@ async function checkInheritedConfiguration(workspace) {
     file,
     sha256: crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"),
   }));
-  const packet = { inputs, fixed };
+  const packet = { inputs, fixed, fixture: pack };
   const save = () =>
     fs.writeFileSync(
       `${process.env.VIZE_TYPESCRIPT_PROVIDER_RESULT}.configuration.json`,
@@ -203,9 +195,13 @@ async function checkInheritedConfiguration(workspace) {
     await vscode.commands.executeCommand("typescript.restartTsServer");
     packet.fresh = await eventually(async () => {
       const response = await diagnostics(vue);
+      packet.latestFresh = response;
+      save();
       assert.deepEqual(response.body, packet.warm.body);
       return response;
     });
+    assert.deepEqual(packet.fresh.body, expected.strict);
+    assert.deepEqual(packet.controlAfter.body, expected.controlAfter);
     return packet;
   } finally {
     save();

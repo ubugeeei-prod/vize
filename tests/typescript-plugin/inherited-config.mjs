@@ -3,26 +3,23 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { startTsserver } from "./tsserver-client.mjs";
+import fixtureLoader from "./project-fixture.cjs";
 
-export function createInheritedConfig(consumer, src, output, config) {
+export function createInheritedConfig(consumer, src, output, typescriptVersion) {
+  const { files, expected, pack } = fixtureLoader.readProjectFixture();
   const base = path.join(consumer, "inherited.json"),
     root = path.join(consumer, "tsconfig.json");
   const sourceFile = path.join(src, "Inherited.vue");
-  const source =
-    '<script setup lang="ts">\nconst known = 1;\n</script>\n<template><UnknownClosureProbe :n="known"/></template>\n';
+  const source = files.get("src/Inherited.vue.txt");
   const control = path.join(src, "inherited-control.ts");
-  const controlSource =
-    'export function fallthrough(kind: string) {\n  switch (kind) {\n    case "one": kind.trim();\n    case "two": break;\n  }\n}\n';
-  const before = {
-    compilerOptions: { noFallthroughCasesInSwitch: false },
-    vueCompilerOptions: { strictTemplates: false },
-  };
-  const after = {
-    compilerOptions: { noFallthroughCasesInSwitch: true },
-    vueCompilerOptions: { strictTemplates: true },
-  };
-  fs.writeFileSync(root, JSON.stringify({ ...config, extends: "./inherited.json" }));
-  fs.writeFileSync(base, JSON.stringify(before));
+  const controlSource = files.get("src/control.ts.txt");
+  const before = JSON.parse(files.get("inherited-before.json.txt"));
+  const after = JSON.parse(files.get("inherited-after.json.txt"));
+  fs.writeFileSync(
+    root,
+    files.get(`tsconfig-${typescriptVersion.startsWith("6.") ? "6.0" : "5.7"}.json.txt`),
+  );
+  fs.writeFileSync(base, files.get("inherited-before.json.txt"));
   fs.writeFileSync(sourceFile, source);
   fs.writeFileSync(control, controlSource);
   const digest = (data) => createHash("sha256").update(data).digest("hex");
@@ -40,13 +37,14 @@ export function createInheritedConfig(consumer, src, output, config) {
         controlSource,
         before,
         after,
+        fixture: pack,
         fixed: fixed.map(({ file, sha256 }) => ({ file, sha256 })),
       },
       null,
       2,
     ),
   );
-  return { root, base, sourceFile, source, control, controlSource, before, after, fixed };
+  return { root, base, sourceFile, source, control, controlSource, before, after, fixed, expected };
 }
 
 export async function checkInheritedConfig(
@@ -132,6 +130,8 @@ export async function checkInheritedConfig(
   }
   assert.deepEqual(packet.before.body, [], "unchecked unknown components are initially admitted");
   assert.deepEqual(packet.controlBefore.body, []);
+  assert.deepEqual(packet.fresh.body, fixture.expected.strict);
+  assert.deepEqual(packet.controlAfter.body, fixture.expected.controlAfter);
   assert(
     packet.controlAfter.body.some((diagnostic) => diagnostic.code === 7029),
     "the real TypeScript project consumed the changed extends file",

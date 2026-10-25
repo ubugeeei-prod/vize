@@ -1,0 +1,1 @@
+{"compilerOptions":{"noFallthroughCasesInSwitch":false},"vueCompilerOptions":{"strictTemplates":false}}

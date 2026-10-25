@@ -5,6 +5,7 @@ const { vueComponentDisplayParts } = require("./component-contracts.cjs");
 const { resolveVueImportDefinition } = require("./import-resolution.cjs");
 const { createMappedLanguageService } = require("./language-service.cjs");
 const { installVueVirtualModules, isSfc } = require("./virtual-modules.cjs");
+const liveProjects = new WeakMap();
 
 function init({ typescript: ts }) {
   return {
@@ -36,15 +37,28 @@ function init({ typescript: ts }) {
       if (info?.config?.enabled === false || !info?.languageService) {
         return info?.languageService;
       }
+      // TypeScript re-enables configured plugins on the current service after
+      // reloadProjects. That service can already contain this mapper, followed
+      // by another plugin's wrapper. Preserve that complete live chain.
+      if (liveProjects.has(info.languageServiceHost)) return info.languageService;
       try {
         const support = createVueImportSupport(ts, info);
-        return support
+        const service = support
           ? createLanguageServiceProxy(
               ts,
               createMappedLanguageService(ts, info.languageService, support.virtual),
               support,
             )
           : info.languageService;
+        if (support) {
+          const dispose = service.dispose?.bind(service);
+          service.dispose = () => {
+            liveProjects.delete(info.languageServiceHost);
+            dispose?.();
+          };
+          liveProjects.set(info.languageServiceHost, service);
+        }
+        return service;
       } catch (error) {
         logPluginError(info, "create", error);
         return info.languageService;
