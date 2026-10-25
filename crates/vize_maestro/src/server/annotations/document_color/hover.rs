@@ -40,9 +40,15 @@ pub(in crate::server::annotations) fn hover(ctx: &IdeContext<'_>) -> Option<Hove
         selected.consumed_bytes as u64,
     );
     let literal = selected.literal?;
-    let mut positions = PositionCursor::new(&ctx.content);
-    let start = positions.position(literal.start);
-    let end = positions.position(literal.end);
+    let range = vize_l0::profile!("maestro.css_color_hover.positions", {
+        let mut positions = PositionCursor::new(&ctx.content);
+        let start = positions.position(literal.start);
+        let end = positions.position(literal.end);
+        Range::new(
+            Position::new(start.line, start.character),
+            Position::new(end.line, end.character),
+        )
+    });
     let color = Color {
         red: literal.red,
         green: literal.green,
@@ -52,15 +58,15 @@ pub(in crate::server::annotations) fn hover(ctx: &IdeContext<'_>) -> Option<Hove
     let markdown = vize_l0::profile!("maestro.css_color_hover.render", markdown(color));
     Some(Hover {
         contents: HoverContents::Markup(markdown_content(markdown)),
-        range: Some(Range::new(
-            Position::new(start.line, start.character),
-            Position::new(end.line, end.character),
-        )),
+        range: Some(range),
     })
 }
 
 fn markdown(color: Color) -> String {
-    let forms = DocumentColorService::presentations(color);
+    let forms = vize_l0::profile!(
+        "maestro.css_color_hover.presentations",
+        DocumentColorService::presentations(color)
+    );
     let mut example = String::from(".example {\n");
     for form in forms {
         example.push_str("  color: ");

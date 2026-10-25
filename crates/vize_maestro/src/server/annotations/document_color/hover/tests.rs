@@ -72,6 +72,14 @@ fn complete_hover_packets_keep_authored_utf16_ranges_in_every_supported_style_pr
                     None
                 );
             }
+            assert_eq!(
+                state.resident.take_stats(),
+                vize_incremental::DescriptorStats {
+                    lookups: 9,
+                    parses: 1
+                },
+                "every selected query reuses the resident descriptor for {language:?}/{ending:?}"
+            );
             #[cfg(feature = "native")]
             assert!(!state.has_corsa_bridge());
         }
