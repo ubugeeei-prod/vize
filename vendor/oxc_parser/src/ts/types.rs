@@ -1704,5 +1704,4 @@ impl<'a, C: Config> ParserImpl<'a, C> {
 }
 
 #[cfg(test)]
-#[path = "types/type_argument_close_tests.rs"]
 mod type_argument_close_tests;
