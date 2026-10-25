@@ -139,7 +139,8 @@ fn project_preview_is_not_overridden_by_an_ancestor_native_version() {
 #[test]
 fn missing_runtime_message_is_actionable_without_a_bare_executable_fallback() {
     let message = crate::cstr!("{}", CorsaResolveError::NotFound);
-    assert!(message.contains("native TypeScript/tsgo"));
-    assert!(message.contains("selected project"));
-    assert!(message.contains("CORSA_PATH"));
+    assert_eq!(
+        message.as_str(),
+        "No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable."
+    );
 }

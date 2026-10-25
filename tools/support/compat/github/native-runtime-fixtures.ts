@@ -31,7 +31,7 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       {
         path: "crates/vize_canon/src/lsp_client/bootstrap.rs",
         before: "b0f9fa8f1a3b9eb8df8ea12f5141059cd195a60d393da7e671daf5a9010a4305",
-        after: "273948b9cc6c40af8e4eb0c793151caf678964b7ec2fec54c016d67431376aa6",
+        after: "7d3a41daa0d38b31c025340bf7c676ac10bc359cd45e5e18f9a1a34042a8c775",
       },
       {
         path: "crates/vize_canon/src/batch/error.rs",

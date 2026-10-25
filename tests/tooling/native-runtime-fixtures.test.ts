@@ -36,14 +36,15 @@ const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex")
 const pathFor = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
 const manifestFor = (product: Product) =>
   JSON.parse(readFileSync(new URL(pathFor(product), root), "utf8")) as Manifest;
-const sourceCache = new Map<string, Buffer | null>();
-function beforeSource(path: string): Buffer | null {
-  if (sourceCache.has(path)) return sourceCache.get(path) ?? null;
-  // This is an immutable actual-main ancestor, available in the same full
-  // history checkout the affected-tooling planner requires. No network fallback.
-  const bytes = gitFixtureFile(baseline, path, fileURLToPath(root));
-  sourceCache.set(path, bytes);
-  return bytes;
+const images = JSON.parse(
+  readFileSync(new URL("tests/tooling/fixtures/native-runtime-source-images.json", root), "utf8"),
+) as {
+  base: Record<string, string | null>;
+  head: Record<string, string>;
+};
+function sourceImage(side: "base" | "head", path: string): Buffer | null {
+  const text = images[side][path];
+  return typeof text === "string" ? Buffer.from(text) : null;
 }
 function analyze(
   product: Product,
@@ -70,8 +71,9 @@ function analyze(
             runtimeCases: side === "base" ? (options.previous ?? []) : (options.rows ?? [row]),
           }),
         );
-      if (side === "base") return beforeSource(path);
+      if (side === "base") return sourceImage(side, path);
       if (Object.hasOwn(options.files ?? {}, path)) return options.files?.[path] ?? null;
+      if (Object.hasOwn(images.head, path)) return sourceImage("head", path);
       try {
         return readFileSync(new URL(path, root));
       } catch {
@@ -93,16 +95,13 @@ void test("actual Rust graph registrations qualify exact source pairs outside la
       product === "typechecker"
         ? loadTypecheckerManifest(fileURLToPath(new URL(pathFor(product), root)))
         : loadLinterManifest(fileURLToPath(new URL(pathFor(product), root)), fileURLToPath(root));
-    const baselineManifest = JSON.parse(
-      beforeSource(pathFor(product))!.toString("utf8"),
-    ) as Manifest;
-    assert.deepEqual(manifest.cases, baselineManifest.cases);
+    assert.deepEqual(loaded.manifest.cases, manifest.cases);
     // Linter input-only registrations were already outside its executable
     // cohort denominator. Preserve both inventories rather than equating them.
     const planned =
       product === "typechecker"
-        ? baselineManifest.cases.map(({ id }) => id)
-        : baselineManifest.cohorts!.flatMap((cohort) => {
+        ? manifest.cases.map(({ id }) => id)
+        : manifest.cohorts!.flatMap((cohort) => {
             const cases = JSON.parse(
               readFileSync(new URL(cohort.cases.path, root), "utf8"),
             ) as Array<{ id: string }>;
@@ -190,7 +189,7 @@ void test("source, selector and test body mutations reject even when their suppl
     const row = structuredClone(manifestFor(product).runtimeCases[0]);
     const path = row.sources[0].path;
     const bytes = Buffer.concat([
-      readFileSync(new URL(path, root)),
+      sourceImage("head", path)!,
       Buffer.from("\n// unrelated future edit\n"),
     ]);
     row.sources[0].after = hash(bytes);
@@ -230,9 +229,9 @@ void test("mixed and future product edits still need normal language inputs", ()
 
 void test("mixed batch errors retain every unrelated enum, conversion and detection byte", () => {
   const path = "crates/vize_canon/src/batch/error.rs";
-  const before = beforeSource(path)?.toString("utf8");
+  const before = sourceImage("base", path)?.toString("utf8");
   assert(before);
-  const after = readFileSync(new URL(path, root), "utf8");
+  const after = sourceImage("head", path)!.toString("utf8");
   assert(unchangedNonRuntimeErrors(before, after));
   assert(
     !unchangedNonRuntimeErrors(before, after.replace("SfcParse(String)", "SfcParse(PathBuf)")),

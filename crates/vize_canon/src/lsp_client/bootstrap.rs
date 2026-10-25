@@ -242,8 +242,13 @@ mod tests {
             Some(root.path().to_str().unwrap()),
         )
         .unwrap_err();
-        assert!(error.contains("Configured Corsa executable does not exist"));
-        assert!(error.contains("missing-native-runtime"));
+        assert_eq!(
+            error,
+            vize_l0::cstr!(
+                "Configured Corsa executable does not exist: {} (from configuration)",
+                root.path().join("missing-native-runtime").display()
+            )
+        );
     }
 
     #[test]
