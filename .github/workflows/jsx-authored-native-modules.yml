@@ -1,0 +1,125 @@
+name: JSX authored native modules
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_atelier_jsx/**"
+      - "crates/vize_atelier_vapor/src/**"
+      - "crates/vize_atelier_ssr/src/**"
+      - "crates/vize_vitrine/src/napi/jsx.rs"
+      - ".github/workflows/jsx-authored-native-modules.yml"
+permissions: { contents: read }
+concurrency:
+  group: jsx-authored-native-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  authored-modules:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Complete native module and source-map oracles
+        env:
+          VIZE_JSX_AUTHORED_NATIVE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/packets.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/jsx-authored-native"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
+          cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture
+      - name: Measure the exact old and new authored-module contracts
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          baseline="$RUNNER_TEMP/jsx-authored-base"
+          observer=crates/vize_atelier_jsx/tests/authored_module_profile.rs
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          role_observer=crates/vize_atelier_jsx/tests/ssr_functional_role_packet.rs
+          cp "$role_observer" "$baseline/$role_observer"
+          cmp "$role_observer" "$baseline/$role_observer"
+          git -C "$baseline" diff --exit-code -- crates/*/src
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
+          VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture)
+          VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture
+          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
+          sha256sum "$observer" "$baseline/$observer" "$role_observer" "$baseline/$role_observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
+      - name: Verify measured contracts and source counters
+        run: |
+          python3 - <<'PYCODE'
+          import json, os, statistics
+          from pathlib import Path
+          directory=Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native'
+          base=json.loads((directory/'base-profile.json').read_text())
+          head=json.loads((directory/'head-profile.json').read_text())
+          assert len(base)==len(head)==12
+          before_roles=json.loads((directory/'base-functional-role.json').read_text())
+          after_roles=json.loads((directory/'head-functional-role.json').read_text())
+          assert len(before_roles)==len(after_roles)==6
+          for index,(before,after) in enumerate(zip(before_roles,after_roles)):
+            assert before['source']==after['source']
+            assert before['components']==after['components'], 'module admission must retain the whole original producer packet'
+            if index==0:
+              assert after['module']=='' and len(after['diagnostics'])==1
+              if not before['diagnostics']:
+                assert 'function ssrRender' in before['module'] and 'const A =' not in before['module']
+            if index==3:
+              assert not after['diagnostics'] and '__ssrInlineRender: true' in after['module']
+            if index in [1,2,4,5]:
+              assert len(after['diagnostics'])==1 and after['module']==''
+              diagnostic=after['diagnostics'][0]
+              assert after['source'][diagnostic['start']:diagnostic['end']] in ['1','`text`']
+          rows=[]
+          for previous,current in zip(base,head):
+            for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
+            assert not current['output']['diagnostics'], current['output']
+            counters={entry['name']:entry['total'] for entry in current['counters']}
+            roots=counters['atelier.jsx.module.native_roots']
+            assert counters['atelier.jsx.module.native_plans']==roots
+            assert counters['atelier.jsx.module.native_generated_maps']==(roots if current['map'] else 0)
+            if current['ssr']: assert counters['l4.ssr.accepted']==roots
+            else: assert counters['atelier.vapor.transformed_root.origin_collections']==(roots if current['map'] else 0)
+            if current['map']:
+              mapped=json.loads(current['output']['map'])
+              assert mapped['sourcesContent']==[current['source']]
+            else: assert current['output']['map'] is None
+            assert len(previous['samplesNs'])==len(current['samplesNs'])==9
+            before=statistics.median(previous['samplesNs'])
+            after=statistics.median(current['samplesNs'])
+            rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'baseContract':'explicit-refusal' if previous['output']['diagnostics'] else 'complete-module','headContract':'complete-module','baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
+          (directory/'comparison.json').write_text(json.dumps({'scope':'same sources with raw before/head outcomes retained; ratios describe the observed contracts and do not claim equivalent work or a speedup','rows':rows},indent=2)+'\n')
+          PYCODE
+      - name: Existing JSX library contracts
+        if: always()
+        env: { INSTA_UPDATE: new }
+        run: cargo test --locked --profile ci -p vize_atelier_jsx --lib
+      - name: Existing mode and Babel option producer contracts
+        if: always()
+        env: { INSTA_UPDATE: new }
+        run: |
+          status=0
+          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding; do
+            cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
+          done
+          exit "$status"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: jsx-authored-native-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/jsx-authored-native
+            crates/vize_atelier_jsx/src/**/*.snap.new
+            crates/vize_atelier_jsx/tests/**/*.snap.new
+          if-no-files-found: error
+          retention-days: 14

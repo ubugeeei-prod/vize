@@ -80,13 +80,13 @@ pub struct JsxScopedStyleNapi {
 #[napi(object)]
 pub struct JsxCompileResultNapi {
     /// Complete emitted module, including the deduplicated runtime helpers.
-    /// VDOM output retains authored imports, declarations and exports. Static
-    /// standalone Vapor output contains named renderer exports; unsupported
-    /// authored Vapor modules return diagnostics and an empty module.
+    /// Authored imports, declarations and exports are retained. Native component
+    /// arrows use genuine Vue setup contracts; unrepresented native contexts
+    /// return source diagnostics and an empty module.
     pub code: String,
     /// v3 source map (JSON) for `code`, present when requested for mappable
-    /// output. Authored spans and all VDOM JSX roots map against the complete
-    /// source. `null` for generated backends without map support.
+    /// output. Authored spans and generated JSX roots map against the complete
+    /// original source.
     pub map: Option<String>,
     /// Error-severity diagnostic messages.
     pub errors: Vec<String>,
@@ -159,8 +159,8 @@ fn compile_jsx_impl(
         ..Default::default()
     };
     config.ssr = opts.ssr.unwrap_or(false);
-    // Surface a v3 source map when requested. The flag only affects client VDOM
-    // codegen; enabling it is a no-op for Vapor and SSR output.
+    // Every backend carries its genuine per-root source origins into the
+    // complete authored module when maps are requested.
     config.vdom.source_map = opts.source_map.unwrap_or(false);
 
     let allocator = Allocator::new();
@@ -416,7 +416,7 @@ mod tests {
     #[test]
     fn jsx_compile_result_supports_ssr_output() {
         let result = compile_jsx_impl(
-            "const App = () => <div>{message}</div>;".to_string(),
+            "const App = () => { return <div>{message}</div>; };".to_string(),
             Some(JsxCompileOptionsNapi {
                 ssr: Some(true),
                 source_map: Some(true),
@@ -425,14 +425,17 @@ mod tests {
         );
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(result.code.contains("__ssrInlineRender: true"));
+        assert!(result.code.contains("const App ="));
+        assert!(result.code.contains("_ssrInterpolate(message)"));
+        let decoded: serde_json::Value =
+            serde_json::from_str(&result.map.expect("SSR module source map"))
+                .expect("valid v3 map");
         assert_eq!(
-            result.code,
-            "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } \
-             from \"@vue/server-renderer\"\n\n\
-             function ssrRender(_ctx, _push, _parent, _attrs) {\n  \
-             _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(message)}</div>`)\n\
-             }\n"
+            decoded.get("sourcesContent"),
+            Some(&serde_json::json!([
+                "const App = () => { return <div>{message}</div>; };"
+            ]))
         );
-        assert!(result.map.is_none(), "SSR output has no source map yet");
     }
 }
