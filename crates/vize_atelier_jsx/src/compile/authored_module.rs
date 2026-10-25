@@ -3,6 +3,7 @@
 mod collisions;
 mod contexts;
 mod mapped;
+mod native;
 mod plans;
 
 use vize_l0::{String, ToCompactString};
@@ -54,6 +55,20 @@ pub(super) fn emit(
         "atelier.jsx.module.component_plans",
         plans::collect(&parsed.program, &native_roots)
     )?;
+    let profiler = vize_l0::profiler::global_profiler();
+    if profiler.is_enabled() {
+        profiler
+            .record_counter_enabled("atelier.jsx.module.native_roots", native_roots.len() as u64);
+        profiler
+            .record_counter_enabled("atelier.jsx.module.native_plans", native_plans.len() as u64);
+        profiler.record_counter_enabled(
+            "atelier.jsx.module.generated_maps",
+            origins
+                .iter()
+                .filter(|origin| origin.json.is_some())
+                .count() as u64,
+        );
+    }
     contexts::check_spans(
         &parsed.program,
         &native_plans
@@ -223,66 +238,6 @@ impl Context<'_> {
         } else {
             ")\n})()"
         });
-        Ok(())
-    }
-
-    fn native_plan(&self, index: usize) -> Option<&plans::Plan> {
-        let &(start, end) = self.spans.get(index)?;
-        self.native_plans
-            .iter()
-            .find(|plan| plan.setup.render_start == start && plan.setup.render_end == end)
-    }
-
-    fn native_wrapper(
-        &self,
-        index: usize,
-        writer: &mut ModuleWriter<'_>,
-    ) -> Result<(), JsxDiagnostic> {
-        let component = self
-            .components
-            .get(index)
-            .ok_or_else(|| error(0, 0, "missing native component"))?;
-        let plan = self
-            .native_plan(index)
-            .ok_or_else(|| error(0, 0, "missing native component plan"))?;
-        let setup = &plan.setup;
-        writer.synthetic("({\n");
-        writer.synthetic(if matches!(component, JsxComponent::Ssr(_)) {
-            "__ssrInlineRender: true,\n"
-        } else {
-            "__vapor: true,\n"
-        });
-        if let Some(name) = component.component_name() {
-            writer.synthetic("name: ");
-            writer.synthetic(&js_string(name));
-            writer.synthetic(",\n");
-        }
-        if !setup.destructured_props.is_empty() {
-            writer.synthetic("props: [");
-            for (i, prop) in setup.destructured_props.iter().enumerate() {
-                if i > 0 {
-                    writer.synthetic(", ");
-                }
-                writer.synthetic(&js_string(prop));
-            }
-            writer.synthetic("],\n");
-        }
-        if setup.is_async {
-            writer.synthetic("async ");
-        }
-        writer.synthetic("setup");
-        if setup.type_params_start != setup.type_params_end {
-            writer.synthetic("<");
-            writer.authored(setup.type_params_start, setup.type_params_end)?;
-            writer.synthetic(">");
-        }
-        writer.synthetic("(");
-        writer.authored(setup.params_start, setup.params_end)?;
-        writer.synthetic(") {\n");
-        self.authored_range(setup.setup_start, setup.setup_end, index, writer)?;
-        writer.synthetic("return ");
-        self.expression(index, !matches!(component, JsxComponent::Ssr(_)), writer)?;
-        writer.synthetic("\n}\n})");
         Ok(())
     }
 
