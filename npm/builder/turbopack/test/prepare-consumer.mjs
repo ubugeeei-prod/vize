@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parse } from "yaml";
+import { sourceNativeResolutions } from "./consumer-lock.mjs";
 
 export const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 export const repoRoot = path.resolve(packageRoot, "../../..");
@@ -253,26 +253,15 @@ export async function prepareConsumer() {
     ]);
   }
   const strictLockBytes = await fs.readFile(path.join(strictConsumer, "pnpm-lock.yaml"));
-  const strictLock = parse(strictLockBytes.toString());
-  assert.equal(
-    path.resolve(strictConsumer, strictLock.overrides["@vizejs/native"].replace(/^file:/, "")),
-    nativeTar,
-  );
-  const nativeResolutions = Object.entries(strictLock.packages).filter(([key]) =>
-    key.startsWith("@vizejs/native@"),
-  );
-  assert.ok(nativeResolutions.length);
   const nativeIntegrity = `sha512-${createHash("sha512")
     .update(await fs.readFile(nativeTar))
     .digest("base64")}`;
-  for (const [key, entry] of nativeResolutions) {
-    assert.ok(key.includes("file:"), "a registry native image is not source qualification");
-    assert.equal(entry.resolution.integrity, nativeIntegrity);
-    assert.equal(
-      path.resolve(strictConsumer, entry.resolution.tarball.replace(/^file:/, "")),
-      nativeTar,
-    );
-  }
+  const nativeResolutions = sourceNativeResolutions(
+    strictLockBytes.toString(),
+    strictConsumer,
+    nativeTar,
+    nativeIntegrity,
+  );
   const strictRequire = createRequire(path.join(strictConsumer, "package.json"));
   const strictNative = strictRequire.resolve("@vizejs/native");
   const strictEntries = {};
