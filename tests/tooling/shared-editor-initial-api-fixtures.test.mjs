@@ -7,6 +7,7 @@ import {
   newSharedEditorInitialApiCases,
   SHARED_EDITOR_INITIAL_API_PROTOCOL_ID as ID,
 } from "../../tools/support/compat/github/shared-editor-initial-api-fixtures.ts";
+import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifest = JSON.parse(
@@ -46,6 +47,24 @@ function reader(overrides = new Map()) {
     [clientPath, Buffer.from(client)],
     [row.lspCase.path, null],
   ]);
+  const beforeTypechecker = structuredClone(manifest);
+  beforeTypechecker.protocolCases = beforeTypechecker.protocolCases.filter(
+    (item) => item.id !== ID,
+  );
+  before.set(
+    "tests/_fixtures/differential/typechecker/manifest.json",
+    Buffer.from(JSON.stringify(beforeTypechecker)),
+  );
+  const beforeLsp = JSON.parse(
+    fs.readFileSync(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"), "utf8"),
+  );
+  beforeLsp.cases = beforeLsp.cases.filter(
+    (item) => item.id !== "lsp/regression/shared-api-snapshot-reopen-10730",
+  );
+  before.set(
+    "tests/_fixtures/differential/lsp/manifest.json",
+    Buffer.from(JSON.stringify(beforeLsp)),
+  );
   return (side, name) => {
     if (overrides.has(`${side}:${name}`)) return overrides.get(`${side}:${name}`);
     if (side === "base" && before.has(name)) return before.get(name);
@@ -115,4 +134,46 @@ void test("ordinary inputs cannot replace the pinned wire, image authority or co
   const sdk = structuredClone(row);
   sdk.producer.sdk.sha256 = "0".repeat(64);
   assert.throws(() => newSharedEditorInitialApiCases(undefined, [sdk], reader()));
+});
+
+void test("shared report requires the reviewed API row even with ordinary filler and keeps mixed Canon requirements", () => {
+  const paths = row.sources.map((source) => source.path);
+  const analyze = (readFile, changed = paths) =>
+    analyzeLegacyFix({ title: "fix(lsp): acknowledge shared snapshots", paths: changed, readFile });
+  const accepted = analyze(reader());
+  assert.ok(accepted.products.length > 0);
+  assert.ok(accepted.products.every((product) => product.state === "new-inputs-registered"));
+  assert.ok(accepted.products.some((product) => product.cases.includes(ID)));
+  const absent = structuredClone(manifest);
+  absent.protocolCases = absent.protocolCases.filter((item) => item.id !== ID);
+  absent.cases.push({
+    ...structuredClone(absent.cases[0]),
+    id: "typechecker/ordinary-structural-control",
+  });
+  const missing = analyze(
+    reader(
+      new Map([
+        [
+          "head:tests/_fixtures/differential/typechecker/manifest.json",
+          Buffer.from(JSON.stringify(absent)),
+        ],
+      ]),
+    ),
+  );
+  assert.ok(missing.products.some((product) => product.state !== "new-inputs-registered"));
+  const mixed = analyze(reader(), [...paths, "crates/vize_canon/src/batch/unrelated.rs"]);
+  assert.ok(mixed.products.some((product) => product.state === "new-input-missing"));
+  const foreign = structuredClone(manifest);
+  foreign.protocolCases.push({ ...structuredClone(row), id: "lsp/unknown-api-contract" });
+  const unknown = analyze(
+    reader(
+      new Map([
+        [
+          "head:tests/_fixtures/differential/typechecker/manifest.json",
+          Buffer.from(JSON.stringify(foreign)),
+        ],
+      ]),
+    ),
+  );
+  assert.ok(unknown.products.some((product) => product.state === "invalid-manifest-or-input"));
 });

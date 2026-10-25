@@ -7107,7 +7107,7 @@
         },
         "registryTest": {
           "path": "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",
-          "sha256": "f64348a6c6ef8e7c15b71e465f75f419ef647374877a6510bade62b910104750"
+          "sha256": "efe2edfc3586fb44000d5d5a38809a1e1e56c8b0384c9d782b8e933095cdeca3"
         }
       }
     },
