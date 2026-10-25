@@ -26,7 +26,7 @@ function installVueVirtualModules(ts, info) {
     /* Logging cannot affect the host. */
   }
   const snapshots = new Map();
-  const get = (fileName) => {
+  const readSource = (fileName) => {
     if (!isSfc(fileName)) return undefined;
     const originalSnapshot = getSnapshot(fileName);
     const scriptInfo = info.project?.projectService?.getScriptInfo?.(fileName);
@@ -42,6 +42,11 @@ function installVueVirtualModules(ts, info) {
       // authored disk text through its public API; open buffers are untouched.
       scriptInfo.reloadFromFile?.(fileName);
     }
+    return source;
+  };
+  const get = (fileName) => {
+    const source = readSource(fileName);
+    if (typeof source !== "string") return undefined;
     const settings = host.getCompilationSettings?.() || {};
     const configSource =
       typeof settings.configFilePath === "string" ? readFile(settings.configFilePath) : "";
@@ -149,7 +154,7 @@ function installVueVirtualModules(ts, info) {
       );
     },
   };
-  const support = { get, engine, resolve, fileExists, readFile, snapshots };
+  const support = { get, readSource, engine, resolve, fileExists, readFile, snapshots };
   if (!engine.native) return support;
   if (!installAtomically(host, replacements)) return undefined;
   installedHosts.set(host, support);
