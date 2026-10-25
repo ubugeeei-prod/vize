@@ -49,6 +49,35 @@ Own: the component's template alone. Rendered: own plus every distinct component
 | 1 | Child.vue | Child | 5 | reactive-graph (4) via template cyclomatic=1, reactive nodes=2, reactive edges=1 |\n\
 | 2 | App.vue | App | 1 | template-control-flow (1) via template cyclomatic=1 |\n";
 
+const PLAIN_REPORT: &str = "## Cross-file Complexity\n\n\
+| Metric | Value |\n\
+| --- | ---: |\n\
+| Band | low |\n\
+| Total score | 2 |\n\
+| Cyclomatic score | 2 |\n\
+| Cognitive score | 0 |\n\n\
+### Dimensions\n\n\
+| Dimension | Score |\n\
+| --- | ---: |\n\
+| template-control-flow | 2 |\n\
+| slot-usage | 0 |\n\
+| prop-drilling | 0 |\n\
+| global-state | 0 |\n\
+| provide-inject | 0 |\n\
+| fallthrough-attrs | 0 |\n\
+| reactive-graph | 0 |\n\n\
+### Template Complexity\n\n\
+Own: the component's template alone. Rendered: own plus every distinct component it renders, recursion counted once. Own scores above cyclomatic 11 or cognitive 16 exceed the corpus p95.\n\n\
+| Component | Own cyclomatic | Own cognitive | Rendered cyclomatic | Rendered cognitive | Renders | Where it comes from |\n\
+| --- | ---: | ---: | ---: | ---: | ---: | --- |\n\
+| App.vue | 1 | 0 | 2 | 0 | 1 | - |\n\
+| Child.vue | 1 | 0 | 1 | 0 | 0 | - |\n\n\
+### Top Hotspots\n\n\
+| Rank | File | Component | Score | Reason |\n\
+| ---: | --- | --- | ---: | --- |\n\
+| 1 | App.vue | App | 1 | template-control-flow (1) via template cyclomatic=1 |\n\
+| 2 | Child.vue | Child | 1 | template-control-flow (1) via template cyclomatic=1 |\n";
+
 fn effects(source: &str) -> EffectGraphSummary {
     analyze_sfc_for_cross_file(source, Path::new("日本語🙂Child.vue"))
         .expect("valid SFC descriptor")
@@ -174,13 +203,7 @@ const label = 'ref(0), computed(() => count.value)'
         if child == CHILD {
             assert_eq!(output.complexity_report.as_deref(), Some(REPORT));
         } else {
-            assert!(
-                output
-                    .complexity_report
-                    .as_deref()
-                    .unwrap()
-                    .contains("| reactive-graph | 0 |")
-            );
+            assert_eq!(output.complexity_report.as_deref(), Some(PLAIN_REPORT));
         }
     }
 }
