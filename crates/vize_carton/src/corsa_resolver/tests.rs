@@ -44,6 +44,7 @@ fn write_typescript_manifest(path: &Path, suffix: &str, version: &str) {
     .unwrap();
 }
 
+#[cfg(unix)]
 fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
     let platform_package = super::packages::tsrs_platform_package().unwrap();
     let wrapper = root.join("node_modules").join(".bin").join("tsrs");
@@ -52,7 +53,7 @@ fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
         .join("node_modules")
         .join(platform_package)
         .join("tsrs");
-    write_file(&wrapper);
+    fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
     write_file(&native);
     fs::create_dir_all(package.parent().unwrap()).unwrap();
     fs::write(
@@ -62,7 +63,9 @@ fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
         ),
     )
     .unwrap();
-    write_file(&root.join("node_modules/tsrs/bin/tsrs.js"));
+    let launcher = root.join("node_modules/tsrs/bin/tsrs.js");
+    write_file(&launcher);
+    std::os::unix::fs::symlink(&launcher, &wrapper).unwrap();
     (wrapper, native)
 }
 

@@ -80,7 +80,7 @@ export function unchangedNativeRuntimeHelp(before: string, after: string): boole
   return before.split(oldText).length === 2 && before.replace(oldText, newText) === after;
 }
 
-/** Only the existing fake runtime's explicit selection may change. */
+/** Preserve both input graphs while correcting explicit mock/opaque selection. */
 export function unchangedGlobalDiagnosticMock(before: string, after: string): boolean {
   const marker = "fn cli_global_diagnostics_do_not_trigger_session_fallback() {";
   const start = before.indexOf(marker);
@@ -90,10 +90,30 @@ export function unchangedGlobalDiagnosticMock(before: string, after: string): bo
   const current =
     "    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();";
   const selected = before.indexOf(previous, start);
+  if (selected < start || end <= selected) return false;
+  const mockSelected =
+    before.slice(0, selected) + current + before.slice(selected + previous.length);
+  const oldName = "fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary()";
+  const newName = "fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview()";
+  const oldPath = "assert_eq!(executor.corsa_path(), native.canonicalize().unwrap());";
+  const newPath = "assert_eq!(executor.corsa_path(), wrapper.canonicalize().unwrap());";
   return (
-    selected >= start &&
-    end > selected &&
-    before.slice(0, selected) + current + before.slice(selected + previous.length) === after
+    mockSelected.split(oldName).length === 2 &&
+    mockSelected.split(oldPath).length === 2 &&
+    mockSelected.replace(oldName, newName).replace(oldPath, newPath) === after
+  );
+}
+
+/** An opaque launcher stays selected; every original input and other assertion stays exact. */
+export function unchangedOpaqueClientFixture(before: string, after: string): boolean {
+  const oldName = "fn normalizes_explicit_wrapper_path_to_native_binary()";
+  const newName = "fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_binary()";
+  const oldPath = "        native_preview\n            .canonicalize()";
+  const newPath = "        wrapper\n            .canonicalize()";
+  return (
+    before.split(oldName).length === 2 &&
+    before.split(oldPath).length === 2 &&
+    before.replace(oldName, newName).replace(oldPath, newPath) === after
   );
 }
 
@@ -195,6 +215,12 @@ export function newNativeRuntimeCases(
             before.toString("utf8"),
             after.toString("utf8"),
           ), "unrelated executor test or oracle edit");
+      if (expected.path === "crates/vize_canon/src/lsp_client/tests.rs")
+        require(before !== null &&
+          unchangedOpaqueClientFixture(
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated client test or input edit");
       if (expected.path === "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs")
         require(before !== null &&
           unchangedIncrementalRuntimeMock(

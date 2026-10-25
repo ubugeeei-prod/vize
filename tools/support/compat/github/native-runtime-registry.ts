@@ -15,7 +15,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/tests.rs",
         before: "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
-        after: "16d7a3b29dfe44c129ef4005b0c62e406b4955062470a1083a6c4f6b29b67ccc",
+        after: "3648f1a499135ec10c0668ddadd647fa8a827059f420813b4fe8a5015e409be2",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
@@ -50,7 +50,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_canon/src/batch/executor/tests.rs",
         before: "138020f6b6f2aca5cabf28d457b1084b87cc3732b673538e57fcf45bbd7cc1d7",
-        after: "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082",
+        after: "400833cf269847075fd9330a3af1fd099d268b07a7889dae6b7b32395606f190",
       },
       {
         path: "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs",
@@ -76,6 +76,11 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
         path: "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
         before: null,
         after: "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd",
+      },
+      {
+        path: "crates/vize_canon/src/lsp_client/tests.rs",
+        before: "6cdcce2ad44616ab339a1a8c3cbf2e0484af5dddc68486ef0bebbc79bdcbb280",
+        after: "55bd45968d7b016ceadf328d0bc2b3650a26eb987dcbc71cad56e3e413bdde2e",
       },
     ],
     tests: [
@@ -174,6 +179,18 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
         source: "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
         consumesFixture: false,
       },
+      {
+        selector:
+          "batch::executor::tests::keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview",
+        source: "crates/vize_canon/src/batch/executor/tests.rs",
+        consumesFixture: false,
+      },
+      {
+        selector:
+          "lsp_client::tests::keeps_explicit_opaque_wrapper_instead_of_unrelated_native_binary",
+        source: "crates/vize_canon/src/lsp_client/tests.rs",
+        consumesFixture: false,
+      },
     ],
   },
   linter: {
@@ -186,7 +203,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/tests.rs",
         before: "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
-        after: "16d7a3b29dfe44c129ef4005b0c62e406b4955062470a1083a6c4f6b29b67ccc",
+        after: "3648f1a499135ec10c0668ddadd647fa8a827059f420813b4fe8a5015e409be2",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
