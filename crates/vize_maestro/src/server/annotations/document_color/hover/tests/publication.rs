@@ -100,3 +100,74 @@ fn completed_whole_color_hover_is_refused_after_async_source_mutation() {
         });
     }
 }
+
+#[test]
+fn concrete_color_hover_keeps_the_local_route_with_typechecking_enabled() {
+    block_on(async {
+        let project = tempfile::tempdir().unwrap();
+        let missing = project
+            .path()
+            .join("definitely-missing-corsa-css-literal-control");
+        assert!(!missing.exists());
+        let config = serde_json::json!({"vue": {
+            "typeChecker": { "corsaPath": missing },
+            "languageServer": { "hover": true, "typecheck": true, "lint": false }
+        }});
+        std::fs::write(
+            project.path().join("vite.config.mjs"),
+            vize_l0::cstr!("export default {};", config).as_bytes(),
+        )
+        .unwrap();
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server
+            .initialize(tower_lsp::lsp_types::InitializeParams {
+                workspace_folders: Some(vec![tower_lsp::lsp_types::WorkspaceFolder {
+                    uri: Url::from_directory_path(project.path()).unwrap(),
+                    name: "CSS literal route".into(),
+                }]),
+                ..Default::default()
+            })
+            .await
+            .unwrap();
+        assert!(server.state.is_lsp_typecheck_enabled());
+        assert!(server.state.lsp_features().hover);
+        assert_eq!(
+            server.state.get_type_checker_config().runtime_path(),
+            missing.to_str()
+        );
+        assert!(!server.state.has_corsa_bridge());
+        assert_eq!(server.state.corsa_init_failure(), None);
+        let source = "<template><div /></template>\n<style>.日本🧭 { color:#336699; }</style>";
+        let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+        server
+            .state
+            .documents
+            .open(uri.clone(), source.into(), 1, "vue".into());
+        let start = source.find("#336699").unwrap();
+        let (line, character) = crate::ide::offset_to_position(source, start + 2);
+        let actual = server
+            .hover(HoverParams {
+                text_document_position_params: TextDocumentPositionParams {
+                    text_document: TextDocumentIdentifier { uri },
+                    position: Position::new(line, character),
+                },
+                work_done_progress_params: Default::default(),
+            })
+            .await
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            serde_json::json!({
+                "contents": { "kind": "markdown", "value": super::DOCUMENTATION },
+                "range": { "start": super::position(source, start), "end": super::position(source, start + 7) }
+            })
+        );
+        assert!(!server.state.has_corsa_bridge());
+        assert_eq!(server.state.corsa_init_failure(), None);
+        // A real startup attempt against the pinned missing executable proves
+        // the preceding hover did not quietly run another discovered provider.
+        assert!(server.state.get_corsa_bridge().await.is_none());
+        assert!(server.state.corsa_init_failure().is_some());
+    });
+}
