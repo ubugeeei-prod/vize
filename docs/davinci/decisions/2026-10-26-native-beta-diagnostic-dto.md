@@ -41,6 +41,16 @@ Darwin arm64 image, with independently authored Unicode/CRLF/LS/PS text and a
 same-snapshot semantic diagnostic. Its JSON sidecar records image, payload and
 raw-stream identities. It is an ABI fixture, separate from source execution.
 
+A DerivedSnapshots API client owns an independent snapshot lineage. An API
+attachment and ready acknowledgement do not prove that lineage contains the
+editor's entire unsaved overlay graph. Matching only the requested file is also
+insufficient: an unchanged file can import an edited dependency. Attached-editor
+semantic API selection therefore reports unsupported for this dialect and uses
+the existing LSP fallback. Component classification separately refuses this
+unproved API view. Configuration/ready barriers remain enabled, and independently
+owned API snapshots remain available. Original-program and configuration
+attestations describe API-owned metadata, not the editor's complete overlay view.
+
 The dedicated `Native beta diagnostic DTO` workflow runs the identical public
 observer against pinned before and candidate source roles and independently
 pinned Linux images for 7.0.2 and 7.1.0-beta. The before role receives only the
@@ -48,7 +58,14 @@ separately hashed test observer and its test-only module registration; its
 production bytes remain the pinned source. Candidate private decoders are never
 copied into that role. The corpus retains complete semantic-error, repair,
 hover and reference packets, an erroneous neighboring file, held-snapshot
-reads, exact source bytes and closed native API/LSP streams. The before beta
+reads, exact source bytes and complete native API/LSP streams. Its DTO lane writes
+owned source bytes and supplies explicit FileChanges to the API lineage. A separate
+attached-editor lane leaves the requested main file unchanged, edits its dependency
+without changing disk, repairs and closes it, and compares full diagnostic,
+hover, completion, definition, reference and rename packets with native LSP. The
+beta candidate must issue no attached semantic API queries. The original failing
+implicit-snapshot capture is retained separately; it is not repaired by accepting
+an empty result. The before beta
 role must retain its strict DTO failure; candidate beta must complete the
 same-snapshot adapter. Each SDK/source pair retains its own provider and source
 receipt. This qualifies the bounded diagnostic adapter and its exercised

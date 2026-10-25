@@ -79,10 +79,8 @@ for (const file of files) {
   }
   // An unfinished blocking read at process exit carries no returned bytes.
 }
-const native = leaders.filter((entry) => entry.lsp);
-assert.equal(native.length, 1, "One actual native LSP owner required");
-const leader = native[0].pid;
-assert.equal(exits.get(leader), 0, "Actual native owner must exit cleanly");
+const native = leaders.filter((entry) => entry.lsp).sort((a, b) => a.pid - b.pid);
+assert(native.length >= 2, "Separate owned-API and attached-editor native scopes required");
 function owner(value) {
   const seen = new Set();
   while (threads.has(value)) {
@@ -127,108 +125,159 @@ function relations(client, server) {
     assert.deepEqual(ids.sort(), answers.sort(), "Unanswered or unmatched native request");
   }
 }
-const streams = new Map();
-for (const row of records) {
-  if (owner(row.tid) !== leader) continue;
-  const id = `${row.fd}:${row.op}`;
-  if (!streams.has(id)) streams.set(id, []);
-  streams.get(id).push(row);
-}
-const observations = [];
-fs.mkdirSync(path.join(root, "raw-streams"), { recursive: true });
-for (const fd of [
-  ...new Set([...streams.values()].flatMap((rows) => rows.map((row) => row.fd))),
-].sort((a, b) => a - b)) {
-  const pair = { fd };
-  for (const [operation, direction] of [
-    ["read", "client"],
-    ["write", "server"],
-  ]) {
-    const rows = (streams.get(`${fd}:${operation}`) ?? []).sort(
-      (a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line,
-    );
-    const raw = Buffer.concat(rows.map((row) => row.data));
-    const start = raw.indexOf("Content-Length:");
-    if (start < 0) continue;
-    const payload = raw.subarray(start);
-    const packets = frames(payload);
-    const file = `raw-streams/owner-${leader}-fd-${fd}.${direction}.bin`;
-    fs.writeFileSync(path.join(root, file), payload);
-    pair[direction] = {
-      file,
-      bytes: payload.length,
-      sha256: hash(payload),
-      precedingNonProtocolBytes: start,
-      packets,
-    };
-  }
-  if (pair.client || pair.server) observations.push(pair);
-}
-const byFd = new Map(observations.map((entry) => [entry.fd, entry]));
-assert(byFd.get(0)?.client && byFd.get(1)?.server);
-relations(byFd.get(0).client.packets, byFd.get(1).server.packets);
-const apiStreams = observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
-assert.equal(apiStreams.length, 1, "Exactly one attached native API stream required");
-const api = apiStreams[0];
-relations(api.client.packets, api.server.packets);
-const requests = api.client.packets.filter((row) => "id" in row && "method" in row);
-const responses = new Map(
-  api.server.packets
-    .filter((row) => "id" in row && !("method" in row))
-    .map((row) => [key(row.id), row]),
-);
 const kinds = new Set([
   "getSyntacticDiagnostics",
   "getSemanticDiagnostics",
   "getSuggestionDiagnostics",
   "getDeclarationDiagnostics",
 ]);
-const kindRows = [];
-for (const request of requests) {
-  if (!kinds.has(request.method)) continue;
-  const params = request.params;
-  if (source.role === "after" && provider.version === "7.1.0-beta") {
-    assert(!("file" in params));
-    assert.equal(params.files.length, 1);
-  } else {
-    assert(!("files" in params));
-    assert.equal(typeof params.file, "string");
+const semantic = new Set([
+  ...kinds,
+  "getDiagnostics",
+  "getDiagnosticsForFile",
+  "getDiagnosticsForProject",
+  "getHoverAtPosition",
+  "getDefinitionAtPosition",
+  "getReferencesAtPosition",
+  "getCompletionAtPosition",
+  "getRenameAtPosition",
+  "getTypeAtPosition",
+  "getSymbolAtPosition",
+  "getSourceFile",
+]);
+const receipts = [];
+fs.mkdirSync(path.join(root, "raw-streams"), { recursive: true });
+for (const [index, process] of native.entries()) {
+  const leader = process.pid;
+  const scope = index === 0 ? "api-owned-explicit-file-changes" : "attached-editor-overlay";
+  const streams = new Map();
+  for (const row of records) {
+    if (owner(row.tid) !== leader) continue;
+    const id = `${row.fd}:${row.op}`;
+    if (!streams.has(id)) streams.set(id, []);
+    streams.get(id).push(row);
   }
-  kindRows.push({ request, response: responses.get(key(request.id)) });
-}
-assert(kindRows.length >= 9);
-for (const phase of source.rows) {
-  const binary = fs.readFileSync(path.join(root, `${phase.phase}.source-file.bin`));
-  assert.equal(hash(binary), phase.encodedSourceSha256);
-  assert(
-    [...responses.values()].some(
-      (response) =>
-        typeof response.result?.data === "string" &&
-        Buffer.from(response.result.data, "base64").equals(binary),
-    ),
-    "Retained source bytes must occur in a complete API frame",
+  const joined = (rows) =>
+    Buffer.concat(
+      [...rows]
+        .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line)
+        .map((row) => row.data),
+    );
+  const stderr = joined(streams.get("2:write") ?? []);
+  const stderrFile = `raw-streams/owner-${leader}.stderr.bin`;
+  fs.writeFileSync(path.join(root, stderrFile), stderr);
+  const observations = [];
+  for (const fd of [
+    ...new Set([...streams.values()].flatMap((rows) => rows.map((row) => row.fd))),
+  ].sort((a, b) => a - b)) {
+    const pair = { fd };
+    for (const [operation, direction] of [
+      ["read", "client"],
+      ["write", "server"],
+    ]) {
+      const raw = joined(streams.get(`${fd}:${operation}`) ?? []);
+      const start = raw.indexOf("Content-Length:");
+      if (start < 0) continue;
+      const payload = raw.subarray(start);
+      const packets = frames(payload);
+      const file = `raw-streams/owner-${leader}-fd-${fd}.${direction}.bin`;
+      fs.writeFileSync(path.join(root, file), payload);
+      pair[direction] = {
+        file,
+        bytes: payload.length,
+        sha256: hash(payload),
+        precedingNonProtocolBytes: start,
+        packets,
+      };
+    }
+    if (pair.client || pair.server) observations.push(pair);
+  }
+  const byFd = new Map(observations.map((entry) => [entry.fd, entry]));
+  assert(byFd.get(0)?.client && byFd.get(1)?.server);
+  relations(byFd.get(0).client.packets, byFd.get(1).server.packets);
+  const apiStreams = observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
+  assert.equal(apiStreams.length, 1, "One retained API attachment per native LSP owner");
+  const api = apiStreams[0];
+  relations(api.client.packets, api.server.packets);
+  const requests = api.client.packets.filter((row) => "id" in row && "method" in row);
+  const responses = new Map(
+    api.server.packets
+      .filter((row) => "id" in row && !("method" in row))
+      .map((row) => [key(row.id), row]),
   );
+  const kindRows = [];
+  for (const request of requests) {
+    if (!kinds.has(request.method)) continue;
+    const params = request.params;
+    if (source.role === "after" && provider.version === "7.1.0-beta") {
+      assert(!("file" in params));
+      assert.equal(params.files.length, 1);
+    } else {
+      assert(!("files" in params));
+      assert.equal(typeof params.file, "string");
+    }
+    kindRows.push({ request, response: responses.get(key(request.id)) });
+  }
+  if (index === 0) {
+    assert(kindRows.length >= 9);
+    const updates = requests.filter((row) =>
+      ["updateSnapshot", "deriveSnapshot"].includes(row.method),
+    );
+    assert(
+      updates.some((row) => JSON.stringify(row.params).includes("source.ts")),
+      "Explicit owned file changes required",
+    );
+    for (const phase of source.rows) {
+      const binary = fs.readFileSync(path.join(root, `${phase.phase}.source-file.bin`));
+      assert.equal(hash(binary), phase.encodedSourceSha256);
+      assert(
+        [...responses.values()].some(
+          (response) =>
+            typeof response.result?.data === "string" &&
+            Buffer.from(response.result.data, "base64").equals(binary),
+        ),
+        "Owned source bytes must occur in a complete API frame",
+      );
+    }
+  } else if (source.role === "after" && provider.version === "7.1.0-beta") {
+    assert.deepEqual(
+      requests.filter((row) => semantic.has(row.method)),
+      [],
+      "Attached DerivedSnapshots must not use semantic API queries",
+    );
+  }
+  receipts.push({
+    scope,
+    nativeOwner: leader,
+    nativeExit: exits.get(leader),
+    stderr: { file: stderrFile, bytes: stderr.length, sha256: hash(stderr) },
+    streams: observations,
+    compilerKindPackets: kindRows,
+  });
 }
+assert.equal(source.attached.rows.length, 4);
 save("closed-full-wire.json", {
   source: source.source,
   role: source.role,
   providerVersion: provider.version,
   providerSha256: provider.executableSha256,
-  nativeOwner: leader,
-  nativeExit: exits.get(leader),
-  leaders,
   scope:
-    "Complete actual native frames and request/reply identity; no response fields filtered. Earlier non-protocol filesystem bytes are counted explicitly.",
-  streams: observations,
-  compilerKindPackets: kindRows,
+    "Independent API-owned explicit disk/FileChanges snapshots and attached editor overlay routes. Complete native frames retained without response-field filtering.",
+  leaders,
+  owners: receipts,
 });
+// Keep terminal-state qualification separate from complete packet capture. A
+// standard-exit stderr remains a failed lifecycle even if the process exits 0.
+for (const receipt of receipts) {
+  assert.equal(receipt.nativeExit, 0, "Actual native owner must exit cleanly");
+  assert.equal(receipt.stderr.bytes, 0, "Nonempty native stderr refuses lifecycle qualification");
+}
 console.log(
   JSON.stringify({
     source: source.source,
     role: source.role,
     sdk: provider.version,
-    nativeOwner: leader,
-    apiCompilerKindPackets: kindRows.length,
+    nativeOwners: receipts.length,
     allFramesClosed: true,
   }),
 );

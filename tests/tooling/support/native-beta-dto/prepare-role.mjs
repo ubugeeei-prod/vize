@@ -50,6 +50,8 @@ const production = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
   "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol.rs",
   "crates/vize_canon/src/lsp_client/editor_lsp.rs",
+  "crates/vize_canon/src/lsp_client/session/capabilities.rs",
+  "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
 ];
 for (const file of production) {
   assert.deepEqual(

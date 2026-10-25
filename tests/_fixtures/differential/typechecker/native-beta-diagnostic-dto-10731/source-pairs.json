@@ -1,6 +1,6 @@
 {
   "beforeRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
-  "candidateProductionRevision": "bb448dfe260abc982ecc278894d26725f30da6ee",
+  "candidateProductionRevision": "a0e92ca5488fd4f04dabd282f1e437a98a3061c5",
   "production": [
     {
       "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
@@ -25,7 +25,17 @@
     {
       "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
       "beforeSha256": null,
-      "afterSha256": "c0a3afa863dd0bff4bad10bf2945ba7c8160511a0423fe619ae1543024e77c0f"
+      "afterSha256": "b709f334ca25aa503778f7d5fb4bdfb7859d064813599b69314401e3ff546e73"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/session/capabilities.rs",
+      "beforeSha256": "62069a68aa113b6916743ac088019857a8240dd7c8dc4ec58bbb7f7f9927e61d",
+      "afterSha256": "25d31a29813a9ba77b16f3892ac854123509c170e1e1fdeac066360d4a90eed5"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+      "beforeSha256": "c1c86934e04476bfb2464934e906498b4ff95f03b68a08527a24a0cbc7c39c13",
+      "afterSha256": "6f06efdc6cd759b462afdd05135abd1938e897097d9aa05377e39b1443660590"
     }
   ],
   "producerFiles": [
@@ -35,7 +45,7 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
-      "sha256": "709ab1802d0fd92a7af561c130f4e85e11110d75f63f04bd5f554ab8d6f0064f"
+      "sha256": "c25cf37d6300decd1bb798b81cca5e74435c0a51b59375101076223af1650d3f"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/provider.mjs",
@@ -43,7 +53,7 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
-      "sha256": "2bf2169eb4e8e88a8dba3f3051f0416dc167e568a4d86db419041101a4e2e0a4"
+      "sha256": "9eb4bceb8ec4ad1ecc418073570b68b479efb219a08fa1b1053f5b936a503f51"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/run-source.mjs",

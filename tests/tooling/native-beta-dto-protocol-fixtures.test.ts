@@ -55,6 +55,8 @@ void test("only the finite registered source files enter this protocol family", 
   for (const path of [
     "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
+    "crates/vize_canon/src/lsp_client/session/capabilities.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
   ])
     assert(nativeBetaDtoProtocolSource(path));
   for (const path of [
