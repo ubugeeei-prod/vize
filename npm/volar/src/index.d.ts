@@ -5,7 +5,7 @@ import type * as ts from "typescript";
 import type {} from "@volar/typescript";
 
 export interface VizeLanguageOptions extends Omit<VueLanguageCodeOptions, "filename"> {
-  /** Opt in only for Art files whose content uses the supported Vue SFC form. */
+  /** Opt in to Canon's Vue/Musea variant projection for .art and .art.vue. */
   includeArt?: boolean;
 }
 export declare class VizeVirtualCode implements VirtualCode {

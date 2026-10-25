@@ -74,9 +74,9 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
     fileExists: (file) => !deleted.has(file) && (documents.has(file) || ts.sys.fileExists(file)),
     readFile: (file) =>
       deleted.has(file) ? undefined : (documents.get(file)?.source ?? ts.sys.readFile(file)),
-    readDirectory: ts.sys.readDirectory,
+    readDirectory: (...args) => ts.sys.readDirectory(...args),
     directoryExists: (dir) => dir.startsWith(workspace) || ts.sys.directoryExists(dir),
-    realpath: ts.sys.realpath,
+    realpath: (file) => ts.sys.realpath?.(file) ?? file,
   };
   const service = createVizeLanguageService(ts, host, languageOptions);
   inputs.push({ name, files, compilerOptions: settings, languageOptions });
@@ -364,21 +364,69 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     art.languageService.dispose();
   }
 
+  const storySource =
+    '<script setup lang="ts">\nimport { suffix } from "./art-lib";\nconst label: string = "😀";\nconst record = { alpha: 1, beta: "two" };\n</script>\n<art title="按钮"><variant name="Default"><button>{{ label.toUpperCase() }} {{ record.alpha }} {{ suffix }} {{ unknownStoryBinding }}</button></variant><variant name="Other"><span>{{ label }}</span></variant></art>';
   const story = fixture(
-    "musea-story-refusal",
-    {
-      "Story.art.vue":
-        '<art title="Button"><variant name="Default"><button>{{ unknownStoryBinding }}</button></variant></art>',
-    },
+    "musea-variants",
+    { "Story.art.vue": storySource, "art-lib.ts": 'export const suffix = "!";' },
     {},
     { includeArt: true },
   );
   try {
-    const diagnostics = query("musea-story-explicit-refusal", {}, () =>
-      story.languageService.getSemanticDiagnostics(story.path("Story.art.vue")),
+    const file = story.path("Story.art.vue");
+    const diagnostics = query("musea-variant-diagnostics", { file }, () =>
+      story.languageService.getSemanticDiagnostics(file),
     );
-    assert(diagnostics.some((diagnostic) => diagnostic.code === 100003));
-    story.capture("unsupported-real-musea-story");
+    assert.equal(diagnostics.length, 1);
+    assert.equal(diagnostics[0].code, 2304);
+    assert.equal(
+      storySource.slice(diagnostics[0].start, diagnostics[0].start + diagnostics[0].length),
+      "unknownStoryBinding",
+    );
+    const label = storySource.indexOf("label.toUpperCase");
+    const hover = query("musea-variant-hover", { file, position: label }, () =>
+      story.languageService.getQuickInfoAtPosition(file, label),
+    );
+    assert(ts.displayPartsToString(hover.displayParts).includes("string"));
+    const property = storySource.indexOf("record.alpha") + "record.".length;
+    const completion = query("musea-variant-completion", { file, position: property }, () =>
+      story.languageService.getCompletionsAtPosition(file, property, {}),
+    );
+    assert.deepEqual(completion.entries.map((entry) => entry.name).sort(), ["alpha", "beta"]);
+    const imported = storySource.lastIndexOf("suffix");
+    const definition = query("musea-variant-definition", { file, position: imported }, () =>
+      story.languageService.getDefinitionAtPosition(file, imported),
+    );
+    assert(definition.some((entry) => entry.fileName === story.path("art-lib.ts")));
+    const references = query("musea-variant-references", { file, position: label }, () =>
+      story.languageService.findReferences(file, label),
+    );
+    assert.equal(references.flatMap((entry) => entry.references).length, 3);
+    const rename = query("musea-variant-rename", { file, position: label }, () =>
+      story.languageService.findRenameLocations(file, label, false, false, true),
+    );
+    assert.equal(rename.length, 3);
+    story.capture("native-art-variant-projection");
+    story.update(
+      "Story.art.vue",
+      storySource.replace('const label: string = "😀"', "const label: number = 7"),
+    );
+    const updated = query("musea-unsaved-update-diagnostics", { file }, () =>
+      story.languageService.getSemanticDiagnostics(file),
+    );
+    assert(updated.some((diagnostic) => diagnostic.code === 2339));
+    story.delete("art-lib.ts");
+    const deleted = query("musea-delete-import-diagnostics", { file }, () =>
+      story.languageService.getSemanticDiagnostics(file),
+    );
+    assert(deleted.some((diagnostic) => diagnostic.code === 2307));
+    story.capture("native-art-update-and-delete");
+    story.update("Story.art.vue", '<art title="Empty"></art>');
+    const empty = query("musea-no-variant-diagnostics", { file }, () =>
+      story.languageService.getSemanticDiagnostics(file),
+    );
+    assert(empty.some((diagnostic) => diagnostic.code === 100003));
+    story.capture("native-art-no-checkable-variant");
   } finally {
     story.languageService.dispose();
   }

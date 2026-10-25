@@ -34,17 +34,28 @@ export class VizeVirtualCode {
     if (this.languageId === "art") {
       const projection = JSON.parse(nativeProjection);
       if (!projection.diagnostics.some((diagnostic) => diagnostic.code === 100001)) {
-        // Native block recognition must refuse unprojected Musea stories.
+        // Canon already projects native variant bodies. Its SFC scanner and
+        // Musea parser also distinguish invalid metadata and an empty gallery.
         const descriptor = native.parseSfc(source, { filename: this.fileName });
-        for (const block of descriptor.customBlocks) {
-          if (block.type !== "art" && block.type !== "variant") continue;
-          projection.diagnostics.push({
-            start: block.loc.tagStart,
-            length: block.loc.tagEnd - block.loc.tagStart,
-            code: 100003,
-            messageText:
-              "Musea story blocks require the native Vize language server; this Volar plugin supports Vue SFC content only.",
-          });
+        const block = descriptor.customBlocks.find(
+          (candidate) => candidate.type === "art" || candidate.type === "variant",
+        );
+        if (block) {
+          let messageText;
+          try {
+            const art = native.parseArt(source, { filename: this.fileName });
+            if (art.variants.length === 0)
+              messageText = "Musea Art contains no checkable variant; add a <variant> block.";
+          } catch (error) {
+            messageText = `Invalid Musea Art: ${error instanceof Error ? error.message : String(error)}`;
+          }
+          if (messageText)
+            projection.diagnostics.push({
+              start: block.loc.tagStart,
+              length: block.loc.tagEnd - block.loc.tagStart,
+              code: 100003,
+              messageText,
+            });
         }
       }
       nativeProjection = JSON.stringify(projection);

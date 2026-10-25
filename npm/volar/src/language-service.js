@@ -100,8 +100,9 @@ export function createVizeLanguageService(ts, host, options = {}) {
     }
     return cached.get(fileName);
   }
-  const { proxy, initialize } = createProxyLanguageService(rawService);
-  initialize(language);
+  const proxied = createProxyLanguageService(rawService);
+  proxied.initialize(language);
+  const proxy = proxied.proxy;
 
   function sourceFileFor(fileName) {
     const source = language.scripts.get(fileName);
@@ -166,7 +167,7 @@ export function createVizeLanguageService(ts, host, options = {}) {
       }
       if (key === "dispose")
         return () => {
-          for (const id of [...registry.keys()]) language.scripts.delete(id);
+          for (const id of registry.keys()) language.scripts.delete(id);
           rawService.dispose();
         };
       const value = target[key];

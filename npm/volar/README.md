@@ -69,9 +69,11 @@ host. Recreate the composition when native-generation options or that selected
 Vue configuration change.
 
 `.vue` is enabled by default. `includeArt: true` additionally admits `.art` and `.art.vue` files
-using Vue SFC content. This does not lower Musea `<variant>`/`<art>` story syntax,
-choose a story variant, or provide Art-specific navigation. Such syntax retains
-an explicit unsupported-story diagnostic based on the native SFC scanner. No alternate provider is
+using Canon's existing Vue and Musea variant projections. Script bindings in
+variant templates use the same authored mappings. Gallery metadata editing,
+rendering and variant selection commands are outside this package. Invalid
+metadata and an Art block with no checkable variant report explicit diagnostics
+through the native SFC/Musea parsers. No alternate provider is
 substituted when the matching native projection API is unavailable.
 
 The focused Actions workflow builds the reviewed native source and exercises
