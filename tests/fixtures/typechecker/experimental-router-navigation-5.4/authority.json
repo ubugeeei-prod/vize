@@ -96,13 +96,84 @@
       "path": "routes.generated.ts",
       "bytes": 2706,
       "sha256": "016f9de64ad0d4310fc301a2482e2b8e1126aa96bf43dc44b9f97d9a6dda4c59",
-      "storage": "generated-modules.json"
+      "storage": "generated-modules.json",
+      "relocations": [
+        {
+          "start": 88,
+          "end": 176,
+          "relative": "src/pages/index.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 411,
+          "end": 513,
+          "relative": "src/pages/optional/[[id=int]].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 791,
+          "end": 902,
+          "relative": "src/pages/optional-repeat/[[ids=int]]+.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1153,
+          "end": 1253,
+          "relative": "src/pages/products/[id=int].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1502,
+          "end": 1602,
+          "relative": "src/pages/repeat/[ids=int]+.vue",
+          "role": "dynamic-page-import"
+        }
+      ]
     },
     {
       "path": "resolver.generated.ts",
       "bytes": 3791,
       "sha256": "2803a229229e8f89eed21d3df870af2081a052c9099765c649218e3fb9e043d4",
-      "storage": "generated-modules.json"
+      "storage": "generated-modules.json",
+      "relocations": [
+        {
+          "start": 275,
+          "end": 362,
+          "relative": "src/params/date.ts",
+          "role": "static-parser-import"
+        },
+        {
+          "start": 592,
+          "end": 680,
+          "relative": "src/pages/index.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1024,
+          "end": 1126,
+          "relative": "src/pages/optional/[[id=int]].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1490,
+          "end": 1601,
+          "relative": "src/pages/optional-repeat/[[ids=int]]+.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 2254,
+          "end": 2354,
+          "relative": "src/pages/products/[id=int].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 2662,
+          "end": 2762,
+          "relative": "src/pages/repeat/[ids=int]+.vue",
+          "role": "dynamic-page-import"
+        }
+      ]
     }
-  ]
+  ],
+  "scannerCaptureRoot": "/private/tmp/vize-router-matrix-reference/router-experimental-WG7ryK"
 }

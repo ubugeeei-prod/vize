@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -16,6 +17,9 @@ import {
   plainTypeScriptOracle,
   point,
   readNavigationFixture,
+  relocateScannerOutput,
+  scannerTransportCompiler,
+  scannerTransportControls,
   type FormatStage,
 } from "./support/router-experimental-navigation-matrix.ts";
 
@@ -168,8 +172,10 @@ await test(
     const output =
       process.env.VIZE_TEST_ROUTER_MATRIX_OUTPUT ??
       path.join(repoRoot, "target/differential/router-navigation");
-    const { files } = readNavigationFixture();
+    const { authority, files } = readNavigationFixture();
     const fixture = await prepareExperimentalRouterProject(output);
+    const scannerCompiler = scannerTransportCompiler(path.join(fixture.root, "package.json"));
+    scannerTransportControls(files, authority, scannerCompiler);
     const pages = authoredPages(files);
     const references = JSON.parse(files.get("reference-diagnostics.json")!) as Array<{
       id: string;
@@ -269,10 +275,30 @@ await test(
       installPages("\n");
       const scanner = run("extended-official-scanner", process.execPath, ["generate.mjs"]);
       assert.equal(scanner.status, 0);
+      const scannerPackets: unknown[] = [];
+      const scannerChecks: Array<() => void> = [];
       for (const name of ["typed-router.d.ts", "routes.generated.ts", "resolver.generated.ts"]) {
         const bytes = fs.readFileSync(path.join(fixture.root, name), "utf8");
         fs.writeFileSync(path.join(output, `${name}.txt`), bytes);
-        assert.equal(bytes, files.get(`${name}.txt`), `complete scanner output ${name}`);
+        const pinned = files.get(`${name}.txt`)!;
+        const expected =
+          name === "typed-router.d.ts"
+            ? pinned
+            : relocateScannerOutput(
+                name,
+                pinned,
+                fs.realpathSync(fixture.root),
+                authority,
+                scannerCompiler,
+              );
+        fs.writeFileSync(path.join(output, `${name}.expected.txt`), expected);
+        scannerPackets.push({
+          name,
+          originalSha256: createHash("sha256").update(pinned).digest("hex"),
+          expectedSha256: createHash("sha256").update(expected).digest("hex"),
+          actualSha256: createHash("sha256").update(bytes).digest("hex"),
+        });
+        scannerChecks.push(() => assert.equal(bytes, expected, `complete scanner output ${name}`));
         if (name !== "typed-router.d.ts") fs.rmSync(path.join(fixture.root, name));
       }
       for (const [variant, newline] of [
@@ -467,5 +493,10 @@ await test(
     } finally {
       fixture.cleanup();
     }
+    fs.writeFileSync(
+      path.join(output, "scanner-transport.json"),
+      `${JSON.stringify({ authority, admittedRoot: fs.realpathSync(fixture.root), packets: scannerPackets }, null, 2)}\n`,
+    );
+    for (const check of scannerChecks) check();
   },
 );

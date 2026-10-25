@@ -24,6 +24,16 @@ while 7.1 reports the object argument; preserve both actual ranges literally.
 This distinction does not confer full cross-backend diagnostic range parity.
 No union normalization or candidate-generated expected messages are used.
 
+Executable scanner modules embed absolute imports. Their sole root transport is
+an authority roster of eleven UTF8 spans: five dynamic page imports in each
+module and one static parser import in the resolver. The pinned 5.9 AST must
+prove every span's StringLiteral role and decoded old-root value. Only those
+expected import values move to the admitted runner root; all remaining bytes are
+exact. Original, transported and actual modules and hashes remain artifacts.
+Wrong boundaries, foreign roots, extra/missing imports, changed literals,
+members and text are negative controls. Complete scanner outputs use lossless
+JSON storage to retain their original final blank lines.
+
 Every actual process records its command, arguments, status, signal, error,
 stdout, stderr and elapsed time before assertions. This preserves the complete
 native report and generated code, the pinned SFC reference, independent plain TS

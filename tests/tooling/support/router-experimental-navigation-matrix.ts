@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -71,6 +72,169 @@ export function authoredPages(files: Map<string, string>) {
       .filter(([name]) => name.startsWith("project/") && name.endsWith(".vue.txt"))
       .map(([name, source]) => [name.slice("project/".length, -".txt".length), source]),
   );
+}
+
+type ScannerAuthority = {
+  scannerCaptureRoot: string;
+  generatedOutputs: Array<{
+    path: string;
+    sha256: string;
+    relocations: Array<{ start: number; end: number; relative: string; role: string }>;
+  }>;
+};
+
+type ScannerNode = {
+  kind: number;
+  text: string;
+  end: number;
+  expression: ScannerNode;
+  arguments: ScannerNode[];
+  moduleSpecifier: ScannerNode;
+  parseDiagnostics: unknown[];
+  getStart(source: ScannerNode): number;
+};
+type ScannerCompiler = {
+  version: string;
+  ScriptTarget: { Latest: number };
+  SyntaxKind: { ImportKeyword: number };
+  createSourceFile(file: string, source: string, target: number, parents: boolean): ScannerNode;
+  isCallExpression(node: ScannerNode): boolean;
+  isImportDeclaration(node: ScannerNode): boolean;
+  isStringLiteral(node: ScannerNode): boolean;
+  forEachChild(node: ScannerNode, callback: (node: ScannerNode) => void): void;
+};
+export function scannerTransportCompiler(packageFile: string) {
+  const compiler = createRequire(packageFile)("typescript") as ScannerCompiler;
+  assert.equal(compiler.version, "5.9.3");
+  return compiler;
+}
+
+/** Relocate only pinned scanner import-literal spans; every other byte survives. */
+export function relocateScannerOutput(
+  name: string,
+  source: string,
+  root: string,
+  authority: ScannerAuthority,
+  compiler: ScannerCompiler,
+) {
+  assert.ok(
+    path.isAbsolute(root) && !/[\\'\r\n]/u.test(root),
+    "the scanner witness admits a POSIX import-safe root",
+  );
+  const output = authority.generatedOutputs.find((entry) => entry.path === name)!;
+  const bytes = Buffer.from(source);
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), output.sha256);
+  const allowed = new Set([
+    "src/pages/index.vue",
+    "src/pages/optional-repeat/[[ids=int]]+.vue",
+    "src/pages/optional/[[id=int]].vue",
+    productPage,
+    "src/pages/repeat/[ids=int]+.vue",
+    "src/params/date.ts",
+  ]);
+  const spans = [...output.relocations].sort((a, b) => a.start - b.start);
+  assert.equal(spans.length, name === "routes.generated.ts" ? 5 : 6);
+  const parsed = compiler.createSourceFile(name, source, compiler.ScriptTarget.Latest, true);
+  assert.equal(parsed.parseDiagnostics.length, 0, "the complete pinned module must parse");
+  const literals = new Map<number, { end: number; value: string; role: string }>();
+  const remember = (literal: ScannerNode, role: string) => {
+    if (
+      !compiler.isStringLiteral(literal) ||
+      !literal.text.startsWith(`${authority.scannerCaptureRoot}/`)
+    )
+      return;
+    const start = Buffer.byteLength(source.slice(0, literal.getStart(parsed) + 1));
+    const end = Buffer.byteLength(source.slice(0, literal.end - 1));
+    literals.set(start, { end, value: literal.text, role });
+  };
+  const visit = (node: ScannerNode) => {
+    if (
+      compiler.isCallExpression(node) &&
+      node.expression.kind === compiler.SyntaxKind.ImportKeyword &&
+      node.arguments.length === 1
+    )
+      remember(node.arguments[0], "dynamic-page-import");
+    if (compiler.isImportDeclaration(node)) remember(node.moduleSpecifier, "static-parser-import");
+    compiler.forEachChild(node, visit);
+  };
+  visit(parsed);
+  assert.equal(
+    literals.size,
+    spans.length,
+    "every captured-root import needs an exact registered span",
+  );
+  let previous = 0;
+  for (const span of spans) {
+    assert.ok(span.start >= previous && span.end > span.start);
+    assert.ok(allowed.has(span.relative));
+    assert.deepEqual(literals.get(span.start), {
+      end: span.end,
+      value: `${authority.scannerCaptureRoot}/${span.relative}`,
+      role: span.role,
+    });
+    const prefix = bytes.subarray(0, span.start).toString("utf8");
+    if (span.role === "dynamic-page-import") {
+      assert.ok(span.relative.endsWith(".vue") && prefix.endsWith("import('"));
+    } else {
+      assert.equal(span.role, "static-parser-import");
+      assert.equal(span.relative, "src/params/date.ts");
+      assert.ok(prefix.endsWith("from '"));
+    }
+    assert.equal(
+      bytes.subarray(span.start, span.end).toString("utf8"),
+      `${authority.scannerCaptureRoot}/${span.relative}`,
+    );
+    assert.equal(bytes[span.end], 39);
+    previous = span.end;
+  }
+  let moved = bytes;
+  for (const span of spans.reverse())
+    moved = Buffer.concat([
+      moved.subarray(0, span.start),
+      Buffer.from(`${root}/${span.relative}`),
+      moved.subarray(span.end),
+    ]);
+  return moved.toString("utf8");
+}
+
+export function scannerTransportControls(
+  files: Map<string, string>,
+  authority: ScannerAuthority,
+  compiler: ScannerCompiler,
+) {
+  const name = "routes.generated.ts";
+  const source = files.get(`${name}.txt`)!;
+  const transport = (text: string, admitted = authority) =>
+    relocateScannerOutput(name, text, "/tmp/runner日本語", admitted, compiler);
+  assert.ok(transport(source).includes("/tmp/runner日本語/src/pages/index.vue"));
+  assert.equal(
+    relocateScannerOutput(name, source, authority.scannerCaptureRoot, authority, compiler),
+    source,
+  );
+  assert.throws(() => relocateScannerOutput(name, source, "/tmp/quote'root", authority, compiler));
+  for (const key of ["start", "end"] as const)
+    for (const offset of [-1, 1]) {
+      const changed = structuredClone(authority);
+      changed.generatedOutputs[0].relocations[0][key] += offset;
+      assert.throws(() => transport(source, changed));
+    }
+  const foreign = structuredClone(authority);
+  foreign.scannerCaptureRoot = "/tmp/foreign";
+  assert.throws(() => transport(source, foreign));
+  for (const text of [
+    `${source}import('${authority.scannerCaptureRoot}/src/pages/foreign.vue')\n`,
+    source.replace(/^.*component:.*index\.vue.*\n/mu, ""),
+  ]) {
+    const changed = structuredClone(authority);
+    changed.generatedOutputs[0].sha256 = createHash("sha256").update(text).digest("hex");
+    assert.throws(() => transport(text, changed));
+  }
+  for (const text of [
+    source.replace("src/pages/index.vue", "src/pages/foreign.vue"),
+    source.replace("name: '/'", "name: '/changed'"),
+    `${source}// changed text`,
+  ])
+    assert.throws(() => transport(text));
 }
 
 export type MatrixCase = {
