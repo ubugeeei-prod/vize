@@ -74,6 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           node --test npm/eslint/test/consumer.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/consumer.log"
+          (cd npm/oxlint && vp test run src/file-state.test.ts src/batched-rules.test.ts src/active-rule-collection.test.ts) 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/shared-routing.log"
           node npm/oxlint/src/eslint-acceptance.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/legacy-export.log"
           for round in 1 2 3 4 5; do
             node npm/eslint/test/startup-profile.mjs > "$VIZE_ESLINT_EVIDENCE/startup-$round.json"

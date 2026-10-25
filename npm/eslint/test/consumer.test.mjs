@@ -45,6 +45,16 @@ function verify(source, rules, filename = "Unsaved.vue") {
   packets.push({ source, rules, filename, result });
   return result;
 }
+function parsedSource(source) {
+  const parsed = plugin.configs.essential.languageOptions.parser.parseForESLint(source, {
+    ...plugin.configs.essential.languageOptions.parserOptions,
+    range: true,
+    loc: true,
+    tokens: true,
+    comment: true,
+  });
+  return new SourceCode({ ...parsed, text: source, parserServices: parsed.services });
+}
 const alt = { "vize/a11y/alt-text": "error" };
 const source = '<template>😀<img src="x"></template>\r\n';
 
@@ -107,14 +117,7 @@ void test("selected rule options, severity, off, parse errors and reused ASTs ar
   const value =
     '<template><my-component /></template><script setup>import MyComponent from "./MyComponent.vue";</script>';
   const casing = (option) => ({ "vize/vue/component-name-in-template-casing": ["warn", option] });
-  const parsed = plugin.configs.essential.languageOptions.parser.parseForESLint(value, {
-    ...plugin.configs.essential.languageOptions.parserOptions,
-    range: true,
-    loc: true,
-    tokens: true,
-    comment: true,
-  });
-  const code = new SourceCode({ ...parsed, text: value, parserServices: parsed.services });
+  const code = parsedSource(value);
   for (const [option, expected] of [
     ["PascalCase", 1],
     ["kebab-case", 0],
@@ -222,10 +225,51 @@ void test("explicit type-aware selection uses the actual runtime and exposes mis
     assert.ok(!result.some((message) => /runtime|executable|failed/i.test(message.message)));
     assert.deepEqual(typedLinter.verify(diskSource, selected, { filename }), []);
     selected[0].settings.vize.corsaPath = path.join(directory, "missing-typescript-runtime");
-    const missing = typedLinter.verify(value, selected, { filename });
+    const reusable = parsedSource(value);
+    const missingCount = calls.length;
+    const missing = typedLinter.verify(reusable, selected, { filename });
     packets.push({ source: value, missingRuntime: missing });
+    assert.equal(calls.length - missingCount, 1);
+    assert.equal(missing.length, 1);
     assert.ok(
       missing.some((message) => /Configured Corsa executable does not exist/.test(message.message)),
+    );
+    selected[0].rules["vize/type/strict-boolean-expressions"] = "error";
+    const twoCount = calls.length;
+    const twoRules = typedLinter.verify(reusable, selected, { filename });
+    packets.push({ source: value, missingRuntimeWithTwoSelectedRules: twoRules });
+    assert.equal(calls.length - twoCount, 1);
+    assert.equal(twoRules.length, 1);
+    assert.equal(twoRules[0].message, missing[0].message);
+    const another = path.join(directory, "Another.vue");
+    fs.writeFileSync(another, diskSource);
+    const anotherMessages = typedLinter.verify(reusable, selected, { filename: another });
+    packets.push({ source: value, missingRuntimeOtherFile: anotherMessages });
+    assert.equal(anotherMessages.length, 1);
+    assert.match(anotherMessages[0].message, /Configured Corsa executable does not exist/);
+    const off = config({
+      "vize/type/no-floating-promises": "off",
+      "vize/type/strict-boolean-expressions": "off",
+    });
+    off[0].settings.vize.corsaPath = selected[0].settings.vize.corsaPath;
+    const offCount = calls.length;
+    assert.deepEqual(typedLinter.verify(reusable, off, { filename }), []);
+    assert.equal(calls.length, offCount);
+    const unrelated = config(alt);
+    unrelated[0].settings.vize.corsaPath = selected[0].settings.vize.corsaPath;
+    const unrelatedSource = "<template><img></template>" + value;
+    const unrelatedMessages = typedLinter.verify(unrelatedSource, unrelated, { filename });
+    packets.push({ source: unrelatedSource, zeroTypeRules: unrelatedMessages });
+    assert.deepEqual(
+      unrelatedMessages.map((message) => message.ruleId),
+      ["vize/a11y/alt-text"],
+    );
+    selected[0].settings.vize.corsaPath = runtime;
+    const repaired = typedLinter.verify(reusable, selected, { filename });
+    packets.push({ source: value, repairedRuntime: repaired });
+    assert.deepEqual(
+      repaired.map((message) => message.ruleId),
+      ["vize/type/no-floating-promises"],
     );
     assert.equal(fs.readFileSync(filename, "utf8"), diskSource);
   } finally {
