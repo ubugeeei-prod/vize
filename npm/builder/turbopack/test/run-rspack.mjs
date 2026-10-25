@@ -26,6 +26,9 @@ export async function checkRspackConsumer(browser, measurements) {
       devtool: "source-map",
       output: { path: target, filename: "bundle.js", cssFilename: "styles.css" },
       optimization: { minimize: false },
+      // This map regression retains statements in the unminified Vue runtime.
+      // Keep a bounded fixture budget and continue rejecting all diagnostics.
+      performance: { maxAssetSize: 512 * 1024, maxEntrypointSize: 512 * 1024 },
       experiments: { css: true },
       resolve: { alias: { vue: require.resolve("vue/dist/vue.runtime.esm-bundler.js") } },
       module: {
@@ -49,7 +52,13 @@ export async function checkRspackConsumer(browser, measurements) {
         compiler.close((error) => (error ? reject(error) : resolve())),
       );
     }
-    const report = stats.toJson({ all: false, errors: true, warnings: true, timings: true });
+    const report = stats.toJson({
+      all: false,
+      errors: true,
+      warnings: true,
+      timings: true,
+      assets: true,
+    });
     await fs.writeFile(
       path.join(output, `rspack-${mode}-stats.json`),
       JSON.stringify(report, null, 2) + "\n",
