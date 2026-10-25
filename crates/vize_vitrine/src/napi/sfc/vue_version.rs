@@ -43,15 +43,23 @@ mod tests {
 
     #[test]
     fn known_legacy_dialects_require_a_real_runtime_backend() {
-        for version in ["2", "2.7", "v2", " V2.7 ", "1", "0.11", "0.10"] {
+        for (version, canonical) in [
+            ("2", "2"),
+            ("2.7", "2.7"),
+            ("v2", "2"),
+            (" V2.7 ", "2.7"),
+            ("1", "1"),
+            ("0.11", "0.11"),
+            ("0.10", "0.10"),
+        ] {
             let error = resolve_sfc_vue_version(Some(version)).unwrap_err();
             assert_eq!(error.status, napi::Status::InvalidArg);
-            assert!(
-                error
-                    .reason
-                    .contains("native SFC compiler currently targets the Vue 3 runtime")
+            assert_eq!(
+                error.reason,
+                format!(
+                    "SFC code generation for vueVersion \"{canonical}\" is not available: the native SFC compiler currently targets the Vue 3 runtime. Keep this project's Vue {canonical} framework compiler enabled."
+                )
             );
-            assert!(error.reason.contains("framework compiler enabled"));
         }
     }
 
@@ -62,7 +70,8 @@ mod tests {
         ] {
             let error = resolve_sfc_vue_version(Some(version)).unwrap_err();
             assert_eq!(error.status, napi::Status::InvalidArg);
-            assert!(error.reason.contains("vue.version"));
+            let reference = VueVersion::from_config_str(version).unwrap_err();
+            assert_eq!(error.reason, reference.to_string());
         }
     }
 }
