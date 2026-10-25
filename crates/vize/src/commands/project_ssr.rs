@@ -11,23 +11,37 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 pub(super) fn ssr_enabled(root: &Path) -> bool {
-    for name in [
-        "nuxt.config.ts",
-        "nuxt.config.js",
-        "nuxt.config.mts",
-        "nuxt.config.mjs",
-        "nuxt.config.cts",
-        "nuxt.config.cjs",
-    ] {
-        let path = root.join(name);
-        if path.exists() {
-            // Unreadable, dynamic or invalid configuration cannot prove that
-            // an otherwise reachable browser read never runs on a server.
-            return fs::read_to_string(path)
-                .ok()
-                .and_then(|source| nuxt_ssr(&source))
-                != Some(false);
+    let mut directory = Some(root);
+    while let Some(root) = directory {
+        for name in [
+            "nuxt.config.ts",
+            "nuxt.config.js",
+            "nuxt.config.mts",
+            "nuxt.config.mjs",
+            "nuxt.config.cts",
+            "nuxt.config.cjs",
+        ] {
+            let path = root.join(name);
+            if path.exists() {
+                // Unreadable, dynamic or invalid configuration cannot prove that
+                // an otherwise reachable browser read never runs on a server.
+                return fs::read_to_string(path)
+                    .ok()
+                    .and_then(|source| nuxt_ssr(&source))
+                    != Some(false);
+            }
         }
+        // A command launched in src/ still belongs to its application. Stop at
+        // a nested package or Vite project instead of borrowing an outer SPA's
+        // policy for a separately owned application.
+        if root.join("package.json").is_file()
+            || ["ts", "js", "mts", "mjs", "cts", "cjs"]
+                .iter()
+                .any(|extension| root.join(format!("vite.config.{extension}")).is_file())
+        {
+            break;
+        }
+        directory = root.parent();
     }
     true
 }
@@ -131,7 +145,22 @@ fn shadows_nuxt_config(program: &oxc_ast::ast::Program<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::nuxt_ssr;
+    use super::{nuxt_ssr, ssr_enabled};
+
+    #[test]
+    fn source_directories_inherit_app_policy_but_nested_projects_do_not() {
+        let project = tempfile::tempdir().unwrap();
+        std::fs::write(
+            project.path().join("nuxt.config.ts"),
+            "export default defineNuxtConfig({ssr:false})",
+        )
+        .unwrap();
+        let source = project.path().join("src");
+        std::fs::create_dir_all(&source).unwrap();
+        assert!(!ssr_enabled(&source));
+        std::fs::write(source.join("package.json"), "{}").unwrap();
+        assert!(ssr_enabled(&source));
+    }
 
     #[test]
     fn only_complete_default_export_configuration_can_disable_ssr() {

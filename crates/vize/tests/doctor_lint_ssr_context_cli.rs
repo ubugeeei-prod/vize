@@ -155,6 +155,35 @@ fn client_only_apps_keep_non_ssr_boundary_findings() {
     assert_eq!(rule_ids(&cross_file), ["cross-file"]);
 }
 
+#[test]
+fn commands_launched_in_a_source_directory_keep_the_app_context() {
+    let directory = tempfile::tempdir().unwrap();
+    project(
+        directory.path(),
+        "export default defineNuxtConfig({ssr:false})",
+        false,
+    );
+    let source_root = directory.path().join("src");
+    let doctor = run(
+        &source_root,
+        "nested-cwd.doctor",
+        &["doctor", ".", "--format", "json", "--exit-zero"],
+    );
+    assert_eq!(
+        doctor,
+        serde_json::to_value(DoctorReport::new(".", [])).unwrap()
+    );
+    let lint = run(
+        &source_root,
+        "nested-cwd.cross-file",
+        &["lint", "App.vue", "--cross-file", "--format", "json"],
+    );
+    assert_eq!(
+        lint,
+        serde_json::json!([{"file":"App.vue","messages":[],"errorCount":0,"warningCount":0}])
+    );
+}
+
 fn project(root: &Path, nuxt: &str, vite_client_build: bool) {
     write(root, "src/App.vue", BROWSER_SOURCE);
     let build = if vite_client_build {
