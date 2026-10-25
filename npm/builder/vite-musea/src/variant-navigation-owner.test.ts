@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { compileFunction } from "node:vm";
 import ts from "typescript";
+import { MUSEA_PROPS_QUERY } from "../gallery/utils/propsPermalink.ts";
 
 const corpus = new URL(
   "../../../../tests/_fixtures/differential/musea/variant-navigation/",
@@ -31,7 +32,7 @@ function harness(script: string) {
   const block = script.slice(start).split("</script>")[0];
   const callbacks: Array<() => void> = [];
   const unmounts: Array<() => void> = [];
-  const watches: Array<() => void> = [];
+  const watches: Array<{ source: unknown; callback: () => void }> = [];
   const scrolls: Array<{ name: string; options: ScrollIntoViewOptions }> = [];
   class Section {
     dataset: { variantName: string };
@@ -56,14 +57,15 @@ function harness(script: string) {
   }
   const scope = {
     activeTab: { value: "variants" },
-    route: { hash: "#last" },
+    route: { hash: "#last", query: {} as Record<string, unknown> },
+    MUSEA_PROPS_QUERY,
     artPath: { value: "Keys" },
     art: { value: { path: "Keys" } },
     selectedVariantName: { value: "first" },
     variantSectionIds: { value: { first: "first", last: "last" } },
     variantSectionElements: new Map(sections),
     nextTick: () => new Promise<void>((resolve) => callbacks.push(resolve)),
-    watch: (_source: unknown, callback: () => void) => watches.push(callback),
+    watch: (source: unknown, callback: () => void) => watches.push({ source, callback }),
     onMounted: () => {},
     onUnmounted: (callback: () => void) => unmounts.push(callback),
     clearActions: () => {},
@@ -120,10 +122,20 @@ function harness(script: string) {
     scrolls,
     tick: () => callbacks.splice(0).forEach((resolve) => resolve()),
     unmount: () => unmounts.forEach((callback) => callback()),
-    refreshNavigation: () => watches[1](),
+    refreshNavigation: () => {
+      // Select the production art/tab watcher by what it watches. Additional
+      // independent query watchers must not change this navigation contract.
+      const watcher = watches.find(
+        ({ source }) => typeof source === "function" && Array.isArray(source()),
+      );
+      assert.ok(watcher);
+      watcher.callback();
+    },
     replaceRoute: () => {
       scope.artPath.value = "Controls";
-      watches[0]();
+      const watcher = watches.find(({ source }) => source === scope.artPath);
+      assert.ok(watcher);
+      watcher.callback();
     },
     entry: (name: string) => ({
       target: sections.get(name),
