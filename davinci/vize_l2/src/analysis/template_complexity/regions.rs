@@ -144,7 +144,7 @@ fn owner_bindings(
 ) -> u32 {
     let mut scoped = false;
     for binding in bindings {
-        let id = walk.mint();
+        let id = walk.mint_attached();
         match binding {
             BindingOp::Bind(bind) => {
                 dynamic_name(bind.name, id, depth, facts);

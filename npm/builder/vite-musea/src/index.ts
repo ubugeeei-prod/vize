@@ -40,7 +40,9 @@ export type {
   A11yOptions,
   A11yResult,
   CaptureConfig,
+  BeforeCaptureContext,
   ComparisonConfig,
+  DiffStyle,
   CiConfig,
 } from "./types/index.js";
 
@@ -48,6 +50,7 @@ export {
   MuseaVrtRunner,
   generateVrtReport,
   generateVrtJsonReport,
+  UnsupportedDiffStyleError,
   type VrtResult,
   type VrtSummary,
 } from "./vrt.js";

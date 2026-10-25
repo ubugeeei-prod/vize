@@ -7,7 +7,7 @@
  */
 
 import type { BrowserContext, Page } from "playwright";
-import type { ArtFileInfo, ViewportConfig } from "../types/index.js";
+import type { ArtFileInfo, ComparisonConfig, ViewportConfig } from "../types/index.js";
 import fs from "node:fs";
 import path from "node:path";
 import { PNG } from "pngjs";
@@ -17,6 +17,7 @@ import type { VrtResult } from "./types.js";
 import type { MuseaVrtRunner } from "./runner.js";
 import { observePreviewReady, waitForMountedPreview } from "./preview-ready.js";
 import { guardHostedNavigation } from "./hosted-navigation.js";
+import { resolveDiffStyle, sideBySidePng } from "./diff-style.js";
 
 /**
  * Capture screenshot and compare with baseline.
@@ -37,7 +38,10 @@ export async function captureAndCompare(
 
   const options = runner.getOptions();
   const capture = runner.getCapture();
-  const comparison = runner.getComparison();
+  // Authored async hooks can update configuration for a later capture. Keep
+  // this capture's rendering, validation, and result metadata on one snapshot.
+  const comparison = { ...runner.getComparison() };
+  if (comparison.diffColor) comparison.diffColor = { ...comparison.diffColor };
 
   const snapshotDir = options.snapshotDir;
   const snapshotName = await runner.getSnapshotName(art, variantName, viewport);
@@ -54,6 +58,7 @@ export async function captureAndCompare(
   let page: Page | null = null;
 
   try {
+    const diffStyle = resolveDiffStyle(comparison.diffStyle);
     context = await browser.newContext({
       viewport: {
         width: viewport.width,
@@ -76,6 +81,24 @@ export async function captureAndCompare(
     // Wait for content to render
     await page.waitForSelector(capture.waitSelector, { timeout: 10000 });
 
+    if (capture.beforeCapture) {
+      try {
+        await capture.beforeCapture(
+          page,
+          Object.freeze({
+            artPath: art.path,
+            variantName,
+            viewport: Object.freeze({ ...viewport }),
+          }),
+        );
+      } catch (error) {
+        throw new Error(
+          `beforeCapture failed: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
+      }
+    }
+
     // Additional wait for animations to settle
     await page.waitForTimeout(capture.settleTime);
 
@@ -90,18 +113,19 @@ export async function captureAndCompare(
       }
     }
 
-    // Mask elements before capture (replace with colored box)
-    if (capture.maskElements.length > 0) {
-      for (const selector of capture.maskElements) {
-        await page.evaluate((sel) => {
-          document.querySelectorAll(sel).forEach((el) => {
-            const htmlEl = el as HTMLElement;
-            htmlEl.style.background = "#ff00ff";
-            htmlEl.style.color = "transparent";
-            htmlEl.innerHTML = "";
-          });
-        }, selector);
+    // Screenshot masks cover the rendered rectangle, including replaced
+    // elements, without deleting content or reflowing neighboring components.
+    const mask = capture.maskElements.map((selector) => {
+      if (typeof selector !== "string" || selector.trim().length === 0) {
+        throw new Error("VRT maskElements must contain non-empty selectors");
       }
+      return page.locator(selector);
+    });
+    if (
+      mask.length > 0 &&
+      !(await page.evaluate((color) => CSS.supports("color", color), capture.maskColor))
+    ) {
+      throw new Error(`Invalid VRT mask color: ${capture.maskColor}`);
     }
 
     // Take screenshot
@@ -111,6 +135,8 @@ export async function captureAndCompare(
       fullPage: capture.fullPage,
       animations: capture.animations,
       caret: capture.caret,
+      mask,
+      maskColor: capture.maskColor,
     });
 
     // Check if baseline exists
@@ -127,6 +153,7 @@ export async function captureAndCompare(
         snapshotPath,
         currentPath,
         isNew: true,
+        ...(diffStyle === "overlay" ? {} : { diffStyle }),
       };
     }
 
@@ -146,6 +173,7 @@ export async function captureAndCompare(
       diffPercentage: comparisonResult.diffPercentage,
       diffPixels: comparisonResult.diffPixels,
       totalPixels: comparisonResult.totalPixels,
+      ...(diffStyle === "overlay" ? {} : { diffStyle }),
     };
   } catch (error) {
     return {
@@ -170,13 +198,9 @@ export async function compareImages(
   baselinePath: string,
   currentPath: string,
   diffPath: string,
-  comparison: {
-    colorThreshold?: number;
-    antiAliasing?: boolean;
-    alpha?: boolean;
-    diffColor?: { r: number; g: number; b: number };
-  },
+  comparison: ComparisonConfig,
 ): Promise<{ diffPixels: number; totalPixels: number; diffPercentage: number }> {
+  const diffStyle = resolveDiffStyle(comparison.diffStyle);
   const baseline = await readPng(baselinePath);
   const current = await readPng(currentPath);
 
@@ -184,14 +208,17 @@ export async function compareImages(
   if (baseline.width !== current.width || baseline.height !== current.height) {
     const width = Math.max(baseline.width, current.width);
     const height = Math.max(baseline.height, current.height);
-    const diff = new PNG({ width, height });
+    const diff =
+      diffStyle === "sideBySide" ? sideBySidePng(baseline, current) : new PNG({ width, height });
 
-    // Fill with red to indicate size mismatch
-    for (let i = 0; i < diff.data.length; i += 4) {
-      diff.data[i] = 255; // R
-      diff.data[i + 1] = 0; // G
-      diff.data[i + 2] = 0; // B
-      diff.data[i + 3] = 255; // A
+    // Overlay/diff-only retain the existing solid-red size-mismatch marker.
+    if (diffStyle !== "sideBySide") {
+      for (let i = 0; i < diff.data.length; i += 4) {
+        diff.data[i] = 255; // R
+        diff.data[i + 1] = 0; // G
+        diff.data[i + 2] = 0; // B
+        diff.data[i + 3] = 255; // A
+      }
     }
 
     await writePng(diff, diffPath);
@@ -215,7 +242,9 @@ export async function compareImages(
     return { diffPixels: 0, totalPixels, diffPercentage: 0 };
   }
 
-  const diff = new PNG({ width, height });
+  // Side-by-side presentation needs only the statistics pass, not an overlay
+  // buffer or anti-aliasing highlight classification.
+  const diff = diffStyle === "sideBySide" ? undefined : new PNG({ width, height });
 
   const useAntiAliasing = comparison.antiAliasing ?? true;
   const useAlpha = comparison.alpha ?? true;
@@ -253,23 +282,23 @@ export async function compareImages(
       const delta = colorDelta(r1, g1, b1, a1, r2, g2, b2, a2);
 
       if (delta > maxColorDelta) {
+        diffPixels++;
+        if (!diff) continue;
         // Anti-aliasing detection: check if pixel is likely AA
         if (useAntiAliasing && isAntiAliased(baseline, current, x, y, width, height)) {
           // Mark as AA (yellow)
-          diffPixels++;
           diff.data[idx] = 255;
           diff.data[idx + 1] = 200;
           diff.data[idx + 2] = 0;
           diff.data[idx + 3] = 128;
         } else {
           // Mark as different
-          diffPixels++;
           diff.data[idx] = diffColor.r;
           diff.data[idx + 1] = diffColor.g;
           diff.data[idx + 2] = diffColor.b;
           diff.data[idx + 3] = 255;
         }
-      } else {
+      } else if (diff && diffStyle === "overlay") {
         // Grayscale for matching pixels
         const gray = Math.round((r2 + g2 + b2) / 3);
         diff.data[idx] = gray;
@@ -282,7 +311,7 @@ export async function compareImages(
 
   // Only write diff if there are differences
   if (diffPixels > 0) {
-    await writePng(diff, diffPath);
+    await writePng(diff ?? sideBySidePng(baseline, current), diffPath);
   }
 
   const diffPercentage = (diffPixels / totalPixels) * 100;

@@ -8,6 +8,7 @@ import type {
   ComparisonConfig,
   CiConfig,
   ViewportConfig,
+  DiffStyle,
 } from "../types/index.js";
 
 /**
@@ -21,6 +22,8 @@ export interface VrtResult {
   snapshotPath: string;
   currentPath?: string;
   diffPath?: string;
+  /** Non-default presentation of the PNG at diffPath. */
+  diffStyle?: DiffStyle;
   diffPercentage?: number;
   diffPixels?: number;
   totalPixels?: number;

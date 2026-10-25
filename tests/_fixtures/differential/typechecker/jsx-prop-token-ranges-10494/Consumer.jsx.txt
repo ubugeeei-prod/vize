@@ -1,0 +1,4 @@
+// 🧭 authored prop coordinates
+import Child from "./Child.vue";
+export const invalid = <Child count="wrong" foo-bar={123} active="yes" 名称={false} />;
+export const valid = <Child count={1} foo-bar="ok" active 名称="ok" />;

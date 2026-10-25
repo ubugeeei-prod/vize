@@ -87,6 +87,10 @@ conclusion is drawn from the text).
 This describes expression carriers: the current `OnHandlerRef::Body` returns
 no expression and is not traversed or counted as unknown by this pass. A lowered
 `OriginalFor` counts its loop structure without walking a collection AST.
+Retained expression contribution ranges pass through the existing checked parser
+wrapper and decoded-to-authored coordinates. If any contribution has no exact
+authored boundary, the whole expression becomes one `unknown` row over its
+original range; no partial score or guessed entity-interior range is published.
 
 ## Corpus distribution and default thresholds
 

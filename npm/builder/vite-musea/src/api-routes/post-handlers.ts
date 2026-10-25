@@ -193,6 +193,7 @@ export async function handleRunVrt(
         snapshotPath: r.snapshotPath,
         currentPath: r.currentPath,
         diffPath: r.diffPath,
+        diffStyle: r.diffStyle,
         error: r.error,
       })),
       artifacts: {

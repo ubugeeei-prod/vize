@@ -26,13 +26,16 @@ import { resolveSnapshotIdentity } from "./snapshot-identity.js";
 import { matchesSnapshotPattern } from "./snapshot-pattern.js";
 import { hostedCertificateArguments } from "./hosted-navigation.js";
 import { launchChromium } from "./browser-launch.js";
+import { resolveDiffStyle } from "./diff-style.js";
 export { normalizeVrtWorkerCount } from "./jobs.js";
+type ResolvedCaptureConfig = Required<Omit<CaptureConfig, "beforeCapture">> &
+  Pick<CaptureConfig, "beforeCapture">;
 /**
  * VRT runner using Playwright.
  */
 export class MuseaVrtRunner {
   private options: Required<VrtOptions>;
-  private capture: Required<CaptureConfig>;
+  private capture: ResolvedCaptureConfig;
   private comparison: ComparisonConfig;
   private ci: CiConfig;
   private browser: Browser | null = null;
@@ -43,6 +46,13 @@ export class MuseaVrtRunner {
   private previewUrls: ExtendedVrtOptions["previewUrls"];
 
   constructor(options: ExtendedVrtOptions = {}) {
+    resolveDiffStyle(options.comparison?.diffStyle);
+    if (
+      options.capture?.beforeCapture !== undefined &&
+      typeof options.capture.beforeCapture !== "function"
+    ) {
+      throw new TypeError("Musea capture.beforeCapture must be a function.");
+    }
     this.identityOptions = {
       ...options,
       projectRoot: path.resolve(options.projectRoot ?? process.cwd()),
@@ -62,6 +72,7 @@ export class MuseaVrtRunner {
       launchOptions: options.launchOptions ?? {},
     };
     this.capture = {
+      beforeCapture: options.capture?.beforeCapture,
       animations: options.capture?.animations ?? "disabled",
       reducedMotion: options.capture?.reducedMotion ?? "no-preference",
       caret: options.capture?.caret ?? "hide",
@@ -72,6 +83,7 @@ export class MuseaVrtRunner {
       waitSelector: options.capture?.waitSelector ?? ".musea-variant",
       hideElements: options.capture?.hideElements ?? [],
       maskElements: options.capture?.maskElements ?? [],
+      maskColor: options.capture?.maskColor ?? "#ff00ff",
     };
     this.comparison = options.comparison ?? {};
     this.ci = options.ci ?? {};
@@ -105,7 +117,7 @@ export class MuseaVrtRunner {
   }
 
   /** @internal */
-  getCapture(): Required<CaptureConfig> {
+  getCapture(): ResolvedCaptureConfig {
     return this.capture;
   }
 

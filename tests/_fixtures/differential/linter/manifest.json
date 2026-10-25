@@ -1865,9 +1865,7 @@
     {
       "id": "linter/pug-refusal-10428",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "pug-refusal-10428",
         "files": [
@@ -1889,10 +1887,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "pug-template"
-            ],
+            "dialects": ["vue3-sfc", "pug-template"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1901,9 +1896,7 @@
     {
       "id": "linter/retained-projection-10440",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "retained-projection-10440",
         "files": [
@@ -1960,12 +1953,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "pug-template",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "pug-template", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1974,9 +1962,7 @@
     {
       "id": "linter/component-document-isolation-10444",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "component-document-isolation-10444",
         "files": [
@@ -2018,12 +2004,38 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "pug-template",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "pug-template", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/complexity-coordinates-10465",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "complexity-coordinates-10465",
+        "files": [
+          {
+            "path": "Dashboard.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "c05846695d762bb444da775b584d1063297f520acd0158e67f90ad6734366750"
+          },
+          {
+            "path": "Dashboard.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "c81237220b426813cbb7621e569320837f9115a7e25bd2e0ffe9289e760cb070"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]

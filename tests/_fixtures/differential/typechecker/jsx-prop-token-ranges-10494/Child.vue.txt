@@ -1,0 +1,5 @@
+<script setup lang="ts">
+// 🧭 physical declarations
+defineProps<{ count: number; fooBar: string; active: boolean; 名称: string }>();
+</script>
+<template><span /></template>

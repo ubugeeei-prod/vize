@@ -69,7 +69,7 @@ impl JsxRenameService {
         map_canonical_corsa_workspace_edit(ctx, &document, edit)
     }
 
-    /// Preserve prepare-rename placeholders while mapping the local range.
+    /// Present the authored target, excluding generated quotes or canonical spelling.
     fn map_prepare_rename(
         ctx: &IdeContext<'_>,
         virtual_ts: &JsxVirtualTs,
@@ -80,9 +80,20 @@ impl JsxRenameService {
                 JsxService::map_virtual_range(virtual_ts, &ctx.content, range)
                     .map(PrepareRenameResponse::Range)
             }
-            PrepareRenameResponse::RangeWithPlaceholder { range, placeholder } => {
-                JsxService::map_virtual_range(virtual_ts, &ctx.content, range)
-                    .map(|range| PrepareRenameResponse::RangeWithPlaceholder { range, placeholder })
+            PrepareRenameResponse::RangeWithPlaceholder { range, .. } => {
+                let range = JsxService::map_virtual_range(virtual_ts, &ctx.content, range)?;
+                let start = crate::ide::position_to_offset(
+                    &ctx.content,
+                    range.start.line,
+                    range.start.character,
+                )?;
+                let end = crate::ide::position_to_offset(
+                    &ctx.content,
+                    range.end.line,
+                    range.end.character,
+                )?;
+                let placeholder = ctx.content.get(start..end)?.to_owned();
+                Some(PrepareRenameResponse::RangeWithPlaceholder { range, placeholder })
             }
             PrepareRenameResponse::DefaultBehavior { default_behavior } => {
                 Some(PrepareRenameResponse::DefaultBehavior { default_behavior })
@@ -154,5 +165,49 @@ mod tests {
             let ctx = ctx_for(&state, &uri, source, "props.msg");
             assert!(JsxRenameService::prepare_rename(&ctx, None).await.is_none());
         });
+    }
+
+    #[test]
+    fn mapped_property_prepare_rename_uses_whole_authored_token_and_placeholder() {
+        for newline in ["\n", "\r\n"] {
+            for (authored, generated_name) in
+                [("count", "count"), ("foo-bar", "fooBar"), ("名称", "名称")]
+            {
+                let source =
+                    vize_l0::cstr!("// 🧭\nconst view = <Child {authored}={{value}} />;\n")
+                        .replace('\n', newline);
+                let generated = super::super::virtual_ts::generate_jsx_virtual_ts(
+                    &source,
+                    vize_atelier_jsx::JsxLang::Tsx,
+                )
+                .unwrap();
+                let quoted = vize_l0::cstr!("\"{generated_name}\"");
+                let key = generated.code.find(quoted.as_str()).unwrap();
+                let state = ServerState::new();
+                let uri = Url::parse("file:///tmp/Props.tsx").unwrap();
+                let at = source.find(authored).unwrap();
+                let ctx = IdeContext::testing(&state, &uri, at, source.clone());
+                let range = |text: &str, start: usize, end: usize| {
+                    let (line, character) = crate::ide::offset_to_position(text, start);
+                    let from = tower_lsp::lsp_types::Position::new(line, character);
+                    let (line, character) = crate::ide::offset_to_position(text, end);
+                    tower_lsp::lsp_types::Range::new(
+                        from,
+                        tower_lsp::lsp_types::Position::new(line, character),
+                    )
+                };
+                let native = PrepareRenameResponse::RangeWithPlaceholder {
+                    range: range(&generated.code, key + 1, key + quoted.len() - 1),
+                    placeholder: quoted.into(),
+                };
+                assert_eq!(
+                    JsxRenameService::map_prepare_rename(&ctx, &generated, native),
+                    Some(PrepareRenameResponse::RangeWithPlaceholder {
+                        range: range(&source, at, at + authored.len()),
+                        placeholder: authored.into()
+                    })
+                );
+            }
+        }
     }
 }
