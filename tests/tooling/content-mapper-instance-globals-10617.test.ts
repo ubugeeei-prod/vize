@@ -36,7 +36,7 @@ test("10617 retains the original reported files, exact beta host and closed fram
     cases.find(({ id }) => id === "original")!.globals,
     files.get("project/src/globals.d.ts.txt"),
   );
-  assert.equal(cases.length, 26);
+  assert.equal(cases.length, 40);
   const packet = { jsonrpc: "2.0", id: 1, result: { text: "日本語🍣\r\n", mappings: [] } };
   assert.deepEqual(decodeFrames(frame(packet).toString()), [packet]);
   assert.throws(() => decodeFrames(frame(packet).subarray(0, -1).toString()));

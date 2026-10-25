@@ -13,6 +13,7 @@ export type GlobalCase = {
   discovery?: boolean;
   binding?: string;
   unusedDirective?: boolean;
+  forbiddenReceiverNames?: string[];
   errors: Array<{ anchor: string; token: string; kind: string; suppressed?: boolean }>;
 };
 export type Packet = {
@@ -318,6 +319,12 @@ export function assertCheckedReadOwnership(
     ts.forEachChild(node, visit);
   };
   visit(parsed);
+  for (const name of entry.forbiddenReceiverNames ?? [])
+    assert.equal(
+      reads.filter((read) => read.name === name).length,
+      0,
+      `${entry.id}: an object/member key, literal, comment or callback-local name cannot acquire an instance receiver`,
+    );
   for (const error of entry.errors.filter((item) => item.kind === "undeclared")) {
     const at = location(source, error.anchor, error.token);
     const named = reads.filter((read) => read.name === error.token);
