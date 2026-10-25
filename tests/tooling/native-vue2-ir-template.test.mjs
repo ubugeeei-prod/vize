@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { test } from "node:test";
 
 const capture = process.env.VIZE_VUE2_IR_CAPTURE;
@@ -83,7 +83,7 @@ for (const [name, version] of Object.entries({ vue26: "2.6.14", vue27: "2.7.16" 
     { skip: !capture },
     async () => {
       assert.equal(packet.schema, "vize.native-vue2-template-target.v1");
-      assert.equal(packet.rows.length, 16);
+      assert.equal(packet.rows.length, 19);
       const directory = join(process.env.VIZE_VUE2_IR_ORACLES_ROOT, name);
       const require = createRequire(join(directory, "package.json"));
       const Vue = require("vue");
@@ -92,12 +92,24 @@ for (const [name, version] of Object.entries({ vue26: "2.6.14", vue27: "2.7.16" 
       assert.equal(Vue.version, version);
       assert.equal(require("vue-template-compiler/package.json").version, version);
       assert.equal(require("vue-server-renderer/package.json").version, version);
+      function inventory(directory) {
+        return readdirSync(directory, { withFileTypes: true })
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .flatMap((entry) => {
+            if (entry.name === "node_modules") return [];
+            const path = join(directory, entry.name);
+            if (entry.isDirectory()) return inventory(path);
+            assert.equal(entry.isFile(), true);
+            const bytes = readFileSync(path);
+            return [{ path, bytes: bytes.length, sha256: hash(bytes) }];
+          });
+      }
       const identities = Object.fromEntries(
         ["vue", "vue-template-compiler", "vue-server-renderer"].map((dependency) => {
           const path = require.resolve(`${dependency}/package.json`);
           return [
             dependency,
-            { path, sha256: hash(readFileSync(path)), version: require(path).version },
+            { path, files: inventory(dirname(path)), version: require(path).version },
           ];
         }),
       );

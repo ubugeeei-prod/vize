@@ -198,3 +198,54 @@ fn recovery_and_encoded_delimiters_preserve_the_original_observations() {
         assert_eq!(observation.original().unsupported().len(), boundaries);
     }
 }
+
+#[test]
+fn static_attribute_dialect_differences_and_runtime_data_roles_are_refused() {
+    for (source, kind) in [
+        (
+            "<div id='&copy;'>{{ x }}</div>",
+            Vue2HoleKind::AttributeEncoding,
+        ),
+        (
+            "<div id='&apos;'>{{ x }}</div>",
+            Vue2HoleKind::AttributeEncoding,
+        ),
+        (
+            "<div id='&#10;'>{{ x }}</div>",
+            Vue2HoleKind::AttributeEncoding,
+        ),
+        (
+            "<div id='&#9;'>{{ x }}</div>",
+            Vue2HoleKind::AttributeEncoding,
+        ),
+        (
+            "<div id='&#x41;'>{{ x }}</div>",
+            Vue2HoleKind::AttributeEncoding,
+        ),
+        (
+            "<video muted>{{ x }}</video>",
+            Vue2HoleKind::UnsupportedAttribute,
+        ),
+        (
+            "<div inline-template><span>x</span></div>",
+            Vue2HoleKind::UnsupportedAttribute,
+        ),
+    ] {
+        let arena = Allocator::default();
+        let original = parse_component(&arena, source)
+            .unwrap()
+            .into_expression_pool();
+        let observation = lower_vue2_component(&arena, original);
+        assert!(observation.admitted().is_none(), "{source}");
+        assert_eq!(
+            observation
+                .holes()
+                .iter()
+                .filter(|hole| hole.kind == kind)
+                .count(),
+            1,
+            "{source}"
+        );
+        assert_eq!(observation.original().block().source(), source);
+    }
+}

@@ -58,13 +58,24 @@ impl<'a> Context<'_, 'a> {
                 || name.starts_with("v-")
                 || matches!(
                     name,
-                    "is" | "key" | "ref" | "slot" | "slot-scope" | "scope" | "style"
+                    "is" | "key"
+                        | "ref"
+                        | "slot"
+                        | "slot-scope"
+                        | "scope"
+                        | "style"
+                        | "muted"
+                        | "inline-template"
                 )
             {
                 self.hole(attribute_span, Vue2HoleKind::UnsupportedAttribute);
                 continue;
             }
             let value = match &attribute.value {
+                Some(value) if !attribute_encoding_admitted(value.content.text) => {
+                    self.hole(attribute_span, Vue2HoleKind::AttributeEncoding);
+                    continue;
+                }
                 Some(value) => match prepare_attribute_value(
                     self.allocator,
                     self.original.block().root_source(),
@@ -91,4 +102,19 @@ impl<'a> Context<'_, 'a> {
         });
         self.built(result, span);
     }
+}
+
+// Vue 2's original HTML parser decodes only this attribute vocabulary by
+// default. The shared HTML5 source preparation has a wider vocabulary, so it
+// can be reused only after this exact intersection is proved. Newline flags,
+// other numeric/named entities and undecodable ampersands remain explicit
+// refusals until their original dialect-owned value contract is implemented.
+fn attribute_encoding_admitted(raw: &str) -> bool {
+    raw.match_indices('&').all(|(at, _)| {
+        raw.get(at..).is_some_and(|tail| {
+            ["&amp;", "&lt;", "&gt;", "&quot;", "&#39;"]
+                .iter()
+                .any(|entity| tail.starts_with(entity))
+        })
+    })
 }

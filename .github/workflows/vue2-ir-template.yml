@@ -55,6 +55,21 @@ jobs:
           cargo test --locked --profile ci -p vize_l4 --lib targets::vue2:: -- --nocapture 2>&1 | tee target/vize-tests/vue2-ir/emit.log
       - name: Capture complete generated modules and source phase timings
         run: cargo run --locked --profile ci -p vize_l4 --example vue2_ir_template > "$VIZE_VUE2_IR_CAPTURE" 2> target/vize-tests/vue2-ir/capture.stderr
+      - name: Seal the actual source-native executable
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync, statSync, writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const source = execFileSync('git', ['rev-parse', 'HEAD'], {encoding:'utf8'}).trim();
+          assert.equal(source, process.env.SOURCE_SHA);
+          const file = join(process.env.CARGO_TARGET_DIR, 'ci/examples/vue2_ir_template');
+          const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+          const files = execFileSync('git', ['ls-files'], {encoding:'utf8'}).trim().split('\n').filter(file => file === 'Cargo.lock' || file === 'Cargo.toml' || file.startsWith('davinci/vize_l1_to_l2/src/native_vue2') || file.startsWith('davinci/vize_l4/src/targets/vue2') || file === 'davinci/vize_l4/examples/vue2_ir_template.rs');
+          writeFileSync('target/vize-tests/vue2-ir/producer.json', JSON.stringify({source, tree:execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(), executable:{file,bytes:statSync(file).size,sha256:hash(readFileSync(file))}, compiler:execFileSync('rustc',['--version'],{encoding:'utf8'}).trim(), sourceFiles: Object.fromEntries(files.map(file => [file,hash(readFileSync(file))])), runId:process.env.GITHUB_RUN_ID},null,2)+'\n');
+          JS
       - name: Install exact official Vue 2 runtime and compiler pairs
         shell: bash
         run: |

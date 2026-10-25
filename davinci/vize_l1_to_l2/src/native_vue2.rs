@@ -22,6 +22,7 @@ pub enum Vue2HoleKind {
     UnsupportedMarkup,
     UnsupportedTag,
     UnsupportedAttribute,
+    AttributeEncoding,
     WhitespacePolicy,
     Filter,
     OriginalText(RetainedTextRefusal),

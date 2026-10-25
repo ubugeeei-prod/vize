@@ -42,6 +42,9 @@ const SOURCES: &[&str] = &[
     "<div class='x'/>",
     "<button type='button'>{{ a + b }}</button>",
     "<div>{{ 1 }}</div>",
+    "<div id='&lt;&gt;&quot;&amp;&#39;'>{{ a }}</div>",
+    "<div id='&amp;amp;'>{{ a }}</div>",
+    "<div class=''>{{ a }}</div>",
 ];
 struct Lookup;
 impl BindingLookup for Lookup {
