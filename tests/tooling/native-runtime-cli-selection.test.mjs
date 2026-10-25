@@ -53,7 +53,7 @@ function expectedCheckJson(consumer, phase) {
   };
 }
 
-test("native CLI exec custody preserves full argv and rejects incomplete trace framing", () => {
+void test("native CLI exec custody preserves full argv and rejects incomplete trace framing", () => {
   const line =
     'execve("/actual/compiler", ["/actual/compiler", "--project", "/project/tsconfig.json"], 0x1 /* 4 vars */) = 0';
   assert.deepEqual(parseExecTrace(line), [
@@ -67,6 +67,24 @@ test("native CLI exec custody preserves full argv and rejects incomplete trace f
     },
   ]);
   assert.throws(() => parseExecTrace('execve("/actual/compiler", ["..."], <unfinished ...>'));
+  const cEscaped = String.raw`execve("/actual/compiler", ["/actual/compiler", "/project/\345\210\251\347\224\250\350\200\205/App.vue", "quote\"slash\\tab\t", "\xef\xbb\xbfvalue"], 0x1) = 0`;
+  assert.deepEqual(parseExecTrace(cEscaped)[0].argv, [
+    "/actual/compiler",
+    "/project/利用者/App.vue",
+    'quote"slash\\tab\t',
+    "\ufeffvalue",
+  ]);
+  for (const argv of [
+    '["ok", ...]',
+    '["ok",]',
+    '["ok" "missing-comma"]',
+    String.raw`["\q"]`,
+    String.raw`["\777"]`,
+    String.raw`["\xff"]`,
+    String.raw`["\x1"]`,
+    String.raw`["\0"]`,
+  ])
+    assert.throws(() => parseExecTrace(`execve("/actual/compiler", ${argv}, 0x1) = 0`));
   assert.throws(() => loadNativeProviders({}), /VIZE_NATIVE_BETA_ROOT/u);
   const invalid = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-provider-refusal-"));
   try {
@@ -119,7 +137,7 @@ test("native CLI exec custody preserves full argv and rejects incomplete trace f
   );
 });
 
-test("source CLI selects actual user-installed native packages and retains whole diagnostic results", async (t) => {
+void test("source CLI selects actual user-installed native packages and retains whole diagnostic results", async (t) => {
   const selected =
     process.env.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION === "1" ||
     process.env.VIZE_SOURCE_CLI !== undefined;

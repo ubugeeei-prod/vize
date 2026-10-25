@@ -5,16 +5,64 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { CORSA_OVERRIDES, sha256 } from "./providers.mjs";
 
+// strace writes C byte escapes, including octal UTF8 bytes, rather than JSON.
+function decodeExecString(quoted) {
+  assert.ok(quoted.isWellFormed(), "lossless C trace text");
+  const bytes = [];
+  const escapes = { a: 7, b: 8, f: 12, n: 10, r: 13, t: 9, v: 11, "\\": 92, '"': 34 };
+  for (let offset = 1; offset < quoted.length - 1; offset++) {
+    if (quoted[offset] !== "\\") {
+      const point = quoted.codePointAt(offset);
+      bytes.push(...Buffer.from(String.fromCodePoint(point)));
+      if (point > 0xffff) offset++;
+      continue;
+    }
+    offset++;
+    const escaped = quoted[offset];
+    if (Object.hasOwn(escapes, escaped)) bytes.push(escapes[escaped]);
+    else if (/[0-7]/u.test(escaped)) {
+      const octal = /^[0-7]{1,3}/u.exec(quoted.slice(offset))[0];
+      const byte = Number.parseInt(octal, 8);
+      assert.ok(byte <= 255, "C octal escape is one byte");
+      bytes.push(byte);
+      offset += octal.length - 1;
+    } else if (escaped === "x") {
+      const hex = /^[0-9a-fA-F]{2}/u.exec(quoted.slice(offset + 1));
+      assert.ok(hex, "complete C hex byte escape");
+      bytes.push(Number.parseInt(hex[0], 16));
+      offset += 2;
+    } else assert.fail(`unsupported C exec escape: ${escaped}`);
+  }
+  const buffer = Buffer.from(bytes);
+  const text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(buffer);
+  assert.equal(text.includes("\0"), false, "exec strings cannot contain NUL");
+  return text;
+}
+function decodeExecArgv(quoted) {
+  const result = [];
+  let rest = quoted.slice(1, -1).trim();
+  while (rest.length) {
+    const match = /^"(?:[^"\\]|\\.)*"/u.exec(rest);
+    assert.ok(match, "complete C-quoted exec argument without truncation");
+    result.push(decodeExecString(match[0]));
+    rest = rest.slice(match[0].length).trim();
+    if (rest.length) {
+      assert.ok(rest.startsWith(","), "complete exec argument separator");
+      rest = rest.slice(1).trim();
+      assert.notEqual(rest, "", "exec arguments cannot have a trailing separator");
+    }
+  }
+  return result;
+}
+
 export function parseExecTrace(text) {
   const rows = [];
   for (const [index, line] of text.split("\n").entries()) {
     if (!line.includes("execve(")) continue;
     const match = /^execve\(("(?:[^"\\]|\\.)*"), (\[.*\]), .*\)\s+= (.*)$/u.exec(line);
     assert.ok(match, `complete execve framing required at line ${index + 1}`);
-    const executable = JSON.parse(match[1]),
-      argv = JSON.parse(match[2]);
-    assert.equal(typeof executable, "string");
-    assert.ok(Array.isArray(argv) && argv.every((x) => typeof x === "string"));
+    const executable = decodeExecString(match[1]),
+      argv = decodeExecArgv(match[2]);
     rows.push({
       line: index + 1,
       raw: line,

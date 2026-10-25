@@ -75,7 +75,7 @@ function expectedMissing(filename, message) {
   };
 }
 
-test("NAPI process custody rejects absent, foreign and failed API owner records", () => {
+void test("NAPI process custody rejects absent, foreign and failed API owner records", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-napi-custody-unit-"));
   try {
     const binary = path.join(directory, "marker");
@@ -129,7 +129,7 @@ test("NAPI process custody rejects absent, foreign and failed API owner records"
   }
 });
 
-test("source type-aware NAPI follows real user compiler graphs and preserves whole DTOs", async (t) => {
+void test("source type-aware NAPI follows real user compiler graphs and preserves whole DTOs", async (t) => {
   if (process.env.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION !== "1") {
     t.skip("explicit source NAPI/provider qualification not selected; no runtime credit");
     return;
