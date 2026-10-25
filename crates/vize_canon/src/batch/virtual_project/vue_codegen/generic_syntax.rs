@@ -13,6 +13,7 @@ pub(super) fn refuse(
     let start = crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)
         .map_or(0, |range| range.start as u32);
     GeneratedVueFile {
+        diagnostic_route: super::super::DiagnosticRoute::ProjectSessionRequired,
         generic_copies: None,
         typed_router_import: false,
         empty_module_exports: false,

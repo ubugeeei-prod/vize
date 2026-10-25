@@ -455,6 +455,34 @@ fn generic_constructor_intersections_preserve_slot_payloads() {
 }
 
 #[test]
+fn planned_generic_syntax_keeps_independent_body_errors_through_repairs() {
+    check_pack(
+        "planned-generic-syntax-route-10598",
+        "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
+        "957827706dd439d9810a24f65b4a16c45f266b5e",
+        Some(10598),
+        &[
+            "lf-valid-generic-body-error",
+            "lf-broken-generic-body-error",
+            "lf-repaired-generic-body-error",
+            "lf-both-repaired",
+            "crlf-valid-generic-body-error",
+            "crlf-broken-generic-body-error",
+            "crlf-repaired-generic-body-error",
+            "crlf-both-repaired",
+            "unicode-lf-valid-generic-body-error",
+            "unicode-lf-broken-generic-body-error",
+            "unicode-lf-repaired-generic-body-error",
+            "unicode-lf-both-repaired",
+            "unicode-crlf-valid-generic-body-error",
+            "unicode-crlf-broken-generic-body-error",
+            "unicode-crlf-repaired-generic-body-error",
+            "unicode-crlf-both-repaired",
+        ],
+    );
+}
+
+#[test]
 fn quoted_generic_parameters_preserve_complete_batch_diagnostics() {
     check_pack(
         "quoted-generic-parameters-10540",
@@ -857,6 +885,7 @@ fn check_pack(
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
             | "quoted-generic-parameters-10540"
+            | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"

@@ -1,11 +1,12 @@
 //! Input options and generated output shared by canonical Vue projections.
 
-use super::super::setup_props::RuntimePropResolveCache;
+use super::super::{DiagnosticRoute, setup_props::RuntimePropResolveCache};
 use crate::{batch::Diagnostic, virtual_ts::VirtualTsCheckOptions};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{String as CompactString, config::VueVersion};
 
 pub(in crate::batch::virtual_project) struct GeneratedVueFile {
+    pub(in crate::batch::virtual_project) diagnostic_route: DiagnosticRoute,
     pub(in crate::batch::virtual_project) code: CompactString,
     pub(in crate::batch::virtual_project) mappings: Vec<crate::virtual_ts::VizeMapping>,
     /// Row-aligned producer feature ownership. Style diagnostics may append

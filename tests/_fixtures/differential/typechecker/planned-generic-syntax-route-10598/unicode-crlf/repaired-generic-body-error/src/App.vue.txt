@@ -1,0 +1,7 @@
+<!--🧭--><script setup lang="ts" generic="T extends string">
+const independent: number = 'bad';
+void independent;
+const genericValue: T | undefined = undefined;
+void genericValue;
+</script>
+<template><div /></template>

@@ -74,6 +74,14 @@ pub(super) fn generate_vue_virtual_ts(
         .map(|value| value.as_ref())
         .filter(|value: &&str| !value.trim().is_empty())
         .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
+    let diagnostic_route = if generic_parameters
+        .as_ref()
+        .is_some_and(|plan| !plan.diagnostics.is_empty())
+    {
+        super::DiagnosticRoute::ProjectSessionRequired
+    } else {
+        super::DiagnosticRoute::NativeCliAllowed
+    };
 
     if generic_parameters.as_ref().is_some_and(|plan| {
         !plan.diagnostics.is_empty()
@@ -91,6 +99,7 @@ pub(super) fn generate_vue_virtual_ts(
         Ok(view) => view,
         Err(error) => {
             return Ok(GeneratedVueFile {
+                diagnostic_route,
                 generic_copies: None,
                 typed_router_import: false,
                 empty_module_exports: false,
@@ -173,6 +182,7 @@ pub(super) fn generate_vue_virtual_ts(
     // AST remains absent; native TypeScript owns syntax diagnostics for that script.
     if !has_script_projection {
         return Ok(GeneratedVueFile {
+            diagnostic_route,
             generic_copies: None,
             typed_router_import: false,
             empty_module_exports: false,
@@ -388,6 +398,7 @@ pub(super) fn generate_vue_virtual_ts(
     );
 
     Ok(GeneratedVueFile {
+        diagnostic_route,
         generic_copies,
         code,
         mappings,

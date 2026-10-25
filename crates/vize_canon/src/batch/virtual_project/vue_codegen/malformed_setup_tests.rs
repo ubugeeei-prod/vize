@@ -101,6 +101,7 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
         generic_copies.as_ref(),
     );
     let before = GeneratedVueFile {
+        diagnostic_route: Default::default(),
         code: prior.code,
         mappings,
         mapping_meta,
