@@ -49,8 +49,22 @@ jobs:
           VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/provider-authority-six
           VIZE_NATIVE_702_ROOT: ${{ runner.temp }}/provider-authority-702
         run: |
+          set -euo pipefail
           export VIZE_NATIVE_STRACE="$(command -v strace)"
-          node observer/tests/tooling/support/native-runtime-selection/authority.mjs
+          control_root="$RUNNER_TEMP/provider-authority/observer-control"
+          mkdir -p "$control_root"
+          ps -eo pid,ppid,pgid,stat,comm > "$control_root/processes-before.txt"
+          set +e
+          timeout --signal=KILL 120s node observer/tests/tooling/support/native-runtime-selection/authority.mjs > "$control_root/stdout.bin" 2> "$control_root/stderr.bin" &
+          observer_supervisor_pid=$!
+          printf '%s\n' "$observer_supervisor_pid" > "$control_root/supervisor-pid.txt"
+          wait "$observer_supervisor_pid"
+          observer_status=$?
+          set -e
+          printf '%s\n' "$observer_status" > "$control_root/status.txt"
+          ps -eo pid,ppid,pgid,stat,comm > "$control_root/processes-after.txt"
+          cat "$control_root/stdout.bin" "$control_root/stderr.bin"
+          exit "$observer_status"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

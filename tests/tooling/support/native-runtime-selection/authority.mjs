@@ -130,6 +130,25 @@ export async function observeProviderAuthority(env = process.env) {
     path.join(sourceRoot, "target/vize-tests/native-runtime-authority");
   fs.mkdirSync(output, { recursive: true });
   const directory = fs.mkdtempSync(path.join(output, "observation-"));
+  const journal = (event) =>
+    fs.appendFileSync(
+      path.join(directory, "progress.jsonl"),
+      `${JSON.stringify({ at: new Date().toISOString(), pid: process.pid, mode, ...event })}\n`,
+    );
+  process.once("uncaughtExceptionMonitor", (error) =>
+    journal({
+      event: "observer-uncaught",
+      message: String(error),
+      resources: process.getActiveResourcesInfo(),
+    }),
+  );
+  process.once("exit", (code) =>
+    journal({
+      event: "observer-exit",
+      code,
+      resources: process.getActiveResourcesInfo(),
+    }),
+  );
   const productBlobs = [
     "crates/vize_carton/src/corsa_resolver.rs",
     "crates/vize_carton/src/corsa_resolver/packages.rs",
@@ -163,6 +182,7 @@ export async function observeProviderAuthority(env = process.env) {
   });
   const cases = [];
   for (const kind of AUTHORITY_CASES) {
+    journal({ event: "case-start", kind });
     const consumer = prepare(path.join(base, kind), kind, providers);
     const caseOutput = path.join(directory, kind);
     fs.mkdirSync(caseOutput);
@@ -204,6 +224,7 @@ export async function observeProviderAuthority(env = process.env) {
       for (const phase of ["valid", "error", "repair"]) {
         fs.writeFileSync(consumer.entry, SOURCES[phase]);
         assertProviderFiles(providers);
+        journal({ event: "phase-start", kind, phase, args, expectedProvider: expected });
         const observed = runStracedCli({
           strace,
           cli,
@@ -213,11 +234,21 @@ export async function observeProviderAuthority(env = process.env) {
           directory: path.join(caseOutput, phase),
           expectedExecutable: expected,
         });
+        journal({
+          event: "phase-returned",
+          kind,
+          phase,
+          status: observed.status,
+          signal: observed.signal,
+        });
         row.phases.push({ phase, inputs: captureConsumerInputs(consumer), observed });
         write(path.join(caseOutput, "comparison.json"), row);
         if (expected) {
           assert.equal(observed.status, phase === "error" ? 1 : 0);
-          assert.equal(observed.streams.stderr.text, "");
+          assert.equal(
+            observed.streams.stderr.text,
+            `Building Corsa virtual project for 2 files under ${consumer.workspace}...\nRunning Corsa diagnostics for 2 files...\n`,
+          );
           assert.deepEqual(JSON.parse(observed.streams.stdout.text), expectedJson(phase));
         } else {
           assert.equal(observed.status, 1);
@@ -246,6 +277,7 @@ export async function observeProviderAuthority(env = process.env) {
     }
     write(path.join(caseOutput, "comparison.json"), row);
     cases.push(row);
+    journal({ event: "case-complete", kind, state: row.state, phases: row.phases.length });
   }
   write(path.join(directory, "result.json"), { mode, producer: source, observer, cases });
   assert.equal(git(sourceRoot, ["status", "--porcelain", "--untracked-files=no"]), "");
