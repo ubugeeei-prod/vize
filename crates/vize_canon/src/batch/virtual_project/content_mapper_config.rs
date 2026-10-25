@@ -26,21 +26,24 @@ impl ContentMapperProjectConfiguration {
     /// Read only the host-selected tsconfig and its existing `extends` chain.
     /// An empty path denotes an inferred project and performs no file reads.
     pub fn load(config_file_name: &Path) -> CorsaResult<Self> {
-        let (options, dependencies) = if config_file_name.as_os_str().is_empty() {
+        let (options, mut dependencies) = if config_file_name.as_os_str().is_empty() {
             (Map::new(), Vec::new())
         } else {
             snapshot_vue_compiler_options(config_file_name)?
+        };
+        let (transform_options, vue_manifest) = if config_file_name.as_os_str().is_empty() {
+            (ContentMapperTransformOptions::default(), None)
+        } else {
+            ContentMapperTransformOptions::default().with_vue_compiler_options(
+                config_file_name,
+                &options,
+                &mut dependencies,
+            )?
         };
         let mut watched_files: Vec<CompactString> = dependencies
             .iter()
             .map(|path| path.to_string_lossy().into())
             .collect();
-        let (transform_options, vue_manifest) = if config_file_name.as_os_str().is_empty() {
-            (ContentMapperTransformOptions::default(), None)
-        } else {
-            ContentMapperTransformOptions::default()
-                .with_vue_compiler_options(config_file_name, &options)?
-        };
         if let Some(manifest) = vue_manifest.as_ref() {
             watched_files.push(manifest.to_string_lossy().into());
             watched_files.sort();
@@ -74,6 +77,7 @@ impl ContentMapperTransformOptions {
         mut self,
         config_file_name: &Path,
         options: &Map<std::string::String, Value>,
+        dependencies: &mut Vec<std::path::PathBuf>,
     ) -> CorsaResult<(Self, Option<std::path::PathBuf>)> {
         let strict_templates = options.get("strictTemplates").and_then(Value::as_bool);
         self.check_unknown_components = options
@@ -94,11 +98,11 @@ impl ContentMapperTransformOptions {
             .and_then(Value::as_bool)
             .unwrap_or(false);
         let (target, manifest) =
-            super::tsconfig_gen::vue_compiler_options::vue_target_from_options(
+            super::tsconfig_gen::vue_compiler_options::vue_target_from_options_with_dependencies(
                 config_file_name.parent().unwrap_or(Path::new(".")),
                 config_file_name,
                 options,
-                None,
+                dependencies,
             )?;
         self.vue_compiler_target = target;
         Ok((self, manifest))
@@ -445,6 +449,74 @@ mod tests {
         let package = parts.next();
         let modules = parts.next();
         file == Some("package.json") && package == Some("vue") && modules == Some("node_modules")
+    }
+
+    #[test]
+    fn auto_target_retains_nearer_missing_candidates_and_repair_without_numeric_probes() {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path();
+        let project = root.join("日本語").join("child");
+        std::fs::create_dir_all(&project).unwrap();
+        std::fs::write(root.join("package.json"), r#"{"name":"fixture"}"#).unwrap();
+        let outer = root.join("node_modules/vue/package.json");
+        std::fs::create_dir_all(outer.parent().unwrap()).unwrap();
+        std::fs::write(&outer, r#"{"version":"2.7.16"}"#).unwrap();
+        let config = project.join("tsconfig.json");
+        std::fs::write(&config, r#"{"vueCompilerOptions":{"target":"auto"}}"#).unwrap();
+        let before = load(&config);
+        assert_eq!(
+            before.transform_options.vue_compiler_target,
+            Some(VueVersion::V2_7)
+        );
+        let mut expected = expected_watches(
+            root,
+            &[
+                "日本語/child/tsconfig.json",
+                "日本語/child/package.json",
+                "日本語/package.json",
+                "package.json",
+                "日本語/child/node_modules/vue",
+                "日本語/child/node_modules/vue/package.json",
+                "日本語/node_modules/vue",
+                "日本語/node_modules/vue/package.json",
+                "node_modules/vue",
+                "node_modules/vue/package.json",
+            ],
+        );
+        expected.sort();
+        assert_eq!(before.watched_files, expected);
+        let nearer = project.join("node_modules/vue/package.json");
+        std::fs::create_dir_all(nearer.parent().unwrap()).unwrap();
+        std::fs::write(&nearer, r#"{"version":"3.5.0"}"#).unwrap();
+        let created = load(&config);
+        assert_eq!(
+            created.transform_options.vue_compiler_target,
+            Some(VueVersion::V3)
+        );
+        assert_ne!(created.config_identity, before.config_identity);
+        assert!(
+            !created
+                .watched_files
+                .iter()
+                .any(|path| path.as_str() == outer.to_string_lossy())
+        );
+        std::fs::remove_file(&nearer).unwrap();
+        let removed = load(&config);
+        assert_eq!(removed.config_identity, before.config_identity);
+        assert_eq!(removed.watched_files, before.watched_files);
+        std::fs::write(&nearer, r#"{"version":"invalid"}"#).unwrap();
+        assert!(ContentMapperProjectConfiguration::load(&config).is_err());
+        std::fs::write(&nearer, r#"{"version":"3.5.0"}"#).unwrap();
+        let repaired = load(&config);
+        assert_eq!(repaired.config_identity, created.config_identity);
+        assert_eq!(repaired.watched_files, created.watched_files);
+        for source in [r#"{"vueCompilerOptions":{"target":3}}"#, "{}"] {
+            std::fs::write(&config, source).unwrap();
+            assert_eq!(
+                load(&config).watched_files,
+                expected_watches(root, &["日本語/child/tsconfig.json"])
+            );
+        }
     }
 
     #[test]

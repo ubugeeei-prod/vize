@@ -369,3 +369,189 @@ for (const newline of ["\n", "\r\n"]) {
     },
   );
 }
+
+void test("one project fingerprints its native closure once per epoch and disposes exact watches", (context) => {
+  const fs = require("node:fs"),
+    os = require("node:os"),
+    path = require("node:path");
+  const { installVueVirtualModules } = require("../../npm/typescript-plugin/virtual-modules.cjs");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-project-closure-"));
+  const nativeRoot = path.join(root, "native");
+  fs.mkdirSync(nativeRoot);
+  fs.writeFileSync(
+    path.join(nativeRoot, "package.json"),
+    JSON.stringify({ name: "@vizejs/native", main: "index.cjs" }),
+  );
+  fs.writeFileSync(path.join(nativeRoot, "index.cjs"), "module.exports = {};\n");
+  fs.copyFileSync(
+    require.resolve("../../npm/native/language-projection.js"),
+    path.join(nativeRoot, "language-projection.js"),
+  );
+  const native = require(path.join(nativeRoot, "index.cjs"));
+  const config = path.join(root, "tsconfig.json"),
+    base = path.join(root, "inherited.json"),
+    missing = path.join(root, "preferred.json");
+  const files = new Map([
+    [config, "root"],
+    [base, "loose"],
+  ]);
+  const reads = new Map(),
+    watches = new Map(),
+    closed = [];
+  const sources = new Map(
+    Array.from({ length: 25 }, (_, index) => [
+      path.join(root, `${index}.vue`),
+      `<template>${index}</template>`,
+    ]),
+  );
+  let version = 0,
+    resolverCalls = 0,
+    generationCalls = 0,
+    refreshes = 0,
+    malformed = false;
+  native.getVueLanguageProjectMetadata = () => {
+    resolverCalls++;
+    if (malformed) throw new Error("Invalid inherited configuration");
+    return {
+      configIdentity: files.get(missing) || files.get(base),
+      watchedFiles: [config, base, missing],
+    };
+  };
+  native.generateVueLanguageCode = () => {
+    generationCalls++;
+    return JSON.stringify({
+      text: `export default ${JSON.stringify(files.get(missing) || files.get(base))};`,
+      extension: ".tsx",
+      mappings: [],
+      diagnostics: [],
+    });
+  };
+  const readFile = (file) => {
+    reads.set(file, (reads.get(file) || 0) + 1);
+    return files.get(file);
+  };
+  const host = {
+    readFile,
+    fileExists: (file) => files.has(file) || sources.has(file),
+    getScriptSnapshot: (file) =>
+      sources.has(file) ? ts.ScriptSnapshot.fromString(sources.get(file)) : undefined,
+    getCompilationSettings: () => ({ configFilePath: config }),
+    getCurrentDirectory: () => root,
+    getProjectVersion: () => String(version),
+  };
+  const originalVersion = host.getProjectVersion;
+  const support = installVueVirtualModules(ts, {
+    languageServiceHost: host,
+    config: { nativePath: nativeRoot },
+    project: { refreshDiagnostics: () => refreshes++ },
+    serverHost: {
+      watchFile(file, callback) {
+        assert(!watches.has(file), "each observed input has one live watcher");
+        watches.set(file, callback);
+        return {
+          close() {
+            closed.push(file);
+            watches.delete(file);
+          },
+        };
+      },
+    },
+  });
+  const queryAll = () => [...sources.keys()].map((file) => support.get(file));
+  const crypto = require("node:crypto");
+  const originalHash = crypto.createHash;
+  let hashCalls = 0;
+  crypto.createHash = (...args) => {
+    hashCalls++;
+    return originalHash(...args);
+  };
+  try {
+    queryAll();
+    queryAll();
+    assert.equal(resolverCalls, 1);
+    assert.equal(generationCalls, 25);
+    assert.deepEqual([...watches.keys()], [config, base, missing]);
+    assert.deepEqual(
+      [...reads.values()],
+      [1, 1, 1],
+      "50 SFC queries share three known input reads",
+    );
+    assert.equal(
+      hashCalls,
+      27,
+      "25 projection version digests plus two readable configuration digests",
+    );
+    version++;
+    queryAll();
+    assert.equal(resolverCalls, 1, "an unchanged project epoch does not reload the resolver");
+    assert.equal(generationCalls, 25);
+    assert.deepEqual([...reads.values()], [2, 2, 2]);
+    assert.equal(
+      hashCalls,
+      29,
+      "an unchanged epoch hashes each readable input once, not once per SFC",
+    );
+    context.diagnostic(
+      JSON.stringify({
+        scope: "JavaScript cache policy, controlled provider; not native or wall-time throughput",
+        sfcs: 25,
+        queries: 75,
+        resolverCalls,
+        generations: generationCalls,
+        knownInputReads: [...reads.values()],
+        hashCalls,
+      }),
+    );
+    watches.get(base)(base, ts.FileWatcherEventKind.Changed);
+    queryAll();
+    assert.equal(
+      resolverCalls,
+      1,
+      "unchanged watcher events retain the canonical resolver snapshot",
+    );
+    assert.equal(generationCalls, 25);
+    const originalProject = host.getProjectVersion();
+    files.set(base, "strict");
+    watches.get(base)(base, ts.FileWatcherEventKind.Changed);
+    assert.equal(refreshes, 2);
+    assert.notEqual(
+      host.getProjectVersion(),
+      originalProject,
+      "a config event invalidates the actual host project version",
+    );
+    queryAll();
+    assert.equal(resolverCalls, 2);
+    assert.equal(generationCalls, 50);
+    assert.deepEqual([...reads.values()], [4, 4, 4]);
+    files.set(missing, "preferred");
+    watches.get(missing)(missing, ts.FileWatcherEventKind.Created);
+    const preferred = queryAll();
+    assert.equal(resolverCalls, 3);
+    assert(
+      preferred.every((document) => document.projection.text === 'export default "preferred";'),
+    );
+    files.delete(missing);
+    watches.get(missing)(missing, ts.FileWatcherEventKind.Deleted);
+    assert(queryAll().every((document) => document.projection.text === 'export default "strict";'));
+    assert.equal(resolverCalls, 4);
+    malformed = true;
+    files.set(base, "invalid");
+    version++;
+    assert(queryAll().every((document) => document.error === "Invalid inherited configuration"));
+    assert.equal(generationCalls, 100, "failed configuration never calls the projection generator");
+    malformed = false;
+    files.set(base, "strict");
+    version++;
+    assert(queryAll().every((document) => !document.error));
+    assert.equal(resolverCalls, 6, "a rejected snapshot can recover on the next project epoch");
+    support.dispose();
+    assert.equal(watches.size, 0);
+    assert.deepEqual(closed, [config, base, missing]);
+    assert.equal(host.getProjectVersion, originalVersion);
+    assert.equal(support.snapshots.size, 0);
+  } finally {
+    crypto.createHash = originalHash;
+    support.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

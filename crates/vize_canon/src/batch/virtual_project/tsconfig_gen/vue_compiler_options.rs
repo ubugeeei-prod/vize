@@ -58,22 +58,66 @@ pub(in crate::batch::virtual_project) fn vue_target_from_options(
     Option<vize_carton::config::VueVersion>,
     Option<std::path::PathBuf>,
 )> {
+    vue_target_from_options_with_resolver(project_root, tsconfig_path, options, |directory| {
+        inputs.map_or_else(
+            || crate::package_route::installed_package_manifest(directory, "vue"),
+            |inputs| inputs.installed_vue_manifest(directory),
+        )
+    })
+}
+
+/// Preserve the existing package resolver's actual probes for dynamic hosts.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub(in crate::batch::virtual_project) fn vue_target_from_options_with_dependencies(
+    project_root: &Path,
+    tsconfig_path: &Path,
+    options: &Map<std::string::String, Value>,
+    dependencies: &mut Vec<PathBuf>,
+) -> CorsaResult<(
+    Option<vize_carton::config::VueVersion>,
+    Option<std::path::PathBuf>,
+)> {
+    vue_target_from_options_with_resolver(project_root, tsconfig_path, options, |directory| {
+        let dependencies = std::cell::RefCell::new(dependencies);
+        let mut manifests = FxHashMap::default();
+        crate::package_route::installed_package_manifest_with_reader(
+            directory,
+            "vue",
+            |path| {
+                manifests
+                    .entry(path.to_path_buf())
+                    .or_insert_with(|| {
+                        let source = std::fs::read_to_string(path).ok()?;
+                        serde_json::from_str(&source).ok()
+                    })
+                    .clone()
+            },
+            |path| dependencies.borrow_mut().push(path.to_path_buf()),
+        )
+    })
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+fn vue_target_from_options_with_resolver(
+    project_root: &Path,
+    tsconfig_path: &Path,
+    options: &Map<std::string::String, Value>,
+    resolve_manifest: impl FnOnce(&Path) -> Option<(PathBuf, Value)>,
+) -> CorsaResult<(
+    Option<vize_carton::config::VueVersion>,
+    Option<std::path::PathBuf>,
+)> {
     let Some(target) = options.get("target") else {
         return Ok((None, None));
     };
     if target.as_str() == Some("auto") {
         let directory = tsconfig_path.parent().unwrap_or(project_root);
-        let (manifest_path, manifest) = inputs
-            .map_or_else(
-                || crate::package_route::installed_package_manifest(directory, "vue"),
-                |inputs| inputs.installed_vue_manifest(directory),
-            )
-            .ok_or_else(|| {
-                crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
-                    "cannot resolve installed Vue for vueCompilerOptions.target \"auto\" in {}",
-                    tsconfig_path.display()
-                ))
-            })?;
+        let (manifest_path, manifest) = resolve_manifest(directory).ok_or_else(|| {
+            crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
+                "cannot resolve installed Vue for vueCompilerOptions.target \"auto\" in {}",
+                tsconfig_path.display()
+            ))
+        })?;
         let version = manifest
             .get("version")
             .and_then(Value::as_str)
