@@ -16,6 +16,7 @@ mod global_components;
 mod incomplete_tags;
 mod javascript_check_js;
 mod long_prop_kebab_case;
+mod optional_prop_spacing;
 mod props_binding;
 mod pug_refusal;
 mod template_expression_syntax;

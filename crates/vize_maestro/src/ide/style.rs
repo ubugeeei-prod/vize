@@ -72,3 +72,7 @@ fn starts_with(name: &str, prefix: &str) -> bool {
         .get(..prefix.len())
         .is_some_and(|start| start.eq_ignore_ascii_case(prefix.as_bytes()))
 }
+
+pub(crate) fn known_property(name: &str) -> bool {
+    data::property(name).is_some()
+}

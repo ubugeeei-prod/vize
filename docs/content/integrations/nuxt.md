@@ -281,6 +281,27 @@ export default defineNuxtConfig({
 });
 ```
 
+### Migrating from Nuxt 2
+
+When moving a Nuxt 2 / Vue 2.7 application to Nuxt 3 or 4, use
+`vize.compiler.whitespace: "vue2-preserve"` to retain Vue 2's template text rules:
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: { whitespace: "vue2-preserve" },
+  },
+});
+```
+
+This keeps whitespace around contiguous text and interpolations as written, while
+whitespace-only runs between elements become one space and edge runs are dropped.
+`"vue2-line-breaks"` is a narrower opt-in for individual line breaks, not full Vue 2
+preservation. The [compiler reference](../guide/compiler-configuration-reference.md#whitespace)
+describes all four modes and the comment, named-slot and preformatted-text rules.
+A project still running Nuxt 2 keeps its existing compiler as described above.
+
 ## Use the Vite plugin directly
 
 Nuxt builds with Vite, so the Vite plugin also works without the module. You lose the Nuxt-specific bridges and lint generation described above:

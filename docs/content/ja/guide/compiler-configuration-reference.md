@@ -15,23 +15,24 @@ title: コンパイラ設定リファレンス
 
 以下は `defineConfig` の `compiler` に指定するオプションです。統合によっては、すべての項目を利用するわけではありません。
 
-| オプション          | 値                                   | 主な用途                                                                         |
-| ------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
-| `sourceMap`         | `boolean`                            | Vite プラグインでソースマップを有効にする                                        |
-| `ssr`               | `boolean`                            | Vite の SSR ビルドフラグに依存せず、SSR 用にコンパイルする                       |
-| `vapor`             | `boolean`                            | Vapor モードのコンパイルを有効にする                                             |
-| `jsxMode`           | `"vdom"` または `"vapor"`            | `.jsx`/`.tsx` コンポーネントの既定の出力バックエンドを選ぶ                       |
-| `customRenderer`    | `boolean`                            | 小文字の非 HTML タグをカスタムレンダラーの要素として扱う                         |
-| `customElements`    | `string[]`                           | カスタム要素としてコンパイルするタグのパターンを指定する（TresJS では `Tres*`）  |
-| `templateSyntax`    | `"standard"`、`"strict"`、`"quirks"` | テンプレート構文に対して、警告、エラー、Vue の互換動作のいずれを使うか選ぶ       |
-| `scriptExt`         | `"ts"` または `"js"`                 | npm の build コマンドで TypeScript 出力を保持するか、JavaScript に変換するか選ぶ |
-| `mode`              | `"module"` または `"function"`       | 低レベルのコンパイラ出力モードを選ぶ                                             |
-| `prefixIdentifiers` | `boolean`                            | テンプレート内の識別子に `_ctx` を付ける                                         |
-| `hoistStatic`       | `boolean`                            | 静的ノードのホイスティングを制御する                                             |
-| `cacheHandlers`     | `boolean`                            | イベントハンドラーのキャッシュを制御する                                         |
-| `isTs`              | `boolean`                            | スクリプトブロックを TypeScript として解析する                                   |
-| `runtimeModuleName` | `string`                             | ランタイムのインポート元モジュールを上書きする                                   |
-| `runtimeGlobalName` | `string`                             | 関数形式または IIFE 形式の出力で使うランタイムのグローバル名を上書きする         |
+| オプション          | 値                                                                  | 主な用途                                                                         |
+| ------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                                                           | Vite プラグインでソースマップを有効にする                                        |
+| `ssr`               | `boolean`                                                           | Vite の SSR ビルドフラグに依存せず、SSR 用にコンパイルする                       |
+| `vapor`             | `boolean`                                                           | Vapor モードのコンパイルを有効にする                                             |
+| `jsxMode`           | `"vdom"` または `"vapor"`                                           | `.jsx`/`.tsx` コンポーネントの既定の出力バックエンドを選ぶ                       |
+| `customRenderer`    | `boolean`                                                           | 小文字の非 HTML タグをカスタムレンダラーの要素として扱う                         |
+| `customElements`    | `string[]`                                                          | カスタム要素としてコンパイルするタグのパターンを指定する（TresJS では `Tres*`）  |
+| `templateSyntax`    | `"standard"`、`"strict"`、`"quirks"`                                | テンプレート構文に対して、警告、エラー、Vue の互換動作のいずれを使うか選ぶ       |
+| `whitespace`        | `"condense"`, `"preserve"`, `"vue2-line-breaks"`, `"vue2-preserve"` | テンプレートの空白。[空白](#空白)を参照                                          |
+| `scriptExt`         | `"ts"` または `"js"`                                                | npm の build コマンドで TypeScript 出力を保持するか、JavaScript に変換するか選ぶ |
+| `mode`              | `"module"` または `"function"`                                      | 低レベルのコンパイラ出力モードを選ぶ                                             |
+| `prefixIdentifiers` | `boolean`                                                           | テンプレート内の識別子に `_ctx` を付ける                                         |
+| `hoistStatic`       | `boolean`                                                           | 静的ノードのホイスティングを制御する                                             |
+| `cacheHandlers`     | `boolean`                                                           | イベントハンドラーのキャッシュを制御する                                         |
+| `isTs`              | `boolean`                                                           | スクリプトブロックを TypeScript として解析する                                   |
+| `runtimeModuleName` | `string`                                                            | ランタイムのインポート元モジュールを上書きする                                   |
+| `runtimeGlobalName` | `string`                                                            | 関数形式または IIFE 形式の出力で使うランタイムのグローバル名を上書きする         |
 
 Vite プロジェクトでは、プラグインに直接指定したオプションが共通設定より優先されます。
 
@@ -53,6 +54,42 @@ export default defineConfig({
 
 実験的な Vue RFC とバックエンドのフラグは、最上位の `experimentals` に指定します。
 [実験機能](./experimentals.md)を参照してください。キーを省略した場合と、`false` または `null` を指定した場合は無効です。
+
+## 空白
+
+`compiler.whitespace` の既定値は `"condense"` です。Vue 2 のテンプレートを Vue 3 向けの
+ビルドへ移行する際は、目的に応じたモードを明示してください。
+
+| モード               | テキストと補間が連続する部分                                                                                         | 空白だけの部分                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `"condense"`         | 連続する ASCII 空白をスペース1つにまとめます。                                                                       | 子リストの先頭・末尾、および要素間の改行を削除し、それ以外はスペース1つにします。 |
+| `"preserve"`         | Vue 3 の規則で、空白以外も含むテキストを記述どおり保持します。                                                       | 子リストの先頭・末尾は削除し、意味のある兄弟ノード間はスペース1つにします。       |
+| `"vue2-line-breaks"` | `condense` を基本とし、テキストや補間から次の兄弟ノードへ続く改行がスペースになる箇所で、改行1つを残します。         | それ以外は `condense` と同じです。限定的な移行用モードです。                      |
+| `"vue2-preserve"`    | Vue 2.7 の `whitespace: "preserve"` と同じく、連続したテキスト・補間を、その前後の空白も含めて記述どおり保持します。 | 子リストの先頭・末尾は削除し、要素間はスペース1つにします。                       |
+
+ここで空白とは、スペース・タブ・LF・フォームフィード・CR です。ノーブレークスペースは
+縮約しません。`"vue2-preserve"` はコメントの境界も Vue 2 と同じように扱い、名前付きの
+`<template #slot>` の手前に残る、コンポーネントのデフォルトスロット末尾の空白も削除します。
+
+たとえば `"vue2-preserve"` は `<span>\n  {{ value }}\n</span>` の補間の前後にある改行と
+字下げを両方保持します。`"vue2-line-breaks"` はこの全体を保持するモードではなく、Vue 2 の
+preserve モードの代わりにはなりません。
+
+これらの設定によって `<pre>` と `<textarea>` の特別な処理は変わりません。HTML の先頭改行を
+除く規則は引き続き適用され、`<pre>` の CRLF は内容を折り返さず LF に正規化されます。
+`v-pre` では引き続きディレクティブや `{{ }}` をリテラルとして扱います。`v-pre` 自体が空白の
+モードを選ぶわけではありません。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  compiler: { whitespace: "vue2-preserve" },
+});
+```
+
+Vite プラグインには `vize({ whitespace: "vue2-preserve" })` と直接指定することもできます。
+Nuxt では `vize.compiler.whitespace` を使います。[Nuxt 2 からの移行](../integrations/nuxt.md#nuxt-2-からの移行)も参照してください。
 
 ## テンプレートの構文
 

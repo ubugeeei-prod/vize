@@ -24,6 +24,18 @@ const selectors = [
     source: `${root}/tests.rs`,
   },
 ];
+const pairFixture = "native-provider-pairs-10599/provider-pairs.json";
+const pairSelectors = [
+  {
+    selector: `${selectorRoot}tests::provider_pairs::admission_matches_pinned_complete_provider_pairs`,
+    source: `${root}/tests/provider_pairs.rs`,
+  },
+  {
+    selector: `${selectorRoot}tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown`,
+    source: `${root}/tests/native_provider.rs`,
+  },
+  ...selectors.slice(1),
+];
 
 export function nativeShutdownProtocolSource(path: string): boolean {
   if (path === `${root}.rs` || path === `${root}/peer.ts.txt`) return true;
@@ -66,33 +78,42 @@ export function newNativeShutdownProtocolCases(
     require(typeof row.id === "string" && !ids.has(row.id), "missing or duplicate ID");
     ids.add(row.id);
     if (oldIds.has(row.id)) return [];
-    require(row.id === "typechecker/protocol/native-shutdown-completion-10524", "unregistered ID");
+    const pairs = row.id === "typechecker/protocol/native-provider-pairs-10599";
+    require(pairs ||
+      row.id === "typechecker/protocol/native-shutdown-completion-10524", "unregistered ID");
+    const registeredFixture = pairs ? pairFixture : fixture;
+    const registeredSelectors = pairs ? pairSelectors : selectors;
     require(row.state === "active", "new case must be active");
     require(row.adapter === "native-shutdown-wire-v1", "unregistered adapter");
     require(JSON.stringify(row.targets) === '["native-shutdown"]', "unregistered target");
     require(Array.isArray(row.inputs) && row.inputs.length === 1, "one raw envelope pack required");
     const input = object(row.inputs[0], ["path", "sha256"]);
-    require(input.path === fixture, "unregistered raw envelope pack");
+    require(input.path === registeredFixture, "unregistered raw envelope pack");
     const bytes = pinned(
       readFile,
-      `tests/_fixtures/differential/typechecker/${fixture}`,
+      `tests/_fixtures/differential/typechecker/${registeredFixture}`,
       input.sha256,
     );
     const envelopes: unknown = JSON.parse(bytes.toString("utf8"));
     require(Array.isArray(envelopes) && envelopes.length > 0, "empty or invalid envelope pack");
-    const kinds = new Set<string>();
-    for (const value of envelopes) {
-      const envelope = object(value, ["input", "expected"]);
-      const expected = envelope.expected as { kind?: unknown } | null;
-      const kind = expected?.kind;
-      require(typeof kind === "string" &&
-        ["complete", "unrelated", "malformed"].includes(kind), "invalid outcome");
-      const result = object(expected, kind === "malformed" ? ["kind", "error"] : ["kind"]);
-      if (kind === "malformed")
-        require(typeof result.error === "string" && result.error.length > 0, "missing whole error");
-      kinds.add(kind);
+    if (pairs) {
+      validateProviderPairs(envelopes);
+    } else {
+      const kinds = new Set<string>();
+      for (const value of envelopes) {
+        const envelope = object(value, ["input", "expected"]);
+        const expected = envelope.expected as { kind?: unknown } | null;
+        const kind = expected?.kind;
+        require(typeof kind === "string" &&
+          ["complete", "unrelated", "malformed"].includes(kind), "invalid outcome");
+        const result = object(expected, kind === "malformed" ? ["kind", "error"] : ["kind"]);
+        if (kind === "malformed")
+          require(typeof result.error === "string" &&
+            result.error.length > 0, "missing whole error");
+        kinds.add(kind);
+      }
+      require(kinds.size === 3, "complete, unrelated and malformed controls required");
     }
-    require(kinds.size === 3, "complete, unrelated and malformed controls required");
     for (const [path, declaration] of [
       [`${root}.rs`, /\bmod completion;/],
       [`${root}.rs`, /#\[cfg\(test\)\]\s+mod tests;/],
@@ -103,17 +124,60 @@ export function newNativeShutdownProtocolCases(
       require(source !== undefined &&
         declaration.test(source), `missing ordinary test module: ${path}`);
     }
+    if (pairs) {
+      const source = readFile("head", `${root}/tests.rs`)?.toString("utf8");
+      require(source !== undefined &&
+        /\bmod provider_pairs;/.test(source), "missing ordinary pair test module");
+      require(source !== undefined &&
+        /#\[cfg\(unix\)\]\s+mod native_provider;/.test(
+          source,
+        ), "missing ordinary native provider test module");
+    }
     require(Array.isArray(row.tests) &&
-      row.tests.length === selectors.length, "all registered selectors required");
-    for (const [index, registered] of selectors.entries()) {
+      row.tests.length === registeredSelectors.length, "all registered selectors required");
+    for (const [index, registered] of registeredSelectors.entries()) {
       const test = object(row.tests[index], ["selector", "source", "sha256"]);
       require(test.selector === registered.selector &&
         test.source === registered.source, "unregistered selector or source");
       const source = pinned(readFile, registered.source, test.sha256).toString("utf8");
       const name = registered.selector.split("::").at(-1);
       require(source.includes(`#[test]\nfn ${name}(`), "registered test body missing");
-      if (index === 0) require(source.includes(fixture), "raw envelope pack is not consumed");
+      if (index === 0)
+        require(source.includes(registeredFixture), "raw envelope pack is not consumed");
     }
     return [row.id];
   });
+}
+
+function validateProviderPairs(envelopes: unknown[]) {
+  const expectedIds = [
+    "npm-linux-complete",
+    "npm-darwin-complete",
+    "mapper-linux-complete",
+    "npm-linux-with-mapper-contract",
+    "npm-darwin-with-mapper-contract",
+    "mapper-linux-with-npm-contract",
+    "unknown-physical-image",
+    "changed-encoding",
+    "missing-diagnostics",
+    "changed-version",
+    "changed-name",
+    "extra-capability",
+    "server-info-only",
+    "null-initialize",
+  ];
+  require(envelopes.length === expectedIds.length, "all complete provider pair controls required");
+  for (const [index, value] of envelopes.entries()) {
+    const envelope = object(value, ["id", "input", "expected"]);
+    require(envelope.id === expectedIds[index], "unregistered provider pair control");
+    const input = object(envelope.input, ["imageSha256", "initialize"]);
+    require(typeof input.imageSha256 === "string" &&
+      /^[a-f0-9]{64}$/.test(input.imageSha256), "invalid physical image identity");
+    const initialized = object(input.initialize, ["jsonrpc", "id", "result"]);
+    require(initialized.jsonrpc === "2.0" &&
+      initialized.id === 1, "whole Initialize response required");
+    const expected = object(envelope.expected, ["kind"]);
+    require(expected.kind ===
+      (index < 3 ? "admitted" : "rejected"), "provider pair outcome changed");
+  }
 }

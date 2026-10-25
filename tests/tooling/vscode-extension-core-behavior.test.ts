@@ -355,3 +355,23 @@ test("a source-built server reporting <version>-dev matches its extension", () =
   assert.ok(!serverMatchesExtension("0.475.0", "0.474.0"));
   assert.ok(!serverMatchesExtension("0.474.0-dev", "0.475.0"));
 });
+
+test("vscode typecheck timeout reaches initialization without enabling any feature", () => {
+  assert.deepEqual(getInitializationOptions(new FakeConfig({ "typecheck.timeoutMs": 180000 })), {
+    typecheckTimeoutMs: 180000,
+  });
+  assert.equal(describeCapabilities({ typecheckTimeoutMs: 180000 }), "none");
+  for (const invalid of [
+    0,
+    -1,
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.MAX_SAFE_INTEGER,
+  ]) {
+    assert.deepEqual(
+      getInitializationOptions(new FakeConfig({ "typecheck.timeoutMs": invalid })),
+      {},
+    );
+  }
+});
