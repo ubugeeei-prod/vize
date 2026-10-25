@@ -100,7 +100,8 @@ Vize does not bundle or download the native compiler. The CLI, language server, 
 linting share runtime discovery from the selected project's dependencies. Explicit
 `--corsa-path`, `typeChecker.corsaPath`, or `CORSA_PATH` settings take priority. When a selected
 `tsconfig` lives in another package, its package provides the runtime; unrelated workspace
-caches and Vize's own dependencies are not runtime sources.
+caches and Vize's own dependencies are not runtime sources. Global executables require an
+explicit path; discovery does not search `HOME`, global npm installations, or `PATH`.
 
 To retain TypeScript 6 for other tools, use a project alias for the native compiler:
 

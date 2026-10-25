@@ -65,7 +65,8 @@ For project type checking, install `typescript@7.1.0-beta` and use its content m
 in the [Type Checking guide](https://vize.dev/guide/type-checking). `vize check`, the language
 server, and type-aware linting use the same native runtime resolver. Explicit runtime settings
 such as `--corsa-path`, `typeChecker.corsaPath`, and `CORSA_PATH` take priority over discovery in
-the selected project's dependency graph. A missing runtime reports an actionable error;
+the selected project's dependency graph. Global compiler installations require an explicit path;
+Vize does not search `HOME`, global npm installations, or `PATH`. A missing runtime reports an actionable error;
 formatting and other commands that do not need type information remain available.
 
 To keep TypeScript 6 for other tools, install the native compiler under an npm alias:
