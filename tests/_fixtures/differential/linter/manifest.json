@@ -2036,7 +2036,7 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "complete max-template-complexity diagnostic packet controls"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
