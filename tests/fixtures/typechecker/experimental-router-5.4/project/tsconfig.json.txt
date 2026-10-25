@@ -1,0 +1,1 @@
+{"compilerOptions":{"target":"ESNext","module":"ESNext","moduleResolution":"Bundler","strict":true,"noEmit":true,"skipLibCheck":true,"rootDir":".","types":["vue-router/auto-routes"]},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]},"include":["typed-router.d.ts","src/**/*.ts","src/**/*.vue"]}

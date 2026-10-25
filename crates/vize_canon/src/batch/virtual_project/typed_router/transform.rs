@@ -43,7 +43,7 @@ pub(super) fn apply(
         };
         if !matches!(
             import.source.value.as_str(),
-            "vue-router" | "vue-router/auto"
+            "vue-router" | "vue-router/auto" | "vue-router/experimental"
         ) || import.import_kind == ImportOrExportKind::Type
         {
             continue;
@@ -53,7 +53,13 @@ pub(super) fn apply(
                 && specifier.import_kind != ImportOrExportKind::Type
                 && specifier.imported.name().as_str() == specifier.local.name.as_str()
                 && specifier.imported.span() == specifier.local.span
-                && matches!(specifier.local.name.as_str(), "useRoute" | "definePage")
+                && match (import.source.value.as_str(), specifier.local.name.as_str()) {
+                    // The published experimental entry exports the page macro;
+                    // useRoute still belongs to the stable entry in Router 5.4.
+                    ("vue-router/experimental", "definePage") => true,
+                    ("vue-router" | "vue-router/auto", "useRoute" | "definePage") => true,
+                    _ => false,
+                }
                 && let Some(symbol) = specifier.local.symbol_id.get()
             {
                 imports.push(symbol);

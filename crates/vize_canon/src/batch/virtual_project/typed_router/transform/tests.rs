@@ -3,6 +3,7 @@ use crate::virtual_ts::{
     ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VirtualTsOutput, VizeMapping,
     VizeSemanticLink, VizeSemanticLinkKind, VizeSubSpan,
 };
+mod experimental_imports;
 mod traversal_tests;
 const FILE: &str = "\"/src/pages/[id].vue\"";
 const ROUTE: &str =

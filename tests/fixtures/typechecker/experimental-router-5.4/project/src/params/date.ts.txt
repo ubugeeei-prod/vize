@@ -1,0 +1,2 @@
+import { defineParamParser, miss } from 'vue-router/experimental'
+export const parser = defineParamParser<Date>({get(value) { const date = new Date(value); if(Number.isNaN(date.getTime())) miss(); return date }, set(value) { return value.toISOString() }})

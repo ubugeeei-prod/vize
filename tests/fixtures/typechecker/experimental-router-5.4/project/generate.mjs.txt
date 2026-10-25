@@ -1,0 +1,8 @@
+import { createRoutesContext, resolveOptions } from 'vue-router/unplugin';
+import fs from 'node:fs';
+const context=createRoutesContext(resolveOptions({root:process.cwd(),routesFolder:'src/pages',dts:'typed-router.d.ts',experimental:{paramParsers:{dir:'src/params'}}}));
+await context.scanPages(false);context.writeConfigFiles();
+fs.writeFileSync('routes.generated.ts', context.generateRoutes());
+fs.writeFileSync('resolver.generated.ts', context.generateResolver());
+context.stopWatcher();
+console.log(fs.readFileSync('typed-router.d.ts','utf8'));
