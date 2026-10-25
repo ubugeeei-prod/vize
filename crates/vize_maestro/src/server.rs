@@ -37,6 +37,8 @@ mod native_requests;
 mod open_document;
 mod project_contexts;
 mod semantic_tokens;
+#[cfg(feature = "native")]
+mod shutdown;
 mod state;
 mod workspace_files;
 mod workspace_folder_events;
@@ -109,6 +111,9 @@ pub struct MaestroServer {
     /// Explicit checked-root receipt carried only by a single operation view.
     #[cfg(feature = "native")]
     configuration_admission: project_contexts::ConfigurationAdmissionReceipt,
+    /// Repeated shutdown requests retain the same owned completion and result.
+    #[cfg(feature = "native")]
+    shutdown: Option<shutdown::Shutdown>,
 }
 
 impl MaestroServer {
@@ -152,6 +157,8 @@ impl MaestroServer {
             configuration_watchers: Some(ConfigurationWatchControl::new(Default::default())),
             #[cfg(feature = "native")]
             configuration_admission: Default::default(),
+            #[cfg(feature = "native")]
+            shutdown: Some(Default::default()),
             #[cfg(feature = "retained-program")]
             navigation,
             #[cfg(feature = "experimental-source-navigation")]
@@ -164,13 +171,11 @@ impl MaestroServer {
         &self.state.documents
     }
 
-    fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+    async fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
         #[cfg(feature = "native")]
         if let Some(watchers) = &self.configuration_watchers {
             watchers.shutdown();
         }
-        #[cfg(feature = "native")]
-        self.state.retire_project_contexts();
         #[cfg(feature = "retained-program")]
         if let Some(navigation) = &self.navigation {
             navigation.retire();
@@ -179,6 +184,20 @@ impl MaestroServer {
         {
             self.state
                 .retire_module_links(ModuleLinkRetirement::Shutdown);
+        }
+        #[cfg(feature = "native")]
+        {
+            let state = self.state.clone();
+            self.shutdown
+                .as_ref()
+                .ok_or_else(tower_lsp::jsonrpc::Error::internal_error)?
+                .run(async move {
+                    state.shutdown_project_contexts().await.map_err(|error| {
+                        tracing::warn!("owned compiler shutdown failed: {error}");
+                        tower_lsp::jsonrpc::Error::internal_error()
+                    })
+                })
+                .await?;
         }
         Ok(())
     }
@@ -195,6 +214,7 @@ impl MaestroServer {
             initial_diagnostics: None,
             configuration_watchers: None,
             configuration_admission: Default::default(),
+            shutdown: None,
             #[cfg(feature = "retained-program")]
             navigation: None,
             #[cfg(feature = "experimental-source-navigation")]

@@ -208,6 +208,18 @@ impl ProjectContext {
         }
     }
 
+    /// Stop admission without releasing the compiler before graceful shutdown
+    /// captures it. An unpublished initializer cannot start a bridge: its
+    /// state is private until publication and retirement is checked afterward.
+    pub(super) fn shutdown_state(&self) -> Option<Arc<ServerState>> {
+        self.mark_retired();
+        #[cfg(feature = "retained-program")]
+        if let Some(navigation) = self.navigation.get() {
+            navigation.retire();
+        }
+        self.state.get().cloned()
+    }
+
     #[cfg(feature = "retained-program")]
     pub(super) fn navigation_for_state(
         &self,

@@ -15,6 +15,8 @@ use serde_json::json;
 
 use super::super::ServerState;
 
+mod shutdown;
+
 struct BackendCleanup<'a>(&'a Path);
 impl BackendCleanup<'_> {
     fn stop(&self) {

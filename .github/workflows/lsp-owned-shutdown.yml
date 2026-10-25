@@ -1,0 +1,34 @@
+name: LSP owned shutdown
+on:
+  push:
+    branches: [fix/lsp-owned-shutdown-10760]
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: lsp-owned-shutdown-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  owned-shutdown:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: 1.99.1 }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-owned-shutdown
+          cache-key-suffix: linux-x64
+      - name: Verify exact source and format
+        run: |
+          git rev-parse HEAD
+          cargo fmt --all -- --check
+      - name: Exercise accepted startup and bridge FIFO shutdown
+        run: cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::shutdown_tests -- --nocapture
+      - name: Exercise outer shutdown ownership and cancellation
+        run: cargo test --locked --profile ci -p vize_maestro --lib shutdown -- --nocapture
