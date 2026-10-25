@@ -1,0 +1,49 @@
+{
+  "beforeRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "candidateProductionRevision": "bb448dfe260abc982ecc278894d26725f30da6ee",
+  "production": [
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
+      "beforeSha256": "a5382f567c0e453f91bb325a3d855a60b0517ce09b7cee07340fb9d987be08ff",
+      "afterSha256": "a6e466261f9df2c9b79eae3c4558615849a4b06565a4e81c01107eab973fb7f1"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/location.rs",
+      "beforeSha256": null,
+      "afterSha256": "5980489fa2841b5fd147e3f2a46418bb7f181ec5ad6a70890cba49e316bf67a5"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
+      "beforeSha256": "ed8f27d3395713cae0434d7009e69bcc8c8fd9abe989a3a863600caf53b69e41",
+      "afterSha256": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol.rs",
+      "beforeSha256": "b916b1ee1448529f42e5fcfeaec0fa200eb80a9b8c1fa389faf4ba8288ae37f1",
+      "afterSha256": "82770f11c1f108a14c4ce13d07035cd3ce1af30bb6666164a437bd85229fe7f5"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
+      "beforeSha256": null,
+      "afterSha256": "c0a3afa863dd0bff4bad10bf2945ba7c8160511a0423fe619ae1543024e77c0f"
+    }
+  ],
+  "producerFiles": [
+    {
+      "path": ".github/workflows/native-beta-diagnostic-dto.yml",
+      "sha256": "244f25a0e1801c1468271cb89bb81f403e8d9b2a89211e7deed336f4435660e4"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
+      "sha256": "709ab1802d0fd92a7af561c130f4e85e11110d75f63f04bd5f554ab8d6f0064f"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/provider.mjs",
+      "sha256": "ae9fcac461a5107bcd4db22f7906e67889a61861ccb2f57cea27df5f42cb90c6"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
+      "sha256": "be2fb8820573d71d3bc932c875a0a7f22f47e48a4a725d0fd75b378589d34a8d"
+    }
+  ]
+}
