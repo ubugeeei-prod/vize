@@ -116,7 +116,6 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     }
 
     analyzer.rebuild_import_edges();
-    analyzer.rebuild_component_edges();
     let cross_file_result = analyzer.analyze();
 
     for diagnostic in &cross_file_result.diagnostics {

@@ -138,7 +138,6 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
     // Rebuild import and component usage edges after all files are added.
     // This ensures edges are created even when files are processed out of order.
     analyzer.rebuild_import_edges();
-    analyzer.rebuild_component_edges();
 
     // Run cross-file analysis
     let result = analyzer.analyze();
