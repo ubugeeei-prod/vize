@@ -15,8 +15,8 @@ const fixture = fileURLToPath(
 const frozen = JSON.parse(fs.readFileSync(fixture, "utf8"));
 const family = loadCompilerManifest(
   path.join(root, "tests/_fixtures/differential/compiler/manifest.json"),
-).cssApiCases;
-assert.equal(family.length, 1);
+).cssApiCases.find((row) => row.id === "compiler/css/source-map-10693");
+assert.ok(family);
 const errors = JSON.parse(
   fs.readFileSync(
     new URL("../fixtures/css/compile-source-maps/public-error-neighbor.json", import.meta.url),
@@ -90,11 +90,11 @@ await test("real source native CSS preserves every frozen public field and emits
         const { map, ...preserved } = result;
         assert.deepEqual(preserved, entry.output);
         if (entry.id === "unicode-crlf" && options.minify) {
-          assert.equal(entry.source, family[0].source);
+          assert.equal(entry.source, family.source);
           if (sourceMap) {
-            assert.deepEqual(options, family[0].options);
-            assert.deepEqual(result, family[0].after);
-          } else assert.deepEqual(result, family[0].before);
+            assert.deepEqual(options, family.options);
+            assert.deepEqual(result, family.after);
+          } else assert.deepEqual(result, family.before);
         }
         if (!sourceMap || unqualified.has(entry.id)) {
           assert.equal(map, undefined, `${entry.id} must not claim transformed source ownership`);
