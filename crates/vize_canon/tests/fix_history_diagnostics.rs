@@ -20,6 +20,28 @@ use support::fix_history_observation as observation;
 use support::fix_history_paths::{link_vue, safe_relative};
 
 #[test]
+fn contextual_prop_anchors_preserve_authored_diagnostics() {
+    check_pack(
+        "contextual-prop-anchors-10661",
+        "contextual_prop_anchors_preserve_authored_diagnostics",
+        "da6d833de40c8a084022d0229beaeec25a92eb41",
+        Some(10661),
+        &[
+            "original-from",
+            "all-keyword-props",
+            "authored-contextual-locals",
+            "authored-prop-shadow-imports",
+            "reactive-prop-destructure",
+            "const-enum-import",
+            "unicode-identities",
+            "authored-ts2552-retained",
+            "non-colliding-keyword-props",
+            "authored-undefined-shadow",
+        ],
+    );
+}
+
+#[test]
 fn inline_event_assignments_preserve_exact_diagnostics() {
     check_pack(
         "event-handler-narrowing",
@@ -758,6 +780,20 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
     );
 }
 
+#[test]
+fn slot_host_guards_preserve_authored_impossible_comparisons() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "narrowed-slot-host-guard-10660",
+        "slot_host_guards_preserve_authored_impossible_comparisons",
+        "da6d833de40c8a084022d0229beaeec25a92eb41",
+        Some(10660),
+        &["explicit-default", "authored-impossible-comparison"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -785,7 +821,8 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "typed-import-meta"
+            "contextual-prop-anchors-10661"
+            | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
             | "authored-unused-symbols"
@@ -842,7 +879,8 @@ fn check_pack(
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
             | "unicode-prop-bindings-10573"
-            | "undeclared-instance-globals-10617" => regression,
+            | "undeclared-instance-globals-10617"
+            | "narrowed-slot-host-guard-10660" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

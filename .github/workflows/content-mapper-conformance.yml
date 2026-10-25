@@ -120,6 +120,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::unknown_options_10218:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::generic_constructor_slots:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::long_prop_kebab_case:: --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::optional_prop_spacing:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::pug_refusal:: --nocapture
       - name: Run TS-40 current-projection baselines
         run: |

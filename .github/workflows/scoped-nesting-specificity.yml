@@ -1,0 +1,69 @@
+name: Scoped nesting specificity
+on:
+  pull_request:
+    paths:
+      - .github/workflows/scoped-nesting-specificity.yml
+      - crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs
+      - crates/vize_atelier_sfc/src/vite_plugin/css_scope/**
+      - crates/vize_atelier_sfc/tests/scoped_nesting_specificity.rs
+      - crates/vize_atelier_sfc/tests/fixtures/scoped_nesting_specificity.json
+      - tests/tooling/scoped-nesting-specificity.test.mjs
+      - tests/_fixtures/differential/compiler/scoped-list-nesting-10606/**
+permissions: { contents: read }
+concurrency:
+  group: scoped-nesting-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+jobs:
+  scoped-cascade:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.HEAD_SHA }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          {
+            key: scoped-nesting-specificity,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+          }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+          cache-save: false
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/install-playwright-browsers
+        with: { workspace: ./tests }
+      - name: Compile current source and retain all prior scoped CSS oracles
+        env:
+          VIZE_SCOPED_NESTING_CAPTURE: ${{ runner.temp }}/scoped-nesting-modules.json
+        run: |
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          cargo test --locked --profile ci -p vize_atelier_sfc --lib vite_plugin::css_scope:: -- --nocapture
+          cargo test --locked --profile ci -p vize_atelier_sfc --test scoped_nesting_specificity -- --nocapture
+          cargo test --locked --profile ci -p vize_atelier_sfc --test mixed_style_scope -- --nocapture
+      - name: Verify complete scoped CSS and real Chromium cascade and pixels
+        env:
+          VIZE_SCOPED_NESTING_CAPTURE: ${{ runner.temp }}/scoped-nesting-modules.json
+          VIZE_SCOPED_NESTING_REQUIRE_SOURCE: "1"
+          VIZE_SCOPED_NESTING_RUNTIME_CAPTURE: ${{ runner.temp }}/scoped-nesting-runtime.json
+        run: vp node --test tests/tooling/scoped-nesting-specificity.test.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: scoped-nesting-${{ env.HEAD_SHA }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/scoped-nesting-modules.json
+            ${{ runner.temp }}/scoped-nesting-runtime.json
+          if-no-files-found: error
+          retention-days: 14

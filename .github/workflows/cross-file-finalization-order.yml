@@ -1,0 +1,90 @@
+name: Cross-file finalization order
+run-name: Cross-file exact incoming vectors @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Exact combined integration base SHA with reset and stale-import fixes
+        type: string
+        required: true
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/cross-file-finalization-order.yml
+      - crates/vize_croquis_cf/src/graph.rs
+      - crates/vize_croquis_cf/src/graph/order.rs
+      - crates/vize_croquis_cf/src/graph/order/**
+      - crates/vize_croquis_cf/src/analyzer/core/files.rs
+      - tests/tooling/support/cross-file-finalization-order.ts
+      - tests/tooling/support/cross-file-finalization-order/**
+permissions:
+  contents: read
+concurrency:
+  group: cross-file-finalization-order-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  BASE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
+jobs:
+  actual-ordered-source-states:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: cross-file-finalization-order-head
+          target-path: target/finalization-order-head-build
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          secondary-key: cross-file-finalization-order-base
+          secondary-target-path: target/finalization-order-base-build
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install frozen tools and prepare identical observer-only overlays
+        run: |
+          vp install --frozen-lockfile --prefer-offline
+          git worktree add --detach target/finalization-order-base "$BASE_SOURCE_SHA"
+          for root in . target/finalization-order-base; do
+            mkdir -p "$root/crates/vize/examples/cross_file_finalization_order"
+            cp tests/tooling/support/cross-file-finalization-order/observer/*.rs "$root/crates/vize/examples/cross_file_finalization_order/"
+          done
+      - name: Verify linear ordering laws and complete raw node identity
+        run: |
+          mkdir -p target/vize-tests/cross-file-finalization-order
+          cargo test --locked --profile ci -p vize_croquis_cf --target-dir target/finalization-order-head-build --lib -- graph::order::tests:: --nocapture > target/vize-tests/cross-file-finalization-order/rust.stdout 2> target/vize-tests/cross-file-finalization-order/rust.stderr
+          cat target/vize-tests/cross-file-finalization-order/rust.stdout
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          assert.match(fs.readFileSync('target/vize-tests/cross-file-finalization-order/rust.stdout', 'utf8'), /test result: ok\. 3 passed; 0 failed; 0 ignored;/u);
+          JS
+      - name: Compile actual base and head observers into isolated targets
+        run: |
+          cargo build --locked --manifest-path target/finalization-order-base/Cargo.toml --profile ci -p vize --example cross_file_finalization_order --target-dir target/finalization-order-base-build
+          cargo build --locked --profile ci -p vize --example cross_file_finalization_order --target-dir target/finalization-order-head-build
+      - name: Compare one new pass with the old second and third passes
+        run: node tests/tooling/support/cross-file-finalization-order.ts
+      - name: Preserve all original vectors, diagnostics, input bytes and provider identities
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cross-file-finalization-order-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/cross-file-finalization-order
+          if-no-files-found: error
+          retention-days: 14

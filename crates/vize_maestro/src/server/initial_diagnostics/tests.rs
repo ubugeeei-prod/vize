@@ -4,6 +4,12 @@ use tower_lsp::lsp_types::Url;
 
 use super::{MAX_PENDING_DOCUMENTS, PendingInitialDiagnostics};
 
+fn finish_sync(pending: &mut PendingInitialDiagnostics) {
+    while let Some((uri, job)) = pending.take_sync() {
+        pending.complete_sync(&uri, job.sequence);
+    }
+}
+
 #[test]
 fn completed_diagnostics_consume_only_the_satisfied_initial_version() {
     let uri = Url::parse("file:///workspace/App.vue").unwrap();
@@ -30,6 +36,7 @@ fn pending_jobs_keep_only_the_newest_version_per_uri() {
 
     assert_eq!(pending.jobs.len(), 1);
     assert!(pending.take_ready(now + Duration::from_secs(2)).is_none());
+    finish_sync(&mut pending);
     let (ready_uri, ready) = pending.take_ready(now + Duration::from_secs(3)).unwrap();
     assert_eq!(ready_uri, uri);
     assert_eq!(ready.version, 3);
@@ -43,10 +50,13 @@ fn sync_feedback_runs_once_for_the_latest_open_version() {
     let mut pending = PendingInitialDiagnostics::default();
     pending.insert(uri.clone(), 1, now + Duration::from_secs(1));
     pending.insert(uri.clone(), 2, now + Duration::from_secs(1));
-    assert_eq!(
-        pending.take_sync().map(|(uri, job)| (uri, job.version)),
-        Some((uri.clone(), 2))
+    let (sync_uri, job) = pending.take_sync().unwrap();
+    assert_eq!((sync_uri, job.version), (uri.clone(), 2));
+    assert!(
+        pending.take_ready(now + Duration::from_secs(2)).is_none(),
+        "native must not overtake a running sync pass"
     );
+    pending.complete_sync(&uri, job.sequence);
     assert!(pending.take_sync().is_none());
     assert!(pending.take_ready(now).is_none());
     assert_eq!(
@@ -69,6 +79,7 @@ fn distinct_uris_keep_independent_pending_jobs() {
         pending.insert(uri, version, now);
     }
 
+    finish_sync(&mut pending);
     let mut versions = [
         pending.take_ready(now).unwrap().1.version,
         pending.take_ready(now).unwrap().1.version,
@@ -100,4 +111,21 @@ fn pending_jobs_evict_the_oldest_uri_at_capacity() {
     assert_eq!(pending.jobs.len(), MAX_PENDING_DOCUMENTS);
     assert!(!pending.jobs.contains_key(&oldest));
     assert_eq!(pending.jobs[&newest].version, 99);
+}
+
+#[test]
+fn completing_old_sync_never_releases_a_newer_open_before_its_feedback() {
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let now = Instant::now();
+    let mut pending = PendingInitialDiagnostics::default();
+    pending.insert(uri.clone(), 1, now);
+    let (_, old) = pending.take_sync().unwrap();
+    pending.insert(uri.clone(), 2, now);
+    pending.complete_sync(&uri, old.sequence);
+    assert!(pending.take_ready(now).is_none());
+    let (_, current) = pending.take_sync().unwrap();
+    pending.complete_sync(&uri, old.sequence);
+    assert!(pending.take_ready(now).is_none());
+    pending.complete_sync(&uri, current.sequence);
+    assert_eq!(pending.take_ready(now).unwrap().1.version, 2);
 }

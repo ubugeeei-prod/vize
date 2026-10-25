@@ -1,0 +1,5095 @@
+{
+  "provider": {
+    "version": "vize 0.565.0",
+    "wrapperSha256": "c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54",
+    "nativeSha256": "3f7af8eac6db36b88af0b71089c257826b30b49a31ed2ba3981c7f65b619d8f3",
+    "consumer": "/tmp/vize-css-hover-565.f97Mp7"
+  },
+  "sourceMainInventory": "813716a1d5acada5b368054771e991325500a9ff",
+  "rows": [
+    {
+      "language": "default",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style>\n/* 日本 🧭 */\n.demo {\n  color: #ff0000;\n  background-color: rgb(0 128 255 / 50%);\n  border-color: hsl(120 100% 25%);\n  outline-color: red;\n  --theme: #abc;\n  content: \"#123456\";\n}\n</style>\n",
+      "sourceSha256": "0a5d9c9f5e8bb3b60fe24654d1525a349bcb1da27ac7656b75d861deae2b5f67",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.85612500000002
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4814579999999751
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4679590000000644
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5082079999999678
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.45775000000003274
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.7786670000000413
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5876660000001266
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.523290999999972
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5352080000000115
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.8016249999998308,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "default",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style>\r\n/* 日本 🧭 */\r\n.demo {\r\n  color: #ff0000;\r\n  background-color: rgb(0 128 255 / 50%);\r\n  border-color: hsl(120 100% 25%);\r\n  outline-color: red;\r\n  --theme: #abc;\r\n  content: \"#123456\";\r\n}\r\n</style>\r\n",
+      "sourceSha256": "8b5da7dff7eeb6241f156b9a3544200be61fcb039800054304f0c437a9a239a0",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4875840000001972
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.48279100000013386
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4640830000000733
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.45804199999997763
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4415830000000369
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.43249999999989086
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.41429199999993216
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4045000000000982
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.38962500000002365
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-default-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.6147079999998368,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "css",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"css\">\n/* 日本 🧭 */\n.demo {\n  color: #ff0000;\n  background-color: rgb(0 128 255 / 50%);\n  border-color: hsl(120 100% 25%);\n  outline-color: red;\n  --theme: #abc;\n  content: \"#123456\";\n}\n</style>\n",
+      "sourceSha256": "f6b3d25acd31fad802a48c1f8a476a88d1d5e977ed28831b46bd475487073e1d",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4397079999998823
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.46962500000017826
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4175829999999223
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.37570800000003146
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3856670000000122
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.3992080000000442
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3849169999998594
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.38774999999986903
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.45904200000018136
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.4723750000000564,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "css",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"css\">\r\n/* 日本 🧭 */\r\n.demo {\r\n  color: #ff0000;\r\n  background-color: rgb(0 128 255 / 50%);\r\n  border-color: hsl(120 100% 25%);\r\n  outline-color: red;\r\n  --theme: #abc;\r\n  content: \"#123456\";\r\n}\r\n</style>\r\n",
+      "sourceSha256": "8414b7a6a0dadcede8f83094e83ceb27f6d2728e7963999eb58c851d89d7a4d2",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.405666999999994
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.38066700000013043
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.37162499999999454
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.36516600000004473
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3689999999999145
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.4097079999999096
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3897910000000593
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3827919999998812
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4152079999998932
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-css-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.43508300000007694,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "scss",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"scss\">\n/* 日本 🧭 */\n.demo {\n  color: #ff0000;\n  background-color: rgb(0 128 255 / 50%);\n  border-color: hsl(120 100% 25%);\n  outline-color: red;\n  --theme: #abc;\n  content: \"#123456\";\n}\n</style>\n",
+      "sourceSha256": "513c4e9f81f6011546cf66bcb2992a29b66adfa6ea42c907c5e54f32d12c25cc",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4098750000000564
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4079580000000078
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3862920000001395
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.37316599999985556
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3947499999999309
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.40866700000015044
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3792919999998503
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.47595899999987523
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3789170000000013
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.4329999999999927,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "scss",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"scss\">\r\n/* 日本 🧭 */\r\n.demo {\r\n  color: #ff0000;\r\n  background-color: rgb(0 128 255 / 50%);\r\n  border-color: hsl(120 100% 25%);\r\n  outline-color: red;\r\n  --theme: #abc;\r\n  content: \"#123456\";\r\n}\r\n</style>\r\n",
+      "sourceSha256": "4be26bfbefa52dc1173b906bcc82bdd29e7a39a4147db28ab232d4669b2c856a",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.41000000000008185
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3861660000000029
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3795000000000073
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3704170000000886
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3760420000000977
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.3817500000000109
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.46662499999979445
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4775830000000951
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3870830000000751
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-scss-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.42925000000013824,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "less",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"less\">\n/* 日本 🧭 */\n.demo {\n  color: #ff0000;\n  background-color: rgb(0 128 255 / 50%);\n  border-color: hsl(120 100% 25%);\n  outline-color: red;\n  --theme: #abc;\n  content: \"#123456\";\n}\n</style>\n",
+      "sourceSha256": "48f5eed333662cb8215083896ebd257a2c9a8deee5c945543e8a02725d22f42d",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.5024579999999332
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4607499999999618
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.41029200000002675
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42429199999992306
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.46833300000002964
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.47633300000006784
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.397707999999966
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.37924999999995634
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.37087499999984175
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.44849999999996726,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "less",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"less\">\r\n/* 日本 🧭 */\r\n.demo {\r\n  color: #ff0000;\r\n  background-color: rgb(0 128 255 / 50%);\r\n  border-color: hsl(120 100% 25%);\r\n  outline-color: red;\r\n  --theme: #abc;\r\n  content: \"#123456\";\r\n}\r\n</style>\r\n",
+      "sourceSha256": "4b08ad4685dfc954e09d9781f89fceef50513bf1f2f2d15ea6f18064fc43e341",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.40637500000002547
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4393750000001546
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42849999999998545
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5751250000000709
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.41599999999994
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.40495800000007875
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4442919999999049
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4168329999999969
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3932089999998425
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-less-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.555208999999877,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "postcss",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"postcss\">\n/* 日本 🧭 */\n.demo {\n  color: #ff0000;\n  background-color: rgb(0 128 255 / 50%);\n  border-color: hsl(120 100% 25%);\n  outline-color: red;\n  --theme: #abc;\n  content: \"#123456\";\n}\n</style>\n",
+      "sourceSha256": "d438b3ae6064de6068e49d3f13d3f29cbac9d26fe4a328b0ef3268dd52645633",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.47775000000001455
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5049169999999776
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4730829999998605
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42937499999993634
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4472089999999298
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.4180830000000242
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39591699999982666
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40208400000005895
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4008329999999205
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.47745800000006966,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "postcss",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"postcss\">\r\n/* 日本 🧭 */\r\n.demo {\r\n  color: #ff0000;\r\n  background-color: rgb(0 128 255 / 50%);\r\n  border-color: hsl(120 100% 25%);\r\n  outline-color: red;\r\n  --theme: #abc;\r\n  content: \"#123456\";\r\n}\r\n</style>\r\n",
+      "sourceSha256": "8239f4c5bb4c724c5d648191031d093a128ddc42d134e9c30d7abc0f3a8ccf44",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4279999999998836
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.46970900000019356
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4029579999998987
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4265410000000429
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3969999999999345
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.483791999999994
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4136670000000322
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.46550000000002
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42512499999998
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-postcss-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.6075829999999769,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "sass",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"sass\">\n/* 日本 🧭 */\n.demo\n  color: #ff0000\n  background-color: rgb(0 128 255 / 50%)\n  border-color: hsl(120 100% 25%)\n  outline-color: red\n  --theme: #abc\n  content: \"#123456\"\n</style>\n",
+      "sourceSha256": "0c474e1a909ac0d7370e0c7be7b953964a00535b89efbd86526227ef9f3247e4",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4459169999997812
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.399167000000034
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39487499999995634
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40420899999980975
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4111250000000837
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.42512499999998
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.47441699999990306
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.46049999999991087
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.6463750000000346
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.4758750000000873,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "sass",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"sass\">\r\n/* 日本 🧭 */\r\n.demo\r\n  color: #ff0000\r\n  background-color: rgb(0 128 255 / 50%)\r\n  border-color: hsl(120 100% 25%)\r\n  outline-color: red\r\n  --theme: #abc\r\n  content: \"#123456\"\r\n</style>\r\n",
+      "sourceSha256": "82973d3fdfe87b351665c114ac3c3c83640a694024d23ad1062add31fb847ef2",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.47320799999988594
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42116699999996854
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.45537500000000364
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4155000000000655
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3894999999999982
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.45183399999996254
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4768330000001697
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3890830000000278
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3986250000000382
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-sass-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.5426249999998163,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "stylus",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"stylus\">\n/* 日本 🧭 */\n.demo\n  color: #ff0000\n  background-color: rgb(0 128 255 / 50%)\n  border-color: hsl(120 100% 25%)\n  outline-color: red\n  --theme: #abc\n  content: \"#123456\"\n</style>\n",
+      "sourceSha256": "e8ec85c399c022fd2c25498bb59dfa9e60367632ec2401f5deb94edd0bff0f5e",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.43308299999989686
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40287499999999454
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5362079999999878
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.450458000000026
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4722910000000411
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.45345799999995506
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.409874999999829
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4012920000000122
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40362499999991996
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.43279099999995196,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "stylus",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"stylus\">\r\n/* 日本 🧭 */\r\n.demo\r\n  color: #ff0000\r\n  background-color: rgb(0 128 255 / 50%)\r\n  border-color: hsl(120 100% 25%)\r\n  outline-color: red\r\n  --theme: #abc\r\n  content: \"#123456\"\r\n</style>\r\n",
+      "sourceSha256": "2e97a1082ee0e1c69b68335c1df9579ddd27f140b1ec849771a1052dba47a75e",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.42679199999997763
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40704200000004676
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3916669999998703
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.422832999999855
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4002500000001419
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.43133400000010624
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4196669999998903
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39658299999996416
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39066600000001017
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-stylus-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.45116699999994125,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "styl",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"styl\">\n/* 日本 🧭 */\n.demo\n  color: #ff0000\n  background-color: rgb(0 128 255 / 50%)\n  border-color: hsl(120 100% 25%)\n  outline-color: red\n  --theme: #abc\n  content: \"#123456\"\n</style>\n",
+      "sourceSha256": "7afce4c6ffd385bb33205b9f46958462862657eb974d834100c974533b17d013",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4239580000000842
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3930840000000444
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39791700000000674
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4010000000000673
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39037499999994907
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.4207499999999982
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4135409999998956
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.403583000000026
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40049999999996544
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.4366669999999431,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "styl",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"styl\">\r\n/* 日本 🧭 */\r\n.demo\r\n  color: #ff0000\r\n  background-color: rgb(0 128 255 / 50%)\r\n  border-color: hsl(120 100% 25%)\r\n  outline-color: red\r\n  --theme: #abc\r\n  content: \"#123456\"\r\n</style>\r\n",
+      "sourceSha256": "b773bc858fd1db0ae7ffe751ea5fc27a79b31e07e64cb25ff9392e228a48ec2c",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            },
+            "range": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 2,
+                "line": 4
+              }
+            }
+          },
+          "elapsedMs": 0.4397079999998823
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42250000000012733
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4201250000000982
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4160830000000715
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.43108299999994415
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": {
+            "contents": {
+              "kind": "markdown",
+              "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\noutline-color: red;\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+            },
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 7
+              },
+              "start": {
+                "character": 17,
+                "line": 7
+              }
+            }
+          },
+          "elapsedMs": 0.4506250000001728
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4241669999998976
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4211250000000746
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.41895900000008623
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-styl-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.49070800000004056,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "unknown",
+      "newline": "LF",
+      "source": "<template><div /></template>\n<style lang=\"unknown\">\n/* 日本 🧭 */\n.demo {\n  color: #ff0000;\n  background-color: rgb(0 128 255 / 50%);\n  border-color: hsl(120 100% 25%);\n  outline-color: red;\n  --theme: #abc;\n  content: \"#123456\";\n}\n</style>\n",
+      "sourceSha256": "22bd8bb68fd78da93b72913786b8fc54b1019f7bd2bcdc26c02e52671abedbbd",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.43200000000001637
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40616700000009587
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.40649999999982356
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39554100000009385
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39170800000010786
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39274999999997817
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39287499999977626
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.39791600000012295
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.43908299999998235
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-1.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.5984160000000429,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    },
+    {
+      "language": "unknown",
+      "newline": "CRLF",
+      "source": "<template><div /></template>\r\n<style lang=\"unknown\">\r\n/* 日本 🧭 */\r\n.demo {\r\n  color: #ff0000;\r\n  background-color: rgb(0 128 255 / 50%);\r\n  border-color: hsl(120 100% 25%);\r\n  outline-color: red;\r\n  --theme: #abc;\r\n  content: \"#123456\";\r\n}\r\n</style>\r\n",
+      "sourceSha256": "e1371d0ced80e3ff5ecd56b95f410204ef543404d332bbba3cce2cfaf15fda0e",
+      "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue",
+      "hover": [
+        {
+          "kind": "property",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 3
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.5082500000000891
+        },
+        {
+          "kind": "hex",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 4,
+              "character": 11
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.49500000000011823
+        },
+        {
+          "kind": "rgb",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 21
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.45029199999999037
+        },
+        {
+          "kind": "rgb channel",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 5,
+              "character": 28
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.41733399999998255
+        },
+        {
+          "kind": "hsl",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 6,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4682080000000042
+        },
+        {
+          "kind": "named",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 7,
+              "character": 17
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4393329999998059
+        },
+        {
+          "kind": "custom",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 8,
+              "character": 13
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.4123329999999896
+        },
+        {
+          "kind": "string",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 9,
+              "character": 14
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.3992080000000442
+        },
+        {
+          "kind": "comment",
+          "params": {
+            "textDocument": {
+              "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue"
+            },
+            "position": {
+              "line": 2,
+              "character": 4
+            }
+          },
+          "result": null,
+          "elapsedMs": 0.42695800000001327
+        }
+      ],
+      "diagnostics": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-css-hover-565.f97Mp7/workspace/Style-unknown-2.vue",
+        "version": 1
+      },
+      "documentColors": [
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 4
+            },
+            "start": {
+              "character": 9,
+              "line": 4
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 0.5,
+            "blue": 1,
+            "green": 0.501960813999176,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 5
+            },
+            "start": {
+              "character": 20,
+              "line": 5
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0.5,
+            "red": 0
+          },
+          "range": {
+            "end": {
+              "character": 33,
+              "line": 6
+            },
+            "start": {
+              "character": 16,
+              "line": 6
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0,
+            "green": 0,
+            "red": 1
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        {
+          "color": {
+            "alpha": 1,
+            "blue": 0.800000011920929,
+            "green": 0.7333333492279053,
+            "red": 0.6666666865348816
+          },
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      ],
+      "documentColorElapsedMs": 0.5259590000000571,
+      "presentations": [
+        {
+          "label": "#ff0000"
+        },
+        {
+          "label": "rgb(255, 0, 0)"
+        },
+        {
+          "label": "hsl(0 100% 50%)"
+        }
+      ]
+    }
+  ],
+  "initialize": {
+    "capabilities": {
+      "codeLensProvider": {
+        "resolveProvider": false
+      },
+      "colorProvider": true,
+      "completionProvider": {
+        "resolveProvider": true,
+        "triggerCharacters": [
+          "\"",
+          "'",
+          ":",
+          "@",
+          ".",
+          "<",
+          "=",
+          "/",
+          ">",
+          "+",
+          "^",
+          "*",
+          "(",
+          ")",
+          "#",
+          "[",
+          "]",
+          "$",
+          "-",
+          "{",
+          "}"
+        ]
+      },
+      "definitionProvider": true,
+      "documentFormattingProvider": true,
+      "documentHighlightProvider": true,
+      "documentLinkProvider": {
+        "resolveProvider": false
+      },
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": ";",
+        "moreTriggerCharacter": [
+          "}",
+          "\n"
+        ]
+      },
+      "documentRangeFormattingProvider": true,
+      "documentSymbolProvider": true,
+      "experimental": {
+        "vize": {
+          "jsxTypecheck": false
+        }
+      },
+      "foldingRangeProvider": true,
+      "hoverProvider": true,
+      "inlayHintProvider": true,
+      "linkedEditingRangeProvider": true,
+      "monikerProvider": true,
+      "referencesProvider": true,
+      "renameProvider": {
+        "prepareProvider": true
+      },
+      "selectionRangeProvider": true,
+      "semanticTokensProvider": {
+        "full": true,
+        "legend": {
+          "tokenModifiers": [
+            "declaration",
+            "definition",
+            "readonly",
+            "static",
+            "deprecated",
+            "abstract",
+            "async",
+            "modification",
+            "documentation",
+            "defaultLibrary"
+          ],
+          "tokenTypes": [
+            "namespace",
+            "type",
+            "class",
+            "enum",
+            "interface",
+            "struct",
+            "typeParameter",
+            "parameter",
+            "variable",
+            "property",
+            "enumMember",
+            "event",
+            "function",
+            "method",
+            "macro",
+            "keyword",
+            "modifier",
+            "comment",
+            "string",
+            "number",
+            "regexp",
+            "operator",
+            "decorator"
+          ]
+        },
+        "range": true
+      },
+      "signatureHelpProvider": {
+        "retriggerCharacters": [
+          ")"
+        ],
+        "triggerCharacters": [
+          "(",
+          ",",
+          "<"
+        ]
+      },
+      "textDocumentSync": {
+        "change": 2,
+        "openClose": true,
+        "save": {
+          "includeText": false
+        },
+        "willSave": false,
+        "willSaveWaitUntil": false
+      },
+      "workspace": {
+        "fileOperations": {
+          "didCreate": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didDelete": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "willRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          }
+        },
+        "workspaceFolders": {
+          "changeNotifications": true,
+          "supported": true
+        }
+      },
+      "workspaceSymbolProvider": true
+    },
+    "serverInfo": {
+      "name": "vize-maestro",
+      "version": "0.565.0"
+    }
+  },
+  "exitCode": 0
+}

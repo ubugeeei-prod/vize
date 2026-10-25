@@ -166,6 +166,7 @@ import CounterCard from './RuntimeChild.vue'
 </template>
 "#;
     let typed_child = r#"<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
 defineProps<{ id: number }>()
 </script>
 <template><span /></template>

@@ -207,8 +207,9 @@ test("create-vue linter reports and repairs one exact HTML quote edit", async ()
 });
 
 test("create-vue formatter converges and repairs one exact attribute-spacing edit", async () => {
+  // This standalone consumer must not inherit the repository's target/** exclusion.
   await withPinnedFixtureWorkspace(
-    { fixtureId: "create-vue", includePaths: [appPath] },
+    { fixtureId: "create-vue", includePaths: [appPath], outsideRepository: true },
     async (fixture) => {
       const pinnedSource = fixture.read(appPath);
       const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;

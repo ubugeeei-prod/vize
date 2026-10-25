@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "lsp/regression/css-color-declaration-admission-10562-css",
+  "provenance": {
+    "fixCommit": "bd905feebbbe20eae06089fa63b68f4fe5e9c622",
+    "witnessPath": "crates/vize_maestro/src/server/annotations/document_color/tests/declaration_admission.rs",
+    "witnessTest": "selector_hex_and_function_lookalikes_never_become_colour_values",
+    "inputOrigin": "Minimal derivative of complete fresh installed public v0.565.0 selector/colonless color packets",
+    "contractOrigin": "Independently authored declaration-value ownership, UTF-16 source spans and exact simple RGBA channels"
+  },
+  "files": [
+    {
+      "source": "Colors.vue.txt",
+      "runtimePath": "Colors.vue",
+      "sha256": "f7effe51005cad0a23b3ca9c0f733f7f8326151b29cef51926f1de7336538e74"
+    }
+  ],
+  "entry": "Colors.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "f33dba4f826d8e148ed9f685d801cf06c187261bf17e91175b531bc73335332d"
+  },
+  "method": "textDocument/documentColor",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "typecheck": false,
+    "lint": false
+  },
+  "scope": "Original authored color declaration admission; source-inspected input custody grants no native whole-product LSP credit"
+}

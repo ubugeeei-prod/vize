@@ -1,5 +1,6 @@
 import type { LspWorkspaceEvidence } from "./lsp-workspace.ts";
 import type { SourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
+import type { LspSourceSession } from "./lsp-source-sessions.ts";
 
 export type JsonRpcMessage = {
   jsonrpc: string;
@@ -25,6 +26,7 @@ export type FixtureData = {
   entry?: string;
   expected: { source: string; sha256: string };
   method: string;
+  sourceSession?: LspSourceSession;
   request?: { params: Record<string, unknown> };
   options?: { tabSize: number; insertSpaces: boolean };
 };
@@ -77,6 +79,7 @@ export type LspRow = {
     workspace?: LspWorkspaceEvidence;
     responses?: ResponseComparison[];
     error?: string;
+    reason?: string;
   };
   native: { state: string; reason: string };
   comparison: { state: string; reason: string };
@@ -96,6 +99,7 @@ export type LspSummary = {
   plannedCases: number;
   legacyMatches: number;
   legacyFailures: number;
+  legacyUnsupported: number;
   baselineDrift: number;
   nativeUnsupported: number;
   pairedComparisons: number;

@@ -2,6 +2,8 @@
 
 use vize_carton::{String, ToCompactString, cstr};
 
+mod observe;
+
 /// Suffix added to an unresolved authored `.vue.ts`/`.vue.tsx` import so
 /// TypeScript cannot accidentally resolve the generated SFC mirror.
 pub const AUTHORED_VUE_TS_SENTINEL: &str = "/__vize_authored_vue_ts__";
@@ -20,9 +22,13 @@ pub(crate) const QUOTE_PAIRS: [(char, char); 3] =
 /// authored source. This preserves diagnostics for real `.vue.ts` files and
 /// even for a deliberately authored sentinel-like module name.
 pub fn restore_virtual_vue_specifiers(message: &str, authored_source: &str) -> String {
+    let profiler = vize_carton::profiler::global_profiler();
+    let profiling = profiler.is_enabled();
+    let _span = profiling.then(|| profiler.global_span("canon.diagnostics.restore_specifiers"));
+    let mut observation = observe::SearchObservation::new();
     let mut rewrites = Vec::new();
     for reported in quoted_specifiers(message) {
-        if authored_source.contains(reported) {
+        if observation.source_contains(authored_source, reported) {
             continue;
         }
         let Some(authored) = authored_specifier(reported) else {
@@ -30,6 +36,8 @@ pub fn restore_virtual_vue_specifiers(message: &str, authored_source: &str) -> S
         };
         rewrites.push((reported.to_compact_string(), authored.to_compact_string()));
     }
+
+    observation.finish(message, rewrites.len());
 
     let mut rewritten = message.to_compact_string();
     for (reported, authored) in rewrites {

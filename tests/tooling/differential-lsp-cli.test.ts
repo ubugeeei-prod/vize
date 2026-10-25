@@ -46,7 +46,13 @@ void test("source-built LSP registers complete fix-history response sessions wit
   t.diagnostic(`Native acceptance: ${acceptanceArtifact}`);
   if (process.env.GITHUB_STEP_SUMMARY)
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
-  assert.equal(report.summary.legacyMatches, count, JSON.stringify(report.rows, null, 2));
+  const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
+  assert.equal(report.summary.legacyUnsupported, unsupported);
+  assert.equal(
+    report.summary.legacyMatches,
+    count - unsupported,
+    JSON.stringify(report.rows, null, 2),
+  );
   assert.equal(report.summary.legacyFailures, 0);
   assert.equal(report.summary.baselineDrift, 0);
 });

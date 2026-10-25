@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Comp7 from './Child.vue'
+import OtherCard from './Child.vue'
+const FakeCard = { notAComponent: ref(1) }
+</script>
+<template>
+  <!-- 🧭 authored UTF-16 range -->
+  🧭 <Comp7 />
+  <comp7 />
+  <FakeCard />
+  <GlobalOnly />
+  <NoSuch />
+  <OtherCard />
+</template>

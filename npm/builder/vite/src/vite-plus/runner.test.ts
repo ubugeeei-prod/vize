@@ -93,6 +93,29 @@ void test("formatting owns only selected Vue files and never expands an empty li
   });
 });
 
+void test("formatting opt-out forwards every selected path to the host formatter", async () => {
+  await project(async () => {
+    for (const task of ["fmt", "fmt:check", "check"] as const) {
+      for (const patterns of [[], ["App.vue"], ["**/*.vue"], ["App.vue", "script.ts"]]) {
+        const calls: string[][] = [];
+        const metadata: VizeTaskConfig = {
+          config: { formatter: { printWidth: 120 } },
+          options: { check: false, lint: false, fmt: false },
+        };
+        const status = await runTools(task, patterns, metadata, "vp", "native", async (_, args) => {
+          calls.push(args);
+          return 0;
+        });
+        assert.equal(status, 0);
+        assert.deepEqual(calls, [
+          ...(task === "check" ? [["vp", "lint", ...patterns]] : []),
+          ["vp", "fmt", task === "fmt" ? "--write" : "--check", ...patterns],
+        ]);
+      }
+    }
+  });
+});
+
 void test("fmt.ignorePatterns excludes Vue files from check and write, even for explicit paths", async () => {
   await project(async () => {
     const calls: string[][] = [];

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const stable: number = 1
+const route = useRoute()
+route.params.id
+</script>
+<template><div>{{ stable }}</div></template>
+<style>.x { display: flex; }</style>

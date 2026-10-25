@@ -3,6 +3,10 @@ use crate::facts::resolve_module;
 use crate::graph::DependencyEdge;
 use crate::registry::FileId;
 use std::path::Path;
+use vize_carton::FxHashSet;
+
+#[cfg(test)]
+mod source_update_tests;
 
 impl CrossFileAnalyzer {
     /// Nuxt renders files in `pages/` through `app.vue` and its default layout.
@@ -68,31 +72,31 @@ impl CrossFileAnalyzer {
             .scopes
             .iter()
             .filter_map(|scope| {
-                if let vize_croquis::ScopeData::ExternalModule(data) = scope.data() {
-                    Some((data.source.clone(), data.is_type_only))
+                let vize_croquis::ScopeData::ExternalModule(data) = scope.data() else {
+                    return None;
+                };
+                profiler.record_counter("croquis_cf.dependencies.resolve_import.attempts", 1);
+                let target = vize_l0::profile!(
+                    "croquis_cf.dependencies.resolve_import",
+                    self.resolve_import(data.source.as_str(), current_dir.as_deref())
+                );
+                let Some(target_id) = target else {
+                    profiler.record_counter("croquis_cf.dependencies.resolve_import.misses", 1);
+                    return None;
+                };
+                profiler.record_counter("croquis_cf.dependencies.resolve_import.hits", 1);
+                let edge_type = if data.is_type_only {
+                    DependencyEdge::TypeImport
                 } else {
-                    None
-                }
+                    DependencyEdge::Import
+                };
+                Some((target_id, edge_type))
             })
             .collect();
+        self.clear_obsolete_import_edges(file_id, &imports_data);
         self.clear_component_usage_edges(file_id);
 
-        for (source, is_type_only) in imports_data {
-            profiler.record_counter("croquis_cf.dependencies.resolve_import.attempts", 1);
-            let target = vize_l0::profile!(
-                "croquis_cf.dependencies.resolve_import",
-                self.resolve_import(source.as_str(), current_dir.as_deref())
-            );
-            let Some(target_id) = target else {
-                profiler.record_counter("croquis_cf.dependencies.resolve_import.misses", 1);
-                continue;
-            };
-            profiler.record_counter("croquis_cf.dependencies.resolve_import.hits", 1);
-            let edge_type = if is_type_only {
-                DependencyEdge::TypeImport
-            } else {
-                DependencyEdge::Import
-            };
+        for (target_id, edge_type) in imports_data {
             self.graph.add_edge(file_id, target_id, edge_type);
         }
 
@@ -116,6 +120,47 @@ impl CrossFileAnalyzer {
         from_dir: Option<&Path>,
     ) -> Option<FileId> {
         resolve_module(&self.registry, specifier, from_dir)
+    }
+
+    /// Keep unchanged imports in their original positions. Only this owner's
+    /// obsolete runtime/type-only pairs are removed from both graph directions.
+    fn clear_obsolete_import_edges(
+        &mut self,
+        file_id: FileId,
+        current: &[(FileId, DependencyEdge)],
+    ) {
+        let profiler = vize_l0::profiler::global_profiler();
+        let _phase = profiler.global_span("croquis_cf.dependencies.reconcile_imports");
+        let owns_imports = self.graph.get_node(file_id).is_some_and(|node| {
+            node.imports.iter().any(|(_, kind)| {
+                matches!(kind, DependencyEdge::Import | DependencyEdge::TypeImport)
+            })
+        });
+        if !owns_imports {
+            return;
+        }
+        let current: FxHashSet<_> = current.iter().copied().collect();
+        let mut obsolete = Vec::new();
+        if let Some(node) = self.graph.get_node_mut(file_id) {
+            node.imports.retain(|edge| {
+                let remove = matches!(edge.1, DependencyEdge::Import | DependencyEdge::TypeImport)
+                    && !current.contains(edge);
+                if remove {
+                    obsolete.push(*edge);
+                }
+                !remove
+            });
+        }
+        profiler.record_counter(
+            "croquis_cf.dependencies.reconcile_imports.removed",
+            obsolete.len() as u64,
+        );
+        for (target, obsolete_kind) in obsolete {
+            if let Some(node) = self.graph.get_node_mut(target) {
+                node.importers
+                    .retain(|(source, kind)| *source != file_id || *kind != obsolete_kind);
+            }
+        }
     }
 
     fn clear_component_usage_edges(&mut self, file_id: FileId) {
