@@ -12,6 +12,8 @@ import {
   unchangedNonRuntimeErrors,
   unchangedNativeRuntimeHelp,
   unchangedGlobalDiagnosticMock,
+  unchangedIncrementalRuntimeMock,
+  unchangedOpaqueClientFixture,
 } from "../../tools/support/compat/github/native-runtime-fixtures.ts";
 import { planPrChecks } from "../../tools/support/compat/github/plan-pr-checks.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
@@ -354,4 +356,31 @@ void test("native compiler guidance changes cannot alter diagnostic behavior or 
       ),
     );
   }
+});
+
+void test("explicit incremental mock selection preserves every fallback counter and error byte", () => {
+  const path = "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs";
+  const before = sourceImage("base", path)!.toString("utf8");
+  const after = sourceImage("head", path)!.toString("utf8");
+  assert(unchangedIncrementalRuntimeMock(before, after));
+  assert(!unchangedIncrementalRuntimeMock(before, before));
+  assert(
+    !unchangedIncrementalRuntimeMock(
+      before,
+      after.replace("session_to_cli_fallbacks: 1", "session_to_cli_fallbacks: 0"),
+    ),
+  );
+  assert(!unchangedIncrementalRuntimeMock(before, `${after}\n// unrelated edit\n`));
+});
+
+void test("portable opaque wrapper controls retain their complete original input graphs", () => {
+  const path = "crates/vize_canon/src/lsp_client/tests.rs";
+  const before = sourceImage("base", path)!.toString("utf8");
+  const after = sourceImage("head", path)!.toString("utf8");
+  assert(unchangedOpaqueClientFixture(before, after));
+  assert(!unchangedOpaqueClientFixture(before, before));
+  assert(!unchangedOpaqueClientFixture(before, `${after}\n// unrelated edit\n`));
+  assert(
+    !unchangedOpaqueClientFixture(before, after.replace('join("workspace")', 'join("changed")')),
+  );
 });

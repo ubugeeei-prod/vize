@@ -1,182 +1,15 @@
 // Executable discovery has no authored-language coordinates. These closed
 // source identities and real Rust graph consumers stay outside batch cases.
 import { createHash } from "node:crypto";
-import {
-  nativeRuntimeGuidanceRegistration,
-  unchangedNativeRuntimeGuidance,
-} from "./native-runtime-guidance.ts";
+import { nativeRuntimeRegistry as registered } from "./native-runtime-registry.ts";
+import { unchangedNativeRuntimeGuidance } from "./native-runtime-guidance.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
-type SourcePair = { path: string; before: string | null; after: string };
-type Selector = { selector: string; source: string; consumesFixture: boolean };
 export const runtimeFixturePath = "tests/_fixtures/runtime/native-runtime-10694/selection.json";
 const runtimeFixtureSha256 = "20408c95b216c0b655200a5491e3ed0542a13e8db1adaf486274677b375f5463";
 
 // Populated with the exact reviewed consumer source pairs, never a directory
 // exemption. A later edit cannot reuse the Issue 10694 registration.
-const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> = {
-  lsp: nativeRuntimeGuidanceRegistration,
-  typechecker: {
-    sources: [
-      {
-        path: "crates/vize_carton/src/corsa_resolver.rs",
-        before: "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
-        after: "22da83c84ab1d0626ede00e2dbc63d52db9035b346829225bcbbdcb6facf7cd9",
-      },
-      {
-        path: "crates/vize_carton/src/corsa_resolver/tests.rs",
-        before: "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
-        after: "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc",
-      },
-      {
-        path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
-        before: null,
-        after: "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5",
-      },
-      {
-        path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
-        before: null,
-        after: "f869b0a0acb0207661e6f6a403b91850f3241cf6e1b14fc6da326b20affdb83a",
-      },
-      {
-        path: "crates/vize_canon/src/lsp_client/bootstrap.rs",
-        before: "b0f9fa8f1a3b9eb8df8ea12f5141059cd195a60d393da7e671daf5a9010a4305",
-        after: "7d3a41daa0d38b31c025340bf7c676ac10bc359cd45e5e18f9a1a34042a8c775",
-      },
-      {
-        path: "crates/vize_canon/src/batch/error.rs",
-        before: "495e53261574cb81f49590911c552f3b6f614d9b700e5fd6c18e4186ad156d14",
-        after: "895b884def8f152505e48742ab21e6fec23f1bda4c86af15064acbd5b7974f02",
-      },
-      {
-        path: "crates/vize_canon/src/batch/snapshots/vize_canon__batch__error__tests__corsa_not_found_error_message.snap",
-        before: "bef84760ee73db62358bf6b148fd029f37d5fc8dff61e5ac90c5a9ce09b7b0d1",
-        after: "6c8c77c5d558f9e75c1e7950ae72bd6445fe810899d08a4c4c67c03a180584b3",
-      },
-      {
-        path: "crates/vize_canon/src/batch/snapshots/vize_canon__batch__error__tests__corsa_not_found_no_pm.snap",
-        before: "e40b76d36a5a64ecfcb4e49a6df5b753ff0d83ad013a57f0378b86a2356de5da",
-        after: "de87619592c61e08e6406c25bfcdea334befdd33dfc0b62fa266aa0391a07ed2",
-      },
-      {
-        path: "crates/vize_canon/src/batch/executor/tests.rs",
-        before: "138020f6b6f2aca5cabf28d457b1084b87cc3732b673538e57fcf45bbd7cc1d7",
-        after: "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082",
-      },
-    ],
-    tests: [
-      {
-        selector:
-          "corsa_resolver::tests::fixture_cases::runtime_selection_fixture_covers_declared_graphs_and_overrides",
-        source: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
-        consumesFixture: true,
-      },
-      {
-        selector:
-          "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
-        source: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
-        consumesFixture: false,
-      },
-      {
-        selector:
-          "lsp_client::bootstrap::tests::runtime_selection_fixture_preserves_explicit_path_authority",
-        source: "crates/vize_canon/src/lsp_client/bootstrap.rs",
-        consumesFixture: true,
-      },
-      {
-        selector:
-          "batch::error::tests::explicit_missing_runtime_reports_the_full_path_without_install_advice",
-        source: "crates/vize_canon/src/batch/error.rs",
-        consumesFixture: false,
-      },
-      {
-        selector:
-          "batch::error::tests::every_package_manager_keeps_the_existing_typescript_dependency",
-        source: "crates/vize_canon/src/batch/error.rs",
-        consumesFixture: false,
-      },
-      {
-        selector: "batch::executor::tests::cli_global_diagnostics_do_not_trigger_session_fallback",
-        source: "crates/vize_canon/src/batch/executor/tests.rs",
-        consumesFixture: false,
-      },
-    ],
-  },
-  linter: {
-    sources: [
-      {
-        path: "crates/vize_carton/src/corsa_resolver.rs",
-        before: "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
-        after: "22da83c84ab1d0626ede00e2dbc63d52db9035b346829225bcbbdcb6facf7cd9",
-      },
-      {
-        path: "crates/vize_carton/src/corsa_resolver/tests.rs",
-        before: "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
-        after: "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc",
-      },
-      {
-        path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
-        before: null,
-        after: "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5",
-      },
-      {
-        path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
-        before: null,
-        after: "f869b0a0acb0207661e6f6a403b91850f3241cf6e1b14fc6da326b20affdb83a",
-      },
-      {
-        path: "crates/vize_patina/src/linter/corsa_session/paths.rs",
-        before: "520d83c671bf4965de96d35272e97e9b10fe4d98f2e4a96ae389a5934da17e2e",
-        after: "bc006e0ae6e331206ebf1c0e85cb6fd8d6ae4a298b36e023637636c83e383a00",
-      },
-      {
-        path: "crates/vize_patina/src/linter/corsa_session/paths/store.rs",
-        before: "f6b53e7c54bb702a1ba69dc8e906c7f414c1bdcde68c20fe01964f38d1897fd6",
-        after: "5b5a3fc63a2bf6d7446220171f9b64917f417b784286f4b15641e811cfbff112",
-      },
-      {
-        path: "crates/vize_patina/src/linter/corsa_session/paths/store/runtime_tests.rs",
-        before: null,
-        after: "9adfd1ceac1d790514b13915df0de205cf5b254a087e4bd662aff821d2a6c590",
-      },
-      {
-        path: "crates/vize_patina/src/linter/corsa_session/session.rs",
-        before: "bf2aff6b0ed2aa044a39c48cb3280903d76e173da2af931f9416a454edbaeb24",
-        after: "5cf2c7cbbf2fc36109cb8f4e02e7e02db51902b00d32ce5b3ec04152dd872ee5",
-      },
-      {
-        path: "crates/vize_patina/src/linter/native_type_aware.rs",
-        before: "f1b118304bdcc17341379bc685f0c9e805972e519524aead474fa6e7d28eb7a7",
-        after: "71cf576e7de8c3419f15af8ed6ed395fee6ddde77114f0e42068c5af130e64f5",
-      },
-      {
-        path: "crates/vize_patina/src/linter/native_type_aware/plain_module_tests/packets.rs",
-        before: "34e3d06a5cae777bc1315d5d4bbb94c8f44f1fc138ee3d7323a53762fcd5f5e7",
-        after: "c72d860c16caa1fae043ddde528155a32f3de1ced1de02ad5a32fcb4b72f8c3f",
-      },
-    ],
-    tests: [
-      {
-        selector:
-          "corsa_resolver::tests::fixture_cases::runtime_selection_fixture_covers_declared_graphs_and_overrides",
-        source: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
-        consumesFixture: true,
-      },
-      {
-        selector:
-          "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
-        source: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
-        consumesFixture: false,
-      },
-      {
-        selector:
-          "linter::corsa_session::paths::store::runtime_tests::runtime_selection_fixture_uses_selected_config_roots",
-        source: "crates/vize_patina/src/linter/corsa_session/paths/store/runtime_tests.rs",
-        consumesFixture: true,
-      },
-    ],
-  },
-};
 
 function require(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(`invalid native runtime case: ${message}`);
@@ -247,7 +80,7 @@ export function unchangedNativeRuntimeHelp(before: string, after: string): boole
   return before.split(oldText).length === 2 && before.replace(oldText, newText) === after;
 }
 
-/** Only the existing fake runtime's explicit selection may change. */
+/** Preserve both input graphs while correcting explicit mock/opaque selection. */
 export function unchangedGlobalDiagnosticMock(before: string, after: string): boolean {
   const marker = "fn cli_global_diagnostics_do_not_trigger_session_fallback() {";
   const start = before.indexOf(marker);
@@ -257,11 +90,39 @@ export function unchangedGlobalDiagnosticMock(before: string, after: string): bo
   const current =
     "    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();";
   const selected = before.indexOf(previous, start);
+  if (selected < start || end <= selected) return false;
+  const mockSelected =
+    before.slice(0, selected) + current + before.slice(selected + previous.length);
+  const oldName = "fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary()";
+  const newName = "fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview()";
+  const oldPath = "assert_eq!(executor.corsa_path(), native.canonicalize().unwrap());";
+  const newPath = "assert_eq!(executor.corsa_path(), wrapper.canonicalize().unwrap());";
   return (
-    selected >= start &&
-    end > selected &&
-    before.slice(0, selected) + current + before.slice(selected + previous.length) === after
+    mockSelected.split(oldName).length === 2 &&
+    mockSelected.split(oldPath).length === 2 &&
+    mockSelected.replace(oldName, newName).replace(oldPath, newPath) === after
   );
+}
+
+/** An opaque launcher stays selected; every original input and other assertion stays exact. */
+export function unchangedOpaqueClientFixture(before: string, after: string): boolean {
+  const oldName = "fn normalizes_explicit_wrapper_path_to_native_binary()";
+  const newName = "fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_binary()";
+  const oldPath = "        native_preview\n            .canonicalize()";
+  const newPath = "        wrapper\n            .canonicalize()";
+  return (
+    before.split(oldName).length === 2 &&
+    before.split(oldPath).length === 2 &&
+    before.replace(oldName, newName).replace(oldPath, newPath) === after
+  );
+}
+
+/** Preserve the complete incremental fallback/counter control around its selected mock. */
+export function unchangedIncrementalRuntimeMock(before: string, after: string): boolean {
+  const previous = "    let executor = CorsaExecutor::new(&case_dir).unwrap();";
+  const current =
+    "    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();";
+  return before.split(previous).length === 2 && before.replace(previous, current) === after;
 }
 
 export function newNativeRuntimeCases(
@@ -354,6 +215,18 @@ export function newNativeRuntimeCases(
             before.toString("utf8"),
             after.toString("utf8"),
           ), "unrelated executor test or oracle edit");
+      if (expected.path === "crates/vize_canon/src/lsp_client/tests.rs")
+        require(before !== null &&
+          unchangedOpaqueClientFixture(
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated client test or input edit");
+      if (expected.path === "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs")
+        require(before !== null &&
+          unchangedIncrementalRuntimeMock(
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated incremental counter or fallback oracle edit");
       if (expected.path.startsWith("crates/vize_maestro/"))
         require(before !== null &&
           unchangedNativeRuntimeGuidance(
@@ -393,6 +266,7 @@ export function newNativeRuntimeCases(
     for (const [path, declaration] of [
       ["crates/vize_carton/src/corsa_resolver.rs", /#\[cfg\(test\)\]\s+mod tests;/],
       ["crates/vize_carton/src/corsa_resolver/tests.rs", /\bmod fixture_cases;/],
+      ["crates/vize_carton/src/corsa_resolver/tests.rs", /\bmod provider_authority;/],
       ["crates/vize_canon/src/lsp_client/bootstrap.rs", /#\[cfg\(test\)\]\s+mod tests\s*\{/],
       [
         "crates/vize_patina/src/linter/corsa_session/paths/store.rs",

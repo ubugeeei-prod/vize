@@ -311,7 +311,7 @@ fn rejects_unlinked_preview_and_old_vize_bundle_without_user_selection() {
 }
 
 #[test]
-fn current_runtime_order_remains_nearest_then_start_root() {
+fn current_runtime_order_is_nearest_then_start_root_and_rejects_broken_slots() {
     let suffix = platform_suffix();
     let temp = TempDir::new().unwrap();
     let root = temp.path().join("install");
@@ -346,7 +346,8 @@ fn current_runtime_order_remains_nearest_then_start_root() {
             .join("lib/tsc"),
     )
     .unwrap();
-    assert_eq!(discover_in_walk(&[nested], false), Some(outer));
+    assert_eq!(discover_in_walk(&[root], false), Some(outer));
+    assert_eq!(discover_in_walk(&[nested], false), None);
 }
 
 #[test]

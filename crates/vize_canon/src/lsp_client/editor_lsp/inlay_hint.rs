@@ -102,6 +102,118 @@ pub(super) fn trace_native_inlay(stage: &str, value: impl FnOnce() -> Value) {
     if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").as_deref()
         == Some(std::ffi::OsStr::new("1"))
     {
-        tracing::warn!(stage, value = %value(), "native inlay hint observation");
+        tracing::info!(stage, value = %value(), "native inlay hint observation");
+    }
+}
+
+#[cfg(test)]
+mod trace_tests {
+    use super::trace_native_inlay;
+    use parking_lot::Mutex;
+    use serde_json::{Value, json};
+    use std::{cell::Cell, process::Command};
+    use tracing::{Event, Metadata, Subscriber, field, span};
+    use vize_l0::cstr;
+
+    static EVENTS: Mutex<Vec<Value>> = Mutex::new(Vec::new());
+
+    struct Capture;
+
+    struct Fields(Value);
+
+    impl field::Visit for Fields {
+        fn record_str(&mut self, field: &field::Field, value: &str) {
+            self.0[field.name()] = json!(value);
+        }
+
+        fn record_debug(&mut self, field: &field::Field, value: &dyn std::fmt::Debug) {
+            self.0[field.name()] = json!(cstr!("{value:?}").as_str());
+        }
+    }
+
+    impl Subscriber for Capture {
+        fn enabled(&self, _metadata: &Metadata<'_>) -> bool {
+            true
+        }
+
+        fn new_span(&self, _span: &span::Attributes<'_>) -> span::Id {
+            span::Id::from_u64(1)
+        }
+
+        fn record(&self, _span: &span::Id, _values: &span::Record<'_>) {}
+
+        fn record_follows_from(&self, _span: &span::Id, _follows: &span::Id) {}
+
+        fn event(&self, event: &Event<'_>) {
+            let mut fields = Fields(json!({}));
+            event.record(&mut fields);
+            let metadata = event.metadata();
+            EVENTS.lock().push(json!({
+                "level": metadata.level().as_str(),
+                "target": metadata.target(),
+                "fields": fields.0
+            }));
+        }
+
+        fn enter(&self, _span: &span::Id) {}
+
+        fn exit(&self, _span: &span::Id) {}
+    }
+
+    #[test]
+    fn trace_payload_is_lazy_and_informational() {
+        const PROBE: &str = "VIZE_TEST_NATIVE_INLAY_TRACE_PROBE";
+        if let Some(mode) = std::env::var_os(PROBE) {
+            let called = Cell::new(0);
+            tracing::subscriber::with_default(Capture, || {
+                trace_native_inlay("startupConfigurationSnapshot", || {
+                    called.set(called.get() + 1);
+                    json!({"ok": true, "response": null})
+                });
+            });
+            if mode == "enabled" {
+                assert_eq!(called.get(), 1);
+                assert_eq!(
+                    *EVENTS.lock(),
+                    vec![json!({
+                        "level": "INFO",
+                        "target": "vize_canon::lsp_client::editor_lsp::inlay_hint",
+                        "fields": {
+                            "message": "native inlay hint observation",
+                            "stage": "startupConfigurationSnapshot",
+                            "value": "{\"ok\":true,\"response\":null}"
+                        }
+                    })]
+                );
+            } else {
+                assert_eq!(called.get(), 0);
+                assert_eq!(*EVENTS.lock(), Vec::<Value>::new());
+            }
+            return;
+        }
+
+        // Child processes keep the process-global environment isolated from
+        // other Rust tests. Only the literal opt-in enables payload creation.
+        for (mode, setting) in [
+            ("default", None),
+            ("disabled", Some("0")),
+            ("enabled", Some("1")),
+        ] {
+            let mut command = Command::new(std::env::current_exe().unwrap());
+            command
+                .args([
+                    "--exact",
+                    "lsp_client::editor_lsp::inlay_hint::trace_tests::trace_payload_is_lazy_and_informational",
+                    "--nocapture",
+                ])
+                .env(PROBE, mode)
+                .env_remove("VIZE_TRACE_EDITOR_PREPARATION");
+            if let Some(setting) = setting {
+                command.env("VIZE_TRACE_EDITOR_PREPARATION", setting);
+            }
+            let output = command.output().unwrap();
+            assert!(output.status.success(), "{mode}: {output:?}");
+            assert!(output.stderr.is_empty(), "{mode}: {output:?}");
+        }
     }
 }

@@ -1212,5 +1212,49 @@
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     }
+  ],
+  "cssApiCases": [
+    {
+      "id": "compiler/css/source-map-10693",
+      "state": "active",
+      "adapter": "compile-css-original-input-map-10693",
+      "targets": ["css"],
+      "inputs": {
+        "root": "css-source-map-10693",
+        "files": [
+          {
+            "path": "input.css",
+            "role": "source",
+            "sha256": "95eb31d1885582970845eecdd729bd7794feab04b648ad9240859fe5375628ba"
+          },
+          {
+            "path": "options.json",
+            "role": "options",
+            "sha256": "8a7da73e40a0992ea910783c87be9e5f18b625efe19bebc64c3991826f727bc8"
+          },
+          {
+            "path": "public-before.json",
+            "role": "public-before",
+            "sha256": "a77d5512fc0ea4d50229b55649cd505d61e481d544118bbeeb746d39d1a1b9d6"
+          },
+          {
+            "path": "source-after.json",
+            "role": "source-after",
+            "sha256": "38dae0e480b12f25f532450c61f08f2721aa0bff940c2121e9c10b0f1c839ea1"
+          },
+          {
+            "path": "authority.json",
+            "role": "authority",
+            "sha256": "25dd8f6635a152d04a0f8c45c5920a5019850e7979893dc3dbaa328445e9fa9f"
+          }
+        ]
+      },
+      "genericCli": "unsupported-css-api",
+      "nativeCompatibility": "unsupported",
+      "witness": {
+        "runner": "tests/native/css-compile-source-maps.mjs",
+        "requestCount": 84
+      }
+    }
   ]
 }

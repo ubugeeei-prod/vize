@@ -13,6 +13,7 @@ mod declarations;
 mod hsl;
 mod lex;
 mod rgb;
+mod selection;
 
 use self::lex::{
     decode_identifier, identifier_end, is_declaration_name, is_identifier_boundary,
@@ -20,6 +21,7 @@ use self::lex::{
 };
 use super::named;
 pub(super) use declarations::CssMode;
+pub(super) use selection::color_at;
 
 #[cfg(test)]
 std::thread_local! {
@@ -45,9 +47,22 @@ pub(crate) struct ColorLiteral {
 }
 
 pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) -> Vec<ColorLiteral> {
+    scan(content, region, mode, Vec::new())
+}
+
+/// Both consumers use the same declaration admission, numeric parser and
+/// tentative-selector rollback. A selected query retains only its candidate.
+trait Collection {
+    fn checkpoint(&self) -> usize;
+    fn truncate(&mut self, checkpoint: usize);
+    fn push(&mut self, literal: ColorLiteral);
+    fn finished(&self, cursor: usize, committed: bool) -> bool;
+    fn finish(&mut self, _cursor: usize) {}
+}
+
+fn scan<C: Collection>(content: &str, region: (usize, usize), mode: CssMode, mut found: C) -> C {
     let (region_start, region_end) = region;
     let bytes = content.as_bytes();
-    let mut found = Vec::new();
     let mut cursor = region_start;
     let mut block_depth = 0usize;
     let mut parenthesis_depth = 0usize;
@@ -58,6 +73,9 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
     let mut line_header_pending = true;
 
     while cursor < region_end {
+        if found.finished(cursor, tentative_value.is_none()) {
+            break;
+        }
         #[cfg(test)]
         SCAN_STEPS.set(SCAN_STEPS.get() + 1);
         let Some(&byte) = bytes.get(cursor) else {
@@ -102,7 +120,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
             if let Some(end) =
                 declarations::stylus_value(content, statement_start, cursor, region_end)
             {
-                tentative_value.get_or_insert(found.len());
+                tentative_value.get_or_insert(found.checkpoint());
                 in_value = true;
                 cursor = end;
                 continue;
@@ -147,7 +165,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 ) =>
             {
                 if mode != CssMode::DeclarationList {
-                    tentative_value.get_or_insert(found.len());
+                    tentative_value.get_or_insert(found.checkpoint());
                 }
                 in_value = true;
                 cursor += 1;
@@ -229,6 +247,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
         }
     }
 
+    found.finish(cursor);
     found
 }
 

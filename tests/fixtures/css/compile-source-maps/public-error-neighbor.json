@@ -1,0 +1,34 @@
+{
+  "schema": "vize.css.compile-source-map.public-error-neighbor",
+  "version": 1,
+  "provider": "public-0.571.0.json",
+  "buildToken": "4a833c6793600c1f36aada2e025c9e84",
+  "captures": [
+    {
+      "id": "parse-error",
+      "source": "}",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": "}",
+        "cssVars": [],
+        "errors": ["CSS parse error: Unexpected end of input at style.css:0:2"],
+        "warnings": []
+      }
+    },
+    {
+      "id": "parse-error",
+      "source": "}",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": "}",
+        "cssVars": [],
+        "errors": ["CSS parse error: Unexpected end of input at style.css:0:2"],
+        "warnings": []
+      }
+    }
+  ]
+}

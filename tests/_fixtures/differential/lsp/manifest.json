@@ -2432,6 +2432,88 @@
       }
     },
     {
+      "id": "lsp/regression/css-hover-stylesheet-examples-10572",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-hover-stylesheet-examples-10572",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "7e59a2a5690fe4a9c85299c5d0799c036d30584d885268c634282f58584930f6"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-hover-stylesheet-examples-10572/case.json",
+        "sha256": "4b8b6be0f119be9ab7d1fa23eb826d55c8e20fcfab8338c317f1481a8a49c0df"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/css-concrete-color-hover-10556",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-concrete-color-hover-10556",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "edb68163b7b1a9e56d2f700019cc8dc7c44b2630b36b097c80ff60691558018f"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-concrete-color-hover-10556/case.json",
+        "sha256": "fe7c33875ef794b9d071b92a0b057a853ddbb183f734ac4bb6aa7f4190f9a3be"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/shared-api-snapshot-reopen-10730",
       "state": "active",
       "targets": [
@@ -2503,12 +2585,12 @@
         {
           "path": "crates/vize_carton/src/corsa_resolver.rs",
           "before": "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
-          "after": "22da83c84ab1d0626ede00e2dbc63d52db9035b346829225bcbbdcb6facf7cd9"
+          "after": "850beef2582ea0c0e8f11afd579633e367b82bae4d3d165d1750c60b9a210231"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests.rs",
           "before": "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
-          "after": "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc"
+          "after": "3648f1a499135ec10c0668ddadd647fa8a827059f420813b4fe8a5015e409be2"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -2523,7 +2605,7 @@
         {
           "path": "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
           "before": "08d381606e630b9a03dc8b505e0c2699d1285b0b1cb654307f5e1a65c7329de3",
-          "after": "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9"
+          "after": "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d"
         }
       ],
       "tests": [
@@ -2535,12 +2617,12 @@
         {
           "selector": "ide::diagnostics::typecheck_unavailable_tests::unavailable_typecheck_diagnostic_points_to_typescript_7",
           "source": "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
-          "sha256": "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9"
+          "sha256": "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d"
         },
         {
           "selector": "ide::diagnostics::typecheck_unavailable_tests::unavailable_typecheck_notice_points_to_typescript_7",
           "source": "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
-          "sha256": "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9"
+          "sha256": "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d"
         }
       ]
     }

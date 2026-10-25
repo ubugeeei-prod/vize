@@ -22,6 +22,11 @@ const registration = {
       before: "02601e1d2bb3eee642b663fd3336156f32791a35cf5999e689c69956626357fb",
       after: "be7c5924613e2f284b8d9e88d30d5512077de2cbfd8ca1e8e77cca15f7c0a971",
     },
+    {
+      path: "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs",
+      before: "0c477b1f2dbab225f4d63935c687f4eb5ae88017966c857692c739dc463448bd",
+      after: "6f43f25b70046abcde4664b09a5d6c974793e690628cc5ddda8aff673acac07c",
+    },
   ],
   lspCase: {
     path: "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/case.json",
@@ -34,7 +39,7 @@ const registration = {
   producer: {
     workflow: {
       path: ".github/workflows/lsp-shared-api-reopen.yml",
-      sha256: "9ef427249159c02779b49de21daba76997cb9de0136446b6f40c28eb466aa869",
+      sha256: "04c66c27dbd17e47306850cacfd623e4dca48531c4845cadc8ffae67bc83cd76",
     },
     entry: {
       path: "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
@@ -80,7 +85,7 @@ const registration = {
     },
     registryTest: {
       path: "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",
-      sha256: "efe2edfc3586fb44000d5d5a38809a1e1e56c8b0384c9d782b8e933095cdeca3",
+      sha256: "c3de4d5662c05f677d25e268611e86e94d444396bda4b8b1fbb84e09c1900768",
     },
   },
 } as const;

@@ -99,7 +99,7 @@ fn encodes_reserved_characters_in_virtual_file_uris() {
 }
 
 #[test]
-fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary() {
+fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview() {
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path();
     let wrapper = root.join("node_modules/.bin/tsgo");
@@ -117,7 +117,7 @@ fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary() {
 
     let executor = CorsaExecutor::with_corsa_path(root, Some(&wrapper)).unwrap();
 
-    assert_eq!(executor.corsa_path(), native.canonicalize().unwrap());
+    assert_eq!(executor.corsa_path(), wrapper.canonicalize().unwrap());
 }
 
 #[test]

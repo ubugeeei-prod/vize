@@ -17,10 +17,18 @@ fn write_typescript_manifest(path: &Path, suffix: &str, version: &str) {
     fs::write(
         path,
         &*crate::cstr!(
-            r#"{{"name":"typescript","version":"{version}","optionalDependencies":{{"@typescript/typescript-{suffix}":"{version}"}}}}"#
+            r#"{{"name":"typescript","version":"{version}","bin":{{"tsc":"bin/tsc"}},"optionalDependencies":{{"@typescript/typescript-{suffix}":"{version}"}}}}"#
         ),
     )
     .unwrap();
+    let project = path.parent().unwrap().parent().unwrap().parent().unwrap();
+    if !project.join("package.json").exists() {
+        fs::write(
+            project.join("package.json"),
+            &*crate::cstr!(r#"{{"devDependencies":{{"typescript":"{version}"}}}}"#),
+        )
+        .unwrap();
+    }
     let package = path
         .parent()
         .unwrap()
@@ -36,6 +44,7 @@ fn write_typescript_manifest(path: &Path, suffix: &str, version: &str) {
     .unwrap();
 }
 
+#[cfg(unix)]
 fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
     let platform_package = super::packages::tsrs_platform_package().unwrap();
     let wrapper = root.join("node_modules").join(".bin").join("tsrs");
@@ -44,16 +53,19 @@ fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
         .join("node_modules")
         .join(platform_package)
         .join("tsrs");
-    write_file(&wrapper);
+    fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
     write_file(&native);
     fs::create_dir_all(package.parent().unwrap()).unwrap();
     fs::write(
         package,
         &*crate::cstr!(
-            r#"{{"name":"tsrs","optionalDependencies":{{"{platform_package}":"0.18.0"}}}}"#
+            r#"{{"name":"tsrs","bin":{{"tsrs":"bin/tsrs.js"}},"optionalDependencies":{{"{platform_package}":"0.18.0"}}}}"#
         ),
     )
     .unwrap();
+    let launcher = root.join("node_modules/tsrs/bin/tsrs.js");
+    write_file(&launcher);
+    std::os::unix::fs::symlink(&launcher, &wrapper).unwrap();
     (wrapper, native)
 }
 
@@ -166,6 +178,8 @@ fn explicit_tsrs_wrapper_does_not_normalize_to_typescript() {
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path();
     let (wrapper, native) = write_tsrs_install(root);
+    fs::remove_file(&wrapper).unwrap();
+    std::os::unix::fs::symlink(root.join("node_modules/tsrs/bin/tsrs.js"), &wrapper).unwrap();
     write_typescript_manifest(
         &root.join("node_modules/typescript/package.json"),
         suffix,
@@ -235,6 +249,7 @@ fn relative_explicit_path_resolves_against_project_root() {
     assert_eq!(resolved, explicit.canonicalize().unwrap());
 }
 
+#[cfg(unix)]
 #[test]
 fn explicit_wrapper_path_normalizes_to_native_binary() {
     let temp_dir = TempDir::new().unwrap();
@@ -251,8 +266,9 @@ fn explicit_wrapper_path_normalizes_to_native_binary() {
         .join("native-preview")
         .join("lib")
         .join("tsgo");
-    write_file(&wrapper);
     write_file(&native);
+    fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
+    std::os::unix::fs::symlink(&native, &wrapper).unwrap();
 
     let resolved = resolve(Some(&wrapper), Some(workspace_root.as_path()), &[]).unwrap();
 
@@ -260,7 +276,7 @@ fn explicit_wrapper_path_normalizes_to_native_binary() {
 }
 
 #[test]
-fn normalizes_wrapper_to_project_cache_when_native_binary_is_absent() {
+fn project_cache_requires_developer_opt_in_and_preserves_explicit_wrapper() {
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path();
     let wrapper = root.join("node_modules").join(".bin").join("tsgo");
@@ -268,7 +284,22 @@ fn normalizes_wrapper_to_project_cache_when_native_binary_is_absent() {
     write_file(&wrapper);
     write_file(&cache);
 
-    assert_eq!(normalize_corsa_path(&wrapper), cache);
+    assert_eq!(
+        discover_in_walk(&[root.to_path_buf()], false),
+        Some(wrapper.clone())
+    );
+    assert_eq!(
+        discover_in_walk(&[root.to_path_buf()], true),
+        Some(cache.clone())
+    );
+    assert_eq!(
+        normalize_corsa_path(&wrapper),
+        wrapper.canonicalize().unwrap()
+    );
+    assert_eq!(
+        resolve(Some(&cache), Some(root), &[]).unwrap(),
+        cache.canonicalize().unwrap()
+    );
 }
 
 #[test]
@@ -291,7 +322,9 @@ fn prefers_project_local_cache_before_native_preview() {
     write_file(&cache);
     write_file(&native);
 
-    let resolved = discover_in_walk(&[root.join("packages").join("demo")], false);
+    let starts = [root.join("packages").join("demo")];
+    assert_eq!(discover_in_walk(&starts, false), Some(native));
+    let resolved = discover_in_walk(&starts, true);
 
     assert_eq!(resolved, Some(cache));
 }
@@ -429,3 +462,4 @@ mod package_runtime;
 mod project_packages;
 
 mod fixture_cases;
+mod provider_authority;

@@ -24,6 +24,7 @@ assert.ok(row);
 function reader(overrides = new Map()) {
   const initialPath = "crates/vize_canon/src/lsp_client/initial_diagnostics.rs";
   const clientPath = "crates/vize_canon/src/lsp_client/editor_lsp/client.rs";
+  const tracePath = "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs";
   const initial = fs
     .readFileSync(path.join(root, initialPath), "utf8")
     .replace(
@@ -42,9 +43,14 @@ function reader(overrides = new Map()) {
   const tests = client.indexOf("\n#[cfg(all(test, unix))]\nmod initial_snapshot_tests {");
   assert.ok(tests > 0);
   client = client.slice(0, tests);
+  const trace = fs
+    .readFileSync(path.join(root, tracePath), "utf8")
+    .split("\n#[cfg(test)]\nmod trace_tests {")[0]
+    .replace("tracing::info!(stage, value", "tracing::warn!(stage, value");
   const before = new Map([
     [initialPath, Buffer.from(initial)],
     [clientPath, Buffer.from(client)],
+    [tracePath, Buffer.from(trace)],
     [row.lspCase.path, null],
   ]);
   const beforeTypechecker = structuredClone(manifest);
@@ -77,7 +83,7 @@ function reader(overrides = new Map()) {
   };
 }
 
-void test("only both reviewed source pairs and the full ordinary LSP producer register this API fix", () => {
+void test("only all reviewed source pairs and the full ordinary LSP producer register this API fix", () => {
   const accepted = newSharedEditorInitialApiCases(undefined, [row], reader());
   assert.deepEqual(accepted.ids, [ID]);
   assert.deepEqual(
@@ -110,8 +116,7 @@ void test("exact API source pairs cannot use missing, stale, duplicate or foreig
 
 void test("ordinary inputs cannot replace the pinned wire, image authority or complete producer", () => {
   for (const target of [
-    row.sources[0].path,
-    row.sources[1].path,
+    ...row.sources.map((source) => source.path),
     row.lspCase.path,
     row.wireContract.path,
     ...Object.values(row.producer)
