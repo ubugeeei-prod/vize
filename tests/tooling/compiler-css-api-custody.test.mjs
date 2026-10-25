@@ -56,16 +56,32 @@ await test("closed actual CSS API inputs remain separate from all SSR execution 
 });
 
 await test("the actual required fixture gate admits only the exact CSS producer and refuses mixed changes", () => {
-  const readSide = (side, file) => {
-    if (side === "head") return read(file);
+  const historical = (revision, file) => {
     try {
-      return execFileSync("git", ["show", `b0033883518f364cfbd3dd0ab9464715e9f51758:${file}`], {
+      return execFileSync("git", ["show", `${revision}:${file}`], {
         cwd: root,
         stdio: ["ignore", "pipe", "ignore"],
       });
     } catch {
       return null;
     }
+  };
+  const manifestRelative = "tests/_fixtures/differential/compiler/manifest.json";
+  const before = "b0033883518f364cfbd3dd0ab9464715e9f51758";
+  const after = "510b0bb1033a22265e3408693a4aa00b78351cef";
+  const original = JSON.parse(historical(before, manifestRelative));
+  const cssOnly = {
+    ...manifest,
+    // This historical CSS-only change predates later ordinary compiler cases.
+    // Keep those genuine current additions outside this unit test's diff.
+    cases: original.cases,
+    cssApiCases: manifest.cssApiCases.filter((row) => row.id === "compiler/css/source-map-10693"),
+  };
+  const readSide = (side, file) => {
+    if (side === "base") return historical(before, file);
+    if (file === manifestRelative) return Buffer.from(JSON.stringify(cssOnly));
+    if (cssMapProducerPaths.includes(file)) return historical(after, file);
+    return read(file);
   };
   const request = {
     title: "fix(css): emit source maps",
