@@ -159,14 +159,14 @@ void test("linter and LSP coverage record every pinned authored source dialect",
     unknownReadinessCases: 92,
     verified: {},
     provisional: {
-      "html-template": 50,
+      "html-template": 51,
       js: 6,
       jsx: 1,
       "pug-template": 4,
       ts: 36,
       tsx: 1,
       "vue2-sfc": 2,
-      "vue3-sfc": 72,
+      "vue3-sfc": 73,
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
