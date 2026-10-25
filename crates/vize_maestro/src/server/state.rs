@@ -130,7 +130,7 @@ pub struct ServerState {
     /// Physical path identities used by canonical editor mapping. File events
     /// invalidate the table before the next request.
     #[cfg(feature = "native")]
-    canonical_paths: DashMap<PathBuf, PathBuf>,
+    canonical_paths: canonical_paths::Cache,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
     /// imported component on every keystroke; entries are invalidated by the

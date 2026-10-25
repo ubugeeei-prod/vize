@@ -38,7 +38,7 @@ impl ServerState {
             ),
             package_route_resolver: Mutex::new(package_route_resolver),
             #[cfg(feature = "native")]
-            canonical_paths: DashMap::new(),
+            canonical_paths: Default::default(),
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),

@@ -1,5 +1,7 @@
 mod scope;
 pub(super) use scope::same_typescript_project;
+mod identities;
+use identities::UriMembership;
 
 use std::collections::VecDeque;
 
@@ -24,6 +26,16 @@ impl CanonicalVirtualDocument {
         source: String,
         mut opened: Self,
     ) {
+        let mut dependency_uris = UriMembership::accepted_first(
+            self.dependencies
+                .iter()
+                .map(|dependency| dependency.request_uri.as_str()),
+        );
+        let mut materialized_uris = UriMembership::accepted_first(
+            self.materialized_sources
+                .iter()
+                .map(|source| source.request_uri.as_str()),
+        );
         for catalog in opened.source_catalogs.drain(..) {
             if !self
                 .source_catalogs
@@ -41,21 +53,18 @@ impl CanonicalVirtualDocument {
                 request_uri: opened.request_uri,
                 virtual_result: opened.virtual_result,
             },
+            &mut dependency_uris,
         );
         for dependency in opened.dependencies.drain(..) {
-            self.include_dependency(ctx, dependency);
+            self.include_dependency(ctx, dependency, &mut dependency_uris);
         }
         for materialized in opened.materialized_sources.drain(..) {
-            if !self.materialized_sources.iter().any(|existing| {
-                location_matches_uri_cached(
-                    ctx.state,
-                    &existing.request_uri,
-                    &materialized.request_uri,
-                )
-            }) {
+            if materialized_uris.insert_if_absent(ctx.state, &materialized.request_uri) {
                 self.materialized_sources.push(materialized);
             }
         }
+        dependency_uris.record_work("merge_dependencies");
+        materialized_uris.record_work("merge_materialized");
         self.session_project_roots
             .append(&mut opened.session_project_roots);
         self.session_project_roots.sort();
@@ -66,15 +75,9 @@ impl CanonicalVirtualDocument {
         &mut self,
         ctx: &IdeContext<'_>,
         dependency: CanonicalDependencyDocument,
+        identities: &mut UriMembership,
     ) {
-        if location_matches_uri_cached(ctx.state, &dependency.request_uri, &self.request_uri)
-            || self.dependencies.iter().any(|existing| {
-                location_matches_uri_cached(
-                    ctx.state,
-                    &existing.request_uri,
-                    &dependency.request_uri,
-                )
-            })
+        if !identities.insert_unless_primary(ctx.state, &dependency.request_uri, &self.request_uri)
         {
             return;
         }
@@ -244,28 +247,24 @@ async fn open_canonical_virtual_project_document_with_scope(
             dependency.virtual_result.code.as_str().into(),
         )
     }));
-    project_documents.extend(
-        document
-            .materialized_sources
-            .iter()
-            .filter(|source| source.mapping_kind.is_mappable())
-            .filter(|source| {
-                !location_matches_uri_cached(ctx.state, &source.request_uri, &document.request_uri)
-                    && !document.dependencies.iter().any(|dependency| {
-                        location_matches_uri_cached(
-                            ctx.state,
-                            &source.request_uri,
-                            &dependency.request_uri,
-                        )
-                    })
-            })
-            .map(|source| {
-                (
-                    source.request_uri.clone(),
-                    source.virtual_result.code.as_str().into(),
-                )
-            }),
-    );
+    {
+        let mut existing =
+            UriMembership::candidate_first(project_documents.iter().map(|(uri, _)| uri.as_str()));
+        project_documents.extend(
+            document
+                .materialized_sources
+                .iter()
+                .filter(|source| source.mapping_kind.is_mappable())
+                .filter(|source| !existing.contains(ctx.state, &source.request_uri))
+                .map(|source| {
+                    (
+                        source.request_uri.clone(),
+                        source.virtual_result.code.as_str().into(),
+                    )
+                }),
+        );
+        existing.record_work("project_filter");
+    }
     bridge
         .open_virtual_documents_batch(&project_documents)
         .await
