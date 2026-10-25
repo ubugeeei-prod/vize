@@ -57,9 +57,11 @@ jobs:
       - name: Build the actual native source
         run: vp run --filter './npm/native' build:ci
       - name: Build the published adapter shape
-        run: |
-          vp run --filter './npm/builder/parcel' build
-          vp run --filter './npm/builder/parcel-resolver' build
+        working-directory: npm/builder/parcel
+        run: vp pack
+      - name: Build the published resolver shape
+        working-directory: npm/builder/parcel-resolver
+        run: vp pack
       - name: Validate geometry and configuration
         run: node --test npm/builder/parcel/src/*.test.ts npm/builder/parcel-resolver/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs
       - name: Install the fixture browser

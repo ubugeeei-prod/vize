@@ -19,6 +19,17 @@ void test("immutable Unicode component modules preserve exact bytes and relative
 
 void test("ordinary dependencies fall through without a private payload", () => {
   assert.equal(resolveVirtualModule({ specifier: "vue", resolveFrom, meta: {} }), undefined);
+  for (const entry of [null, [], "payload", false, 1]) {
+    assert.throws(
+      () =>
+        resolveVirtualModule({
+          specifier: "component.js",
+          resolveFrom,
+          meta: { vizeVirtualModule: entry },
+        }),
+      /Invalid immutable/,
+    );
+  }
 });
 
 void test("changed code, digest, specifier and module location cannot alias an existing request", () => {

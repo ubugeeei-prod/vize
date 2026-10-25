@@ -12,7 +12,9 @@ export function resolveVirtualModule(
   dependency: Dependency,
 ): { filePath: string; code: string; sideEffects: true } | undefined {
   const entry = dependency.meta.vizeVirtualModule;
-  if (!entry || typeof entry !== "object" || Array.isArray(entry)) return;
+  if (entry === undefined) return;
+  if (!entry || typeof entry !== "object" || Array.isArray(entry))
+    throw new Error("Invalid immutable Vize component module metadata.");
   const { filePath, code, digest } = entry as Record<string, unknown>;
   if (
     typeof code !== "string" ||
