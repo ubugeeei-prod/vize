@@ -8,12 +8,13 @@
 // 3. Skip publish entirely when the exact version is already visible.
 // 4. Treat a non-zero `vsce publish` exit as success if the version becomes
 //    visible immediately after the attempted publish.
-import { collectOutput, println, run, runMain, sleepSeconds } from "../command_io.ts";
+import { collectOutput, println, run, runMain, sleepSeconds, writeStderr } from "../command_io.ts";
 import { cliArgs, moonTrim, nonEmptyEnv, resolvePath } from "../command_runtime.ts";
 import {
   envIntAtLeast,
   jsonHasExtensionVersion,
   readExtensionInfo,
+  readExtensionTarget,
 } from "../editor_extension_info.ts";
 import { parseJson } from "../ordered_json.ts";
 
@@ -45,6 +46,7 @@ async function extensionVersionIsVisible(
   dlxBin: string,
   extensionId: string,
   version: string,
+  target: string,
 ): Promise<boolean> {
   const { status, stdout } = await collectOutput(
     dlxBin,
@@ -54,7 +56,7 @@ async function extensionVersionIsVisible(
   const body = moonTrim(stdout);
   if (body === "") return false;
   const parsed = parseJson(body);
-  return parsed !== undefined && jsonHasExtensionVersion(parsed, version);
+  return parsed !== undefined && jsonHasExtensionVersion(parsed, version, target);
 }
 
 async function waitForExtensionVisibility(
@@ -63,9 +65,10 @@ async function waitForExtensionVisibility(
   version: string,
   maxAttempts: number,
   delaySeconds: number,
+  target: string,
 ): Promise<boolean> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    if (await extensionVersionIsVisible(dlxBin, extensionId, version)) {
+    if (await extensionVersionIsVisible(dlxBin, extensionId, version, target)) {
       println(`${extensionId} ${version} is visible in the VS Code Marketplace.`);
       return true;
     }
@@ -88,10 +91,19 @@ export async function publishVscodeExtension(args: readonly string[]): Promise<n
   const packageJsonPath = resolvePath(args.length === 2 ? args[1] : "editors/vscode/package.json");
   const extensionInfo = readExtensionInfo(packageJsonPath);
   if (extensionInfo === null) return 1;
+  const target = readExtensionTarget();
+  if (target === null) return 1;
   const dlxBin = configuredVsceDlxBin();
   const resolutionAttempts = envIntAtLeast("PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24);
   const resolutionDelaySeconds = envIntAtLeast("PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10);
-  if (await extensionVersionIsVisible(dlxBin, extensionInfo.extensionId, extensionInfo.version)) {
+  if (
+    await extensionVersionIsVisible(
+      dlxBin,
+      extensionInfo.extensionId,
+      extensionInfo.version,
+      target,
+    )
+  ) {
     println(
       `${extensionInfo.extensionId} ${extensionInfo.version} is already published, skipping VS Code Marketplace publish.`,
     );
@@ -104,9 +116,10 @@ export async function publishVscodeExtension(args: readonly string[]): Promise<n
     publishArgs.push("--pre-release");
   }
   const exitCode = await run(dlxBin, vsceDlxArgs(dlxBin, "publish", publishArgs));
-  // A successful publish is final; the Marketplace can take 5+ min to list it.
-  if (exitCode === 0) return 0;
-  // A failed exit may still have published, so only then wait for the listing.
+  // Keep the existing universal upload contract. A platform upload must also
+  // become visible under its own target before that matrix entry can pass.
+  if (exitCode === 0 && target === "universal") return 0;
+  // A failed exit can still have published; recheck the same exact target.
   if (
     await waitForExtensionVisibility(
       dlxBin,
@@ -114,12 +127,20 @@ export async function publishVscodeExtension(args: readonly string[]): Promise<n
       extensionInfo.version,
       resolutionAttempts,
       resolutionDelaySeconds,
+      target,
     )
   ) {
-    println(
-      `${extensionInfo.extensionId} ${extensionInfo.version} was published despite a non-zero vsce publish exit.`,
-    );
+    if (exitCode !== 0)
+      println(
+        `${extensionInfo.extensionId} ${extensionInfo.version} was published despite a non-zero vsce publish exit.`,
+      );
     return 0;
+  }
+  if (exitCode === 0) {
+    writeStderr(
+      `VS Code Marketplace did not expose ${extensionInfo.extensionId} ${extensionInfo.version} for ${target} before the visibility deadline.\n`,
+    );
+    return 1;
   }
   return exitCode;
 }

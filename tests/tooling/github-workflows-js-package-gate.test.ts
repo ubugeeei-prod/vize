@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import {
   checkWorkflowJobSources,
@@ -18,10 +19,20 @@ test("check workflow runs JS package unit tests and production dependency audit"
   assert.equal(packageJson.packageManager, "pnpm@12.1.0");
   assert.equal(packageJson.pnpm, undefined);
   assert.match(pnpmWorkspace, /^overrides:\n/m);
-  assert.match(
-    pnpmWorkspace,
-    /^allowBuilds:\n  "@parcel\/watcher": false\n  core-js: false\n  esbuild: true\n  puppeteer: false\n  unrs-resolver: false\n  vue-demi: false$/m,
-  );
+  const workspace = parse(pnpmWorkspace);
+  assert.deepEqual(workspace.allowBuilds, {
+    "@parcel/watcher": false,
+    "@swc/core@1.16.20": false,
+    "core-js": false,
+    esbuild: true,
+    "lmdb@2.8.5": false,
+    "msgpackr-extract@3.0.4": false,
+    puppeteer: false,
+    "unrs-resolver": false,
+    "vue-demi": false,
+  });
+  assert.notEqual(workspace.strictDepBuilds, false);
+  assert.notEqual(workspace.dangerouslyAllowAllBuilds, true);
   assert.match(jsPackageJob, /uses: \.\/\.github\/actions\/test-js-packages-with-history/);
   const jsAction = readRepoFile(
     ".github",

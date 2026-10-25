@@ -59,6 +59,8 @@ pub struct MacroArtifactNapi {
 #[derive(Default)]
 pub struct SfcParseOptionsNapi {
     pub filename: Option<String>,
+    /// Include effective parser attributes in authored name order.
+    pub include_attrs: Option<bool>,
 }
 
 #[napi(object)]
