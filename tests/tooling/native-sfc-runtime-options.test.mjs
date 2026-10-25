@@ -112,53 +112,56 @@ await test("capture all native runtime configurations before semantic assertions
         }),
     );
     for (const [target, targetOptions] of Object.entries(targets)) {
-      for (const sourceMap of [false, true]) {
-        for (const runtimeModuleName of runtimeModules) {
-          const options = {
-            ...targetOptions,
-            sourceMap,
-            ...(runtimeModuleName === undefined ? {} : { runtimeModuleName }),
-          };
-          const batchOptions = {
-            ...options,
-            includeSourceMap: sourceMap,
-            includeHashes: true,
-            includeStyles: true,
-            includeCustomBlocks: true,
-            includeMacroArtifacts: true,
-          };
-          const batch = observe("files", { target, ...batchOptions }, () =>
-            native.compileSfcBatchWithResults(files, batchOptions),
-          );
-          const single = files.map((file) =>
-            observe(
-              "single",
-              { target, ...options, filename: file.path, scopeId: file.scopeId },
-              () =>
-                native.compileSfc(file.source, {
-                  ...options,
-                  filename: file.path,
-                  scopeId: file.scopeId,
-                }),
-            ),
-          );
-          const syntax = batch.results.map((result) => {
-            try {
-              const parsed = new vm.SourceTextModule(result.code);
-              return { valid: true, imports: parsed.dependencySpecifiers };
-            } catch (error) {
-              return {
-                valid: false,
-                error: { name: error.name, message: error.message, stack: error.stack },
-              };
-            }
-          });
-          cases.push({ target, options, batch, single, syntax });
-          if (!sourceMap) {
-            const stats = observe("stats", { target, ...options }, () =>
-              native.compileSfcBatch("./*.vue", options),
+      for (const inlineTemplate of [undefined, true]) {
+        for (const sourceMap of [false, true]) {
+          for (const runtimeModuleName of runtimeModules) {
+            const options = {
+              ...targetOptions,
+              sourceMap,
+              ...(inlineTemplate === undefined ? {} : { inlineTemplate }),
+              ...(runtimeModuleName === undefined ? {} : { runtimeModuleName }),
+            };
+            const batchOptions = {
+              ...options,
+              includeSourceMap: sourceMap,
+              includeHashes: true,
+              includeStyles: true,
+              includeCustomBlocks: true,
+              includeMacroArtifacts: true,
+            };
+            const batch = observe("files", { target, ...batchOptions }, () =>
+              native.compileSfcBatchWithResults(files, batchOptions),
             );
-            cases.at(-1).stats = stats;
+            const single = files.map((file) =>
+              observe(
+                "single",
+                { target, ...options, filename: file.path, scopeId: file.scopeId },
+                () =>
+                  native.compileSfc(file.source, {
+                    ...options,
+                    filename: file.path,
+                    scopeId: file.scopeId,
+                  }),
+              ),
+            );
+            const syntax = batch.results.map((result) => {
+              try {
+                const parsed = new vm.SourceTextModule(result.code);
+                return { valid: true, imports: parsed.dependencySpecifiers };
+              } catch (error) {
+                return {
+                  valid: false,
+                  error: { name: error.name, message: error.message, stack: error.stack },
+                };
+              }
+            });
+            cases.push({ target, options, batch, single, syntax });
+            if (!sourceMap) {
+              const stats = observe("stats", { target, ...options }, () =>
+                native.compileSfcBatch("./*.vue", options),
+              );
+              cases.at(-1).stats = stats;
+            }
           }
         }
       }
@@ -200,8 +203,8 @@ await test("capture all native runtime configurations before semantic assertions
 });
 
 function completeCases() {
-  assert.equal(cases.length, 108, "all 36 module and 72 standalone configurations were captured");
-  assert.equal(observations.length, 559, "every native API return was retained");
+  assert.equal(cases.length, 144, "all 72 module and 72 standalone configurations were captured");
+  assert.equal(observations.length, 901, "every native API return was retained");
   return cases;
 }
 
@@ -210,27 +213,31 @@ await test(
   skip,
   () => {
     for (const target of Object.keys(targets)) {
-      for (const sourceMap of [false, true]) {
-        const baseline = completeCases().find(
-          (row) =>
-            row.target === target &&
-            row.options.sourceMap === sourceMap &&
-            row.batch &&
-            row.options.runtimeModuleName === undefined,
-        );
-        const explicit = completeCases().find(
-          (row) =>
-            row.target === target &&
-            row.options.sourceMap === sourceMap &&
-            row.batch &&
-            row.options.runtimeModuleName === "vue",
-        );
-        assert.deepEqual(explicit.single, baseline.single);
-        const { timeMs: beforeTime, ...before } = baseline.batch;
-        const { timeMs: afterTime, ...after } = explicit.batch;
-        assert.equal(typeof beforeTime, "number");
-        assert.equal(typeof afterTime, "number");
-        assert.deepEqual(after, before);
+      for (const inlineTemplate of [undefined, true]) {
+        for (const sourceMap of [false, true]) {
+          const baseline = completeCases().find(
+            (row) =>
+              row.target === target &&
+              row.options.sourceMap === sourceMap &&
+              row.options.inlineTemplate === inlineTemplate &&
+              row.batch &&
+              row.options.runtimeModuleName === undefined,
+          );
+          const explicit = completeCases().find(
+            (row) =>
+              row.target === target &&
+              row.options.sourceMap === sourceMap &&
+              row.options.inlineTemplate === inlineTemplate &&
+              row.batch &&
+              row.options.runtimeModuleName === "vue",
+          );
+          assert.deepEqual(explicit.single, baseline.single);
+          const { timeMs: beforeTime, ...before } = baseline.batch;
+          const { timeMs: afterTime, ...after } = explicit.batch;
+          assert.equal(typeof beforeTime, "number");
+          assert.equal(typeof afterTime, "number");
+          assert.deepEqual(after, before);
+        }
       }
     }
   },
@@ -271,6 +278,7 @@ await test("single and batch code, maps and all shared metadata remain equal", s
           entry.batch &&
           entry.target === row.target &&
           entry.options.sourceMap === false &&
+          entry.options.inlineTemplate === row.options.inlineTemplate &&
           entry.options.runtimeModuleName === undefined,
       );
       const bytes = (entry) =>
@@ -297,6 +305,12 @@ await test(
           true,
           JSON.stringify({ target: row.target, options: row.options, syntax }),
         );
+        const authored = { 2: "author-runtime", 3: "vue", 7: "#app/nuxt" }[index];
+        if (authored)
+          assert.deepEqual(
+            syntax.imports.filter((name) => name === authored),
+            [authored],
+          );
         assert.equal(
           syntax.imports.every(
             (name) =>
@@ -377,7 +391,7 @@ await test("standalone single, files and statistics preserve code and maps", ski
 await test("whole default code, maps and DTOs equal the before-source native", skip, () => {
   assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
   const before = JSON.parse(readFileSync(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE));
-  assert.equal(before.length, 108);
+  assert.equal(before.length, 144);
   const defaults = (rows) =>
     rows.filter(
       (row) =>
