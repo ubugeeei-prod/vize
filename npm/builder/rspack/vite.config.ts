@@ -23,5 +23,6 @@ export default defineConfig({
     clean: true,
     minify: true,
     sourcemap: false,
+    deps: { alwaysBundle: ["@vizejs/builder-shared"] },
   },
 });
