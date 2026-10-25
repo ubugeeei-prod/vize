@@ -283,23 +283,34 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
     }
 
     let preamble = merge_preambles(components.iter().map(JsxComponent::preamble));
-    let (module, module_map) = match vize_l0::profile!(
-        "atelier.jsx.module.assemble",
-        authored_module::emit(
-            &components,
-            &origins,
-            &spans,
-            &preamble,
-            source,
-            lang,
-            config.vdom.source_map,
-        )
-    ) {
-        Ok(Some(module)) => module,
-        Ok(None) => (render_exports::module_code(&components, preamble), None),
-        Err(diagnostic) => {
-            diagnostics.push(diagnostic);
-            (String::default(), None)
+    // Native module admission must not cascade a second ownership diagnostic
+    // after lowering already rejected the root. Keep original diagnostics and
+    // per-component producer packets, but publish no executable native module.
+    let (module, module_map) = if diagnostics.iter().any(JsxDiagnostic::is_error)
+        && components
+            .iter()
+            .any(|component| !matches!(component, JsxComponent::Vdom(_)))
+    {
+        (String::default(), None)
+    } else {
+        match vize_l0::profile!(
+            "atelier.jsx.module.assemble",
+            authored_module::emit(
+                &components,
+                &origins,
+                &spans,
+                &preamble,
+                source,
+                lang,
+                config.vdom.source_map,
+            )
+        ) {
+            Ok(Some(module)) => module,
+            Ok(None) => (render_exports::module_code(&components, preamble), None),
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+                (String::default(), None)
+            }
         }
     };
     JsxCompileOutput {
