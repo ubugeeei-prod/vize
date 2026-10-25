@@ -192,6 +192,7 @@ if (mode === "prepare") {
   assert.equal(readFileSync(join(out, "before.status"), "utf8"), "101\n");
   assert(readFileSync(join(out, "before.stderr"), "utf8").includes("operator context"));
   assert.equal(before.length, 4);
+  assert.equal(readFileSync(join(out, "ast.status"), "utf8"), "0\n");
   assert.equal(readFileSync(join(out, "after.status"), "utf8"), "0\n");
   assert.equal(readFileSync(join(out, "options.status"), "utf8"), "0\n");
   assert.equal(after.length, 240);

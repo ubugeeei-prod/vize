@@ -271,3 +271,44 @@ fn actual_native_context_options_keep_whole_clean_and_authored_error_packets() {
         );
     }
 }
+
+#[test]
+fn options_api_setup_return_preserves_its_authored_undefined_shadow() {
+    let script =
+        "export default { setup() { const undefined = 'authored'; return { undefined }; } };";
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, "<p>{{ undefined }}</p>");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
+        .with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let generated = super::generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+    let shadows: Vec<_> = generated
+        .code
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("var undefined:"))
+        .collect();
+    assert_eq!(
+        shadows,
+        ["var undefined: __U<__R_undefined> = (void 0) as any;"]
+    );
+    let source = shadows.join("\n");
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
+    assert!(parsed.diagnostics.is_empty(), "{:?}", parsed.diagnostics);
+    let mut ast = ContextAst::default();
+    ast.visit_program(&parsed.program);
+    assert_eq!(
+        (ast.operator_placeholders, ast.undefined_references),
+        (1, 0)
+    );
+}

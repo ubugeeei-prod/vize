@@ -56,7 +56,7 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains("var count: __U<__R_count> = undefined as any;"),
+            .contains("var count: __U<__R_count> = (void 0) as any;"),
         "setup ref return should be available as an auto-unwrapped template variable:\n{}",
         output.code
     );

@@ -92,7 +92,7 @@ function __setup() {
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
     type __U<T> = T extends { value: infer __V } ? __V : T;
-    var count: __U<__R_count> = undefined as any;
+    var count: __U<__R_count> = (void 0) as any;
     // Vue template context (Vue 2-compatible structural fallback)
     type __Ctx = { $attrs: Record<string, unknown>; $slots: Record<string, unknown>; $refs: Record<string, any>; $emit: (...args: any[]) => void; };
     const __ctx = (void 0) as unknown as __Ctx;
