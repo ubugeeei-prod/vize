@@ -10,6 +10,7 @@ impl CrossFileAnalyzer {
     pub fn new(options: CrossFileOptions) -> Self {
         Self {
             options,
+            ssr_enabled: true,
             registry: ModuleRegistry::new(),
             graph: DependencyGraph::new(),
             effect_graph_summaries: Default::default(),
@@ -22,12 +23,20 @@ impl CrossFileAnalyzer {
     pub fn with_project_root(options: CrossFileOptions, root: impl AsRef<Path>) -> Self {
         Self {
             options,
+            ssr_enabled: true,
             registry: ModuleRegistry::with_project_root(root.as_ref()),
             graph: DependencyGraph::new(),
             effect_graph_summaries: Default::default(),
             template_complexity: Default::default(),
             single_file_options: AnalyzerOptions::full(),
         }
+    }
+
+    /// Set the host project's SSR capability without changing enabled rule groups.
+    /// Unknown projects must retain the default `true`.
+    #[doc(hidden)]
+    pub fn set_ssr_enabled(&mut self, enabled: bool) {
+        self.ssr_enabled = enabled;
     }
 
     /// Set single-file analyzer options.

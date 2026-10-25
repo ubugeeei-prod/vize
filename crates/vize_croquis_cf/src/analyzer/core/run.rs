@@ -79,7 +79,7 @@ impl CrossFileAnalyzer {
             let (boundaries, diags) = rules::analyze_boundaries_in_ssr_mode(
                 &self.registry,
                 &self.graph,
-                self.options.server_client_boundary,
+                self.ssr_enabled,
             );
             result.boundaries = boundaries;
             result.diagnostics.extend(diags);

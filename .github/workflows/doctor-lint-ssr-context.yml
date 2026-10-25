@@ -14,6 +14,9 @@ on:
       - crates/vize/tests/doctor_lint_ssr_context_cli.rs
       - crates/vize_croquis_cf/src/rules/boundary.rs
       - crates/vize_croquis_cf/src/analyzer/core/run.rs
+      - crates/vize_croquis_cf/src/analyzer/core.rs
+      - crates/vize_croquis_cf/src/analyzer/core/constructors.rs
+      - crates/vize_croquis_cf/src/analyzer/tests_single_file.rs
 permissions:
   contents: read
 concurrency:

@@ -100,8 +100,8 @@ fn ssr_and_unknown_configuration_keep_real_browser_diagnostics() {
         assert_eq!(
             cross_ids,
             [
-                "croquis/cf/browser-api-ssr",
-                "croquis/cf/browser-api-ssr",
+                "cross-file",
+                "cross-file",
                 "ssr/no-browser-globals-in-ssr",
                 "ssr/no-browser-globals-in-ssr"
             ],
@@ -152,7 +152,7 @@ fn client_only_apps_keep_non_ssr_boundary_findings() {
         ["VIZE_DOCTOR_CF_ASYNC_WITHOUT_SUSPENSE"]
     );
     assert_eq!(rule_ids(&lint), Vec::<&str>::new());
-    assert_eq!(rule_ids(&cross_file), ["croquis/cf/async-without-suspense"]);
+    assert_eq!(rule_ids(&cross_file), ["cross-file"]);
 }
 
 fn project(root: &Path, nuxt: &str, vite_client_build: bool) {
