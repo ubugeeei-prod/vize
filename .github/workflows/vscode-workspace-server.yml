@@ -46,6 +46,9 @@ jobs:
         run: vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-server-trust.test.ts
       - name: Check the extension
         run: vp run --workspace-root check:vscode-extension
+      - name: Install the production archive tools on Windows
+        if: runner.os == 'Windows'
+        run: choco install zip unzip --yes --no-progress
       - name: Package the production VSIX
         run: vp run --workspace-root package:vscode-extension
       - name: Ensure virtual display
