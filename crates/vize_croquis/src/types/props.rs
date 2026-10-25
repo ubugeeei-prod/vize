@@ -2,6 +2,7 @@ use vize_carton::{CompactString, FxHashSet};
 
 use super::{TypeProperty, TypeResolver, is_valid_identifier};
 
+mod literal;
 mod members;
 
 impl TypeResolver {
@@ -97,8 +98,10 @@ impl TypeResolver {
         let optional = name_part.ends_with('?');
         let name = name_part.trim().trim_end_matches('?').trim();
 
-        if name.is_empty() || !is_valid_identifier(name) {
-            return None;
+        if !is_valid_identifier(name) {
+            self.literal_member_parse_calls
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            return literal::parse(trimmed);
         }
 
         Some(TypeProperty {

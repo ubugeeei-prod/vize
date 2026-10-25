@@ -69,7 +69,7 @@
           "name": "label",
           "control": "text",
           "default_value": "Seed",
-          "required": false,
+          "required": true,
           "options": []
         },
         {
@@ -102,8 +102,8 @@
         }
       ],
       "groups": [],
-      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"scope.name\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed custom\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"__proto__\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed proto\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed constructor\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed method\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
-      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  \"scope.name\"?: string;\n  __proto__?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed\",\n      \"required\": true,\n      \"options\": []\n    },\n    {\n      \"name\": \"scope.name\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed custom\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"__proto__\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed proto\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed constructor\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed method\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label: string;\n  \"scope.name\"?: string;\n  __proto__?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
     }
   },
   {

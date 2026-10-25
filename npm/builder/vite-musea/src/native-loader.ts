@@ -163,7 +163,7 @@ export function analyzeSfcFallback(source: string, _options?: { filename?: strin
       props.push({
         name,
         type,
-        required: !optional && defaultValue === undefined,
+        required: !optional,
         ...(defaultValue !== undefined ? fallbackDefault(defaultValue) : {}),
       });
     }
@@ -242,7 +242,8 @@ function fallbackDefault(
     value = value.expression;
   if (value && (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value)))
     return { default_value: value.text };
-  if (value && ts.isNumericLiteral(value)) return { default_value: Number(value.text) };
+  if (value && ts.isNumericLiteral(value) && Number.isFinite(Number(value.text)))
+    return { default_value: Number(value.text) };
   if (value?.kind === ts.SyntaxKind.TrueKeyword) return { default_value: true };
   if (value?.kind === ts.SyntaxKind.FalseKeyword) return { default_value: false };
   if (value?.kind === ts.SyntaxKind.NullKeyword) return { default_value: null };

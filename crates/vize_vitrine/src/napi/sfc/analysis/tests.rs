@@ -135,3 +135,28 @@ fn profiling_counts_cold_warm_source_edits_bypass_and_errors_without_stale_value
             .is_none()
     );
 }
+
+#[test]
+fn exotic_typed_names_keep_real_parser_counts_and_cache_reuse() {
+    let cache = Mutex::new(AnalysisCache::default());
+    let options = SfcAnalyzeOptions {
+        filename: Some("Literal.vue".into()),
+        profile: Some(true),
+        cache: None,
+    };
+    let source = r#"<script setup lang="ts">defineProps<{ "scope.name"?: string; café?: number; ['a:b']?: boolean; [key]: string }>()</script>"#;
+    let cold = analyze(source, &options, &cache).expect("valid typed source");
+    assert_eq!(
+        cold["props"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|prop| prop["name"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["scope.name", "café", "a:b"]
+    );
+    assert_eq!(cold["profile"]["literalMemberParseCalls"], json!(4));
+    let warm = analyze(source, &options, &cache).expect("cached source");
+    assert_eq!(warm["props"], cold["props"]);
+    assert_eq!(warm["profile"]["literalMemberParseCalls"], json!(0));
+}

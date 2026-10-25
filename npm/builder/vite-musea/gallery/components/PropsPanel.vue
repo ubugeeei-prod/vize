@@ -64,15 +64,15 @@ const slotContent = shallowRef<Record<string, string>>({});
 const copiedUsage = ref(false);
 const art = computed(() => getArt(props.artPath));
 const unsupported = computed(() => new Set(palette.value?.unsupportedProps ?? []));
-const jsonUnsupported = computed(
+const functionProps = computed(
   () =>
-    new Set([
-      ...unsupported.value,
-      ...(palette.value?.controls ?? [])
+    new Set(
+      (palette.value?.controls ?? [])
         .filter((control) => control.control === "function")
         .map((control) => control.name),
-    ]),
+    ),
 );
+const jsonUnsupported = computed(() => new Set([...unsupported.value, ...functionProps.value]));
 const appliedValues = computed(() => supportedProps(mergedValues.value, jsonUnsupported.value));
 const retainedUnsupported = computed(() =>
   Object.keys(mergedValues.value).filter((name) => unsupported.value.has(name)),
@@ -166,8 +166,12 @@ function onCodeEditorUpdate(newContent: string) {
   try {
     const parsed = JSON.parse(newContent);
     if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+      const functionEdit = unsupportedPropEdit(mergedValues.value, parsed, functionProps.value);
       codeError.value =
-        unsupportedPropEdit(mergedValues.value, parsed, jsonUnsupported.value) ?? null;
+        unsupportedPropEdit(mergedValues.value, parsed, unsupported.value) ??
+        (functionEdit
+          ? "Function props cannot be edited as JSON. Keep their retained value or remove them."
+          : null);
       if (!codeError.value) setAllValues(parsed as Record<string, unknown>);
     } else {
       codeError.value = "JSON must be an object";

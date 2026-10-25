@@ -139,7 +139,7 @@ void test(
       );
       assert.deepEqual(
         [...controls.keys()],
-        ["label", "count", "code", "enabled", "items", "data", "callback", "opaque"],
+        ["count", "label", "code", "enabled", "items", "data", "callback", "opaque"],
       );
       const expectedControls = {
         label: "text",

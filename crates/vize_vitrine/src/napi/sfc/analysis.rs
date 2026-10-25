@@ -72,6 +72,7 @@ struct Profile {
     cache_hit: bool,
     descriptor_parse_calls: u32,
     analyze_calls: u32,
+    literal_member_parse_calls: u32,
     default_parse_calls: u32,
     serialize_calls: u32,
     descriptor_parse_ns: u64,
@@ -141,6 +142,7 @@ fn analyze(
             analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::for_declaration());
         profile.analyze_ns = elapsed(started);
         profile.analyze_calls = 1;
+        profile.literal_member_parse_calls = croquis.types.literal_member_parse_calls();
         let started = profiling.then(Instant::now);
         let inputs: Vec<_> = croquis
             .macros

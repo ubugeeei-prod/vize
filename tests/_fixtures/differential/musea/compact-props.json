@@ -175,7 +175,7 @@
           {
             "name": "label",
             "type": "string",
-            "required": false,
+            "required": true,
             "default_value": "Seed"
           },
           {
