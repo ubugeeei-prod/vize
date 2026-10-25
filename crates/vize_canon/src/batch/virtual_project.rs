@@ -55,7 +55,9 @@ pub use document::{
 // Crate-scoped: the `alias_resolver` parameter names
 // `import_rewriter_alias::AliasSpecifierResolver`, which is `pub(crate)`.
 pub(crate) use document::generate_vue_document_virtual_ts_with_options_and_alias_resolver;
+mod diagnostic_route;
 mod diagnostics;
+pub(in crate::batch) use diagnostic_route::DiagnosticRoute;
 mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
@@ -379,6 +381,7 @@ pub struct VirtualProject {
 
 #[derive(Default)]
 struct SourceArtifacts {
+    diagnostic_route: DiagnosticRoute,
     virtual_paths: Vec<PathBuf>,
     passthrough_paths: Vec<PathBuf>,
     empty_module_exports: bool,

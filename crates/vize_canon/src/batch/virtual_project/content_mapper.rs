@@ -33,7 +33,6 @@ use super::art_usage::apply_musea_art_globals;
 use super::build::{descriptor_uses_jsx_script, prepend_vue_jsx_reference};
 use super::diagnostics::invalid_sfc_fallback_virtual_ts;
 use super::javascript_sfc::{descriptor_is_unchecked_javascript, prepare_script_blocks};
-use super::vue_codegen::generic_attribute::GenericCopies;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 mod masked_spans;
@@ -177,6 +176,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         mut code,
         mut mappings,
         mapping_meta,
+        mut generic_copies,
         mut semantic_links,
         mut prop_default_key_links,
         mut diagnostics,
@@ -213,6 +213,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
 
     publicize_generated_diagnostic_helpers(&mut code, &mappings);
 
+    let unprefixed_len = code.len();
     if use_tsx {
         prepend_vue_jsx_reference(
             &mut code,
@@ -229,6 +230,9 @@ pub fn generate_vue_content_mapper_transform_with_options(
             &mut prop_default_key_links,
         );
     }
+    if let Some(copies) = &mut generic_copies {
+        copies.shift_generated(code.len() - unprefixed_len);
+    }
 
     authored.remap_mappings(&mut mappings);
     for diagnostic in &mut diagnostics {
@@ -242,10 +246,9 @@ pub fn generate_vue_content_mapper_transform_with_options(
         // Directive comments are read from HTML templates and SFC blocks only.
         diagnostic_directives: (!authored.is_derived())
             .then(|| {
-                let echoes = GenericCopies::find(&code, &mappings, content, &descriptor);
                 let directives = with_generic_echoes(
                     sfc_diagnostic_directives(content, &descriptor, &spans),
-                    echoes.as_ref(),
+                    generic_copies.as_ref(),
                 );
                 with_component_prop_echoes(directives, &code, &mappings)
             })

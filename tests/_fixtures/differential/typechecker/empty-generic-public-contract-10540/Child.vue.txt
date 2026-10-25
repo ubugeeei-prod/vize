@@ -1,0 +1,1 @@
+<!-- @inferComponentDollarEl true --><script setup lang="ts">import Base from './Base.vue';</script><template><Base v-if="true" /><Transition v-else><img /></Transition></template>

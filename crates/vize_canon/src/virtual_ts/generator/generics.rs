@@ -7,9 +7,7 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 use crate::text_scan::{byte_before, starts_with_at};
-use crate::virtual_ts::props::{
-    add_generic_defaults, extract_generic_names, strip_const_modifiers,
-};
+use crate::virtual_ts::generic_parameters::GenericParameters;
 
 pub(super) fn setup_signature(summary: &Croquis) -> (Option<&str>, Option<&str>, bool) {
     summary
@@ -48,10 +46,10 @@ impl HoistedGenericAliases {
     pub(super) fn collect(
         summary: &Croquis,
         script: Option<&str>,
-        generic_param: Option<&str>,
+        generic_param: Option<&GenericParameters>,
     ) -> Option<Self> {
         let (script, generic_param) = script.zip(generic_param)?;
-        let generic_names = extract_generic_names(generic_param);
+        let generic_names = generic_param.names.clone();
         let names: Vec<String> = generic_names
             .split(',')
             .map(str::trim)
@@ -118,7 +116,7 @@ impl HoistedGenericAliases {
             .collect();
 
         Some(Self {
-            generic_decl: strip_const_modifiers(&add_generic_defaults(generic_param)),
+            generic_decl: generic_param.alias_declaration.clone(),
             generic_names,
             type_names,
             dependent_declarations,
@@ -170,85 +168,9 @@ pub(super) fn module_alias_generic_suffix(
 /// is self-contained, `any` when the constraint names a sibling parameter (the
 /// name would dangle outside the parameter list), and `unknown` when
 /// unconstrained (keeps extracted component props inferable — #2701).
-pub(super) fn generic_fallback_args(generic_decl: &str) -> String {
-    let params = split_generic_params(generic_decl);
-    let names: Vec<String> = extract_generic_names(generic_decl)
-        .split(',')
-        .map(str::trim)
-        .filter(|name| !name.is_empty())
-        .map(String::from)
-        .collect();
-    let mut args = String::default();
-    for param in params {
-        if param.trim().is_empty() {
-            continue;
-        }
-        let arg = match param_constraint(param) {
-            Some(constraint) if references_any_identifier(constraint, &names) => "any",
-            Some(constraint) => constraint,
-            None => "unknown",
-        };
-        if !args.is_empty() {
-            args.push_str(", ");
-        }
-        args.push_str(arg);
-    }
-    args
-}
-
-/// Split a generic parameter list at depth-0 commas, tracking `<>` nesting
-/// (the same convention as the sibling parameter helpers in `props`).
-pub(super) fn split_generic_params(list: &str) -> Vec<&str> {
-    let mut params = Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0usize;
-    for (i, b) in list.bytes().enumerate() {
-        match b {
-            b'<' => depth += 1,
-            b'>' => depth -= 1,
-            b',' if depth == 0 => {
-                params.push(list.get(start..i).unwrap_or_default());
-                start = i + 1;
-            }
-            _ => {}
-        }
-    }
-    params.push(list.get(start..).unwrap_or_default());
-    params
-}
-
-/// Constraint text of one generic parameter declaration (`T extends X = D`
-/// -> `X`); `None` when the parameter is unconstrained. `const` modifiers and
-/// parameter defaults are excluded; `=>` arrows never terminate the
-/// constraint.
-fn param_constraint(param: &str) -> Option<&str> {
-    let bytes = param.as_bytes();
-    let mut depth = 0i32;
-    let mut start = None;
-    let mut i = 0usize;
-    while let Some(&byte) = bytes.get(i) {
-        match byte {
-            b'<' => depth += 1,
-            b'>' => depth -= 1,
-            b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,
-            b'=' if depth == 0 => break,
-            b'e' if depth == 0
-                && start.is_none()
-                && bytes
-                    .get(i..)
-                    .is_some_and(|rest| rest.starts_with(b"extends"))
-                && !byte_before(bytes, i).is_some_and(is_ident_byte)
-                && !matches!(bytes.get(i + 7), Some(&b) if is_ident_byte(b)) =>
-            {
-                start = Some(i + 7);
-                i += 6;
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-    let constraint = param.get(start?..i.min(param.len()))?.trim();
-    (!constraint.is_empty()).then_some(constraint)
+#[cfg(test)]
+fn generic_fallback_args(generic_decl: &str) -> String {
+    GenericParameters::parse(generic_decl).fallback
 }
 
 pub(super) fn is_ident_byte(b: u8) -> bool {
@@ -333,16 +255,11 @@ pub(super) fn generic_injection_point(decl: &str, type_name: &str) -> Option<usi
 }
 
 pub(in crate::virtual_ts) fn generic_injection(
-    generic_param: Option<&str>,
+    generic_param: Option<&GenericParameters>,
 ) -> Option<(String, Vec<String>)> {
     generic_param.map(|g| {
-        // Type aliases/interfaces cannot retain function-only `const` modifiers (TS1277).
-        let defaults = strip_const_modifiers(&add_generic_defaults(g));
-        let names = extract_generic_names(g)
-            .split(',')
-            .map(|n| String::from(n.trim()))
-            .filter(|n| !n.is_empty())
-            .collect();
+        let defaults = g.alias_declaration.clone();
+        let names = g.parameter_names().map(String::from).collect();
         (defaults, names)
     })
 }
@@ -359,12 +276,9 @@ mod tests {
             vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
         analyzer.analyze_script_setup_with_generic(script, Some("T extends 'number' | 'text'"));
         let summary = analyzer.finish();
-        let aliases = HoistedGenericAliases::collect(
-            &summary,
-            Some(script),
-            Some("T extends 'number' | 'text'"),
-        )
-        .expect("Value captures the SFC parameter");
+        let generic = super::GenericParameters::parse("T extends 'number' | 'text'");
+        let aliases = HoistedGenericAliases::collect(&summary, Some(script), Some(&generic))
+            .expect("Value captures the SFC parameter");
         let mut setup = String::default();
         aliases.emit_setup_aliases(&mut setup);
         assert_eq!(

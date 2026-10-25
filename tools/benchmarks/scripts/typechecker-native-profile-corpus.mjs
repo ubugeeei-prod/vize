@@ -4,13 +4,14 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { corpusManifest } from "./type-snapshot-cli-corpus.mjs";
+import { canonicalBuildInfoArgument } from "./typechecker-native-build-info.mjs";
 
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 function virtualKey(root) {
   assert.equal(Buffer.from(root).toString("utf8"), root, "unsupported root encoding");
   return sha(Buffer.concat([Buffer.from("vize-canon-project-key:v1\0"), Buffer.from(root)]));
 }
-function graphVector(shards, authoredRoot) {
+function graphVector(shards, authoredRoot, corpusId) {
   authoredRoot = realpathSync(authoredRoot);
   return shards.map((shard) => {
     assert(isAbsolute(shard.cwd), "absolute native cwd required");
@@ -68,13 +69,18 @@ function graphVector(shards, authoredRoot) {
       bytes: record.bytes,
       sha256: record.sha256,
     });
+    const buildInfo = canonicalBuildInfoArgument({ shard, authoredRoot, corpusId });
     return {
       virtualParent: dirname(shard.cwd),
       config: identity(archive.config),
       configSha256: shard.configSha256,
       declaredRootSelection: archive.config.declaredRootSelection,
       args: shard.args.map((arg, index, args) =>
-        args[index - 1] === "--project" ? relocate(arg) : arg,
+        buildInfo !== null && index === 4
+          ? buildInfo
+          : args[index - 1] === "--project"
+            ? relocate(arg)
+            : arg,
       ),
       compilerOptions: shard.compilerOptions,
       runtime: archive.runtime,
@@ -124,8 +130,8 @@ export function profileDuplicateCorpus({
     "duplicate-tree virtual bytes differ",
   );
   assert.deepEqual(
-    graphVector(checked.wrapped.nativeShards, copyRoot),
-    graphVector(reference.wrapped.nativeShards, corpus.dir),
+    graphVector(checked.wrapped.nativeShards, copyRoot, corpus.id),
+    graphVector(reference.wrapped.nativeShards, corpus.dir, corpus.id),
     "duplicate-tree config/member bytes, order or canonical external context differ",
   );
   const profiles = checked.wrapped.nativeShards.map((shard) => {

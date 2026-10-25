@@ -3,9 +3,9 @@ use vize_croquis::Croquis;
 
 use super::setup_scope::{define_emits_type_requires_setup_scope, macro_type_requires_setup_scope};
 use crate::virtual_ts::{
+    generic_parameters::GenericParameters,
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, push_ts_string_literal},
     macro_type_mappings::MacroTypeMappings,
-    props::{add_generic_defaults, extract_generic_names, strip_const_modifiers},
 };
 
 mod authored_events;
@@ -87,10 +87,10 @@ impl EmitsInfo {
 /// is parenthesized so a function-typed model does not absorb the union into
 /// its return type.
 fn model_update_payload(
-    summary: &Croquis,
+    generic_parameters: Option<&GenericParameters>,
     model: &vize_croquis::macros::ModelDefinition,
 ) -> String {
-    let base = crate::virtual_ts::model_types::model_value_type(summary, model);
+    let base = crate::virtual_ts::model_types::model_value_type(generic_parameters, model);
     if model.required || model.default_value.is_some() || base == "unknown" || base == "any" {
         base
     } else {
@@ -98,14 +98,17 @@ fn model_update_payload(
     }
 }
 
-pub(super) fn template_model_emit_type(summary: &Croquis) -> Option<String> {
+pub(super) fn template_model_emit_type(
+    summary: &Croquis,
+    generic_parameters: Option<&GenericParameters>,
+) -> Option<String> {
     if summary.macros.models().is_empty() {
         return None;
     }
     let mut ts = String::from("__EmitFn<{\n");
     for model in summary.macros.models() {
         push_model_update_event_literal(&mut ts, model.name.as_str());
-        let payload = model_update_payload(summary, model);
+        let payload = model_update_payload(generic_parameters, model);
         append!(ts, ": [value: {payload}];\n");
     }
     ts.push_str("}>");
@@ -122,7 +125,7 @@ pub(super) fn emit_emits_type(
     summary: &Croquis,
     mut mappings: MacroTypeMappings<'_>,
     preserve_event_navigation: bool,
-    generic_param: Option<&str>,
+    generic_param: Option<&GenericParameters>,
     has_runtime_emits: bool,
 ) -> EmitsInfo {
     let generated_start = ts.len();
@@ -145,7 +148,7 @@ pub(super) fn emit_emits_type(
     let emits_generic_decl = generic_param
         .filter(|_| !emits_already_defined)
         .filter(|_| define_emits_type_args.is_some() || has_macro_emits || has_model_emits)
-        .map(|generic| strip_const_modifiers(&add_generic_defaults(generic)));
+        .map(|generic| generic.alias_declaration.clone());
     let emits_generic_suffix = emits_generic_decl
         .as_ref()
         .map(|generic| cstr!("<{generic}>"))
@@ -157,13 +160,15 @@ pub(super) fn emit_emits_type(
     };
     let generic_event_map_names = generic_param
         .filter(|_| !generic_event_map_decl.is_empty())
-        .map(extract_generic_names)
+        .map(|generic| generic.names.clone())
         .unwrap_or_default();
 
     if !emits_already_defined {
         if let Some(type_args) = define_emits_type_args {
             let inner_type = if define_emits_type_requires_setup_scope(summary) {
-                let names = generic_param.map(extract_generic_names).unwrap_or_default();
+                let names = generic_param
+                    .map(|generic| generic.names.clone())
+                    .unwrap_or_default();
                 cstr!("Awaited<ReturnType<typeof __setup<{names}>>>[\"__vize_typed_emits\"]")
             } else {
                 String::from(inner_type_of(type_args))
@@ -175,7 +180,7 @@ pub(super) fn emit_emits_type(
                 );
                 for model in models {
                     let name = model.name.as_str();
-                    let payload = model_update_payload(summary, model);
+                    let payload = model_update_payload(generic_param, model);
                     ts.push_str("  ");
                     push_model_update_event_literal(ts, name);
                     append!(*ts, ": [value: {payload}];\n");
@@ -194,7 +199,7 @@ pub(super) fn emit_emits_type(
             );
             for model in models {
                 let name = model.name.as_str();
-                let payload = model_update_payload(summary, model);
+                let payload = model_update_payload(generic_param, model);
                 ts.push_str(" & ((event: ");
                 push_model_update_event_literal(ts, name);
                 append!(*ts, ", value: {payload}) => void)");
@@ -215,7 +220,7 @@ pub(super) fn emit_emits_type(
                 if emitted_names.contains(event_name.as_str()) {
                     continue;
                 }
-                let payload = model_update_payload(summary, model);
+                let payload = model_update_payload(generic_param, model);
                 ts.push_str("  ");
                 push_ts_string_literal(ts, event_name.as_str());
                 append!(*ts, ": [value: {payload}];\n");

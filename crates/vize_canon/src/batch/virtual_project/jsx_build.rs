@@ -50,6 +50,7 @@ pub(super) fn build_jsx_registered_file(
     let virtual_path = virtual_jsx_path(context.project_root, context.virtual_root, path)?;
 
     Ok(RegisteredFile {
+        diagnostic_route: Default::default(),
         star_projection: None,
         file: VirtualFile {
             content: rewritten.code,

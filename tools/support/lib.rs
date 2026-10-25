@@ -4,4 +4,5 @@ pub mod editors {
     pub mod archive;
     pub mod e2e;
     pub mod lsp_smoke;
+    pub mod vsix_configuration;
 }
