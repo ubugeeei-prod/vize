@@ -445,7 +445,12 @@ void test("one project fingerprints its native closure once per epoch and dispos
     config: { nativePath: nativeRoot },
     project: { refreshDiagnostics: () => refreshes++ },
     serverHost: {
-      watchFile(file, callback) {
+      watchFile(file, callback, pollingInterval) {
+        assert.equal(
+          pollingInterval,
+          250,
+          "missing-file host polling has an explicit numeric interval",
+        );
         assert(!watches.has(file), "each observed input has one live watcher");
         watches.set(file, callback);
         return {

@@ -257,11 +257,16 @@ function createProjectConfiguration(
           if (!watchers.has(file))
             added.set(
               file,
-              watchFile(file, () => {
-                if (disposed) return;
-                dirty = true;
-                changed();
-              }),
+              watchFile(
+                file,
+                () => {
+                  if (disposed) return;
+                  dirty = true;
+                  changed();
+                },
+                // Missing candidates use the server host's polling fallback.
+                250,
+              ),
             );
     } catch (cause) {
       for (const watcher of added.values()) watcher.close();
