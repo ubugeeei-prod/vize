@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   getDetectedNuxtMajor,
+  getDetectedNuxtBuilderKind,
   getNuxtBuilderKind,
   hasNuxtViteCompilerSupport,
   isViteNuxtBuilder,
@@ -58,4 +59,21 @@ void test("the public Nuxt 2 constructor version is detected without private ins
   assert.equal(getDetectedNuxtMajor({ options: { _nuxtVersion: "2.17.3" } }), 2);
   assert.equal(getDetectedNuxtMajor({ constructor: { version: "unknown" } }), null);
   assert.equal(getDetectedNuxtMajor(undefined), null);
+});
+
+void test("Nuxt 2 checker selects its actual default or Bridge builder", () => {
+  class Nuxt2 {
+    static version = "v2.17.3";
+    options: { builder?: unknown; bridge?: false | { vite?: boolean } } = {};
+  }
+  const nuxt = new Nuxt2();
+  assert.equal(getDetectedNuxtBuilderKind(nuxt), "webpack");
+  nuxt.options.bridge = { vite: true };
+  assert.equal(getDetectedNuxtBuilderKind(nuxt), "vite");
+  nuxt.options.bridge = { vite: false };
+  assert.equal(getDetectedNuxtBuilderKind(nuxt), "webpack");
+  nuxt.options.builder = "custom-builder";
+  assert.equal(getDetectedNuxtBuilderKind(nuxt), "unsupported");
+  assert.equal(getDetectedNuxtBuilderKind({ options: {} }), "unsupported");
+  assert.equal(getDetectedNuxtBuilderKind({ options: { builder: "vite" } }), "vite");
 });

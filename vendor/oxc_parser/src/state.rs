@@ -6,6 +6,12 @@ use oxc_span::Span;
 use crate::{Context, cursor::ParserCheckpoint};
 
 pub struct ParserState<'a> {
+    /// Last raw `>` in this parser's immutable source, computed on the first
+    /// expression type-argument probe. Zero also represents no `>`: an opener
+    /// at any source offset cannot be closed by a byte at offset zero.
+    /// This source fact survives speculative rewinds, like failed probes.
+    pub last_type_argument_close: Option<usize>,
+
     /// Failed probes survive rewinds. Share the existing arrow-probe table so
     /// ordinary parses incur no additional table initialization or drop cost.
     pub failed_speculations: FxHashSet<FailedSpeculation>,
@@ -38,6 +44,7 @@ pub struct ParserState<'a> {
 impl ParserState<'_> {
     pub fn new() -> Self {
         Self {
+            last_type_argument_close: None,
             failed_speculations: FxHashSet::default(),
             cover_initialized_name: FxHashMap::default(),
             trailing_commas: FxHashMap::default(),

@@ -59,3 +59,13 @@ export function getNuxtBuilderKind(builder: unknown): NuxtBuilderKind {
   }
   return "unsupported";
 }
+
+/** Nuxt 2's default webpack builder has no Nuxt 3-style builder name. */
+export function getDetectedNuxtBuilderKind(nuxt: {
+  options: { builder?: unknown; bridge?: false | { vite?: boolean } };
+}): NuxtBuilderKind {
+  const builder = nuxt.options.builder;
+  if (builder !== undefined) return getNuxtBuilderKind(builder);
+  if (getDetectedNuxtMajor(nuxt) !== 2) return "unsupported";
+  return nuxt.options.bridge && nuxt.options.bridge.vite === true ? "vite" : "webpack";
+}

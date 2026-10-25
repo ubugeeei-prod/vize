@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10667,
+  "regressionCommit": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+  "sourceRevision": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "prop-used",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "sources/prop-used.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
