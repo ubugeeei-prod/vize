@@ -127,11 +127,20 @@ jobs:
           test "$after_status" -eq 0
       - name: Verify whole packets and exact generated-prefix mapping deltas
         run: node tools/support/github/typed-context-undefined-replay.mjs verify "$RUNNER_TEMP/typed-context-undefined"
+      - name: Require the complete legacy editor projection matrix
+        working-directory: source
+        env:
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/typed-context-undefined/legacy-ts40
+        run: |
+          directory="$RUNNER_TEMP/typed-context-undefined"
+          cargo test --locked --profile ci -p vize_maestro --features legacy --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty -- --exact --nocapture > "$directory/legacy-ts40.stdout" 2> "$directory/legacy-ts40.stderr"
       - name: Retain all raw evidence including failed observations
         if: ${{ always() }}
         run: |
           directory="$RUNNER_TEMP/typed-context-undefined"
           mkdir -p "$directory"
+          mkdir -p "$directory/pending-legacy-snapshots"
+          find source/crates/vize_maestro/tests/snapshots -name '*.snap.new' -exec cp {} "$directory/pending-legacy-snapshots/" \;
           for phase in before source; do
             for name in typed-context-undefined-10667 typed-context-undefined-options-10667; do
               path="$phase/target/vize-tests/$name"

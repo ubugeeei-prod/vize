@@ -101,10 +101,22 @@ pub(super) fn assert_mapper_geometry(
     if let Some(start) = source.find("{{ undefined") {
         let start = start + "{{ ".len();
         assert!(
-            transform.mappings.iter().any(|span| span.0[2] == start
-                && span.0[3] == "undefined".len()
-                && span.0[5] != 0
-                && transform.text.get(span.0[0]..span.0[0] + span.0[1]) == Some("undefined")),
+            transform.mappings.iter().any(|span| {
+                let [generated, length, authored, original, _, features] = span.0;
+                if authored > start
+                    || start + "undefined".len() > authored + original
+                    || length != original
+                    || features == 0
+                {
+                    return false;
+                }
+                // The producer may retain the whole member expression as one
+                // copied span. Keep that tuple; prove this token's exact offset.
+                let token = generated + (start - authored);
+                transform.text.get(generated..generated + length)
+                    == source.get(authored..authored + original)
+                    && transform.text.get(token..token + "undefined".len()) == Some("undefined")
+            }),
             "{}: original template token stays navigable: {:?}",
             case.id,
             transform.mappings
