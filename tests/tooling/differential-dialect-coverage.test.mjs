@@ -79,18 +79,18 @@ void test("every product manifest contributes to the case-level dialect denomina
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 25,
+    plannedCases: 26,
     verifiedCases: 4,
-    provisionalCases: 19,
-    unknownReadinessCases: 21,
+    provisionalCases: 20,
+    unknownReadinessCases: 22,
     verified: {
       "vue0-template": 2,
       "vue-quirks": 2,
     },
     provisional: {
-      "html-template": 19,
+      "html-template": 20,
       ts: 5,
-      "vue3-sfc": 19,
+      "vue3-sfc": 20,
     },
   });
 });
