@@ -341,5 +341,9 @@ try {
     ) + "\n",
   );
 } finally {
+  await fs.writeFile(
+    path.join(output, "measurements.json"),
+    JSON.stringify(measurements, null, 2) + "\n",
+  );
   await browser.close();
 }

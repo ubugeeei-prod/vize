@@ -4,8 +4,9 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { createServer } from "node:http";
 import { once } from "node:events";
-import { eachMapping, TraceMap } from "@jridgewell/trace-mapping";
+import { eachMapping, originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import { consumer, output, sha256 } from "./prepare-consumer.mjs";
+import { buildRspack, verifyDebugAdvisories } from "./rspack-authority.mjs";
 
 /** Exercise the packed existing adapter after sharing its module/map helpers. */
 export async function checkRspackConsumer(browser, measurements) {
@@ -16,64 +17,46 @@ export async function checkRspackConsumer(browser, measurements) {
   const filename = "组件 space/RegressionCounter.vue";
   const original = await fs.readFile(path.join(root, filename), "utf8");
   const packets = [];
-  for (const mode of ["development", "production"]) {
+  for (const mode of ["development", "production-unminified-debug-map", "production"]) {
+    const debug = mode !== "production";
     const target = path.join(root, mode);
     const start = performance.now();
-    const compiler = rspack({
-      context: root,
-      mode,
-      entry: "./entry.js",
-      devtool: "source-map",
-      output: { path: target, filename: "bundle.js", cssFilename: "styles.css" },
-      optimization: { minimize: false },
-      // This map regression retains statements in the unminified Vue runtime.
-      // Keep a bounded fixture budget and continue rejecting all diagnostics.
-      performance: { maxAssetSize: 512 * 1024, maxEntrypointSize: 512 * 1024 },
-      experiments: { css: true },
-      resolve: { alias: { vue: require.resolve("vue/dist/vue.runtime.esm-bundler.js") } },
-      module: {
-        rules: [
-          {
-            test: /\.vue$/,
-            loader: require.resolve("@vizejs/rspack-plugin/loader"),
-            options: { sourceMap: true },
-          },
-        ],
+    const report = await buildRspack(
+      rspack,
+      {
+        context: root,
+        mode: mode === "development" ? "development" : "production",
+        entry: "./entry.js",
+        devtool: "source-map",
+        output: { path: target, filename: "bundle.js", cssFilename: "styles.css" },
+        ...(debug ? { optimization: { minimize: false } } : {}),
+        experiments: { css: true },
+        resolve: { alias: { vue: require.resolve("vue/dist/vue.runtime.esm-bundler.js") } },
+        module: {
+          rules: [
+            {
+              test: /\.vue$/,
+              loader: require.resolve("@vizejs/rspack-plugin/loader"),
+              options: { sourceMap: true },
+            },
+          ],
+        },
+        plugins: [new VizePlugin({ typescript: false, css: { native: true } })],
       },
-      plugins: [new VizePlugin({ typescript: false, css: { native: true } })],
-    });
-    let stats;
-    try {
-      stats = await new Promise((resolve, reject) => {
-        compiler.run((error, result) => (error ? reject(error) : resolve(result)));
-      });
-    } finally {
-      await new Promise((resolve, reject) =>
-        compiler.close((error) => (error ? reject(error) : resolve())),
-      );
-    }
-    const report = stats.toJson({
-      all: false,
-      errors: true,
-      warnings: true,
-      timings: true,
-      assets: true,
-    });
-    await fs.writeFile(
-      path.join(output, `rspack-${mode}-stats.json`),
-      JSON.stringify(report, null, 2) + "\n",
+      `rspack-${mode}`,
     );
-    assert.deepEqual(report.errors, []);
-    assert.deepEqual(report.warnings, []);
     measurements.push({ phase: `rspack-${mode}-build`, ms: performance.now() - start });
 
     const bundle = await fs.readFile(path.join(target, "bundle.js"), "utf8");
+    if (mode === "production-unminified-debug-map")
+      await verifyDebugAdvisories(rspack, root, bundle, report.warnings);
+    else assert.deepEqual(report.warnings, []);
     const mapBytes = await fs.readFile(path.join(target, "bundle.js.map"));
     const map = JSON.parse(mapBytes);
     const authored = map.sources.findIndex((source) => decodeURI(source).endsWith(filename));
     assert.notEqual(authored, -1);
     assert.equal(map.sourcesContent[authored], original);
-    const prefix = original.slice(0, original.indexOf("const initial"));
+    const prefix = original.slice(0, original.indexOf(debug ? "const initial" : "const emoji"));
     const line = prefix.split("\n").length;
     const matches = [];
     eachMapping(new TraceMap(map), (mapping) => {
@@ -81,16 +64,33 @@ export async function checkRspackConsumer(browser, measurements) {
         matches.push(mapping);
       }
     });
-    assert.ok(matches.length, "Rspack must retain the script statement's authored position");
+    if (debug)
+      assert.ok(matches.length, "Rspack must retain the script statement's authored position");
     const generated = bundle.split("\n");
-    assert.ok(
-      matches.some((mapping) =>
-        /^(?:const|let|var) [\w$]+ = 2;/.test(
-          generated[mapping.generatedLine - 1].slice(mapping.generatedColumn),
+    if (debug)
+      assert.ok(
+        matches.some((mapping) =>
+          /^(?:const|let|var) [\w$]+ = 2;/.test(
+            generated[mapping.generatedLine - 1].slice(mapping.generatedColumn),
+          ),
         ),
-      ),
-      "the composed map points at the surviving statement after Unicode text",
-    );
+        "the composed map points at the surviving statement after Unicode text",
+      );
+    else {
+      const marker = /🐱|\\u[dD]83[dD]\\u[dD][cC]31|\\u\{1[fF]431\}/.exec(bundle);
+      assert.ok(marker, "optimized code retains the visible authored string");
+      const position = bundle.slice(0, marker.index);
+      const origin = originalPositionFor(new TraceMap(map), {
+        line: position.split("\n").length,
+        column: position.length - position.lastIndexOf("\n") - 1,
+      });
+      assert.ok(decodeURI(origin.source ?? "").endsWith(filename));
+      assert.equal(
+        origin.line,
+        line,
+        "optimized surviving string points at its authored declaration",
+      );
+    }
     await fs.mkdir(path.join(output, "maps"), { recursive: true });
     await fs.writeFile(path.join(output, "maps", `rspack-${mode}.map`), mapBytes);
 
