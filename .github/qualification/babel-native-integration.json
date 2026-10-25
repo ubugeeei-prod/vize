@@ -90,11 +90,15 @@
       "tree": "7c87159554a66997bd59eaf52bbe865eb38b0b23",
       "integrationCherryPick": "ec508c8cb89c8db2a0428cfe248e6df52b286bf4",
       "scope": "README-only actual setup/native source boundaries"
+    },
+    {
+      "sha": "9f742169dfe8fe7527a18e81871b932be5cdbbdf",
+      "scope": "additive CSRonly actualNative CSSOM8+HTMLcase4 guards, genuine static/dynamic reference roles; original supported8 unchanged"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "ec508c8cb89c8db2a0428cfe248e6df52b286bf4",
-    "tree": "500d498a8438ee11aab4fcdaccb6c07436b1ac5d"
+    "sha": "adc7a9151d5c7d5b6225e9896ddacc5fef539e50",
+    "tree": "065c68f6a3ec70a1111c934c6ccc5a09d7c65d42"
   },
   "priorCampaigns": [
     {
@@ -132,6 +136,12 @@
         "source": "90c355d5266f8b37e8808dfe351cd9cc6781c6a1",
         "actual": "separate4strict rc9functional failures, actualmissingSetListenerABI, no expected-error PASS"
       }
+    },
+    {
+      "source": "f665d4803586b4be4219abdff705462e5abf0b93",
+      "run": 40236239858,
+      "artifact": 12615181400,
+      "actual": "SUCCESS:all8supported original wholeSSR/browser/hydration/rawHTML/node identity/effect rows0fail0skip;96host/generator+60cold controls andrealcall profile/source declarations passed; no publiccredit"
     }
   ],
   "runtimeQualification": {
@@ -196,5 +206,15 @@
     "mainLock": "style-union-composition/main-ce95/structural-preservation.json; both YAML documents parsed, all42current-main importer records/package/snapshot/catalog entries deep-equal; only own Babel importer added",
     "sourceConflicts": "no production conflicts; ort combines three overlapping JSX compiler/lowerer/vapor files; bothmode states inspected",
     "publicAcceptance": "none; candidate source qualification only"
+  },
+  "additiveStyleWitness": {
+    "caseFamilies": {
+      "frozenCssom": 8,
+      "asciiCaseStyleSources": 4
+    },
+    "hostPairs": 4,
+    "supportedRuntimeWitnessFiles": "byte-identical f665 and90c; no SSR/hydration coverage claim for this additional CSR guard",
+    "maps": "single delegated Native pass; wholeDTO +true original-printed-AST map anchors for admitted JSX literals; finalBabel sourcecontent retained",
+    "rawContract": "refused cases compare full dynamic-reference raw packets; admitted cases compare actual static-template raw packets and independently CSSOM computed priorities, retaining all raw counterparts"
   }
 }
