@@ -6,6 +6,7 @@ import {
   newCheckPreparationCases,
 } from "../../tools/support/compat/github/check-preparation-fixtures.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
+import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
 import { fileURLToPath } from "node:url";
 
 const root = new URL("../../", import.meta.url);
@@ -44,7 +45,9 @@ void test("real CLI preparation registration retains exact input, producer, sour
     sources: new Set(checkPreparationRegistration.sources.map((pair) => pair.path)),
   });
   assert.deepEqual(
-    newCheckPreparationCases("typechecker", [registration()], [registration()], source),
+    newCheckPreparationCases("typechecker", [registration()], [registration()], (side, path) =>
+      source("head", path),
+    ),
     { ids: [], sources: new Set() },
   );
   const loaded = loadTypecheckerManifest(manifestPath);
@@ -98,4 +101,64 @@ void test("CLI preparation authority rejects missing bodies, changed pairs and f
     { ...registration(), extra: "unknown field" },
   ])
     assert.throws(() => newCheckPreparationCases("typechecker", [], [row], source));
+});
+
+void test("required real CLI packets cannot be replaced with an ordinary batch registration", () => {
+  const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
+  const original = JSON.parse(readFileSync(new URL(manifestPath, root), "utf8")) as {
+    cases: Array<{ id: string }>;
+    preparationCases?: unknown;
+  };
+  const ordinary = { ...original.cases[0], id: "typechecker/preparation/ordinary-control" };
+  const unrelated = "crates/vize_canon/src/unrelated-preparation-control.rs";
+  const analyze = (rows: unknown, addOrdinary: boolean, addUnrelated = false) => {
+    const baseline = { ...original, preparationCases: undefined };
+    const current = {
+      ...original,
+      preparationCases: rows,
+      cases: [...original.cases, ...(addOrdinary ? [ordinary] : [])],
+    };
+    return analyzeLegacyFix({
+      title: "fix(check): preserve authored parse failures",
+      paths: [
+        ...checkPreparationRegistration.sources.map((pair) => pair.path),
+        ...(addUnrelated ? [unrelated] : []),
+      ],
+      readFile: (side, path) =>
+        path === manifestPath
+          ? Buffer.from(JSON.stringify(side === "base" ? baseline : current))
+          : source(side, path),
+    }).products;
+  };
+  for (const rows of [
+    undefined,
+    [],
+    [{ ...registration(), test: { ...registration().test, sha256: "0".repeat(64) } }],
+  ]) {
+    assert.equal(
+      analyze(rows, true).find((row) => row.product === "typechecker")?.state,
+      "invalid-manifest-or-input",
+    );
+  }
+  assert.deepEqual(analyze([registration()], false), [
+    {
+      product: "typechecker",
+      state: "new-inputs-registered",
+      cases: [checkPreparationRegistration.id],
+    },
+  ]);
+  assert.deepEqual(analyze([registration()], false, true), [
+    {
+      product: "typechecker",
+      state: "new-input-missing",
+      cases: [checkPreparationRegistration.id],
+    },
+  ]);
+  assert.deepEqual(analyze([registration()], true, true), [
+    {
+      product: "typechecker",
+      state: "new-inputs-registered",
+      cases: [ordinary.id, checkPreparationRegistration.id],
+    },
+  ]);
 });

@@ -7241,7 +7241,7 @@
       ],
       "test": {
         "path": "tests/tooling/cli-check-contract.test.ts",
-        "sha256": "8ec5b43ca6393840f6ffd5f468fb56b7e87c2c06aa3679de2e5875c957727851"
+        "sha256": "c16f0a791dd8633322944551d03ee5e7a3c39bcc99588afaf8ec58c863b94a4f"
       },
       "producer": {
         "path": "tools/support/compat/github/source-cli-identity.ts",

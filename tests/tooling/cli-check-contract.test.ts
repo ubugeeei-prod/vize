@@ -8,7 +8,7 @@ import { after, test } from "node:test";
 import {
   regularMember,
   sourceCliCheckout,
-  verifySourceCliConsumerUse,
+  sharedOracleAuthority,
 } from "../../tools/support/compat/github/source-cli-identity.ts";
 import { fileURLToPath } from "node:url";
 
@@ -149,7 +149,7 @@ let preparationProducer:
   | {
       sourceRevision: string;
       producerReceiptSha256: string;
-      useReceiptSha256: string;
+      useReceiptSha256: string | null;
       binary: ReturnType<typeof regularMember>;
     }
   | undefined;
@@ -159,20 +159,12 @@ function requirePreparationProducer() {
   const producerReceiptSha256 = process.env.VIZE_SOURCE_CLI_RECEIPT_SHA256;
   const useReceiptSha256 = process.env.VIZE_SOURCE_CLI_USE_RECEIPT_SHA256;
   assert.ok(producerReceiptSha256, "the original source CLI producer receipt is required");
-  assert.ok(useReceiptSha256, "the verified source CLI consumer receipt is required");
   const checkout = sourceCliCheckout(root);
-  const producer = JSON.parse(
-    fs.readFileSync(path.join(root, "target/ci/vize.source-build.json"), "utf8"),
-  ) as Parameters<typeof verifySourceCliConsumerUse>[1];
-  assert.ok(process.env.GITHUB_RUN_ID);
-  assert.ok(process.env.GITHUB_RUN_ATTEMPT);
-  verifySourceCliConsumerUse(
+  const producer = sharedOracleAuthority(
     root,
-    producer,
-    { ...checkout, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT },
-    producerReceiptSha256,
-    useReceiptSha256,
+    path.join(root, "target/ci/examples/cli_build_result_oracle"),
   );
+  assert.ok(producer, "the original same-attempt or verified reused source producer is required");
   assert.equal(VIZE.command, path.join(root, "target/ci/vize"));
   const binary = regularMember(root, "target/ci/vize");
   assert.deepEqual(
@@ -183,7 +175,7 @@ function requirePreparationProducer() {
   preparationProducer = {
     sourceRevision: checkout.sourceRevision,
     producerReceiptSha256,
-    useReceiptSha256,
+    useReceiptSha256: useReceiptSha256 ?? null,
     binary,
   };
   return preparationProducer;

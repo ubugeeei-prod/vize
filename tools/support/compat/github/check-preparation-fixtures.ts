@@ -42,7 +42,7 @@ export const checkPreparationRegistration = {
   ],
   test: {
     path: "tests/tooling/cli-check-contract.test.ts",
-    sha256: "8ec5b43ca6393840f6ffd5f468fb56b7e87c2c06aa3679de2e5875c957727851",
+    sha256: "c16f0a791dd8633322944551d03ee5e7a3c39bcc99588afaf8ec58c863b94a4f",
   },
   producer: {
     path: "tools/support/compat/github/source-cli-identity.ts",
@@ -82,7 +82,23 @@ export function newCheckPreparationCases(
   readFile: ReadFile,
 ): { ids: string[]; sources: Set<string> } {
   const result = { ids: [] as string[], sources: new Set<string>() };
-  if (current === undefined) return result;
+  const required =
+    product === "typechecker" &&
+    checkPreparationRegistration.sources.every((pair) => {
+      const before = readFile("base", pair.path);
+      const after = readFile("head", pair.path);
+      return (
+        (pair.before === null
+          ? before === null
+          : before !== null && createHash("sha256").update(before).digest("hex") === pair.before) &&
+        after !== null &&
+        createHash("sha256").update(after).digest("hex") === pair.after
+      );
+    });
+  if (current === undefined) {
+    assert(!required, "the exact source preparation fix requires its real CLI packet contract");
+    return result;
+  }
   assert.ok(Array.isArray(current), "preparationCases must be an array");
   assert.ok(
     previous === undefined || Array.isArray(previous),
@@ -108,5 +124,9 @@ export function newCheckPreparationCases(
     }
     result.ids.push(registered.id);
   }
+  assert(
+    !required || result.ids.length === 1,
+    "the exact source preparation fix requires its new real CLI packet contract",
+  );
   return result;
 }
