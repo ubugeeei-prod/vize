@@ -1,0 +1,27 @@
+{
+  "schema": "vize.cpi-ledger-validation-profile-inputs",
+  "source": "1f68052dffd4eb09fd8b69211f3562d484d06085",
+  "run": 40228210670,
+  "artifact": 12612238313,
+  "files": [
+    {
+      "file": "named.vue.txt",
+      "original": "consumer/auxiliary-controls/copy/named/invalid/Globals.vue.txt",
+      "bytes": 268,
+      "sha256": "4e2dca348474a298fd2b592014bb3f9d494573df9ee62aa898bb555c15cadc98"
+    },
+    {
+      "file": "slot-expect.vue.txt",
+      "original": "consumer/auxiliary-controls/copy/slot-expect/invalid/Globals.vue.txt",
+      "bytes": 398,
+      "sha256": "0d1e8890a44d76e0b4ec18a6f877091e710d5cafce9fb3910f4319087c6e3ebc"
+    },
+    {
+      "file": "slot-expect-strict-unused.vue.txt",
+      "original": "consumer/auxiliary-controls/copy/slot-expect-strict-unused/unused/Globals.vue.txt",
+      "bytes": 401,
+      "sha256": "3346312bd0f9cb174d452d53134a8f9202b7c1e7153a44e544268039c876568a"
+    }
+  ],
+  "scope": "Exact recorded inputs for source-only mapper allocation observations; not new acceptance cases or isolated per-role allocation attribution."
+}

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { defineComponent, type SlotsType } from "vue";
+const Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });
+</script>
+<template>
+  <!-- @vue-expect-error -->
+  <Child :value="$ghost.value"><template #default="{ known }">{{ known.toFixed() }}</template></Child>
+  <div>{{ $other.value }}</div>
+</template>

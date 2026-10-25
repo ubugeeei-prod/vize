@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { defineComponent, type SlotsType } from "vue";
+const Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });
+</script>
+<template>
+  <Child :value="$ghost.value" />
+</template>

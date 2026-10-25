@@ -7,6 +7,10 @@ on:
         description: "Exact source baseline for complete existing projection parity"
         required: true
         type: string
+      qualify-input-ownership:
+        description: "Validate the composed product tree with all144 unchanged generic packets and actual mapper allocation observations"
+        type: boolean
+        default: false
       measure-source:
         description: "Capture optimized source-API allocation requests and paired timing"
         type: boolean
@@ -175,5 +179,161 @@ jobs:
         with:
           name: constructor-emitter-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/constructor-emitter
+          if-no-files-found: error
+          retention-days: 7
+
+  composed-input-ownership:
+    if: github.event_name == 'workflow_dispatch' && inputs.qualify-input-ownership
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    permissions: { contents: read, actions: read }
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TARGET_DIR: ${{ runner.temp }}/cpi-ownership-validation-target
+      SOURCE_SHA: ${{ github.sha }}
+      RECORDED_PRODUCT_SHA: "1f68052dffd4eb09fd8b69211f3562d484d06085"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.12.1", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Prove the exact composed product source remains unchanged
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git diff --exit-code "$RECORDED_PRODUCT_SHA" HEAD -- Cargo.toml Cargo.lock crates vendor npm
+          mkdir -p "$RUNNER_TEMP/cpi-ownership-validation"
+          git rev-parse HEAD HEAD^{tree} "$RECORDED_PRODUCT_SHA" > "$RUNNER_TEMP/cpi-ownership-validation/source-identity.txt"
+      - name: Restore the actual recorded physical source host and full input evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: instance-globals-10617-1f68052dffd4eb09fd8b69211f3562d484d06085-1
+          run-id: 40228210670
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/recorded-cpi-composition
+      - name: Authenticate recorded host bytes and all three profiler input programs
+        run: |
+          set -euo pipefail
+          tar -xzf "$RUNNER_TEMP/recorded-cpi-composition/source-host.tar.gz" -C "$RUNNER_TEMP"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync, writeFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import path from 'node:path';
+          const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+          const recorded = path.join(process.env.RUNNER_TEMP, 'recorded-cpi-composition');
+          const host = JSON.parse(readFileSync(path.join(recorded, 'source-host.json')));
+          assert.equal(host.upstream, 'd6c4afddb2c55f4a9dea7b59293a99a8fdea1799');
+          assert.equal(host.source, process.env.RECORDED_PRODUCT_SHA);
+          assert.equal(digest(readFileSync(`${process.env.RUNNER_TEMP}/instance-globals-source-host/tsgo`)), host.sha256);
+          const directory = 'tests/_fixtures/content-mapper/cpi-ledger-validation-10617';
+          const provenance = JSON.parse(readFileSync(`${directory}/provenance.json`));
+          assert.equal(provenance.source, process.env.RECORDED_PRODUCT_SHA);
+          assert.equal(provenance.files.length, 3);
+          for (const row of provenance.files) {
+            const actual = readFileSync(`${directory}/${row.file}`);
+            assert.equal(actual.length, row.bytes);
+            assert.equal(digest(actual), row.sha256);
+            assert.deepEqual(actual, readFileSync(path.join(recorded, row.original)));
+          }
+          writeFileSync(`${process.env.RUNNER_TEMP}/cpi-ownership-validation/recorded-custody.json`, JSON.stringify({source:process.env.SOURCE_SHA, productBaseline:process.env.RECORDED_PRODUCT_SHA, host, provenance, isolatedRoleCostObserved:false}, null, 2)+'\n');
+          JS
+      - name: Install the same pinned generic test dependency image
+        run: |
+          mkdir -p "$RUNNER_TEMP/cpi-ownership-consumer"
+          cd "$RUNNER_TEMP/cpi-ownership-consumer"
+          npm init -y
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact vize@0.566.0 typescript@7.1.0-dev.20261024.1 vue@3.5.42
+      - name: Retain all 144 unchanged generic repair observations
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/instance-globals-source-host/tsgo
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/cpi-ownership-consumer/node_modules/vue
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/cpi-ownership-validation/generic-regression"
+          mkdir -p "$capture"
+          cargo test --locked --profile ci -p vize --test integration --no-run --message-format=json > "$capture/build.jsonl" 2> "$capture/build.log"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          import path from 'node:path';
+          const capture = `${process.env.RUNNER_TEMP}/cpi-ownership-validation/generic-regression`;
+          const messages = readFileSync(`${capture}/build.jsonl`, 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line));
+          assert.equal(messages.at(-1).reason, 'build-finished');
+          assert.equal(messages.at(-1).success, true);
+          const targets = messages.filter(message => message.reason === 'compiler-artifact' && message.target.name === 'integration' && message.target.kind.join() === 'test' && message.executable);
+          assert.equal(targets.length, 1);
+          const binary = realpathSync(targets[0].executable);
+          const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          const binarySha256 = hash(binary);
+          const run = (name, args) => {
+            const result = spawnSync(binary, args, {encoding: 'utf8', maxBuffer: 16 * 1024 * 1024});
+            writeFileSync(`${capture}/${name}.stdout.raw`, result.stdout ?? '');
+            writeFileSync(`${capture}/${name}.stderr.raw`, result.stderr ?? '');
+            writeFileSync(`${capture}/${name}.process.json`, JSON.stringify({source: process.env.SOURCE_SHA, executable: binary, executableSha256: binarySha256, argv: args, cwd: process.cwd(), pid: result.pid, status: result.status, signal: result.signal, error: result.error ? {name: result.error.name, message: result.error.message, stack: result.error.stack, code: result.error.code} : null}, null, 2) + '\n');
+            assert.equal(result.error, undefined);
+            assert.equal(result.signal, null);
+            assert.equal(result.status, 0);
+            assert.equal(hash(binary), binarySha256);
+            return result;
+          };
+          const filter = 'content_mapper_tsgo_cli::quoted_generic_parameters::';
+          const listed = run('inventory', [filter, '--list', '--format', 'terse']);
+          const actual = listed.stdout.split('\n').filter(line => line.endsWith(': test')).map(line => line.slice(0, -6)).sort();
+          const expected = [
+            `${filter}quoted_generic_parameters_keep_complete_cli_and_official_host_packets_through_repairs`,
+            `${filter}syntax::malformed_generic_attributes_keep_provider_syntax_codes_and_authored_ranges_through_repairs`,
+            `${filter}body_error::independent_authored_body_errors_survive_generic_repairs`,
+          ].sort();
+          assert.deepEqual(actual, expected, 'the complete original three-test authority must execute');
+          writeFileSync(`${capture}/inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, binary, binarySha256, actual}, null, 2) + '\n');
+          const executed = run('execution', [filter, '--test-threads=1', '--nocapture']);
+          assert.match(executed.stdout, /test result: ok\. 3 passed; 0 failed; 0 ignored;/u);
+          // Read only this directly observed libtest PID's output. Cached or
+          // concurrent producers cannot enter the fresh execution inventory.
+          const root = path.join('target/vize-tests/content-mapper-quoted-generic-parameters', String(executed.pid));
+          const schemas = new Map([
+            ['vize.quoted-generic-parameters-host-observation', 32],
+            ['vize.quoted-generic-syntax-host-observation', 48],
+            ['vize.generic-body-error-host-observation', 64],
+          ]);
+          const packets = [];
+          const walk = directory => {
+            for (const item of readdirSync(directory, {withFileTypes: true})) {
+              const file = path.join(directory, item.name);
+              if (item.isDirectory()) walk(file);
+              else if (item.isFile() && file.endsWith('.json')) {
+                const bytes = readFileSync(file), packet = JSON.parse(bytes);
+                if (schemas.has(packet?.schema)) packets.push({file, schema: packet.schema, sha256: createHash('sha256').update(bytes).digest('hex')});
+              }
+            }
+          };
+          walk(root);
+          for (const [schema, count] of schemas) assert.equal(packets.filter(packet => packet.schema === schema).length, count, schema);
+          assert.equal(packets.length, 144);
+          writeFileSync(`${capture}/whole-packet-inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, executedPid: executed.pid, binarySha256, completePackets: packets.length, packets}, null, 2) + '\n');
+          JS
+      - name: Measure both unchanged ownership controls and recorded CPI mapper generation
+        env:
+          VIZE_INPUT_OWNERSHIP_PROFILE_CAPTURE: ${{ runner.temp }}/cpi-ownership-validation/original-generation-profile.json
+          VIZE_CPI_OWNERSHIP_PROFILE_CAPTURE: ${{ runner.temp }}/cpi-ownership-validation/cpi-generation-profile.json
+        run: |
+          cargo test --locked --profile ci -p vize_benchmarks --test component_input_ownership_profile -- --nocapture --test-threads=1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: cpi-ownership-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/cpi-ownership-validation
+            ${{ runner.temp }}/cpi-ownership-consumer/package.json
+            ${{ runner.temp }}/cpi-ownership-consumer/package-lock.json
+            target/vize-tests/content-mapper-quoted-generic-parameters
           if-no-files-found: error
           retention-days: 7

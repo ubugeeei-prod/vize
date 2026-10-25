@@ -27,8 +27,12 @@ const FORM: &str = include_str!(concat!(
 const ITERATIONS: u64 = 32;
 
 fn generate(source: &str, disabled: bool) -> Value {
+    generate_at("src/Form.vue", source, disabled)
+}
+
+fn generate_at(file_name: &str, source: &str, disabled: bool) -> Value {
     if disabled {
-        let mut options = SfcTypeCheckOptions::new("src/Form.vue");
+        let mut options = SfcTypeCheckOptions::new(file_name);
         options.check_props = false;
         let result = profile!(
             "qualification.component_input.generate",
@@ -40,9 +44,62 @@ fn generate(source: &str, disabled: bool) -> Value {
     } else {
         let result = profile!(
             "qualification.component_input.generate",
-            generate_vue_content_mapper_transform(Path::new("src/Form.vue"), source)
+            generate_vue_content_mapper_transform(Path::new(file_name), source)
         );
         serde_json::to_value(result.unwrap()).unwrap()
+    }
+}
+
+#[test]
+fn actual_composed_cpi_inputs_report_whole_mapper_allocations() {
+    const NAMED: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/_fixtures/content-mapper/cpi-ledger-validation-10617/named.vue.txt"
+    ));
+    const EXPECT: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/_fixtures/content-mapper/cpi-ledger-validation-10617/slot-expect.vue.txt"
+    ));
+    const UNUSED: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/_fixtures/content-mapper/cpi-ledger-validation-10617/slot-expect-strict-unused.vue.txt"
+    ));
+    let profiler = global_profiler();
+    let mut rows = Vec::new();
+    for (name, source) in [
+        ("named-invalid", NAMED),
+        ("slot-expect-invalid", EXPECT),
+        ("slot-expect-strict-unused", UNUSED),
+    ] {
+        let baseline = generate_at("src/Globals.vue", source, false);
+        for _ in 0..8 {
+            black_box(generate_at("src/Globals.vue", source, false));
+        }
+        profiler.clear();
+        profiler.enable();
+        let mut last = Value::Null;
+        for _ in 0..ITERATIONS {
+            last = generate_at("src/Globals.vue", black_box(source), false);
+        }
+        profiler.disable();
+        assert_eq!(
+            last, baseline,
+            "profiling preserves the entire composed mapper packet: {name}"
+        );
+        let mut spans = profiler.span_snapshot().into_iter().filter(|(key, _, _)| key.starts_with("canon.virtual_ts.input_ownership.") || key.starts_with("canon.virtual_ts.root_expect.") || key.starts_with("canon.instance_global_rewrite.") || *key == "canon.virtual_ts.instance_global_refs" || *key == "qualification.component_input.generate").map(|(key, _, m)| json!({"name": key, "calls": m.count, "nanoseconds": m.total_duration.as_nanos(), "allocationCalls": m.alloc_calls, "requestedBytes": m.alloc_bytes, "selfAllocationCalls": m.self_alloc_calls, "selfRequestedBytes": m.self_alloc_bytes})).collect::<Vec<_>>();
+        spans.sort_by(|a, b| a["name"].as_str().cmp(&b["name"].as_str()));
+        assert!(spans.iter().any(|span| span["name"]
+            == "canon.virtual_ts.input_ownership.retained_context"
+            && span["calls"] == ITERATIONS));
+        assert!(spans.iter().any(
+            |span| span["name"] == "canon.virtual_ts.instance_global_refs"
+                && span["calls"] == ITERATIONS
+        ));
+        rows.push(json!({"case": name, "sourcePath": "src/Globals.vue", "input": source, "iterations": ITERATIONS, "packet": last, "spans": spans}));
+    }
+    if let Some(path) = std::env::var_os("VIZE_CPI_OWNERSHIP_PROFILE_CAPTURE") {
+        let packet = json!({"schema": "vize.composed-cpi-mapper-generation-profile", "observedSource": std::env::var("SOURCE_SHA").ok(), "recordedInputSource": "1f68052dffd4eb09fd8b69211f3562d484d06085", "scope": "Whole real mapper generation for recorded component-prop Value-role projects. Source-only allocation requests, not runtime RSS or isolated per-role cost; TypeScript semantics require the separate physical-host packets.", "rows": rows});
+        std::fs::write(path, serde_json::to_vec_pretty(&packet).unwrap()).unwrap();
     }
 }
 
