@@ -758,6 +758,20 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
     );
 }
 
+#[test]
+fn slot_host_guards_preserve_authored_impossible_comparisons() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "narrowed-slot-host-guard-10660",
+        "slot_host_guards_preserve_authored_impossible_comparisons",
+        "da6d833de40c8a084022d0229beaeec25a92eb41",
+        Some(10660),
+        &["explicit-default", "authored-impossible-comparison"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -841,7 +855,8 @@ fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
-            | "unicode-prop-bindings-10573" => regression,
+            | "unicode-prop-bindings-10573"
+            | "narrowed-slot-host-guard-10660" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

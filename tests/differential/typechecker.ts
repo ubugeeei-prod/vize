@@ -93,6 +93,7 @@ export const TYPECHECKER_TESTS = {
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+  "narrowed-slot-host-guard-10660": "slot_host_guards_preserve_authored_impossible_comparisons",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -162,6 +163,7 @@ const sourceRevisions = {
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "narrowed-slot-host-guard-10660": "da6d833de40c8a084022d0229beaeec25a92eb41",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

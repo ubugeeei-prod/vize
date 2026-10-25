@@ -5942,6 +5942,121 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/narrowed-slot-host-guard-10660/explicit-default",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "narrowed-slot-host-guard-10660",
+      "case": "explicit-default",
+      "test": "slot_host_guards_preserve_authored_impossible_comparisons",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "narrowed-slot-host-guard-10660/cases.json",
+        "sha256": "9145b2e5025df47dc980237ca068092e21e9fe4db1557451a87386a77ecfa76f"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "narrowed-slot-host-guard-10660/tsconfig.json.txt",
+          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f"
+        },
+        {
+          "file": "src/Box.vue",
+          "path": "narrowed-slot-host-guard-10660/src/Box.vue.txt",
+          "sha256": "8d851781a3cff8a7ec59da7ebecaa4ef2b2bd8ce0bec5afd1cc6ce1816aaf1ec"
+        },
+        {
+          "file": "src/Status.vue",
+          "path": "narrowed-slot-host-guard-10660/src/Status.vue.txt",
+          "sha256": "e5f8260a30d1e65a7c7a7451e9b6aad199d23efe42f7e6ab54a0bd348c602195"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/narrowed-slot-host-guard-10660/authored-impossible-comparison",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "narrowed-slot-host-guard-10660",
+      "case": "authored-impossible-comparison",
+      "test": "slot_host_guards_preserve_authored_impossible_comparisons",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "narrowed-slot-host-guard-10660/cases.json",
+        "sha256": "9145b2e5025df47dc980237ca068092e21e9fe4db1557451a87386a77ecfa76f"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "narrowed-slot-host-guard-10660/tsconfig.json.txt",
+          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f"
+        },
+        {
+          "file": "src/Box.vue",
+          "path": "narrowed-slot-host-guard-10660/src/Box.vue.txt",
+          "sha256": "8d851781a3cff8a7ec59da7ebecaa4ef2b2bd8ce0bec5afd1cc6ce1816aaf1ec"
+        },
+        {
+          "file": "src/Status.vue",
+          "path": "narrowed-slot-host-guard-10660/src/Status.authored.vue.txt",
+          "sha256": "800f8e2ed291fe1dddf17616bab326921cd206ef1c72a85c824676c47e571a53"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Status.vue",
+          "line": 13,
+          "column": 29,
+          "severity": 1,
+          "code": 2367,
+          "message": "This comparison appears to be unintentional because the types '\"error\" | \"success\"' and '\"pending\"' have no overlap."
+        }
+      ]
     }
   ],
   "protocolCases": [
