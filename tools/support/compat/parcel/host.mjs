@@ -949,17 +949,34 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     .map((line) => JSON.parse(line));
   const nativeOperations = summarizeNativeEvents(rawNativeEvents);
   assert.ok(nativeOperations.calls > 0);
-  await write("native-operations.json", nativeOperations);
+  const sourceHead = run("git", ["rev-parse", "HEAD"], repository).trim();
+  const sourceStatus = run(
+    "git",
+    ["status", "--porcelain", "--untracked-files=normal"],
+    repository,
+  );
+  if (!preflightProvider)
+    assert.equal(sourceStatus, "", "source qualification requires a clean source tree");
+  const qualificationScope = recoveryFrontier
+    ? "recovery-frontier"
+    : "production-ssr-and-normal-development-updates";
+  const unqualified = recoveryFrontier ? [] : ["post-error browser recovery (#10736)"];
+  await write("native-operations.json", {
+    schema: "vize.parcel.native-operations.v1",
+    source: sourceHead,
+    sourceQualification: !preflightProvider,
+    qualificationScope,
+    unqualified,
+    ...nativeOperations,
+  });
   await write("receipt.json", {
     complete: true,
     schema: "vize.parcel.host.v2",
-    qualificationScope: recoveryFrontier
-      ? "recovery-frontier"
-      : "production-ssr-and-normal-development-updates",
-    unqualified: recoveryFrontier ? [] : ["post-error browser recovery (#10736)"],
+    qualificationScope,
+    unqualified,
     sourceQualification: !preflightProvider,
-    source: run("git", ["rev-parse", "HEAD"], repository).trim(),
-    sourceStatus: run("git", ["status", "--porcelain", "--untracked-files=normal"], repository),
+    source: sourceHead,
+    sourceStatus,
     node: { version: process.version, platform: process.platform, arch: process.arch },
     native,
     plugin,

@@ -1,7 +1,7 @@
 # @vizejs/parcel-transformer
 
-Compile Vue single-file components with Vize's native compiler in Parcel 2.16.4
-and later 2.x versions. This integration is a compatibility preview.
+Compile Vue single-file components with Vize's native compiler in Parcel 2.
+The host matrix exercises Parcel 2.16.4. This integration is a compatibility preview.
 
 ```sh
 npm install --save-dev parcel @vizejs/parcel-transformer
@@ -21,8 +21,9 @@ Register the transformer and named component pipeline in `.parcelrc`:
 }
 ```
 
-The named pipeline isolates component execution from style dependencies. The CSS continuation scopes styles
-after Parcel's preprocessor pipeline and preserves its normal processing.
+The named pipeline isolates component execution from style dependencies. The CSS
+continuation scopes styles after Parcel's preprocessor pipeline and preserves its
+normal processing.
 Install the corresponding Parcel transformer and preprocessor when using Sass,
 Less, or Stylus. The adapter does not download these providers itself.
 

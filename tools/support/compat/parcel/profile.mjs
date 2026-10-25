@@ -49,6 +49,8 @@ await fs.writeFile(
       source: receipt?.source,
       complete: receipt?.complete === true,
       sourceQualification: receipt?.sourceQualification === true,
+      qualificationScope: receipt?.qualificationScope,
+      unqualified: receipt?.unqualified,
       note: "JavaScript self samples per process/thread. Raw signed deltas are retained; derived intervals are withheld for non-monotonic profiles. No timestamp normalization, cross-process totals, Rust attribution, RSS or speedup claim.",
       profiles: results,
     },
@@ -80,6 +82,8 @@ await fs.writeFile(
     {
       source: receipt?.source,
       complete: receipt?.complete === true,
+      qualificationScope: receipt?.qualificationScope,
+      unqualified: receipt?.unqualified,
       files: entries.sort((left, right) =>
         left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
       ),
