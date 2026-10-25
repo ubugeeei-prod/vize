@@ -273,7 +273,7 @@ mod tests {
         );
         assert_eq!(
             anchors.as_str(),
-            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void $setup; void $value; void _private; void café; void props; void résumé;\n"
+            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void $setup; void $value; void _private; void café; void _class; void _default; void props; void résumé;\n"
         );
         assert_eq!(
             summary

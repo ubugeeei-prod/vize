@@ -5960,7 +5960,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6012,7 +6012,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6064,7 +6064,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6116,7 +6116,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6168,7 +6168,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6220,7 +6220,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6272,7 +6272,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6324,7 +6324,7 @@
       "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
       "packReference": {
         "path": "contextual-prop-anchors-10661/cases.json",
-        "sha256": "a9587fd7e408f4318680a7dd4d59ee8bf92da45aea97211e1a11aee23a7843bc"
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
       },
       "inputs": [
         {
@@ -6341,6 +6341,110 @@
           "file": "src/Route.vue",
           "path": "contextual-prop-anchors-10661/authored-ts2552-retained/src/Route.vue.txt",
           "sha256": "e4a2dae5bf23a007ad68afa9ea8ac45f3dbfb76ae55cde9da7baa114327e0eb1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/non-colliding-keyword-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "non-colliding-keyword-props",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/non-colliding-keyword-props/src/Route.vue.txt",
+          "sha256": "fab2807742be1b287b3cf35ce1bf26a954bffb4acdb7e5079cfeb82772b1af2e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/authored-undefined-shadow",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "authored-undefined-shadow",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/authored-undefined-shadow/src/Route.vue.txt",
+          "sha256": "3b78f39ac54830036d2cd13267b15bc7bc0ae7d3aa0fb0e765cb863dec89d371"
         }
       ],
       "dialectCoverage": {

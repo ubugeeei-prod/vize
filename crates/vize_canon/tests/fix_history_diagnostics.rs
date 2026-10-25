@@ -35,6 +35,8 @@ fn contextual_prop_anchors_preserve_authored_diagnostics() {
             "const-enum-import",
             "unicode-identities",
             "authored-ts2552-retained",
+            "non-colliding-keyword-props",
+            "authored-undefined-shadow",
         ],
     );
 }

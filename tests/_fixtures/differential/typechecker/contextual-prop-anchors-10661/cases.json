@@ -169,6 +169,42 @@
           "message": "Cannot find name 'localNmae'. Did you mean 'localName'?"
         }
       ]
+    },
+    {
+      "id": "non-colliding-keyword-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "non-colliding-keyword-props/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-undefined-shadow",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "authored-undefined-shadow/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

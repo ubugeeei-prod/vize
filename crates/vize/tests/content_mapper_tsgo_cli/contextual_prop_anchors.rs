@@ -77,7 +77,7 @@ fn contextual_prop_anchors_preserve_complete_native_and_mapper_outcomes() {
         .join("tests/_fixtures/differential/typechecker/contextual-prop-anchors-10661");
     let ids: Vec<String> =
         serde_json::from_slice(&fs::read(fixture.join("case-ids.json")).unwrap()).unwrap();
-    assert_eq!(ids.len(), 8);
+    assert_eq!(ids.len(), 10);
     let root = workspace_root().join("target/vize-tests/contextual-prop-anchors-10661");
     let mut observations = Vec::new();
     for (variant, newline, prefix) in [
@@ -164,14 +164,27 @@ fn contextual_prop_anchors_preserve_complete_native_and_mapper_outcomes() {
                 "mapper-beta",
                 &inputs,
             );
-            let invalid = name.as_str() == "authored-ts2552-retained";
-            let native_expected = if invalid {
+            let authored_error = name.as_str() == "authored-ts2552-retained";
+            // The original all-84 source remains a separately labelled known
+            // producer defect. Require its complete prior output, never classify
+            // it as a clean keyword result or discard its unmapped diagnostics.
+            let known_undefined_collision = name.as_str() == "all-keyword-props";
+            let invalid = authored_error || known_undefined_collision;
+            let native_expected = if authored_error {
                 expected_error("src/Route.vue.ts", &virtual_code)
+            } else if known_undefined_collision {
+                fs::read_to_string(fixture.join(name.as_str()).join("known-native.stdout.txt"))
+                    .unwrap()
+                    .into()
             } else {
                 String::default()
             };
-            let mapper_expected = if invalid {
+            let mapper_expected = if authored_error {
                 expected_error("src/Route.vue", &source)
+            } else if known_undefined_collision {
+                fs::read_to_string(fixture.join(name.as_str()).join("known-mapper.stdout.txt"))
+                    .unwrap()
+                    .into()
             } else {
                 String::default()
             };
@@ -186,7 +199,7 @@ fn contextual_prop_anchors_preserve_complete_native_and_mapper_outcomes() {
             });
         }
     }
-    assert_eq!(observations.len(), 32);
+    assert_eq!(observations.len(), 40);
     for o in observations {
         for (host, output, expected, status) in [
             (

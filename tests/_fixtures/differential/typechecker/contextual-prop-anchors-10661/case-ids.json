@@ -6,5 +6,7 @@
   "reactive-prop-destructure",
   "const-enum-import",
   "unicode-identities",
-  "authored-ts2552-retained"
+  "authored-ts2552-retained",
+  "non-colliding-keyword-props",
+  "authored-undefined-shadow"
 ]

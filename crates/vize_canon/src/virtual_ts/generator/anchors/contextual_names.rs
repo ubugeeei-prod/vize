@@ -39,32 +39,27 @@ fn anchors(code: &str) -> &str {
         .expect("the actual setup anchor list must exist")
 }
 
+fn exact_anchor(case: &str) {
+    let code = generate(case);
+    let expected =
+        std::fs::read_to_string(cstr!("{CORPUS}{case}/expected-anchor.txt").as_str()).unwrap();
+    assert_eq!(
+        anchors(&code),
+        expected.trim_end_matches('\n'),
+        "complete anchor list: {case}"
+    );
+}
+
 #[test]
 fn every_keyword_prop_anchor_references_its_actual_generated_declaration() {
-    let code = generate("all-keyword-props");
-    let anchors = anchors(&code);
-    for statement in anchors
-        .split(';')
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-    {
-        let name = statement.strip_prefix("void ").unwrap();
-        assert!(
-            code.contains(cstr!("const {name} = props[").as_str()),
-            "anchor has no generated prop binding: {statement}\n{code}"
-        );
-    }
-    for name in [
-        "from", "of", "as", "debugger", "extends", "false", "true", "null",
+    for case in [
+        "original-from",
+        "all-keyword-props",
+        "non-colliding-keyword-props",
+        "authored-undefined-shadow",
+        "authored-ts2552-retained",
     ] {
-        assert!(
-            anchors.contains(cstr!("void _{name};").as_str()),
-            "{name}: {anchors}"
-        );
-        assert!(
-            !anchors.contains(cstr!("void {name};").as_str()),
-            "{name}: {anchors}"
-        );
+        exact_anchor(case);
     }
 }
 
@@ -74,37 +69,13 @@ fn authored_contextual_names_and_shadowing_keep_their_lexical_identity() {
         "authored-contextual-locals",
         "authored-prop-shadow-imports",
         "reactive-prop-destructure",
+        "const-enum-import",
     ] {
-        let code = generate(case);
-        let anchors = anchors(&code);
-        assert!(
-            anchors.contains("void from;") || anchors.contains("keyof typeof from"),
-            "{case}: {anchors}"
-        );
-        assert!(!anchors.contains("void _from;"), "{case}: {anchors}");
+        exact_anchor(case);
     }
-    let code = generate("const-enum-import");
-    assert!(anchors(&code).contains("void (null as unknown as keyof typeof from);"));
-    assert!(!anchors(&code).contains("typeof _from"));
 }
 
 #[test]
 fn unicode_prop_and_authored_local_anchors_keep_the_existing_identifier_authority() {
-    let code = generate("unicode-identities");
-    for name in [
-        "café",
-        "caf_",
-        "日本語",
-        "𐐀value",
-        "a\u{200c}b",
-        "$value",
-        "_private",
-        "résumé",
-    ] {
-        assert!(
-            anchors(&code).contains(cstr!("void {name};").as_str()),
-            "{name}: {}",
-            anchors(&code)
-        );
-    }
+    exact_anchor("unicode-identities");
 }
