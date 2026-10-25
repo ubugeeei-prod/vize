@@ -7,6 +7,11 @@ import { test } from "node:test";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import {
+  admitAdditionalHosts,
+  assertHostCase,
+  assertPublishedControl,
+} from "./support/content-mapper-instance-globals-hosts-10617.ts";
+import {
   assertErrorMappings,
   assertCheckedReadOwnership,
   assertProtocolAdmission,
@@ -62,7 +67,7 @@ await test(
       process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD !== "1"
         ? "requires the exact-source consumer campaign"
         : false,
-    timeout: 600_000,
+    timeout: 900_000,
   },
   async () => {
     const output =
@@ -92,6 +97,7 @@ await test(
     fs.mkdirSync(reference, { recursive: true });
     for (const name of ["package.json", "package-lock.json"])
       fs.writeFileSync(path.join(reference, name), files.get(`reference/${name}.txt`)!);
+    let additionalHostRoot: string | undefined;
     const records: Packet[] = [],
       checks: Array<{ id: string; run: () => string | void }> = [],
       sizes: unknown[] = [],
@@ -156,6 +162,8 @@ await test(
         run("published-vize-version", publicCli, ["--version"], published).stdout,
         "vize 0.566.0\n",
       );
+      const hostMatrix = admitAdditionalHosts(output, files, published, repoRoot, run);
+      additionalHostRoot = hostMatrix.cleanupRoot;
       const identity = makeSourceProject(source, published, repoRoot, binary, files);
       fs.writeFileSync(
         path.join(output, "source-adapter.json"),
@@ -284,36 +292,75 @@ await test(
           );
           sourceCases.push({ id: id++, source: content, entry, label });
           if (["original", "valid", "undeclared-only", "repaired"].includes(entry.id))
-            faithful.push(() => {
-              const rows = compilerRows(beta.stdout);
-              const expectedBefore = rows
-                .flatMap((row, index) => {
-                  const error = entry.errors[index];
-                  if (error.kind === "undeclared") return [];
-                  const at = location(content, error.anchor, error.token);
-                  return [
-                    `src/Globals.vue(${at.line},${at.column}): error TS${row.code}: ${row.message}\n`,
-                  ];
-                })
-                .join("");
-              assert.deepEqual(
-                {
-                  status: before.status,
-                  signal: before.signal,
-                  error: before.error,
-                  stdout: before.stdout,
-                  stderr: before.stderr,
-                },
-                {
-                  status: expectedBefore ? 2 : 0,
-                  signal: null,
-                  error: null,
-                  stdout: expectedBefore,
-                  stderr: "",
-                },
-                `faithful published red/control ${label}`,
+            faithful.push(() => assertPublishedControl(content, entry, beta, before, label));
+          for (const additional of hostMatrix.hosts) {
+            const hostLabel = `${label}/${additional.id}`;
+            const context = run(
+              `${hostLabel}/independent-context`,
+              additional.command,
+              ["--noEmit", "--pretty", "false", "-p", "oracle.tsconfig.json"],
+              source,
+            );
+            const publicPacket = run(
+              `${hostLabel}/published-official-host`,
+              additional.command,
+              ["--runExternalCode", "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+              published,
+            );
+            const sourcePacket = run(
+              `${hostLabel}/source-official-host`,
+              additional.command,
+              ["--runExternalCode", "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+              source,
+            );
+            const args = [
+              "check",
+              "src",
+              "--tsconfig",
+              "tsconfig.json",
+              "--format",
+              "json",
+              "--quiet",
+              "--corsa-path",
+              additional.command,
+            ];
+            if (label === "lf/original")
+              args.push(
+                "--profile-json",
+                path.join(output, `${additional.id}-source-profile.json`),
               );
+            const native = run(`${hostLabel}/source-check`, binary, args, source);
+            checks.push({
+              id: hostLabel,
+              run() {
+                if (entry.discovery) {
+                  discovery.push({
+                    label: hostLabel,
+                    scope: "Options API own method discovery",
+                    before: publicPacket,
+                    after: sourcePacket,
+                    cli: native,
+                  });
+                  if (publicPacket.status === 0 && sourcePacket.status !== 0)
+                    throw new Error("new Options API own-dollar regression");
+                  return "discovery-unqualified";
+                }
+                assertHostCase(
+                  content,
+                  entry,
+                  context,
+                  sourcePacket,
+                  native,
+                  JSON.parse(files.get("project/tsconfig.json.txt")!).compilerOptions,
+                  hostLabel,
+                );
+              },
             });
+            if (["original", "valid", "undeclared-only", "repaired"].includes(entry.id))
+              faithful.push(() =>
+                assertPublishedControl(content, entry, context, publicPacket, hostLabel),
+              );
+          }
           checks.push({
             id: label,
             run() {
@@ -341,56 +388,14 @@ await test(
                   throw new Error("new Options API own-dollar regression");
                 return "discovery-unqualified";
               }
-              assert.equal(after.status, expected ? 2 : 0, label);
-              assert.equal(after.stdout, expected, label);
-              assert.equal(after.stderr, "", label);
-              const activeErrors = entry.errors
-                .map((error, index) => ({ error, row: rows[index] }))
-                .filter(({ error }) => !error.suppressed);
-              const nativeErrors = activeErrors.map(({ error, row }) => ({
-                at: location(content, error.anchor, error.token),
-                code: row.code,
-                message: row.message,
-                binding: entry.binding,
-              }));
-              if (entry.unusedDirective)
-                nativeErrors.push({
-                  at: location(content, "<!-- @vue-expect-error -->", "<!--"),
-                  code: 2578,
-                  message: "Unused '@vue-expect-error' directive.",
-                  binding: "@vue-expect-error",
-                });
-              // The CLI's authored-location presentation order differs from the
-              // compiler/mapper's prelude order; neither actual output is changed.
-              nativeErrors.sort((a, b) => a.at.line - b.at.line || a.at.column - b.at.column);
-              const diagnostics = nativeErrors.map(({ at, code, message, binding }) => {
-                const line = content.split(/\r?\n/u)[at.line - 1].trim();
-                return `error:${at.line}:${at.column} [TS${code}] ${message} (source: ${line.length > 160 ? `${line.slice(0, 157)}...` : line}${binding ? `; binding: ${binding}` : ""})`;
-              });
-              const report = {
-                files: [
-                  { file: "src/Globals.vue", diagnostics },
-                  { file: "src/globals.d.ts", diagnostics: [] },
-                ],
-                programs: [
-                  {
-                    root: ".",
-                    tsconfig: "tsconfig.json",
-                    compilerOptions: JSON.parse(files.get("project/tsconfig.json.txt")!)
-                      .compilerOptions,
-                    files: ["src/Globals.vue", "src/globals.d.ts"],
-                  },
-                ],
-                errorCount: diagnostics.length,
-                warningCount: 0,
-                fileCount: 2,
-              };
-              assert.equal(cli.status, expected ? 1 : 0, label);
-              assert.equal(cli.stderr, "", label);
-              assert.deepEqual(
-                JSON.parse(cli.stdout),
-                report,
-                `whole native check report ${label}`,
+              assertHostCase(
+                content,
+                entry,
+                beta,
+                after,
+                cli,
+                JSON.parse(files.get("project/tsconfig.json.txt")!).compilerOptions,
+                label,
               );
             },
           });
@@ -499,11 +504,14 @@ await test(
         golden?.complete === true &&
         golden.packets.length === sourceCases.length &&
         failures.length === 0;
+      const hostMatrixQualification = wholePacketQualification && hostMatrix.sourceHostAdmitted;
       fs.writeFileSync(
         path.join(output, "qualification.json"),
-        `${JSON.stringify({ status: discoveryOnly ? "discovery-only; no acceptance credit" : wholePacketQualification ? "qualified" : "unqualified", fullPacketQualification: wholePacketQualification, outcomes }, null, 2)}\n`,
+        `${JSON.stringify({ status: discoveryOnly ? "discovery-only; no acceptance credit" : wholePacketQualification ? "qualified" : "unqualified", fullPacketQualification: wholePacketQualification, hostMatrixQualification, hostMatrixRequired: hostMatrix.required, outcomes }, null, 2)}\n`,
       );
       if (!discoveryOnly) {
+        if (hostMatrix.required)
+          assert.equal(hostMatrixQualification, true, "all three real hosts must qualify");
         assert.equal(
           wholePacketQualification,
           true,
@@ -512,7 +520,12 @@ await test(
         assert.deepEqual(failures, [], "whole beta/native/protocol gaps; raw packets retained");
       }
     } finally {
-      for (const root of [published, reference, source])
+      for (const root of [
+        published,
+        reference,
+        source,
+        ...(additionalHostRoot ? [additionalHostRoot] : []),
+      ])
         fs.rmSync(path.join(root, "node_modules"), { recursive: true, force: true });
     }
   },

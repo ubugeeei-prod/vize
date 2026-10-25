@@ -75,6 +75,21 @@ export function readGlobalsFixture() {
   assert.equal(lock.packages["node_modules/vize"].integrity, authority.publicIntegrity);
   assert.equal(lock.packages["node_modules/typescript"].integrity, authority.hostIntegrity);
   assert.equal(lock.packages["node_modules/vue"].version, authority.vueVersion);
+  if (files.has("host-authority.json")) {
+    const hostAuthority = JSON.parse(files.get("host-authority.json")!);
+    const officialLock = JSON.parse(files.get("official-host/package-lock.json.txt")!);
+    assert.equal(hostAuthority.schema, "vize.instance-globals-host-authority");
+    assert.equal(hostAuthority.officialNightly.version, "7.1.0-dev.20261024.1");
+    assert.equal(
+      officialLock.packages["node_modules/typescript"].version,
+      hostAuthority.officialNightly.version,
+    );
+    assert.equal(
+      officialLock.packages["node_modules/typescript"].integrity,
+      hostAuthority.officialNightly.integrity,
+    );
+    assert.equal(hostAuthority.sourceHost.revision, "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799");
+  }
   const data = JSON.parse(files.get("cases.json")!) as {
     version: number;
     issue: number;

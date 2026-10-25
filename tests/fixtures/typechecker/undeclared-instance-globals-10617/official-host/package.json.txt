@@ -1,0 +1,8 @@
+{
+  "name": "vize-10617-official-host-authority",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "typescript": "7.1.0-dev.20261024.1"
+  }
+}

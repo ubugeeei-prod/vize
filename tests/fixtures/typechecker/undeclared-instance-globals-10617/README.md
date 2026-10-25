@@ -45,3 +45,19 @@ the first source capture. Its `complete: false` flag prevents final qualificatio
 These objects are byte-exact evidence of the earlier producer, including the
 complete directive payload; all final inputs must be recaptured after the inline
 instance-read fix. No workspace-root or generated-code normalization is used.
+
+The final host matrix preserves three independent channels: the reported beta,
+the locked official `7.1.0-dev.20261024.1` package, and a source-built host from
+`microsoft/TypeScript` revision `d6c4afddb2c55f4a9dea7b59293a99a8fdea1799`.
+Each channel retains its own handwritten context, published mapper, source mapper
+and native checker process packets. Messages and ranges are never normalized or
+compared across different backends. Installed platform binaries retain hashes
+and their immutable lock integrities. The source host requires an exact receipt
+binding its upstream revision, current Vize checkout, run, complete version
+packet and actual binary bytes. The dedicated matrix fails closed if any host is
+absent; ordinary source-runtime tooling can run beta plus official nightly while
+recording the unavailable source host as unverified with no credit.
+
+The prior 26-case discovery authority is pinned in `host-authority.json`. Those
+raw captures remain independent evidence; expanded inline-producer cases and
+expectations do not rewrite their historical packets.

@@ -56,8 +56,23 @@
     },
     {
       "path": "README.md",
-      "bytes": 3141,
-      "sha256": "bf34f09e5e65c10a0c6c6ba177dafd63d1ce40b4dc7ca1b0fcfefa079eefa946"
+      "bytes": 4216,
+      "sha256": "e1a40997ebd55d7784bf159d9cdd13d874127f4202a65f04ec97fe2234e76ccd"
+    },
+    {
+      "path": "official-host/package.json.txt",
+      "bytes": 158,
+      "sha256": "faad13aafcce63a0298c69751c3de1f22c058f750224ee5bb1e786ca41c680b4"
+    },
+    {
+      "path": "official-host/package-lock.json.txt",
+      "bytes": 5055,
+      "sha256": "1d60694e2701cae0c5de17315f16ac0ffe5ca2d72c0dcfc4dac09899d48a07c6"
+    },
+    {
+      "path": "host-authority.json",
+      "bytes": 1016,
+      "sha256": "71a251bcf3fc7724daae4e350fad11e103b33e5fcb09e1563858f6053f41e682"
     }
   ]
 }
