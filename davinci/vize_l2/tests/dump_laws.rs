@@ -311,6 +311,7 @@ fn every_opaque_reason_spelling_round_trips() {
         (OpaqueReason::NestingRefused, "nesting-refused"),
         (OpaqueReason::ParseRejected, "parse-rejected"),
         (OpaqueReason::Compound, "compound"),
+        (OpaqueReason::SourceCoordinates, "source-coordinates"),
     ];
     let value = Page {
         ops: reasons
@@ -325,7 +326,7 @@ fn every_opaque_reason_spelling_round_trips() {
     };
     let canonical = "\
 [l2-dump-v2]
-ops=5
+ops=6
 
 [l2-dump-v2.ops]
 ui.interpolation opaque(for-value \"x\" @1:2) @0:3
@@ -333,6 +334,7 @@ ui.interpolation opaque(multi-statement \"x\" @1:2) @0:3
 ui.interpolation opaque(nesting-refused \"x\" @1:2) @0:3
 ui.interpolation opaque(parse-rejected \"x\" @1:2) @0:3
 ui.interpolation opaque(compound \"x\" @1:2) @0:3
+ui.interpolation opaque(source-coordinates \"x\" @1:2) @0:3
 
 ";
     assert_eq!(value.print_to_string(DumpMode::Full).as_str(), canonical);

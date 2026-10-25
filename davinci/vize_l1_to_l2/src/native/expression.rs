@@ -1,15 +1,16 @@
 //! The actual L1 consuming handoff, never a parse from L2 or transformed text.
 
 use super::{Context, NativeEmbed, NativeHoleKind};
+use crate::expression_coordinates::expression_coordinates;
 use crate::native::ConstructionFactory;
-use vize_l0::{Allocator, Span, Vec};
+use vize_l0::{Allocator, Span};
 use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
-use vize_l1::embed::{DecodeSegmentKind, Embed, EmbedSource, Grammar, Shape};
+use vize_l1::embed::{Embed, EmbedSource, Grammar, Shape};
 use vize_l1::markup::Interpolation;
 use vize_l2::artifact::ArtifactError;
 use vize_l2::expr::JsExpr;
-use vize_l2::expr::js::{JsCoordinateError, JsCoordinates, JsSegment};
+use vize_l2::expr::js::JsCoordinateError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeExpressionError {
@@ -29,25 +30,8 @@ pub fn retain_expression_in<'a>(
         syntax.hole().unwrap_or(EmbedHole::InvalidExpressionShape),
     ))?;
     let source = syntax.source();
-    let mut segments = Vec::new_in(&allocator);
-    if let Some(map) = source.decode_map() {
-        for segment in map.segments() {
-            segments.push(JsSegment {
-                decoded: segment.decoded(),
-                authored: segment.authored(),
-                entity: segment.kind() == DecodeSegmentKind::Entity,
-            });
-        }
-    }
-    let segments = segments.into_boxed_slice().into_arena_slice();
-    let coordinates = JsCoordinates::checked(
-        file,
-        source.text(),
-        source.span(),
-        syntax.parser_prefix(),
-        segments,
-    )
-    .map_err(NativeExpressionError::Coordinates)?;
+    let coordinates = expression_coordinates(allocator, file, source, syntax.parser_prefix())
+        .map_err(NativeExpressionError::Coordinates)?;
     JsExpr::from_retained_in(allocator, ast, source.text(), source.span(), coordinates)
         .map_err(NativeExpressionError::Coordinates)
 }

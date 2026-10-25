@@ -2132,6 +2132,47 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/complexity-decoded-coordinates-10473",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "complexity-decoded-coordinates-10473",
+        "files": [
+          {
+            "path": "Dashboard.double.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "ad04c804ee95451fe6cfb9573a7ca82b02e5f39a1b6aab0631d632b598d86831"
+          },
+          {
+            "path": "Dashboard.double.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "24c0acf440a7f0bea56b9311a95b4775c47c91dd9ed3e4577962a64282b2f6ee"
+          },
+          {
+            "path": "Dashboard.single.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "e490354a9efe99a5d36e59705fe89083e806fe6bacd2ca24d95ff082699ab079"
+          },
+          {
+            "path": "Dashboard.single.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "85e1e4289d166db5beb21bddc2dee5e57551aa1f75a3570757874c22fd0197fb"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
