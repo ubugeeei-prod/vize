@@ -24,7 +24,12 @@ export function discoverWorkspaceServers(
       const serverPath = packageServer(packageRoot) ?? binServer(packageRoot, platform);
       if (serverPath) {
         const realPath = fs.realpathSync(serverPath);
-        const identity = platform === "win32" ? realPath.toLowerCase() : realPath;
+        // realpath resolves links, but its drive-letter casing may follow the
+        // caller. Preserve every other byte: NTFS directories may distinguish case.
+        const identity =
+          platform === "win32"
+            ? realPath.replace(/^[A-Z]:/, (drive) => drive.toLowerCase())
+            : realPath;
         servers.set(identity, { path: realPath, source: "workspace" });
       }
     }

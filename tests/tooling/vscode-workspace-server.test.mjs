@@ -271,11 +271,14 @@ await test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrapp
 
 await test("distinct multi-root engines fall back even when versions match", async (t) => {
   const f = fixture(t);
-  f.install();
+  const firstEngine = f.install();
   const second = path.join(f.directory, "second");
   fs.mkdirSync(second);
   fs.writeFileSync(path.join(second, "package.json"), "{}");
-  f.install(second);
+  const secondEngine = f.install(second);
+  fs.appendFileSync(secondEngine, "\n// A distinct build with the same advertised version.\n");
+  assert.notEqual(fs.realpathSync(firstEngine), fs.realpathSync(secondEngine));
+  assert.notDeepEqual(fs.readFileSync(firstEngine), fs.readFileSync(secondEngine));
   const bundled = f.server(path.join(f.directory, "extension", "dist", exeName), "1.2.3");
   const current = discovery(f, [f.folder, second]);
   assert.equal(await current.resolve(), bundled);
