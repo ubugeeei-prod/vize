@@ -13,7 +13,20 @@ fn authored_attribute_runtime_output_and_metadata_remain_byte_exact() {
         config.vdom.source_map = true;
         let output = compile_jsx(&bump, source, JsxLang::Tsx, &config);
         assert_eq!(output.components.len(), 1);
-        assert!(output.diagnostics.is_empty());
+        if mode == JsxOutputMode::Vapor {
+            assert_eq!(output.diagnostics.len(), 1);
+            assert_eq!(
+                output
+                    .diagnostics
+                    .first()
+                    .map(|diagnostic| diagnostic.message.as_str()),
+                Some(
+                    "Vapor/SSR backend retained JSX inside an attribute expression; this context requires shared IR lowering before module emission"
+                )
+            );
+        } else {
+            assert!(output.diagnostics.is_empty());
+        }
         let components: Vec<_> = output
             .components
             .iter()

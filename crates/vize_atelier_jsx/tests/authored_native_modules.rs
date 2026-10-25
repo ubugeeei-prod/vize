@@ -161,6 +161,7 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
         }
         for source in [
             "export const nodes=[1].map(n=><i>{n}</i>);",
+            "export const App=()=> <Child icon={<i/>}/>;",
             "export function App(){return <p/>;}",
             "export const App=(props: Props)=><p>{props.label}</p>;",
             "export const App=({label}:{label:string})=><p>{label}</p>;",
@@ -190,4 +191,40 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
             );
         }
     }
+}
+
+#[test]
+fn ssr_keeps_existing_object_and_functional_roles_distinct() {
+    for source in [
+        "export const App=()=> <p/>;",
+        "export default (props:{label:string})=> <p>{props.label}</p>;",
+    ] {
+        let allocator = Allocator::new();
+        let out = compile_jsx(
+            &allocator,
+            source,
+            JsxLang::Tsx,
+            &JsxCompileConfig {
+                ssr: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            out.has_errors(),
+            "unrepresented functional fallthrough: {source}"
+        );
+        assert!(out.module_code().is_empty());
+    }
+    let allocator = Allocator::new();
+    let out = compile_jsx(
+        &allocator,
+        "export const App=(props:{label:string})=> {return <p>{props.label}</p>;};",
+        JsxLang::Tsx,
+        &JsxCompileConfig {
+            ssr: true,
+            ..Default::default()
+        },
+    );
+    assert!(!out.has_errors(), "{:?}", out.diagnostics);
+    assert!(out.module_code().contains("__ssrInlineRender: true"));
 }

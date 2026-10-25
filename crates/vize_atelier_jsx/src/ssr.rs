@@ -181,6 +181,9 @@ pub(crate) fn compile_root_with_origins(
         scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
     ssr_options.component_name = component_name.clone();
+    if jsx_closure {
+        ssr_options.vapor = mode.unwrap_or(default_mode) == JsxOutputMode::Vapor;
+    }
     ssr_options.scope_id = scoped_style.as_ref().map(|style| style.scope_id.clone());
     let experimental = SsrCompilerExperimentalOptions {
         source_map,
