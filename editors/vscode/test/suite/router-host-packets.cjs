@@ -1,0 +1,431 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const { createHash } = require("node:crypto");
+const { createRequire } = require("node:module");
+const vscode = require("vscode");
+const { describeDiagnostic, describeRange } = require("./real-server-support.cjs");
+const { waitFor } = require("./wait-for.cjs");
+
+const output = process.env.VIZE_TEST_ROUTER_OUTPUT;
+function retain(name, value) {
+  fs.writeFileSync(path.join(output, `${name}.json`), `${JSON.stringify(value, null, 2)}\n`);
+}
+function records() {
+  const file = process.env.VIZE_TEST_CONFIG_PROTOCOL_PATH;
+  if (!fs.existsSync(file)) return [];
+  const source = fs.readFileSync(file, "utf8");
+  return source
+    .slice(0, source.lastIndexOf("\n") + 1)
+    .split("\n")
+    .filter(Boolean)
+    .map(JSON.parse);
+}
+const frames = () => records().filter((record) => record.kind === "frame");
+const pos = (document, offset) => {
+  assert.ok(offset >= 0);
+  const value = document.positionAt(offset);
+  return { line: value.line, character: value.character };
+};
+const range = (document, offset, length) => ({
+  start: pos(document, offset),
+  end: pos(document, offset + length),
+});
+function diagnostics(document, enabled, invalid) {
+  const source = document.getText();
+  const result = [];
+  if (!enabled)
+    for (const match of source.matchAll(/route\.params\.(page|tags|at|heading)\b/gu)) {
+      result.push({
+        range: range(document, match.index + "route.params.".length, match[1].length),
+        severity: 2,
+        code: "ecosystem/vue-router-route-param",
+        source: "vize/ecosystem",
+        message: `Route param \`${match[1]}\` is not defined by this page file. Available params: id`,
+      });
+    }
+  if (invalid) {
+    const start = source.lastIndexOf("toUpperCase");
+    result.push({
+      code: 2339,
+      message: "Property 'toUpperCase' does not exist on type 'number'.",
+      range: range(document, start, "toUpperCase".length),
+      severity: 1,
+      source: "vize/types",
+    });
+  }
+  return result;
+}
+
+async function publication(document, after = 0) {
+  return waitFor(
+    () =>
+      frames()
+        .slice(after)
+        .find(
+          ({ direction, packet }) =>
+            direction === "server" &&
+            packet.method === "textDocument/publishDiagnostics" &&
+            packet.params.uri === document.uri.toString() &&
+            packet.params.version === document.version,
+        ),
+    Boolean,
+    `native diagnostic publication ${document.uri}`,
+    60_000,
+  );
+}
+
+function documentRevision(uri) {
+  let sequence = 0;
+  let revision;
+  for (const { direction, packet } of frames()) {
+    if (direction !== "client") continue;
+    if (packet.method === "textDocument/didOpen") {
+      sequence++;
+      if (packet.params.textDocument.uri === uri) revision = sequence;
+    } else if (packet.method === "textDocument/didChange") {
+      sequence += packet.params.contentChanges.length;
+      if (packet.params.textDocument.uri === uri) revision = sequence;
+    }
+  }
+  assert.ok(Number.isSafeInteger(revision));
+  return revision;
+}
+
+const markdown = (value) =>
+  value == null
+    ? null
+    : {
+        value: value.value,
+        isTrusted: value.isTrusted ?? null,
+        supportThemeIcons: value.supportThemeIcons ?? null,
+        supportHtml: value.supportHtml ?? null,
+        baseUri: value.baseUri?.toString() ?? null,
+      };
+const publicLocation = (location) => ({
+  uri: location.uri.toString(),
+  range: describeRange(location.range),
+});
+function expectedMarkdown(value) {
+  const result = new vscode.MarkdownString(value);
+  result.isTrusted = false;
+  result.supportHtml = false;
+  return result;
+}
+function publicCompletion(item) {
+  return Object.fromEntries(
+    [
+      "additionalTextEdits",
+      "command",
+      "commitCharacters",
+      "detail",
+      "filterText",
+      "insertText",
+      "keepWhitespace",
+      "kind",
+      "label",
+      "preselect",
+      "sortText",
+      "tags",
+      "textEdit",
+    ]
+      .map((key) => [key, item[key] ?? null])
+      .concat([
+        [
+          "documentation",
+          typeof item.documentation === "string"
+            ? item.documentation
+            : markdown(item.documentation),
+        ],
+        [
+          "range",
+          item.range
+            ? item.range.inserting
+              ? {
+                  inserting: describeRange(item.range.inserting),
+                  replacing: describeRange(item.range.replacing),
+                }
+              : describeRange(item.range)
+            : null,
+        ],
+      ]),
+  );
+}
+
+async function capture(document, label) {
+  const source = document.getText();
+  const offset = source.indexOf("route.params.page") + "route.params.".length;
+  assert.ok(offset >= "route.params.".length);
+  const position = pos(document, offset + 1);
+  const uri = document.uri.toString();
+  const result = { label, uri, source, version: document.version, native: {}, public: {} };
+  const save = () => retain(label, result);
+  const request = async (name, method, params) => {
+    result.native[name] = await vscode.commands.executeCommand("vize.test.executeLspRequest", {
+      method,
+      params,
+    });
+    save();
+  };
+  try {
+    await request("hover", "textDocument/hover", { textDocument: { uri }, position });
+    await request("completion", "textDocument/completion", {
+      textDocument: { uri },
+      position: pos(document, offset),
+    });
+    result.native.resolved = [];
+    for (const item of result.native.completion ?? []) {
+      result.native.resolved.push(
+        await vscode.commands.executeCommand("vize.test.executeLspRequest", {
+          method: "completionItem/resolve",
+          params: item,
+        }),
+      );
+      save();
+    }
+    await request("definition", "textDocument/definition", { textDocument: { uri }, position });
+    await request("references", "textDocument/references", {
+      textDocument: { uri },
+      position,
+      context: { includeDeclaration: true },
+    });
+    result.public.hover = (
+      await vscode.commands.executeCommand("vscode.executeHoverProvider", document.uri, position)
+    ).map((hover) => ({
+      contents: hover.contents.map(markdown),
+      range: hover.range ? describeRange(hover.range) : null,
+    }));
+    save();
+    const completions = await vscode.commands.executeCommand(
+      "vscode.executeCompletionItemProvider",
+      document.uri,
+      pos(document, offset),
+      undefined,
+      5,
+    );
+    result.public.completion = {
+      isIncomplete: completions.isIncomplete,
+      items: completions.items.map(publicCompletion),
+    };
+    save();
+    result.public.definition = (
+      await vscode.commands.executeCommand(
+        "vscode.executeDefinitionProvider",
+        document.uri,
+        position,
+      )
+    ).map(publicLocation);
+    save();
+    result.public.references = (
+      await vscode.commands.executeCommand(
+        "vscode.executeReferenceProvider",
+        document.uri,
+        position,
+      )
+    ).map(publicLocation);
+    result.public.diagnostics = vscode.languages
+      .getDiagnostics(document.uri)
+      .map(describeDiagnostic);
+    const candidate = result.native.completion?.[0]?.data?.vizeCompletion?.item?.data?.fileName;
+    if (candidate) {
+      const bytes = fs.readFileSync(candidate);
+      result.generated = {
+        file: candidate,
+        bytes: bytes.length,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+        source: bytes.toString("utf8"),
+      };
+    }
+    result.documentRevision = documentRevision(uri);
+    return result;
+  } finally {
+    save();
+  }
+}
+
+function syntaxLocations(project, document, generated) {
+  const requireProject = createRequire(path.join(project.root, "package.json"));
+  const ts = requireProject("typescript");
+  assert.equal(ts.version, "5.9.3");
+  const declaration = path.join(project.root, "typed-router.d.ts");
+  const tree = ts.createSourceFile(
+    declaration,
+    fs.readFileSync(declaration, "utf8"),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const routeName = document.getText().match(/useRoute\('([^']+)'\)/u)[1];
+  const properties = [];
+  function visit(node) {
+    if (ts.isPropertySignature(node) && node.name?.text === routeName) {
+      const member = node.type.typeArguments[3].members.find((item) => item.name.text === "page");
+      properties.push(member.name);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(tree);
+  assert.equal(properties.length, 1);
+  const node = properties[0];
+  const point = (offset) => {
+    const location = tree.getLineAndCharacterOfPosition(offset);
+    return { line: location.line, character: location.character };
+  };
+  const definition = {
+    uri: vscode.Uri.file(declaration).toString(),
+    range: { start: point(node.getStart(tree)), end: point(node.end) },
+  };
+  const reference = {
+    uri: definition.uri,
+    range: { start: point(node.getStart(tree) + 1), end: point(node.end - 1) },
+  };
+  let privatePosition;
+  if (generated) {
+    const nativeTree = ts.createSourceFile(
+      generated.file,
+      generated.source,
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const candidates = [];
+    function find(value) {
+      if (
+        ts.isVariableDeclaration(value) &&
+        value.name.getText(nativeTree) === "page" &&
+        value.initializer?.getText(nativeTree) === "route.params.page"
+      )
+        candidates.push(value.initializer.name.getStart(nativeTree));
+      ts.forEachChild(value, find);
+    }
+    find(nativeTree);
+    assert.equal(candidates.length, 1);
+    privatePosition = Buffer.byteLength(generated.source.slice(0, candidates[0]));
+    assert.equal(nativeTree.referencedFiles.length, 1);
+    assert.deepEqual(
+      fs.readFileSync(
+        ts.resolveTripleslashReference(nativeTree.referencedFiles[0].fileName, generated.file),
+      ),
+      fs.readFileSync(declaration),
+    );
+  }
+  return { definition, reference, privatePosition };
+}
+
+function assertCapture(actual, project, document, enabled, invalid = false) {
+  const source = document.getText();
+  const property = source.indexOf("route.params.page") + "route.params.".length;
+  const hover = {
+    contents: { kind: "markdown", value: "```typescript\n(property) 'page': number\n```" },
+    range: range(document, property, 4),
+  };
+  const syntax = syntaxLocations(project, document, actual.generated);
+  const references = [
+    { uri: document.uri.toString(), range: range(document, property, 4) },
+    {
+      uri: document.uri.toString(),
+      range: range(document, source.lastIndexOf("route.params.page") + "route.params.".length, 4),
+    },
+    syntax.reference,
+  ];
+  let completion = [
+    { label: "id", kind: 10, detail: "Vue Router file route param: string", sortText: "0" },
+  ];
+  let resolved = completion;
+  if (enabled) {
+    assert.ok(actual.generated);
+    const relative = path.relative(project.root, document.fileName).split(path.sep).join("/");
+    assert.ok(actual.generated.file.endsWith(`/${relative}.ts`));
+    const virtualRoot = actual.generated.file.slice(0, -relative.length - 4);
+    completion = ["at", "heading", "id", "page", "tags"].map((name) => ({
+      data: {
+        vizeCompletion: {
+          item: {
+            data: {
+              fileName: `${virtualRoot}/${relative}.ts`,
+              name,
+              position: syntax.privatePosition,
+            },
+            kind: 5,
+            label: name,
+            sortText: "11",
+          },
+          requestUri: vscode.Uri.file(`${virtualRoot}/${relative}.ts`).toString(),
+          revision: actual.documentRevision,
+          uri: document.uri.toString(),
+        },
+      },
+      kind: 5,
+      label: name,
+      sortText: "11",
+    }));
+    const types = {
+      at: "Date | undefined",
+      heading: "string | undefined",
+      id: "number",
+      page: "number",
+      tags: "string[] | undefined",
+    };
+    resolved = completion.map((item) => ({
+      ...item,
+      detail: `(property) '${item.label}': ${types[item.label]}`,
+      documentation: {
+        kind: "markdown",
+        value: `\`\`\`typescript\n(property) '${item.label}': ${types[item.label]}\n\`\`\``,
+      },
+    }));
+  }
+  assert.deepEqual(actual.native, {
+    hover,
+    completion,
+    resolved,
+    definition: syntax.definition,
+    references,
+  });
+  const expectedPublicCompletion = resolved.map((item) => {
+    const value = new vscode.CompletionItem(item.label, item.kind - 1);
+    value.sortText = item.sortText;
+    value.detail = item.detail;
+    if (item.documentation) value.documentation = expectedMarkdown(item.documentation.value);
+    return publicCompletion(value);
+  });
+  const publicHover = {
+    contents: [markdown(expectedMarkdown(hover.contents.value))],
+    range: [
+      hover.range.start.line,
+      hover.range.start.character,
+      hover.range.end.line,
+      hover.range.end.character,
+    ],
+  };
+  const location = (value) => ({
+    uri: value.uri,
+    range: [
+      value.range.start.line,
+      value.range.start.character,
+      value.range.end.line,
+      value.range.end.character,
+    ],
+  });
+  const expectedDiagnostics = diagnostics(document, enabled, invalid).map((value) => ({
+    code: value.code,
+    message: value.message,
+    range: [
+      value.range.start.line,
+      value.range.start.character,
+      value.range.end.line,
+      value.range.end.character,
+    ],
+    relatedInformation: undefined,
+    severity: value.severity - 1,
+    source: value.source,
+    tags: undefined,
+  }));
+  assert.deepEqual(actual.public, {
+    hover: [publicHover],
+    completion: { isIncomplete: false, items: expectedPublicCompletion },
+    definition: [location(syntax.definition)],
+    references: references.map(location),
+    diagnostics: expectedDiagnostics,
+  });
+}
+
+module.exports = { assertCapture, capture, diagnostics, frames, publication, records, retain };
