@@ -221,13 +221,18 @@ fn resolve_typescript_platform_package(
             Ok(None)
         };
     }
-    if !package_major_at_least(&manifest, 7) {
-        return Ok(None);
-    }
     let version = manifest
         .get("version")
         .and_then(serde_json::Value::as_str)
         .ok_or(InvalidNativePackage)?;
+    let major = version
+        .split('.')
+        .next()
+        .and_then(|major| major.parse::<u64>().ok())
+        .ok_or(InvalidNativePackage)?;
+    if major < 7 {
+        return Ok(None);
+    }
     if manifest
         .get("optionalDependencies")
         .and_then(|deps| deps.get(platform))

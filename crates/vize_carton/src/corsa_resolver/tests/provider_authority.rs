@@ -164,19 +164,26 @@ fn declared_platform_follows_its_hoisted_slot() {
 
 #[test]
 fn invalid_nearest_alias_is_not_rescued_by_an_ancestor_runtime() {
-    let temp = TempDir::new().unwrap();
-    let root = temp.path();
-    let outer = native(root, "7.0.2");
-    let project = root.join("packages/app");
-    let broken = project.join("node_modules/native-alias/package.json");
-    write_file(&broken);
-    fs::write(
-        project.join("package.json"),
-        r#"{"devDependencies":{"native-alias":"npm:typescript@7.1.0-beta"}}"#,
-    )
-    .unwrap();
-    assert_eq!(discover_in_walk(&[root.to_path_buf()], false), Some(outer));
-    assert_eq!(discover_in_walk(&[project], false), None);
+    for manifest in [
+        "",
+        r#"{"name":"typescript"}"#,
+        r#"{"name":"typescript","version":"broken"}"#,
+    ] {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+        let outer = native(root, "7.0.2");
+        let project = root.join("packages/app");
+        let broken = project.join("node_modules/native-alias/package.json");
+        write_file(&broken);
+        fs::write(&broken, manifest).unwrap();
+        fs::write(
+            project.join("package.json"),
+            r#"{"devDependencies":{"native-alias":"npm:typescript@7.1.0-beta"}}"#,
+        )
+        .unwrap();
+        assert_eq!(discover_in_walk(&[root.to_path_buf()], false), Some(outer));
+        assert_eq!(discover_in_walk(&[project], false), None);
+    }
 }
 
 #[test]
