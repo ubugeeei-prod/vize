@@ -1,7 +1,7 @@
 [
-  "  const builtinUndefined: __VizeOptionsBinding<typeof __default__, \"builtinUndefined\"> = undefined as any;",
-  "  var wrappedArrow: __VizeOptionsBinding<typeof __default__, \"wrappedArrow\"> = undefined as any;",
-  "  const wrappedNull: __VizeOptionsBinding<typeof __default__, \"wrappedNull\"> = undefined as any;",
-  "  const wrappedString: __VizeOptionsBinding<typeof __default__, \"wrappedString\"> = undefined as any;",
-  "  const wrappedUndefined: __VizeOptionsBinding<typeof __default__, \"wrappedUndefined\"> = undefined as any;"
+  "  const builtinUndefined: __VizeOptionsBinding<typeof __default__, \"builtinUndefined\"> = (void 0) as any;",
+  "  var wrappedArrow: __VizeOptionsBinding<typeof __default__, \"wrappedArrow\"> = (void 0) as any;",
+  "  const wrappedNull: __VizeOptionsBinding<typeof __default__, \"wrappedNull\"> = (void 0) as any;",
+  "  const wrappedString: __VizeOptionsBinding<typeof __default__, \"wrappedString\"> = (void 0) as any;",
+  "  const wrappedUndefined: __VizeOptionsBinding<typeof __default__, \"wrappedUndefined\"> = (void 0) as any;"
 ]

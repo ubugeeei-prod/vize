@@ -7,6 +7,8 @@
   "dependencies": {
     "@vizejs/nuxt": "0.429.1",
     "nuxt": "2.17.3",
+    "sass": "1.93.3",
+    "sass-loader": "10.5.2",
     "vue": "2.7.16"
   }
 }

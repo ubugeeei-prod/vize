@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const \u0075ndefined = "authored";
+defineProps<{ undefined: string }>();
+</script>
+<template><p>{{ undefined }}</p></template>

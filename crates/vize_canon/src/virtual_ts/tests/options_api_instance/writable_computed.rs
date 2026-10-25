@@ -79,13 +79,13 @@ fn writable_computed_template_bindings_emit_var() {
     assert_eq!(
         declarations,
         [
-            "  var accessor: __VizeOptionsBinding<typeof __default__, \"accessor\"> = undefined as any;",
-            "  var arrowSetter: __VizeOptionsBinding<typeof __default__, \"arrowSetter\"> = undefined as any;",
-            "  const getterOnly: __VizeOptionsBinding<typeof __default__, \"getterOnly\"> = undefined as any;",
-            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = undefined as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;",
-            "  const reset: __VizeOptionsBinding<typeof __default__, \"reset\"> = undefined as any;",
-            "  var store: __VizeOptionsBinding<typeof __default__, \"store\"> = undefined as any;",
+            "  var accessor: __VizeOptionsBinding<typeof __default__, \"accessor\"> = (void 0) as any;",
+            "  var arrowSetter: __VizeOptionsBinding<typeof __default__, \"arrowSetter\"> = (void 0) as any;",
+            "  const getterOnly: __VizeOptionsBinding<typeof __default__, \"getterOnly\"> = (void 0) as any;",
+            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const reset: __VizeOptionsBinding<typeof __default__, \"reset\"> = (void 0) as any;",
+            "  var store: __VizeOptionsBinding<typeof __default__, \"store\"> = (void 0) as any;",
         ]
     );
 }
@@ -134,9 +134,9 @@ export default defineComponent({
     assert_eq!(
         declarations,
         [
-            "  const fixed: __VizeOptionsBinding<typeof __default__, \"fixed\"> = undefined as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;",
-            "  var title: __VizeOptionsBinding<typeof __default__, \"title\"> = undefined as any;",
+            "  const fixed: __VizeOptionsBinding<typeof __default__, \"fixed\"> = (void 0) as any;",
+            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  var title: __VizeOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
         ]
     );
 }
@@ -185,8 +185,8 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;",
-            "  const title: __VizeOptionsBinding<typeof __default__, \"title\"> = undefined as any;",
+            "  const ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const title: __VizeOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
         ]
     );
 }
@@ -206,7 +206,7 @@ fn accessor_pair_is_writable_in_either_order() {
     let declarations = options_api_declarations(script, r#"<div @click="first = 'b'" />"#);
     assert_eq!(
         declarations,
-        ["  var first: __VizeOptionsBinding<typeof __default__, \"first\"> = undefined as any;"]
+        ["  var first: __VizeOptionsBinding<typeof __default__, \"first\"> = (void 0) as any;"]
     );
 }
 
@@ -257,8 +257,8 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = undefined as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;",
+            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
         ]
     );
 }
@@ -303,9 +303,9 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  var free: __VizeOptionsBinding<typeof __default__, \"free\"> = undefined as any;",
-            "  const ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;",
-            "  const size: __VizeOptionsBinding<typeof __default__, \"size\"> = undefined as any;",
+            "  var free: __VizeOptionsBinding<typeof __default__, \"free\"> = (void 0) as any;",
+            "  const ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const size: __VizeOptionsBinding<typeof __default__, \"size\"> = (void 0) as any;",
         ]
     );
 }

@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { value as undefined } from "./dep";
+defineProps<{ undefined: string }>();
+</script>
+<template><p>{{ undefined }}</p></template>

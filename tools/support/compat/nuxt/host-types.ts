@@ -62,6 +62,7 @@ export interface BrowserElement {
   textContent: string | null;
   href?: string;
   getAttributeNames(): string[];
+  getAttribute(name: string): string | null;
   hasAttribute(name: string): boolean;
 }
 export interface BrowserGlobals {
