@@ -16,12 +16,17 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       {
         path: "crates/vize_carton/src/corsa_resolver.rs",
         before: "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
-        after: "f195f877677277cd66910e67165fd2c6dd31738cf78113acecfa1fe06ccc381e",
+        after: "22da83c84ab1d0626ede00e2dbc63d52db9035b346829225bcbbdcb6facf7cd9",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests.rs",
         before: "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
         after: "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc",
+      },
+      {
+        path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
+        before: null,
+        after: "6d2d716232dc934551f2af7b6ef498f033df02e91a3b7a3670939ec302a6ffe1",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -63,6 +68,12 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       },
       {
         selector:
+          "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
+        source: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
+        consumesFixture: false,
+      },
+      {
+        selector:
           "lsp_client::bootstrap::tests::runtime_selection_fixture_preserves_explicit_path_authority",
         source: "crates/vize_canon/src/lsp_client/bootstrap.rs",
         consumesFixture: true,
@@ -91,12 +102,17 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       {
         path: "crates/vize_carton/src/corsa_resolver.rs",
         before: "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
-        after: "f195f877677277cd66910e67165fd2c6dd31738cf78113acecfa1fe06ccc381e",
+        after: "22da83c84ab1d0626ede00e2dbc63d52db9035b346829225bcbbdcb6facf7cd9",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests.rs",
         before: "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
         after: "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc",
+      },
+      {
+        path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
+        before: null,
+        after: "6d2d716232dc934551f2af7b6ef498f033df02e91a3b7a3670939ec302a6ffe1",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -140,6 +156,12 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
           "corsa_resolver::tests::fixture_cases::runtime_selection_fixture_covers_declared_graphs_and_overrides",
         source: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
         consumesFixture: true,
+      },
+      {
+        selector:
+          "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
+        source: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
+        consumesFixture: false,
       },
       {
         selector:
