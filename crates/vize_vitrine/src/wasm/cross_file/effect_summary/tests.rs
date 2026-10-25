@@ -113,13 +113,6 @@ import { ref, computed } from 'vue'
 const count = ref < number > (0)
 const doubled = computed(() => count.value)
 </script>"#;
-    assert_eq!(
-        summary(source),
-        EffectGraphSummary {
-            node_count: 1,
-            edge_count: 0,
-            cycle_count: 0,
-            cycle_node_count: 0,
-        }
-    );
+    // Summary nodes are edge endpoints, not every reactive declaration.
+    assert_eq!(summary(source), EffectGraphSummary::default());
 }
