@@ -116,6 +116,10 @@ void test("native CLI exec custody preserves full argv and rejects incomplete tr
       fs.realpathSync(path.join(child.PATH, process.platform === "win32" ? "node.exe" : "node")),
       fs.realpathSync(process.execPath),
     );
+    const identity = JSON.parse(fs.readFileSync(path.join(isolated, "node-identity.json"), "utf8"));
+    assert.equal(identity.physicalPath, fs.realpathSync(process.execPath));
+    assert.equal(identity.version, process.version);
+    assert.equal(identity.sha256, sha256(fs.readFileSync(process.execPath)));
     assert.equal(original.HOME, "parent-home");
     assert.equal(process.env.HOME, originalHome);
   } finally {

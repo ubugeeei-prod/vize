@@ -121,6 +121,22 @@ export function runtimeChildEnvironment(base = process.env, directory) {
     const node = path.join(toolPath, process.platform === "win32" ? "node.exe" : "node");
     if (!fs.existsSync(node)) fs.symlinkSync(process.execPath, node, "file");
     assert.equal(fs.realpathSync(node), fs.realpathSync(process.execPath));
+    fs.writeFileSync(
+      path.join(directory, "node-identity.json"),
+      `${JSON.stringify(
+        {
+          alias: node,
+          physicalPath: fs.realpathSync(node),
+          version: process.version,
+          bytes: fs.statSync(node).size,
+          sha256: sha256(fs.readFileSync(node)),
+          custody:
+            "External Node executable; complete image SHA retained, duplicate tool symlink bytes are not sealed in the source artifact.",
+        },
+        null,
+        2,
+      )}\n`,
+    );
     // Config evaluation needs Node; compiler/global npm launchers remain absent.
     env.PATH = toolPath;
     // Isolate only the returned child environment; caller/shell HOME is untouched.

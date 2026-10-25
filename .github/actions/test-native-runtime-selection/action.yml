@@ -62,5 +62,7 @@ runs:
           npm/native/.artifacts/native/formatter-history/build-receipt.json
           ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/**/package.json
           ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/**/package-lock.json
+          !target/vize-tests/**/environment/tool-path/node
+          !target/vize-tests/**/environment/tool-path/node.exe
         if-no-files-found: error
         retention-days: 7
