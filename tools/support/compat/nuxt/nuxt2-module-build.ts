@@ -14,20 +14,42 @@ import type { Browser, BrowserElement } from "./host-types.ts";
 import { verifyNuxt2LintConfig } from "./nuxt2-lint-config.ts";
 import { verifyNuxtAutoInitConfig } from "./nuxt-auto-init-config.ts";
 import { verifyNuxt2Typecheck } from "./nuxt2-typecheck.ts";
+import { prepareNuxt2BridgeSource } from "./nuxt2-bridge-source.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
-const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt2-module-build");
+const host = process.argv[3] ?? "classic";
+assert.equal(["classic", "bridge-webpack", "bridge-vite"].includes(host), true);
+const bridge = host !== "classic";
+const vite = host === "bridge-vite";
+const fixture = path.join(
+  root,
+  "tools/support/compat/nuxt/fixtures",
+  bridge ? "nuxt2-bridge-module-build" : "nuxt2-module-build",
+);
+const nuxtVersion = bridge ? "2.18.1" : "2.17.3";
+const cli = vite
+  ? "node_modules/nuxi/bin/nuxi.mjs"
+  : bridge
+    ? "node_modules/@nuxt/bridge/bin/nuxt2.cjs"
+    : "node_modules/nuxt/bin/nuxt.js";
 const packageRoot = path.join(fixture, "node_modules/@vizejs/nuxt");
 const candidateDist = path.join(root, "npm/framework/nuxt/dist");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt2-build"));
 fs.mkdirSync(artifacts, { recursive: true });
+const cleanupBridgeSource = bridge ? prepareNuxt2BridgeSource(root, fixture, artifacts) : undefined;
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const webpackEnvironment = {
   ...process.env,
   NO_COLOR: "1",
   // webpack 4 hashes require the legacy provider on the supported modern Node
   // host. Scope it to this pinned webpack fixture's child processes.
-  NODE_OPTIONS: [process.env.NODE_OPTIONS, "--openssl-legacy-provider"].filter(Boolean).join(" "),
+  ...(vite
+    ? {}
+    : {
+        NODE_OPTIONS: [process.env.NODE_OPTIONS, "--openssl-legacy-provider"]
+          .filter(Boolean)
+          .join(" "),
+      }),
 };
 const timings: Array<{ stage: string; milliseconds: number }> = [];
 const browserPackets: unknown[] = [];
@@ -143,10 +165,13 @@ async function verifyBrowser(port: number, mode: "production" | "development") {
   }
 }
 
-assert.equal(at(readJson(path.join(packageRoot, "package.json")), "version"), "0.429.1");
+assert.equal(
+  at(readJson(path.join(packageRoot, "package.json")), "version"),
+  bridge ? at(readJson(path.join(root, "npm/framework/nuxt/package.json")), "version") : "0.429.1",
+);
 assert.equal(
   at(readJson(path.join(fixture, "node_modules/nuxt/package.json")), "version"),
-  "2.17.3",
+  nuxtVersion,
 );
 assert.ok(fs.existsSync(path.join(candidateDist, "nuxt2-entry.cjs")));
 
@@ -158,7 +183,7 @@ const swapped = (
 ).map(([name, candidate]) => ({
   candidate,
   installed: path.join(fixture, "node_modules/@vizejs", name, "dist"),
-  backup: path.join(artifacts, `published-${name}-dist`),
+  backup: path.join(artifacts, `${bridge ? "initial-source" : "published"}-${name}-dist`),
 }));
 for (const item of swapped) {
   assert.ok(fs.existsSync(item.candidate), "candidate package must be built");
@@ -170,14 +195,14 @@ for (const item of swapped) {
 // Children started here; the outer cleanup stops any that are still running.
 const servers: ChildProcess[] = [];
 try {
-  for (const name of [".nuxt", "dist"])
+  for (const name of [".nuxt", "dist", ".output"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
   const buildLog = path.join(artifacts, "build.log");
   const log = fs.openSync(buildLog, "w");
   const buildStarted = performance.now();
   let result;
   try {
-    result = spawnSync(process.execPath, ["node_modules/nuxt/bin/nuxt.js", "build"], {
+    result = spawnSync(process.execPath, [cli, "build"], {
       cwd: fixture,
       env: webpackEnvironment,
       stdio: ["ignore", log, log],
@@ -196,7 +221,7 @@ try {
   const port = await freePort();
 
   const serverLog = fs.openSync(path.join(artifacts, "server.log"), "w");
-  const child = spawn(process.execPath, ["node_modules/nuxt/bin/nuxt.js", "start"], {
+  const child = spawn(process.execPath, vite ? [".output/server/index.mjs"] : [cli, "start"], {
     cwd: fixture,
     env: { ...webpackEnvironment, HOST: "127.0.0.1", PORT: String(port) },
     stdio: ["ignore", serverLog, serverLog],
@@ -234,7 +259,7 @@ try {
   }
   const devPort = await freePort();
   const devLog = fs.openSync(path.join(artifacts, "development.log"), "w");
-  const dev = spawn(process.execPath, ["node_modules/nuxt/bin/nuxt.js", "dev"], {
+  const dev = spawn(process.execPath, [cli, "dev"], {
     cwd: fixture,
     env: { ...webpackEnvironment, HOST: "127.0.0.1", PORT: String(devPort) },
     stdio: ["ignore", devLog, devLog],
@@ -267,8 +292,8 @@ try {
     await devExited;
     fs.closeSync(devLog);
   }
-  verifyNuxt2LintConfig(fixture, artifacts);
-  verifyNuxtAutoInitConfig(fixture, artifacts);
+  verifyNuxt2LintConfig(fixture, artifacts, `v${nuxtVersion}`);
+  verifyNuxtAutoInitConfig(fixture, artifacts, `v${nuxtVersion}`);
   verifyNuxt2Typecheck(fixture, artifacts);
   fs.writeFileSync(
     path.join(artifacts, "proof.json"),
@@ -279,7 +304,11 @@ try {
           encoding: "utf8",
         }).stdout.trim(),
         node: process.version,
-        nuxt: "2.17.3",
+        nuxt: nuxtVersion,
+        host,
+        packageProvider: bridge
+          ? "explicit built source products; no historical native TypeScript installation"
+          : "published 0.429.1 package with current source adapter dist",
         buildExit: result.status,
         routes: ["/", "/about"],
         compiler: "Nuxt host Vue 2 compiler; native Vue 3 compiler is not substituted",
@@ -292,7 +321,9 @@ try {
           "webpack",
           "sass",
           "sass-loader",
-        ].map(packageIdentity),
+        ]
+          .concat(bridge ? ["@nuxt/bridge", "nuxi", "vite", "@vitejs/plugin-vue2"] : [])
+          .map(packageIdentity),
         browserPackets,
         timings,
       },
@@ -309,4 +340,5 @@ try {
     fs.rmSync(item.installed, { recursive: true, force: true });
     fs.cpSync(item.backup, item.installed, { recursive: true });
   }
+  cleanupBridgeSource?.();
 }
