@@ -40,6 +40,34 @@ and TSX parsing for `.tsx` filenames. It leaves plain `.ts` parsing to the host.
 Keep client and server builds on the same renderer setting. Unsupported native
 source shapes surface as compilation errors.
 
+## Component authoring
+
+Vapor and setup SSR output use component objects. A block arrow keeps setup
+state inside the component; declare props with a named identifier and an inline
+object type:
+
+```tsx
+import { ref } from "vue";
+
+export const Counter = (props: { label: string }) => {
+  const count = ref(0);
+  const increment = () => {
+    count.value++;
+  };
+  return <button onClick={increment}>{props.label + ":" + count.value}</button>;
+};
+```
+
+The preview rejects destructured props in these component objects. Use their
+bindings as JSX component tags or direct exports; calls, callable aliases,
+introspection, and escaping component values require a separate callable
+representation and produce a diagnostic. Nested JSX that an attribute expression
+cannot lower also produces a diagnostic.
+
+VDOM client output supports expression arrows. SSR output for an expression
+functional component is an explicit unsupported role; use a block setup component
+for the paired client/server build.
+
 ## Babel composition
 
 The compiler runs in a `pre` hook. It serializes the current AST, including edits
