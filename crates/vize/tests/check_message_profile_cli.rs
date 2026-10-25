@@ -173,9 +173,20 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
         counter(&profile, "canon.diagnostics.restore_specifiers.rewrites", 4),
         1
     );
-    assert!(
-        counter(&profile, "canon.corsa.cli.stdout.bytes", 1)
-            > counter(&profile, "canon.corsa.cli.decoded.message_bytes", 1)
+    // Complete raw 7.0.2 output has four lines (400 UTF-8 bytes), including
+    // the generated missing-import spelling that the mapper must restore.
+    assert_eq!(counter(&profile, "canon.corsa.cli.stdout.bytes", 1), 400);
+    assert_eq!(
+        counter(&profile, "canon.corsa.cli.decoded.message_bytes", 1),
+        260
+    );
+    assert_eq!(
+        counter(
+            &profile,
+            "canon.diagnostics.restore_specifiers.message_input_bytes",
+            4
+        ),
+        260
     );
     fs::write(
         project.path().join("src/entry.ts"),
