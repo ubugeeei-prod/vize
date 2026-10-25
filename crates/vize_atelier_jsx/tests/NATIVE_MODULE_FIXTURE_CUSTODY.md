@@ -48,15 +48,15 @@ counts and recorded identity divergence remain unchanged.
 Parent workflows create each destination directory and upload the files even
 when a test fails. A capture does not accept a new golden packet.
 
-| Environment variable                  | Output                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VIZE_FALSY_AND_CAPTURE`              | Original standalone producer contract, keyed by fixture ID, then `source` and `outputs`; the original `code`, `componentCode`, `functionName`, `diagnostics` and `map` facets remain exact.                                                                                                                |
-| `VIZE_JSX_FALSY_REFUSAL_CAPTURE`      | All four original VDOM SSR refusal packets: `id`, `source`, `module`, `moduleMap`, complete `components`, structured `diagnostics`. Written before assertions.                                                                                                                                             |
-| `VIZE_JSX_VALUE_CAPTURE`              | Current complete falsy/ternary module payload consumed by Node, with the actual native `App` entry.                                                                                                                                                                                                        |
-| `VIZE_JSX_FALSY_RECEIPT`              | Existing raw runtime receipt, now also retaining each positive SSR object's role and server diagnostics.                                                                                                                                                                                                   |
-| `VIZE_JSX_NESTED_RUNTIME_CAPTURE`     | `{ schemaVersion: 2, cases: [{ name, mode, source, historicalPacket, historical, expectedPacket, expected, current }] }`. Historical, expected and current packets retain every module, map, diagnostic and component facet. All four cases are compiled and captured before the first equality assertion. |
-| `VIZE_JSX_VAPOR_COMPAT_CAPTURE`       | Exact `{ corpus, compiled }` stdin payload, including complete native/VDOM module text and entry names. Written before Node executes.                                                                                                                                                                      |
-| `VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE` | `{ installed, cases, failures, exception? }`; each case retains unmodified `referenceCode`, full `reference` and `actual` phases, plus `babelCode`, `babel`, and `vdom` where applicable. Failure writes preserve completed observations and the raw exception.                                            |
+| Environment variable                  | Output                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VIZE_FALSY_AND_CAPTURE`              | Original standalone producer contract, keyed by fixture ID, then `source` and `outputs`; the original `code`, `componentCode`, `functionName`, `diagnostics` and `map` facets remain exact.                                                                                                                                        |
+| `VIZE_JSX_FALSY_REFUSAL_CAPTURE`      | All four original VDOM SSR refusal packets: `id`, `source`, `module`, `moduleMap`, complete `components`, structured `diagnostics`. Written before assertions.                                                                                                                                                                     |
+| `VIZE_JSX_VALUE_CAPTURE`              | Current complete falsy/ternary module payload consumed by Node, with the actual native `App` entry.                                                                                                                                                                                                                                |
+| `VIZE_JSX_FALSY_RECEIPT`              | Existing raw runtime receipt, now also retaining each positive SSR object's role and server diagnostics.                                                                                                                                                                                                                           |
+| `VIZE_JSX_NESTED_RUNTIME_CAPTURE`     | `{ schemaVersion: 3, cases: [{ name, mode, source, historicalPacket, historical, refusalPacket, refusal, expectedPacket, expected, current }] }`. Historical, expected and current packets retain every module, map, diagnostic and component facet. All four cases are compiled and captured before the first equality assertion. |
+| `VIZE_JSX_VAPOR_COMPAT_CAPTURE`       | Exact `{ corpus, compiled }` stdin payload, including complete native/VDOM module text and entry names. Written before Node executes.                                                                                                                                                                                              |
+| `VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE` | `{ installed, cases, failures, exception? }`; each case retains unmodified `referenceCode`, full `reference` and `actual` phases, plus `babelCode`, `babel`, and `vdom` where applicable. Failure writes preserve completed observations and the raw exception.                                                                    |
 
 The native oracle's existing `--reference` mode still emits the same reference
 trace on stdout; workflows can retain that stdout and stderr separately before
@@ -93,3 +93,42 @@ hydrate same-source SSR Vapor-object HTML; it does not claim Vapor hydration.
 The four original functional VDOM SSR modules still refuse. Physical provider
 hashes were not recorded in this receipt. None of these captures grants release
 or public-consumer qualification.
+
+## Static values and adapter execution
+
+`static-values-10701-successor.json` names a later stories Vapor successor. Only
+`/components/3/code` and `/components/4/code` change: actual immutable local
+component values use static creation, and their slot layout loses its dynamic
+boundary. Every other module, diagnostic, component, map, style and setup facet
+remains equal to the frozen 664 refusal successor. Both previous files remain
+unchanged. The whole module still refuses, so native handled count and runtime
+credit remain zero. The capture's `refusalPacket`/`refusal` retain that previous
+stage independently of `expectedPacket`/`expected`.
+
+`native_component_stability` covers 14 sources in both native Vapor and default
+VDOM modes. Actual semantic symbols distinguish const values, illegal writes,
+ambient declarations, live imports, members, repeated values and lexical
+shadows. The compiler reuses the existing semantic program and builds its
+Vapor-only facts once when a bound identifier needs them. Default VDOM performs
+no added fact scan. Five native sources independently reconstruct their entire
+decoded token arrays, including Unicode and CRLF positions. All raw packets
+retain serialized map bytes and decoded arrays; git goldens retain complete
+code/map fields while omitting duplicate decoded arrays. The pinned 664 source
+runs the same observer with a strict old dynamic-value contract. Every default
+VDOM and conservative native code/map/token packet must match before and after.
+These are source controls and do not establish imported/live component SSR
+hydration behavior.
+
+The pure Rust adapter DTO testcase is discovered by its exact full name and
+must report one passing testcase. Its raw selection, execution and receipt
+files distinguish it from actual Node ABI execution. The earlier default-feature
+selector matched zero tests and grants no adapter execution credit. Only the
+JSX module's test gate exposes its pure implementation without enabling Node
+FFI; the `napi` feature retains the public binding contract. Actual installed
+Node/Babel and browser behavior remains a separate campaign.
+
+Current experimental Vapor runtime qualification targets the pinned rc.11 API.
+Historical rc.9 aliases and positive/reference traces remain regression evidence;
+failed older-runtime API rows remain explicitly unsupported. Neither a helper
+alias nor an output rewrite upgrades them to current-target support. VDOM and
+Vapor browser qualification keep their own exact runtime graphs and raw traces.

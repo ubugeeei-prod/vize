@@ -26,6 +26,7 @@
     reason = "N-API values cross the boundary as std `String`s"
 )]
 
+#[cfg(feature = "napi")]
 use napi_derive::napi;
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
@@ -33,7 +34,7 @@ use vize_atelier_jsx::{
 use vize_l0::Allocator;
 
 /// Options for [`compile_jsx`].
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct JsxCompileOptionsNapi {
     /// Source filename, used to infer the language when `lang` is omitted.
@@ -65,7 +66,7 @@ pub struct JsxCompileOptionsNapi {
 /// A JSX component's extracted `<style scoped>` block, surfaced to the bundler
 /// plugins so a `.jsx`/`.tsx` component's scoped CSS reaches the same emission
 /// path as SFC `<style>` blocks (#1495, #1533).
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct JsxScopedStyleNapi {
     /// The generated scope id, e.g. `data-v-1a2b3c4d`. Already injected into the
     /// component's rendered elements; surfaced here so the bundler can name the
@@ -77,7 +78,7 @@ pub struct JsxScopedStyleNapi {
 }
 
 /// Result of [`compile_jsx`].
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct JsxCompileResultNapi {
     /// Complete emitted module, including the deduplicated runtime helpers.
     /// Authored imports, declarations and exports are retained. Native component
@@ -115,6 +116,7 @@ fn resolve_default_mode(jsx_mode: Option<&str>, vapor: Option<bool>) -> JsxOutpu
     }
 }
 
+#[cfg(feature = "napi")]
 #[napi(js_name = "compileJsx")]
 pub fn compile_jsx(
     source: String,
@@ -425,9 +427,16 @@ mod tests {
         );
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(result.code.contains("__ssrInlineRender: true"));
-        assert!(result.code.contains("const App ="));
-        assert!(result.code.contains("_ssrInterpolate(message)"));
+        insta::assert_snapshot!(
+            "jsx_authored_ssr_dto_10701",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "code": &result.code,
+                "map": &result.map,
+                "errors": &result.errors,
+                "warnings": &result.warnings,
+                "scopedStyles": result.scoped_styles.iter().map(|style| serde_json::json!({"scopeId":&style.scope_id,"css":&style.css})).collect::<Vec<_>>(),
+            })).expect("complete NAPI result")
+        );
         let decoded: serde_json::Value =
             serde_json::from_str(&result.map.expect("SSR module source map"))
                 .expect("valid v3 map");

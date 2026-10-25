@@ -59,6 +59,7 @@ fn position(source: &str, offset: usize) -> (u32, u32) {
 
 #[test]
 fn only_actual_immutable_native_component_symbols_are_static_values() {
+    let old_contract = std::env::var_os("VIZE_JSX_COMPONENT_STABILITY_EXPECT_OLD").is_some();
     let cases = [
         (
             "const",
@@ -177,13 +178,17 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
             if mode == JsxOutputMode::Vapor {
                 assert_eq!(
                     builds,
-                    u64::from(!members),
+                    u64::from(!old_contract && !members),
                     "one shared semantic fact build: {name}"
                 );
                 let count = if name == "repeated" { 2 } else { 1 };
                 assert_eq!(
                     proofs,
-                    if stable { count as u64 } else { 0 },
+                    if stable && !old_contract {
+                        count as u64
+                    } else {
+                        0
+                    },
                     "actual symbol proof: {name}"
                 );
                 assert_eq!(
@@ -199,14 +204,14 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                 for (helper, _) in &calls.creations {
                     assert_eq!(
                         helper,
-                        if stable {
+                        if stable && !old_contract {
                             "_createComponentWithFallback"
                         } else {
                             "_createDynamicComponent"
                         }
                     );
                 }
-                if stable {
+                if stable && !old_contract {
                     let map = SourceMap::from_json_string(output.source_map().expect("map"))
                         .expect("map JSON");
                     let actual = map
@@ -228,6 +233,7 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                         .map(|(offset, _)| offset + 1)
                         .collect::<Vec<_>>();
                     assert_eq!(authored_values.len(), calls.creations.len());
+                    let mut expected_links = Vec::new();
                     for ((_, value), authored) in calls.creations.iter().zip(authored_values) {
                         let origin = (
                             position(&code, value.start as usize),
@@ -241,6 +247,44 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                                 .collect::<Vec<_>>(),
                             [origin],
                             "actual component-value origin: {name}"
+                        );
+                        expected_links.push(origin);
+                    }
+                    if matches!(
+                        name,
+                        "const" | "repeated" | "escaped" | "unicode-crlf" | "destructured"
+                    ) {
+                        let arrow = source.find("()=>").expect("owned arrow");
+                        let end =
+                            source.find("</section>").expect("closing root") + "</section>".len();
+                        let prefix = source.get(..arrow).expect("authored prefix");
+                        let suffix = source.get(end..).expect("authored suffix");
+                        for (original, generated, text) in [
+                            (0, code.find(prefix).expect("whole retained prefix"), prefix),
+                            (
+                                end,
+                                code.rfind(suffix).expect("whole retained suffix"),
+                                suffix,
+                            ),
+                        ] {
+                            expected_links.extend(text.char_indices().map(|(offset, _)| {
+                                (
+                                    position(&code, generated + offset),
+                                    position(source, original + offset),
+                                )
+                            }));
+                        }
+                        expected_links.push((
+                            position(
+                                &code,
+                                code.find("\"<section").expect("real template tag") + 2,
+                            ),
+                            position(source, source.find("<section").expect("authored tag") + 1),
+                        ));
+                        expected_links.sort_unstable_by_key(|link| link.0);
+                        assert_eq!(
+                            actual, expected_links,
+                            "complete independent lexical token array: {name}"
                         );
                     }
                 }
@@ -264,13 +308,39 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                     )
                 })
                 .collect::<Vec<_>>();
-            packets.push(json!({"name":name,"source":source,"mode":format!("{mode:?}"),"stable":stable,"code":code.as_str(),"map":serde_json::from_str::<serde_json::Value>(output.source_map().expect("map")).expect("map JSON"),"tokens":tokens,"counters":counters}));
+            let repeated = compile_jsx(&allocator, source, JsxLang::Tsx, &config);
+            assert_eq!(
+                repeated.module_code(),
+                code,
+                "profiling cannot change complete code"
+            );
+            assert_eq!(
+                repeated.source_map(),
+                output.source_map(),
+                "complete raw map bytes are deterministic with profiling off/on"
+            );
+            packets.push(json!({"name":name,"source":source,"mode":format!("{mode:?}"),"stable":stable,"code":code.as_str(),"map":serde_json::from_str::<serde_json::Value>(output.source_map().expect("map")).expect("map JSON"),"rawMap":output.source_map(),"tokens":tokens,"counters":counters}));
         }
     }
     if let Some(path) = std::env::var_os("VIZE_JSX_COMPONENT_STABILITY_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&packets).expect("packets"))
             .expect("capture");
     }
+    if old_contract {
+        return; // The pinned pre-fix build has its own strict dynamic-value oracle above.
+    }
     let expected: serde_json::Value = serde_json::from_str(include_str!("../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/component-stability.json")).expect("reviewed whole packets");
-    assert_eq!(json!(packets), expected);
+    let whole_outputs = packets
+        .into_iter()
+        .map(|packet| {
+            let mut fields = packet.as_object().expect("whole packet").clone();
+            // Decoded arrays remain in the raw capture; maps retain the identical
+            // encoded tokens. Independent full arrays and before/head arrays are
+            // verified separately rather than duplicating the same data in git.
+            fields.remove("tokens");
+            fields.remove("rawMap"); // Exact serialized bytes stay in the raw before/head packets.
+            serde_json::Value::Object(fields)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(json!(whole_outputs), expected);
 }

@@ -93,6 +93,14 @@ jobs:
           (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
           git -C "$stable_base" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/stability-base-source.txt"
           sha256sum "$observer" "$stable_base/$observer" > "$RUNNER_TEMP/jsx-authored-native/stability-observer.sha256"
+          stability_oracle=crates/vize_atelier_jsx/tests/native_component_stability.rs
+          stability_packet=tests/_fixtures/differential/jsx/authored-native-modules-10700/component-stability.json
+          cp "$stability_oracle" "$stable_base/$stability_oracle"
+          cp "$stability_packet" "$stable_base/$stability_packet"
+          cmp "$stability_oracle" "$stable_base/$stability_oracle"
+          cmp "$stability_packet" "$stable_base/$stability_packet"
+          (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_COMPONENT_STABILITY_EXPECT_OLD=1 VIZE_JSX_COMPONENT_STABILITY_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-packets.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_stability -- --nocapture)
+          sha256sum "$stability_oracle" "$stable_base/$stability_oracle" > "$RUNNER_TEMP/jsx-authored-native/stability-oracle.sha256"
       - name: Verify measured contracts and source counters
         run: |
           python3 - <<'PYCODE'
@@ -104,6 +112,13 @@ jobs:
           assert len(base)==len(head)==16
           stability_base=json.loads((directory/'stability-base-profile.json').read_text())
           assert len(stability_base)==len(head)
+          before_packets=json.loads((directory/'stability-base-packets.json').read_text())
+          after_packets=json.loads((directory/'component-stability.json').read_text())
+          assert len(before_packets)==len(after_packets)==28
+          for previous,current in zip(before_packets,after_packets):
+            for key in ['source','name','mode','stable']: assert previous[key]==current[key]
+            if current['mode']=='Vdom' or not current['stable']:
+              assert {k:v for k,v in previous.items() if k!='counters'}=={k:v for k,v in current.items() if k!='counters'}, 'complete default/conservative code/maps/tokens remain exact'
           before_roles=json.loads((directory/'base-functional-role.json').read_text())
           after_roles=json.loads((directory/'head-functional-role.json').read_text())
           assert len(before_roles)==len(after_roles)==6
@@ -168,6 +183,34 @@ jobs:
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
           exit "$status"
+      - name: Exact pure Rust JSX adapter DTO test
+        if: always()
+        env: { INSTA_UPDATE: new }
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/jsx-authored-native"
+          test_name=napi::jsx::tests::jsx_compile_result_supports_ssr_output
+          cargo test --locked --profile ci -p vize_vitrine --lib "$test_name" -- --exact --list > "$directory/napi-dto.list.stdout" 2> "$directory/napi-dto.list.stderr"
+          python3 - <<'PYCODE'
+          import os
+          from pathlib import Path
+          lines=(Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native/napi-dto.list.stdout').read_text().splitlines()
+          assert [line for line in lines if line.endswith(': test')]==['napi::jsx::tests::jsx_compile_result_supports_ssr_output: test'], lines
+          PYCODE
+          status=0
+          cargo test --locked --profile ci -p vize_vitrine --lib "$test_name" -- --exact > "$directory/napi-dto.run.stdout" 2> "$directory/napi-dto.run.stderr" || status=1
+          python3 - <<'PYCODE'
+          import hashlib,json,os,re
+          from pathlib import Path
+          directory=Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native'
+          stdout=(directory/'napi-dto.run.stdout').read_text()
+          passed=bool(re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored;',stdout))
+          names=[line for line in (directory/'napi-dto.list.stdout').read_text().splitlines() if line.endswith(': test')]
+          receipt={'sourceHead':(directory/'source.txt').read_text().splitlines()[0],'selected':names,'selectedCount':len(names),'exactOnePassed':passed,'scope':'pure Rust adapter DTO and compile implementation; no Node ABI execution credit','filesSha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in directory.glob('napi-dto.*') if p.is_file()}}
+          (directory/'napi-dto.receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          assert passed, stdout
+          PYCODE
+          exit "$status"
       - name: Verify complete native fixture and historical custody
         if: always()
         run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.mjs tests/tooling/vapor-third-party-reports.test.mjs
@@ -199,5 +242,6 @@ jobs:
             ${{ runner.temp }}/jsx-authored-native
             crates/vize_atelier_jsx/src/**/*.snap.new
             crates/vize_atelier_jsx/tests/**/*.snap.new
+            crates/vize_vitrine/src/napi/snapshots/*.snap.new
           if-no-files-found: error
           retention-days: 14
