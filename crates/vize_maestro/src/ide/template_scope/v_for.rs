@@ -14,17 +14,16 @@ pub(super) fn binding_at(ctx: &IdeContext<'_>, word: &str) -> Option<TemplateSco
         return None;
     }
 
-    let descriptor = ctx.descriptor()?;
-    let template = descriptor.template.as_ref()?;
-    if ctx.offset < template.loc.start || ctx.offset > template.loc.end {
+    let (content, start) = super::active_template(ctx)?;
+    if ctx.offset < start || ctx.offset > start + content.len() {
         return None;
     }
 
-    let cursor = ctx.offset - template.loc.start;
+    let cursor = ctx.offset - start;
     let allocator = vize_l0::Allocator::new();
-    let (ast, _) = vize_armature::parse(&allocator, template.content.as_ref());
+    let (ast, _) = vize_armature::parse(&allocator, content);
 
-    find_in_children(&ast.children, template.loc.start, cursor, word)
+    find_in_children(&ast.children, start, cursor, word)
 }
 
 fn find_in_children(

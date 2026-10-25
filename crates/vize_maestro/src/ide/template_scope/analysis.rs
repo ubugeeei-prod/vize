@@ -25,8 +25,18 @@ pub(super) fn analyze_with_patterns(
     )
     .ok()?;
     let allocator = vize_l0::Allocator::new();
-    let template = descriptor.template.as_ref();
-    let parsed = template.map(|template| vize_armature::parse(&allocator, &template.content));
+    // The descriptor's ordinary template may be absent (`.art.vue`) or belong
+    // to a different scope (inline `<art>`). Keep the prepared ordinary
+    // template for patterned syntax, selecting art from the physical source.
+    let template = if matches!(ctx.block_type, Some(crate::virtual_code::BlockType::Art(_))) {
+        super::active_template(ctx)
+    } else {
+        descriptor
+            .template
+            .as_ref()
+            .map(|template| (template.content.as_ref(), template.loc.start))
+    };
+    let parsed = template.map(|(content, _)| vize_armature::parse(&allocator, content));
     let ast = parsed.as_ref().map(|(root, _)| root);
     let mut options = SfcCroquisOptions::full();
     options.analyzer_options.experimental_patterned_template = patterned;
@@ -37,7 +47,7 @@ pub(super) fn analyze_with_patterns(
     } else {
         analyze_sfc_descriptor(&descriptor, ast, options)
     };
-    Some((croquis, template.map_or(0, |template| template.loc.start)))
+    Some((croquis, template.map_or(0, |(_, start)| start)))
 }
 
 pub(crate) fn bindings_visible_at(

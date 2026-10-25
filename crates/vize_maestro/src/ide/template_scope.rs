@@ -15,6 +15,8 @@ pub(crate) use patterned_navigation::needs_patterned_navigation;
 pub(crate) use patterned_navigation::needs_structural_pattern_navigation;
 
 #[cfg(test)]
+mod art_tests;
+#[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 
@@ -22,6 +24,22 @@ use tower_lsp::lsp_types::{GotoDefinitionResponse, Hover, Location, Position, Ra
 
 use super::template_excerpt::opening_tag_at;
 use super::{HoverBuilder, IdeContext, offset_to_position};
+
+/// Analyze only the authored template containing this request. Art variants
+/// share setup bindings, but never each other's template-local declarations.
+fn active_template<'a>(ctx: &'a IdeContext<'_>) -> Option<(&'a str, usize)> {
+    if let Some(crate::virtual_code::BlockType::Art(
+        crate::virtual_code::ArtCursorPosition::VariantTemplate(info),
+    )) = ctx.block_type
+    {
+        return Some((
+            ctx.content.get(info.template_start..info.template_end)?,
+            info.template_start,
+        ));
+    }
+    let template = ctx.descriptor()?.template.as_ref()?;
+    Some((template.content.as_ref(), template.loc.start))
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum TemplateScopeBindingKind {
