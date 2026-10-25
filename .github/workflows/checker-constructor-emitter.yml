@@ -117,9 +117,12 @@ jobs:
           set -euo pipefail
           capture="$RUNNER_TEMP/constructor-emitter"
           baseline="$RUNNER_TEMP/constructor-base"
-          observer=crates/vize_canon/tests/generic_parameter_profile.rs
-          cp "$observer" "$baseline/$observer"
-          cmp "$observer" "$baseline/$observer"
+          observer=tools/benchmarks/probes/generic_parameter_profile.rs
+          integration=crates/vize_canon/tests/generic_parameter_profile.rs
+          cp "$observer" "$integration"
+          cp "$observer" "$baseline/$integration"
+          cmp "$observer" "$integration"
+          cmp "$observer" "$baseline/$integration"
           (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-base" VIZE_GENERIC_PARAMETER_PROFILE_CWD="$RUNNER_TEMP/constructor-profile-cwd" VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-base.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture) > "$capture/profile-base.log" 2>&1
           CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-head" VIZE_GENERIC_PARAMETER_PROFILE_CWD="$RUNNER_TEMP/constructor-profile-cwd" VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-head.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture > "$capture/profile-head.log" 2>&1
           node --input-type=module <<'JS'
@@ -155,7 +158,7 @@ jobs:
           assert.notEqual(binaries[0].binary, binaries[1].binary);
           assert.notEqual(binaries[0].sha256, binaries[1].sha256, 'the repaired literal control must come from different source executables');
           const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
-            binaries, profile: 'ci-opt', observerSha256: sha256('crates/vize_canon/tests/generic_parameter_profile.rs'),
+            binaries, profile: 'ci-opt', observerSha256: sha256('tools/benchmarks/probes/generic_parameter_profile.rs'),
             basePacketSha256: sha256(`${directory}/profile-base.json`), headPacketSha256: sha256(`${directory}/profile-head.json`),
             scope: head.scope, workingDirectory: head.workingDirectory, allocationDefinition: head.allocationDefinition, rows };
           writeFileSync(`${directory}/profile-receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
