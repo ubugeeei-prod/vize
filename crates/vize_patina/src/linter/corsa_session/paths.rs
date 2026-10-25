@@ -1,6 +1,5 @@
 mod store;
 pub(super) use store::remove_finished_process_sessions;
-pub(super) use store::resolve_corsa_executable;
 pub(super) use store::session_tsconfig_contents;
 use store::{
     cleanup_stale_session_roots, push_u64, remove_empty_session_parents, session_store_root,
@@ -8,13 +7,14 @@ use store::{
 pub(in crate::linter) use store::{
     effective_tsconfig_for_source, resolve_project_root, validate_tsconfig,
 };
+pub(super) use store::{resolve_corsa_executable, runtime_project_root};
 
 use serde_json::Value;
 use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
-use vize_carton::corsa_resolver::{CORSA_EXECUTABLE_NAMES, CorsaResolveError, CorsaResolveRequest};
+use vize_carton::corsa_resolver::CorsaResolveRequest;
 use vize_l0::{String, ToCompactString, cstr};
 
 const SESSION_DIRECTORY_PREFIX: &str = "session-";

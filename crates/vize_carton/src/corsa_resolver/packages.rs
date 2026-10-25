@@ -9,10 +9,7 @@ pub(super) fn find_node_modules_native(dir: &Path) -> Option<Candidate> {
     let suffix = platform_suffix();
 
     if !suffix.is_empty() {
-        if let Some(path) = find_stable_typescript_native(&node_modules, suffix) {
-            return Some(Candidate::Native(path));
-        }
-        if let Some(path) = find_vize_owned_stable_typescript_native(&node_modules, suffix) {
+        if let Some(path) = find_stable_typescript_native(dir, &node_modules, suffix) {
             return Some(Candidate::Native(path));
         }
 
@@ -38,12 +35,6 @@ pub(super) fn find_node_modules_native(dir: &Path) -> Option<Candidate> {
         if let Some(found) = existing_executable(&meta_lib_dir, executable) {
             return Some(Candidate::Legacy(found));
         }
-    }
-
-    if !suffix.is_empty()
-        && let Some(path) = scrape_native_preview_pnpm_store(&node_modules, suffix)
-    {
-        return Some(Candidate::Legacy(path));
     }
 
     if let Some(path) = find_node_modules_tsrs_native(dir) {
@@ -110,52 +101,98 @@ pub(super) fn tsrs_platform_package() -> Option<&'static str> {
     }
 }
 
-fn find_stable_typescript_native(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
-    if let Some(path) = resolve_typescript_platform_package(node_modules, suffix) {
-        return Some(path);
-    }
-
-    let lib_dir = typescript_platform_package_root(node_modules, suffix).join("lib");
-    if let Some(found) = existing_executable(&lib_dir, "tsc") {
-        return Some(found);
-    }
-
-    scrape_typescript_pnpm_store(node_modules, suffix)
-}
-
-fn find_vize_owned_stable_typescript_native(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
-    find_stable_typescript_native(&node_modules.join("vize").join("node_modules"), suffix)
-}
-
-/// Resolve the TypeScript 7 platform binary through its package manifest.
-fn resolve_typescript_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
-    let package_dir = node_modules.join("typescript");
-    let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
-    let manifest: serde_json::Value = serde_json::from_str(&manifest).ok()?;
-    if !package_major_at_least(&manifest, 7) {
-        return None;
-    }
+fn find_stable_typescript_native(dir: &Path, node_modules: &Path, suffix: &str) -> Option<PathBuf> {
     let platform_package = crate::cstr!("@typescript/typescript-{suffix}");
-    if !manifest
-        .get("optionalDependencies")
-        .and_then(serde_json::Value::as_object)
-        .is_some_and(|dependencies| dependencies.contains_key(platform_package.as_str()))
+    let mut packages = vec![node_modules.join("typescript")];
+    let project = read_manifest(dir).unwrap_or_default();
+    let mut aliases = Vec::new();
+    for section in ["dependencies", "devDependencies", "optionalDependencies"] {
+        if let Some(dependencies) = project.get(section).and_then(serde_json::Value::as_object) {
+            for name in dependencies.keys() {
+                if name != "typescript" && valid_package_name(name) {
+                    aliases.push(name.as_str());
+                }
+            }
+        }
+    }
+    aliases.sort_unstable();
+    aliases.dedup();
+    packages.extend(aliases.into_iter().map(|name| node_modules.join(name)));
+    for package_dir in packages {
+        if let Some(path) =
+            resolve_typescript_platform_package(&package_dir, platform_package.as_str())
+        {
+            return Some(path);
+        }
+    }
+    // A directly installed platform package is also valid when the selected
+    // project declares it. A stale hoisted transitive package is not authority.
+    if ["dependencies", "devDependencies", "optionalDependencies"]
+        .iter()
+        .any(|section| {
+            project
+                .get(section)
+                .and_then(serde_json::Value::as_object)
+                .is_some_and(|dependencies| dependencies.contains_key(platform_package.as_str()))
+        })
+    {
+        let package_dir = node_modules.join(platform_package.as_str());
+        let manifest = read_manifest(&package_dir)?;
+        if manifest.get("name").and_then(serde_json::Value::as_str)
+            == Some(platform_package.as_str())
+            && package_major_at_least(&manifest, 7)
+        {
+            return existing_executable(&package_dir.join("lib"), "tsc");
+        }
+    }
+    None
+}
+
+fn valid_package_name(name: &str) -> bool {
+    !Path::new(name).is_absolute()
+        && !name.starts_with('.')
+        && name
+            .split('/')
+            .all(|part| !part.is_empty() && part != "." && part != "..")
+}
+
+fn read_manifest(package: &Path) -> Option<serde_json::Value> {
+    serde_json::from_str(&std::fs::read_to_string(package.join("package.json")).ok()?).ok()
+}
+
+/// Follow the installed meta package, including aliases and pnpm symlinks.
+/// The first linked platform package owns Node's lookup: a mismatched version
+/// cannot be skipped in favour of an unrelated ancestor's runtime.
+fn resolve_typescript_platform_package(package_dir: &Path, platform: &str) -> Option<PathBuf> {
+    let manifest = read_manifest(package_dir)?;
+    if manifest.get("name").and_then(serde_json::Value::as_str) != Some("typescript")
+        || !package_major_at_least(&manifest, 7)
     {
         return None;
     }
-
-    let real_package_dir = package_dir.canonicalize().unwrap_or(package_dir);
+    let version = manifest.get("version")?.as_str()?;
+    if manifest
+        .get("optionalDependencies")?
+        .get(platform)?
+        .as_str()?
+        != version
+    {
+        return None;
+    }
+    let real_package_dir = package_dir.canonicalize().ok()?;
     for ancestor in real_package_dir.ancestors() {
-        let package_root = typescript_platform_package_root(&ancestor.join("node_modules"), suffix);
+        let package_root = ancestor.join("node_modules").join(platform);
         if !package_root.is_dir() {
             continue;
         }
-        let lib_dir = package_root.join("lib");
-        if let Some(found) = existing_executable(&lib_dir, "tsc") {
-            return Some(found);
+        let installed = read_manifest(&package_root)?;
+        if installed.get("name").and_then(serde_json::Value::as_str) != Some(platform)
+            || installed.get("version").and_then(serde_json::Value::as_str) != Some(version)
+        {
+            return None;
         }
+        return existing_executable(&package_root.join("lib"), "tsc");
     }
-
     None
 }
 
@@ -206,57 +243,6 @@ fn native_preview_platform_package_root(node_modules: &Path, suffix: &str) -> Pa
         .join(&*crate::cstr!("native-preview-{suffix}"))
 }
 
-fn typescript_platform_package_root(node_modules: &Path, suffix: &str) -> PathBuf {
-    node_modules
-        .join("@typescript")
-        .join(&*crate::cstr!("typescript-{suffix}"))
-}
-
-/// Legacy fallback: scan the pnpm virtual store for layouts where the platform
-/// package exists in the store but is not linked at this `node_modules` level.
-fn scrape_native_preview_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
-    let store = node_modules.join(".pnpm");
-    let entries = std::fs::read_dir(&store).ok()?;
-
-    for entry in entries.flatten() {
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if !name.starts_with("@typescript+native-preview-") || !name.contains(suffix) {
-            continue;
-        }
-        let lib_dir =
-            native_preview_platform_package_root(&entry.path().join("node_modules"), suffix)
-                .join("lib");
-        for executable in CORSA_EXECUTABLE_NAMES {
-            if let Some(found) = existing_executable(&lib_dir, executable) {
-                return Some(found);
-            }
-        }
-    }
-
-    None
-}
-
-fn scrape_typescript_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
-    let store = node_modules.join(".pnpm");
-    let entries = std::fs::read_dir(&store).ok()?;
-
-    for entry in entries.flatten() {
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if !name.starts_with("@typescript+typescript-") || !name.contains(suffix) {
-            continue;
-        }
-        let lib_dir = typescript_platform_package_root(&entry.path().join("node_modules"), suffix)
-            .join("lib");
-        if let Some(found) = existing_executable(&lib_dir, "tsc") {
-            return Some(found);
-        }
-    }
-
-    None
-}
-
 pub(super) fn find_node_modules_wrapper(dir: &Path) -> Option<PathBuf> {
     let node_modules = dir.join("node_modules");
 
@@ -264,17 +250,6 @@ pub(super) fn find_node_modules_wrapper(dir: &Path) -> Option<PathBuf> {
         let candidate = node_modules.join(".bin").join(executable);
         if candidate.exists() {
             return Some(candidate);
-        }
-    }
-
-    if typescript_package_major_at_least(&node_modules, 7) {
-        for candidate in [
-            node_modules.join(".bin").join("tsc"),
-            node_modules.join("typescript").join("bin").join("tsc"),
-        ] {
-            if candidate.exists() {
-                return Some(candidate);
-            }
         }
     }
 
@@ -290,11 +265,4 @@ pub(super) fn find_node_modules_wrapper(dir: &Path) -> Option<PathBuf> {
     }
 
     None
-}
-
-fn typescript_package_major_at_least(node_modules: &Path, minimum: u64) -> bool {
-    std::fs::read_to_string(node_modules.join("typescript").join("package.json"))
-        .ok()
-        .and_then(|manifest| serde_json::from_str::<serde_json::Value>(&manifest).ok())
-        .is_some_and(|manifest| package_major_at_least(&manifest, minimum))
 }

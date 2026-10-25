@@ -12,18 +12,16 @@
 //!    `CORSA_EXECUTABLE`, `TSGO_PATH`, `TSGO_EXECUTABLE`, `TSRS_PATH`,
 //!    `TSRS_EXECUTABLE`. The first one set wins; its value must point at an
 //!    existing file.
-//! 3. Project discovery: an ancestor walk from the project root (and the
-//!    current directory) probing project caches, dev-checkout paths, stable
-//!    `typescript@7` platform packages, the bundled `node_modules/vize`
-//!    runtime, legacy `@typescript/native-preview` layouts, pnpm store
-//!    fallbacks, and finally local `node_modules/.bin` wrappers. Current native
-//!    runtimes across these roots take precedence over legacy previews; each
-//!    tier retains nearest-directory and start-root order.
+//! 3. Project discovery: an ancestor walk from the selected project root (or
+//!    the current directory when no root is supplied), following user-installed
+//!    native TypeScript packages, declared aliases and linked platform packages.
+//!    The nearest native package wins; local launchers remain a final fallback.
+//!    Unlinked package-store entries and Vize's old bundled runtime are ignored.
 //! 4. Common global install locations under `$HOME` plus `npm root -g`.
 //! 5. A `PATH` lookup for `corsa` then `tsgo`.
 //!
-//! Developer-checkout paths (`ref/typescript-go/...`, `../corsa-bind`, and the
-//! compile-time workspace root) are probed only in debug builds or when
+//! Developer-checkout paths (`ref/typescript-go/...` and `../corsa-bind`) are
+//! probed only in debug builds or when
 //! `VIZE_CORSA_DEV_PATHS` is set to a non-empty value other than `0`, so
 //! production binaries never scan repo-internal layouts.
 
@@ -88,7 +86,10 @@ impl std::fmt::Display for CorsaResolveError {
                 "Configured Corsa executable does not exist: {} (from {source})",
                 path.display()
             ),
-            Self::NotFound => write!(f, "No Corsa executable found"),
+            Self::NotFound => write!(
+                f,
+                "No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable."
+            ),
         }
     }
 }
@@ -194,7 +195,7 @@ fn resolve_required_path(
     project_root: Option<&Path>,
 ) -> Result<PathBuf, CorsaResolveError> {
     let resolved = resolve_relative_path(path, project_root);
-    if !resolved.exists() {
+    if !resolved.is_file() {
         return Err(CorsaResolveError::ExplicitNotFound {
             source,
             path: resolved,
@@ -209,35 +210,13 @@ fn resolve_relative_path(path: &Path, project_root: Option<&Path>) -> PathBuf {
         return path.to_path_buf();
     }
 
-    let project_candidate = project_root.map(|root| root.join(path));
-    if let Some(candidate) = &project_candidate
-        && candidate.exists()
-    {
-        return candidate.clone();
-    }
-
-    if let Ok(cwd) = std::env::current_dir() {
-        let cwd_candidate = cwd.join(path);
-        if cwd_candidate.exists() {
-            return cwd_candidate;
-        }
-    }
-
-    project_candidate.unwrap_or_else(|| path.to_path_buf())
+    project_root.map_or_else(|| path.to_path_buf(), |root| root.join(path))
 }
 
 fn discover_runtime(project_root: Option<&Path>) -> Option<PathBuf> {
     let dev_paths = dev_paths_enabled();
-    let mut walk_starts = Vec::new();
-    if let Some(root) = project_root {
-        push_unique(&mut walk_starts, root.to_path_buf());
-    }
-    if let Ok(cwd) = std::env::current_dir() {
-        push_unique(&mut walk_starts, cwd);
-    }
-    if dev_paths && let Some(workspace_root) = compile_time_workspace_root() {
-        push_unique(&mut walk_starts, workspace_root);
-    }
+    let cwd = std::env::current_dir().ok();
+    let walk_starts = discovery_starts(project_root, cwd.as_deref());
 
     if let Some(found) = discover_in_walk(&walk_starts, dev_paths) {
         return Some(found);
@@ -259,13 +238,12 @@ fn dev_paths_enabled() -> bool {
     }
 }
 
-/// The vize workspace root captured at compile time. Only meaningful for
-/// binaries running on a machine with the vize checkout (i.e. development).
-fn compile_time_workspace_root() -> Option<PathBuf> {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
-        .map(Path::to_path_buf)
+fn discovery_starts(project_root: Option<&Path>, cwd: Option<&Path>) -> Vec<PathBuf> {
+    match project_root {
+        Some(root) if root.is_absolute() => vec![root.to_path_buf()],
+        Some(root) => vec![cwd.map_or_else(|| root.to_path_buf(), |cwd| cwd.join(root))],
+        None => cwd.into_iter().map(Path::to_path_buf).collect(),
+    }
 }
 
 enum Candidate {
@@ -274,12 +252,10 @@ enum Candidate {
     Wrapper(PathBuf),
 }
 
-/// Walk every start directory and its ancestors, preferring a native binary
-/// found anywhere over legacy preview runtimes, then over local wrappers.
-/// An older project preview may lack the API supported by Vize's runtime;
-/// retain it only when no current runtime is installed in the discovery roots.
+/// Follow the selected dependency roots without replacing a nearer native
+/// runtime with a different ancestor's version. Resolve native packages before
+/// falling back to a local launcher.
 fn discover_in_walk(walk_starts: &[PathBuf], dev_paths: bool) -> Option<PathBuf> {
-    let mut legacy_fallback: Option<PathBuf> = None;
     let mut wrapper_fallback: Option<PathBuf> = None;
     let mut visited: Vec<&Path> = Vec::new();
 
@@ -290,10 +266,7 @@ fn discover_in_walk(walk_starts: &[PathBuf], dev_paths: bool) -> Option<PathBuf>
             }
             visited.push(dir);
             match probe_directory(dir, dev_paths) {
-                Some(Candidate::Native(path)) => return Some(path),
-                Some(Candidate::Legacy(path)) => {
-                    legacy_fallback.get_or_insert(path);
-                }
+                Some(Candidate::Native(path) | Candidate::Legacy(path)) => return Some(path),
                 Some(Candidate::Wrapper(path)) => {
                     wrapper_fallback.get_or_insert(path);
                 }
@@ -302,7 +275,7 @@ fn discover_in_walk(walk_starts: &[PathBuf], dev_paths: bool) -> Option<PathBuf>
         }
     }
 
-    legacy_fallback.or(wrapper_fallback)
+    wrapper_fallback
 }
 
 fn probe_directory(dir: &Path, dev_paths: bool) -> Option<Candidate> {
@@ -344,11 +317,11 @@ fn find_project_cache(dir: &Path, dev_paths: bool) -> Option<PathBuf> {
 /// ship `lib/tsgo.exe`; every other platform ships an extensionless binary.
 fn existing_executable(dir: &Path, executable: &str) -> Option<PathBuf> {
     let plain = dir.join(executable);
-    if plain.exists() {
+    if plain.is_file() {
         return Some(plain);
     }
     let windows = dir.join(&*crate::cstr!("{executable}.exe"));
-    if windows.exists() {
+    if windows.is_file() {
         return Some(windows);
     }
     None
@@ -370,13 +343,13 @@ fn find_in_home_locations() -> Option<PathBuf> {
     for executable in CORSA_EXECUTABLE_NAMES {
         for prefix in HOME_RELATIVE {
             let candidate = home.join(prefix).join(executable);
-            if candidate.exists() {
+            if candidate.is_file() {
                 return Some(candidate);
             }
         }
         for system_dir in SYSTEM_BIN_DIRS {
             let candidate = Path::new(system_dir).join(executable);
-            if candidate.exists() {
+            if candidate.is_file() {
                 return Some(candidate);
             }
         }
@@ -398,7 +371,7 @@ fn find_in_npm_global_root() -> Option<PathBuf> {
     let bin_dir = Path::new(npm_root.trim()).parent()?.join("bin");
     for executable in CORSA_EXECUTABLE_NAMES {
         let candidate = bin_dir.join(executable);
-        if candidate.exists() {
+        if candidate.is_file() {
             return Some(candidate);
         }
     }
@@ -426,12 +399,6 @@ fn wrapper_project_root(path: &Path) -> Option<&Path> {
         return None;
     }
     node_modules.parent()
-}
-
-fn push_unique(paths: &mut Vec<PathBuf>, candidate: PathBuf) {
-    if !paths.contains(&candidate) {
-        paths.push(candidate);
-    }
 }
 
 #[cfg(test)]

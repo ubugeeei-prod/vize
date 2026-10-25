@@ -136,7 +136,7 @@ fn resolves_platform_package_through_pnpm_symlink_layout() {
 }
 
 #[test]
-fn scrapes_pnpm_store_when_meta_package_is_not_linked() {
+fn rejects_pnpm_store_when_meta_package_is_not_linked() {
     let suffix = platform_suffix();
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path().join("project");
@@ -153,11 +153,11 @@ fn scrapes_pnpm_store_when_meta_package_is_not_linked() {
 
     let resolved = discover_in_walk(&[root], false);
 
-    assert_eq!(resolved, Some(store_binary));
+    assert_eq!(resolved, None);
 }
 
 #[test]
-fn scrapes_pnpm_store_when_typescript_platform_package_is_not_linked() {
+fn rejects_pnpm_store_when_typescript_platform_package_is_not_linked() {
     let suffix = platform_suffix();
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path().join("project");
@@ -174,11 +174,11 @@ fn scrapes_pnpm_store_when_typescript_platform_package_is_not_linked() {
 
     let resolved = discover_in_walk(&[root], false);
 
-    assert_eq!(resolved, Some(store_binary));
+    assert_eq!(resolved, None);
 }
 
 #[test]
-fn falls_back_to_typescript_seven_bin_wrapper_when_platform_package_missing() {
+fn rejects_typescript_seven_launcher_when_platform_package_is_missing() {
     let suffix = platform_suffix();
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path().join("project");
@@ -194,7 +194,7 @@ fn falls_back_to_typescript_seven_bin_wrapper_when_platform_package_missing() {
 
     let resolved = discover_in_walk(&[root], false);
 
-    assert_eq!(resolved, Some(wrapper));
+    assert_eq!(resolved, None);
 }
 
 #[test]
@@ -255,11 +255,10 @@ fn dev_paths_expose_sibling_corsa_bind_cache() {
     assert_eq!(discover_in_walk(&[nested], false), None);
 }
 
-/// A prepared upstream workspace may bring its own older native preview.
-/// Its API can lack `-async`, while Vize's enclosing install owns the current
-/// runtime. Keep upstream's frozen package closure without selecting that API.
+/// Unlinked store entries and a surrounding Vize bundle are not the selected
+/// project's native dependency graph. Explicit user overrides remain valid.
 #[test]
-fn ancestor_current_runtime_precedes_nested_router_preview() {
+fn rejects_unlinked_preview_and_old_vize_bundle_without_user_selection() {
     let suffix = platform_suffix();
     let temp = TempDir::new().unwrap();
     let install = temp.path().join("vize-install");
@@ -295,7 +294,7 @@ fn ancestor_current_runtime_precedes_nested_router_preview() {
 
     assert_eq!(
         discover_in_walk(std::slice::from_ref(&playground), false),
-        Some(current.canonicalize().unwrap())
+        None
     );
     // Explicit configuration and the existing environment override still own
     // the selection, even when that executable is an older preview.
@@ -308,7 +307,7 @@ fn ancestor_current_runtime_precedes_nested_router_preview() {
         legacy.canonicalize().unwrap()
     );
     fs::remove_file(&current).unwrap();
-    assert_eq!(discover_in_walk(&[playground], false), Some(legacy));
+    assert_eq!(discover_in_walk(&[playground], false), None);
 }
 
 #[test]

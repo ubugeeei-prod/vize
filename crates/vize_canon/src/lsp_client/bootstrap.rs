@@ -9,7 +9,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use vize_carton::corsa_resolver::{CorsaResolveError, CorsaResolveRequest};
+use vize_carton::corsa_resolver::CorsaResolveRequest;
 use vize_l0::{String, cstr};
 
 pub(super) fn resolve_corsa_executable(
@@ -21,16 +21,9 @@ pub(super) fn resolve_corsa_executable(
         project_root: working_dir.map(Path::new),
     };
 
-    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
-        Ok(path) => {
-            tracing::info!(executable = %path.display(), "resolved native TypeScript runtime");
-            Ok(path.to_string_lossy().into())
-        }
-        // Preserve the historical lenient fallback: spawning a bare `corsa`
-        // still lets `PATH` changes made after resolution take effect.
-        Err(CorsaResolveError::NotFound) => Ok("corsa".into()),
-        Err(error @ CorsaResolveError::ExplicitNotFound { .. }) => Err(cstr!("{error}")),
-    }
+    vize_carton::corsa_resolver::resolve_corsa_executable(request)
+        .map(|path| path.to_string_lossy().into())
+        .map_err(|error| cstr!("{error}"))
 }
 
 impl CorsaProjectClient {
@@ -194,8 +187,20 @@ fn selected_workspace_config(root: &Path, explicit: Option<&Path>) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use super::selected_workspace_config;
+    use super::{resolve_corsa_executable, selected_workspace_config};
     use std::fs;
+
+    #[test]
+    fn missing_explicit_runtime_is_an_error_before_any_transport_starts() {
+        let root = tempfile::tempdir().unwrap();
+        let error = resolve_corsa_executable(
+            Some("missing-native-runtime"),
+            Some(root.path().to_str().unwrap()),
+        )
+        .unwrap_err();
+        assert!(error.contains("Configured Corsa executable does not exist"));
+        assert!(error.contains("missing-native-runtime"));
+    }
 
     #[test]
     fn explicit_generated_config_keeps_nested_authority_with_or_without_root_config() {

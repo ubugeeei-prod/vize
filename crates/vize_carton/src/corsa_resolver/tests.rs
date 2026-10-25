@@ -21,6 +21,19 @@ fn write_typescript_manifest(path: &Path, suffix: &str, version: &str) {
         ),
     )
     .unwrap();
+    let package = path
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("@typescript")
+        .join(&*crate::cstr!("typescript-{suffix}"));
+    fs::create_dir_all(&package).unwrap();
+    fs::write(
+        package.join("package.json"),
+        &*crate::cstr!(r#"{{"name":"@typescript/typescript-{suffix}","version":"{version}"}}"#),
+    )
+    .unwrap();
 }
 
 fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
@@ -330,7 +343,7 @@ fn ignores_typescript_six_when_finding_corsa_runtime() {
 }
 
 #[test]
-fn finds_vize_owned_typescript_runtime_when_project_uses_typescript_six() {
+fn ignores_vize_owned_runtime_and_uses_the_project_preview() {
     let suffix = platform_suffix();
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path().join("project");
@@ -358,7 +371,7 @@ fn finds_vize_owned_typescript_runtime_when_project_uses_typescript_six() {
 
     let resolved = discover_in_walk(std::slice::from_ref(&root), false);
 
-    assert_eq!(resolved, Some(owned_binary.canonicalize().unwrap()));
+    assert_eq!(resolved, Some(native_preview_binary));
 }
 
 #[test]
@@ -413,3 +426,4 @@ fn falls_back_to_node_modules_bin_wrapper_when_no_native_binary_exists() {
 }
 
 mod package_runtime;
+mod project_packages;
