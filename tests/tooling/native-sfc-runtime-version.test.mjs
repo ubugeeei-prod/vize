@@ -187,7 +187,7 @@ test("explicit Vue3 emits its actual DOM and server runtime vocabulary", options
     native.compileSfc(source, { vueVersion: "3", ssr: true }),
   );
   assert.deepEqual(ssr.errors, []);
-  assert.match(ssr.code, /from ["']vue\/server-renderer["']/);
+  assert.match(ssr.code, /from ["']@vue\/server-renderer["']/);
   assert.match(ssr.code, /ssrRender|ssrInterpolate/);
   assert.equal(readdirSync(fixtures).filter((name) => name.endsWith(".vue")).length, 4);
 });
