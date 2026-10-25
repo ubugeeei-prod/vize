@@ -12,6 +12,7 @@ import {
 } from "./native-shutdown-protocol-fixtures.ts";
 
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import { newCheckPreparationCases } from "./check-preparation-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -61,6 +62,7 @@ interface Manifest {
   cases?: ManifestCase[];
   protocolCases?: unknown;
   runtimeCases?: unknown;
+  preparationCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -207,6 +209,12 @@ function checkProduct(
       manifest.runtimeCases,
       readFile,
     );
+    const preparation = newCheckPreparationCases(
+      product,
+      before?.preparationCases,
+      manifest.preparationCases,
+      readFile,
+    );
     const productPaths = paths.filter((path) =>
       product === "lsp"
         ? /^crates\/vize_(?:maestro|resident)\/src\//.test(path)
@@ -219,6 +227,7 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !preparation.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
@@ -231,7 +240,7 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids],
+      cases: [...cases, ...protocols, ...runtime.ids, ...preparation.ids],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
