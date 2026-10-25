@@ -18,8 +18,8 @@ use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;
 use crate::lower::BabelLoweringOptions;
 use crate::spread_children::reject_spread_children;
-use crate::ssr::compile_lowered_root_to_ssr;
-use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
+use crate::ssr::{SsrLane, compile_root_with_origins};
+use crate::vapor::{VaporCompileOptions, compile_root_to_vapor_with_origins};
 use crate::vdom::{VdomCompatOptions, VdomCompileOptions, compile_root_to_vdom};
 use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 
@@ -91,14 +91,14 @@ impl JsxCompileOutput {
     }
 
     /// Emit a module with deduplicated runtime imports. VDOM output preserves
-    /// authored declarations, exports and lexical scopes; block-body components
-    /// reuse their setup statements. Per-component render code remains available
-    /// in `components`. Vapor and SSR retain their standalone render exports.
+    /// authored declarations, exports and lexical scopes. Native component arrows
+    /// use their backend's Vue setup contract. Per-component render code remains
+    /// available in `components`.
     pub fn module_code(&self) -> String {
         self.module.clone()
     }
 
-    /// The composed v3 source map for VDOM modules when requested, including
+    /// The composed v3 source map for authored modules when requested, including
     /// authored source and every generated render root.
     pub fn source_map(&self) -> Option<&str> {
         self.module_map.as_deref()
@@ -178,6 +178,23 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
     // Park the analysis on the allocator so the transforms can borrow it.
     let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
 
+    let mut bindings = (config.ssr
+        || lowered
+            .roots
+            .iter()
+            .any(|root| resolve_mode(root.mode, config.default_mode) == JsxOutputMode::Vapor))
+    .then(|| {
+        vize_l0::profile!(
+            "atelier.jsx.module.binding_metadata",
+            crate::emission::bindings(analysis)
+        )
+    });
+    let mut ssr_options = vize_atelier_ssr::SsrCompilerOptions {
+        binding_metadata: if config.ssr { bindings.take() } else { None },
+        is_ts,
+        ..Default::default()
+    };
+    let mut origins = Vec::with_capacity(lowered.roots.len());
     let mut components = Vec::with_capacity(lowered.roots.len());
     let mut spans = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
@@ -185,16 +202,23 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             lowered_root.root.loc.span.start,
             lowered_root.root.loc.span.end,
         ));
+        let mut origin = crate::emission::RootSourceMap::default();
         let component = if config.ssr {
             reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
-            JsxComponent::Ssr(compile_lowered_root_to_ssr(
+            let (component, map) = compile_root_with_origins(
                 allocator,
                 lowered_root,
                 analysis,
                 config.default_mode,
                 source,
+                SsrLane::Plan,
                 &mut diagnostics,
-            ))
+                &mut ssr_options,
+                config.vdom.source_map,
+                true,
+            );
+            origin = map;
+            JsxComponent::Ssr(component)
         } else {
             let mode = resolve_mode(lowered_root.mode, config.default_mode);
             if mode == JsxOutputMode::Vapor {
@@ -228,27 +252,38 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                     &mut diagnostics,
                     source,
                 )),
-                JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
-                    allocator,
-                    lowered_root,
-                    analysis,
-                    &config.vapor,
-                    source,
-                    &mut diagnostics,
-                )),
+                JsxOutputMode::Vapor => {
+                    let (component, map) = compile_root_to_vapor_with_origins(
+                        allocator,
+                        lowered_root,
+                        analysis,
+                        &config.vapor,
+                        source,
+                        &mut diagnostics,
+                        bindings.as_ref(),
+                        config.vdom.source_map,
+                    );
+                    origin = map;
+                    JsxComponent::Vapor(component)
+                }
             }
         };
+        origins.push(origin);
         components.push(component);
     }
 
     let preamble = merge_preambles(components.iter().map(JsxComponent::preamble));
-    let (module, module_map) = match authored_module::emit(
-        &components,
-        &spans,
-        &preamble,
-        source,
-        lang,
-        config.vdom.source_map,
+    let (module, module_map) = match vize_l0::profile!(
+        "atelier.jsx.module.assemble",
+        authored_module::emit(
+            &components,
+            &origins,
+            &spans,
+            &preamble,
+            source,
+            lang,
+            config.vdom.source_map,
+        )
     ) {
         Ok(Some(module)) => module,
         Ok(None) => (render_exports::module_code(&components, preamble), None),
