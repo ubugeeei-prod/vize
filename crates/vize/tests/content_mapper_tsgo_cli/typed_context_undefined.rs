@@ -226,7 +226,14 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
             let messages: Vec<_> = errors
                 .iter()
                 .map(|(line, column, code, message, text)| {
-                    format!("error:{line}:{column} [TS{code}] {message} (source: {text})")
+                    let message = format!("error:{line}:{column} [TS{code}] {message}");
+                    // JSON retains template expression context; authored script
+                    // diagnostics use their concise complete message contract.
+                    if case.expected == "member" {
+                        format!("{message} (source: {text})")
+                    } else {
+                        message
+                    }
                 })
                 .collect();
             let mut expected_config: Value = serde_json::from_slice(&config).unwrap();
