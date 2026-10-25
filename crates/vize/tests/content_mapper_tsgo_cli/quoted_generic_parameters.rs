@@ -12,6 +12,7 @@ use vize_l0::{String as CompactString, cstr};
 
 use super::{TSGO_ENV, install_mapper_manifest, install_vue_package, output_text, workspace_root};
 
+mod body_error;
 mod syntax;
 
 const PACK: &str = include_str!(concat!(

@@ -140,7 +140,13 @@ jobs:
             const previous = base.rows[index];
             assert.deepEqual([current.case, current.mapper, current.source, current.iterationsPerSample], [previous.case, previous.mapper, previous.source, previous.iterationsPerSample]);
             if (current.case !== 'literal') assert.deepEqual(current.packet, previous.packet);
-            else assert.notDeepEqual(current.packet, previous.packet, 'quoted generic fixture must reach the repaired production projection');
+            else {
+              assert.notDeepEqual(current.packet, previous.packet, 'quoted generic fixture must reach the repaired production projection');
+              const expectedProps = "export type Props<T extends 'a,b' = 'a,b', U extends `x,${string}` = 'x,y', F extends (left: T, right: U) => readonly [T, U] = (left: T, right: U) => readonly [T, U]> = Awaited<ReturnType<typeof __setup<T, U, F>>>[\"__vize_setup_props\"];";
+              const declarations = packet => (packet.text ?? packet.virtual_ts).split('\n').filter(line => line.startsWith('export type Props<'));
+              assert.deepEqual(declarations(current.packet), [expectedProps], 'head must emit the complete independently authored literal contract');
+              assert.notDeepEqual(declarations(previous.packet), [expectedProps], 'baseline must retain the original quoted-comma corruption');
+            }
             return { case: current.case, mapper: current.mapper, iterationsPerSample: current.iterationsPerSample,
               baseAllocationCalls: previous.allocationCallsPerSample, headAllocationCalls: current.allocationCallsPerSample,
               baseRequestedBytes: previous.requestedBytesPerSample, headRequestedBytes: current.requestedBytesPerSample,
