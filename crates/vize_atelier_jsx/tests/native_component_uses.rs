@@ -104,6 +104,52 @@ fn callable_alias_introspection_and_escape_uses_refuse_actual_converted_symbols(
                 vdom.diagnostics
             );
         }
+        for (name, authored_use) in [
+            ("\\u0041pp", "\\u0041pp"),
+            ("アプリ", "アプリ"),
+            ("𐐀App", "𐐀App"),
+        ] {
+            let source = format!(
+                "// 😀\r\nconst {name} = () => <p/>;\r\nexport const node = {authored_use}();"
+            );
+            let allocator = Allocator::new();
+            profiler.clear();
+            profiler.enable();
+            let output = compile_jsx(
+                &allocator,
+                &source,
+                JsxLang::Tsx,
+                &JsxCompileConfig {
+                    ssr,
+                    default_mode: JsxOutputMode::Vapor,
+                    ..Default::default()
+                },
+            );
+            profiler.disable();
+            assert_eq!(
+                output
+                    .diagnostics
+                    .iter()
+                    .map(|diagnostic| diagnostic.message.as_str())
+                    .collect::<Vec<_>>(),
+                [REFUSAL]
+            );
+            let diagnostic = output.diagnostics.first().unwrap();
+            assert_eq!(
+                source.get(diagnostic.start as usize..diagnostic.end as usize),
+                Some(authored_use)
+            );
+            assert_eq!(output.module_code().as_str(), "");
+            assert_eq!(
+                counters(),
+                [
+                    ("atelier.jsx.module.component_use_candidates", 1),
+                    ("atelier.jsx.module.component_use_refusals", 1),
+                    ("atelier.jsx.module.component_use_semantic_builds", 1),
+                ]
+            );
+            packets.push(json!({"source":source,"ssr":ssr,"module":output.module_code().as_str(),"diagnostics":output.diagnostics.iter().map(|diagnostic|json!({"message":diagnostic.message.as_str(),"start":diagnostic.start,"end":diagnostic.end})).collect::<Vec<_>>(),"counters":counters()}));
+        }
         for (suffix, candidates, builds) in [
             (
                 "export {App as Alias}; export default App; export const Parent = () => <App/>;",

@@ -7,7 +7,11 @@ on:
       - "crates/vize_atelier_vapor/src/**"
       - "crates/vize_atelier_ssr/src/**"
       - "crates/vize_vitrine/src/napi/jsx.rs"
-      - "tests/_fixtures/differential/jsx/authored-native-modules-10700/**"
+      - "tests/_fixtures/differential/jsx/**"
+      - "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
+      - "tests/tooling/jsx-authored-module-fixture-custody.test.mjs"
+      - "tests/tooling/jsx-vapor-oracle/**"
+      - "tests/tooling/support/jsx-falsy-and-runtime.mjs"
       - ".github/workflows/jsx-authored-native-modules.yml"
 permissions: { contents: read }
 concurrency:
@@ -58,6 +62,7 @@ jobs:
           status=0
           cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture || status=1
           VIZE_JSX_NATIVE_USES_CAPTURE="$RUNNER_TEMP/jsx-authored-native/component-uses.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_uses -- --nocapture || status=1
+          VIZE_JSX_COMPONENT_STABILITY_CAPTURE="$RUNNER_TEMP/jsx-authored-native/component-stability.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_stability -- --nocapture || status=1
           exit "$status"
       - name: Measure the exact old and new authored-module contracts
         run: |
@@ -78,6 +83,16 @@ jobs:
           VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
           sha256sum "$observer" "$baseline/$observer" "$role_observer" "$baseline/$role_observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
+          # A separate source tree/target isolates the actual static-value
+          # change from the earlier standalone-to-authored-module transition.
+          stable_base="$RUNNER_TEMP/jsx-stability-base"
+          git worktree add --detach "$stable_base" 664c7dc3846c068a756b7562e11eab35a9497d9d
+          cp "$observer" "$stable_base/$observer"
+          cmp "$observer" "$stable_base/$observer"
+          git -C "$stable_base" diff --exit-code -- crates/*/src
+          (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
+          git -C "$stable_base" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/stability-base-source.txt"
+          sha256sum "$observer" "$stable_base/$observer" > "$RUNNER_TEMP/jsx-authored-native/stability-observer.sha256"
       - name: Verify measured contracts and source counters
         run: |
           python3 - <<'PYCODE'
@@ -86,7 +101,9 @@ jobs:
           directory=Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native'
           base=json.loads((directory/'base-profile.json').read_text())
           head=json.loads((directory/'head-profile.json').read_text())
-          assert len(base)==len(head)==12
+          assert len(base)==len(head)==16
+          stability_base=json.loads((directory/'stability-base-profile.json').read_text())
+          assert len(stability_base)==len(head)
           before_roles=json.loads((directory/'base-functional-role.json').read_text())
           after_roles=json.loads((directory/'head-functional-role.json').read_text())
           assert len(before_roles)==len(after_roles)==6
@@ -108,6 +125,7 @@ jobs:
             for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
             assert not current['output']['diagnostics'], current['output']
             counters={entry['name']:entry['total'] for entry in current['counters']}
+            assert counters.get('atelier.jsx.lower.component_stability_builds',0)<=1
             roots=counters['atelier.jsx.module.native_roots']
             assert counters['atelier.jsx.module.component_use_candidates']==0
             assert counters['atelier.jsx.module.component_use_semantic_builds']==0
@@ -125,6 +143,15 @@ jobs:
             after=statistics.median(current['samplesNs'])
             rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'baseContract':'explicit-refusal' if previous['output']['diagnostics'] else 'complete-module','headContract':'complete-module','baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
           (directory/'comparison.json').write_text(json.dumps({'scope':'same sources with raw before/head outcomes retained; ratios describe the observed contracts and do not claim equivalent work or a speedup','rows':rows},indent=2)+'\n')
+          stable_rows=[]
+          for previous,current in zip(stability_base,head):
+            for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
+            changed=current['source'].startswith('const Child={};') and not current['ssr']
+            if not changed: assert previous['output']==current['output'], 'all conservative/default paths keep complete code and maps'
+            assert not previous['output']['diagnostics'] and not current['output']['diagnostics']
+            before=statistics.median(previous['samplesNs']); after=statistics.median(current['samplesNs'])
+            stable_rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'intentionalStaticValueChange':changed,'baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
+          (directory/'stability-comparison.json').write_text(json.dumps({'scope':'literal guarded664 source versus head; complete conservative outputs equal, actual immutable static-value code/map change isolated','rows':stable_rows},indent=2)+'\n')
           PYCODE
       - name: Existing JSX library contracts
         if: always()
@@ -132,13 +159,18 @@ jobs:
         run: cargo test --locked --profile ci -p vize_atelier_jsx --lib
       - name: Existing mode and Babel option producer contracts
         if: always()
-        env: { INSTA_UPDATE: new }
+        env:
+          INSTA_UPDATE: new
+          VIZE_JSX_ADVERSARIAL_CAPTURE: ${{ runner.temp }}/jsx-authored-native/adversarial
         run: |
           status=0
-          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding; do
+          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding adversarial_snapshots; do
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
           exit "$status"
+      - name: Verify complete native fixture and historical custody
+        if: always()
+        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.mjs tests/tooling/vapor-third-party-reports.test.mjs
       - name: Capture whole native fixture packets and genuine runtime traces
         if: always()
         env:
@@ -150,6 +182,7 @@ jobs:
           VIZE_JSX_VAPOR_COMPAT_CAPTURE: ${{ runner.temp }}/jsx-authored-native/compat-modules.json
           VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/compat-runtime.json
           VIZE_L4_SSR_REQUIRE_NATIVE: "1"
+          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE: ${{ runner.temp }}/jsx-authored-native/runtime-producer
         run: |
           status=0
           mkdir -p "$RUNNER_TEMP/jsx-authored-native"

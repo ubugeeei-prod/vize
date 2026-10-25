@@ -82,6 +82,40 @@ test("Node 22 is the public package floor", () => {
   }
 });
 
+test("Node engine floors retain precise compatible minimum versions", () => {
+  for (const engine of [
+    "^22 || >=24",
+    "^22.13.0 || >=24",
+    "^22.18.0 || >=24.11.0",
+    ">=22.13.0 || ^24.0.0",
+    "^22.13 || >=24.0",
+    ">= 22.13.0",
+  ]) {
+    assert.equal(parseNodeEngineFloor(engine), 22, engine);
+  }
+  assert.equal(parseNodeEngineFloor("^24.1.2"), 24);
+});
+
+test("Node engine floors preserve lower alternatives and refuse unknown range syntax", () => {
+  assert.equal(parseNodeEngineFloor("^22.13.0 || >=20.19.0"), 20);
+  assert.equal(parseNodeEngineFloor(">=18.0.0 || ^22.13.0 || >=24"), 18);
+  assert.equal(parseNodeEngineFloor("^99.0.0"), 99);
+  for (const engine of [
+    "",
+    "22.13.0",
+    ">22.13.0",
+    "^22.13.0-beta.1",
+    "^22.013.0",
+    "^22.13.00",
+    "^22.13.0 trailing",
+    "^22.13.0 || >=unknown",
+    "^22.13.0 || *",
+    "^22.x",
+  ]) {
+    assert.equal(parseNodeEngineFloor(engine), null, engine);
+  }
+});
+
 function readNpmPackages(): Array<{ packageDir: string; packageJson: PackageJson }> {
   return fs
     .readdirSync(path.join(root, "npm"), { withFileTypes: true })
@@ -107,15 +141,6 @@ function parseNodeEngineFloor(engine: string): number | null {
 }
 
 function parseSimpleNodeEngineRange(range: string): number | null {
-  const gteMatch = range.match(/^>=\s*(\d+)$/);
-  if (gteMatch != null) {
-    return Number.parseInt(gteMatch[1], 10);
-  }
-
-  const caretMatch = range.match(/^\^(\d+)$/);
-  if (caretMatch != null) {
-    return Number.parseInt(caretMatch[1], 10);
-  }
-
-  return null;
+  const match = range.match(/^(?:>=\s*|\^)(0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))?)?$/);
+  return match == null ? null : Number.parseInt(match[1], 10);
 }

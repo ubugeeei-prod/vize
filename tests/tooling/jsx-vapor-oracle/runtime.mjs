@@ -4,11 +4,9 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { compileFunction } from "node:vm";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 import { transformSync } from "@babel/core";
 import { Window } from "happy-dom";
-
-const here = dirname(fileURLToPath(import.meta.url));
 
 const window = new Window();
 for (const key of [

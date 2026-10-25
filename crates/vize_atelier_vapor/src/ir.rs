@@ -318,7 +318,8 @@ pub struct CreateComponentIRNode<'a> {
     pub dynamic_slots: bool,
     /// Component kind for built-in / dynamic handling
     pub kind: ComponentKind,
-    /// Dynamic component `:is` expression (for ComponentKind::Dynamic)
+    /// Component value expression. A proved immutable JSX value is Regular
+    /// with asset:false; otherwise `:is` uses ComponentKind::Dynamic.
     pub is_expr: Option<Box<'a, SimpleExpressionNode<'a>>>,
     /// v-show expression to apply after component creation
     pub v_show: Option<Box<'a, SimpleExpressionNode<'a>>>,

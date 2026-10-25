@@ -82,6 +82,8 @@ pub struct SfcCompileOptionsNapi {
     pub experimental_server_script: Option<bool>,
     pub runtime_module_name: Option<String>,
     pub runtime_global_name: Option<String>,
+    /// Runtime dialect selector; omitted or "3" uses Vue 3.
+    /// Legacy selectors are rejected until their native runtime backend is available.
     pub vue_version: Option<String>,
     pub style_trim: Option<bool>,
     pub template_cache_handlers: Option<bool>,
@@ -173,6 +175,8 @@ pub struct BatchCompileOptionsNapi {
     pub experimental_server_script: Option<bool>,
     pub runtime_module_name: Option<String>,
     pub runtime_global_name: Option<String>,
+    /// Runtime dialect selector; omitted or "3" uses Vue 3.
+    /// Legacy selectors are rejected until their native runtime backend is available.
     pub vue_version: Option<String>,
     pub style_trim: Option<bool>,
     pub template_cache_handlers: Option<bool>,

@@ -28,12 +28,13 @@ pub fn generate_vapor_from_transformed_root<'a>(
 ) -> (VaporGenerateResult, Vec<String>, Vec<String>) {
     let (ir, diagnostics, warnings, templates) = profile!(
         "atelier.vapor.transformed_root.lower",
-        crate::lower::transform_to_ir_with_spans(
+        crate::lower::transform_to_ir_with_host_context(
             allocator,
             root,
             source,
             scope_id,
             experimental.source_map,
+            options.jsx_closure,
         )
     );
     let spans = profile!(

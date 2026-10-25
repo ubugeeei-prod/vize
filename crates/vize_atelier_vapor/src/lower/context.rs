@@ -14,6 +14,7 @@ pub(crate) struct TransformContext<'a> {
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
     pub(crate) scope_id: Option<String>,
+    pub(crate) jsx_closure: bool,
     /// Atoms for the names lowering computes rather than slices out of the
     /// source (camelized prop keys, builtin directive names).
     pub(crate) interner: Interner<'a>,
@@ -47,6 +48,7 @@ impl<'a> TransformContext<'a> {
             allocator,
             source,
             scope_id: None,
+            jsx_closure: false,
             interner: Interner::new(allocator),
             temp_id: 0,
             templates: Vec::new_in(&allocator),
