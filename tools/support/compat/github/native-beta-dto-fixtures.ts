@@ -14,6 +14,7 @@ const production = [
   `${snapshot}protocol/protocol9.rs`,
   "crates/vize_canon/src/lsp_client/session/capabilities.rs",
   "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+  "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
 ];
 const tests = [
   {
@@ -35,6 +36,11 @@ const tests = [
     source: `${snapshot}tests/native_beta.rs`,
     selector:
       "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+  },
+  {
+    source: `${snapshot}tests.rs`,
+    selector:
+      "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",
   },
 ];
 const scope = new Set([
@@ -179,7 +185,7 @@ export function newNativeBetaDtoProtocolCases(
     const pairs = JSON.parse(data[3]!.toString("utf8"));
     require(pairs.beforeRevision === before &&
       pairs.candidateProductionRevision ===
-        "a0e92ca5488fd4f04dabd282f1e437a98a3061c5", "pinned source pair required");
+        "ec579d989b1f876c182732c739eaaca03013ac75", "pinned source pair required");
     require(Array.isArray(pairs.production) &&
       pairs.production.length === production.length, "all exact production blobs required");
     for (const [index, path] of production.entries()) {
@@ -230,6 +236,9 @@ export function newNativeBetaDtoProtocolCases(
       "completion_raw(",
       "definition_raw(",
       "rename_raw(",
+      "mapped_virtual",
+      "whole_batch",
+      "directCompletion",
     ])
       require(actual.includes(
         marker === "expected_refusal" ? "expect_refusal" : marker,

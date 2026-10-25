@@ -65,8 +65,13 @@ without changing disk, repairs and closes it, and compares full diagnostic,
 hover, completion, definition, reference and rename packets with native LSP. The
 beta candidate must issue no attached semantic API queries. The original failing
 implicit-snapshot capture is retained separately; it is not repaired by accepting
-an empty result. The before beta
-role must retain its strict DTO failure; candidate beta must complete the
+an empty result. The immutable before-beta role is a baseline observation of its known strict
+DTO and lifecycle refusal; it receives no functional or lifecycle PASS. Candidate
+beta must complete the
 same-snapshot adapter. Each SDK/source pair retains its own provider and source
 receipt. This qualifies the bounded diagnostic adapter and its exercised
-features, rather than general beta editor or resolver support.
+features, rather than general beta editor or resolver support. All candidate
+native owners must exit zero with empty stderr. Completion comparison preserves
+list metadata and complete item multisets, including duplicate counts and nested
+fields, while retaining original ordered packets. This proves content semantics;
+deterministic ordering is tracked separately in #10747.

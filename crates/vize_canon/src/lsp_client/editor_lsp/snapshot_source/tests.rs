@@ -205,3 +205,27 @@ fn trace_source(params: &serde_json::Value, name: &str, text: &str) {
 
 #[cfg(unix)]
 mod native_beta;
+
+#[test]
+#[cfg(unix)]
+fn completion_comparison_retains_metadata_nested_fields_and_duplicate_counts() {
+    use native_beta::completion_multiset;
+    use serde_json::json;
+    let original = json!({"isIncomplete":false,"items":[{"label":"a","sortText":"1","data":{"version":1}},{"label":"b"}]});
+    let reordered = json!({"isIncomplete":false,"items":[{"label":"b"},{"label":"a","sortText":"1","data":{"version":1}}]});
+    assert_eq!(
+        completion_multiset(&original),
+        completion_multiset(&reordered)
+    );
+    for changed in [
+        json!({"isIncomplete":false,"items":[{"label":"a","sortText":"2","data":{"version":1}},{"label":"b"}]}),
+        json!({"isIncomplete":true,"items":original["items"]}),
+        json!({"isIncomplete":false,"items":[{"label":"a","sortText":"1","data":{"version":2}},{"label":"b"}]}),
+        json!({"isIncomplete":false,"items":[{"label":"a","sortText":"1","data":{"version":1}},{"label":"b"},{"label":"b"}]}),
+    ] {
+        assert_ne!(
+            completion_multiset(&original),
+            completion_multiset(&changed)
+        );
+    }
+}
