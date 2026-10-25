@@ -1,0 +1,117 @@
+name: Consumer instance globals capture
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/content-mapper-instance-globals.yml
+      - .github/workflows/full-source-cli.yml
+      - .github/actions/restore-source-cli/**
+      - crates/vize_canon/src/virtual_ts/**
+      - crates/vize/src/commands/content_mapper.rs
+      - crates/vize/src/commands/content_mapper/**
+      - tests/fixtures/typechecker/undeclared-instance-globals-10617/**
+      - tests/tooling/content-mapper-instance-globals-10617.test.ts
+      - tests/tooling/support/content-mapper-instance-globals-10617.ts
+      - npm/cli/content-mapper-helpers*
+      - Cargo.lock
+  workflow_dispatch:
+    inputs:
+      expected-source-sha:
+        description: Exact reviewed source commit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instance-globals-10617-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  admit-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Admit the immutable event source before building
+        env:
+          SOURCE_EVENT: ${{ github.event_name }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$SOURCE_EVENT" = workflow_dispatch ]; then
+            [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+          else
+            test "$SOURCE_EVENT" = pull_request
+            [[ "$PR_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          fi
+  source-cli:
+    needs: admit-source
+    uses: ./.github/workflows/full-source-cli.yml
+  real-beta-host:
+    needs: source-cli
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.source-cli.outputs.receipt-sha256 }}
+    steps:
+      - name: Checkout the same source as the immutable producer
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require the reviewed source and retain merge identity
+        env:
+          SOURCE_EVENT: ${{ github.event_name }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$SOURCE_EVENT" = workflow_dispatch ]; then
+            [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+          else
+            test "$SOURCE_EVENT" = pull_request
+            test "$(git rev-parse HEAD^2)" = "$PR_HEAD"
+          fi
+          git diff --exit-code HEAD
+          mkdir -p "$RUNNER_TEMP/instance-globals-10617"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/instance-globals-10617/source-identity.txt"
+      - name: Setup the producer Rust runtime
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Setup Vite Plus
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install frozen source dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
+      - name: Retain the original producer receipt and executable hash
+        run: |
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/instance-globals-10617/source-build.json"
+          sha256sum target/ci/vize > "$RUNNER_TEMP/instance-globals-10617/source-cli.sha256"
+      - name: Capture real consumer packets with explicit discovery status
+        env:
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_TEST_GLOBALS_REQUIRED: "1"
+          VIZE_TEST_GLOBALS_DISCOVERY: "1"
+          VIZE_TEST_GLOBALS_OUTPUT: ${{ runner.temp }}/instance-globals-10617/consumer
+        run: vp node --test --test-concurrency=1 tests/tooling/content-mapper-instance-globals-10617.test.ts
+      - name: Retain complete packets, generated code and format discoveries
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: instance-globals-10617-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/instance-globals-10617/
+          if-no-files-found: error
