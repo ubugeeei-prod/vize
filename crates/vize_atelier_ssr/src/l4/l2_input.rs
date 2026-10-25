@@ -101,10 +101,6 @@ pub fn compile_l2_to_ssr_with_host_context<'a>(
     )
 }
 
-#[expect(
-    clippy::too_many_arguments,
-    reason = "shared L2 emission with source origin and explicit host role"
-)]
 fn emit_l2<'a>(
     allocator: &'a Allocator,
     source: &'a str,

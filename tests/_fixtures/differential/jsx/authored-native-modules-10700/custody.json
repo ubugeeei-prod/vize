@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "mappedRoots": {
+    "contract": "complete authored source-only packet plus independent complete decoded-token oracle; runtime qualification is separate",
+    "sourceHead": "a7f163db2ae3c9f4e6d6dc66c21a0c84b49a5a32",
+    "run": 40217399231,
+    "artifact": 12608118087,
+    "capture": "packets.json",
+    "sha256": "1f47dc14522b43b82f5b85bbc485255a52a6b6f40ebd391ba546515d7d0938df"
+  },
+  "admission": "capture required; no qualification claim until actual source packet review",
+  "statefulVdomSsr": "capture required; no qualification claim until actual source packet review"
+}
