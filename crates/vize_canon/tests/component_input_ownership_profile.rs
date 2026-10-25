@@ -28,7 +28,7 @@ const ITERATIONS: u64 = 32;
 
 fn generate(source: &str, disabled: bool) -> Value {
     if disabled {
-        let mut options = SfcTypeCheckOptions::new("src/Form.vue").with_virtual_ts();
+        let mut options = SfcTypeCheckOptions::new("src/Form.vue");
         options.check_props = false;
         let result = profile!(
             "qualification.component_input.generate",
@@ -70,7 +70,13 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
         ("vue-pure-expect", expected.as_str(), false, 1, 2),
         ("vue-arrow-expect", arrow.as_str(), false, 1, 3),
         ("vue-member-unmoved", unsafe_read.as_str(), false, 0, 1),
-        ("checker-props-disabled", expected.as_str(), true, 0, 0),
+        (
+            "checker-virtual-projection-disabled",
+            expected.as_str(),
+            true,
+            0,
+            0,
+        ),
     ];
     let profiler = global_profiler();
     let mut rows = Vec::new();
@@ -90,27 +96,37 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
             last, baseline,
             "profiling must retain the complete generated packet: {name}"
         );
-        for (key, expected_count) in [
-            (
-                "canon.virtual_ts.root_expect.parse_setup",
-                setup_parses * ITERATIONS,
-            ),
-            (
-                "canon.virtual_ts.root_expect.parse_candidate",
-                candidate_parses * ITERATIONS,
-            ),
-        ] {
-            assert_eq!(
-                profiler.get(key).map_or(0, |metrics| metrics.count),
-                expected_count,
-                "actual gated parser calls: {name} {key}"
-            );
-        }
         let mut spans = profiler.span_snapshot().into_iter().filter(|(name, _, _)| name.starts_with("canon.virtual_ts.root_expect.") || *name == "qualification.component_input.generate").map(|(name, _, m)| json!({"name": name, "calls": m.count, "nanoseconds": m.total_duration.as_nanos(), "allocationCalls": m.alloc_calls, "requestedBytes": m.alloc_bytes, "selfAllocationCalls": m.self_alloc_calls, "selfRequestedBytes": m.self_alloc_bytes})).collect::<Vec<_>>();
         spans.sort_by(|a, b| a["name"].as_str().cmp(&b["name"].as_str()));
         rows.push(json!({"case": name, "input": source, "iterations": ITERATIONS, "setupParsesPerGeneration": setup_parses, "candidateParsesPerGeneration": candidate_parses, "packet": last, "spans": spans}));
     }
     if let Some(path) = std::env::var_os("VIZE_INPUT_OWNERSHIP_PROFILE_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&rows).unwrap()).unwrap();
+    }
+    // Retain every actual observation before checking the independent laws.
+    for row in &rows {
+        for (key, expected) in [
+            (
+                "canon.virtual_ts.root_expect.parse_setup",
+                "setupParsesPerGeneration",
+            ),
+            (
+                "canon.virtual_ts.root_expect.parse_candidate",
+                "candidateParsesPerGeneration",
+            ),
+        ] {
+            let actual = row["spans"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|span| span["name"] == key)
+                .map_or(0, |span| span["calls"].as_u64().unwrap());
+            assert_eq!(
+                actual,
+                row[expected].as_u64().unwrap() * ITERATIONS,
+                "actual gated parser calls: {} {key}",
+                row["case"]
+            );
+        }
     }
 }

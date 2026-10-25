@@ -62,7 +62,7 @@ fn separate_generations_cannot_share_an_owner_at_colliding_offsets() {
 }
 
 #[test]
-fn only_proven_bare_navigation_can_be_excluded_from_expect_ownership() {
+fn both_proven_navigation_and_inference_copies_keep_exact_owner_ranges() {
     let mut ledger = DiagnosticOwnership::default();
     ledger.record_bare_navigation(owner(), 10..15, 22..27);
     ledger.record(owner(), 20..25, 22..27, true);
@@ -71,9 +71,9 @@ fn only_proven_bare_navigation_can_be_excluded_from_expect_ownership() {
     assert_eq!(
         echoes
             .iter()
-            .map(|echo| echo.bare_navigation)
+            .map(|echo| echo.generated.clone())
             .collect::<Vec<_>>(),
-        [true, false]
+        [10..15, 20..25]
     );
     let mut missing = DiagnosticOwnership::default();
     missing.record_bare_navigation(owner(), 10..15, 22..27);

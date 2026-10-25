@@ -290,11 +290,11 @@ fn mapped_virtual_ranges(
         .filter_map(
             |ContentMapperSpan([generated, length, original, original_length, _, _])| {
                 let echo = excluded.partition_point(|echo| echo.end <= *generated);
-                let is_navigation_echo = excluded
+                let is_owned_echo = excluded
                     .get(echo)
                     .is_some_and(|echo| echo.start <= *generated && generated + length <= echo.end);
                 (*length > 0
-                    && !is_navigation_echo
+                    && !is_owned_echo
                     && targets.iter().any(|target| {
                         *original < target.end && original + original_length > target.start
                     }))

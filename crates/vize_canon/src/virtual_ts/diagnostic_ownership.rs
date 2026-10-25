@@ -57,8 +57,6 @@ impl InputOwner {
 pub(crate) struct DiagnosticEcho {
     pub(crate) generated: Range<usize>,
     pub(crate) authored: Range<usize>,
-    /// A mapped bare v-bind read is navigation, not another diagnostic owner.
-    pub(crate) bare_navigation: bool,
 }
 
 #[derive(Debug)]
@@ -67,7 +65,6 @@ struct Projection {
     generated: Range<usize>,
     authored: Range<usize>,
     inference: bool,
-    bare_navigation: bool,
     valid: bool,
 }
 
@@ -84,7 +81,7 @@ impl DiagnosticOwnership {
         authored: Range<usize>,
         inference: bool,
     ) {
-        self.record_projection(owner, generated, authored, inference, false);
+        self.record_projection(owner, generated, authored, inference);
     }
 
     pub(crate) fn record_bare_navigation(
@@ -93,7 +90,7 @@ impl DiagnosticOwnership {
         generated: Range<usize>,
         authored: Range<usize>,
     ) {
-        self.record_projection(owner, generated, authored, true, true);
+        self.record_projection(owner, generated, authored, true);
     }
 
     fn record_projection(
@@ -102,7 +99,6 @@ impl DiagnosticOwnership {
         generated: Range<usize>,
         authored: Range<usize>,
         inference: bool,
-        bare_navigation: bool,
     ) {
         if !generated.is_empty() && !authored.is_empty() {
             self.rows.push(Projection {
@@ -110,7 +106,6 @@ impl DiagnosticOwnership {
                 generated,
                 authored,
                 inference,
-                bare_navigation,
                 valid: true,
             });
         }
@@ -188,7 +183,6 @@ impl DiagnosticOwnership {
                 echoes.push(DiagnosticEcho {
                     generated: row.generated,
                     authored: row.authored,
-                    bare_navigation: row.bare_navigation,
                 });
             }
         }

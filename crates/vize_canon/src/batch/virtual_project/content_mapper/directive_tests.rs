@@ -26,25 +26,39 @@ fn static_id_echoes(
     use super::protocol::ContentMapperDiagnosticDirective as Directive;
     let original = source.find(&format!("id=\"{id}\"")).unwrap();
     let entry = format!("\"id\": \"{id}\"");
-    let generated = generated.find(&entry).unwrap();
-    vec![
-        Directive([
-            original,
-            2,
-            generated,
-            generated + 4,
-            DIRECTIVE_POLICY_IGNORE,
-            0,
-        ]),
-        Directive([
-            original + 4,
-            id.len(),
-            generated + 6,
-            generated + entry.len(),
-            DIRECTIVE_POLICY_IGNORE,
-            0,
-        ]),
-    ]
+    let positions = generated
+        .match_indices(&entry)
+        .map(|(start, _)| start)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        positions.len(),
+        3,
+        "two actual inference literals and one canonical literal"
+    );
+    positions
+        .into_iter()
+        .take(2)
+        .flat_map(|generated| {
+            [
+                Directive([
+                    original,
+                    2,
+                    generated,
+                    generated + 4,
+                    DIRECTIVE_POLICY_IGNORE,
+                    0,
+                ]),
+                Directive([
+                    original + 4,
+                    id.len(),
+                    generated + 6,
+                    generated + entry.len(),
+                    DIRECTIVE_POLICY_IGNORE,
+                    0,
+                ]),
+            ]
+        })
+        .collect()
 }
 
 #[test]
@@ -241,7 +255,6 @@ fn input_echo_policy_subtracts_only_existing_ignore_intervals() {
         let echoes = [crate::virtual_ts::diagnostic_ownership::DiagnosticEcho {
             generated: 10..30,
             authored: 100..110,
-            bare_navigation: true,
         }];
         let result = super::directives::with_owned_input_echoes(Some(table), &echoes).unwrap();
         let mut expected = expected
@@ -285,17 +298,25 @@ fn static_component_expect_owns_one_packet_without_its_child() {
                     .unwrap();
                 let directives = result.diagnostic_directives.unwrap();
                 let mut expected = static_id_echoes(source.as_str(), result.text.as_str(), id);
-                expected.extend(baseline.directives);
+                let mut authored = baseline.directives;
+                let event_read = format!("void __vize_events_nav_0.{event};");
+                let event_name_start = result.text.as_str().find(&event_read).unwrap()
+                    + "void __vize_events_nav_0.".len();
+                // The mapped name read is the first real diagnostic owner.
+                // The two emitter-proven literals precede this packet and
+                // cannot stretch its EXPECT across their IGNORE intervals.
+                authored[0].0[2] = event_name_start;
+                expected.extend(authored);
                 assert_eq!(
                     directives.directives, expected,
-                    "ordered synthetic and unchanged authored tuples"
+                    "complete ordered inference tuples and one precise authored expectation"
                 );
                 assert_eq!(
                     directives.unused_expect_directive_diagnostics,
                     baseline.unused_expect_directive_diagnostics
                 );
                 assert_eq!(directives.unused_expect_directive_diagnostics.len(), 1);
-                let [token, length, start, end, policy, unused] = directives.directives[2].0;
+                let [token, length, start, end, policy, unused] = directives.directives[4].0;
                 assert_eq!(&source[token..token + length], "@vue-expect-error");
                 assert_eq!((policy, unused), (DIRECTIVE_POLICY_EXPECT, 0));
                 let parent = source.find("<Comp").unwrap();
@@ -310,11 +331,22 @@ fn static_component_expect_owns_one_packet_without_its_child() {
                     )
                     .collect::<Vec<_>>();
                 assert!(!parent_rows.is_empty());
-                assert!(parent_rows.iter().all(
-                    |super::protocol::ContentMapperSpan([generated, length, _, _, _, _])| start
-                        <= *generated
-                        && generated + length <= end
-                ));
+                assert!(
+                    parent_rows.iter().all(
+                        |super::protocol::ContentMapperSpan([generated, length, _, _, _, _])| {
+                            covered(&directives.directives, *generated)
+                                && covered(&directives.directives, generated + length - 1)
+                        }
+                    ),
+                    "one EXPECT plus exact inference rows cover the complete parent"
+                );
+                assert!(
+                    expected
+                        .iter()
+                        .take(4)
+                        .all(|row| row.0[3] <= start || end <= row.0[2]),
+                    "no protocol interval overlaps EXPECT"
+                );
                 let child = source.find("value.bad").unwrap();
                 let child_positions = mapped_positions(&result.mappings, child);
                 assert!(!child_positions.is_empty());
