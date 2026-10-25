@@ -138,3 +138,22 @@ test("unsupported transitions get no synthetic wire, reference match or native c
     assert.throws(() => validateLspReport(loaded, forged, build));
   }
 });
+
+test("the handler compares complete CSS documentation from the retained public response", () => {
+  const before = JSON.parse(
+    gunzipSync(fixture.files.get("custody/public-before-observation.json.gz")!).toString("utf8"),
+  );
+  const response = before.find(
+    (entry: { kind: string; method: string; params?: { label?: string } }) =>
+      entry.kind === "response" &&
+      entry.method === "completionItem/resolve" &&
+      entry.params?.label === "display",
+  ).response;
+  const source = fs.readFileSync(
+    path.join(root, "crates/vize_maestro/src/server/handlers/tests/completion_resolve.rs"),
+    "utf8",
+  );
+  const literal = source.match(/documentation\.value,\s*r#"([\s\S]*?)"#/u);
+  assert.ok(literal);
+  assert.deepEqual({ kind: "markdown", value: literal[1] }, response.documentation);
+});

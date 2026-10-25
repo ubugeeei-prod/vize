@@ -56,7 +56,34 @@ fn css_catalog_resolution_keeps_all_insertion_fields_and_never_opens_a_native_ow
         let Some(Documentation::MarkupContent(documentation)) = &result.documentation else {
             panic!("existing rich CSS catalog documentation required");
         };
-        assert!(documentation.value.contains("**Syntax**"));
+        assert_eq!(
+            documentation.value,
+            r#"**display**
+
+_CSS property_
+
+In combination with 'float' and 'position', determines the type of box or boxes that are generated for an element.
+
+**Syntax**
+
+```css
+[ <display-outside> || <display-inside> ] | <display-listitem> | <display-internal> | <display-box> | <display-legacy>
+```
+
+**Example**
+
+```css
+display: block;
+```
+
+**Baseline (catalog snapshot)**
+
+Widely available; interoperable since 2015-07-29; widely available since 2018-01-29
+
+**Docs**
+
+[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/display)"#
+        );
         let mut insertion = result;
         insertion.documentation = None;
         assert_eq!(insertion, item);
