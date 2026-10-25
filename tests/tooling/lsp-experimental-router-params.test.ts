@@ -329,23 +329,26 @@ test(
       const raw: unknown[] = [];
       session.responseObservers.push((packet) => raw.push(packet));
       session.notificationObservers.push((method, params) => raw.push({ method, params }));
-      const receipt = { variant: "multi-project-and-config-update", raw, stderr: "" };
+      const receipt = {
+        variant: "multi-project-and-config-update",
+        raw,
+        stages: [] as unknown[],
+        stderr: "",
+      };
       receipts.push(receipt);
       try {
         await session.initialize([enabled, disabled], options);
         const enabledUri = open(session, enabled, expected.source);
+        const nativeQueries = async (label: string, revision: number) => {
+          const actual = await queries(session, enabledUri, expected.source);
+          receipt.stages.push({ label, revision, ...actual });
+          assertQueries(actual, expected, enabled, revision, "valid", compare);
+        };
         compare(
           normalize(await diagnostics(session, enabledUri, 1), enabled),
           expected.diagnostics,
         );
-        assertQueries(
-          await queries(session, enabledUri, expected.source),
-          expected,
-          enabled,
-          1,
-          "valid",
-          compare,
-        );
+        await nativeQueries("before-disabled-sibling", 1);
         const disabledUri = open(session, disabled, expected.source);
         compare(await diagnostics(session, disabledUri, 1), structuralDiagnostics(disabledUri, 1));
         const completion = (uri: string) =>
@@ -355,14 +358,7 @@ test(
           });
         compare(await completion(disabledUri), structuralCompletion);
         // The same spelled page/route in another project must not borrow authority.
-        assertQueries(
-          await queries(session, enabledUri, expected.source),
-          expected,
-          enabled,
-          1,
-          "valid",
-          compare,
-        );
+        await nativeQueries("after-disabled-sibling", 1);
         for (const [version, admitted] of [
           [2, false],
           [3, true],
@@ -381,14 +377,7 @@ test(
               normalize(published, enabled),
               replaceExpected(expected.diagnostics, "version", version),
             );
-            assertQueries(
-              await queries(session, enabledUri, expected.source),
-              expected,
-              enabled,
-              4,
-              "valid",
-              compare,
-            );
+            await nativeQueries("restored-after-config-toggle", 4);
           } else {
             compare(published, structuralDiagnostics(enabledUri, version));
             compare(await completion(enabledUri), structuralCompletion);

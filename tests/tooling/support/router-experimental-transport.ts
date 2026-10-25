@@ -22,6 +22,11 @@ export function createExperimentalRouterWorkspace(parent: string, label: string)
   const directory = fs.mkdtempSync(path.join(owner, prefix + "x".repeat(padding)));
   assert.equal(path.dirname(directory), owner);
   assert.equal(directory.length, experimentalRouterWorkspaceUnits);
+  assert.equal(
+    Buffer.byteLength(directory),
+    experimentalRouterWorkspaceUnits + 4,
+    "the fixed oracle requires exactly its one known Unicode root fragment",
+  );
   assert.equal(fs.realpathSync(directory), directory);
   return directory;
 }
