@@ -19,7 +19,18 @@ use vize_l3::decision::{
     build_decisions, build_dom_decisions, dom::ContextOnly, policy::TargetPolicy,
 };
 
-const CONTEXT: &[&str] = &["count", "label", "Math", "_vm", "value"];
+const CONTEXT: &[&str] = &[
+    "count",
+    "label",
+    "Math",
+    "_vm",
+    "value",
+    "render",
+    "staticRenderFns",
+    "_vm1",
+    "render1",
+    "staticRenderFns1",
+];
 struct Lookup;
 impl BindingLookup for Lookup {
     fn lookup(&self, name: &str) -> Option<BindingId> {
@@ -59,6 +70,10 @@ fn bindings() -> Vec<Binding<'static>> {
         .collect()
 }
 fn module(source: &str) -> String {
+    module_with_bindings(source, &bindings())
+}
+
+fn module_with_bindings(source: &str, bindings: &[Binding<'_>]) -> String {
     let allocator = Allocator::default();
     let original = parse_component(&allocator, source)
         .unwrap()
@@ -66,7 +81,6 @@ fn module(source: &str) -> String {
     let observation = lower_vue2_component(&allocator, original);
     let artifact = observation.admitted().unwrap();
     let tables = tables(artifact);
-    let bindings = bindings();
     let ids = bindings
         .iter()
         .map(|binding| binding.id)
@@ -256,5 +270,74 @@ fn named_expression_links_still_point_to_the_original_utf8_source() {
             .text
             .get(link.generated.start as usize..link.generated.end as usize),
         Some("_vm.count")
+    );
+}
+
+fn raw_bindings(role: Access<'static>) -> Vec<Binding<'static>> {
+    bindings()
+        .into_iter()
+        .map(|mut binding| {
+            if matches!(binding.id.index(), 3 | 5..=9) {
+                binding.access = role;
+            }
+            binding
+        })
+        .collect()
+}
+
+#[test]
+fn verbatim_receiver_names_include_semantic_escaped_identifiers() {
+    for role in [Access::Global, Access::Local] {
+        for (expression, emitted) in [("_vm", "_vm"), (r"_\u0076m", r"_\u0076m")] {
+            let source = vize_l0::cstr!("<div>{{{{ {expression} }}}}</div>");
+            assert_eq!(
+                module_with_bindings(&source, &raw_bindings(role)),
+                vize_l0::cstr!(
+                    "export function render() {{\n  const _vm1 = this;\n  return _vm1._c(\"div\", void 0, [_vm1._v(_vm1._s({emitted}))]);\n}}\nrender._withStripped = true;\nexport const staticRenderFns = [];\n"
+                )
+            );
+        }
+    }
+}
+
+#[test]
+fn verbatim_module_names_use_private_declarations_with_stable_public_exports() {
+    for role in [Access::Global, Access::Local] {
+        assert_eq!(
+            module_with_bindings("<div>{{ render }}</div>", &raw_bindings(role)),
+            "function render1() {\n  const _vm = this;\n  return _vm._c(\"div\", void 0, [_vm._v(_vm._s(render))]);\n}\nrender1._withStripped = true;\nexport { render1 as render };\nexport const staticRenderFns = [];\n"
+        );
+        assert_eq!(
+            module_with_bindings("<div>{{ staticRenderFns }}</div>", &raw_bindings(role)),
+            "export function render() {\n  const _vm = this;\n  return _vm._c(\"div\", void 0, [_vm._v(_vm._s(staticRenderFns))]);\n}\nrender._withStripped = true;\nconst staticRenderFns1 = [];\nexport { staticRenderFns1 as staticRenderFns };\n"
+        );
+    }
+}
+
+#[test]
+fn fresh_names_reserve_only_used_verbatim_names_and_choose_smallest_free_suffix() {
+    let source = "<div>{{ [_vm,_vm1,render,render1,staticRenderFns,staticRenderFns1] }}</div>";
+    for role in [Access::Global, Access::Local] {
+        assert_eq!(
+            module_with_bindings(source, &raw_bindings(role)),
+            "function render2() {\n  const _vm2 = this;\n  return _vm2._c(\"div\", void 0, [_vm2._v(_vm2._s([_vm,_vm1,render,render1,staticRenderFns,staticRenderFns1]))]);\n}\nrender2._withStripped = true;\nexport { render2 as render };\nconst staticRenderFns2 = [];\nexport { staticRenderFns2 as staticRenderFns };\n"
+        );
+    }
+    let mut mixed = bindings();
+    for binding in &mut mixed {
+        if matches!(binding.id.index(), 3 | 5 | 6) {
+            binding.access = Access::Global;
+        }
+    }
+    assert_eq!(
+        module_with_bindings(source, &mixed),
+        "function render1() {\n  const _vm1 = this;\n  return _vm1._c(\"div\", void 0, [_vm1._v(_vm1._s([_vm,_vm1._vm1,render,_vm1.render1,staticRenderFns,_vm1.staticRenderFns1]))]);\n}\nrender1._withStripped = true;\nexport { render1 as render };\nconst staticRenderFns1 = [];\nexport { staticRenderFns1 as staticRenderFns };\n"
+    );
+    assert_eq!(
+        module_with_bindings(
+            "<div>{{ ({_vm:count,render:label,staticRenderFns:value}) }}</div>",
+            &raw_bindings(Access::Global)
+        ),
+        "export function render() {\n  const _vm = this;\n  return _vm._c(\"div\", void 0, [_vm._v(_vm._s(({_vm:_vm.count,render:_vm.label,staticRenderFns:_vm.value})))]);\n}\nrender._withStripped = true;\nexport const staticRenderFns = [];\n"
     );
 }

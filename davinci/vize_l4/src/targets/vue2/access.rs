@@ -6,7 +6,7 @@ use crate::expr::{
 };
 use alloc::vec::Vec;
 use vize_l0::{String, ToCompactString};
-use vize_l2::resolution::{Occurrence, Usage};
+use vize_l2::resolution::{BindingId, Occurrence, Usage};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vue2AccessError {
@@ -55,10 +55,29 @@ impl<'a> Vue2Access<'a> {
         }
         Ok(Self { entries })
     }
-}
 
-impl AccessProvider for Vue2Access<'_> {
-    fn spelling(&self, occurrence: &Occurrence<'_>) -> Result<AccessSpelling<'_>, AccessError> {
+    pub(super) fn is_verbatim(&self, binding: BindingId) -> bool {
+        self.entries
+            .binary_search_by_key(&binding, |entry| entry.binding.id)
+            .ok()
+            .and_then(|index| self.entries.get(index))
+            .is_some_and(|entry| matches!(entry.binding.access, Access::Local | Access::Global))
+    }
+
+    pub(super) fn for_receiver(&self, receiver: &str) -> RenderAccess<'_, 'a> {
+        RenderAccess {
+            registry: self,
+            dot: vize_l0::cstr!("{receiver}."),
+            bracket: vize_l0::cstr!("{receiver}["),
+        }
+    }
+
+    fn spelling_in<'s>(
+        &'s self,
+        occurrence: &Occurrence<'_>,
+        dot: &'s str,
+        bracket: &'s str,
+    ) -> Result<AccessSpelling<'s>, AccessError> {
         let index = self
             .entries
             .binary_search_by_key(&occurrence.binding, |entry| entry.binding.id)
@@ -75,14 +94,14 @@ impl AccessProvider for Vue2Access<'_> {
         match entry.binding.access {
             Access::Local | Access::Global => Ok(AccessSpelling::Verbatim),
             Access::PropsAliased { .. } => Ok(AccessSpelling::Rewrite {
-                prefix: "_vm[",
+                prefix: bracket,
                 replacement: entry.alias.as_deref(),
                 suffix: "]",
                 helper: None,
             }),
             Access::Context | Access::Data | Access::Props | Access::Options => {
                 Ok(AccessSpelling::Rewrite {
-                    prefix: "_vm.",
+                    prefix: dot,
                     replacement: None,
                     suffix: "",
                     helper: None,
@@ -90,5 +109,24 @@ impl AccessProvider for Vue2Access<'_> {
             }
             _ => Err(AccessError::UnsupportedUsage),
         }
+    }
+}
+
+pub(super) struct RenderAccess<'r, 'a> {
+    registry: &'r Vue2Access<'a>,
+    dot: String,
+    bracket: String,
+}
+
+impl AccessProvider for RenderAccess<'_, '_> {
+    fn spelling(&self, occurrence: &Occurrence<'_>) -> Result<AccessSpelling<'_>, AccessError> {
+        self.registry
+            .spelling_in(occurrence, &self.dot, &self.bracket)
+    }
+}
+
+impl AccessProvider for Vue2Access<'_> {
+    fn spelling(&self, occurrence: &Occurrence<'_>) -> Result<AccessSpelling<'_>, AccessError> {
+        self.spelling_in(occurrence, "_vm.", "_vm[")
     }
 }

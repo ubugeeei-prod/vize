@@ -17,7 +17,8 @@ impl<L: LinkSink> Emitter<'_, '_, '_, L> {
         if !element.bindings.is_empty() {
             return Err(self.error(node, Vue2ErrorKind::UnsupportedBindings));
         }
-        self.writer.push("_vm._c(");
+        self.writer.push(self.receiver);
+        self.writer.push("._c(");
         quoted(&mut self.writer, element.tag, element.span);
         if element.attributes.is_empty() && matches!(children, DomChildren::Empty) {
             self.writer.push(")");

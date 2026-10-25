@@ -25,7 +25,8 @@ impl<L: LinkSink> Emitter<'_, '_, '_, L> {
         Ok(())
     }
     fn text(&mut self, group: &DomText) -> Result<(), Vue2Error> {
-        self.writer.push("_vm._v(");
+        self.writer.push(self.receiver);
+        self.writer.push("._v(");
         for (index, &node) in group.nodes.iter().enumerate() {
             if index != 0 {
                 self.writer.push(" + ");
@@ -37,7 +38,8 @@ impl<L: LinkSink> Emitter<'_, '_, '_, L> {
             match fact.op() {
                 Op::Text(text) => quoted(&mut self.writer, text.content, text.span),
                 Op::Interpolation(interpolation) => {
-                    self.writer.push("_vm._s(");
+                    self.writer.push(self.receiver);
+                    self.writer.push("._s(");
                     self.expression(node, interpolation.expression)?;
                     self.writer.push(")");
                 }

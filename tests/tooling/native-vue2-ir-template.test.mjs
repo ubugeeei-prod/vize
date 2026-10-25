@@ -5,61 +5,14 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 
+import { vnode } from "./native-vue2-ir-vnode.mjs";
+
 const capture = process.env.VIZE_VUE2_IR_CAPTURE;
 const required = process.env.VIZE_VUE2_IR_REQUIRED === "1";
 if (required) assert.ok(capture, "the required native capture is missing");
 const packet = capture ? JSON.parse(readFileSync(capture, "utf8")) : null;
 const results = [];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-
-function plain(value) {
-  if (value === undefined) return { kind: "undefined" };
-  if (value === null || typeof value !== "object") {
-    assert.notEqual(typeof value, "function");
-    assert.notEqual(typeof value, "symbol");
-    return value;
-  }
-  if (Array.isArray(value)) return value.map(plain);
-  return Object.fromEntries(
-    Reflect.ownKeys(value).map((key) => {
-      assert.equal(typeof key, "string");
-      return [key, plain(value[key])];
-    }),
-  );
-}
-
-// Observe every own VNode field and descriptor in this native-element family.
-// Only the context field has process-local identity: it must be the very same
-// owning instance, rather than an arbitrary object or a dropped field.
-function vnode(node, owner) {
-  return Object.fromEntries(
-    Reflect.ownKeys(node).map((key) => {
-      assert.equal(typeof key, "string");
-      const descriptor = Object.getOwnPropertyDescriptor(node, key);
-      assert.ok(descriptor);
-      assert.equal(typeof descriptor.get, "undefined");
-      assert.equal(typeof descriptor.set, "undefined");
-      let value;
-      if (key === "context" && node[key] !== undefined) {
-        assert.equal(node[key], owner);
-        value = { kind: "actual-owning-Vue-instance" };
-      } else if (key === "children" && node[key] !== undefined) {
-        value = node[key].map((child) => vnode(child, owner));
-      } else {
-        value = plain(node[key]);
-      }
-      return [
-        key,
-        {
-          value,
-          enumerable: descriptor.enumerable,
-          configurable: descriptor.configurable,
-          writable: descriptor.writable,
-        },
-      ];
-    }),
-  );
-}
 
 function host(Vue, template) {
   const component = new Vue({ data: () => ({ a: 6, b: 3, 日本: 4 }), ...template });

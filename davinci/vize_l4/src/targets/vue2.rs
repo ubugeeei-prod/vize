@@ -20,6 +20,7 @@ use vize_l3::decision::{
 mod access;
 mod children;
 mod element;
+mod names;
 mod quote;
 #[cfg(test)]
 mod tests;
@@ -85,26 +86,53 @@ pub fn emit<L: LinkSink>(
     {
         return Err(fail(Vue2ErrorKind::Root));
     }
+    let names = names::Names::checked(analysis.artifact(), expressions, access)?;
     let mut emitter = Emitter {
         facts,
         expressions,
-        access,
+        access: access.for_receiver(&names.receiver),
+        receiver: &names.receiver,
         source: analysis.artifact().source(),
         writer: Writer::with_capacity(analysis.artifact().source().len()),
     };
-    emitter.writer.push("export function render() {");
+    let alias_render = names.render != "render";
+    if !alias_render {
+        emitter.writer.push("export ");
+    }
+    emitter.writer.push("function ");
+    emitter.writer.push(&names.render);
+    emitter.writer.push("() {");
     emitter.writer.indent();
     emitter.writer.newline();
-    emitter.writer.push("const _vm = this;");
+    emitter.writer.push("const ");
+    emitter.writer.push(&names.receiver);
+    emitter.writer.push(" = this;");
     emitter.writer.newline();
     emitter.writer.push("return ");
     emitter.node(*root)?;
     emitter.writer.push(";");
     emitter.writer.deindent();
     emitter.writer.newline();
-    emitter
-        .writer
-        .push("}\nrender._withStripped = true;\nexport const staticRenderFns = [];\n");
+    emitter.writer.push("}\n");
+    emitter.writer.push(&names.render);
+    emitter.writer.push("._withStripped = true;\n");
+    if alias_render {
+        emitter.writer.push("export { ");
+        emitter.writer.push(&names.render);
+        emitter.writer.push(" as render };\n");
+    }
+    let alias_statics = names.statics != "staticRenderFns";
+    if !alias_statics {
+        emitter.writer.push("export ");
+    }
+    emitter.writer.push("const ");
+    emitter.writer.push(&names.statics);
+    emitter.writer.push(" = [];\n");
+    if alias_statics {
+        emitter.writer.push("export { ");
+        emitter.writer.push(&names.statics);
+        emitter.writer.push(" as staticRenderFns };\n");
+    }
     u32::try_from(emitter.writer.len()).map_err(|_| fail(Vue2ErrorKind::OutputTooLarge))?;
     Ok(emitter.writer)
 }
@@ -112,7 +140,8 @@ pub fn emit<L: LinkSink>(
 struct Emitter<'s, 'owner, 'arena, L: LinkSink> {
     facts: &'s DomFacts<'owner, 'arena>,
     expressions: ResolvedExpressions<'s, 'arena>,
-    access: &'s Vue2Access<'s>,
+    access: access::RenderAccess<'s, 's>,
+    receiver: &'s str,
     source: &'arena str,
     writer: Writer<L>,
 }
@@ -146,7 +175,7 @@ impl<L: LinkSink> Emitter<'_, '_, '_, L> {
             return Err(self.error(node, Vue2ErrorKind::UnsupportedExpression));
         };
         self.expressions
-            .write_retained(&mut self.writer, self.source, expression, self.access)
+            .write_retained(&mut self.writer, self.source, expression, &self.access)
             .map_err(|error| self.error(node, Vue2ErrorKind::Expression(error)))
     }
 }
