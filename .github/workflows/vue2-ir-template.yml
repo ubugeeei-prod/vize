@@ -67,7 +67,7 @@ jobs:
           assert.equal(source, process.env.SOURCE_SHA);
           const file = join(process.env.CARGO_TARGET_DIR, 'ci/examples/vue2_ir_template');
           const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-          const files = execFileSync('git', ['ls-files'], {encoding:'utf8'}).trim().split('\n').filter(file => file === 'Cargo.lock' || file === 'Cargo.toml' || file.startsWith('davinci/vize_l1_to_l2/src/native_vue2') || file.startsWith('davinci/vize_l4/src/targets/vue2') || file === 'davinci/vize_l4/examples/vue2_ir_template.rs');
+          const files = execFileSync('git', ['ls-files', '--', 'Cargo.lock', 'Cargo.toml', 'davinci/vize_l1_to_l2/src/lib.rs', 'davinci/vize_l1_to_l2/src/native_vue2.rs', 'davinci/vize_l1_to_l2/src/native_vue2', 'davinci/vize_l4/src/targets.rs', 'davinci/vize_l4/src/targets/vue2.rs', 'davinci/vize_l4/src/targets/vue2', 'davinci/vize_l4/examples/vue2_ir_template.rs'], {encoding:'utf8'}).trim().split('\n');
           writeFileSync('target/vize-tests/vue2-ir/producer.json', JSON.stringify({source, tree:execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(), executable:{file,bytes:statSync(file).size,sha256:hash(readFileSync(file))}, compiler:execFileSync('rustc',['--version'],{encoding:'utf8'}).trim(), sourceFiles: Object.fromEntries(files.map(file => [file,hash(readFileSync(file))])), runId:process.env.GITHUB_RUN_ID},null,2)+'\n');
           JS
       - name: Install exact official Vue 2 runtime and compiler pairs
