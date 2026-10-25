@@ -143,6 +143,14 @@ export function createVizeLanguageService(ts, host, options = {}) {
   }
   const languageService = new Proxy(proxy, {
     get(target, key) {
+      if (key === "toLineColumnOffset")
+        return (fileName, position) => {
+          const authored = sourceFileFor(fileName);
+          if (authored) return authored.getLineAndCharacterOfPosition(position);
+          if (rawService.toLineColumnOffset)
+            return rawService.toLineColumnOffset(fileName, position);
+          throw new Error(`TypeScript host cannot resolve line and column for ${fileName}`);
+        };
       if (key === "getSyntacticDiagnostics" || key === "getSemanticDiagnostics") {
         return (fileName) => {
           const collection = diagnosticsFor(fileName);

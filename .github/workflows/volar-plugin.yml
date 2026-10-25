@@ -61,9 +61,14 @@ jobs:
         run: node --test npm/native/test/language-projection.test.cjs
       - name: Exercise actual Volar context and TypeScript language service
         run: node --test npm/volar/test/service.test.js
+      - name: Check public package declarations
+        run: node "$RUNNER_TEMP/volar-plugin-deps/node_modules/typescript/bin/tsc" --ignoreConfig --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ESNext npm/volar/src/index.d.ts
+      - name: Exercise fresh packed consumers without source loader overrides
+        run: node npm/volar/test/packed-consumer.js
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: volar-plugin-${{ env.VIZE_SOURCE_SHA }}
           path: ${{ runner.temp }}/volar-plugin-evidence
           if-no-files-found: error
+          compression-level: 0

@@ -244,6 +244,13 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
       f.languageService.getQuickInfoAtPosition(file, position),
     );
     assert(hover && hover.textSpan.start === position && hover.textSpan.length === 2);
+    const numberPosition = unicode.indexOf("数: number");
+    assert.deepEqual(
+      query("unicode-authored-line-column", { file, position: numberPosition }, () =>
+        f.languageService.toLineColumnOffset(file, numberPosition),
+      ),
+      { line: 2, character: 6 },
+    );
     f.capture("unicode-crlf");
   } finally {
     f.languageService.dispose();
