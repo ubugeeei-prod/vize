@@ -64,6 +64,7 @@ pub(super) fn alias_node<'a>(
                         }
                     }
                 }
+                drop(pending);
                 // The existing parameter carrier retains the genuine goal;
                 // ForNode ownership distinguishes it from a v-slot goal.
                 node.js_ast = Some(RetainedJsAst {
