@@ -209,7 +209,7 @@ void test("typechecker coverage records every pinned authored source dialect", (
     unknownReadinessCases: 149,
     verified: {},
     provisional: {
-      "html-template": 142,
+      "html-template": 143,
       js: 1,
       jsx: 1,
       "pug-template": 2,
