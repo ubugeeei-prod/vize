@@ -205,7 +205,31 @@ export function assertHostCase(
     { status: expected ? 2 : 0, signal: null, error: null, stdout: expected, stderr: "" },
     label,
   );
-  const nativeErrors = entry.errors
+  assertNativeCase(content, entry, context, cli, compilerOptions, label);
+}
+
+export function assertNativeCase(
+  content: string,
+  entry: GlobalCase,
+  context: Packet,
+  cli: Packet,
+  compilerOptions: unknown,
+  label: string,
+  templateDisabled = false,
+) {
+  const rows = compilerRows(context.stdout);
+  assert.equal(rows.length, entry.errors.length, label);
+  assert.deepEqual(
+    {
+      status: context.status,
+      signal: context.signal,
+      error: context.error,
+      stderr: context.stderr,
+    },
+    { status: rows.length ? 2 : 0, signal: null, error: null, stderr: "" },
+    label,
+  );
+  const nativeErrors = (templateDisabled ? [] : entry.errors)
     .map((error, index) => ({ error, row: rows[index] }))
     .filter(({ error }) => !error.suppressed)
     .map(({ error, row }) => ({
@@ -214,7 +238,7 @@ export function assertHostCase(
       message: row.message,
       binding: entry.binding,
     }));
-  if (entry.unusedDirective)
+  if (entry.unusedDirective && !templateDisabled)
     nativeErrors.push({
       at: location(content, "<!-- @vue-expect-error -->", "<!--"),
       code: 2578,
@@ -246,7 +270,7 @@ export function assertHostCase(
   };
   assert.deepEqual(
     { status: cli.status, signal: cli.signal, error: cli.error, stderr: cli.stderr },
-    { status: expected ? 1 : 0, signal: null, error: null, stderr: "" },
+    { status: diagnostics.length ? 1 : 0, signal: null, error: null, stderr: "" },
     label,
   );
   assert.deepEqual(JSON.parse(cli.stdout), report, `whole native report ${label}`);

@@ -7,6 +7,10 @@ import { test } from "node:test";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import {
+  assertProfileComparatorNegatives,
+  runRewriteProfileControls,
+} from "./support/content-mapper-instance-globals-profiles-10617.ts";
+import {
   admitAdditionalHosts,
   assertHostCase,
   assertPublishedControl,
@@ -23,7 +27,6 @@ import {
   decodeFrames,
   expectedHost,
   frame,
-  location,
   makeSourceProject,
   readGlobalsFixture,
   request,
@@ -62,6 +65,11 @@ test("10617 retains the original reported files, exact beta host and closed fram
     assert.throws(() => assertTransformEnvelope({ ...response, jsonrpc: "1.0" }, 3));
   }
 });
+
+test(
+  "profile controls reject hidden parsing, cache scope collapse and truncated evidence",
+  assertProfileComparatorNegatives,
+);
 
 await test(
   "real beta mapper rejects undeclared instance globals without widening declared or lexical owners",
@@ -407,6 +415,9 @@ await test(
           });
         }
       }
+      checks.push(
+        ...runRewriteProfileControls(files, cases, source, output, binary, host, ts5, run),
+      );
       const publicWire = run(
         "published/same-process-complete-protocol",
         publicCli,

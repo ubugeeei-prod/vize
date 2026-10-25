@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-profile-controls",
+  "version": 1,
+  "counterNamespace": "canon.instance_global_rewrite",
+  "credit": "Source operation counts and full diagnostic controls; no wall-clock speed claim",
+  "controls": [
+    {
+      "id": "no-dollar",
+      "entry": {
+        "id": "profile-no-dollar",
+        "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div>{{ n.toFixed() }}</div>\n</template>\n",
+        "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+        "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst n=1;\nn.toFixed();\n}\n",
+        "errors": []
+      },
+      "mode": "enabled",
+      "uniqueScopeExpressions": 0,
+      "minimumHits": 0,
+      "minimumOutputBuffers": 0
+    },
+    {
+      "id": "disabled",
+      "entry": {
+        "id": "profile-same-scope-repeat",
+        "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div data-seq=\"one\">{{ $ghost.known }}</div>\n  <div data-seq=\"two\">{{ $ghost.known }}</div>\n  <div data-seq=\"three\">{{ $ghost.known }}</div>\n</template>\n",
+        "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+        "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost.known;\n__ctx.$ghost.known;\n__ctx.$ghost.known;\n}\n",
+        "errors": [
+          {
+            "anchor": "<div data-seq=\"one\">{{ $ghost.known }}</div>",
+            "token": "$ghost",
+            "kind": "undeclared"
+          },
+          {
+            "anchor": "<div data-seq=\"two\">{{ $ghost.known }}</div>",
+            "token": "$ghost",
+            "kind": "undeclared"
+          },
+          {
+            "anchor": "<div data-seq=\"three\">{{ $ghost.known }}</div>",
+            "token": "$ghost",
+            "kind": "undeclared"
+          }
+        ]
+      },
+      "mode": "template-checking-disabled",
+      "uniqueScopeExpressions": 0,
+      "minimumHits": 0,
+      "minimumOutputBuffers": 0
+    },
+    {
+      "id": "same-scope-repeat",
+      "entry": {
+        "id": "profile-same-scope-repeat",
+        "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div data-seq=\"one\">{{ $ghost.known }}</div>\n  <div data-seq=\"two\">{{ $ghost.known }}</div>\n  <div data-seq=\"three\">{{ $ghost.known }}</div>\n</template>\n",
+        "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+        "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost.known;\n__ctx.$ghost.known;\n__ctx.$ghost.known;\n}\n",
+        "errors": [
+          {
+            "anchor": "<div data-seq=\"one\">{{ $ghost.known }}</div>",
+            "token": "$ghost",
+            "kind": "undeclared"
+          },
+          {
+            "anchor": "<div data-seq=\"two\">{{ $ghost.known }}</div>",
+            "token": "$ghost",
+            "kind": "undeclared"
+          },
+          {
+            "anchor": "<div data-seq=\"three\">{{ $ghost.known }}</div>",
+            "token": "$ghost",
+            "kind": "undeclared"
+          }
+        ]
+      },
+      "mode": "enabled",
+      "uniqueScopeExpressions": 1,
+      "minimumHits": 2,
+      "minimumOutputBuffers": 3
+    },
+    {
+      "id": "actual-scope-isolation",
+      "caseId": "mixed-loop-scope",
+      "mode": "enabled",
+      "uniqueScopeExpressions": 2,
+      "minimumHits": 1,
+      "minimumOutputBuffers": 1
+    }
+  ]
+}

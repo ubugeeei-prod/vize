@@ -73,6 +73,11 @@
       "path": "host-authority.json",
       "bytes": 1016,
       "sha256": "71a251bcf3fc7724daae4e350fad11e103b33e5fcb09e1563858f6053f41e682"
+    },
+    {
+      "path": "profile-controls.json",
+      "bytes": 3920,
+      "sha256": "aaff45ea0d300f4b4fbcc8eeb319bfedf7a509bf35985469930044acac7b1459"
     }
   ]
 }
