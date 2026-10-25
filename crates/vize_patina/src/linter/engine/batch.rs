@@ -20,14 +20,18 @@ pub struct PreparedLint {
 
 enum Work {
     Complete(LintResult),
-    Sfc {
-        plan: PreparedSfc,
-        tail: Box<sfc::SfcTail>,
-    },
+    Sfc(Box<SfcWork>),
     Plain {
         plan: PreparedPlainModule,
         source: Option<String>,
     },
+}
+
+// Keep the existing single SFC allocation while making every prepared-file
+// slot small. The plan and its finish data share the same owned lifetime.
+struct SfcWork {
+    plan: PreparedSfc,
+    tail: sfc::SfcTail,
 }
 
 impl PreparedLint {
@@ -42,7 +46,7 @@ impl PreparedLint {
     fn virtual_content(&self) -> Option<&str> {
         match &self.work {
             Work::Complete(_) => None,
-            Work::Sfc { plan, .. } => plan.virtual_content(),
+            Work::Sfc(work) => work.plan.virtual_content(),
             Work::Plain { plan, .. } => plan.virtual_content(),
         }
     }
@@ -55,7 +59,7 @@ impl PreparedLint {
         session.select_virtual_document(&self.filename)?;
         match &mut self.work {
             Work::Complete(_) => Ok(()),
-            Work::Sfc { plan, .. } => plan.evaluate(linter, session),
+            Work::Sfc(work) => work.plan.evaluate(linter, session),
             Work::Plain { plan, .. } => plan.evaluate(linter, session),
         }
     }
@@ -63,7 +67,10 @@ impl PreparedLint {
     fn finish(self, linter: &Linter, failure: Option<TypeAwareFailure>) -> LintResult {
         match self.work {
             Work::Complete(result) => result,
-            Work::Sfc { plan, tail } => tail.finish(linter, plan.finish(linter, failure)),
+            Work::Sfc(work) => {
+                let SfcWork { plan, tail } = *work;
+                tail.finish(linter, plan.finish(linter, failure))
+            }
             Work::Plain { plan, source } => {
                 let result = plan.finish(linter, failure);
                 if let Some(source) = source {

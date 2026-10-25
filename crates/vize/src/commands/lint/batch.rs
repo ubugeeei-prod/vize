@@ -4,6 +4,7 @@ use super::{
     LintArgs, LintRunAccumulator,
     collect::{is_plain_script_path, is_standalone_html_path},
     fix::{is_storybook_csf_path, jsx_lang_for_path},
+    fs,
 };
 use rayon::prelude::*;
 use std::{
@@ -11,7 +12,6 @@ use std::{
     sync::Mutex,
     time::{Duration, Instant},
 };
-use vize_carton::source_io as fs;
 use vize_curator::profile::ProfileFileRow;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{LintResult, Linter, PreparedLint};

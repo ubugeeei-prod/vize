@@ -1,4 +1,4 @@
-use super::{PreparedLint, Work};
+use super::{PreparedLint, SfcWork, Work};
 use crate::linter::engine::sfc::{
     empty_lint_result,
     pug::{self, PugRoute},
@@ -106,16 +106,16 @@ impl Linter {
             .flatten();
         PreparedLint {
             filename: filename.to_compact_string(),
-            work: Work::Sfc {
+            work: Work::Sfc(Box::new(SfcWork {
                 plan,
-                tail: Box::new(SfcTail {
+                tail: SfcTail {
                     level,
                     musea,
                     art,
                     suppressions,
                     pug: None,
-                }),
-            },
+                },
+            })),
         }
     }
 }
@@ -123,7 +123,7 @@ impl Linter {
 impl PreparedLint {
     fn with_pug(mut self, view: PugBlockView) -> Self {
         match &mut self.work {
-            Work::Sfc { tail, .. } => tail.pug = Some(view),
+            Work::Sfc(work) => work.tail.pug = Some(view),
             Work::Complete(result) => {
                 *result = pug::map_result(
                     &view,
