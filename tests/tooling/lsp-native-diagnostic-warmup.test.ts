@@ -32,6 +32,8 @@ const localColors = JSON.parse(
   }).toString("utf8"),
 );
 const repaired = erroneous.replaceAll("needsRef(items)", "items.length");
+const changedSource = (value: number) =>
+  erroneous.replace("persistent: string = 1", `persistent: string = ${value}`);
 const nativeErrors = (packet: PublishDiagnosticsParams) =>
   packet.diagnostics.filter(
     (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 2739,
@@ -81,14 +83,36 @@ await test(
           predicate(params),
         45_000,
       ) as Promise<PublishDiagnosticsParams>;
-    const open = (uri: string) =>
+    const open = (uri: string, version = 1, text = erroneous) =>
       session.notify("textDocument/didOpen", {
-        textDocument: { uri, version: 1, languageId: "vue", text: erroneous },
+        textDocument: { uri, version, languageId: "vue", text },
       });
     const change = (uri: string, version: number, text: string) =>
       session.notify("textDocument/didChange", {
         textDocument: { uri, version },
         contentChanges: [{ text }],
+      });
+    const finishedAfter = (uri: string, version: number, after: number) =>
+      new Promise<void>((resolve, reject) => {
+        const needle = `finished initial type diagnostics for ${uri} version ${version}`;
+        const timeout = setTimeout(
+          () =>
+            reject(
+              new Error(
+                `native pass did not drain after revocation: ${needle}\n${session.stderrText}`,
+              ),
+            ),
+          20_000,
+        );
+        const observer = (text: string) => {
+          if (text.slice(after).includes(needle)) {
+            clearTimeout(timeout);
+            session.stderrObservers.splice(session.stderrObservers.indexOf(observer), 1);
+            resolve();
+          }
+        };
+        session.stderrObservers.push(observer);
+        observer(session.stderrText);
       });
     const stop = async () => {
       const gate = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
@@ -174,7 +198,7 @@ await test(
 
       const gate = await stop();
       const secondPass = notifications.length;
-      change(first, 2, erroneous);
+      change(first, 2, changedSource(2));
       await wait(first, pending, secondPass);
       gate.assertStopped();
       assert.deepEqual(
@@ -208,7 +232,7 @@ await test(
 
       const staleGate = await stop();
       const stalePass = notifications.length;
-      change(first, 3, erroneous);
+      change(first, 3, changedSource(3));
       await wait(first, pending, stalePass);
       const staleBoundary = notifications.length;
       change(first, 4, repaired);
@@ -237,9 +261,29 @@ await test(
         "closed files cannot receive a late native result",
       );
 
+      const closeGate = await stop();
+      const closePass = notifications.length;
+      const closeLog = session.stderrText.length;
+      open(second, 2, changedSource(6));
+      await wait(second, pending, closePass);
+      closeGate.assertStopped();
+      const closeBoundary = notifications.length;
+      session.notify("textDocument/didClose", { textDocument: { uri: second } });
+      await wait(second, (packet) => packet.diagnostics.length === 0, closeBoundary);
+      const closedDrained = finishedAfter(second, 2, closeLog);
+      closeGate.resume();
+      await closedDrained;
+      assert.ok(
+        notifications
+          .slice(closeBoundary)
+          .every(({ params }) => params.uri !== second || nativeErrors(params).length === 0),
+        "the actually pending native read must drain without publishing to its closed document",
+      );
+
       const configGate = await stop();
       const configPass = notifications.length;
-      change(first, 5, erroneous);
+      const configLog = session.stderrText.length;
+      change(first, 5, changedSource(5));
       await wait(first, pending, configPass);
       writeVueConfigFixture(
         directory,
@@ -251,8 +295,9 @@ await test(
       const disabled = await wait(third, (packet) => packet.version === 1);
       assert.ok(disabled.diagnostics.every((diagnostic) => diagnostic.source !== "vize/types"));
       const configBoundary = notifications.length;
+      const revokedDrained = finishedAfter(first, 5, configLog);
       configGate.resume();
-      // A foreground local request is the settlement barrier after revocation.
+      await revokedDrained;
       await session.request("textDocument/documentSymbol", { textDocument: { uri: third } });
       assert.ok(
         notifications
