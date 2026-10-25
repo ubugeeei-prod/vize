@@ -45,7 +45,10 @@ pub(crate) struct Contract {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CheckerOptions {
+    #[serde(default)]
     pub(crate) options_api: bool,
+    #[serde(default)]
+    pub(crate) jsx_typecheck: bool,
 }
 
 #[derive(Deserialize)]

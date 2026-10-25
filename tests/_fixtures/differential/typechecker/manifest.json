@@ -5302,6 +5302,118 @@
           "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
         }
       ]
+    },
+    {
+      "id": "typechecker/jsx-prop-token-ranges-10494/tsx-invalid-and-valid-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "jsx-prop-token-ranges-10494",
+      "case": "tsx-invalid-and-valid-props",
+      "test": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+      "regressionCommit": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+      "sourceRevision": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+      "checkerOptions": {
+        "jsxTypecheck": true
+      },
+      "packReference": {
+        "path": "jsx-prop-token-ranges-10494/cases.json",
+        "sha256": "5fe96eaf8181ed9b1f9d06e112f35fa16791a5727fec3503b5b9130dfa2a4268"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "jsx-prop-token-ranges-10494/tsconfig.json.txt",
+          "sha256": "2c866486c5a338910fe6e46f2808cae1fe219f88a964d47b31ef4cad4b4da4c1"
+        },
+        {
+          "file": "Child.vue",
+          "path": "jsx-prop-token-ranges-10494/Child.vue.txt",
+          "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
+        },
+        {
+          "file": "Consumer.tsx",
+          "path": "jsx-prop-token-ranges-10494/Consumer.tsx.txt",
+          "sha256": "d272fc26ebadcc4a54e5f6e7e0f6ebcbc908b8cc934a602193f154b1cde0abef"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/jsx-prop-token-ranges-10494/jsx-invalid-and-valid-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "jsx-prop-token-ranges-10494",
+      "case": "jsx-invalid-and-valid-props",
+      "test": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+      "regressionCommit": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+      "sourceRevision": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+      "checkerOptions": {
+        "jsxTypecheck": true
+      },
+      "packReference": {
+        "path": "jsx-prop-token-ranges-10494/cases.json",
+        "sha256": "5fe96eaf8181ed9b1f9d06e112f35fa16791a5727fec3503b5b9130dfa2a4268"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "jsx-prop-token-ranges-10494/tsconfig.json.txt",
+          "sha256": "2c866486c5a338910fe6e46f2808cae1fe219f88a964d47b31ef4cad4b4da4c1"
+        },
+        {
+          "file": "Child.vue",
+          "path": "jsx-prop-token-ranges-10494/Child.vue.txt",
+          "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
+        },
+        {
+          "file": "Consumer.jsx",
+          "path": "jsx-prop-token-ranges-10494/Consumer.jsx.txt",
+          "sha256": "cab0e951d3d7f006181c86c8fd487d58dd770bde91754126d3adb7c4fee852db"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "jsx"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
