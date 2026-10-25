@@ -37,7 +37,7 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTC_WRAPPER: ""
       RUSTC_WORKSPACE_WRAPPER: ""
-      BASE_SHA: "13fa41356d075047a229f580014b637d3bbeb57f"
+      BASE_SHA: "49a98d1e72707083354b8ff11e1cec800ded28b3"
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
