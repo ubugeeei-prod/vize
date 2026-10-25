@@ -4,9 +4,17 @@ on:
   pull_request:
     paths:
       - "npm/volar/**"
-      - "npm/native/language-projection*"
-      - "npm/native/test/language-projection*"
-      - "crates/vize_vitrine/src/napi/language_code.rs"
+      - "npm/native/**"
+      - "crates/**"
+      - "davinci/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - "tests/tooling/native-declarations.test.ts"
+      - "tests/tooling/benchmark-musea-lane.test.ts"
+      - "tools/benchmarks/scripts/musea-artifacts.mjs"
       - ".github/workflows/volar-plugin.yml"
   workflow_dispatch: {}
 
