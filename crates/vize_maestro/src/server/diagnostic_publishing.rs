@@ -1,7 +1,7 @@
 //! Diagnostic collection and LSP transport publishing.
 
 #[cfg(feature = "native")]
-use std::future::Future;
+use std::{future::Future, task::Poll};
 #[cfg(feature = "native")]
 use tower_lsp::lsp_types::MessageType;
 use tower_lsp::lsp_types::{Diagnostic, Url};
@@ -204,9 +204,27 @@ impl MaestroServer {
         }
         let mut diagnostics = sync.to_vec();
         diagnostics.push(crate::ide::diagnostics::typecheck_pending_hint());
-        self.client
-            .publish_diagnostics(uri.clone(), diagnostics, None)
-            .await;
+        let notification = self
+            .client
+            .publish_diagnostics(uri.clone(), diagnostics, None);
+        futures::pin_mut!(notification);
+        let document = self.state.diagnostic_lock(uri);
+        let mut queued = false;
+        futures::future::poll_fn(|context| {
+            if queued {
+                return notification.as_mut().poll(context);
+            }
+            match document.enqueue_sync(&self.state, uri, version, stamp, || {
+                notification.as_mut().poll(context)
+            }) {
+                Some(result) => {
+                    queued = true;
+                    result
+                }
+                None => Poll::Ready(()),
+            }
+        })
+        .await;
     }
 
     pub(super) async fn publish_collected_diagnostics(

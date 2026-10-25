@@ -211,3 +211,56 @@ fn typecheck_only_and_plain_scripts_retain_one_complete_publication() {
         );
     }
 }
+
+#[test]
+fn complete_same_world_result_cannot_be_replaced_by_pending_type_status() {
+    let mut fixture = original_fixture();
+    let complete = current(&fixture);
+    let expected = notification(&fixture, &complete);
+    let server = fixture.service.inner();
+    assert_eq!(
+        diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_collected_diagnostics(&fixture.app, complete)
+        )),
+        vec![expected]
+    );
+    let stamp = server.state.corsa_request_stamp();
+    let observed = diagnostics(drain(
+        &mut fixture.socket,
+        server.publish_pending_native_diagnostics(&fixture.app, 2, stamp, &[]),
+    ));
+    assert!(
+        observed.is_empty(),
+        "pending native status cannot clear the complete same-world result already queued by another collector"
+    );
+}
+
+#[test]
+fn pending_type_status_refuses_stale_source_environment_closed_and_disabled_worlds() {
+    for control in ["source", "environment", "closed", "disabled", "retired"] {
+        let mut fixture = original_fixture();
+        let server = fixture.service.inner();
+        let stamp = server.state.corsa_request_stamp();
+        match control {
+            "source" => change(&fixture, &fixture.app, 3, ORIGINAL),
+            "environment" => server.state.mark_corsa_disk_state_dirty(),
+            "closed" => {
+                server.state.documents.close(&fixture.app);
+            }
+            "disabled" => server
+                .state
+                .apply_lsp_initialization_options(Some(&json!({"typecheck":false}))),
+            "retired" => server.state.retire_project_contexts(),
+            _ => unreachable!(),
+        }
+        let observed = diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_pending_native_diagnostics(&fixture.app, 2, stamp, &[]),
+        ));
+        assert!(
+            observed.is_empty(),
+            "{control} must not publish pending native status"
+        );
+    }
+}
