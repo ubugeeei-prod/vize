@@ -182,7 +182,7 @@ void test("compiler fixture pins a real full-module reference without native cre
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(acceptance.dialectCoverage.unknown.planned, 22);
+  assert.equal(acceptance.dialectCoverage.unknown.planned, 23);
   assert.equal(
     loaded.cases.find((current) => current.id === "compiler/sfc/package-import-prop-type-9894")
       .comparison.scriptLang,
