@@ -496,6 +496,8 @@ mod tests {
                 "value++",
                 "assertState(state)",
                 "({ ...state, kind: (state.kind = 'b') })",
+                "delete state.kind",
+                "({ nested: [delete state.kind] })",
             ] {
                 let template = cstr!(
                     "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><div>{{{{ {effect} }}}}</div>"
@@ -517,6 +519,36 @@ mod tests {
             );
             assert_eq!(mapping_payloads(&before), mapping_payloads(&after));
             assert_eq!(link_payloads(&before), link_payloads(&after));
+        }
+    }
+
+    #[test]
+    fn flow_sensitive_type_captures_keep_all_original_bytes_and_geometry() {
+        let script = "import Comp from './Comp.vue'; const state: { value?: number } = {}; state.value = 1; const noop = () => {};";
+        for newline in ["\n", "\r\n"] {
+            for callback in [
+                "(field: typeof state.value) => !!field",
+                "(field: typeof state['value']) => !!field",
+                "(field: (typeof state)['value']) => !!field",
+                "(field): typeof state.value => field",
+                "(field) => field as typeof state.value",
+                "(field) => field satisfies typeof state.value",
+            ] {
+                for directive in ["", "<!-- @vue-expect-error -->"] {
+                    for effect in ["", "<div>{{ delete state.value }}</div>"] {
+                        let template = cstr!(
+                            "<!-- 日本 🧭 -->{directive}{newline}<Comp :pick=\"{callback}\" @save=\"noop\" />{effect}"
+                        );
+                        for navigation in [false, true] {
+                            assert_eq!(
+                                render(script, &template, false, navigation),
+                                render(script, &template, true, navigation),
+                                "unproved type capture {callback} must retain the whole original packet"
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 

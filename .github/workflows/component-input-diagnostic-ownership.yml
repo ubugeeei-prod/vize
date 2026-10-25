@@ -5,6 +5,8 @@ on:
     paths:
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership/**"
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership.rs"
+      - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets*"
+      - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets/**"
       - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
       - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
@@ -174,6 +176,40 @@ jobs:
           assert.equal(packets.length, 144);
           writeFileSync(`${capture}/whole-packet-inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, executedPid: executed.pid, binarySha256, completePackets: packets.length, packets}, null, 2) + '\n');
           JS
+      - name: Build the frozen pre-review producer in an isolated target
+        run: |
+          set -euo pipefail
+          frozen=5597001751a477402537a1cc61cae487feefef9c
+          capture="$RUNNER_TEMP/component-input-ownership/relocation-producers"
+          mkdir -p "$capture"
+          git fetch --no-tags origin "$frozen"
+          git worktree add --detach "$RUNNER_TEMP/component-input-before-review" "$frozen"
+          [[ "$(git -C "$RUNNER_TEMP/component-input-before-review" rev-parse HEAD)" == "$frozen" ]]
+          git -C "$RUNNER_TEMP/component-input-before-review" diff --exit-code
+          CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-before-review-target" cargo build --locked --profile ci --manifest-path "$RUNNER_TEMP/component-input-before-review/Cargo.toml" -p vize --bin vize > "$capture/build.stdout.raw" 2> "$capture/build.stderr.raw"
+          printf '%s\n' "$frozen" > "$capture/source.txt"
+          sha256sum "$RUNNER_TEMP/component-input-before-review-target/ci/vize" "$GITHUB_WORKSPACE/target/ci/vize" > "$capture/binaries.sha256"
+      - name: Capture review CFA controls on all three physical SDKs
+        run: |
+          set -euo pipefail
+          for sdk in actual-20261024 beta-3e923 d6c4; do
+            extra=()
+            if [[ "$sdk" == beta-3e923 ]]; then
+              native="$RUNNER_TEMP/component-input-beta/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+              extra=(--mapper-host "$native" --mapper-version 'Version 7.1.0-beta')
+            elif [[ "$sdk" == d6c4 ]]; then
+              native="$RUNNER_TEMP/component-input-d6c4/tsgo"
+              extra=(--mapper-host "$native" --mapper-version "$("$native" --version)")
+            fi
+            node tools/support/compat/content-mapper/diagnostic-ownership.ts \
+              --relocation-controls \
+              --consumer "$RUNNER_TEMP/component-input-consumer" \
+              --candidate-cli "$GITHUB_WORKSPACE/target/ci/vize" \
+              --source-sha "$SOURCE_SHA" \
+              --comparison-cli "$RUNNER_TEMP/component-input-before-review-target/ci/vize" \
+              --comparison-source-sha 5597001751a477402537a1cc61cae487feefef9c \
+              --output "$RUNNER_TEMP/component-input-ownership/relocation-$sdk" "${extra[@]}"
+          done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
