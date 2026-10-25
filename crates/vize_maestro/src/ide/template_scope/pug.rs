@@ -29,7 +29,7 @@ pub(in crate::ide) fn is_pug(ctx: &IdeContext<'_>) -> bool {
             })
 }
 
-fn scope(ctx: &IdeContext<'_>) -> Option<&PugScope> {
+fn scope<'a>(ctx: &'a IdeContext<'_>) -> Option<&'a PugScope> {
     ctx.pug_scope
         .get_or_init(|| {
             if !is_pug(ctx) {
@@ -79,7 +79,7 @@ fn scope(ctx: &IdeContext<'_>) -> Option<&PugScope> {
         .as_deref()
 }
 
-pub(in crate::ide) fn analyzed(ctx: &IdeContext<'_>) -> Option<(&Croquis, u32)> {
+pub(in crate::ide) fn analyzed<'a>(ctx: &'a IdeContext<'_>) -> Option<(&'a Croquis, u32)> {
     let scope = scope(ctx)?;
     let local = u32::try_from(ctx.offset.checked_sub(scope.start)?).ok()?;
     let local = scope.template.map.verbatim_offset_to_html(local)?;
