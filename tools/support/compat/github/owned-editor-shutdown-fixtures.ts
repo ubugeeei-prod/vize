@@ -162,7 +162,7 @@ const registration = {
       },
       {
         path: ".github/workflows/lsp-owned-outer-shutdown.yml",
-        sha256: "b93d5f30b94aed086bd820d4fc162d6c028f80e5f08c909309d99dfe97fafd22",
+        sha256: "1c4cea1334b8957bbe08a8bdeb8ee1c7a849cfe4979ab87b48c568b5b42f0aef",
       },
       {
         path: "tests/tooling/owned-editor-shutdown-order.test.mjs",
@@ -179,6 +179,10 @@ const registration = {
       {
         path: "tests/_fixtures/runtime/lsp-owned-shutdown-10760/reviewed-before.json",
         sha256: "5b9d6232e3ea3b37a47110c7a96fb68dc0aaf8e4b0d30d6d270ad6bd7eeb8d2d",
+      },
+      {
+        path: "tests/tooling/owned-editor-shutdown-report.test.mjs",
+        sha256: "2a657982e7ff35cd1e6de9ca7b8545815fe577cdb4b7d91172b4e75e598556c3",
       },
     ],
     sdk: {
