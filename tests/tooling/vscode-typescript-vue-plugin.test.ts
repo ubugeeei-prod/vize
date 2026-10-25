@@ -88,7 +88,7 @@ test("VSIX plugin injection resolves relative archive paths before changing dire
   assert.match(source, /\.arg\(&vsix_path\)/);
 });
 
-test("TypeScript Vue plugin resolves existing relative .vue imports", () => {
+test("TypeScript Vue plugin keeps missing-provider import errors explicit", () => {
   const project = createVueProject('import App from "./app.vue";\nApp;\n', {
     "app.vue": "<template />\n",
   });
@@ -99,7 +99,7 @@ test("TypeScript Vue plugin resolves existing relative .vue imports", () => {
     const withPlugin = collectDiagnostics(project.mainTs, true);
     assert.equal(
       hasCannotFindVueModule(withPlugin, "./app.vue"),
-      false,
+      true,
       formatDiagnostics(withPlugin),
     );
   } finally {

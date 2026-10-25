@@ -40,8 +40,10 @@ provided by Vize's language server, not promised by this package.
 
 Native projection failures are diagnostics, never an `any` component stub.
 Missing imports remain errors. The native engine and its UTF-8/UTF-16 conversion
-helper are resolved from the same installed package. A workspace Vize integration
-can supply that engine; the plugin's own matching native dependency is the fallback.
+helper are resolved from the same installed package. The default is the plugin's own matching native dependency. A project can explicitly
+select another compatible `@vizejs/native` package directory with `"nativePath"`
+in its plugin entry. Overrides must supply the projection API and its matching
+helper; a failed override remains an error and is never silently substituted.
 Unsaved snapshots invalidate generated code and mappings together.
 
 **Ordinary `tsc` does not load language service plugins.** This package does not

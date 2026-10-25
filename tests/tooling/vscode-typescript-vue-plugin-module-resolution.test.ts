@@ -23,7 +23,7 @@ const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")
   }): import("typescript").LanguageService;
 };
 
-test("TypeScript Vue plugin resolves relative .vue imports from TSX under NodeNext", () => {
+test("TypeScript Vue plugin keeps missing-provider errors under NodeNext while retaining import navigation", () => {
   const project = createVueProject(
     'import Card from "./Card.vue";\nconst render = () => <Card label="ok" />;\nrender;\n',
     {
@@ -48,7 +48,7 @@ test("TypeScript Vue plugin resolves relative .vue imports from TSX under NodeNe
     const withPlugin = collectDiagnostics(project.mainTs, true, project.compilerOptions);
     assert.equal(
       hasCannotFindVueModule(withPlugin, "./Card.vue"),
-      false,
+      true,
       formatDiagnostics(withPlugin),
     );
 

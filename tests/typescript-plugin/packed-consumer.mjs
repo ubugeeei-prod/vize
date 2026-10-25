@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -142,6 +143,41 @@ fs.writeFileSync(main, mainText);
 fs.writeFileSync(vue, vueText);
 fs.writeFileSync(art, artText);
 fs.writeFileSync(path.join(src, "util.ts"), 'export const word = "hello";\n');
+const consumerRequire = createRequire(path.join(consumer, "package.json"));
+const nativeApi = consumerRequire("@vizejs/native");
+const projectionHelper = consumerRequire("@vizejs/native/language-projection.js");
+const loadedImages = Object.values(consumerRequire.cache).filter(
+  (entry) =>
+    entry.filename.endsWith(".node") &&
+    entry.exports.generateVueLanguageCode === nativeApi.generateVueLanguageCode,
+);
+assert.equal(loadedImages.length, 1, "Capture the actual native image serving this projection API");
+const loadedImage = {
+  file: path.basename(loadedImages[0].filename),
+  sha256: digest(fs.readFileSync(loadedImages[0].filename)),
+  nativeBuildToken: nativeApi.getNativeBuildToken(),
+};
+assert.match(loadedImage.nativeBuildToken, /^[0-9a-f]{32}$/);
+assert.equal(
+  loadedImage.sha256,
+  digest(fs.readFileSync(path.join(root, "npm/native", loadedImage.file))),
+);
+fs.writeFileSync(path.join(output, "native-image.json"), JSON.stringify(loadedImage, null, 2));
+for (const [file, source] of [
+  [vue, vueText],
+  [art, artText],
+]) {
+  const raw = nativeApi.generateVueLanguageCode(source, {
+    filename: file,
+    configFileName: path.join(consumer, "tsconfig.json"),
+    preserveUnusedDiagnostics: true,
+  });
+  const normalized = projectionHelper.toUtf16LanguageProjection(source, raw);
+  fs.writeFileSync(
+    path.join(output, `${path.basename(file)}.projection.json`),
+    JSON.stringify({ source, raw: JSON.parse(raw), normalized }, null, 2),
+  );
+}
 const tsserver = path.join(consumer, "node_modules/typescript/lib/tsserver.js");
 const client = startTsserver(tsserver, consumer, output);
 const results = {};
@@ -278,7 +314,7 @@ try {
     assert.match(String(error.stdout), /TS2307.*App\.vue/);
   }
   await client.stop();
-  async function negativeScenario(name, file, source, expectedCode, predicate = () => true) {
+  async function isolatedScenario(name, file, source, expectedCode, predicate = () => true) {
     const directory = path.join(output, name);
     fs.mkdirSync(directory);
     const negative = startTsserver(tsserver, consumer, directory);
@@ -294,23 +330,36 @@ try {
       const response = await negative.send("semanticDiagnosticsSync", { file });
       results[name] = response;
       assert(
-        response.body.some((entry) => entry.code === expectedCode && predicate(entry)),
+        response.body.some(
+          (entry) =>
+            (Array.isArray(expectedCode) ? expectedCode : [expectedCode]).includes(entry.code) &&
+            predicate(entry),
+        ),
         JSON.stringify(response),
       );
     } finally {
       await negative.stop();
     }
   }
+  config.compilerOptions.module = "NodeNext";
+  config.compilerOptions.moduleResolution = "NodeNext";
+  fs.writeFileSync(path.join(consumer, "tsconfig.json"), JSON.stringify(config));
+  await isolatedScenario("native-nodenext", main, mainText, [2322, 2741]);
+  assert(
+    !results["native-nodenext"].body.some(
+      (entry) => entry.code === 2307 && entry.text.includes("App.vue"),
+    ),
+  );
   const helperPath = path.join(consumer, "node_modules/@vizejs/native/language-projection.js");
   fs.renameSync(helperPath, `${helperPath}.disabled`);
   try {
-    await negativeScenario("missing-native-helper", vue, vueText, 100003);
+    await isolatedScenario("missing-native-helper", vue, vueText, 100003);
   } finally {
     fs.renameSync(`${helperPath}.disabled`, helperPath);
   }
   config.compilerOptions.plugins[0].enabled = false;
   fs.writeFileSync(path.join(consumer, "tsconfig.json"), JSON.stringify(config));
-  await negativeScenario("disabled-plugin", main, mainText, 2307, (entry) =>
+  await isolatedScenario("disabled-plugin", main, mainText, 2307, (entry) =>
     entry.text.includes("App.vue"),
   );
   fs.writeFileSync(
@@ -319,6 +368,7 @@ try {
       {
         source: run("git", ["rev-parse", "HEAD"], root).trim(),
         node: process.version,
+        loadedImage,
         tsserverVersion: JSON.parse(
           fs.readFileSync(path.join(consumer, "node_modules/typescript/package.json")),
         ).version,

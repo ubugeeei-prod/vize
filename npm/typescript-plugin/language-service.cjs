@@ -243,7 +243,13 @@ function createMappedLanguageService(ts, service, support) {
       const current =
         method === "getSuggestionDiagnostics" ? service[method](file) : applied.diagnostics;
       const mapped = current.flatMap((value) => {
-        const textSpan = span(file, { start: value.start ?? 0, length: value.length ?? 0 });
+        const range = support.engine.mapLanguageDiagnosticRange(
+          document.projection,
+          value.start ?? 0,
+          value.length ?? 0,
+        );
+        const textSpan =
+          range.fidelity === "none" ? undefined : { start: range.start, length: range.length };
         if (!textSpan && [6133, 6192, 6196].includes(value.code)) return [];
         const result = { ...value, file: sourceFile, ...(textSpan || { start: 0, length: 0 }) };
         if (!textSpan)

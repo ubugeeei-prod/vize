@@ -5,7 +5,7 @@ const helper = require("../../npm/native/language-projection.js");
 const { LanguageFeature: F } = helper;
 const ts = require("../node_modules/typescript");
 
-test("feature dispatch maps Unicode authored spans and keeps edits within exact verbatim text", () => {
+void test("feature dispatch maps Unicode authored spans and keeps edits within exact verbatim text", () => {
   const file = "/src/日本語.vue";
   const source = "😀 <script>const count = 1; count;</script>";
   const prefix = "declare const helper: number;\n";
@@ -87,7 +87,7 @@ test("feature dispatch maps Unicode authored spans and keeps edits within exact 
   assert.deepEqual(service.getFormattingEditsForDocument(file), []);
 });
 
-test("projection failures remain diagnostics and generated errors do not disappear", () => {
+void test("projection failures remain diagnostics and generated errors do not disappear", () => {
   const file = "/src/Bad.vue";
   const source = '<script>const value: number = "wrong";</script>';
   let document = { source, error: "native projection failed" };
@@ -110,7 +110,7 @@ test("projection failures remain diagnostics and generated errors do not disappe
   assert.match(diagnostics[0].messageText, /generated Vize code/);
 });
 
-test("opt-out preserves the original service and ordinary JSX configuration errors remain visible", () => {
+void test("opt-out preserves the original service and ordinary JSX configuration errors remain visible", () => {
   const init = require("../../npm/typescript-plugin/index.cjs");
   const file = "/src/plain.tsx";
   const text = "<div />;";

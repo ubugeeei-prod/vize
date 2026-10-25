@@ -21,6 +21,7 @@ const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")
     languageServiceHost: import("typescript").LanguageServiceHost;
     project: { getCurrentDirectory(): string };
     serverHost: typeof ts.sys;
+    config?: { nativePath: string };
   }): import("typescript").LanguageService;
 };
 
@@ -36,6 +37,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       languageServiceHost: host,
       project: { getCurrentDirectory: () => project.root },
       serverHost: ts.sys,
+      config: { nativePath: project.nativeDir },
     });
     const source = fs.readFileSync(project.mainTs, "utf8");
     const quickInfo = service.getQuickInfoAtPosition(
@@ -249,7 +251,7 @@ function createProject() {
     ].join("\n"),
   );
 
-  return { ambientDts, appVue, mainTs, nativeCalls, packageVue, root: rootDir };
+  return { ambientDts, appVue, mainTs, nativeCalls, nativeDir, packageVue, root: rootDir };
 }
 
 function createHost(rootDir: string, rootFiles: string[]) {

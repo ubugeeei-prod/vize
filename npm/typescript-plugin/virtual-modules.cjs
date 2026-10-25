@@ -2,7 +2,6 @@
 
 const crypto = require("node:crypto");
 const path = require("node:path");
-const { createRequire } = require("node:module");
 const installedHosts = new WeakMap();
 
 // A source snapshot is the sole invalidation authority, including unsaved edits.
@@ -18,7 +17,7 @@ function installVueVirtualModules(ts, info) {
   const getSnapshot = bind("getScriptSnapshot");
   if (!readFile || !fileExists || !getSnapshot) return undefined;
   const root = host.getCurrentDirectory?.() || info.project?.getCurrentDirectory?.();
-  const engine = loadNative(root);
+  const engine = loadNative(root, info.config?.nativePath);
   const snapshots = new Map();
   const get = (fileName) => {
     if (!isSfc(fileName)) return undefined;
@@ -39,8 +38,7 @@ function installVueVirtualModules(ts, info) {
       .digest("hex");
     let projection, error;
     try {
-      if (!engine)
-        throw new Error("A matching @vizejs/native with generateVueLanguageCode is required");
+      if (!engine.native) throw new Error(`Native projection unavailable: ${engine.error}`);
       projection = engine.toUtf16LanguageProjection(
         source,
         engine.native.generateVueLanguageCode(source, {
@@ -122,44 +120,43 @@ function installVueVirtualModules(ts, info) {
     },
   };
   const support = { get, engine, resolve, fileExists, readFile, snapshots };
+  if (!engine.native) return support;
   if (!installAtomically(host, replacements)) return undefined;
   installedHosts.set(host, support);
   return support;
 }
 
-function loadNative(projectRoot) {
-  const roots = [];
-  if (typeof projectRoot === "string") {
-    for (const anchor of [
-      "@vizejs/vite-plugin",
-      "@vizejs/unplugin",
-      "@vizejs/rspack-plugin",
-      "@vizejs/vite-plugin-musea",
-      "vize",
-    ]) {
-      try {
-        roots.push(createRequire(require.resolve(anchor, { paths: [projectRoot] })));
-      } catch {}
-    }
-    roots.push(createRequire(path.join(projectRoot, "package.json")));
+function loadNative(projectRoot, nativePath) {
+  try {
+    const entry =
+      nativePath === undefined
+        ? require.resolve("@vizejs/native")
+        : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
+    const native = require(entry);
+    const directory = path.dirname(entry);
+    const metadata = require(path.join(directory, "package.json"));
+    if (metadata.name !== "@vizejs/native")
+      throw new Error("nativePath must identify @vizejs/native");
+    if (nativePath === undefined && metadata.version !== require("./package.json").version)
+      throw new Error("The default native provider must match the plugin release");
+    const helper = require(path.join(directory, "language-projection.js"));
+    if (
+      typeof native.generateVueLanguageCode !== "function" ||
+      typeof helper.toUtf16LanguageProjection !== "function" ||
+      typeof helper.applyDiagnosticDirectives !== "function" ||
+      typeof helper.mapLanguageDiagnosticRange !== "function"
+    )
+      throw new Error("Native projection capabilities are unavailable");
+    return {
+      native,
+      ...helper,
+      path: entry,
+      version: metadata.version,
+      origin: nativePath === undefined ? "package" : "explicit",
+    };
+  } catch (cause) {
+    return { error: cause instanceof Error ? cause.message : String(cause) };
   }
-  roots.push(require);
-  for (const loader of roots) {
-    try {
-      const entry = loader.resolve("@vizejs/native");
-      const native = loader(entry);
-      const helper = loader(path.join(path.dirname(entry), "language-projection.js"));
-      if (
-        typeof native.generateVueLanguageCode === "function" &&
-        typeof helper.toUtf16LanguageProjection === "function" &&
-        typeof helper.applyDiagnosticDirectives === "function"
-      )
-        return { native, ...helper };
-    } catch {
-      /* Resolve the engine and its helper from one physical package. */
-    }
-  }
-  return undefined;
 }
 
 function installAtomically(host, replacements) {
