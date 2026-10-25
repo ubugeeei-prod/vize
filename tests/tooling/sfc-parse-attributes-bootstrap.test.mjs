@@ -9,6 +9,7 @@ import {
   baseSource,
   sourceProvenance,
   validateProductSource,
+  validateProductPacket,
   validateSourceProvenance,
 } from "../native/sfc-parse-attributes-source.mjs";
 
@@ -157,4 +158,23 @@ void test("manual observers have no PR trigger while before/head products retain
   assert.throws(() => validateProductSource(actor, "base", actor));
   assert.throws(() => validateProductSource(baseSource, "other", actor));
   assert.throws(() => validateProductSource(actor, "head", "invalid"));
+});
+
+void test("packet, receipt and image roles must all match the independent artifact container", () => {
+  const env = environment();
+  const receipt = { role: "base", source: baseSource, provenance: sourceProvenance(actor, env) };
+  const packet = { role: "base", source: baseSource, receipt };
+  validateProductPacket(packet, structuredClone(receipt), "base", actor, env);
+  const wrongReceipt = structuredClone(packet);
+  wrongReceipt.receipt.role = "head";
+  // Matching false labels in both files must not legitimize a base image as head.
+  assert.throws(() =>
+    validateProductPacket(wrongReceipt, wrongReceipt.receipt, "base", actor, env),
+  );
+  const wrongPacket = { ...packet, role: "head" };
+  assert.throws(() => validateProductPacket(wrongPacket, receipt, "base", actor, env));
+  assert.throws(() =>
+    validateProductPacket(packet, { ...receipt, role: "head" }, "base", actor, env),
+  );
+  assert.throws(() => validateProductPacket(packet, receipt, "head", actor, env));
 });

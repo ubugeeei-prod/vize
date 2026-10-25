@@ -3,11 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import {
-  sourceProvenance,
-  validateProductSource,
-  validateSourceProvenance,
-} from "./sfc-parse-attributes-source.mjs";
+import { sourceProvenance, validateProductPacket } from "./sfc-parse-attributes-source.mjs";
 
 const directory = path.resolve(process.argv[2]);
 const base = JSON.parse(await fs.readFile(path.join(directory, "base/packets.json"), "utf8"));
@@ -20,14 +16,12 @@ const observerActor = execFileSync(
 ).trim();
 const provenance = sourceProvenance(observerActor);
 assert.equal(head.source, process.env.VIZE_SFC_ATTRS_ACTOR_SHA);
-for (const packet of [base, head]) {
-  validateProductSource(packet.source, packet.role, observerActor);
-  assert.equal(packet.receipt.source, packet.source);
-  validateSourceProvenance(packet.receipt.provenance, observerActor);
-  const image = JSON.parse(
-    await fs.readFile(path.join(directory, packet.role, "image.json"), "utf8"),
-  );
-  assert.deepEqual(image, packet.receipt, "The compared packets must retain their actual image");
+for (const { role, packet } of [
+  { role: "base", packet: base },
+  { role: "head", packet: head },
+]) {
+  const image = JSON.parse(await fs.readFile(path.join(directory, role, "image.json"), "utf8"));
+  validateProductPacket(packet, image, role, observerActor);
 }
 const fixtures = JSON.parse(
   await fs.readFile(

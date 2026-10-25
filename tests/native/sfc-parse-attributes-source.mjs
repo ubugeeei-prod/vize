@@ -34,6 +34,20 @@ export function validateProductSource(source, role, observerActor) {
   assert.equal(source, role === "base" ? baseSource : observerActor);
 }
 
+export function validateProductPacket(packet, image, role, observerActor, env = process.env) {
+  assert.equal(packet.role, role, "Packet role must match its expected artifact container");
+  assert.equal(
+    packet.receipt.role,
+    role,
+    "Receipt role must match its expected artifact container",
+  );
+  assert.equal(image.role, role, "Image role must match its expected artifact container");
+  validateProductSource(packet.source, role, observerActor);
+  assert.equal(packet.receipt.source, packet.source);
+  validateSourceProvenance(packet.receipt.provenance, observerActor, env);
+  assert.deepEqual(image, packet.receipt, "The compared packets must retain their actual image");
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const observerActor = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
   process.stdout.write(JSON.stringify(sourceProvenance(observerActor)) + "\n");
