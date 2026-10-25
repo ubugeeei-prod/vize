@@ -31,6 +31,11 @@ on:
         required: false
         default: false
         type: boolean
+      contextual_anchor_controls:
+        description: Require the external contextual-prop native and published beta mapper replay
+        required: false
+        default: false
+        type: boolean
       generic_route_controls:
         description: Require the unchanged 144 generic host packets and producer-owned diagnostic route controls
         required: false
@@ -47,7 +52,7 @@ env:
   QUALIFIER_SHA: ${{ inputs.source_ref }}
 jobs:
   native-syntax-completion:
-    if: ${{ !inputs.handoff_only && !inputs.provider_contract_only }}
+    if: ${{ !inputs.handoff_only && !inputs.provider_contract_only && !inputs.contextual_anchor_controls }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 105
     steps:
@@ -390,5 +395,113 @@ jobs:
         with:
           name: native-provider-contract-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
           path: ${{ runner.temp }}/native-provider-contract/
+          if-no-files-found: error
+          retention-days: 14
+
+  actual-native-and-beta-mapper:
+    if: ${{ inputs.contextual_anchor_controls }}
+    env:
+      SOURCE_SHA: ${{ inputs.source_ref }}
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: naitokosuke/vize-from-prop-template-repro
+          ref: 8195df603650e88e61381f4878bd8ac89ed1953a
+          path: reporter
+          persist-credentials: false
+      - name: Authenticate immutable source and inspected public scripts
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git -C reporter rev-parse HEAD)" = 8195df603650e88e61381f4878bd8ac89ed1953a
+          mkdir -p "$RUNNER_TEMP/contextual-prop-anchors"
+          git -C source ls-files -s > "$RUNNER_TEMP/contextual-prop-anchors/whole-source-index.txt"
+          git -C source rev-parse HEAD > "$RUNNER_TEMP/contextual-prop-anchors/source.sha"
+          git rev-parse HEAD > "$RUNNER_TEMP/contextual-prop-anchors/driver.sha"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: source/package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install frozen source dependencies
+        working-directory: source
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.12.1", package-manager-cache: false }
+      - name: Inspect reporter scripts and install the exact published lock without hooks
+        working-directory: reporter
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const p=JSON.parse(readFileSync('package.json','utf8'));
+          assert.deepEqual(p.scripts,{check:'tsc --runExternalCode --noEmit -p tsconfig.json'});
+          assert.deepEqual(p.dependencies,{vue:'3.5.44'});
+          assert.deepEqual(p.devDependencies,{typescript:'7.1.0-beta',vize:'0.569.0'});
+          JS
+          npm exec --yes --ignore-scripts --package=pnpm@12.9.0 -- pnpm install --frozen-lockfile --ignore-scripts
+          git diff --exit-code
+      - name: Preserve exact public failure and authenticate both physical providers
+        run: node tools/support/github/contextual-prop-anchor-replay.mjs prepare "$RUNNER_TEMP/contextual-prop-anchors"
+      - name: Require generator regressions and complete batch fixture diagnostics
+        working-directory: source
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          directory="$RUNNER_TEMP/contextual-prop-anchors"
+          cargo test --locked --profile ci -p vize_canon --lib virtual_ts::generator::anchors:: -- --nocapture --test-threads=1 > "$directory/generator.stdout" 2> "$directory/generator.stderr"
+          cargo test --locked --profile ci -p vize_canon --test fix_history_diagnostics contextual_prop_anchors_preserve_authored_diagnostics -- --exact --nocapture --test-threads=1 > "$directory/batch.stdout" 2> "$directory/batch.stderr"
+      - name: Require complete real native and beta mapper outputs across all source variants
+        if: ${{ !cancelled() }}
+        working-directory: source
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          directory="$RUNNER_TEMP/contextual-prop-anchors"
+          set +e
+          cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::contextual_prop_anchors::contextual_prop_anchors_preserve_complete_native_and_mapper_outcomes --ignored --exact --nocapture --test-threads=1 > "$directory/actual-hosts.stdout" 2> "$directory/actual-hosts.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$directory/actual-hosts.status"
+          exit "$status"
+      - name: Authenticate every complete raw host packet without granting native ledger credit
+        if: ${{ !cancelled() }}
+        run: node tools/support/github/contextual-prop-anchor-replay.mjs verify "$RUNNER_TEMP/contextual-prop-anchors"
+      - name: Retain every raw frame and physical image even on failure
+        if: ${{ always() }}
+        run: |
+          if [[ -d source/target/vize-tests/contextual-prop-anchors-10661 ]]; then
+            cp -a source/target/vize-tests/contextual-prop-anchors-10661 "$RUNNER_TEMP/contextual-prop-anchors/"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: contextual-prop-anchors-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/contextual-prop-anchors/
           if-no-files-found: error
           retention-days: 14
