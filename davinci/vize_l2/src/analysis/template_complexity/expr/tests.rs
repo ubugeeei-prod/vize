@@ -222,6 +222,53 @@ fn static_members_keep_logical_trees_separate_across_the_object_boundary() {
 }
 
 #[test]
+fn conditional_nesting_restores_before_the_next_sibling_expression() {
+    let a = Allocator::default();
+    let expression = "[a ? b ? c : d : e, f && g]";
+    let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
+    let mut facts = ComplexityFacts::empty();
+    score(ExprRef::Js(js), NodeId::from_index(3), 2, &mut facts);
+    facts
+        .contributions
+        .sort_unstable_by_key(Contribution::sort_key);
+    assert_eq!(
+        facts,
+        ComplexityFacts {
+            cyclomatic: 4,
+            cognitive: 8,
+            unknown: 0,
+            max_nesting: 0,
+            contributions: alloc::vec![
+                Contribution {
+                    span: span(expression, "a ? b ? c : d : e"),
+                    kind: DecisionKind::Conditional,
+                    op: NodeId::from_index(3),
+                    nesting: 2,
+                    cyclomatic: 1,
+                    cognitive: 3
+                },
+                Contribution {
+                    span: span(expression, "b ? c : d"),
+                    kind: DecisionKind::Conditional,
+                    op: NodeId::from_index(3),
+                    nesting: 3,
+                    cyclomatic: 1,
+                    cognitive: 4
+                },
+                Contribution {
+                    span: span(expression, "f && g"),
+                    kind: DecisionKind::Logical,
+                    op: NodeId::from_index(3),
+                    nesting: 2,
+                    cyclomatic: 1,
+                    cognitive: 1
+                },
+            ],
+        }
+    );
+}
+
+#[test]
 fn entity_interiors_refuse_the_whole_expression_instead_of_publishing_partial_facts() {
     let a = Allocator::default();
     let expression = "ready && (yes ? '😀' : 'no')";

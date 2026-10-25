@@ -21,7 +21,6 @@ mod tests;
 
 /// Score one evaluated expression position standing at template nesting
 /// `depth`, carried by op `op`.
-#[inline]
 pub(super) fn score(
     expr: ExprRef<'_>,
     op: Option<NodeId>,
@@ -29,21 +28,17 @@ pub(super) fn score(
     facts: &mut ComplexityFacts,
 ) {
     match expr {
+        ExprRef::Js(js) if terminal(js.ast) => {}
         ExprRef::Js(js) => {
-            let ast = decision_root(js.ast);
-            if terminal(ast) {
-                return;
-            }
             let previous = (facts.contributions.len(), facts.cyclomatic, facts.cognitive);
             let mut scorer = Scorer {
                 js,
                 op,
-                depth,
-                conditionals: 0,
+                nesting: depth,
                 facts,
                 unprojectable: false,
             };
-            walk::walk_expression(&mut scorer, ast);
+            scorer.visit_expression(js.ast);
             if scorer.unprojectable {
                 // A contribution inside an indivisible decoded segment has no
                 // exact authored range. Keep no prefix of that expression's
@@ -57,20 +52,6 @@ pub(super) fn score(
         ExprRef::Opaque(_) | ExprRef::Foreign(_) | ExprRef::Filter(_) => {
             unknown(expr, op, depth, facts);
         }
-    }
-}
-
-/// Static member names and parentheses contain no evaluated child besides the
-/// object/inner expression. Peel them once, without a generic visitor frame.
-/// This does not join logical trees across a member: `operand` still decides
-/// whether to flatten before invoking this ordinary sub-expression visitor.
-fn decision_root<'a, 'e>(mut expr: &'e Expression<'a>) -> &'e Expression<'a> {
-    loop {
-        expr = match expr {
-            Expression::StaticMemberExpression(member) => &member.object,
-            Expression::ParenthesizedExpression(paren) => &paren.expression,
-            _ => return expr,
-        };
     }
 }
 
@@ -103,15 +84,13 @@ fn unknown(expr: ExprRef<'_>, op: Option<NodeId>, depth: u32, facts: &mut Comple
     });
 }
 
-/// The expression walk. `conditionals` counts the `?:` enclosing the
-/// current node inside this expression — the expression-internal half of
-/// the nesting a `?:` pays.
+/// The expression walk. `nesting` carries template depth plus the enclosing
+/// `?:` nodes. Conditional recursion saves and restores it, including saturation.
 struct Scorer<'f, 'a> {
     /// Original retained AST, decoded text and checked wrapper/source bridge.
     js: &'a JsExpr<'a>,
     op: Option<NodeId>,
-    depth: u32,
-    conditionals: u32,
+    nesting: u32,
     facts: &'f mut ComplexityFacts,
     unprojectable: bool,
 }
@@ -136,10 +115,6 @@ impl<'a> Scorer<'_, 'a> {
         let authored = decoded.and_then(|decoded| self.js.authored_span(decoded));
         self.unprojectable |= authored.is_none();
         authored
-    }
-
-    fn nesting(&self) -> u32 {
-        self.depth.saturating_add(self.conditionals)
     }
 
     /// In-order flattening: left operand's operators, this operator, then
@@ -168,7 +143,6 @@ impl<'a> Scorer<'_, 'a> {
 
 impl<'a> Visit<'a> for Scorer<'_, 'a> {
     fn visit_expression(&mut self, it: &Expression<'a>) {
-        let it = decision_root(it);
         if !terminal(it) {
             walk::walk_expression(self, it);
         }
@@ -180,7 +154,7 @@ impl<'a> Visit<'a> for Scorer<'_, 'a> {
         let Some(span) = self.file_span(it.span) else {
             return;
         };
-        let nesting = self.nesting();
+        let nesting = self.nesting;
         let mut run = Run {
             operators: 0,
             runs: 0,
@@ -204,7 +178,7 @@ impl<'a> Visit<'a> for Scorer<'_, 'a> {
         let Some(span) = self.file_span(it.span) else {
             return;
         };
-        let nesting = self.nesting();
+        let nesting = self.nesting;
         self.facts.push(Contribution {
             span,
             kind: DecisionKind::Conditional,
@@ -213,8 +187,8 @@ impl<'a> Visit<'a> for Scorer<'_, 'a> {
             cyclomatic: 1,
             cognitive: 1 + nesting,
         });
-        self.conditionals += 1;
+        self.nesting = nesting.saturating_add(1);
         vize_l0::ensure_sufficient_stack(|| walk::walk_conditional_expression(self, it));
-        self.conditionals -= 1;
+        self.nesting = nesting;
     }
 }
