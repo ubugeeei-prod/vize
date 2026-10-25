@@ -304,12 +304,7 @@ type AstCompiler = {
   isIdentifier(node: AstNode): boolean;
   forEachChild(node: AstNode, visitor: (node: AstNode) => void): void;
 };
-export function assertCheckedReadOwnership(
-  source: string,
-  entry: GlobalCase,
-  result: Transform,
-  referencePackage: string,
-) {
+export function instanceReceiverReads(result: Transform, referencePackage: string) {
   const ts = createRequire(referencePackage)("typescript") as AstCompiler;
   assert.equal(ts.version, "5.9.3");
   const parsed = ts.createSourceFile(
@@ -319,7 +314,14 @@ export function assertCheckedReadOwnership(
     true,
     ts.ScriptKind.TSX,
   );
-  const reads: Array<{ name: string; start: number; length: number }> = [];
+  const reads: Array<{
+    name: string;
+    receiver: string;
+    start: number;
+    length: number;
+    prefixStart: number;
+    prefixLength: number;
+  }> = [];
   const visit = (node: AstNode) => {
     if (
       ts.isPropertyAccessExpression(node) &&
@@ -329,8 +331,12 @@ export function assertCheckedReadOwnership(
     ) {
       const name = node.name!;
       const start = Buffer.byteLength(result.text.slice(0, name.getStart(parsed)));
+      const prefixStart = Buffer.byteLength(result.text.slice(0, node.expression.getStart(parsed)));
       reads.push({
         name: name.text!,
+        receiver: node.expression.text!,
+        prefixStart,
+        prefixLength: start - prefixStart,
         start,
         length: Buffer.byteLength(result.text.slice(name.getStart(parsed), name.end)),
       });
@@ -338,6 +344,16 @@ export function assertCheckedReadOwnership(
     ts.forEachChild(node, visit);
   };
   visit(parsed);
+  return reads;
+}
+
+export function assertCheckedReadOwnership(
+  source: string,
+  entry: GlobalCase,
+  result: Transform,
+  referencePackage: string,
+) {
+  const reads = instanceReceiverReads(result, referencePackage);
   for (const name of entry.forbiddenReceiverNames ?? [])
     assert.equal(
       reads.filter((read) => read.name === name).length,
@@ -360,7 +376,9 @@ export function assertCheckedReadOwnership(
             span[0] === read.start &&
             span[1] === read.length &&
             span[2] === at.byteStart &&
-            span[3] === at.byteLength,
+            span[3] === at.byteLength &&
+            span[4] === 0 &&
+            span[5] === 1048575,
         ),
       ),
       `${entry.id}: the checked receiver property, not the alias declaration, owns this authored name`,

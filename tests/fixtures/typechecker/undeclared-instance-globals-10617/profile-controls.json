@@ -16,7 +16,8 @@
       "mode": "enabled",
       "uniqueScopeExpressions": 0,
       "minimumHits": 0,
-      "minimumOutputBuffers": 0
+      "minimumOutputBuffers": 0,
+      "diagnosticPrefixes": 0
     },
     {
       "id": "disabled",
@@ -46,7 +47,8 @@
       "mode": "template-checking-disabled",
       "uniqueScopeExpressions": 0,
       "minimumHits": 0,
-      "minimumOutputBuffers": 0
+      "minimumOutputBuffers": 0,
+      "diagnosticPrefixes": 0
     },
     {
       "id": "same-scope-repeat",
@@ -76,7 +78,8 @@
       "mode": "enabled",
       "uniqueScopeExpressions": 1,
       "minimumHits": 2,
-      "minimumOutputBuffers": 3
+      "minimumOutputBuffers": 3,
+      "diagnosticPrefixes": 3
     },
     {
       "id": "actual-scope-isolation",
@@ -84,7 +87,8 @@
       "mode": "enabled",
       "uniqueScopeExpressions": 2,
       "minimumHits": 1,
-      "minimumOutputBuffers": 1
+      "minimumOutputBuffers": 1,
+      "diagnosticPrefixes": 1
     }
   ]
 }

@@ -7,6 +7,10 @@ import { test } from "node:test";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import {
+  assertDiagnosticPrefixGeometry,
+  assertPrefixGeometryMutations,
+} from "./support/content-mapper-instance-globals-geometry-10617.ts";
+import {
   assertProfileComparatorNegatives,
   runRewriteProfileControls,
 } from "./support/content-mapper-instance-globals-profiles-10617.ts";
@@ -115,6 +119,7 @@ await test(
     const records: Packet[] = [],
       checks: Array<{ id: string; run: () => string | void }> = [],
       sizes: unknown[] = [],
+      geometry: unknown[] = [],
       discovery: unknown[] = [];
     const run = (label: string, command: string, args: string[], cwd: string, input?: Buffer) => {
       const started = performance.now();
@@ -466,6 +471,14 @@ await test(
               result,
               path.join(reference, "package.json"),
             );
+            geometry.push({
+              label: row.label,
+              prefixes: assertDiagnosticPrefixGeometry(
+                row.source,
+                result,
+                path.join(reference, "package.json"),
+              ),
+            });
           },
         });
         checks.push({
@@ -495,6 +508,17 @@ await test(
         "whole generated packet valid/repair determinism",
       );
       fs.writeFileSync(path.join(output, "sizes.json"), `${JSON.stringify(sizes, null, 2)}\n`);
+      checks.push({
+        id: "geometry/mutation-negatives",
+        run() {
+          const original = sourceCases.find((row) => row.label === "lf/original")!;
+          assertPrefixGeometryMutations(
+            original.source,
+            responses.find((row) => row.id === original.id)!.result!,
+            path.join(reference, "package.json"),
+          );
+        },
+      });
       const outcomes = checks.map(({ id: label, run: check }) => {
         try {
           const state = check();
@@ -506,6 +530,10 @@ await test(
       fs.writeFileSync(
         path.join(output, "outcomes.json"),
         `${JSON.stringify(outcomes, null, 2)}\n`,
+      );
+      fs.writeFileSync(
+        path.join(output, "geometry.json"),
+        `${JSON.stringify(geometry, null, 2)}\n`,
       );
       fs.writeFileSync(
         path.join(output, "discovery.json"),

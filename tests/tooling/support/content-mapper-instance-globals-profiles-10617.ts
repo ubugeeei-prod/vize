@@ -12,6 +12,7 @@ type ProfileControl = {
   uniqueScopeExpressions: number;
   minimumHits: number;
   minimumOutputBuffers: number;
+  diagnosticPrefixes: number;
 };
 type SourceProfile = {
   schema_version: number;
@@ -29,11 +30,15 @@ const counterNames = [
   "cache_misses",
   "cache_entries",
   "output_buffers",
+  "diagnostic_prefixes",
 ] as const;
 
 export function assertRewriteProfile(
   profile: SourceProfile,
-  control: Pick<ProfileControl, "uniqueScopeExpressions" | "minimumHits" | "minimumOutputBuffers">,
+  control: Pick<
+    ProfileControl,
+    "uniqueScopeExpressions" | "minimumHits" | "minimumOutputBuffers" | "diagnosticPrefixes"
+  >,
 ) {
   assert.equal(profile.schema_version, 1);
   assert.equal(profile.tool, "vize");
@@ -60,6 +65,11 @@ export function assertRewriteProfile(
   ) as Record<(typeof counterNames)[number], number>;
   for (const name of ["parse_attempts", "source_buffers", "cache_misses", "cache_entries"] as const)
     assert.equal(totals[name], control.uniqueScopeExpressions, name);
+  assert.equal(
+    totals.diagnostic_prefixes,
+    control.diagnosticPrefixes,
+    "every physical prefix emission keeps its own diagnostic ownership",
+  );
   const parse = profile.spans.filter((row) => row.key === `${namespace}.parse`);
   assert.ok(parse.length <= 1);
   assert.equal(
@@ -218,7 +228,12 @@ export function runRewriteProfileControls(
 
 // Synthetic comparator laws only; these objects never count as source measurements.
 export function assertProfileComparatorNegatives() {
-  const control = { uniqueScopeExpressions: 0, minimumHits: 0, minimumOutputBuffers: 0 };
+  const control = {
+    uniqueScopeExpressions: 0,
+    minimumHits: 0,
+    minimumOutputBuffers: 0,
+    diagnosticPrefixes: 0,
+  };
   const empty = {
     schema_version: 1,
     tool: "vize",
@@ -241,6 +256,7 @@ export function assertProfileComparatorNegatives() {
     "cache_misses",
     "cache_entries",
     "output_buffers",
+    "diagnostic_prefixes",
   ])
     assert.throws(() =>
       assertRewriteProfile(
@@ -271,7 +287,12 @@ export function assertProfileComparatorNegatives() {
       max: 1,
     })),
   };
-  const scoped = { uniqueScopeExpressions: 2, minimumHits: 2, minimumOutputBuffers: 2 };
+  const scoped = {
+    uniqueScopeExpressions: 2,
+    minimumHits: 2,
+    minimumOutputBuffers: 2,
+    diagnosticPrefixes: 2,
+  };
   assertRewriteProfile(positive, scoped);
   for (const name of counterNames) {
     const collapsed = structuredClone(positive);
