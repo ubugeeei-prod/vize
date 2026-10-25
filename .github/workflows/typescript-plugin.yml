@@ -22,7 +22,6 @@ jobs:
     timeout-minutes: 25
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -35,6 +34,8 @@ jobs:
       - name: Build the exact-source native producer
         run: vp run --filter './npm/native' build:ci
       - name: Measure the installed package with real tsserver packets
+        env:
+          VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin
         run: vp node tests/typescript-plugin/packed-consumer.mjs
       - name: Measure the supported TypeScript 5 server
         env:
