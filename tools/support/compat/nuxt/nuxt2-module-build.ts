@@ -21,6 +21,8 @@ const host = process.argv[3] ?? "classic";
 assert.equal(["classic", "bridge-webpack", "bridge-vite"].includes(host), true);
 const bridge = host !== "classic";
 const vite = host === "bridge-vite";
+const adapterLoaded = process.env.VIZE_NUXT2_BRIDGE_PLAIN_HOST !== "true";
+assert.ok(adapterLoaded || vite, "the plain-host causal control is specific to Bridge Vite");
 const fixture = path.join(
   root,
   "tools/support/compat/nuxt/fixtures",
@@ -38,6 +40,24 @@ const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-n
 fs.mkdirSync(artifacts, { recursive: true });
 const cleanupBridgeSource = bridge ? prepareNuxt2BridgeSource(root, fixture, artifacts) : undefined;
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+const fixtureConfig = fs.readFileSync(path.join(fixture, "nuxt.config.js"));
+fs.writeFileSync(
+  path.join(artifacts, "campaign-context.json"),
+  JSON.stringify(
+    {
+      host,
+      adapterLoaded,
+      candidateHead: spawnSync("git", ["rev-parse", "HEAD"], {
+        cwd: root,
+        encoding: "utf8",
+      }).stdout.trim(),
+      node: process.version,
+      fixtureConfig: { sha256: hash(fixtureConfig), utf8: fixtureConfig.toString() },
+    },
+    null,
+    2,
+  ) + "\n",
+);
 const webpackEnvironment = {
   ...process.env,
   NO_COLOR: "1",
@@ -214,7 +234,7 @@ try {
   assert.equal(result.error, undefined);
   assert.equal(result.status, 0, `Nuxt 2 build failed; see ${buildLog}`);
   timings.push({
-    stage: "webpack-production-build",
+    stage: `${vite ? "vite" : "webpack"}-production-build`,
     milliseconds: performance.now() - buildStarted,
   });
 
@@ -305,9 +325,11 @@ try {
     await devExited;
     fs.closeSync(devLog);
   }
-  verifyNuxt2LintConfig(fixture, artifacts, `v${nuxtVersion}`);
-  verifyNuxtAutoInitConfig(fixture, artifacts, `v${nuxtVersion}`);
-  verifyNuxt2Typecheck(fixture, artifacts);
+  if (adapterLoaded) {
+    verifyNuxt2LintConfig(fixture, artifacts, `v${nuxtVersion}`);
+    verifyNuxtAutoInitConfig(fixture, artifacts, `v${nuxtVersion}`);
+    verifyNuxt2Typecheck(fixture, artifacts);
+  }
   fs.writeFileSync(
     path.join(artifacts, "proof.json"),
     JSON.stringify(
@@ -319,6 +341,7 @@ try {
         node: process.version,
         nuxt: nuxtVersion,
         host,
+        adapterLoaded,
         packageProvider: bridge
           ? "explicit built source products; no historical native TypeScript installation"
           : "published 0.429.1 package with current source adapter dist",
@@ -344,9 +367,16 @@ try {
       2,
     ) + "\n",
   );
-  console.log("Candidate Nuxt 2 webpack build and SSR routes passed");
+  console.log(
+    `${adapterLoaded ? "Candidate" : "Plain host"} Nuxt 2 ${host} runtime campaign passed`,
+  );
 } finally {
   fs.writeFileSync(path.join(artifacts, "timings.json"), JSON.stringify(timings, null, 2) + "\n");
+  if (vite && fs.existsSync(path.join(fixture, ".nuxt/dist/server"))) {
+    fs.cpSync(path.join(fixture, ".nuxt/dist/server"), path.join(artifacts, "vite-server"), {
+      recursive: true,
+    });
+  }
   if (vite && fs.existsSync(path.join(fixture, ".output/server"))) {
     fs.cpSync(path.join(fixture, ".output/server"), path.join(artifacts, "nitro-server"), {
       recursive: true,

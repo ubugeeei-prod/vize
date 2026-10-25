@@ -2,7 +2,8 @@ import { defineNuxtConfig } from "@nuxt/bridge";
 
 const vite = process.env.VIZE_NUXT2_BRIDGE_BUILDER === "vite";
 export default defineNuxtConfig({
-  modules: ["@vizejs/nuxt"],
+  // The causal control runs the identical pinned host without loading Vize.
+  modules: process.env.VIZE_NUXT2_BRIDGE_PLAIN_HOST === "true" ? [] : ["@vizejs/nuxt"],
   bridge: { vite, nitro: vite },
   build: { loaders: { imgUrl: { limit: 0 } } },
   vite: { build: { assetsInlineLimit: 0 } },

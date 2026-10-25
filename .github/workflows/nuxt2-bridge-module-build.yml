@@ -104,14 +104,23 @@ jobs:
         run: npm ci --legacy-peer-deps --no-audit --no-fund
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium for the Nuxt 2 runtime check
+        id: chromium
         working-directory: tests
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Verify the identical Bridge Vite host without loading the adapter
+        if: matrix.builder == 'vite'
+        env:
+          VIZE_NUXT2_BRIDGE_PLAIN_HOST: "true"
+        run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-bridge-plain-host-proof" bridge-vite
       - name: Verify candidate webpack build, SSR, hydration and dev HMR
+        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
         run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-bridge-proof" "bridge-${{ matrix.builder }}"
       - name: Upload Nuxt 2 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nuxt2-bridge-proof-${{ matrix.builder }}-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ runner.temp }}/nuxt2-bridge-proof
+          path: |
+            ${{ runner.temp }}/nuxt2-bridge-proof
+            ${{ runner.temp }}/nuxt2-bridge-plain-host-proof
           if-no-files-found: ignore
