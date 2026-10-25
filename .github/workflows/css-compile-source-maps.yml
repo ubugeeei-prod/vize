@@ -30,7 +30,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_BUILD_JOBS: "12"
   CARGO_TERM_COLOR: never
-  VIZE_CSS_MAP_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  VIZE_CSS_MAP_SOURCE_SHA: ${{ github.sha }}
+  VIZE_CSS_MAP_PR_HEAD: ${{ github.event.pull_request.head.sha || '' }}
   VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
 jobs:
   native:
@@ -38,7 +39,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ env.VIZE_CSS_MAP_SOURCE_SHA }}", persist-credentials: false }
+        with:
+          { ref: "${{ env.VIZE_CSS_MAP_SOURCE_SHA }}", fetch-depth: 2, persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -48,6 +50,10 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: css-source-maps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
+      - name: Bind actual checkout to its PR merge or exact dispatch role
+        run: |
+          node --test tests/tooling/css-source-map-event.test.mjs
+          node tests/native/css-source-map-event.mjs
       - name: Verify real writer coordinates and complete existing engine contracts
         run: |
           test "$(git rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
