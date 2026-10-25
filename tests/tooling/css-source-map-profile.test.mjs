@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   validateCargoDelta,
   validateIdentity,
+  validateSpecializationPackets,
 } from "../../tools/benchmarks/scripts/css-source-map-profile.mjs";
 
 await test("CSS source campaign permits only its actual existing-package additive lock change", () => {
@@ -44,4 +45,49 @@ await test("binding campaign requires exactly unchanged complete Cargo.lock and 
   validateCargoDelta(lock, lock, revision);
   assert.throws(() => validateCargoDelta(lock, lock + "foreign", revision));
   assert.throws(() => validateCargoDelta(lock, lock, "f".repeat(40)));
+});
+
+await test("map-mode candidate admits only its exact qualified source and unchanged full lock", () => {
+  const revision = "281d277f1b22ae7dde9cf86564bde832674c3752",
+    lock = "exact package identities\n";
+  validateCargoDelta(lock, lock, revision);
+  assert.throws(() => validateCargoDelta(lock, lock + "foreign", revision));
+  assert.throws(() => validateCargoDelta(lock, lock, revision.slice(0, -1) + "1"));
+});
+
+await test("map-mode candidate compares whole maps and results while allowing independent timings", () => {
+  const result = { code: ".雪😀{color:red}", map: '{"mappings":"AAAA"}', errors: [] };
+  const packets = ["base", "head", "head", "base"].map((side, index) => ({
+    identity: { side },
+    calls: [
+      { source: ".雪😀{color:red}", options: { sourceMap: true }, result: structuredClone(result) },
+    ],
+    timings: [{ id: "two-rules", outputs: { on: structuredClone(result) }, samples: [index + 1] }],
+  }));
+  validateSpecializationPackets(packets);
+  for (const change of [
+    (packet) => {
+      packet.calls[0].result.map = '{"mappings":"CAAA"}';
+    },
+    (packet) => {
+      delete packet.calls[0].result.map;
+    },
+    (packet) => {
+      packet.calls[0].result.errors.push("changed");
+    },
+    (packet) => {
+      packet.calls[0].options.sourceMap = false;
+    },
+    (packet) => {
+      packet.timings[0].outputs.on.map = "changed";
+    },
+    (packet) => {
+      packet.timings[0].outputs.on.code += " ";
+    },
+  ]) {
+    const changed = structuredClone(packets);
+    change(changed[1]);
+    assert.throws(() => validateSpecializationPackets(changed));
+  }
+  assert.throws(() => validateSpecializationPackets(packets.slice(1)));
 });

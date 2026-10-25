@@ -19,11 +19,14 @@ export function validateCargoDelta(
   head,
   source = "b0033883518f364cfbd3dd0ab9464715e9f51758",
 ) {
-  if (source === "3a3c8460f966fddbd8e1be4c083d460b24202f90") {
+  if (
+    source === "3a3c8460f966fddbd8e1be4c083d460b24202f90" ||
+    source === "281d277f1b22ae7dde9cf86564bde832674c3752"
+  ) {
     assert.equal(
       head,
       base,
-      "the binding composition campaign changes no Cargo package or dependency",
+      "the registered binding campaigns change no Cargo package or dependency",
     );
     return;
   }
@@ -108,6 +111,20 @@ export function validateNativeTimingPlan(packet, mode) {
       assert.ok(Number.isFinite(sample.bytes) && sample.bytes > 0);
       if (mode === "isolated-off") assert.equal(sample.sourceMap, false);
     }
+  }
+}
+
+// The map-mode candidate changes no semantics. Unlike the original map producer
+// campaign, every emitted map and vector result must match across both roles.
+export function validateSpecializationPackets(packets) {
+  assert.deepEqual(
+    packets.map((packet) => packet.identity.side),
+    ["base", "head", "head", "base"],
+  );
+  const outputs = (packet) => packet.timings.map(({ samples: _, ...row }) => row);
+  for (const packet of packets) {
+    assert.deepEqual(packet.calls, packets[0].calls);
+    assert.deepEqual(outputs(packet), outputs(packets[0]));
   }
 }
 
@@ -426,6 +443,8 @@ function run(base, head, destination) {
       "repeat processes must preserve every whole result, including maps",
     );
   }
+  if (sources.base === "281d277f1b22ae7dde9cf86564bde832674c3752")
+    validateSpecializationPackets(packets);
   assert.equal(
     receipt.builds[0].declaration.sha256,
     receipt.builds[1].declaration.sha256,
@@ -466,7 +485,10 @@ function run(base, head, destination) {
   console.log(JSON.stringify({ stage: "interleaved-native-complete", summary }));
   const phaseDrivers = new Map(),
     phasePackets = [];
-  if (sources.base === "3a3c8460f966fddbd8e1be4c083d460b24202f90") {
+  if (
+    sources.base === "3a3c8460f966fddbd8e1be4c083d460b24202f90" ||
+    sources.base === "281d277f1b22ae7dde9cf86564bde832674c3752"
+  ) {
     const inputs = path.join(destination, "phase-inputs.json");
     write(inputs, { filename: "profile-雪😀.css", vectors: profileVectors() });
     for (const image of receipt.builds)
