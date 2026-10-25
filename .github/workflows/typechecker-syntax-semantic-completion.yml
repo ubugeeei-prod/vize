@@ -16,6 +16,11 @@ on:
         required: false
         default: ""
         type: string
+      shutdown_controls:
+        description: Run exact-source shutdown controls and an isolated old-close negative control
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -168,6 +173,10 @@ jobs:
         env:
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/native-handoff-replay/packets
         run: node ../tools/support/github/native-handoff-replay.mjs "$RUNNER_TEMP/native-handoff-replay"
+      - name: Verify strict owned shutdown controls and old-close rejection
+        if: ${{ inputs.shutdown_controls && matrix.side == 'head' }}
+        working-directory: source
+        run: node ../tools/support/github/native-shutdown-controls.mjs "$RUNNER_TEMP/native-handoff-replay"
       - name: Retain original source, provider, executable and whole packets
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
