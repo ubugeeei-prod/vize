@@ -82,6 +82,11 @@ fn original_intrinsic_targets_reuse_program_file_and_walk_for_both_headers() {
                 "one original File walk across every query"
             );
             assert_eq!(
+                first.intrinsic_entries(),
+                4,
+                "one row per original opening or closing intrinsic leaf"
+            );
+            assert_eq!(
                 project.cached_program_worker_for_test(&uri()).unwrap(),
                 (Arc::as_ptr(&first) as usize, (1, 13))
             );

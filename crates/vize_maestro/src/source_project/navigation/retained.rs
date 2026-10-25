@@ -118,6 +118,10 @@ pub(super) fn run(
         "maestro.native_program.intrinsic_entries",
         intrinsic_tags.0.len() as u64,
     );
+    #[cfg(test)]
+    control
+        .intrinsic_entries
+        .store(intrinsic_tags.0.len(), std::sync::atomic::Ordering::Relaxed);
     let lines = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(snapshot.source())
         .collect::<Vec<_>>();

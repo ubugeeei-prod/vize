@@ -19,6 +19,20 @@ impl Request {
 }
 
 impl NavigationWorker {
+    #[cfg(test)]
+    pub(in crate::source_project::navigation) fn program_walks(&self) -> usize {
+        self.control
+            .walks
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    #[cfg(test)]
+    pub(in crate::source_project::navigation) fn intrinsic_entries(&self) -> usize {
+        self.control
+            .intrinsic_entries
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
     pub(in crate::source_project::navigation) async fn intrinsic_tag(
         &self,
         position: Position,

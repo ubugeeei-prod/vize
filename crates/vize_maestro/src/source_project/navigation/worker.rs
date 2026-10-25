@@ -98,6 +98,8 @@ pub(super) struct Control {
     #[cfg(test)]
     pub(super) walks: AtomicUsize,
     #[cfg(test)]
+    pub(super) intrinsic_entries: AtomicUsize,
+    #[cfg(test)]
     #[cfg(feature = "experimental-source-navigation")]
     pub(super) sfc_productions: AtomicUsize,
     #[cfg(test)]
@@ -166,6 +168,8 @@ impl NavigationWorker {
             parses: AtomicUsize::new(0),
             #[cfg(test)]
             walks: AtomicUsize::new(0),
+            #[cfg(test)]
+            intrinsic_entries: AtomicUsize::new(0),
             #[cfg(test)]
             #[cfg(feature = "experimental-source-navigation")]
             sfc_productions: AtomicUsize::new(0),
@@ -315,11 +319,6 @@ impl NavigationWorker {
             self.control.parses.load(Ordering::Acquire),
             self.control.queries.load(Ordering::Acquire),
         )
-    }
-
-    #[cfg(test)]
-    pub(super) fn program_walks(&self) -> usize {
-        self.control.walks.load(Ordering::Acquire)
     }
 
     #[cfg(test)]
