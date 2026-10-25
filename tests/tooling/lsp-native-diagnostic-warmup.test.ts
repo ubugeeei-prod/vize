@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { readPinnedArtifact } from "../differential/harness.mjs";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
@@ -15,17 +16,25 @@ import {
 import { workspace } from "./support/upstream/vue-language-tools.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
-const erroneous = `<script setup lang="ts">
-import { ref, type Ref } from 'vue';
-const items = ref<number[]>([]);
-const needsRef = (value: Ref<number[]>) => value.value.length;
-const persistent: string = 1;
-</script>
-<template>{{ persistent }}<img src="/logo.png" />${Array.from({ length: 8 }, () => '<button @click="needsRef(items)">test</button>').join("")}</template>`;
+const fixtureRoot = path.join(
+  root,
+  "tests/_fixtures/differential/lsp/native-diagnostic-warmup-10604",
+);
+const fixture = JSON.parse(fs.readFileSync(path.join(fixtureRoot, "case.json"), "utf8"));
+const erroneous = readPinnedArtifact(fixtureRoot, {
+  path: fixture.files[0].source,
+  sha256: fixture.files[0].sha256,
+}).toString("utf8");
+const localColors = JSON.parse(
+  readPinnedArtifact(fixtureRoot, {
+    path: fixture.expected.source,
+    sha256: fixture.expected.sha256,
+  }).toString("utf8"),
+);
 const repaired = erroneous.replaceAll("needsRef(items)", "items.length");
 const nativeErrors = (packet: PublishDiagnosticsParams) =>
   packet.diagnostics.filter(
-    (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 2345,
+    (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 2739,
   );
 const pending = (packet: PublishDiagnosticsParams) =>
   packet.diagnostics.some((diagnostic) => diagnostic.code === "typecheck-pending");
@@ -59,10 +68,17 @@ await test(
     const gates: NativeDiagnosticsGate[] = [];
     let failure: string | undefined;
     let coldFinishedMs: number | undefined;
-    const wait = (uri: string, predicate: (params: PublishDiagnosticsParams) => boolean) =>
+    const wait = (
+      uri: string,
+      predicate: (params: PublishDiagnosticsParams) => boolean,
+      after = 0,
+    ) =>
       session.waitForNotification(
         "textDocument/publishDiagnostics",
-        (params) => isDiagnosticsForUri(params, uri) && predicate(params),
+        (params) =>
+          isDiagnosticsForUri(params, uri) &&
+          notifications.findIndex((row) => row.params === params) >= after &&
+          predicate(params),
         45_000,
       ) as Promise<PublishDiagnosticsParams>;
     const open = (uri: string) =>
@@ -157,8 +173,14 @@ await test(
       );
 
       const gate = await stop();
+      const secondPass = notifications.length;
       change(first, 2, erroneous);
-      await wait(first, pending);
+      await wait(first, pending, secondPass);
+      gate.assertStopped();
+      assert.deepEqual(
+        await session.request("textDocument/documentColor", { textDocument: { uri: first } }),
+        localColors,
+      );
       gate.assertStopped();
       open(second);
       const secondLint = await wait(
@@ -185,8 +207,9 @@ await test(
       );
 
       const staleGate = await stop();
+      const stalePass = notifications.length;
       change(first, 3, erroneous);
-      await wait(first, pending);
+      await wait(first, pending, stalePass);
       const staleBoundary = notifications.length;
       change(first, 4, repaired);
       session.notify("textDocument/didClose", { textDocument: { uri: second } });
@@ -215,8 +238,9 @@ await test(
       );
 
       const configGate = await stop();
+      const configPass = notifications.length;
       change(first, 5, erroneous);
-      await wait(first, pending);
+      await wait(first, pending, configPass);
       writeVueConfigFixture(
         directory,
         JSON.stringify({ languageServer: { lint: true, typecheck: false, editor: true } }),

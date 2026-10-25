@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { ref, type Ref } from 'vue';
+const items = ref<number[]>([]);
+const needsRef = (value: Ref<number[]>) => value.value.length;
+const persistent: string = 1;
+</script>
+<template>
+  {{ persistent }}
+  <img src="/logo.png" />
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+  <button @click="needsRef(items)">test</button>
+</template>
+<style>.swatch { color: #ff0000; }</style>

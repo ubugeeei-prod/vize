@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/native-diagnostic-warmup-10604",
+  "provenance": {
+    "fixCommit": "416564d1746fee250ba4fd7e57965aac1d25d9de",
+    "witnessPath": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
+    "inputOrigin": "Authored public Ref unwrapping reproduction of issue #10604; eight template TS2739 errors plus an independent script TS2322 settlement control.",
+    "contractOrigin": "CSS literal red is independently authored; the dedicated genuine native stdio test asserts delayed type diagnostics and lifetime/freshness controls."
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "eceeec4925439291f312e7d72771206326cd0079c2ab4feb15de7075d9abb91e"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "165f499150c9cbd451fcc2b649d0b92ac606e84cc2635819132872faae8fcb88"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "031669894f1ea9ff20445e6cc718e74d6380dced98f9bfe43a3574f5fee4938d"
+    }
+  ],
+  "entry": "App.vue",
+  "languageId": "vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "63330e200323205a7d1d4365a45030e3a61fdd3518b3a8970dda6359cdeef0b4"
+  },
+  "method": "textDocument/documentColor",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "scope": "The pinned local color response remains available during native warm-up; full diagnostic lifecycle is exercised by the separately bounded real stdio witness, without claiming whole-product native parity."
+}
