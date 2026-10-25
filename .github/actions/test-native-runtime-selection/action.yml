@@ -36,6 +36,8 @@ runs:
       env:
         SURFACE: ${{ inputs.surface }}
         VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"
+        VIZE_RUNTIME_AUTHORITY_EXPECTATION: after
+        VIZE_RUNTIME_AUTHORITY_SOURCE_ROOT: ${{ github.workspace }}
         VIZE_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
         VIZE_NATIVE_BETA_ROOT: ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/beta
         VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/six
@@ -45,6 +47,7 @@ runs:
         export VIZE_NATIVE_STRACE="$(command -v strace)"
         if [[ "$SURFACE" == cli-lsp ]]; then
           node --test tests/tooling/native-runtime-cli-selection.test.mjs
+          node tests/tooling/support/native-runtime-selection/authority.mjs
           node tests/tooling/support/native-runtime-selection/lsp.mjs
         else
           node --test tests/tooling/native-runtime-napi-selection.test.mjs
@@ -56,6 +59,7 @@ runs:
         name: user-native-runtime-${{ inputs.surface }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
         path: |
           target/vize-tests/native-runtime-cli-selection-10694/**
+          target/vize-tests/native-runtime-authority/**
           target/vize-tests/native-runtime-napi-selection-10694/**
           target/vize-tests/native-runtime-selection-lsp/**
           target/ci/vize.differential-build.json

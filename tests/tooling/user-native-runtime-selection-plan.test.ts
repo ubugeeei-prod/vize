@@ -73,6 +73,8 @@ test("required workflow calls reuse ordinary source producers and retain failed 
   assert(js.includes("with: { surface: napi }"));
   assert(action.includes('VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"'));
   assert(action.includes("node --test tests/tooling/native-runtime-cli-selection.test.mjs"));
+  assert(action.includes("node tests/tooling/support/native-runtime-selection/authority.mjs"));
+  assert(action.includes("VIZE_RUNTIME_AUTHORITY_EXPECTATION: after"));
   assert(action.includes("node tests/tooling/support/native-runtime-selection/lsp.mjs"));
   assert(action.includes("node --test tests/tooling/native-runtime-napi-selection.test.mjs"));
   assert(action.includes("if: ${{ always() }}"));
