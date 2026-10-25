@@ -15,10 +15,29 @@ use vize_l1_to_l2::lower::pug::PugBlockView;
 use crate::diagnostic::LintDiagnostic;
 use crate::linter::config::{LintResult, Linter};
 
+pub(in crate::linter::engine) enum PugRoute {
+    View(PugBlockView),
+    Complete(LintResult),
+}
+
 impl Linter {
     /// Lint `source` through its pug view, or `None` when the SFC has no
     /// inline pug template.
     pub(crate) fn lint_pug_sfc(&self, source: &str, filename: &str) -> Option<LintResult> {
+        match self.route_pug_sfc(source, filename)? {
+            PugRoute::Complete(result) => Some(result),
+            PugRoute::View(view) => {
+                let result = self.lint_sfc_view(&view.source, filename, true);
+                Some(map_result(&view, result))
+            }
+        }
+    }
+
+    pub(in crate::linter::engine) fn route_pug_sfc(
+        &self,
+        source: &str,
+        filename: &str,
+    ) -> Option<PugRoute> {
         // Cheap gate: only sources that mention either spelling pay for the SFC parse.
         if !mentions_pug_language(source) {
             return None;
@@ -70,35 +89,43 @@ impl Linter {
                     ));
                     result.error_count += 1;
                 }
-                return Some(self.append_sfc_document_rule_diagnostics(
-                    source,
-                    filename,
-                    result,
-                    Some(&descriptor),
+                return Some(PugRoute::Complete(
+                    self.append_sfc_document_rule_diagnostics(
+                        source,
+                        filename,
+                        result,
+                        Some(&descriptor),
+                    ),
                 ));
             }
         };
-        let mut result = self.lint_sfc_view(&view.source, filename, true);
-        for diagnostic in &mut result.diagnostics {
-            (diagnostic.start, diagnostic.end) = view.to_host(diagnostic.start, diagnostic.end);
-            for label in &mut diagnostic.labels {
-                (label.start, label.end) = view.to_host(label.start, label.end);
-            }
-            let edits_block = diagnostic.fix.as_ref().is_some_and(|fix| {
-                fix.edits
-                    .iter()
-                    .any(|edit| view.touches_body(edit.start, edit.end))
-            });
-            if edits_block {
-                diagnostic.fix = None;
-            } else if let Some(fix) = diagnostic.fix.as_mut() {
-                for edit in &mut fix.edits {
-                    (edit.start, edit.end) = view.to_host(edit.start, edit.end);
-                }
+        Some(PugRoute::View(view))
+    }
+}
+
+pub(in crate::linter::engine) fn map_result(
+    view: &PugBlockView,
+    mut result: LintResult,
+) -> LintResult {
+    for diagnostic in &mut result.diagnostics {
+        (diagnostic.start, diagnostic.end) = view.to_host(diagnostic.start, diagnostic.end);
+        for label in &mut diagnostic.labels {
+            (label.start, label.end) = view.to_host(label.start, label.end);
+        }
+        let edits_block = diagnostic.fix.as_ref().is_some_and(|fix| {
+            fix.edits
+                .iter()
+                .any(|edit| view.touches_body(edit.start, edit.end))
+        });
+        if edits_block {
+            diagnostic.fix = None;
+        } else if let Some(fix) = diagnostic.fix.as_mut() {
+            for edit in &mut fix.edits {
+                (edit.start, edit.end) = view.to_host(edit.start, edit.end);
             }
         }
-        Some(result)
     }
+    result
 }
 
 fn mentions_pug_language(source: &str) -> bool {

@@ -14,7 +14,7 @@ use crate::linter::engine::tag_scan::{find_closing_tag, find_start_tag_end};
 mod analysis;
 
 impl Linter {
-    pub(super) fn append_art_variant_template_diagnostics(
+    pub(in crate::linter::engine) fn append_art_variant_template_diagnostics(
         &self,
         source: &str,
         filename: &str,

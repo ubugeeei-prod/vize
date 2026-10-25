@@ -26,6 +26,10 @@ impl Linter {
             filename,
             &mut result,
         );
+        self.finish_script_result(source, result)
+    }
+
+    pub(super) fn finish_script_result(&self, source: &str, mut result: LintResult) -> LintResult {
         crate::context::retain_unless_source_suppressed(source, &mut result.diagnostics);
         result.error_count = result
             .diagnostics

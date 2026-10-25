@@ -165,6 +165,20 @@ impl CorsaTypeAwareSession {
         self.open_virtual_projects(&[(generated_source, filename)])
     }
 
+    pub(in crate::linter) fn select_virtual_document(
+        &mut self,
+        filename: &str,
+    ) -> Result<(), String> {
+        if !self.opened_documents.contains_key(filename) {
+            return Err(vize_l0::cstr!(
+                "Unpublished patina probe document: {filename}"
+            ));
+        }
+        self.retarget_virtual_file(filename);
+        self.active_filename = Some(filename.to_compact_string());
+        Ok(())
+    }
+
     pub(super) fn retarget_virtual_file(&mut self, filename: &str) {
         self.virtual_file_path =
             virtual_file_path(&self.session_root, &self.project_root, filename);

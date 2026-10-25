@@ -2,6 +2,7 @@
 
 mod aggregate;
 mod args;
+mod batch;
 mod collect;
 mod config_load;
 mod cross_file;
@@ -139,80 +140,97 @@ pub fn run(mut args: LintArgs) {
     let lint_start = Instant::now();
     let cross_file_enabled = args.cross_file || args.cross_file_tree || args.cross_file_complexity;
     let retain_file_results = should_retain_file_results(render_details, cross_file_enabled);
-    let lint_run = files
-        .par_iter()
-        .zip(resolved_rules.file_config_indices.par_iter())
-        .filter_map(|(path, config_index)| {
-            let linter = linters.get(*config_index)?;
-            let file_start = args.profile.then(Instant::now);
-            let read_start = args.profile.then(Instant::now);
-            let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
-                Ok(source) => {
-                    global_profiler().record_fs_read_to_string(source.len());
-                    source.into()
-                }
-                Err(e) => {
-                    global_profiler().record_fs_read_to_string_failure();
-                    eprintln!("Failed to read {}: {}", path.display(), e);
-                    return None;
-                }
-            };
-            let read_time = read_start
-                .map(|start| start.elapsed())
-                .unwrap_or(Duration::ZERO);
-
-            let filename = path.to_string_lossy().to_compact_string();
-            let lint_file_start = args.profile.then(Instant::now);
-            let result = profile!("cli.lint.file.lint", {
-                lint_source_with_optional_fix(linter, path, source, &filename, args.fix)
-            });
-            let (source, result, fixed) = result
-                .inspect_err(|_| {
-                    write_failures.fetch_add(1, Ordering::Relaxed);
-                })
-                .ok()?;
-            let lint_time = lint_file_start
-                .map(|start| start.elapsed())
-                .unwrap_or(Duration::ZERO);
-
-            if let (Some(file_start), Some(profile_rows)) = (file_start, profile_rows.as_ref()) {
-                let note = if fixed {
-                    cstr!(
-                        "{} error(s), {} warning(s), fixed",
-                        result.error_count,
-                        result.warning_count
-                    )
-                } else {
-                    cstr!(
-                        "{} error(s), {} warning(s)",
-                        result.error_count,
-                        result.warning_count
-                    )
-                };
-                if let Ok(mut rows) = profile_rows.lock() {
-                    rows.push(ProfileFileRow {
-                        path: path.clone(),
-                        bytes: source.len(),
-                        total: file_start.elapsed(),
-                        primary_label: "read",
-                        primary: read_time,
-                        secondary_label: "lint",
-                        secondary: lint_time,
-                        note: Some(note),
-                    });
-                }
-            }
-
-            Some((path.clone(), filename, source, result))
-        })
-        .fold(
-            || LintRunAccumulator::new(retain_file_results),
-            LintRunAccumulator::push,
+    let lint_run = if !args.fix
+        && linters
+            .iter()
+            .any(vize_patina::Linter::has_type_aware_rules)
+    {
+        batch::run(
+            &files,
+            &resolved_rules.file_config_indices,
+            &linters,
+            &args,
+            retain_file_results,
+            profile_rows.as_ref(),
         )
-        .reduce(
-            || LintRunAccumulator::new(retain_file_results),
-            LintRunAccumulator::merge,
-        );
+    } else {
+        files
+            .par_iter()
+            .zip(resolved_rules.file_config_indices.par_iter())
+            .filter_map(|(path, config_index)| {
+                let linter = linters.get(*config_index)?;
+                let file_start = args.profile.then(Instant::now);
+                let read_start = args.profile.then(Instant::now);
+                let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path))
+                {
+                    Ok(source) => {
+                        global_profiler().record_fs_read_to_string(source.len());
+                        source.into()
+                    }
+                    Err(e) => {
+                        global_profiler().record_fs_read_to_string_failure();
+                        eprintln!("Failed to read {}: {}", path.display(), e);
+                        return None;
+                    }
+                };
+                let read_time = read_start
+                    .map(|start| start.elapsed())
+                    .unwrap_or(Duration::ZERO);
+
+                let filename = path.to_string_lossy().to_compact_string();
+                let lint_file_start = args.profile.then(Instant::now);
+                let result = profile!("cli.lint.file.lint", {
+                    lint_source_with_optional_fix(linter, path, source, &filename, args.fix)
+                });
+                let (source, result, fixed) = result
+                    .inspect_err(|_| {
+                        write_failures.fetch_add(1, Ordering::Relaxed);
+                    })
+                    .ok()?;
+                let lint_time = lint_file_start
+                    .map(|start| start.elapsed())
+                    .unwrap_or(Duration::ZERO);
+
+                if let (Some(file_start), Some(profile_rows)) = (file_start, profile_rows.as_ref())
+                {
+                    let note = if fixed {
+                        cstr!(
+                            "{} error(s), {} warning(s), fixed",
+                            result.error_count,
+                            result.warning_count
+                        )
+                    } else {
+                        cstr!(
+                            "{} error(s), {} warning(s)",
+                            result.error_count,
+                            result.warning_count
+                        )
+                    };
+                    if let Ok(mut rows) = profile_rows.lock() {
+                        rows.push(ProfileFileRow {
+                            path: path.clone(),
+                            bytes: source.len(),
+                            total: file_start.elapsed(),
+                            primary_label: "read",
+                            primary: read_time,
+                            secondary_label: "lint",
+                            secondary: lint_time,
+                            note: Some(note),
+                        });
+                    }
+                }
+
+                Some((path.clone(), filename, source, result))
+            })
+            .fold(
+                || LintRunAccumulator::new(retain_file_results),
+                LintRunAccumulator::push,
+            )
+            .reduce(
+                || LintRunAccumulator::new(retain_file_results),
+                LintRunAccumulator::merge,
+            )
+    };
     let (mut results, quiet_totals) = lint_run.into_parts();
     let lint_time = lint_start.elapsed();
 
