@@ -478,12 +478,12 @@ export function main(args) {
     scope:
       "Complete real CLI reports and actual source profile counters. JS-derived ordered native-input token vectors are pinned to unchanged Rust lexical source, not emitted engine traces. Declared literal include roots are captured without claiming transitive native-library closure or recomputing Canon project-key identity. Fresh Cargo targets and warmed direct-runtime CLI timings; wrappers only in separate untimed observations.",
   };
+  writeJson(path.join(output, "provenance.json"), provenance);
   assert.notEqual(
     provenance.binaryHashes.base,
     provenance.binaryHashes.head,
     "source roles must have distinct CLI images",
   );
-  writeJson(path.join(output, "provenance.json"), provenance);
   const capture = captureWrapper(output, runtime);
   writeJson(path.join(output, "capture-wrapper.json"), capture);
   const summaries = [];
