@@ -16,7 +16,14 @@ use super::{
 };
 use crate::diagnostic::LintDiagnostic;
 
+mod prepared;
 mod syntax;
+
+#[cfg(test)]
+mod tests;
+
+use prepared::PlainQueryPlan;
+pub(in crate::linter) use prepared::PreparedPlainModule;
 
 const PLAIN_HOST: &str = "function __vize_plain_host() {\n\n}\n\n// Invoke setup to verify types\n";
 
@@ -26,13 +33,46 @@ pub(in crate::linter) fn append_plain_module_type_diagnostics(
     filename: &str,
     result: &mut LintResult,
 ) {
-    if !linter.type_aware_enabled || !is_plain_type_script(filename) {
+    // Preserve the zero-work single-file path when no native rule can run.
+    if !linter.type_aware_enabled
+        || !is_plain_type_script(filename)
+        || !(rule_active(linter, RULE_NO_FLOATING_PROMISES)
+            || rule_active(linter, RULE_NO_REACTIVITY_LOSS))
+    {
         return;
+    }
+    let initial = std::mem::replace(result, empty_result(filename));
+    let mut prepared = prepare_plain_module(linter, source, filename, initial);
+    let failure = if prepared.virtual_content().is_some() {
+        profile!("patina.type_aware.plain_module", {
+            with_corsa_session(linter, filename, |session| {
+                if let Some(content) = prepared.virtual_content() {
+                    session.open_virtual_project(content, filename)?;
+                }
+                prepared.evaluate(linter, session)
+            })
+        })
+        .err()
+    } else {
+        None
+    };
+    *result = prepared.finish(linter, failure);
+}
+
+/// Collect static findings and generated checker work without starting a session.
+pub(in crate::linter) fn prepare_plain_module(
+    linter: &Linter,
+    source: &str,
+    filename: &str,
+    mut result: LintResult,
+) -> PreparedPlainModule {
+    if !linter.type_aware_enabled || !is_plain_type_script(filename) {
+        return PreparedPlainModule::new(result, None, false);
     }
     let promises = rule_active(linter, RULE_NO_FLOATING_PROMISES);
     let reactivity = rule_active(linter, RULE_NO_REACTIVITY_LOSS);
     if !promises && !reactivity {
-        return;
+        return PreparedPlainModule::new(result, None, false);
     }
 
     let mut slots = Vec::new();
@@ -40,39 +80,30 @@ pub(in crate::linter) fn append_plain_module_type_diagnostics(
         push_promise_slots(source, filename, &mut slots);
     }
     if reactivity {
-        push_reactivity_slots(linter, source, filename, result, &mut slots);
+        push_reactivity_slots(linter, source, filename, &mut result, &mut slots);
     }
     place_slots_after_statements(source, filename, &mut slots);
     if slots.is_empty() {
-        super::super::severity::apply_severity_overrides(result, &linter.severity_overrides);
-        return;
+        return PreparedPlainModule::new(result, None, true);
     }
 
-    let (augmented, probes) = augment_source(source, &slots);
-    let corsa_result = profile!("patina.type_aware.plain_module", {
-        with_corsa_session(linter, filename, |session| {
-            session.open_virtual_project(augmented.as_str(), filename)?;
-            let mut seen_promises = FxHashSet::default();
-            let mut seen_reactivity = FxHashSet::default();
-            let selected = probes
-                .iter()
-                .filter(|(_, kind)| remember_probe(kind, &mut seen_promises, &mut seen_reactivity))
-                .collect::<Vec<_>>();
-            let requests = selected
-                .iter()
-                .map(|(offset, kind)| (*offset, false, kind.loads_signatures()))
-                .collect::<Vec<_>>();
-            let type_probes = session.probe_types_at_offsets(augmented.as_str(), &requests)?;
-            for ((_, kind), probe) in selected.into_iter().zip(type_probes) {
-                report_probe(result, kind, probe.as_ref());
-            }
-            Ok(())
-        })
-    });
-    if let Err(error) = corsa_result {
-        super::push_type_aware_failure(result, error);
+    let (content, probes) = augment_source(source, &slots);
+    let mut seen_promises = FxHashSet::default();
+    let mut seen_reactivity = FxHashSet::default();
+    let probes = probes
+        .into_iter()
+        .filter(|(_, kind)| remember_probe(kind, &mut seen_promises, &mut seen_reactivity))
+        .collect();
+    PreparedPlainModule::new(result, Some(PlainQueryPlan { content, probes }), true)
+}
+
+fn empty_result(filename: &str) -> LintResult {
+    LintResult {
+        filename: filename.to_compact_string(),
+        diagnostics: Vec::new(),
+        error_count: 0,
+        warning_count: 0,
     }
-    super::super::severity::apply_severity_overrides(result, &linter.severity_overrides);
 }
 
 fn push_promise_slots(source: &str, filename: &str, slots: &mut Vec<Slot>) {

@@ -10,13 +10,14 @@ use corsa::utils::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{String, ToCompactString, profile};
 
-pub(super) enum TypeAwareFailure {
+pub(in crate::linter) enum TypeAwareFailure {
     ProjectConfiguration { message: String, report: bool },
     Runtime(String),
 }
 
 pub(in crate::linter) mod document;
 mod driver;
+pub(in crate::linter) use driver::{PreparedSfc, prepare_with_descriptor};
 mod expression_bindings;
 mod markers;
 mod options_prop_shape;

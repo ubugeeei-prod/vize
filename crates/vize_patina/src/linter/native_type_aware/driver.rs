@@ -1,27 +1,35 @@
 mod css;
 mod planning;
+mod prepared;
 mod probes;
+
+#[cfg(test)]
+mod tests;
+
 use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
 use super::document::project_type_aware;
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
-    RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
-    RULE_STRICT_BOOLEAN, strict_boolean, with_corsa_session,
+    RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_STRICT_BOOLEAN, strict_boolean, with_corsa_session,
 };
 use super::{
-    markers::{QueryKind, push_promise_marker},
+    markers::push_promise_marker,
     parsing::collect_floating_candidates,
     reactivity_loss::collect_reactivity_loss_queries,
-    rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
+    rule_queries::{collect_emit_queries, collect_prop_queries},
     template_queries::collect_template_query_sets,
 };
 use planning::{
     collect_emit_static_warning_or_probe_need, collect_prop_static_warning_or_probe_need,
     is_type_rule_active,
 };
+pub(in crate::linter) use prepared::PreparedSfc;
+use prepared::SfcQueryPlan;
 use vize_armature::Parser as TemplateParser;
 use vize_croquis::script_parser;
-use vize_l0::profile;
+use vize_l0::{ToCompactString, profile};
+/// Single-file compatibility path. Batch callers publish all prepared documents
+/// before refreshing the checker, then call `evaluate` without reopening them.
 pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
     source: &str,
@@ -29,6 +37,35 @@ pub(super) fn lint_with_descriptor<'a>(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
     derived: bool,
 ) -> LintResult {
+    let mut prepared: super::PreparedSfc =
+        super::prepare_with_descriptor(linter, source, filename, descriptor, derived);
+    let failure = if prepared.virtual_content().is_some() {
+        profile!(
+            "patina.type_aware.corsa_session",
+            with_corsa_session(linter, filename, |session| {
+                if let Some(content) = prepared.virtual_content() {
+                    profile!(
+                        "patina.type_aware.corsa.open_virtual_project",
+                        session.open_virtual_project(content, filename)
+                    )?;
+                }
+                prepared.evaluate(linter, session)
+            })
+        )
+        .err()
+    } else {
+        None
+    };
+    prepared.finish(linter, failure)
+}
+
+pub(in crate::linter) fn prepare_with_descriptor<'a>(
+    linter: &Linter,
+    source: &str,
+    filename: &str,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
+    derived: bool,
+) -> PreparedSfc {
     let allocator =
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let mut template_syntax = None;
@@ -50,15 +87,25 @@ pub(super) fn lint_with_descriptor<'a>(
     let template_has_fatal_parse_errors = template_ast
         .as_ref()
         .is_some_and(|(_, _, _, has_fatal)| *has_fatal);
-    // Finish while the parsed template is alive, including every no-query exit.
-    let finish = |result| {
-        css::finish(
-            linter,
-            descriptor,
+    // Materialize CSS while the template is alive, but retain its position after
+    // all type findings when the owned plan is evaluated later.
+    let finish = |result, plan| {
+        PreparedSfc::new(
             result,
-            template_ast
-                .as_ref()
-                .and_then(|(root, _, _, fatal)| (!*fatal).then_some(root)),
+            plan,
+            css::finish(
+                linter,
+                descriptor,
+                LintResult {
+                    filename: filename.to_compact_string(),
+                    diagnostics: Vec::new(),
+                    error_count: 0,
+                    warning_count: 0,
+                },
+                template_ast
+                    .as_ref()
+                    .and_then(|(root, _, _, fatal)| (!*fatal).then_some(root)),
+            ),
         )
     };
     let analysis = profile!("patina.type_aware.croquis", {
@@ -129,7 +176,7 @@ pub(super) fn lint_with_descriptor<'a>(
     let script_content = script_block.map_or("", |block| block.content.as_ref());
     let script_offset = script_block.map_or(0, |block| block.loc.start as u32);
     if script_content.is_empty() && !include_boolean_queries {
-        return finish(result);
+        return finish(result, None);
     }
 
     let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
@@ -150,7 +197,7 @@ pub(super) fn lint_with_descriptor<'a>(
         && !include_reactivity_queries
         && !include_boolean_queries
     {
-        return finish(result);
+        return finish(result, None);
     }
 
     let template_offset = template_ast
@@ -284,73 +331,20 @@ pub(super) fn lint_with_descriptor<'a>(
             .as_ref()
             .is_none_or(strict_boolean::Plan::is_empty)
     {
-        return finish(result);
+        return finish(result, None);
     }
 
-    let mut should_warn_for_props = false;
-    let mut should_warn_for_emits = false;
-    let corsa_result = profile!(
-        "patina.type_aware.corsa_session",
-        with_corsa_session(linter, filename, |session| {
-            profile!(
-                "patina.type_aware.corsa.open_virtual_project",
-                session.open_virtual_project(&virtual_ts.content, filename)
-            )?;
-            probes::evaluate(
-                session,
-                probes::ProbeBatch {
-                    content: &virtual_ts.content,
-                    source,
-                    script_offset,
-                    macros: &macro_queries,
-                    templates: &template_queries,
-                    promises: &template_promise_queries,
-                    reactivities: &reactivity_loss_queries,
-                },
-                &mut result,
-                &mut should_warn_for_props,
-                &mut should_warn_for_emits,
-            )?;
-            if let Some(plan) = &boolean_plan {
-                strict_boolean::evaluate(
-                    session,
-                    &virtual_ts.content,
-                    plan,
-                    linter.strict_boolean_options,
-                    &mut result,
-                )?;
-            }
-            Ok(())
-        })
-    );
-    if let Err(error) = corsa_result {
-        super::push_type_aware_failure(&mut result, error);
-    }
-
-    push_macro_warning(
-        &mut result,
-        &macro_queries,
-        MacroWarning {
-            kind: QueryKind::PropType,
-            base_offset: script_offset,
-            rule_name: RULE_REQUIRE_TYPED_PROPS,
-            message: "Prop should have a type definition",
-            help: "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
-            should_warn: should_warn_for_props,
-        },
-    );
-    push_macro_warning(
-        &mut result,
-        &macro_queries,
-        MacroWarning {
-            kind: QueryKind::EmitValidator,
-            base_offset: script_offset,
-            rule_name: RULE_REQUIRE_TYPED_EMITS,
-            message: "Emit should have a type definition",
-            help: "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
-            should_warn: should_warn_for_emits,
-        },
-    );
-
-    finish(result)
+    finish(
+        result,
+        Some(SfcQueryPlan {
+            content: virtual_ts.content,
+            source: source.to_compact_string(),
+            script_offset,
+            macros: macro_queries,
+            templates: template_queries,
+            promises: template_promise_queries,
+            reactivities: reactivity_loss_queries,
+            boolean: boolean_plan,
+        }),
+    )
 }
