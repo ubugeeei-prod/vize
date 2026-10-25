@@ -7,7 +7,9 @@ import { test } from "node:test";
 import { testedPackageGroups } from "../../tools/config/vite-plus/tested-package-groups.ts";
 import { jsInstallFilters } from "../../tools/support/compat/github/install-js-checks.ts";
 
-test("the pinned package manager selects private transitive dependencies for every JS installer group", () => {
+const compareNames = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
+void test("the pinned package manager selects private transitive dependencies for every JS installer group", () => {
   const original = process.cwd();
   const fixture = mkdtempSync(join(tmpdir(), "vize-install-共有 "));
   const manager = JSON.parse(
@@ -52,7 +54,7 @@ test("the pinned package manager selects private transitive dependencies for eve
       ),
     )
       .map(({ name }) => name)
-      .sort();
+      .sort(compareNames);
   try {
     write(".", { name: "fixture-root", private: true, packageManager: manager });
     writeFileSync(
@@ -78,7 +80,7 @@ test("the pinned package manager selects private transitive dependencies for eve
     assert.deepEqual(select([`${rspack}...`]), [names.get(rspack)]);
     assert.deepEqual(
       select([`{${rspack}}...`]),
-      [names.get(rspack), "fixture-shared", "fixture-leaf", "fixture-optional"].sort(),
+      [names.get(rspack), "fixture-shared", "fixture-leaf", "fixture-optional"].sort(compareNames),
     );
     for (const [group, packages] of groups) {
       const roots = [...packages, native, ...(group === "ui" ? [uiFixture] : [])];
@@ -92,7 +94,7 @@ test("the pinned package manager selects private transitive dependencies for eve
             "fixture-leaf",
             "fixture-optional",
           ]),
-        ].sort(),
+        ].sort(compareNames),
         group,
       );
     }

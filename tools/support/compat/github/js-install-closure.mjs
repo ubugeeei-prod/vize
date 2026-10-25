@@ -6,6 +6,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const baseline = "fc745ea5a2c9efcf6b1549d6312c61d4f2770697";
+const compareNames = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 const observer = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const inputs = [
   "package.json",
@@ -75,7 +76,7 @@ async function capture(role, directory, destination) {
   assert.equal(selection.status, 0, selection.stderr);
   const projects = JSON.parse(selection.stdout)
     .map(({ name }) => name)
-    .sort();
+    .sort(compareNames);
   assert.equal(projects.includes("@vizejs/builder-shared"), role === "after");
   const started = performance.now();
   const install = run("install", process.execPath, [
@@ -164,7 +165,10 @@ function compare(directory) {
     before.inputs,
     "same declared dependencies, lock, emitter and real mapping tests",
   );
-  assert.deepEqual(after.projects, [...before.projects, "@vizejs/builder-shared"].sort());
+  assert.deepEqual(
+    after.projects,
+    [...before.projects, "@vizejs/builder-shared"].sort(compareNames),
+  );
   for (const key of ["event", "triggerHead", "node", "packageManager", "installedPackageManager"])
     assert.equal(after[key], before[key], key);
   assert.equal(before.issuer.code, "ERR_MODULE_NOT_FOUND");
