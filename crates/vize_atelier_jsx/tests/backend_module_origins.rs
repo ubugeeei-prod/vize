@@ -5,8 +5,9 @@
     reason = "test packets use ordinary owned strings and JSON fixtures"
 )]
 
-use oxc_sourcemap::SourceMap;
-use serde_json::{Value, json};
+mod backend_origin_oracle;
+use backend_origin_oracle::{check_map, rejects_mutations};
+use serde_json::json;
 use vize_atelier_core::{lane::transform_with_source_text, options::TransformOptions};
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_atelier_ssr::{
@@ -17,52 +18,7 @@ use vize_atelier_vapor::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, generate_vapor_from_transformed_root,
     generate_vapor_with_options, transform_to_ir,
 };
-use vize_l0::Allocator;
-
-fn byte_at(text: &str, line: u32, column: u32) -> usize {
-    assert!(line <= text.bytes().filter(|&byte| byte == b'\n').count() as u32);
-    let start = text
-        .split_inclusive('\n')
-        .take(line as usize)
-        .map(str::len)
-        .sum::<usize>();
-    let mut units = 0;
-    for (offset, ch) in text.get(start..).unwrap().char_indices() {
-        if units == column {
-            return start + offset;
-        }
-        assert_ne!(ch, '\n', "source map column exceeds line extent");
-        units += ch.len_utf16() as u32;
-        assert!(units <= column, "source map splits a UTF-16 surrogate pair");
-    }
-    assert_eq!(units, column);
-    text.len()
-}
-
-fn check_map(code: &str, source: &str, raw: &str) -> Value {
-    let document: Value = serde_json::from_str(raw).unwrap();
-    assert_eq!(document["version"], 3);
-    assert_eq!(document["sources"], json!(["Original 日本語.tsx"]));
-    assert_eq!(document["sourcesContent"], json!([source]));
-    let map = SourceMap::from_json_string(raw).unwrap();
-    let tokens = map
-        .get_source_view_tokens()
-        .map(|token| {
-            let generated = byte_at(code, token.get_dst_line(), token.get_dst_col());
-            let authored = byte_at(source, token.get_src_line(), token.get_src_col());
-            assert!(code.is_char_boundary(generated));
-            assert!(source.is_char_boundary(authored));
-            json!({ "generated": generated, "authored": authored, "name": token.get_name() })
-        })
-        .collect::<Vec<_>>();
-    let label = source.rfind("label").unwrap();
-    assert!(tokens.iter().any(|token| token["authored"] == label));
-    assert!(
-        tokens.len() > 1,
-        "a synthetic module-start anchor cannot qualify"
-    );
-    json!({ "code": code, "map": document, "tokens": tokens })
-}
+use vize_l0::{Allocator, Span};
 
 #[test]
 fn caller_built_jsx_roots_keep_real_vapor_and_ssr_origins() {
@@ -119,18 +75,35 @@ fn caller_built_jsx_roots_keep_real_vapor_and_ssr_origins() {
             assert_eq!(output.templates, legacy.templates);
             assert_eq!(output.map.is_some(), mapped);
             if let Some(raw) = &output.map {
-                packets.push(json!({ "backend": "vapor", "source": source, "output": check_map(&output.code, &source, raw) }));
+                packets.push(json!({ "backend": "vapor", "source": source, "output": check_map(&output.code, &source, raw, "vapor").unwrap() }));
             }
         }
 
         let l2 = root.l2.unwrap();
         let options = SsrCompilerOptions::default();
         let legacy = compile_l2_to_ssr(&allocator, &source, &l2.root, &options).unwrap();
+        for invalid in [Span::new(0, 0), Span::new(0, source.len() as u32 + 1)] {
+            assert!(
+                compile_l2_to_ssr_with_experimental_options(
+                    &allocator,
+                    &source,
+                    &l2.root,
+                    invalid,
+                    &options,
+                    &SsrCompilerExperimentalOptions {
+                        source_map: true,
+                        ..Default::default()
+                    },
+                )
+                .is_none()
+            );
+        }
         for mapped in [false, true] {
             let output = compile_l2_to_ssr_with_experimental_options(
                 &allocator,
                 &source,
                 &l2.root,
+                transformed.loc.span,
                 &options,
                 &SsrCompilerExperimentalOptions {
                     source_map: mapped,
@@ -143,7 +116,7 @@ fn caller_built_jsx_roots_keep_real_vapor_and_ssr_origins() {
             assert_eq!(output.preamble, legacy.preamble);
             assert_eq!(output.map.is_some(), mapped);
             if let Some(raw) = &output.map {
-                packets.push(json!({ "backend": "ssr", "source": source, "output": check_map(&output.code, &source, raw), "preamble": output.preamble }));
+                packets.push(json!({ "backend": "ssr", "source": source, "output": check_map(&output.code, &source, raw, "ssr").unwrap(), "preamble": output.preamble, "negatives": rejects_mutations(&output.code, &source, raw) }));
             }
         }
     }
