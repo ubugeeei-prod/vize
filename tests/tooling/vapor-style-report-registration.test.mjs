@@ -45,6 +45,7 @@ function observe({
   filler = false,
   mixed = false,
   future = false,
+  requestedPaths,
   rows = manifest.vaporStyleApiCases,
 } = {}) {
   const previous = structuredClone(manifest),
@@ -53,7 +54,7 @@ function observe({
   current.vaporStyleApiCases = rows;
   if (missing) delete current.vaporStyleApiCases;
   if (filler) current.cases.push(ordinary);
-  const paths = [...sourcePaths];
+  const paths = requestedPaths ?? [...sourcePaths];
   if (mixed) paths.push("crates/vize_atelier_sfc/src/unrelated_unit.rs");
   const result = analyzeLegacyFix({
     title: "fix(compiler): retain literal Vapor styles",
@@ -103,4 +104,10 @@ void test("the report cannot convert the source witness into native or SSR credi
   const broadened = structuredClone(manifest.vaporStyleApiCases);
   broadened[0].nativeParity = true;
   assert.equal(observe({ rows: broadened, filler: true }).state, "invalid-manifest-or-input");
+});
+
+void test("a different compiler-family request receives no Vapor source-case credit", () => {
+  const result = observe({ requestedPaths: ["crates/vize_atelier_sfc/src/unrelated_unit.rs"] });
+  assert.equal(result.state, "new-input-missing", result.reason);
+  assert.deepEqual(result.cases, []);
 });
