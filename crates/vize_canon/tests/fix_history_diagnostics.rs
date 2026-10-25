@@ -841,7 +841,8 @@ fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
-            | "unicode-prop-bindings-10573" => regression,
+            | "unicode-prop-bindings-10573"
+            | "undeclared-instance-globals-10617" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -1193,5 +1194,16 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
             "reserved-hyphen-ascii",
             "unicode-continue",
         ],
+    );
+}
+
+#[test]
+fn undeclared_instance_globals_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+        "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+        Some(10617),
+        &["original", "undeclared-only", "repaired"],
     );
 }

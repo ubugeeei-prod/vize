@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const n = 1;
+</script>
+
+<template>
+  <div>{{ $declared.known }} {{ $declared.known }} {{ $declared.known }} {{ n }}</div>
+</template>

@@ -5942,6 +5942,191 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/undeclared-instance-globals-10617/original",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "undeclared-instance-globals-10617",
+      "case": "original",
+      "test": "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+      "regressionCommit": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+      "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+      "packReference": {
+        "path": "undeclared-instance-globals-10617/cases.json",
+        "sha256": "873f04461c82576c94b064391ed3232bb4f57a7a606f69aa8aa3412000281044"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "undeclared-instance-globals-10617/tsconfig.json.txt",
+          "sha256": "bb91d63fbb3a450e766893efc826e4d40ea3588fd9277fb6120b4fa51c36ea49"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "path": "undeclared-instance-globals-10617/globals.d.ts.txt",
+          "sha256": "ec4ba2c3b3401dd3c90bc268146de2e613a818b794446fca6bf45ac84985ae92"
+        },
+        {
+          "file": "src/Globals.vue",
+          "path": "undeclared-instance-globals-10617/sources/original.vue.txt",
+          "sha256": "622c1d1a109b47a74717cbb749ed5b886503861a29fe8d0c397183ff17af64be"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 43,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ known: number; }'."
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 57,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type '__Ctx'. Did you mean '$declared'?"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/undeclared-instance-globals-10617/undeclared-only",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "undeclared-instance-globals-10617",
+      "case": "undeclared-only",
+      "test": "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+      "regressionCommit": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+      "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+      "packReference": {
+        "path": "undeclared-instance-globals-10617/cases.json",
+        "sha256": "873f04461c82576c94b064391ed3232bb4f57a7a606f69aa8aa3412000281044"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "undeclared-instance-globals-10617/tsconfig.json.txt",
+          "sha256": "bb91d63fbb3a450e766893efc826e4d40ea3588fd9277fb6120b4fa51c36ea49"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "path": "undeclared-instance-globals-10617/globals.d.ts.txt",
+          "sha256": "ec4ba2c3b3401dd3c90bc268146de2e613a818b794446fca6bf45ac84985ae92"
+        },
+        {
+          "file": "src/Globals.vue",
+          "path": "undeclared-instance-globals-10617/sources/undeclared-only.vue.txt",
+          "sha256": "f757b3220ad8227acfac244cac3fce746b28b29ad2b4078c2606de589f9f4d76"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 33,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type '__Ctx'. Did you mean '$declared'?"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/undeclared-instance-globals-10617/repaired",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "undeclared-instance-globals-10617",
+      "case": "repaired",
+      "test": "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+      "regressionCommit": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+      "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+      "packReference": {
+        "path": "undeclared-instance-globals-10617/cases.json",
+        "sha256": "873f04461c82576c94b064391ed3232bb4f57a7a606f69aa8aa3412000281044"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "undeclared-instance-globals-10617/tsconfig.json.txt",
+          "sha256": "bb91d63fbb3a450e766893efc826e4d40ea3588fd9277fb6120b4fa51c36ea49"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "path": "undeclared-instance-globals-10617/globals.d.ts.txt",
+          "sha256": "ec4ba2c3b3401dd3c90bc268146de2e613a818b794446fca6bf45ac84985ae92"
+        },
+        {
+          "file": "src/Globals.vue",
+          "path": "undeclared-instance-globals-10617/sources/repaired.vue.txt",
+          "sha256": "9de814a59aa34c9cf3825d4e604c8a24aa94b34fee0e5292aebe4e58cee570ac"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ],
   "protocolCases": [
