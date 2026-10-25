@@ -212,6 +212,10 @@ export function assertWholeTransform(actual: Transform, expected: Transform) {
     "complete generated text, mapping order, directives and all opaque fields",
   );
 }
+export function assertTransformEnvelope(response: Response, id: number) {
+  assert.ok(response.result, "a transform response must contain its complete result");
+  assert.deepEqual(response, { id, jsonrpc: "2.0", result: response.result });
+}
 export function fullPacketMutations(golden: Transform, foreign: Transform) {
   const changes: Array<(copy: Transform) => void> = [
     (copy) => {
@@ -239,7 +243,7 @@ export function fullPacketMutations(golden: Transform, foreign: Transform) {
       copy.diagnosticDirectives = { foreign: true };
     },
   ];
-  for (const index of [0, 1, 2, 3, 5])
+  for (const index of [0, 1, 2, 3, 4, 5])
     for (const delta of [-1, 1])
       changes.push((copy) => {
         copy.mappings[0][index] += delta;

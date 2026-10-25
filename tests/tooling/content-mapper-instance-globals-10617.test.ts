@@ -16,6 +16,7 @@ import {
   assertCheckedReadOwnership,
   assertProtocolAdmission,
   assertWholeTransform,
+  assertTransformEnvelope,
   fullPacketMutations,
   type PacketGoldens,
   compilerRows,
@@ -54,6 +55,11 @@ test("10617 retains the original reported files, exact beta host and closed fram
     );
     const directivePacket = golden.packets.find((row) => "diagnosticDirectives" in row.result)!;
     fullPacketMutations(directivePacket.result, golden.packets[0].result);
+    const response = { id: 3, jsonrpc: "2.0", result: golden.packets[0].result };
+    assertTransformEnvelope(response, 3);
+    assert.throws(() => assertTransformEnvelope({ ...response, id: 4 }, 3));
+    assert.throws(() => assertTransformEnvelope({ ...response, error: null }, 3));
+    assert.throws(() => assertTransformEnvelope({ ...response, jsonrpc: "1.0" }, 3));
   }
 });
 
@@ -436,7 +442,9 @@ await test(
         path.join(published, "tsconfig.json"),
       );
       for (const row of sourceCases) {
-        const result = responses.find((packet) => packet.id === row.id)!.result!;
+        const response = responses.find((packet) => packet.id === row.id)!;
+        assertTransformEnvelope(response, row.id);
+        const result = response.result!;
         checks.push({
           id: `protocol/${row.id}/${row.entry.id}`,
           run() {

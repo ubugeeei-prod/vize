@@ -432,12 +432,12 @@
     },
     {
       "id": "mixed-loop-scope",
-      "source": "<script setup lang=\"ts\">\nconst rows = [{ known: 1 }];\n</script>\n\n<template>\n  <div v-for=\"$ghost in rows\">{{ $ghost.known }}</div>\n  <div>{{ $ghost.value }}</div>\n</template>\n",
+      "source": "<script setup lang=\"ts\">\nconst rows = [{ known: 1 }];\n</script>\n\n<template>\n  <div v-for=\"$ghost in rows\">{{ $ghost.known }}</div>\n  <div>{{ $ghost.known }}</div>\n</template>\n",
       "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
-      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nfor (const $ghost of [{known:1}]) { $ghost.known; }\n__ctx.$ghost.value;\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nfor (const $ghost of [{known:1}]) { $ghost.known; }\n__ctx.$ghost.known;\n}\n",
       "errors": [
         {
-          "anchor": "$ghost.value",
+          "anchor": "<div>{{ $ghost.known }}</div>",
           "token": "$ghost",
           "kind": "undeclared"
         }
@@ -445,12 +445,12 @@
     },
     {
       "id": "mixed-slot-scope",
-      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from 'vue';\nconst Child = defineComponent({ slots: Object as SlotsType<{ default: { $ghost: { known: number } } }> });\n</script>\n\n<template>\n  <Child v-slot=\"{ $ghost }\">{{ $ghost.known }}</Child>\n  <div>{{ $ghost.value }}</div>\n</template>\n",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from 'vue';\nconst Child = defineComponent({ slots: Object as SlotsType<{ default: { $ghost: { known: number } } }> });\n</script>\n\n<template>\n  <Child v-slot=\"{ $ghost }\">{{ $ghost.known }}</Child>\n  <div>{{ $ghost.known }}</div>\n</template>\n",
       "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
-      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst slot=({$ghost}:{ $ghost:{known:number} }) => $ghost.known;\n__ctx.$ghost.value;\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst slot=({$ghost}:{ $ghost:{known:number} }) => $ghost.known;\n__ctx.$ghost.known;\n}\n",
       "errors": [
         {
-          "anchor": "$ghost.value",
+          "anchor": "<div>{{ $ghost.known }}</div>",
           "token": "$ghost",
           "kind": "undeclared"
         }
