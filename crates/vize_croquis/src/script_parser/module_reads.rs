@@ -26,15 +26,13 @@ pub(super) fn observe(program: &Program<'_>) -> ModuleReadFacts {
     let reads = scoping
         .root_unresolved_references()
         .iter()
-        .filter_map(|(name, references)| {
-            references
-                .iter()
-                .any(|id| {
-                    let flags = scoping.get_reference(*id).flags();
-                    flags.is_read() || flags.is_type() || flags.is_value_as_type()
-                })
-                .then(|| CompactString::new(name.as_str()))
+        .filter(|(_, references)| {
+            references.iter().any(|id| {
+                let flags = scoping.get_reference(*id).flags();
+                flags.is_read() || flags.is_type() || flags.is_value_as_type()
+            })
         })
+        .map(|(name, _)| CompactString::new(name.as_str()))
         .collect();
     ModuleReadFacts::Known(reads)
 }

@@ -9,7 +9,7 @@ use vize_croquis::facts::{
 struct Reader;
 impl FactConsumer for Reader {
     const NAME: &'static str = "test/sibling-script-unused";
-    const DEMAND: Demand = Demand::NONE.with(UnusedBindings::ID);
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID).with(UnusedBindings::ID);
 }
 
 const SETUP: &str = "import { helper } from './helper'; const unused = 0;";
