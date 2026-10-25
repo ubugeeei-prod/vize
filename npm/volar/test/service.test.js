@@ -1,0 +1,328 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { performance } from "node:perf_hooks";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import ts from "typescript";
+import { createVizeLanguagePlugin, createVizeLanguageService } from "../src/index.js";
+
+const directory = path.dirname(fileURLToPath(import.meta.url));
+const workspace = path.join(directory, "fixture");
+const evidence = process.env.VIZE_VOLAR_EVIDENCE_DIR ?? path.join(directory, ".artifacts");
+const packets = [];
+const inputs = [];
+const timings = [];
+const hash = (text) => createHash("sha256").update(text).digest("hex");
+
+function normalize(value) {
+  return JSON.parse(
+    JSON.stringify(value, (key, item) => {
+      if (key === "file" && item?.fileName && typeof item.text === "string")
+        return { fileName: item.fileName.replaceAll(workspace, "<workspace>"), text: item.text };
+      if (typeof item === "string") return item.replaceAll(workspace, "<workspace>");
+      return item;
+    }),
+  );
+}
+
+function query(name, params, invoke) {
+  const started = performance.now();
+  const result = invoke();
+  timings.push({ name, elapsedMs: performance.now() - started });
+  packets.push(normalize({ name, params, result }));
+  return result;
+}
+
+function fixture(name, files, extraOptions = {}, languageOptions = {}) {
+  const documents = new Map(
+    Object.entries(files).map(([file, source]) => [
+      path.join(workspace, file),
+      { source, version: 1 },
+    ]),
+  );
+  const deleted = new Set();
+  let revision = 1;
+  const settings = {
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    strict: true,
+    jsx: ts.JsxEmit.Preserve,
+    skipLibCheck: true,
+    ...extraOptions,
+  };
+  const host = {
+    getCurrentDirectory: () => workspace,
+    getCompilationSettings: () => settings,
+    getScriptFileNames: () => [...documents.keys()],
+    getScriptVersion: (file) => String(documents.get(file)?.version ?? "disk"),
+    getProjectVersion: () => String(revision),
+    getScriptSnapshot: (file) => {
+      if (deleted.has(file)) return;
+      const text = documents.get(file)?.source ?? ts.sys.readFile(file);
+      return text === undefined ? undefined : ts.ScriptSnapshot.fromString(text);
+    },
+    getDefaultLibFileName: ts.getDefaultLibFilePath,
+    fileExists: (file) => !deleted.has(file) && (documents.has(file) || ts.sys.fileExists(file)),
+    readFile: (file) =>
+      deleted.has(file) ? undefined : (documents.get(file)?.source ?? ts.sys.readFile(file)),
+    readDirectory: ts.sys.readDirectory,
+    directoryExists: (dir) => dir.startsWith(workspace) || ts.sys.directoryExists(dir),
+    realpath: ts.sys.realpath,
+  };
+  const service = createVizeLanguageService(ts, host, languageOptions);
+  inputs.push({ name, files, compilerOptions: settings, languageOptions });
+  return {
+    ...service,
+    path: (file) => path.join(workspace, file),
+    text: (file) => documents.get(path.join(workspace, file)).source,
+    update(file, source) {
+      const id = path.join(workspace, file);
+      documents.set(id, { source, version: ++revision });
+      deleted.delete(id);
+      inputs.push({ name, update: file, source, revision });
+    },
+    delete(file) {
+      const id = path.join(workspace, file);
+      documents.delete(id);
+      deleted.add(id);
+      revision++;
+      inputs.push({ name, delete: file, revision });
+    },
+  };
+}
+
+const basic = `<script setup lang="ts">\nimport { suffix } from './lib';\nconst title: string = 'hi';\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n`;
+
+test("actual native projection through Volar and TypeScript: complete packets and lifecycle", () => {
+  assert.equal(ts.version, "6.0.3");
+  const f = fixture("basic", { "App.vue": basic, "lib.ts": "export const suffix = '!';\n" });
+  const file = f.path("App.vue");
+  const ls = f.languageService;
+  const at = (needle, delta = 0) => f.text("App.vue").indexOf(needle) + delta;
+  try {
+    const diagnostics = query("basic-diagnostics", { file }, () => [
+      ...ls.getSyntacticDiagnostics(file),
+      ...ls.getSemanticDiagnostics(file),
+    ]);
+    assert(
+      diagnostics.some(
+        (d) => d.code === 2322 && basic.slice(d.start, d.start + d.length) === "count",
+      ),
+    );
+    assert(diagnostics.some((d) => d.code === 2339 || d.code === 2304));
+    for (const [name, position] of [
+      ["script-hover", at("title: string")],
+      ["template-hover", at("title.toUpperCase")],
+    ]) {
+      const hover = query(name, { file, position }, () =>
+        ls.getQuickInfoAtPosition(file, position),
+      );
+      assert(hover && ts.displayPartsToString(hover.displayParts).includes("string"));
+    }
+    const position = at("record.alpha;", "record.".length);
+    const completion = query("property-completion", { file, position }, () =>
+      ls.getCompletionsAtPosition(file, position, {}),
+    );
+    assert.deepEqual(completion.entries.map((entry) => entry.name).sort(), ["alpha", "beta"]);
+    const definitionPosition = at("value + suffix", "value + ".length);
+    const definition = query("import-definition", { file, position: definitionPosition }, () =>
+      ls.getDefinitionAndBoundSpan(file, definitionPosition),
+    );
+    assert(definition.definitions.some((d) => d.fileName === f.path("lib.ts")));
+    const title = at("title: string");
+    const references = query("title-references", { file, position: title }, () =>
+      ls.findReferences(file, title),
+    );
+    assert(
+      references
+        .flatMap((r) => r.references)
+        .some((r) => r.textSpan.start === at("title.toUpperCase")),
+    );
+    query("title-rename-info", { file, position: title }, () => ls.getRenameInfo(file, title));
+    const rename = query("title-rename", { file, position: title }, () =>
+      ls.findRenameLocations(file, title, false, false, true),
+    );
+    assert(rename.some((r) => r.textSpan.start === at("title.toUpperCase")));
+    const root = f.language.scripts.get(file).generated.root;
+    assert.equal(root.source, basic);
+    assert(root.projection.mappings.some((row) => row[5] === 0));
+    inputs.push({ name: "basic-native-projection", projection: root.projection });
+    const oldHover = ls.getQuickInfoAtPosition(file, title);
+    assert.deepEqual(
+      ls.getQuickInfoAtPosition(file, title),
+      oldHover,
+      "unchanged snapshot is stable",
+    );
+    f.update("App.vue", basic.replace("const title: string = 'hi'", "const title: boolean = true"));
+    const updated = query("unsaved-update-hover", { file, position: title }, () =>
+      ls.getQuickInfoAtPosition(file, title),
+    );
+    assert(ts.displayPartsToString(updated.displayParts).includes("boolean"));
+    query("unsaved-update-diagnostics", { file }, () => ls.getSemanticDiagnostics(file));
+    f.delete("lib.ts");
+    const missing = query("delete-import-diagnostics", { file }, () =>
+      ls.getSemanticDiagnostics(file),
+    );
+    assert(missing.some((d) => d.code === 2307));
+    f.update("lib.ts", "export const suffix = 'restored';\n");
+    const restored = query("recreate-import-diagnostics", { file }, () =>
+      ls.getSemanticDiagnostics(file),
+    );
+    assert(!restored.some((d) => d.code === 2307));
+    f.delete("App.vue");
+    assert.equal(f.language.scripts.get(file), undefined);
+  } finally {
+    ls.dispose();
+  }
+});
+
+test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver options", () => {
+  const unicode =
+    '<script setup lang="ts">\r\nconst 日本 = "😀";\r\nconst 数: number = "bad";\r\n</script>\r\n<template>{{ 日本 }}</template>\r\n';
+  const f = fixture("unicode", { "Unicode.vue": unicode });
+  const file = f.path("Unicode.vue");
+  try {
+    const diagnostics = query("unicode-diagnostics", { file }, () =>
+      f.languageService.getSemanticDiagnostics(file),
+    );
+    assert(
+      diagnostics.some(
+        (d) => d.code === 2322 && unicode.slice(d.start, d.start + d.length) === "数",
+      ),
+    );
+    const position = unicode.lastIndexOf("日本");
+    const hover = query("unicode-template-hover", { file, position }, () =>
+      f.languageService.getQuickInfoAtPosition(file, position),
+    );
+    assert(hover && hover.textSpan.start === position && hover.textSpan.length === 2);
+  } finally {
+    f.languageService.dispose();
+  }
+
+  const directives = `<script setup lang="ts">const valid = 'ok';</script>\n<template>\n<!-- @vue-ignore --><p>{{ ignoredMissing }}</p>\n<!-- @vue-expect-error --><p>{{ expectedMissing }}</p>\n<!-- @vue-expect-error --><p>{{ valid }}</p>\n<p>{{ realMissing }}</p>\n</template>`;
+  const d = fixture("directives", { "Directives.vue": directives });
+  try {
+    const result = query("directive-diagnostics", {}, () =>
+      d.languageService.getSemanticDiagnostics(d.path("Directives.vue")),
+    );
+    assert.equal(result.filter((diagnostic) => diagnostic.code === 4).length, 1);
+    assert(
+      !result.some((diagnostic) =>
+        /ignoredMissing|expectedMissing/.test(
+          ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
+        ),
+      ),
+    );
+    assert(
+      result.some((diagnostic) =>
+        ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n").includes("realMissing"),
+      ),
+    );
+    d.update(
+      "Directives.vue",
+      '<script setup lang="ts">const x = ;</script><template>{{ x }}</template>',
+    );
+    const invalid = query("invalid-code-diagnostics", {}, () => [
+      ...d.languageService.getSyntacticDiagnostics(d.path("Directives.vue")),
+      ...d.languageService.getSemanticDiagnostics(d.path("Directives.vue")),
+    ]);
+    assert(invalid.length > 0);
+  } finally {
+    d.languageService.dispose();
+  }
+
+  const child =
+    '<script setup lang="ts" generic="T extends { id: number }">\ndefineProps<{ item: T }>();\ndefineSlots<{ default(props: { item: T }): unknown }>();\n</script>\n<template><slot :item="item" /></template>';
+  const parent =
+    '<script setup lang="ts">import Child from "./Child.vue";</script>\n<template><Child :item="{ id: 1 }" v-slot="{ item }">{{ item.id }}</Child></template>';
+  const g = fixture("generic-slots", { "Child.vue": child, "Parent.vue": parent });
+  try {
+    const diagnostics = query("generic-slot-diagnostics", {}, () =>
+      g.languageService.getSemanticDiagnostics(g.path("Parent.vue")),
+    );
+    assert.equal(diagnostics.length, 0);
+    const position = parent.indexOf("item.id", parent.indexOf("v-slot")) + "item.".length;
+    query("generic-slot-hover", { position }, () =>
+      g.languageService.getQuickInfoAtPosition(g.path("Parent.vue"), position),
+    );
+  } finally {
+    g.languageService.dispose();
+  }
+
+  const aliasSource =
+    '<script setup lang="ts">import { value } from "@lib/value"; const use = value;</script><template>{{ use }}</template>';
+  const a = fixture(
+    "resolver-options",
+    { "Alias.vue": aliasSource, "src/value.ts": "export const value = 42;" },
+    { paths: { "@lib/*": [path.join(workspace, "src/*")] } },
+  );
+  try {
+    assert.equal(
+      query("alias-diagnostics", {}, () =>
+        a.languageService.getSemanticDiagnostics(a.path("Alias.vue")),
+      ).length,
+      0,
+    );
+    const position = aliasSource.indexOf("use = value") + "use = ".length;
+    const definition = query("alias-definition", { position }, () =>
+      a.languageService.getDefinitionAtPosition(a.path("Alias.vue"), position),
+    );
+    assert(definition.some((d) => d.fileName === a.path("src/value.ts")));
+  } finally {
+    a.languageService.dispose();
+  }
+
+  assert.equal(createVizeLanguagePlugin(ts).getLanguageId("Story.art"), undefined);
+  const art = fixture(
+    "art-opt-in",
+    {
+      "Story.art":
+        '<script setup lang="ts">const message = "story";</script><template>{{ message }}</template>',
+    },
+    {},
+    { includeArt: true },
+  );
+  try {
+    query("art-vue-form-diagnostics", {}, () =>
+      art.languageService.getSemanticDiagnostics(art.path("Story.art")),
+    );
+    const position = art.text("Story.art").lastIndexOf("message");
+    const hover = query("art-vue-form-hover", { position }, () =>
+      art.languageService.getQuickInfoAtPosition(art.path("Story.art"), position),
+    );
+    assert(hover);
+  } finally {
+    art.languageService.dispose();
+  }
+});
+
+test("all captured packets equal the reviewed complete source expectations", () => {
+  fs.mkdirSync(evidence, { recursive: true });
+  fs.writeFileSync(path.join(evidence, "packets.json"), JSON.stringify(packets, null, 2) + "\n");
+  fs.writeFileSync(
+    path.join(evidence, "inputs.json"),
+    JSON.stringify(normalize(inputs), null, 2) + "\n",
+  );
+  fs.writeFileSync(
+    path.join(evidence, "measurements.json"),
+    JSON.stringify(
+      {
+        typescript: ts.version,
+        platform: process.platform,
+        arch: process.arch,
+        node: process.version,
+        rows: timings,
+        packetsSha256: hash(JSON.stringify(packets)),
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  const expected = JSON.parse(
+    fs.readFileSync(path.join(directory, "expected-packets.json"), "utf8"),
+  );
+  assert.deepEqual(packets, expected);
+});
