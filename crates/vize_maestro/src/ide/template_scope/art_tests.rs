@@ -13,7 +13,7 @@ fn art_scopes_select_nearest_loop_and_slot_in_the_requested_variant() {
             } else {
                 ""
             };
-            let source = format!(
+            let source = vize_l0::cstr!(
                 "<script setup>const item = 'outer'; const slotValue = 'outer'; const rows = [];</script>\n{ordinary}<art title=\"Scope\" component=\"./Child.vue\">\n<variant name=\"First\" default>\n<div v-for=\"(item, firstOnly) in rows\">{{{{ item }}}}<Child v-slot=\"{{ slotValue }}\">{{{{ slotValue }}}}</Child></div>\n</variant>\n<variant name=\"Second\">\n<section v-for=\"(item, secondOnly) in rows\">🧭{{{{ item }}}}<span v-for=\"item in rows\">{{{{ item }}}}</span><Child v-slot=\"{{ slotValue }}\">{{{{ slotValue }}}}</Child></section>\n</variant>\n</art>\n"
             ).replace('\n', newline);
             let state = ServerState::new();
@@ -22,14 +22,15 @@ fn art_scopes_select_nearest_loop_and_slot_in_the_requested_variant() {
             } else {
                 "Scope.art.vue"
             };
-            let uri = Url::parse(&format!("file:///tmp/{filename}")).unwrap();
+            let uri = Url::parse(&vize_l0::cstr!("file:///tmp/{filename}")).unwrap();
             state
                 .documents
                 .open(uri.clone(), source.clone(), 1, "vue".into());
 
             let second_loop = source.rfind("(item, secondOnly)").unwrap() + 1;
             let nested_loop = source.rfind("item in rows").unwrap();
-            let second_slot = source.rfind("{ slotValue }").unwrap() + 2;
+            let second_slot =
+                source.rfind("v-slot=\"{ slotValue }\"").unwrap() + "v-slot=\"{ ".len();
             for (offset, name, declaration, kind) in [
                 (
                     source.find("🧭{{ item }}").unwrap() + "🧭{{ ".len(),
@@ -68,29 +69,40 @@ fn art_scopes_select_nearest_loop_and_slot_in_the_requested_variant() {
                     Some(GotoDefinitionResponse::Scalar(binding.location(&ctx)))
                 );
                 let (croquis, start) = analyze(&ctx).unwrap();
-                let visible: Vec<_> = bindings_visible_at(&croquis, (offset - start) as u32)
+                let mut visible: Vec<_> = bindings_visible_at(&croquis, (offset - start) as u32)
                     .into_iter()
+                    .filter(|(_, _, kind)| {
+                        matches!(
+                            kind,
+                            vize_croquis::ScopeKind::VFor | vize_croquis::ScopeKind::VSlot
+                        )
+                    })
                     .map(|(name, _, _)| name)
                     .collect();
-                assert!(visible.contains(&name), "{visible:?}");
-                assert!(
-                    !visible.contains(&"firstOnly"),
-                    "sibling scope leaked: {visible:?}"
-                );
+                visible.sort_unstable();
+                let expected = if kind == TemplateScopeBindingKind::SlotProp {
+                    vec!["item", "secondOnly", "slotValue"]
+                } else {
+                    vec!["item", "secondOnly"]
+                };
+                assert_eq!(visible, expected);
             }
 
             let first_offset = source.find("{{ slotValue }}").unwrap() + 3;
             let ctx = IdeContext::new(&state, &uri, first_offset).unwrap();
             let (croquis, start) = analyze(&ctx).unwrap();
-            let visible: Vec<_> = bindings_visible_at(&croquis, (first_offset - start) as u32)
+            let mut visible: Vec<_> = bindings_visible_at(&croquis, (first_offset - start) as u32)
                 .into_iter()
+                .filter(|(_, _, kind)| {
+                    matches!(
+                        kind,
+                        vize_croquis::ScopeKind::VFor | vize_croquis::ScopeKind::VSlot
+                    )
+                })
                 .map(|(name, _, _)| name)
                 .collect();
-            assert!(visible.contains(&"firstOnly"), "{visible:?}");
-            assert!(
-                !visible.contains(&"secondOnly"),
-                "sibling scope leaked: {visible:?}"
-            );
+            visible.sort_unstable();
+            assert_eq!(visible, ["firstOnly", "item", "slotValue"]);
         }
     }
 }

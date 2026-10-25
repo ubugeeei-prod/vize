@@ -56,7 +56,6 @@ ${ordinary}<art title="Scope" component="./Child.vue">
             kind: "v-for",
             tag: '<div v-for="(item, firstOnly) in rows">',
             own: "firstOnly",
-            sibling: "secondOnly",
           },
           {
             usage: source.lastIndexOf("🧭{{ item }}") + "🧭{{ ".length,
@@ -65,7 +64,6 @@ ${ordinary}<art title="Scope" component="./Child.vue">
             kind: "v-for",
             tag: '<section v-for="(item, secondOnly) in rows">',
             own: "secondOnly",
-            sibling: "firstOnly",
           },
           {
             usage: source.lastIndexOf("{{ item }}") + 3,
@@ -74,7 +72,6 @@ ${ordinary}<art title="Scope" component="./Child.vue">
             kind: "v-for",
             tag: '<span v-for="item in rows">',
             own: "secondOnly",
-            sibling: "firstOnly",
           },
           {
             usage: source.indexOf("{{ slotValue }}") + 3,
@@ -83,16 +80,14 @@ ${ordinary}<art title="Scope" component="./Child.vue">
             kind: "v-slot",
             tag: '<Child v-slot="{ slotValue }">',
             own: "firstOnly",
-            sibling: "secondOnly",
           },
           {
             usage: source.lastIndexOf("{{ slotValue }}") + 3,
-            declaration: source.lastIndexOf("{ slotValue }") + 2,
+            declaration: source.lastIndexOf('v-slot="{ slotValue }"') + 'v-slot="{ '.length,
             name: "slotValue",
             kind: "v-slot",
             tag: '<Child v-slot="{ slotValue }">',
             own: "secondOnly",
-            sibling: "firstOnly",
           },
         ];
         for (const entry of cases) {
@@ -112,12 +107,14 @@ ${ordinary}<art title="Scope" component="./Child.vue">
             },
           });
           const labels = completionLabels(await session.request("textDocument/completion", params));
-          assert.ok(labels.includes(entry.name), `${filename}: missing ${entry.name}`);
-          assert.ok(labels.includes(entry.own), `${filename}: missing ${entry.own}`);
-          assert.ok(!labels.includes(entry.sibling), `${filename}: leaked ${entry.sibling}`);
-          assert.ok(
-            !labels.includes("ordinaryOnly"),
-            `${filename}: ordinary template scope leaked`,
+          assert.deepEqual(
+            labels
+              .filter((label) =>
+                ["item", "slotValue", "firstOnly", "secondOnly", "ordinaryOnly"].includes(label),
+              )
+              .sort(),
+            ["item", entry.own, "slotValue"].sort(),
+            `${filename}: complete named scope completion vector`,
           );
         }
       }
