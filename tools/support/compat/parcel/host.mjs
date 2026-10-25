@@ -470,6 +470,91 @@ void [transformer, styles, resolver, read, remember, standard, vapor, badMap, ba
   await new Promise((resolve) => staticServer.server.close(resolve));
   staticServer = undefined;
 
+  // Independent projects may share installed providers, never their source
+  // identity or module evaluation state. Identical components retain the same
+  // generated digest across project roots, while same-basename files coexist.
+  const mirror = path.join(proof, "independent project 😺");
+  await makeApp(mirror);
+  await fs.copyFile(path.join(consumer, "package.json"), path.join(mirror, "package.json"));
+  await fs.copyFile(
+    path.join(consumer, "package-lock.json"),
+    path.join(mirror, "package-lock.json"),
+  );
+  await fs.symlink(path.join(consumer, "node_modules"), path.join(mirror, "node_modules"), "dir");
+  await fs.mkdir(path.join(mirror, "components"));
+  for (const name of ["App.vue", "icon.svg", "styles"])
+    await fs.cp(path.join(mirror, name), path.join(mirror, "components", name), {
+      recursive: true,
+    });
+  await fs.writeFile(
+    path.join(mirror, "index.html"),
+    '<!doctype html><html><body><div id="first"></div><div id="second"></div><div id="third"></div><script type="module" src="./main.js"></script></body></html>',
+  );
+  await fs.writeFile(
+    path.join(mirror, "main.js"),
+    'import {createApp} from "vue"; import Root from "./App.vue"; import Nested from "./components/App.vue"; createApp(Root).mount("#first"); createApp(Root).mount("#second"); createApp(Nested).mount("#third");',
+  );
+  await write("cross-project-source.json", {
+    root: mirror,
+    sfc: await fs.readFile(path.join(mirror, "App.vue"), "utf8"),
+    nestedSfc: await fs.readFile(path.join(mirror, "components/App.vue"), "utf8"),
+    main: await fs.readFile(path.join(mirror, "main.js"), "utf8"),
+    html: await fs.readFile(path.join(mirror, "index.html"), "utf8"),
+    providerLock: sha(await fs.readFile(path.join(mirror, "package-lock.json"))),
+  });
+  const mirrorBuild = await new Parcel({
+    ...base,
+    entries: path.join(mirror, "index.html"),
+    config: path.join(mirror, ".parcelrc"),
+    mode: "production",
+    shouldDisableCache: true,
+    defaultTargetOptions: { ...base.defaultTargetOptions, distDir: path.join(mirror, "dist") },
+  }).run();
+  const mirrorCapture = await captureBuild("cross-project", mirrorBuild);
+  const mirrorModules = [...mirrorCapture.assets.values()].filter((asset) =>
+    /\.vue\.vize-[a-f0-9]{64}\.js$/.test(asset.filePath),
+  );
+  assert.equal(mirrorModules.length, 2);
+  const mirrorRoot = mirrorModules.find((asset) => path.dirname(asset.filePath) === mirror);
+  assert.ok(mirrorRoot);
+  assert.equal(
+    path.basename(mirrorRoot.filePath),
+    path.basename(nativeAssets[0].filePath),
+    "generated component identity must not include an absolute project root",
+  );
+  const mirrorServer = await serve(path.join(mirror, "dist"));
+  const mirrorPage = await page.context().newPage();
+  const mirrorErrors = [];
+  mirrorPage.on("pageerror", (error) => mirrorErrors.push(error.message));
+  try {
+    await mirrorPage.goto(mirrorServer.url);
+    await mirrorPage.getByRole("button").first().waitFor();
+    await mirrorPage.locator("#first button").click();
+    const observations = await mirrorPage.evaluate(() => ({
+      texts: [...document.querySelectorAll("button")].map((button) => button.textContent),
+      colors: [...document.querySelectorAll("button")].map(
+        (button) => getComputedStyle(button).color,
+      ),
+      scopes: [...document.querySelectorAll("button")].map((button) =>
+        button.getAttributeNames().filter((name) => name.startsWith("data-v-")),
+      ),
+      evaluations: window.parcelModuleEvaluations,
+    }));
+    await write("cross-project-browser.json", { ...observations, errors: mirrorErrors });
+    assert.deepEqual(observations.texts, ["Count: 2", "Count: 1", "Count: 1"]);
+    assert.deepEqual(observations.colors, Array(3).fill("rgb(255, 99, 71)"));
+    assert.equal(observations.evaluations, 2, "one module evaluation per physical SFC");
+    assert.deepEqual(observations.scopes[0], observations.scopes[1]);
+    assert.notDeepEqual(observations.scopes[0], observations.scopes[2]);
+    assert.deepEqual(mirrorErrors, []);
+    assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 1);
+    assert.match(await page.getByRole("button").textContent(), /Count: 2/);
+    await mirrorPage.screenshot({ path: path.join(proof, "cross-project.png"), fullPage: true });
+  } finally {
+    await mirrorPage.close();
+    await new Promise((resolve) => mirrorServer.server.close(resolve));
+  }
+
   // A real Node target compiles the same SFC through the native SSR backend.
   const ssr = await new Parcel({
     entries: path.join(consumer, "entry-server.js"),
@@ -671,6 +756,30 @@ void [transformer, styles, resolver, read, remember, standard, vapor, badMap, ba
     (value) => /Recovered: 3/.test(value),
     "watch recovery",
   );
+  offset = events.length;
+  await fs.writeFile(path.join(consumer, "App.vue"), "<template><b></template>");
+  await waitBuild(offset, "buildFailure");
+  offset = events.length;
+  const repairInputs = [source("Discarded"), "<template><i></template>", source("RapidRecovered")];
+  for (const input of repairInputs) await fs.writeFile(path.join(consumer, "App.vue"), input);
+  await eventually(
+    () => page.locator("button.card").textContent(),
+    (value) => /RapidRecovered: 3/.test(value),
+    "rapid repair must settle on the latest authored component",
+  );
+  const settled = events.slice(offset).findLast((event) => event.type === "buildSuccess");
+  assert.ok(settled);
+  await captureBuild("rapid-repair-final", settled);
+  await write("rapid-repair.json", {
+    inputs: repairInputs,
+    text: await page.locator("body").innerText(),
+    events: events
+      .slice(offset)
+      .map(({ type, diagnostics, buildTime }) => ({ type, diagnostics, buildTime })),
+    moduleEvaluations: await page.evaluate(() => window.parcelModuleEvaluations),
+  });
+  assert.equal(await fs.readFile(path.join(consumer, "App.vue"), "utf8"), repairInputs.at(-1));
+  assert.equal(await page.evaluate(() => window.parcelNavigationMarker), "same-document");
   await page.screenshot({ path: path.join(proof, "development.png"), fullPage: true });
   await write("development.json", {
     builds: development,
@@ -799,6 +908,9 @@ void [transformer, styles, resolver, read, remember, standard, vapor, badMap, ba
       "unicode-crlf-maps",
       "alias",
       "browser-interaction",
+      "duplicate-components-and-instances",
+      "cross-project-isolation",
+      "project-relative-generated-identity",
       "node-ssr",
       "external-css-hmr",
       "sass-dependency-hmr",
@@ -809,6 +921,7 @@ void [transformer, styles, resolver, read, remember, standard, vapor, badMap, ba
       "component-hmr",
       "configuration-invalidation",
       "watch-error-recovery",
+      "rapid-repair-settles-on-latest-source",
       "vapor-browser-interaction",
       "invalid-sfc-rejected",
       "unsupported-css-module-rejected",

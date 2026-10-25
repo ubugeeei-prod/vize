@@ -133,7 +133,9 @@ export default new Transformer<VizeParcelOptions>({
     if (map) {
       code += `\n//# sourceMappingURL=${await map.stringify({
         file: path.basename(asset.filePath),
-        sourceRoot: options.projectRoot,
+        sourceRoot:
+          path.relative(path.dirname(asset.filePath), options.projectRoot).replaceAll("\\", "/") ||
+          ".",
         format: "inline",
       })}\n`;
     }

@@ -49,7 +49,7 @@
     "vite-plus": "catalog:vite-stack"
   },
   "engines": {
-    "node": ">=22.18",
+    "node": ">=22.18.0",
     "parcel": "^2.16.4"
   },
   "metadata": {
