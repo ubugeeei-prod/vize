@@ -297,6 +297,27 @@ export default defineNuxtConfig({
 });
 ```
 
+### Nuxt 2 からの移行
+
+Nuxt 2 / Vue 2.7 のアプリケーションを Nuxt 3 または 4 へ移す際に、Vue 2 のテキストの空白規則を
+維持するには `vize.compiler.whitespace: "vue2-preserve"` を指定します。
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: { whitespace: "vue2-preserve" },
+  },
+});
+```
+
+連続したテキストと補間の前後の空白は記述どおり保持し、要素間の空白だけの部分はスペース1つに
+まとめ、子リストの先頭・末尾にある空白だけの部分は削除します。`"vue2-line-breaks"` は一部の
+改行だけを残す限定的なモードで、Vue 2 の preserve 全体を再現するものではありません。
+4つのモードと、コメント・名前付きスロット・整形済みテキストの扱いは
+[コンパイラ設定リファレンス](../guide/compiler-configuration-reference.md#空白)を参照してください。
+Nuxt 2 のまま動かすプロジェクトでは、上記のとおり既存のコンパイラが使われます。
+
 ## Vite プラグインを直接使う
 
 Nuxt は Vite でビルドするので、モジュールを使わずに Vite プラグインを直接登録することもできます。その場合、ここまでに紹介した Nuxt 向けのブリッジや lint 設定の生成は使えません。

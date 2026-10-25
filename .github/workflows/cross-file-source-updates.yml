@@ -1,0 +1,70 @@
+name: Cross-file retained import updates
+run-name: Cross-file retained updates @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/cross-file-source-updates.yml
+      - crates/vize_croquis_cf/src/analyzer/core/deps.rs
+      - crates/vize_croquis_cf/src/analyzer/core/deps/**
+permissions:
+  contents: read
+concurrency:
+  group: cross-file-source-updates-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  retained-owner-graphs:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: cross-file-sfc-effects
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install frozen workspace tools
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Observe exact retained-owner regression packets
+        run: |
+          mkdir -p target/vize-tests/cross-file-source-updates
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          git diff --exit-code
+          git rev-parse HEAD HEAD:crates/vize_croquis_cf/src > target/vize-tests/cross-file-source-updates/source-identity.txt
+          rustc --version --verbose > target/vize-tests/cross-file-source-updates/rustc.txt
+          sha256sum Cargo.lock crates/vize_croquis_cf/src/analyzer/core/deps.rs crates/vize_croquis_cf/src/analyzer/core/deps/source_update_tests.rs > target/vize-tests/cross-file-source-updates/source-inputs.sha256
+          cp crates/vize_croquis_cf/src/analyzer/core/deps/source_update_tests.rs target/vize-tests/cross-file-source-updates/
+          cargo test --locked --profile ci -p vize_croquis_cf --lib -- analyzer::core::deps::source_update_tests:: --nocapture > target/vize-tests/cross-file-source-updates/rust.stdout 2> target/vize-tests/cross-file-source-updates/rust.stderr
+          cat target/vize-tests/cross-file-source-updates/rust.stdout
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          assert.match(fs.readFileSync('target/vize-tests/cross-file-source-updates/rust.stdout', 'utf8'), /test result: ok\. 5 passed; 0 failed; 0 ignored;/u);
+          JS
+      - name: Preserve complete regression packets and source identities
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cross-file-source-updates-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/cross-file-source-updates
+          if-no-files-found: error
+          retention-days: 14

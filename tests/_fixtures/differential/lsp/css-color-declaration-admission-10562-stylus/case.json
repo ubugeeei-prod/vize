@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "lsp/regression/css-color-declaration-admission-10562-stylus",
+  "provenance": {
+    "fixCommit": "bd905feebbbe20eae06089fa63b68f4fe5e9c622",
+    "witnessPath": "crates/vize_maestro/src/server/annotations/document_color/tests/declaration_admission.rs",
+    "witnessTest": "stylus_colonless_named_and_function_values_share_actual_declaration_admission",
+    "inputOrigin": "Minimal derivative of complete fresh installed public v0.565.0 selector/colonless color packets",
+    "contractOrigin": "Independently authored declaration-value ownership, UTF-16 source spans and exact simple RGBA channels"
+  },
+  "files": [
+    {
+      "source": "Colors.vue.txt",
+      "runtimePath": "Colors.vue",
+      "sha256": "b0dbcf22c8274f7b03700a72850db4dee6b4f1477ef9f885381de48a5cb2e1fc"
+    }
+  ],
+  "entry": "Colors.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "e66406bd42a8f935145e50b598561f2b4cbcc9f4f04da4da6fdc378d282085c5"
+  },
+  "method": "textDocument/documentColor",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "typecheck": false,
+    "lint": false
+  },
+  "scope": "Original authored color declaration admission; source-inspected input custody grants no native whole-product LSP credit"
+}

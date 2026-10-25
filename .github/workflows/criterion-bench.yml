@@ -10,6 +10,11 @@ on:
         description: Full head commit SHA
         required: true
         type: string
+      sfc_optional_lifecycle_only:
+        description: Diagnose one frozen public/source native optional-prop lifecycle without timing
+        required: false
+        default: false
+        type: boolean
       sfc_member_only:
         description: Profile only native SFC prop-member extraction with optimized source pairs
         required: false
@@ -36,7 +41,7 @@ on:
         default: false
         type: boolean
 concurrency:
-  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}-${{ inputs.level_memory_only || false }}-${{ inputs.sfc_member_only || false }}
+  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}-${{ inputs.level_memory_only || false }}-${{ inputs.sfc_member_only || false }}-${{ inputs.sfc_optional_lifecycle_only || false }}
   cancel-in-progress: true
 env:
   CARGO_TERM_COLOR: always
@@ -47,7 +52,7 @@ env:
   DIALECT_GUARD_THRESHOLD_PERCENT: 2
 jobs:
   criterion-ab:
-    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     name: criterion-ab
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
@@ -174,7 +179,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
   dialect-guard:
-    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     name: dialect-guard
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -218,7 +223,7 @@ jobs:
             --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
             --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
   production-pairs:
-    if: ${{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     name: Production pairs (measurement ${{ matrix.repetition }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -295,7 +300,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
   production-summary:
-    if: ${{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     needs: production-pairs
     runs-on: ubuntu-latest
     permissions:
@@ -322,7 +327,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   sfc-parse-replay:
-    if: ${{ inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     name: SFC parse replay (measurement ${{ matrix.repetition }})
     strategy:
       fail-fast: false
@@ -334,7 +339,7 @@ jobs:
       repetition: ${{ matrix.repetition }}
       conflicting_modes: ${{ inputs.production_only || inputs.vapor_only }}
   level-memory:
-    if: ${{ inputs.level_memory_only && !inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.level_memory_only && !inputs.sfc_member_only }}
     uses: ./.github/workflows/level-memory-bench.yml
     with:
       base_sha: ${{ inputs.base_sha }}
@@ -342,9 +347,18 @@ jobs:
       conflicting_modes: ${{ inputs.production_only || inputs.vapor_only || inputs.historical_sfc_parse }}
 
   sfc-members:
-    if: ${{ inputs.sfc_member_only }}
+    if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.sfc_member_only }}
     uses: ./.github/workflows/sfc-member-profile.yml
     with:
       base_sha: ${{ inputs.base_sha }}
       head_sha: ${{ inputs.head_sha }}
       conflicting_modes: ${{ inputs.production_only || inputs.historical_sfc_parse || inputs.level_memory_only || inputs.vapor_only }}
+
+  sfc-optional-lifecycle:
+    if: ${{ inputs.sfc_optional_lifecycle_only }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sfc-optional-lifecycle.yml
+    with:
+      expected-driver-sha: ${{ inputs.head_sha }}
+      conflicting-modes: ${{ inputs.sfc_member_only || inputs.production_only || inputs.historical_sfc_parse || inputs.level_memory_only || inputs.vapor_only }}

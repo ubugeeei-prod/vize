@@ -120,7 +120,7 @@ pub fn analyze_props_validation(
         // Get props passed by parent
         // This requires parsing the template to find the actual props passed
         // For now, we focus on checking required props from the child's perspective
-        let aliases = imported_aliases_for_child(parent_entry, child_entry);
+        let aliases = imported_aliases_for_child(registry, parent_entry, child_entry);
         let passed_usages = extract_passed_props_for_component(
             &parent_entry.analysis,
             child_component_name.as_str(),
@@ -128,6 +128,7 @@ pub fn analyze_props_validation(
         );
 
         for passed_usage in passed_usages {
+            let child_component_name = &passed_usage.component_name;
             // Check for missing required props. A spread v-bind can provide any
             // required prop, so only validate required props for non-spread usages.
             if !passed_usage.has_spread_attrs && !has_dynamic_prop_name(&passed_usage) {
