@@ -173,6 +173,7 @@ export function cleanEnvironment(base, corsa) {
   const env = Object.fromEntries(
     Object.entries(base).filter(([key]) => !/^(VIZE_|CORSA_|TSGO_|NAPI_RS_)/u.test(key)),
   );
+  delete env.RAYON_NUM_THREADS;
   env.CORSA_PATH = corsa;
   env.LANG = "C.UTF-8";
   env.LC_ALL = "C.UTF-8";

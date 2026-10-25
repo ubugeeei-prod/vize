@@ -200,6 +200,7 @@ test("measurement environment removes inherited instrumentation while keeping or
         TSGO_FLAGS: "x",
         NAPI_RS_FORCE_WASI: "1",
         LANG: "ja_JP",
+        RAYON_NUM_THREADS: "1",
       },
       "/exact/tsc",
     ),

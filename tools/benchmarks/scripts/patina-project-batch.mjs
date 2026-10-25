@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { availableParallelism } from "node:os";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 import {
@@ -84,6 +85,8 @@ fs.writeFileSync(
       node: process.version,
       platform: process.platform,
       arch: process.arch,
+      availableParallelism: availableParallelism(),
+      rayonThreads: "default unpinned",
       binaries,
       binaryHashes,
       checker: { path: corsa, version: runtimePackage.version, sha256: runtimeHash },
@@ -180,6 +183,8 @@ const report = {
   profile: "ci-opt-release-thin-lto-cgu16",
   platform: process.platform,
   arch: process.arch,
+  availableParallelism: availableParallelism(),
+  rayonThreads: "default unpinned",
   node: process.version,
   binaries: Object.fromEntries(
     Object.entries(binaries).map(([side, binary]) => [
