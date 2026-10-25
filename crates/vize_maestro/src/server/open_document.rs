@@ -37,7 +37,9 @@ impl MaestroServer {
         // importer pass must not invalidate this same owner after an editor
         // request has already synchronized the stable opened source.
         #[cfg(feature = "native")]
-        if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+        if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
             let disk_matches = uri
                 .to_file_path()
                 .ok()

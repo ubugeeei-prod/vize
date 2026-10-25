@@ -173,7 +173,9 @@ impl ServerState {
         let _change = self.corsa_environment_change();
         let bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = bridge {
-            if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+            if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
                 eprintln!(
                     "[vize-disk-lifecycle] event=maestro_mark bridge={:p} caller={} stack={}",
                     Arc::as_ptr(&bridge),

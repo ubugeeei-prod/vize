@@ -270,7 +270,7 @@ impl CorsaProjectClient {
     /// virtual document, so the next semantic request has to run against a
     /// freshly spawned session to see the current workspace.
     pub fn invalidate_disk_project_state(&mut self) -> Result<(), String> {
-        if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+        if crate::corsa_bridge::preparation_trace::enabled() {
             eprintln!("[vize-disk-lifecycle] event=client_disk_discard client={self:p}");
         }
         self.clear_diagnostics_cache();
