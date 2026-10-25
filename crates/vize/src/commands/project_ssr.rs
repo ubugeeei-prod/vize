@@ -35,9 +35,16 @@ pub(super) fn ssr_enabled(root: &Path) -> bool {
         // a nested package or Vite project instead of borrowing an outer SPA's
         // policy for a separately owned application.
         if root.join("package.json").is_file()
-            || ["ts", "js", "mts", "mjs", "cts", "cjs"]
-                .iter()
-                .any(|extension| root.join(format!("vite.config.{extension}")).is_file())
+            || [
+                "vite.config.ts",
+                "vite.config.js",
+                "vite.config.mts",
+                "vite.config.mjs",
+                "vite.config.cts",
+                "vite.config.cjs",
+            ]
+            .iter()
+            .any(|name| root.join(name).is_file())
         {
             break;
         }
