@@ -15,6 +15,9 @@ use vize_relief::BindingType;
 use crate::ide::IdeContext;
 use crate::ide::completion::items;
 
+#[cfg(test)]
+mod pug_tests;
+
 /// Analyzed template binding completion reads script bindings.
 struct TemplateBindingCompletion;
 
@@ -37,10 +40,21 @@ pub(crate) fn analyzed_template_binding_completions(
 
     let ordinary;
     let (croquis, template_local) = if crate::ide::template_scope::pug::is_pug(ctx) {
-        let Some(analysis) = crate::ide::template_scope::pug::analyzed_for_completion(ctx) else {
-            return Vec::new();
-        };
-        analysis
+        if let Some(analysis) = crate::ide::template_scope::pug::analyzed_for_completion(ctx) {
+            analysis
+        } else if let Some(croquis) = crate::ide::template_scope::pug::cached_analysis(ctx) {
+            // Synthetic gaps cannot admit locals. Retain non-local bindings
+            // from the cached analysis without deriving or parsing again.
+            (croquis, u32::MAX)
+        } else {
+            let Some(analysis) = crate::ide::template_scope::analyze(ctx) else {
+                return Vec::new();
+            };
+            ordinary = analysis;
+            // Unsupported Pug still has script bindings; authored Pug bytes
+            // are not coordinates in the fallback HTML parser's scopes.
+            (&ordinary.0, u32::MAX)
+        }
     } else {
         let Some(analysis) = crate::ide::template_scope::analyze(ctx) else {
             return Vec::new();

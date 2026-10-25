@@ -11,6 +11,8 @@ import {
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
+type CompletionResponse = Parameters<typeof completionLabels>[0];
+
 test("Pug authored scopes preserve local identity, nearest shadowing and exact hover excerpts", async () => {
   fs.mkdirSync(testOutputRoot, { recursive: true });
   const workspace = fs.mkdtempSync(path.join(testOutputRoot, "pug-authored-scopes-"));
@@ -21,6 +23,7 @@ test("Pug authored scopes preserve local identity, nearest shadowing and exact h
     for (const language of ["pug", "jade", "PUG", "JADE"]) {
       for (const newline of ["\n", "\r\n"]) {
         for (const quote of ['"', "'"]) {
+          const context = `${language} newline=${JSON.stringify(newline)} quote=${quote}`;
           const source = `<script setup lang="ts">
 const item = 'outside'
 const rows = [1, 2]
@@ -53,7 +56,11 @@ section
             "textDocument/publishDiagnostics",
             (params) => isDiagnosticsForUri(params, uri),
           );
-          assert.deepEqual(diagnostics.diagnostics, []);
+          assert.deepEqual(
+            diagnostics,
+            { uri, version: 1, diagnostics: [] },
+            `diagnostics: ${context}`,
+          );
           const entries = [
             {
               usage: source.indexOf("🧭{{ item") + "🧭{{ ".length,
@@ -92,28 +99,37 @@ section
             },
           ];
           for (const entry of entries) {
+            const entryContext = `${context} ${entry.kind} at ${entry.usage}`;
             const params = {
               textDocument: { uri },
               position: offsetToPosition(source, entry.usage),
             };
-            assert.deepEqual(await session.request("textDocument/definition", params), {
-              uri,
-              range: {
-                start: offsetToPosition(source, entry.declaration),
-                end: offsetToPosition(source, entry.declaration + 4),
+            assert.deepEqual(
+              await session.request("textDocument/definition", params),
+              {
+                uri,
+                range: {
+                  start: offsetToPosition(source, entry.declaration),
+                  end: offsetToPosition(source, entry.declaration + 4),
+                },
               },
-            });
+              `definition: ${entryContext}`,
+            );
             const loop = entry.kind === "v-for";
-            assert.deepEqual(await session.request("textDocument/hover", params), {
-              contents: {
-                kind: "markdown",
-                value: `**item**\n\n_${entry.kind} scope binding_\n\n\`\`\`pug\n${entry.tag}\n\`\`\`\n\n${loop ? "Loop value alias declared by the nearest `v-for` and available to this template scope." : "Slot prop binding declared by the nearest scoped slot and available to this template subtree."}\n\n**Behavior**\n- Shadows outer template and script bindings with the same name.\n- ${loop ? "Type-backed sessions should refine this with the iterable item type when the backend answers." : "Type-backed sessions should refine this with the child component slot prop type when the backend answers."}`,
+            assert.deepEqual(
+              await session.request("textDocument/hover", params),
+              {
+                contents: {
+                  kind: "markdown",
+                  value: `**item**\n\n_${entry.kind} scope binding_\n\n\`\`\`pug\n${entry.tag}\n\`\`\`\n\n${loop ? "Loop value alias declared by the nearest `v-for` and available to this template scope." : "Slot prop binding declared by the nearest scoped slot and available to this template subtree."}\n\n**Behavior**\n- Shadows outer template and script bindings with the same name.\n- ${loop ? "Type-backed sessions should refine this with the iterable item type when the backend answers." : "Type-backed sessions should refine this with the child component slot prop type when the backend answers."}`,
+                },
+                range: {
+                  start: offsetToPosition(source, entry.usage),
+                  end: offsetToPosition(source, entry.usage + 4),
+                },
               },
-              range: {
-                start: offsetToPosition(source, entry.usage),
-                end: offsetToPosition(source, entry.usage + 4),
-              },
-            });
+              `hover: ${entryContext}`,
+            );
             const names = [
               "item",
               "outerIndex",
@@ -123,21 +139,21 @@ section
               "multilineOnly",
             ];
             const labels = completionLabels(
-              await session.request("textDocument/completion", params),
+              (await session.request("textDocument/completion", params)) as CompletionResponse,
             );
             assert.deepEqual(
               labels.filter((label) => names.includes(label)).sort(),
               entry.locals,
-              "complete named scope vector",
+              `complete named scope vector: ${entryContext}`,
             );
           }
           const boundary =
             source.indexOf(`:title=${quote}item${quote}`) + `:title=${quote}item`.length;
           const boundaryLabels = completionLabels(
-            await session.request("textDocument/completion", {
+            (await session.request("textDocument/completion", {
               textDocument: { uri },
               position: offsetToPosition(source, boundary),
-            }),
+            })) as CompletionResponse,
           );
           assert.deepEqual(
             boundaryLabels
@@ -153,7 +169,7 @@ section
               )
               .sort(),
             ["item", "outerIndex"],
-            "closed directive value caret retains its entire local scope",
+            `closed directive value caret retains its entire local scope: ${context}`,
           );
           const outerUse = source.lastIndexOf("{{ item }}") + 3;
           assert.deepEqual(
@@ -168,6 +184,7 @@ section
                 end: offsetToPosition(source, source.indexOf("item =") + 4),
               },
             },
+            `dedented script binding: ${context}`,
           );
           session.notify("textDocument/didClose", { textDocument: { uri } });
         }

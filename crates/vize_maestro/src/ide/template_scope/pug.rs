@@ -79,6 +79,11 @@ fn scope<'a>(ctx: &'a IdeContext<'_>) -> Option<&'a PugScope> {
         .as_deref()
 }
 
+/// Reuse script analysis without admitting an authored position to a scope.
+pub(in crate::ide) fn cached_analysis<'a>(ctx: &'a IdeContext<'_>) -> Option<&'a Croquis> {
+    Some(&scope(ctx)?.croquis)
+}
+
 pub(in crate::ide) fn analyzed<'a>(ctx: &'a IdeContext<'_>) -> Option<(&'a Croquis, u32)> {
     analyzed_at(ctx, false)
 }
