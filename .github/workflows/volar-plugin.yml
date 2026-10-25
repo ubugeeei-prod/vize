@@ -13,7 +13,7 @@ on:
       - "pnpm-workspace.yaml"
       - "pnpm-lock.yaml"
       - "tests/tooling/native-declarations.test.ts"
-      - "tests/tooling/benchmark-musea-lane.test.ts"
+      - "tests/tooling/benchmark-musea-*.test.ts"
       - "tools/benchmarks/scripts/musea-artifacts.mjs"
       - ".github/workflows/volar-plugin.yml"
   workflow_dispatch: {}
