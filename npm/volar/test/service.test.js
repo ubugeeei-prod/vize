@@ -182,7 +182,12 @@ test("actual native projection through Volar and TypeScript: complete packets an
     assert(rename.some((r) => r.textSpan.start === at("title.toUpperCase")));
     const root = f.language.scripts.get(file).generated.root;
     assert.equal(root.source, basic);
-    assert(root.projection.mappings.some((row) => row[5] === 0));
+    assert(
+      root.projection.mappings.every(
+        (row, index) =>
+          row[5] !== 0 || root.embeddedCodes[0].mappings[index].data.navigation === false,
+      ),
+    );
     inputs.push({ name: "basic-native-projection", projection: root.projection });
     f.capture("initial");
     const oldHover = ls.getQuickInfoAtPosition(file, title);
@@ -240,7 +245,8 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
     f.languageService.dispose();
   }
 
-  const directives = `<script setup lang="ts">const valid = 'ok';</script>\n<template>\n<!-- @vue-ignore --><p>{{ ignoredMissing }}</p>\n<!-- @vue-expect-error --><p>{{ expectedMissing }}</p>\n<!-- @vue-expect-error --><p>{{ valid }}</p>\n<p>{{ realMissing }}</p>\n</template>`;
+  // Directives own their target node, not every descendant of an element.
+  const directives = `<script setup lang="ts">const valid = 'ok';</script>\n<template>\n<!-- @vue-ignore -->{{ ignoredMissing }}\n<!-- @vue-expect-error -->{{ expectedMissing }}\n<!-- @vue-expect-error -->{{ valid }}\n<p>{{ realMissing }}</p>\n<!-- @vue-ignore --><p :id="valid">{{ childMissing }}</p>\n</template>`;
   const d = fixture("directives", { "Directives.vue": directives });
   try {
     const result = query("directive-diagnostics", {}, () =>
@@ -258,6 +264,11 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
     assert(
       result.some((diagnostic) =>
         ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n").includes("realMissing"),
+      ),
+    );
+    assert(
+      result.some((diagnostic) =>
+        ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n").includes("childMissing"),
       ),
     );
     d.update(
@@ -339,6 +350,37 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
     art.capture("art-opt-in-vue-content");
   } finally {
     art.languageService.dispose();
+  }
+
+  const eventChild =
+    '<script setup lang="ts">defineProps<{ fooBar: string }>(); defineEmits<{ saveItem: [value: string] }>();</script><template />';
+  const eventParent =
+    '<script setup lang="ts">import Child from "./Child.vue";</script><template><Child :foo-bar="1" @save-item="(value: number) => undefined" /></template>';
+  const e = fixture("feature-boundaries", { "Child.vue": eventChild, "Events.vue": eventParent });
+  try {
+    const file = e.path("Events.vue");
+    const errors = query("feature-boundary-diagnostics", { file }, () =>
+      e.languageService.getSemanticDiagnostics(file),
+    );
+    assert(errors.some((diagnostic) => diagnostic.code === 2322));
+    const root = e.language.scripts.get(file).generated.root;
+    const diagnosticOnly = root.projection.mappings
+      .map((row, index) => ({ row, mapping: root.embeddedCodes[0].mappings[index] }))
+      .filter(({ row }) => row[5] === 0);
+    assert(diagnosticOnly.length > 0, "native event handler provides diagnostic-only anchors");
+    for (const { mapping } of diagnosticOnly) {
+      assert.equal(mapping.data.navigation, false);
+      assert.equal(mapping.data.completion, false);
+      assert.equal(mapping.data.semantic, false);
+    }
+    const position = eventParent.indexOf("foo-bar");
+    const rename = query("rewritten-prop-refuses-rename", { file, position }, () =>
+      e.languageService.getRenameInfo(file, position),
+    );
+    assert.equal(rename.canRename, false);
+    e.capture("diagnostic-only-and-rewritten-alias");
+  } finally {
+    e.languageService.dispose();
   }
 });
 
