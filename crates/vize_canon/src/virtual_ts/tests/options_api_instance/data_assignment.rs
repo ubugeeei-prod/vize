@@ -50,10 +50,10 @@ fn data_template_bindings_emit_var_while_static_options_stay_const() {
     assert_eq!(
         declarations,
         [
-            "  const close: __VizeOptionsBinding<typeof __default__, \"close\"> = undefined as any;",
-            "  const initial: __VizeOptionsBinding<typeof __default__, \"initial\"> = undefined as any;",
-            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = undefined as any;",
-            "  var open: __VizeOptionsBinding<typeof __default__, \"open\"> = undefined as any;",
+            "  const close: __VizeOptionsBinding<typeof __default__, \"close\"> = (void 0) as any;",
+            "  const initial: __VizeOptionsBinding<typeof __default__, \"initial\"> = (void 0) as any;",
+            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var open: __VizeOptionsBinding<typeof __default__, \"open\"> = (void 0) as any;",
         ]
     );
 }

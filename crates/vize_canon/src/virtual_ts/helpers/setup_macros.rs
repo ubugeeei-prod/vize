@@ -52,7 +52,7 @@ setup_helpers!(
     ),
     (
         "defineModel",
-        r#"  const defineModel = undefined as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
+        r#"  const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
 "#,
         r#"  const defineModel = __vize_defineModel;
 "#

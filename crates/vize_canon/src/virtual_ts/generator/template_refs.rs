@@ -289,7 +289,7 @@ impl TemplateRefUnwraps {
             record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
         }
         for name in &self.options_api_setup_bindings {
-            append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
+            append!(ts, "    var {name}: __U<__R_{name}> = (void 0) as any;\n");
         }
         for name in &self.auto_import_bindings {
             let unwrap = self.unwrap_prefix(name);
@@ -330,7 +330,7 @@ fn record_template_shadow(
     let start = ts.len();
     append!(
         *ts,
-        "{name}: {type_prefix}{name}{type_suffix} = undefined as any;\n"
+        "{name}: {type_prefix}{name}{type_suffix} = (void 0) as any;\n"
     );
     if let Some(source_range) = captures.get(name) {
         semantic_links.push(VizeSemanticLink {

@@ -36,7 +36,7 @@ const modalWindowState = ref(ModalWindowState.None)
         "Vue 3 template ref unwrapping must widen mutable literal values:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("var modalWindowState: __U<__R_modalWindowState> = undefined as any;"),
+        virtual_ts.contains("var modalWindowState: __U<__R_modalWindowState> = (void 0) as any;"),
         "template should shadow the setup ref with an unwrapped alias:\n{virtual_ts}"
     );
     assert!(
