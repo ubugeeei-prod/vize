@@ -1,6 +1,7 @@
 use super::PropInfo;
+use crate::facts::imported_render_target;
 use crate::module_paths::{import_candidates, normalize_logical_path};
-use crate::registry::ModuleEntry;
+use crate::registry::{ModuleEntry, ModuleRegistry};
 use std::path::Path;
 use vize_carton::{CompactString, FxHashMap, String, camelize};
 use vize_croquis::macros::MacroKind;
@@ -11,6 +12,7 @@ mod builtin_attr;
 pub(super) use builtin_attr::is_builtin_attr;
 
 pub(super) struct PassedComponentUsage {
+    pub(super) component_name: CompactString,
     pub(super) props: Vec<PassedPropInfo>,
     pub(super) has_spread_attrs: bool,
     pub(super) start: u32,
@@ -38,7 +40,7 @@ pub(super) fn extract_passed_props_for_component(
 
     for usage in vize_croquis::facts::component_usage_list(analysis) {
         // Match component name (case-insensitive for kebab-case vs PascalCase)
-        if component_names_match(usage.name.as_str(), component_name)
+        if (aliases.is_empty() && component_names_match(usage.name.as_str(), component_name))
             || aliases
                 .iter()
                 .any(|alias| component_names_match(usage.name.as_str(), alias.as_str()))
@@ -57,6 +59,7 @@ pub(super) fn extract_passed_props_for_component(
                 .collect();
 
             usages.push(PassedComponentUsage {
+                component_name: usage.name.clone(),
                 props,
                 has_spread_attrs: usage.has_spread_attrs,
                 start: usage.start,
@@ -67,6 +70,7 @@ pub(super) fn extract_passed_props_for_component(
 
     if usages.is_empty() {
         usages.push(PassedComponentUsage {
+            component_name: CompactString::new(component_name),
             props: Vec::new(),
             has_spread_attrs: false,
             start: 0,
@@ -262,6 +266,7 @@ fn is_numeric_literal(value: &str) -> bool {
 }
 
 pub(super) fn imported_aliases_for_child(
+    registry: &ModuleRegistry,
     parent_entry: &ModuleEntry,
     child_entry: &ModuleEntry,
 ) -> Vec<CompactString> {
@@ -278,6 +283,18 @@ pub(super) fn imported_aliases_for_child(
         }
 
         aliases.extend(scope.bindings().map(|(name, _)| CompactString::new(name)));
+    }
+
+    // The render-tree resolver already follows named/default re-export
+    // chains. Attribute matching must use that same resolved identity rather
+    // than comparing the barrel path with the final SFC path.
+    for usage in vize_croquis::facts::component_usage_list(&parent_entry.analysis) {
+        if imported_render_target(registry, parent_entry.id, usage.name.as_str())
+            == Some(child_entry.id)
+            && !aliases.contains(&usage.name)
+        {
+            aliases.push(usage.name);
+        }
     }
 
     aliases
