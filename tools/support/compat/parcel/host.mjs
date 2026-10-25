@@ -352,6 +352,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   assert.equal(physicalImage.length, 1);
   const imageHash = sha(await fs.readFile(path.join(runtimeNative, physicalImage[0])));
   assert.equal(imageHash, sha(await fs.readFile(path.join(nativeDirectory, physicalImage[0]))));
+  let revalidateBuiltSource;
   if (!preflightProvider) {
     const build = JSON.parse(
       await fs.readFile(
@@ -366,6 +367,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     assert.equal(build.source.head, run("git", ["rev-parse", "HEAD"], repository).trim());
     assert.equal(build.generated.sha256, imageHash);
     await write("native-build-receipt.json", build);
+    revalidateBuiltSource = () => validateCiBuild(nativeDirectory, build);
   }
   await makeApp(consumer);
   const manifest = JSON.parse(await fs.readFile(path.join(consumer, "package.json"), "utf8"));
@@ -955,8 +957,11 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     ["status", "--porcelain", "--untracked-files=normal"],
     repository,
   );
-  if (!preflightProvider)
-    assert.equal(sourceStatus, "", "source qualification requires a clean source tree");
+  // NAPI legitimately regenerates its tracked JS/declaration entrypoints.
+  // The original producer validator authenticates their complete before/after
+  // bytes and diff, while refusing every authored source change. Keep the raw
+  // status rather than pretending generated outputs are an empty working tree.
+  revalidateBuiltSource?.();
   const qualificationScope = recoveryFrontier
     ? "recovery-frontier"
     : "production-ssr-and-normal-development-updates";
