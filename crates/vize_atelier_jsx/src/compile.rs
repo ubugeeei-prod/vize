@@ -190,7 +190,11 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         )
     });
     let mut ssr_options = vize_atelier_ssr::SsrCompilerOptions {
-        binding_metadata: if config.ssr { bindings.take() } else { None },
+        binding_metadata: if config.ssr || config.vapor.ssr {
+            bindings.take()
+        } else {
+            None
+        },
         is_ts,
         ..Default::default()
     };
@@ -203,7 +207,13 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             lowered_root.root.loc.span.end,
         ));
         let mut origin = crate::emission::RootSourceMap::default();
-        let component = if config.ssr {
+        let resolved_mode = resolve_mode(lowered_root.mode, config.default_mode);
+        let root_is_ssr = config.ssr || (config.vapor.ssr && resolved_mode == JsxOutputMode::Vapor);
+        let component = if root_is_ssr {
+            if !config.ssr && config.compat.is_babel() {
+                let loc = &lowered_root.root.loc;
+                diagnostics.push(unsupported_with_vapor(loc.span.start, loc.span.end));
+            }
             reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
             let (component, map) = compile_root_with_origins(
                 allocator,
@@ -220,7 +230,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             origin = map;
             JsxComponent::Ssr(component)
         } else {
-            let mode = resolve_mode(lowered_root.mode, config.default_mode);
+            let mode = resolved_mode;
             if mode == JsxOutputMode::Vapor {
                 reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
             }
