@@ -30,5 +30,28 @@ jobs:
           cargo fmt --all -- --check
       - name: Exercise accepted startup and bridge FIFO shutdown
         run: cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::shutdown_tests -- --nocapture
+      - name: Install the explicit qualified compiler for historical shutdown controls
+        env:
+          VIZE_SHUTDOWN_SDK_ROOT: ${{ runner.temp }}/lsp-owned-shutdown-sdk
+        run: |
+          npm install --prefix "$VIZE_SHUTDOWN_SDK_ROOT" --ignore-scripts --no-audit --no-fund --save-exact @typescript/typescript-linux-x64@7.0.2
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {appendFileSync, readFileSync, realpathSync, writeFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import path from 'node:path';
+          const packageRoot = path.join(process.env.VIZE_SHUTDOWN_SDK_ROOT, 'node_modules/@typescript/typescript-linux-x64');
+          const metadata = JSON.parse(readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
+          assert.equal(metadata.name, '@typescript/typescript-linux-x64');
+          assert.equal(metadata.version, '7.0.2');
+          const binary = realpathSync(path.join(packageRoot, 'lib/tsc'));
+          const sha256 = createHash('sha256').update(readFileSync(binary)).digest('hex');
+          assert.equal(sha256, '4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4');
+          const version = execFileSync(binary, ['--version'], {encoding: 'utf8'});
+          assert.equal(version, 'Version 7.0.2\n');
+          writeFileSync(path.join(process.env.RUNNER_TEMP, 'lsp-owned-shutdown-sdk-receipt.json'), JSON.stringify({binary, sha256, version, metadata}, null, 2) + '\n');
+          appendFileSync(process.env.GITHUB_ENV, `VIZE_TEST_TSGO_PATH=${binary}\nVIZE_TEST_REQUIRE_TSGO=1\n`);
+          NODE
       - name: Exercise outer shutdown ownership and cancellation
         run: cargo test --locked --profile ci -p vize_maestro --lib shutdown -- --nocapture
