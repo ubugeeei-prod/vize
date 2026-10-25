@@ -10,7 +10,11 @@
       "path": "campaign.json",
       "sha256": "d3312fd24378b1ac94de585ee4ba0088d9e2f025e177c9fc7a30bb20c9eb877e"
     },
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/10730"
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/10730",
+    "wireContract": {
+      "path": "wire-contract.json",
+      "sha256": "787ac66952fc6b6a8a74b0cbf96aaf41709fb65831a9e874c991d8cb0995f97a"
+    }
   },
   "files": [
     {

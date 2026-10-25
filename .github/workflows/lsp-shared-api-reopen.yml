@@ -54,7 +54,7 @@ jobs:
           test "$status" -eq 0
           node -e 'const fs=require("node:fs");const assert=require("node:assert/strict");assert.match(fs.readFileSync("target/vize-tests/shared-api-reopen-702/transport-controls.stdout","utf8"),/test result: ok\. 2 passed; 0 failed;/u)'
           cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
-          node --test tests/tooling/lsp-shared-api-campaign.test.mjs tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+          node --test tests/tooling/lsp-shared-api-campaign.test.mjs tests/tooling/native-runtime-selection-lsp-strace.test.mjs tests/tooling/shared-editor-initial-api-fixtures.test.mjs
       - name: Install official providers into fresh isolated roots
         run: |
           if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install --yes --no-install-recommends strace; fi

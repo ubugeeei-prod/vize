@@ -20,6 +20,13 @@ export function prepareSharedApiCampaign(repoRoot, consumer) {
     rawCase.provenance.transitions,
   );
   const transitions = JSON.parse(transitionBytes.toString("utf8"));
+  const wireBytes = readPinnedArtifact(
+    path.join(pack, fixture.inputs.root),
+    rawCase.provenance.wireContract,
+  );
+  const wireContract = JSON.parse(wireBytes.toString("utf8"));
+  assert.equal(wireContract.version, 1);
+  assert.equal(wireContract.id, "lsp/shared-editor-initial-snapshot-10730");
   assert.equal(transitions.version, 1);
   for (const file of fixture.files) {
     const target = path.join(consumer.configRoot, file.runtimePath);
@@ -50,11 +57,13 @@ export function prepareSharedApiCampaign(repoRoot, consumer) {
       support: transitions.dependencyValid,
     },
     transitions,
+    wireContract,
     custody: {
       id: fixture.id,
       manifestSha256: loaded.manifestSha256,
       case: fixture.case,
       transitionsSha256: sha256(transitionBytes),
+      wireContractSha256: sha256(wireBytes),
       inputFiles: captureConsumerInputs(consumer),
       manifestScope: rawCase.scope,
     },
@@ -211,5 +220,44 @@ export async function observeSharedApiTransitions({
     }
     assert.deepEqual(captureConsumerInputs(consumer), campaign.custody.inputFiles);
     profile.snapshotTransitions.push(phase);
+  }
+  assertSharedApiWirePackets(consumer, campaign, profile);
+}
+
+export function assertSharedApiWirePackets(consumer, campaign, profile) {
+  assert.deepEqual(
+    profile.phases.map((phase) => phase.name),
+    Object.keys(campaign.wireContract.basic),
+    "every complete original phase is required",
+  );
+  const transitionKey = (phase) =>
+    phase.name === "repeated-initial" ? `${phase.name}-${phase.version}` : phase.name;
+  assert.deepEqual(
+    profile.snapshotTransitions.map(transitionKey),
+    Object.keys(campaign.wireContract.transitions),
+    "every dependency and repeated-initial transition is required",
+  );
+  const workspace = pathToFileURL(consumer.workspace).href;
+  const materialize = (value) => {
+    if (typeof value === "string") return value.replaceAll("${workspace}", workspace);
+    if (Array.isArray(value)) return value.map(materialize);
+    if (value && typeof value === "object")
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [key, materialize(item)]),
+      );
+    return value;
+  };
+  for (const phase of profile.phases) {
+    const expected = materialize(campaign.wireContract.basic[phase.name]);
+    assert.ok(expected, `registered whole packet phase: ${phase.name}`);
+    for (const [key, packet] of Object.entries(expected))
+      assert.deepEqual(phase[key], packet, `whole ${phase.name} ${key} packet`);
+  }
+  for (const phase of profile.snapshotTransitions) {
+    const key = transitionKey(phase);
+    const expected = materialize(campaign.wireContract.transitions[key]);
+    assert.ok(expected, `registered whole transition: ${key}`);
+    for (const [field, packet] of Object.entries(expected))
+      assert.deepEqual(phase[field], packet, `whole ${key} ${field} packet`);
   }
 }

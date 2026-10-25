@@ -7034,6 +7034,84 @@
   ],
   "protocolCases": [
     {
+      "id": "lsp/shared-editor-initial-snapshot-10730",
+      "state": "active",
+      "adapter": "shared-editor-initial-snapshot-v1",
+      "qualification": "requires-real-same-source-7.0.2-whole-wire",
+      "sources": [
+        {
+          "path": "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
+          "before": "5318a27ee65231a0bf146ec028f79c129f5eb4588e6f5ba7132d809487bfd1a8",
+          "after": "d011c4e2885c4a9252d43982abf369fce2a953ee08dee38b780beb0a3ec72627"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+          "before": "02601e1d2bb3eee642b663fd3336156f32791a35cf5999e689c69956626357fb",
+          "after": "be7c5924613e2f284b8d9e88d30d5512077de2cbfd8ca1e8e77cca15f7c0a971"
+        }
+      ],
+      "lspCase": {
+        "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/case.json",
+        "sha256": "ae8dd53c5060b16fe59863097bc6916c168e15e5cee7b77139ea5e2022a9a713"
+      },
+      "wireContract": {
+        "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/wire-contract.json",
+        "sha256": "787ac66952fc6b6a8a74b0cbf96aaf41709fb65831a9e874c991d8cb0995f97a"
+      },
+      "producer": {
+        "workflow": {
+          "path": ".github/workflows/lsp-shared-api-reopen.yml",
+          "sha256": "9ef427249159c02779b49de21daba76997cb9de0136446b6f40c28eb466aa869"
+        },
+        "entry": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
+          "sha256": "17930e2ea156a5775403888bf20a70e91b12048291294a7d343fd8eaaeb3a2fa"
+        },
+        "driver": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp.mjs",
+          "sha256": "e074a5caeb6cca1ede78091f57e61e59ab4a05d82ab241f47f634ed33dfab11c"
+        },
+        "custody": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-source-custody.mjs",
+          "sha256": "abe1920ba0e6badab8b81a4fb1e1eeb16704f9a0bbb83ccdf60f55ddb5b1327b"
+        },
+        "lifecycle": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-native-lifecycle.mjs",
+          "sha256": "95395e34acb935bd98775e635cdc51331060feb5dc37cd97fa248405fefa8eba"
+        },
+        "campaign": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-shared-api-campaign.mjs",
+          "sha256": "915fc8b0662d4989ee5ffacf9004142fa38127e54e0773e49a70834aa3229b6c"
+        },
+        "wire": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-wire.mjs",
+          "sha256": "19abd5edafb2cde0be60b90097f28e4f71df644373a613d1e355246645ff37f3"
+        },
+        "strace": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-strace.mjs",
+          "sha256": "afca55e47efef1a1f34e1847b6a7872291afbffdf67dae5781332c1295b6e9e9"
+        },
+        "fixtureTest": {
+          "path": "tests/tooling/lsp-shared-api-campaign.test.mjs",
+          "sha256": "3a668098059a393e107f745c0d714d621c2982078abd70d8c0e0c0c43320fa7d"
+        },
+        "sdk": {
+          "package": "typescript",
+          "version": "7.0.2",
+          "platform": "linux-x64",
+          "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4"
+        },
+        "straceTerminal": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-strace-terminal.mjs",
+          "sha256": "c951dacdae6db634bb7a8b2ed006095a64838718946b957414e756ad202d47b7"
+        },
+        "registryTest": {
+          "path": "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",
+          "sha256": "f64348a6c6ef8e7c15b71e465f75f419ef647374877a6510bade62b910104750"
+        }
+      }
+    },
+    {
       "id": "typechecker/protocol/native-shutdown-completion-10524",
       "state": "active",
       "adapter": "native-shutdown-wire-v1",

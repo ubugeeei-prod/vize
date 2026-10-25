@@ -2460,7 +2460,7 @@
       },
       "case": {
         "path": "shared-api-snapshot-reopen-10730/case.json",
-        "sha256": "d07a92508f4667c4eacbc6e0c8fe734a9bca36b54000ce70e0bdf2d7b791d475"
+        "sha256": "ae8dd53c5060b16fe59863097bc6916c168e15e5cee7b77139ea5e2022a9a713"
       },
       "requestCount": 2,
       "initializationOptions": {
