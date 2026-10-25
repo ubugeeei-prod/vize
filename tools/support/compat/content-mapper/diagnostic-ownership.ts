@@ -192,7 +192,11 @@ for (const [id, file, expected] of versions) {
 write(path.join(output, "providers.json"), {
   sourceSha,
   comparisonSourceSha: options.get("--comparison-source-sha"),
-  mode: baselineOnly ? "registry-baseline-only" : "source-cli-qualification",
+  mode: relocationOnly
+    ? "relocation-control-observations-not-qualified"
+    : baselineOnly
+      ? "registry-baseline-only"
+      : "source-cli-qualification",
   notPublicationAcceptance: true,
   explicitMapperHost: options.has("--mapper-host"),
   mapperVersion: officialVersion,
@@ -282,7 +286,7 @@ for (const project of projects)
           );
           write(path.join(nodeModules, "vize/package.json"), {
             name: "vize",
-            version: `0.0.0-source-${sourceSha}`,
+            version: `0.0.0-source-${side === "baseline" ? options.get("--comparison-source-sha") : sourceSha}`,
             private: true,
             typescript: {
               contentMapper: {
@@ -394,7 +398,7 @@ for (const project of projects)
     }
 write(path.join(output, "inventory.json"), {
   cases: rows.length,
-  originalCases: 60,
+  originalCases: relocationOnly ? 0 : 60,
   additionalEdgeCases: relocationOnly ? rows.length : 8,
   executedProcesses: rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
   ids: rows.map((row) => row.id),

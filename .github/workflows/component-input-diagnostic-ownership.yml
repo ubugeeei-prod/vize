@@ -209,6 +209,10 @@ jobs:
               --comparison-cli "$RUNNER_TEMP/component-input-before-review-target/ci/vize" \
               --comparison-source-sha 5597001751a477402537a1cc61cae487feefef9c \
               --output "$RUNNER_TEMP/component-input-ownership/relocation-$sdk" "${extra[@]}"
+            node tools/support/compat/content-mapper/diagnostic-ownership.ts \
+              --relocation-controls --baseline-only \
+              --consumer "$RUNNER_TEMP/component-input-consumer" \
+              --output "$RUNNER_TEMP/component-input-ownership/relocation-public-0566-$sdk" "${extra[@]}"
           done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

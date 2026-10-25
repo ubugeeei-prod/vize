@@ -64,23 +64,55 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
         ":initial-state=\"{ role: null, tags: [] }\"",
         ":initial-state=\"schema.value\"",
     );
+    let captured_type = arrow.replace(
+        "(field) => !!field",
+        "(field: typeof schema.value) => !!field",
+    );
+    let delete_frontier = expected.replace(
+        "</template>",
+        "<div>{{ delete schema.value }}</div></template>",
+    );
     let cases = [
-        ("art-ordinary", FORM, false, 0, 0),
-        ("vue-ordinary", ordinary.as_str(), false, 0, 0),
-        ("vue-pure-expect", expected.as_str(), false, 1, 2),
-        ("vue-arrow-expect", arrow.as_str(), false, 1, 3),
-        ("vue-member-unmoved", unsafe_read.as_str(), false, 0, 1),
+        ("art-ordinary", FORM, false, false, 0, 0),
+        ("vue-ordinary", ordinary.as_str(), false, false, 0, 0),
+        ("vue-pure-expect", expected.as_str(), false, true, 1, 2),
+        ("vue-arrow-expect", arrow.as_str(), false, true, 1, 3),
+        (
+            "vue-member-unmoved",
+            unsafe_read.as_str(),
+            false,
+            true,
+            0,
+            1,
+        ),
+        (
+            "vue-type-capture-unmoved",
+            captured_type.as_str(),
+            false,
+            true,
+            1,
+            3,
+        ),
+        (
+            "vue-delete-frontier-unmoved",
+            delete_frontier.as_str(),
+            false,
+            true,
+            0,
+            0,
+        ),
         (
             "checker-virtual-projection-disabled",
             expected.as_str(),
             true,
+            false,
             0,
             0,
         ),
     ];
     let profiler = global_profiler();
     let mut rows = Vec::new();
-    for (name, source, disabled, setup_parses, candidate_parses) in cases {
+    for (name, source, disabled, render_flow, setup_parses, candidate_parses) in cases {
         let baseline = generate(source, disabled);
         for _ in 0..8 {
             black_box(generate(source, disabled));
@@ -98,7 +130,7 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
         );
         let mut spans = profiler.span_snapshot().into_iter().filter(|(name, _, _)| (name.starts_with("canon.virtual_ts.root_expect.") || name.starts_with("canon.virtual_ts.input_ownership.")) || *name == "qualification.component_input.generate").map(|(name, _, m)| json!({"name": name, "calls": m.count, "nanoseconds": m.total_duration.as_nanos(), "allocationCalls": m.alloc_calls, "requestedBytes": m.alloc_bytes, "selfAllocationCalls": m.self_alloc_calls, "selfRequestedBytes": m.self_alloc_bytes})).collect::<Vec<_>>();
         spans.sort_by(|a, b| a["name"].as_str().cmp(&b["name"].as_str()));
-        rows.push(json!({"case": name, "input": source, "iterations": ITERATIONS, "setupParsesPerGeneration": setup_parses, "candidateParsesPerGeneration": candidate_parses, "packet": last, "spans": spans}));
+        rows.push(json!({"case": name, "input": source, "iterations": ITERATIONS, "renderFlowProof": render_flow, "setupParsesPerGeneration": setup_parses, "candidateParsesPerGeneration": candidate_parses, "packet": last, "spans": spans}));
     }
     if let Some(path) = std::env::var_os("VIZE_INPUT_OWNERSHIP_PROFILE_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&rows).unwrap()).unwrap();
@@ -110,8 +142,7 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
             .unwrap()
             .iter()
             .find(|span| span["name"] == "canon.virtual_ts.root_expect.render_flow");
-        let has_candidate = row["candidateParsesPerGeneration"].as_u64().unwrap() != 0;
-        if has_candidate {
+        if row["renderFlowProof"].as_bool().unwrap() {
             let flow = flow.expect("one parser-owned render-flow proof per EXPECT generation");
             assert_eq!(flow["calls"], ITERATIONS);
             assert_eq!(flow["allocationCalls"], 0);
