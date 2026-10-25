@@ -209,6 +209,7 @@ mod lint_relocated_config_cli;
 mod lint_restricted_members_cli;
 mod lint_rich_cli;
 mod lint_router_app_reachability_cli;
+mod lint_rpc_profile_cli;
 mod lint_rule_execution_cli;
 mod lint_rule_options_casing_cli;
 mod lint_rule_severity_cli;

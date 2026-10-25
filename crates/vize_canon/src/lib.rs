@@ -46,6 +46,8 @@ mod authored_sfc;
 mod checker;
 mod context;
 #[cfg(feature = "native")]
+pub mod corsa_profile;
+#[cfg(feature = "native")]
 pub mod corsa_session_cache;
 pub mod css_classes;
 mod diagnostic;

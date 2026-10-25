@@ -81,9 +81,12 @@ impl CorsaTypeAwareSession {
         let session = profile!(
             "patina.corsa_session.spawn",
             block_on(ProjectSession::spawn(
-                ApiSpawnConfig::new(executable)
-                    .with_mode(api_mode)
-                    .with_cwd(&session_root),
+                vize_canon::corsa_profile::with_request_profiling(
+                    ApiSpawnConfig::new(executable)
+                        .with_mode(api_mode)
+                        .with_cwd(&session_root),
+                    vize_canon::corsa_profile::RequestOrigin::Patina
+                ),
                 config_path_wire.as_str(),
                 Some(virtual_file_wire.as_str().into()),
             ))

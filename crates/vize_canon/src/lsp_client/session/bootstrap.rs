@@ -86,9 +86,12 @@ async fn spawn_project_session_with_mode(
     mode: ApiMode,
 ) -> Result<ProjectSession, CorsaError> {
     ProjectSession::spawn(
-        ApiSpawnConfig::new(executable)
-            .with_mode(mode)
-            .with_cwd(cwd),
+        crate::corsa_profile::with_request_profiling(
+            ApiSpawnConfig::new(executable)
+                .with_mode(mode)
+                .with_cwd(cwd),
+            crate::corsa_profile::RequestOrigin::Canon,
+        ),
         config_path,
         None,
     )

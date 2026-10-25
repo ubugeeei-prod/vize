@@ -45,18 +45,21 @@ impl CorsaProjectClient {
         let filesystem =
             Arc::new(filesystem::ProjectionFileSystem::new(projected, text).map_err(backend)?);
         let session = block_on(ProjectSession::spawn(
-            ApiSpawnConfig::new(self.executable.as_str())
-                .with_cwd(&self.cwd)
-                .with_mode(
-                    if vize_carton::corsa_api_mode::uses_async_json_rpc_api(Path::new(
-                        self.executable.as_str(),
-                    )) {
-                        ApiMode::AsyncJsonRpcStdio
-                    } else {
-                        ApiMode::SyncMsgpackStdio
-                    },
-                )
-                .with_filesystem(filesystem),
+            crate::corsa_profile::with_request_profiling(
+                ApiSpawnConfig::new(self.executable.as_str())
+                    .with_cwd(&self.cwd)
+                    .with_mode(
+                        if vize_carton::corsa_api_mode::uses_async_json_rpc_api(Path::new(
+                            self.executable.as_str(),
+                        )) {
+                            ApiMode::AsyncJsonRpcStdio
+                        } else {
+                            ApiMode::SyncMsgpackStdio
+                        },
+                    )
+                    .with_filesystem(filesystem),
+                crate::corsa_profile::RequestOrigin::Canon,
+            ),
             config
                 .to_str()
                 .ok_or(NativeVueError::UnconfiguredProjection)?,
