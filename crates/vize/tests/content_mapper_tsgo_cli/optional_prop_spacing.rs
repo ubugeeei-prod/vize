@@ -3,6 +3,7 @@
 use std::{path::PathBuf, process::Command};
 
 use serde_json::{Value, json};
+use vize_l0::cstr;
 
 use super::{
     TSGO_ENV, assert_success, check_project, install_mapper_manifest, install_vue_package,
@@ -61,7 +62,7 @@ defineProps<{
             ("<Child :required=\"1\" />", false),
             ("<Child required=\"wrong\" />", true),
         ] {
-            let app = format!(
+            let app = cstr!(
                 "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template>\n  {template}\n</template>\n"
             );
             std::fs::write(
