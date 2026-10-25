@@ -43,6 +43,7 @@ pub(crate) struct GenericParameters {
     pub(crate) parameters: Vec<GenericParameter>,
     pub(crate) diagnostics: Vec<ScriptParseDiagnostic>,
     pub(crate) escaped_wrapper: bool,
+    pub(crate) recoverable_at_closing_delimiter: bool,
     pub(crate) names: String,
     pub(crate) declaration: String,
     pub(crate) alias_declaration: String,
@@ -69,6 +70,16 @@ impl GenericParameters {
         let source = cstr!("{PREFIX}{raw}\n>() {{}}");
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
+        let closing = PREFIX.len() + raw.len() + 1;
+        let recoverable_at_closing_delimiter = !parsed.diagnostics.is_empty()
+            && parsed.diagnostics.iter().all(|error| {
+                error
+                    .labels
+                    .iter()
+                    .find(|label| label.primary())
+                    .or_else(|| error.labels.first())
+                    .is_some_and(|label| label.offset() as usize == closing && label.len() == 1)
+            });
         let mut diagnostics: Vec<_> = parsed
             .diagnostics
             .iter()
@@ -182,6 +193,7 @@ impl GenericParameters {
             parameters,
             diagnostics,
             escaped_wrapper,
+            recoverable_at_closing_delimiter,
             names: String::default(),
             declaration: String::default(),
             alias_declaration: String::default(),
@@ -236,7 +248,7 @@ impl GenericParameters {
         plan
     }
 
-    #[cfg(test)]
+    #[cfg(any(feature = "native", test))]
     pub(crate) fn raw(&self) -> &str {
         &self.raw
     }
@@ -391,3 +403,6 @@ pub(crate) fn authored_generic_range(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(all(test, feature = "native"))]
+mod recovery_tests;

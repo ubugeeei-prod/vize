@@ -8,6 +8,8 @@ mod emits;
 pub(super) mod entry;
 mod fallthrough;
 mod file_directives;
+#[cfg(feature = "native")]
+pub(crate) mod generic_recovery;
 pub(super) mod generics;
 mod global_components;
 mod glued_import;

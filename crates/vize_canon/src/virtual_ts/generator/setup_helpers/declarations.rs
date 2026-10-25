@@ -27,6 +27,15 @@ impl SetupHelperPlan {
         shadowed_helpers(summary, source, preserve_event_navigation)
     }
 
+    #[cfg(feature = "native")]
+    pub(in crate::virtual_ts::generator) fn emit_error_recovery(
+        &self,
+        ts: &mut String,
+        hoisted: bool,
+    ) {
+        emit(ts, self, hoisted, false, false);
+    }
+
     pub(crate) fn emit_import_anchors(&self, ts: &mut String) {
         if self.vue_template_ref_import {
             ts.push_str("// Keep the authored Vue helper import used by its specialized setup signature\nvoid useTemplateRef;\n");
