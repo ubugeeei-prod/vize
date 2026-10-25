@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10573,
+  "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reported-optional-unused",
+      "valid": "<script setup lang=\"ts\">\ndefineProps<{ café? : string; required: number }>()\n</script>\n<template>\n  <div>{{ required }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps<{ café? : string; required: number }>()\n</script>\n<template>\n  <div>{{ required.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,20): error TS2339: Property 'missing' does not exist on type 'number'.\n",
+      "cliDiagnostic": "error:5:20 [TS2339] Property 'missing' does not exist on type 'number'. (source: <div>{{ required.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/reported-optional-unused.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-ascii-collision",
+      "valid": "<script setup lang=\"ts\">\ndefineProps<{ café: string; caf_: number }>()\n</script>\n<template>\n  <div>{{ café }}</div> <div>{{ caf_ }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps<{ café: string; caf_: number }>()\n</script>\n<template>\n  <div>{{ café.missing }}</div> <div>{{ caf_ }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,16): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:16 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ café.missing }}</div> <div>{{ caf_ }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/unicode-ascii-collision.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-ascii-number",
+      "valid": "<script setup lang=\"ts\">\ndefineProps<{ café: string; caf_: number }>()\n</script>\n<template>\n  <div>{{ caf_ }}</div> <div>{{ café }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps<{ café: string; caf_: number }>()\n</script>\n<template>\n  <div>{{ caf_.missing }}</div> <div>{{ café }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,16): error TS2339: Property 'missing' does not exist on type 'number'.\n",
+      "cliDiagnostic": "error:5:16 [TS2339] Property 'missing' does not exist on type 'number'. (source: <div>{{ caf_.missing }}</div> <div>{{ café }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/unicode-ascii-number.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "quoted-cooked-unicode",
+      "valid": "<script setup lang=\"ts\">\ndefineProps<{ \"caf\\u00e9\": string }>()\n</script>\n<template>\n  <div>{{ café }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps<{ \"caf\\u00e9\": string }>()\n</script>\n<template>\n  <div>{{ café.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,16): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:16 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ café.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/quoted-cooked-unicode.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "escaped-identifier",
+      "valid": "<script setup lang=\"ts\">\ndefineProps<{ caf\\u00e9: string }>()\n</script>\n<template>\n  <div>{{ café }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps<{ caf\\u00e9: string }>()\n</script>\n<template>\n  <div>{{ café.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,16): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:16 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ café.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/escaped-identifier.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "supplementary-crlf",
+      "valid": "<script setup lang=\"ts\">\r\ndefineProps<{ 𐐀value: string }>()\r\n</script>\r\n<template>\r\n  <div>{{ 𐐀value }}</div>\r\n</template>\r\n",
+      "invalid": "<script setup lang=\"ts\">\r\ndefineProps<{ 𐐀value: string }>()\r\n</script>\r\n<template>\r\n  <div>{{ 𐐀value.missing }}</div>\r\n</template>\r\n",
+      "mapperDiagnostic": "src/Case.vue(5,19): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:19 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ 𐐀value.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/supplementary-crlf.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-japanese",
+      "valid": "<script setup lang=\"ts\">\ndefineProps({ 日本語: { type: String, required: true } })\n</script>\n<template>\n  <div>{{ 日本語 }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps({ 日本語: { type: String, required: true } })\n</script>\n<template>\n  <div>{{ 日本語.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,15): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:15 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ 日本語.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/runtime-japanese.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "defaulted-unicode",
+      "valid": "<script setup lang=\"ts\">\nwithDefaults(defineProps<{ café?: string }>(), { café: 'ready' })\n</script>\n<template>\n  <div>{{ café }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\nwithDefaults(defineProps<{ café?: string }>(), { café: 'ready' })\n</script>\n<template>\n  <div>{{ café.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,16): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:16 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ café.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/defaulted-unicode.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "keyed-unicode",
+      "valid": "<script setup lang=\"ts\">\ntype Fields = { café: string }\ndefineProps<Pick<Fields, 'café'>>()\n</script>\n<template>\n  <div>{{ café }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ntype Fields = { café: string }\ndefineProps<Pick<Fields, 'café'>>()\n</script>\n<template>\n  <div>{{ café.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(6,16): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:6:16 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ café.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/keyed-unicode.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reserved-hyphen-ascii",
+      "valid": "<script setup lang=\"ts\">\nconst props = defineProps<{ class: string; 'data-id': number; ascii: string }>()\n</script>\n<template>\n  <div>{{ ascii }}</div> <div>{{ props['class'] }} {{ props['data-id'] }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\nconst props = defineProps<{ class: string; 'data-id': number; ascii: string }>()\n</script>\n<template>\n  <div>{{ ascii.missing }}</div> <div>{{ props['class'] }} {{ props['data-id'] }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,17): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:17 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ ascii.missing }}</div> <div>{{ props['class'] }} {{ props['data-id'] }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/reserved-hyphen-ascii.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-continue",
+      "valid": "<script setup lang=\"ts\">\ndefineProps<{ a‌b: string }>()\n</script>\n<template>\n  <div>{{ a‌b }}</div>\n</template>\n",
+      "invalid": "<script setup lang=\"ts\">\ndefineProps<{ a‌b: string }>()\n</script>\n<template>\n  <div>{{ a‌b.missing }}</div>\n</template>\n",
+      "mapperDiagnostic": "src/Case.vue(5,15): error TS2339: Property 'missing' does not exist on type 'string'.\n",
+      "cliDiagnostic": "error:5:15 [TS2339] Property 'missing' does not exist on type 'string'. (source: <div>{{ a‌b.missing }}</div>)",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/unicode-continue.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
