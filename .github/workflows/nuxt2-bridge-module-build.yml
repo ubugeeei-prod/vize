@@ -5,6 +5,12 @@ on:
     branches: [main]
     paths:
       - .github/workflows/nuxt2-bridge-module-build.yml
+      - .github/actions/setup-rust-sticky-cache/**
+      - .github/actions/setup-rust-script/**
+      - .github/actions/setup-ubuntu-archive/**
+      - tools/support/json-value.ts
+      - tools/support/compat/nuxt/host-types.ts
+      - tests/tooling/nuxt2-bridge-*.test.ts
       - npm/framework/nuxt/**
       - npm/framework/nuxt-lint-config/**
       - npm/cli/**
@@ -23,6 +29,12 @@ on:
     branches: [main]
     paths:
       - .github/workflows/nuxt2-bridge-module-build.yml
+      - .github/actions/setup-rust-sticky-cache/**
+      - .github/actions/setup-rust-script/**
+      - .github/actions/setup-ubuntu-archive/**
+      - tools/support/json-value.ts
+      - tools/support/compat/nuxt/host-types.ts
+      - tests/tooling/nuxt2-bridge-*.test.ts
       - npm/framework/nuxt/**
       - npm/framework/nuxt-lint-config/**
       - npm/cli/**
@@ -98,7 +110,7 @@ jobs:
         working-directory: npm/oxlint
         run: vp pack
       - name: Verify transactional source fixture preparation
-        run: vp node --test tests/tooling/nuxt2-bridge-source.test.ts
+        run: vp node --test tests/tooling/nuxt2-bridge-*.test.ts
       - name: Verify both packed entries without loading Vue 3-only Vite APIs
         run: vp node --test npm/framework/nuxt/src/nuxt2-entry.test.ts
       - name: Verify version-specific plans and original modern oracle
