@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "file": "App.vue",
+      "diagnostics": [
+        "error:11:16 [TS2551] Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'? (source: {{ message.toFixed(2) }} {{ $route.path }} {{ $router.push($route.path) }})"
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022"
+      },
+      "files": ["App.vue"]
+    }
+  ],
+  "errorCount": 1,
+  "warningCount": 0,
+  "fileCount": 1
+}

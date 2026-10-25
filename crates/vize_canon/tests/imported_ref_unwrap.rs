@@ -16,11 +16,11 @@ fn imported_ref_is_unwrapped_in_template_scope() {
         "imported refs need a pre-template type capture:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("var sharedRef: __U<__R_sharedRef> = undefined as any;"),
+        virtual_ts.contains("var sharedRef: __U<__R_sharedRef> = (void 0) as any;"),
         "imported refs need an unwrapped template shadow:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("var format: __U<__R_format> = undefined as any;"),
+        virtual_ts.contains("var format: __U<__R_format> = (void 0) as any;"),
         "non-ref named imports should keep their type through the same safe helper:\n{virtual_ts}"
     );
     assert!(

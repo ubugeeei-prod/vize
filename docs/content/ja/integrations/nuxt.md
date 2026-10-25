@@ -281,7 +281,13 @@ Nuxt アプリの中では、モジュールはこれらのモックをグロー
 
 ## Nuxt 2 と Vue 2
 
-モジュールは Nuxt 2、3、4 に対応しています。Vize のコンパイラは Vue 3 向けのコードを出力するため、Nuxt 2 では `.vue` のコンパイルを既存のコンパイラ（`@vitejs/plugin-vue2`、`vue-loader`、または Nuxt 自身）に任せ、lint と Musea だけを提供します。さらに古い Vue のプロジェクトでも、`vueVersion: 0.11`、`vueVersion: 1`、`vueVersion: "legacy"` を指定すれば同じように動作します。
+Nuxt 2 でも同じ `@vizejs/nuxt` パッケージを使用します。CommonJS entry が Nuxt 2 の module loader に対応し、Vue 2 を自動検出します。コンパイル・SSR・style・HMR は既存の Vue 2 compiler と Nuxt が担当します。Vize の native runtime compiler が出力するのは Vue 3 のコードで、Vue 2 compiler を置き換えません。
+
+Nuxt 2 の検証は Nuxt 2.17.3、Vue/compiler/renderer 2.7.16、vue-loader 15、webpack 4 を固定し、本番 SSR、hydration 後の操作と画面遷移、状態を維持した dev HMR、scoped Sass、assets、`~`/`@` alias を実行します。生成した lint 設定と source typechecker についても、正当な Vue 2/Nuxt template と不正入力を確認します。OpenSSL 互換フラグは検証用 webpack 4 の子プロセスだけに適用します。
+
+Nuxt 2 では lint 設定の生成を利用できます。明示的に有効化する `checker` は dev server と並行して動き、builder 名を持たない通常の Nuxt 2 では webpack を使用します。Musea は Nuxt 2 では無効です。
+
+Nuxt Bridge も Vue 2 を使用するため、既存の `@vitejs/plugin-vue2` を維持してください。Vite 構成は `bridge.vite: true` と `bridge.nitro: true` の両方が必要です（[公式ガイド](https://nuxt.com/docs/4.x/bridge/vite)）。module を import できるだけでは、その builder の runtime 対応を検証したことにはなりません。
 
 バージョンは自動的に検出されます。ラッパーによって Nuxt Kit からバージョンが見えない場合は、明示的に指定してください。
 
