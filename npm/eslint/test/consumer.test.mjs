@@ -194,6 +194,7 @@ test("explicit type-aware selection uses the actual runtime and exposes missing 
   );
   selected[0].settings.vize.corsaPath = runtime;
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-eslint-types-"));
+  const typedLinter = new Linter({ cwd: directory });
   const filename = path.join(directory, "Typed.vue");
   const diskSource = value.replace("\nload();", "\nawait load();");
   const tsconfig = { compilerOptions: { strict: true, target: "ESNext", skipLibCheck: true } };
@@ -206,7 +207,7 @@ test("explicit type-aware selection uses the actual runtime and exposes missing 
       "dir",
     );
     const count = calls.length;
-    const result = linter.verify(value, selected, { filename });
+    const result = typedLinter.verify(value, selected, { filename });
     packets.push({
       source: value,
       diskSource,
@@ -219,9 +220,9 @@ test("explicit type-aware selection uses the actual runtime and exposes missing 
     assert.equal(calls.at(-1).typeAware, true);
     assert.ok(result.some((message) => message.ruleId === "vize/type/no-floating-promises"));
     assert.ok(!result.some((message) => /runtime|executable|failed/i.test(message.message)));
-    assert.deepEqual(linter.verify(diskSource, selected, { filename }), []);
+    assert.deepEqual(typedLinter.verify(diskSource, selected, { filename }), []);
     selected[0].settings.vize.corsaPath = path.join(directory, "missing-typescript-runtime");
-    const missing = linter.verify(value, selected, { filename });
+    const missing = typedLinter.verify(value, selected, { filename });
     packets.push({ source: value, missingRuntime: missing });
     assert.ok(
       missing.some((message) => /Configured Corsa executable does not exist/.test(message.message)),
