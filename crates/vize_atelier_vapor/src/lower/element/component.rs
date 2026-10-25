@@ -126,7 +126,10 @@ pub(super) fn transform_component<'a>(
                                     if let Some(ref exp) = dir.exp
                                         && let ExpressionNode::Simple(val_exp) = exp
                                     {
-                                        let node = SimpleExpressionNode::from_node(val_exp);
+                                        let mut node = SimpleExpressionNode::from_node(val_exp);
+                                        if ctx.jsx_closure {
+                                            node.const_type = val_exp.const_type;
+                                        }
                                         is_expr = Some(Box::new_in(node, &ctx.allocator));
                                     }
                                 }
