@@ -6,6 +6,18 @@ import path from "node:path";
 // configuration fixture is independent of every existing protocol oracle.
 const compareNames = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
+// Rust's path ordering compares components, so `preferred/tsconfig.json`
+// precedes the sibling `preferred.json` even though whole-string order differs.
+const comparePaths = (left, right) => {
+  const a = left.split(path.sep),
+    b = right.split(path.sep);
+  for (let index = 0; index < Math.min(a.length, b.length); index++) {
+    const compared = compareNames(a[index], b[index]);
+    if (compared) return compared;
+  }
+  return a.length - b.length;
+};
+
 export function checkProjectMetadata(native, consumer, output) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(consumer, "metadata-")));
   const config = path.join(root, "tsconfig.json");
@@ -24,7 +36,7 @@ export function checkProjectMetadata(native, consumer, output) {
     packets.push({ name, metadata });
     assert.deepEqual(Object.keys(metadata).sort(), ["configIdentity", "watchedFiles"]);
     assert.match(metadata.configIdentity, /^vize-content-mapper-v1:[a-f0-9]{64}$/);
-    assert.deepEqual(metadata.watchedFiles, [...new Set(metadata.watchedFiles)].sort(compareNames));
+    assert.deepEqual(metadata.watchedFiles, [...new Set(metadata.watchedFiles)].sort(comparePaths));
     assert(metadata.watchedFiles.every((file) => path.isAbsolute(file)));
     return metadata;
   };
@@ -43,7 +55,7 @@ export function checkProjectMetadata(native, consumer, output) {
     write(config, '{"extends":"./base.json"}');
     write(base, '{"vueCompilerOptions":{"strictTemplates":false}}');
     const before = capture("inherited-before");
-    assert.deepEqual(before.watchedFiles, [base, config].sort(compareNames));
+    assert.deepEqual(before.watchedFiles, [base, config].sort(comparePaths));
     const beforeRaw = generate();
     assert.deepEqual(capture("unchanged"), before);
     assert.equal(generate(), beforeRaw, "Metadata reads leave the complete projection unchanged");
@@ -66,7 +78,7 @@ export function checkProjectMetadata(native, consumer, output) {
     write(selected, '{"vueCompilerOptions":{"strictTemplates":false}}');
     write(config, '{"extends":"preset"}');
     const packaged = capture("package-extends");
-    assert.deepEqual(packaged.watchedFiles, [config, manifest, selected].sort(compareNames));
+    assert.deepEqual(packaged.watchedFiles, [config, manifest, selected].sort(comparePaths));
     const fallback = path.join(packageRoot, "tsconfig.json");
     write(manifest, '{"tsconfig":"preferred"}');
     write(fallback, '{"vueCompilerOptions":{"strictTemplates":false}}');
