@@ -14,9 +14,28 @@ const { renderToString } = require("vue/server-renderer");
 function normalized(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalized);
   if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(Object.entries(value)
-    .filter(([key]) => !["start", "end", "range", "loc", "raw", "raws", "source", "parent", "comments", "tokens", "leadingComments", "trailingComments", "extra"].includes(key))
-    .map(([key, child]) => [key, normalized(child)]));
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(
+        ([key]) =>
+          ![
+            "start",
+            "end",
+            "range",
+            "loc",
+            "raw",
+            "raws",
+            "source",
+            "parent",
+            "comments",
+            "tokens",
+            "leadingComments",
+            "trailingComments",
+            "extra",
+          ].includes(key),
+      )
+      .map(([key, child]) => [key, normalized(child)]),
+  );
 }
 
 export async function assertBlocksEquivalent(before: string, after: string): Promise<void> {
@@ -42,14 +61,28 @@ export async function assertBlocksEquivalent(before: string, after: string): Pro
   }
 }
 
-export async function renderTemplate(template: string, state: Record<string, unknown>): Promise<string> {
+export async function renderTemplate(
+  template: string,
+  state: Record<string, unknown>,
+): Promise<string> {
   const diagnostics: unknown[] = [];
-  const compiled = compile(template, { mode: "function", onError: (error: unknown) => diagnostics.push(error) });
+  const compiled = compile(template, {
+    mode: "function",
+    onError: (error: unknown) => diagnostics.push(error),
+  });
   assert.deepEqual(diagnostics, []);
   const render = compileFunction(compiled.code, ["Vue"])(Vue);
   render._rc = true;
-  const stub = { render(this: { $slots: { default?: () => unknown } }) { return Vue.h("span", this.$slots.default?.()); } };
-  const app = Vue.createSSRApp({ data: () => state, render, components: { MyChip: stub, MyButton: stub, MyIcon: stub } });
+  const stub = {
+    render(this: { $slots: { default?: () => unknown } }) {
+      return Vue.h("span", this.$slots.default?.());
+    },
+  };
+  const app = Vue.createSSRApp({
+    data: () => state,
+    render,
+    components: { MyChip: stub, MyButton: stub, MyIcon: stub },
+  });
   const warnings: string[] = [];
   app.config.warnHandler = (warning: string) => warnings.push(warning);
   const html = await renderToString(app);
@@ -65,12 +98,25 @@ export async function assertRenderedEquivalent(before: string, after: string): P
   for (const unread of [0, 2]) {
     for (const visible of [false, true]) {
       const state = {
-        unread, count: unread, label: "雪 😀 & <value>", openNav: () => {}, visible,
-        isSelected: visible, isEnabled: visible, hasPermissionForTheSelectedItemInTheCurrentView: true,
-        props: { selectedIdentifier: visible ? "selected" : "other", totalPoint: 103, label: "雪 😀 & <value>" },
+        unread,
+        count: unread,
+        label: "雪 😀 & <value>",
+        openNav: () => {},
+        visible,
+        isSelected: visible,
+        isEnabled: visible,
+        hasPermissionForTheSelectedItemInTheCurrentView: true,
+        props: {
+          selectedIdentifier: visible ? "selected" : "other",
+          totalPoint: 103,
+          label: "雪 😀 & <value>",
+        },
         SELECTED_IDENTIFIER_CONSTANT: "selected",
       };
-      assert.equal(await renderTemplate(b.descriptor.template.content, state), await renderTemplate(a.descriptor.template.content, state));
+      assert.equal(
+        await renderTemplate(b.descriptor.template.content, state),
+        await renderTemplate(a.descriptor.template.content, state),
+      );
     }
   }
 }
