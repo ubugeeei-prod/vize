@@ -190,7 +190,7 @@ test("native hook refuses existing journals, wrong digest, escaped paths and ove
     const result = fixture.run("void 0", {
       [key]: key === "NODE_OPTIONS" ? "--no-warnings" : "forbidden",
     });
-    assert.equal(result.status, 1);
+    assert.equal(result.status, 1, key);
     assert.match(result.stderr, /Initial source\/native override must be empty/u);
     assert.equal(fs.existsSync(fixture.journal), false);
   }

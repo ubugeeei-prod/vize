@@ -15,6 +15,8 @@ for (const key of [
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
   "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
   "VIZE_OXLINT_NATIVE_CUSTODY",
 ]) {
   if (process.env[key]) throw new Error("Initial source/native override must be empty: " + key);
