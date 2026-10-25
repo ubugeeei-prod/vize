@@ -93,7 +93,7 @@ function controlled(t: { after: (callback: () => void) => void }) {
   const sourceFiles = {
     "Cargo.toml": '[workspace]\nmembers = []\n[profile.ci]\ninherits = "dev"\n',
     "Cargo.lock": "version = 4\n",
-    "rust-toolchain.toml": '[toolchain]\nchannel = "1.101.1"\n',
+    "rust-toolchain.toml": '[toolchain]\nchannel = "1.99.1"\n',
     ".cargo/config.toml": "# controlled\n",
     ".config/nextest.toml": "[profile.full]\nretries = 0\n",
   };
@@ -115,8 +115,8 @@ function controlled(t: { after: (callback: () => void) => void }) {
     files: Object.fromEntries(
       Object.entries(sourceFiles).map(([file, value]) => [file, sha256(Buffer.from(value))]),
     ),
-    rustc: "rustc 1.101.1 controlled",
-    cargo: "cargo 1.101.1 controlled",
+    rustc: "rustc 1.99.1 controlled",
+    cargo: "cargo 1.99.1 controlled",
     platform: process.platform,
     arch: process.arch,
     workspaceRoot: repoRoot,
@@ -356,7 +356,7 @@ void test("pre-run attestation refuses stale capture state, changed provenance, 
       f.source.tree = "0".repeat(40);
     },
     (f: Fixture) => {
-      f.source.rustc = "rustc 1.101.0 controlled";
+      f.source.rustc = "rustc 1.99.0 controlled";
     },
     (f: Fixture) => {
       f.source.runtime.RUST_TEST_THREADS = "1";
