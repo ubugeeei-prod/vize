@@ -1,0 +1,141 @@
+{
+  "source": {
+    "sourceRevision": "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc",
+    "binaryPath": "target/ci/vize",
+    "binarySha256": "9b0c1457048b89ab34c48f605c132cda08e5bf8fd11be07b5f68071e61f86aaa",
+    "cliVersion": "vize 0.474.0-dev"
+  },
+  "actualCliVersion": "vize 0.474.0-dev",
+  "sourceTree": "f18c4bec649faddcc7e5da9d25b62fab88eca573",
+  "baselineRevision": "2934b35b18393c188b3da5f8e50595299589fb8c",
+  "vscodeVersion": "1.107.1",
+  "vscodeExecutable": {
+    "path": "/home/runner/_work/vize/vize/.vscode-test/vscode-linux-x64-1.107.1/code",
+    "sha256": "41183e3208e8a2194062d1cffa8fcd5b642beedb30cbd4f1aabbb5d84f23de79"
+  },
+  "vsix": {
+    "sha256": "390f560d1cefa94ad81493c6abb76ed94fbde4d71b6aafcdeb943149c1157963",
+    "bytes": 135744
+  },
+  "installedExtensionPath": "/tmp/vize-css-0mjQii/ext/ubugeeei.vize-0.474.0",
+  "installedFiles": [
+    {
+      "path": ".vsixmanifest",
+      "sha256": "4035cffb0737cff96a596b9452432494e1f6a4072311fe1c30ef475d6da39f96",
+      "bytes": 2876
+    },
+    {
+      "path": "LICENSE.txt",
+      "sha256": "3fc6809880ce2bfec5c2705380f993b11c719ddc59c874b71602adfb1900b2da",
+      "bytes": 1065
+    },
+    {
+      "path": "changelog.md",
+      "sha256": "897d2d396fdf9c0794383d2589c42000e9ad4e63d13428f1a5839eed8cba7f59",
+      "bytes": 889
+    },
+    {
+      "path": "dist/extension.cjs",
+      "sha256": "8ee821c53cf74757bd4bd14d4e62c2f2632d9235332bb15117735e9c0d88f377",
+      "bytes": 389120
+    },
+    {
+      "path": "icons/logo.png",
+      "sha256": "9c1a50a67c41bb7769d7b293436ce02c8ab3c57bb02529301f9e9dd8c36da82a",
+      "bytes": 26222
+    },
+    {
+      "path": "icons/vue.svg",
+      "sha256": "2367ae20c4a1fe95fea9b03def3b11097bcebaf60ebb744eb96667990599153a",
+      "bytes": 261
+    },
+    {
+      "path": "language-configuration.json",
+      "sha256": "f075246f7f58b8a8cb983cca4c083ac24f1b7c14e53a86d8046c86cee5852e02",
+      "bytes": 2172
+    },
+    {
+      "path": "node_modules/@vizejs/typescript-vue-plugin/component-contracts.cjs",
+      "sha256": "d312e81999a7fe5566b36bd5eb5474a54c72e4275f5e5674bc7d98cc046e24d5",
+      "bytes": 4924
+    },
+    {
+      "path": "node_modules/@vizejs/typescript-vue-plugin/import-resolution.cjs",
+      "sha256": "310bf9d13d3fc59fc936ce57032a19ac02721a576c6aff5b65f9d62f63bbcff7",
+      "bytes": 7743
+    },
+    {
+      "path": "node_modules/@vizejs/typescript-vue-plugin/index.cjs",
+      "sha256": "d5d35953a0a8f111cecd300bb6edfe39d15e36769695c0ef7506d8bee8213935",
+      "bytes": 4783
+    },
+    {
+      "path": "node_modules/@vizejs/typescript-vue-plugin/module-resolution.cjs",
+      "sha256": "fdb9806a62d31f091232035a43a8c2c642843ec77b4354ce4a3fd560861145e7",
+      "bytes": 3366
+    },
+    {
+      "path": "node_modules/@vizejs/typescript-vue-plugin/package.json",
+      "sha256": "1cf5d205dd84f4b7ceff53e04c5dafdff8e8c1454e2615dc4c8bfb890e2eb76f",
+      "bytes": 110
+    },
+    {
+      "path": "node_modules/@vizejs/typescript-vue-plugin/virtual-modules.cjs",
+      "sha256": "c141447c08d088f19467c86c1789301502343fe4935d30746d95a53a4b16dc27",
+      "bytes": 7817
+    },
+    {
+      "path": "package.json",
+      "sha256": "f58b0fa63f98c5176c1c428a3a7ea6f7f372ee57c77cfd2ca2719742bc392cf9",
+      "bytes": 13820
+    },
+    {
+      "path": "readme.md",
+      "sha256": "cbb8d8c48d4349414e617892d24dd2ffb1bfb9c05df8091b91da28859da719a5",
+      "bytes": 10786
+    },
+    {
+      "path": "syntaxes/art-vue.tmLanguage.json",
+      "sha256": "9c5ce24d7387d13b85a43a2abd768c9e42278802927e9e3ef6539f8013d0dee4",
+      "bytes": 6961
+    },
+    {
+      "path": "syntaxes/vue-pattern.tmLanguage.json",
+      "sha256": "5ca6d36de6b787a1bf2f36ec3765a67fb644237ba94c5f44afff92fb6a5f1e8d",
+      "bytes": 5032
+    },
+    {
+      "path": "syntaxes/vue-script.tmLanguage.json",
+      "sha256": "ab60835080ae667f72f679c0d6f62e711e2116af2b416109fa6c727d593b878a",
+      "bytes": 4147
+    },
+    {
+      "path": "syntaxes/vue.tmLanguage.json",
+      "sha256": "2656383c04229d782710f0d2d1b0f407b62c67c0e813b01e9a7cc653ec0a6a8b",
+      "bytes": 30828
+    }
+  ],
+  "launchArgs": [
+    "--no-sandbox",
+    "--disable-gpu-sandbox",
+    "--disable-extensions",
+    "--disable-updates",
+    "--disable-workspace-trust",
+    "--skip-welcome",
+    "--skip-release-notes",
+    "--extensions-dir=/tmp/vize-css-0mjQii/ext",
+    "--user-data-dir=/tmp/vize-css-0mjQii/user",
+    "--extensionDevelopmentPath=/tmp/vize-css-0mjQii/ext/ubugeeei.vize-0.474.0",
+    "--extensionTestsPath=/home/runner/_work/vize/vize/editors/vscode/test/suite/css-hover-visual.cjs",
+    "/tmp/vize-css-0mjQii/workspace",
+    "--remote-debugging-port=33641",
+    "--disable-gpu",
+    "--disable-dev-shm-usage"
+  ],
+  "hostEnvironment": {
+    "VIZE_TEST_ENABLE_HOST_COMMANDS": "1",
+    "VIZE_TEST_SERVER_PATH": "/home/runner/_work/vize/vize/target/ci/vize",
+    "nodeOptionsRemoved": true
+  },
+  "latencyMeaning": "Actual public API command wall time in this one fresh packaged editor session; no startup, budget, or admission claim."
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 6,
+      "character": 5
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**display**\n\n_CSS property_\n\nIn combination with 'float' and 'position', determines the type of box or boxes that are generated for an element.\n\n**Syntax**\n\n```css\n[ <display-outside> || <display-inside> ] | <display-listitem> | <display-internal> | <display-box> | <display-legacy>\n```\n\n**Example**\n\n```css\n.example {\n  display: block;\n}\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/display)"
+      },
+      "range": {
+        "start": {
+          "line": 6,
+          "character": 2
+        },
+        "end": {
+          "line": 6,
+          "character": 9
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 3,
+      "character": 10
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**red**\n\n_CSS value for color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  color: red;\n}\n```\n\n**Property syntax**\n\n```css\n<color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+      },
+      "range": {
+        "start": {
+          "line": 3,
+          "character": 9
+        },
+        "end": {
+          "line": 3,
+          "character": 12
+        }
+      }
+    }
+  }
+]

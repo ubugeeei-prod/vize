@@ -14,7 +14,7 @@ mod l2_input;
 mod select;
 mod string_plan;
 
-pub use l2_input::compile_l2_to_ssr;
+pub use l2_input::{compile_l2_to_ssr, compile_l2_to_ssr_with_experimental_options};
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_l0::config::VueVersion;
