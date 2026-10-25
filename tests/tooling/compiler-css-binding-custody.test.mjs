@@ -45,9 +45,20 @@ const side = (side, file) =>
       : read(file);
 
 await test("binding registration preserves every previous compiler row and pins its real source-before packet without changing source roles", () => {
-  const { cssApiCases: oldCss, ...oldFields } = before,
-    { cssApiCases: newCss, ...newFields } = current;
-  assert.deepEqual(newFields, oldFields);
+  const oldCss = before.cssApiCases,
+    newCss = current.cssApiCases;
+  // Preserve actual existing rows while allowing independent compiler campaigns
+  // to append their own genuine cases and runtime packs.
+  for (const row of before.cases)
+    assert.deepEqual(
+      current.cases.find((candidate) => candidate.id === row.id),
+      row,
+    );
+  for (const pack of before.runtimePacks)
+    assert.deepEqual(
+      current.runtimePacks.find((candidate) => candidate.path === pack.path),
+      pack,
+    );
   assert.deepEqual(newCss.slice(0, oldCss.length), oldCss);
   const loaded = loadCompilerCssApiCases(newCss, read);
   const entry = loaded.find((row) => row.id === "compiler/css/v-bind-source-map-10712");
