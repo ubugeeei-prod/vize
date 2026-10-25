@@ -23,7 +23,8 @@ fn rewrite_runtime_import_line(
     let rest = trimmed.strip_prefix("import {")?;
     let (specifiers, rest) = rest.split_once("} from ")?;
     let source = rest.trim().trim_end_matches(';');
-    let expected_double = cstr!("\"{runtime_module_name}\"");
+    let mut expected_double = String::default();
+    vize_l0::js_string::push_js_string_literal(&mut expected_double, runtime_module_name);
     let expected_single = cstr!("'{runtime_module_name}'");
     if source != expected_double && source != expected_single {
         return None;

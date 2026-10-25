@@ -78,9 +78,12 @@ pub(super) fn generate_preamble_from_helpers(
                 preamble.push_str(" as ");
                 preamble.push_str(ctx.helper(*h));
             }
-            preamble.push_str(" } from \"");
-            preamble.push_str(ctx.runtime_module_name.as_str());
-            preamble.push_str("\"\n");
+            preamble.push_str(" } from ");
+            vize_l0::js_string::push_js_string_literal(
+                &mut preamble,
+                ctx.runtime_module_name.as_str(),
+            );
+            preamble.push('\n');
         }
         crate::options::CodegenMode::Function => {
             // Destructuring from global - build string directly without intermediate Vec

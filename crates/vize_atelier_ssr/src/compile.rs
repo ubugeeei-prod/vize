@@ -244,6 +244,70 @@ pub fn compile_ssr_with_sfc_context_and_capture<'a, C: CaptureSink>(
     )
 }
 
+/// Compile using the SFC's typed generated Vue helper source. The SSR renderer
+/// module stays independently owned by this backend.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC metadata and existing codegen options"
+)]
+pub fn compile_ssr_with_sfc_context_and_codegen_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    codegen_options: &vize_atelier_core::CodegenOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    #[cfg(feature = "legacy-differential")]
+    let lane = crate::differential::production_lane();
+    #[cfg(not(feature = "legacy-differential"))]
+    let lane = SsrLane::Selected;
+    compile_ssr_on_lane_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        lane,
+        codegen_options.runtime_module_name.as_str(),
+    )
+}
+
+/// Capture the same typed generated-helper source used for SFC emission.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC metadata, existing codegen options and capture"
+)]
+pub fn compile_ssr_with_sfc_context_codegen_options_and_capture<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    codegen_options: &vize_atelier_core::CodegenOptions,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    inner::compile_ssr_inner_captured_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        codegen_options.runtime_module_name.as_str(),
+        capture,
+    )
+}
+
 mod inner;
 use inner::compile_ssr_inner_captured;
 
@@ -342,6 +406,34 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
     context: SsrSfcContext,
     lane: SsrLane,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_on_lane_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        lane,
+        "vue",
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "private SFC metadata, selected lane and generated runtime"
+)]
+fn compile_ssr_on_lane_with_runtime<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    lane: SsrLane,
+    runtime_module_name: &str,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
     let parser_opts = crate::stage_options::parser_options(&options);
     let (mut root, errors, frozen_elements) = profile!(
@@ -375,6 +467,7 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
                 options: &options,
                 experimental: &experimental_options,
                 context,
+                runtime_module_name,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
                 frozen: Some((&root, &frozen_elements)),
@@ -421,6 +514,7 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
                 experimental_options,
             );
             codegen_ctx.apply_sfc_context(context);
+            codegen_ctx.set_runtime_module_name(runtime_module_name);
             profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
         }
     };

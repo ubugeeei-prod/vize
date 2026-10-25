@@ -24,6 +24,7 @@ mod batch;
 mod batch_helpers;
 mod batch_results;
 mod bundler;
+mod codegen_options;
 mod compile;
 mod css;
 mod experimentals;

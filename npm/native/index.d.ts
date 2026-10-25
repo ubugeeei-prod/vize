@@ -98,7 +98,9 @@ export interface BatchCompileOptionsNapi {
   experimentalSelfComponent?: boolean;
   experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
+  /** Module for generated Vue helpers; preserves authored imports and the SSR renderer. */
   runtimeModuleName?: string;
+  /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
   vueVersion?: string;
   styleTrim?: boolean;
@@ -317,7 +319,10 @@ export interface CompilerOptions {
   experimentalStrictSlotChildren?: boolean;
   /** Enable experimental server-script related RFC surface. */
   experimentalServerScript?: boolean;
-  /** Module name for runtime imports. */
+  /**
+   * Module for compiler-generated Vue helpers. Authored module imports and the
+   * SSR renderer module retain their own sources. Defaults to "vue".
+   */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
   runtimeGlobalName?: string;
@@ -1331,7 +1336,9 @@ export interface SfcCompileOptionsNapi {
   experimentalSelfComponent?: boolean;
   experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
+  /** Module for generated Vue helpers; preserves authored imports and the SSR renderer. */
   runtimeModuleName?: string;
+  /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
   vueVersion?: string;
   styleTrim?: boolean;
