@@ -17,13 +17,11 @@ const baseSha = git(baseRoot, "rev-parse", "HEAD");
 assert.equal(headSha, process.env.EXPECTED_SOURCE_SHA);
 assert.equal(baseSha, "0d237da915b8f1d7b0777bee8f0a0aeea20e3067");
 const overlay = path.join(repo, "tests/tooling/support/cross-file-finalization-order/observer");
-const observerInputs = fs
-  .readdirSync(overlay)
-  .map((name) => ({
-    name,
-    source: fs.readFileSync(path.join(overlay, name), "utf8"),
-    sha256: hash(fs.readFileSync(path.join(overlay, name))),
-  }));
+const observerInputs = fs.readdirSync(overlay).map((name) => ({
+  name,
+  source: fs.readFileSync(path.join(overlay, name), "utf8"),
+  sha256: hash(fs.readFileSync(path.join(overlay, name))),
+}));
 const providers = [
   {
     name: "base",
