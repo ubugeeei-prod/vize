@@ -179,6 +179,25 @@ void test("explicit compiler false keeps the host Vue plugin with shared compile
   assert.deepEqual(result.plugins, [hostVue]);
 });
 
+void test("explicit fmt.vue false keeps shared formatter options without taking host ownership", async () => {
+  for (const formatter of [{}, { preset: "prettier" as const, printWidth: 120 }]) {
+    const result = await defineConfig(
+      { fmt: { vue: false, ignorePatterns: ["generated/**"] } },
+      { plugin: false, tasks: false, lint: false },
+    ).withVue({ formatter })(env);
+    const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
+    assert.equal(metadata.options.fmt, false);
+    assert.deepEqual(result.fmt?.ignorePatterns, ["generated/**"]);
+    assert.deepEqual((await resolveConfigExport(metadata.config!)).formatter, formatter);
+  }
+
+  const enabled = await defineConfig({}, { plugin: false, tasks: false, lint: false }).withVue({
+    formatter: {},
+  })(env);
+  assert.equal((enabled as ConfigWithVizeTasks)[taskConfigKey]?.options.fmt, true);
+  assert.ok(enabled.fmt?.ignorePatterns?.includes("**/*.vue"));
+});
+
 void test("native lint presentation and shared format ignores reach only their owning tasks", async () => {
   const source = {
     lint: {

@@ -293,7 +293,7 @@ void test("the standalone helper delegates to fluent Vue composition", async () 
   );
 });
 
-void test("canonical native leaves retain disabled flags and explicit compiler/formatter presence", () => {
+void test("canonical native leaves retain explicit formatting task opt-out", () => {
   const legacy: VueConfigObject = {
     compiler: false,
     typecheck: false,
@@ -319,7 +319,7 @@ void test("canonical native leaves retain disabled flags and explicit compiler/f
     {},
   );
   assert.equal(selected.compiler, false);
-  assert.deepEqual(selected.metadata.options, { check: true, lint: true, fmt: true });
+  assert.deepEqual(selected.metadata.options, { check: true, lint: true, fmt: false });
 });
 
 void test("canonical version chooses the exact existing native dialect vocabulary", () => {
