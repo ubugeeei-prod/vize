@@ -14,6 +14,11 @@ on:
         description: Full lowercase 40-character head SHA; --ref must be a branch or tag at this commit
         required: true
         type: string
+      patina_project_batch:
+        description: Measure the frozen 1210-file type-aware project batch and exact RPC counts
+        required: false
+        default: false
+        type: boolean
 
 run-name: "Benchmark ${{ github.event_name == 'schedule' && format('long baseline...{0}', github.sha) || github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
 
@@ -234,6 +239,32 @@ jobs:
             --out "$GITHUB_WORKSPACE/benchmark-summary.md" \
             --json "$GITHUB_WORKSPACE/benchmark-results.json"
 
+      - name: Qualify type-aware project batching on existing optimized binaries
+        if: github.event_name == 'workflow_dispatch' && inputs.patina_project_batch && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
+        run: |
+          node --test head/tools/benchmarks/scripts/patina-project-batch.test.mjs
+          node head/tools/benchmarks/scripts/patina-project-batch.mjs \
+            "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
+            "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
+            "$GITHUB_WORKSPACE/patina-project-batch"
+
+      - name: Retain type-aware batch evidence including failed observations
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.patina_project_batch
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: patina-project-batch
+          path: |
+            patina-project-batch/*.json
+            patina-project-batch/*.jsonl
+            patina-project-batch/*.stdout
+            patina-project-batch/*.stderr
+            patina-project-batch/*.rss.txt
+            patina-project-batch/summary.md
+            patina-project-batch/dependency-install.log
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Observe CSS completion and hover on existing base and head CLIs
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: >-
@@ -253,7 +284,11 @@ jobs:
           } > benchmark-provenance.txt
 
       - name: Write job summary
-        run: cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f patina-project-batch/summary.md ]]; then
+            cat patina-project-batch/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

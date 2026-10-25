@@ -1,0 +1,7 @@
+import { useCounter } from "./use-counter";
+export function run__INDEX__(start: number): number {
+  const { count, bump, load } = useCounter(start);
+  load();
+  bump();
+  return count.value + __INDEX__;
+}

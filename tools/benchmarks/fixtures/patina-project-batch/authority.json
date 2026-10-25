@@ -1,0 +1,719 @@
+{
+  "schema": "vize.patina-project-batch-authority",
+  "version": 1,
+  "origin": {
+    "version": "0.557.0",
+    "kind": "frozen complete public CLI output; unchanged public0.558 and source batch replay",
+    "argv": [
+      "lint",
+      "--no-config",
+      "--preset",
+      "all",
+      "--type-aware",
+      "--strict-reactivity",
+      "--format",
+      "json",
+      "src"
+    ]
+  },
+  "cohorts": 10,
+  "filesPerCohort": 121,
+  "diagnosticsPerCohort": 282,
+  "expandedStdoutSha256": "bf3a6089ca4026480ebcf5b188ae11f1e757c6067f59eea0fcb3ca121bcc50dc",
+  "artifacts": {
+    "component.vue.txt": "e98cedde3cca67e90f2ca8af8459efad4760bcfae561c61ef391135f5b56f827",
+    "module.ts.txt": "15e9d8e40e28b2eeef2223fbc4b1d1aa2e75653eef0cac70e8bb90ef985a33b6",
+    "use-counter.ts.txt": "722ef87af2a7888052ea4091ec6459642d6a3d6d3b324d1a379cfcac8deb890a",
+    "cohort.stdout": "5e742b2a8405ff6ee22d3f9535d91cd511d154f315446e703c8fac2d2378478e",
+    "package-lock.json": "e60f7d4911a50f69b1aa5643745c77324b86997cec3685f03865d09aaf1d202f",
+    "package.json.txt": "384e9e6b76bd5ba71023d5540d1b0450b368e4274d5915186670041cfd7d5e85",
+    "tsconfig.json.txt": "099dcae6ad93c2589428f371b751c6b1c7d478712dc480b61d1f019df5c2e047"
+  },
+  "seedInputs": {
+    "src/Comp0.vue": "0b0a1a18b8bddf2c71f9610b36e48dd737b928c93ec5426e9b02a27e0b47009e",
+    "src/Comp1.vue": "8836d46b78a961093bd3242ca81946cef3e8cdb15e02f27d1e3141f4323e2fda",
+    "src/Comp10.vue": "ad64a8144870551859927e765c66438840ae3dfd7393c224a9c097e8791d4a9d",
+    "src/Comp11.vue": "48dcae1a39e5e2f79d8499333a60cf2bcbbdb21862623ec8696abc23e118d27e",
+    "src/Comp12.vue": "d858d951d370ba5e06929ff6adb652c7849fc3dcbdb24806e924c751a3caff20",
+    "src/Comp13.vue": "9e0ad8dc70aad196a6d6c3950679b64cb092ac78058ca27409a818a5934f1029",
+    "src/Comp14.vue": "d1dd67bbae1381f9a51be25f3535d14acc0235763c98143fbc51a1648d7ff7ce",
+    "src/Comp15.vue": "49eadb8e9036f47db146fe1c0247826f46234c7738eb473cd711a20e06b3d1b1",
+    "src/Comp16.vue": "b3d54a61c4bfb391263ddb32d69802a957f252fc02ff07d22ff20730b36f6dde",
+    "src/Comp17.vue": "81b250dc36b37ba9bca6e2d4b820b074a40a4e386263e2998a20e5294ab11d08",
+    "src/Comp18.vue": "c088b757bfc781cc7f5791730045878d92cd748c95338eb932a4a12cc7cb5e46",
+    "src/Comp19.vue": "2a1d49332ee3886eaead9c5dcf557178177764232923a82ac6e20c0dcda464b9",
+    "src/Comp2.vue": "d7661aca2a6ce67ff1b513eb2e00bf5887df53318be7e73efe868621fa2d7dbf",
+    "src/Comp20.vue": "25ec5d84f51d6c69fd6d621b669cfdc6825aca8c4378289a730e090e323b7186",
+    "src/Comp21.vue": "92cc662322b559e1795fdd2d565a845c7b985a6012919623f88f59ccd2183a8b",
+    "src/Comp22.vue": "230d66e8cf47f75b99ae65fef539a8ea283b1153032ba42e027fc3e7bd6ee3d8",
+    "src/Comp23.vue": "5ea328d9fba36aca0e9c45c5001b40976559833245cbdc3b850b00f069e53364",
+    "src/Comp24.vue": "d8852a34229ea934dc0599e370d48f10850f40fe897eeed0fa004f092754f1f9",
+    "src/Comp25.vue": "72cf91b9019dedb6ee04b55d526237422420f4d77fa9d50f6d6a2c53de252fe5",
+    "src/Comp26.vue": "8ecf7563b1eea80cd23cb6a62a3b4a76d47f0cb849bc2fe39652d0c716ace674",
+    "src/Comp27.vue": "70602cb087bc705053c9d983adbecc304d8c6ab4a179c83a8049df8fa88b8fee",
+    "src/Comp28.vue": "bbebc71408b3f2e9378a888153de69b07bd2dd3a68156658194b6855b7b84232",
+    "src/Comp29.vue": "1412f7333842acb1abfbb95f647988ac3292c9ee02b18ba3cd950cc0b73b0206",
+    "src/Comp3.vue": "8b2c79e0351cdfc8ca74ecfaeb46910f4b7ca9ce1aabef0ca8073eafecb43653",
+    "src/Comp30.vue": "a5d351e10b7fd05c982168e20ca8432f87c42cf584ebba896b01ef53ac176b68",
+    "src/Comp31.vue": "133d1e6b1e7bbd3f55b92187a019e4334dff9374081124e33c5197e193b0190f",
+    "src/Comp32.vue": "00b2627d95b752fe03efbe2c1c36088fcbcd4ab999cf710d56dde15779e85814",
+    "src/Comp33.vue": "1e73a3cfa8e67f26da0921ff0ff3d5ee16df9edda07e587bbf3cee399d4bb1f1",
+    "src/Comp34.vue": "a370481c386c5e1e9c63ecd8d4da5568bcb896cd00a022e81032d6666efd609d",
+    "src/Comp35.vue": "356e3a364ec54f99a24c9b3137be6f5b31c6103a44c38ee4beccbb2dde0bfb28",
+    "src/Comp36.vue": "c10ef8081efc3df144689e59b09e86ab7ed9fa7b1dcb31ecb1cbce274f4da052",
+    "src/Comp37.vue": "f677361037ed040a44280c05d6e5132155bd18f335491b351979ac64c43c229f",
+    "src/Comp38.vue": "205acc53efa2b2e6d56190e66797c4872bac9c92c428f3def92c985f25370da9",
+    "src/Comp39.vue": "3888c0ef096f86ce902378626ad78e50a09e1760e1651ca6ab3493e542e6e1b6",
+    "src/Comp4.vue": "d1f517967500978d302aa7b700a055872782c5726253cb80dee58833228baacf",
+    "src/Comp5.vue": "c1c5130ac51427e421048f2b987d5238455c4a8b137f66614417c278422c83f6",
+    "src/Comp6.vue": "e9bc8ba39ce4ab33dfc507a556a077185cf2d73c6f8a7aeffc9691b473868095",
+    "src/Comp7.vue": "475c06e077bc2fd7dc48d3f7ee9c63662ba4bcc5f988420857b9bc82c170f300",
+    "src/Comp8.vue": "78e868d94e38f03fe07a927164e34641325373fce92274d728eed669c9beed20",
+    "src/Comp9.vue": "7ca4c6a1445e671a50c493c28158516ae79aea3d0640539796141b1e19b555ed",
+    "src/mod-0.ts": "ec1eecafd246b4e69d848323bfa9b8978a55a0e874a28d91158a0b7dafe30ed8",
+    "src/mod-1.ts": "2c842e4e6b8c5c07aedf507cdd2e526d492f36de9d89d5a261aa6294419cd538",
+    "src/mod-10.ts": "70870ebcfcbc03e9bf43592f5d207eb51af594a414b9464b7b933cf55995f379",
+    "src/mod-11.ts": "43e41daaacb05c415a19ff92e4a09e99082d3e4d63813b3a9aefd83715eddaa8",
+    "src/mod-12.ts": "90fb0b20902727efee79f120bce4fac3ec2f072e39c5d9331e9fadd8ba3fe3e5",
+    "src/mod-13.ts": "1ccbe4eaccd85fc809a7a36c47647cc057da07ca4f9c6d466451a0660cd44da9",
+    "src/mod-14.ts": "bde513b843025510e97f5852fb75c13843c4080716e8b476309ad5ed47666a4c",
+    "src/mod-15.ts": "56fa865a29d976f9cebe8a7943a234769f3265d405a1bb76c28d97a1c2c020da",
+    "src/mod-16.ts": "776fdaebeafbe27b29a9ae47827caeb112d57701e1770f26b0383ed225c4ee51",
+    "src/mod-17.ts": "a30c4bcaa5d4695809a37a94fead309c71cc830855372919a91299bf94e08180",
+    "src/mod-18.ts": "c0824223c71aa24dadeef076922193f71a26695bc792dc9ab6c7c31bc1a1036b",
+    "src/mod-19.ts": "86887527ca01452f5e81681e10362b91947e2cb74954f5a88d8fcbdd2fd147be",
+    "src/mod-2.ts": "8f4c2e9d3f9e0579735316522ca2037b8961de25b44d779b72d4df3de2cd6ec8",
+    "src/mod-20.ts": "86ae258f55b547b144c67fa01fa39c7679e41c80ccbb54ac77a592cd1ba27aef",
+    "src/mod-21.ts": "637d2bd7e91bef002e930e72b640c1bb369ae9ea2d8b5686dbd9b201b9c81493",
+    "src/mod-22.ts": "625a33db8f789c8a8cd26416efc2d0b8ddc6f78ca6b97674207d6ba3104ed39f",
+    "src/mod-23.ts": "303832e40a500384d4fda0c72140aac362aebef426cca068e7d971cb8da4839a",
+    "src/mod-24.ts": "c5babf119381c75a798e5d48cc33b2d930c5df9827810784f7bfbb0a06874b68",
+    "src/mod-25.ts": "d30da65e1fc6018540318a269df4aad4ec4d105bb83ffe0bcd178dadd809f30e",
+    "src/mod-26.ts": "3cc6a29f0fcbd0d0117fd6b340bb4b275e63bae610b3a81f35403140ab23c525",
+    "src/mod-27.ts": "23e6c2ca17e5cb002db36c0db6e152393e81fcb785e52a5297a86881066f2ddc",
+    "src/mod-28.ts": "d29524de226c38d12b93fceca12a64443ddee4dced2b7993baef012eacecb480",
+    "src/mod-29.ts": "39cf6d7ce3c58e8a0aef6102f5672b271315193ad59aa886d45193e069bff437",
+    "src/mod-3.ts": "242ec0e3ee17338fc18d75dca347cfe266144b73aa53c83663187a8f39ca6c87",
+    "src/mod-30.ts": "092fcb02ac12a2e0bb85f772264c8a4cccb35b89b31933f1b5f2f587fc4d786a",
+    "src/mod-31.ts": "3ff0a34d301a6c3da2d183d914d6f4868a0bdb236d8617562e0a707699bedecd",
+    "src/mod-32.ts": "52f6a66ef32e143e03b3cc7a58f74e6c5a481b7340e36fa4a5b8129a9c94362a",
+    "src/mod-33.ts": "ebfbab6c8acb6716b54c7ecce9bcc8727cd2d5c8912f6535c731539992e1fc95",
+    "src/mod-34.ts": "2e455a03c5b75e93e815904020df92e36e4299a131c7e10b1625e11341906d39",
+    "src/mod-35.ts": "043cee2ddd5a37395160d070c7348145df328d5107aaf879ff8f29dc906a18b1",
+    "src/mod-36.ts": "f2154783c003a2b127523d3cc418d16d587f365ef4da743b3be267b1549a70cc",
+    "src/mod-37.ts": "ea9b10ab11660f80379c4b3053df3c4793e2de3d8633ea3bab92bb2f1e3a925b",
+    "src/mod-38.ts": "56a9dec9c4394810b20231a13db6390e80dd5698cbc9b4a539ab1b938769c577",
+    "src/mod-39.ts": "8dac7e4f8f0c43da563d6219c8fb81c2edebc9875305ad50047ce064d09af4b5",
+    "src/mod-4.ts": "a603e6ee20801dfc26ef2e695bbd118a5fc8cdd4f8b650125da4f0b7cce49d8c",
+    "src/mod-40.ts": "958192c963208550e67e52d36bf9c52c0d1a424d97a792a0684669b457cba1b1",
+    "src/mod-41.ts": "42b0221b3c828187090f6f491842cffe1168508b514c1861549ac4d5cc29744e",
+    "src/mod-42.ts": "c2af0312e3ab0e1f13919c0ff34868ffac14489f6344f5a3b1a9dc38ca55c1d1",
+    "src/mod-43.ts": "9638a8abdc8f29aacbf2ce8867959c0d05ee0f53bd294b901c86b74feeba35f5",
+    "src/mod-44.ts": "52a6a525de261fed93179258d9fa718fc1595833d9411df9ec8788d3868f261e",
+    "src/mod-45.ts": "527f2381ef051982cc0e63b4e92a0e4a982c21040ad26b7dddd27f29b3aebb6e",
+    "src/mod-46.ts": "3726957f7a772d45f69e858aabf07d4c368d34a66a4cbc412d0bbcc28608875b",
+    "src/mod-47.ts": "01fdf0f4875393043b74a058fddcea514789ed33dcec82163c5882297b8de813",
+    "src/mod-48.ts": "d3f62cdc176c7e2c556ac34fa3a3635bfe8ffbfdb8766428ec66ebb7303419dd",
+    "src/mod-49.ts": "badcf1b0c48fa3a575bfd61a3bec35a48d25339f593c3017b403a59242444059",
+    "src/mod-5.ts": "53e25f929f73b3c5015b6e8ee439019827243ae6b64c5f172f8a52bcb39419b5",
+    "src/mod-50.ts": "2008550bfd443217c5928b5d6b808a0561ecde8265a7398c96e31daa3a6249c6",
+    "src/mod-51.ts": "c6eb42b0f3390a3fa375be03cb904366d4d5e454f6537c737833cbc4fd841283",
+    "src/mod-52.ts": "40e9f627cb6f705e5cd999b7076ca58aaee5c49ab4142e492500d42e8db7b047",
+    "src/mod-53.ts": "b8e57f76e536c00bb6530145be2330e802980e65983f14a6c9fdaf0af0c01ad3",
+    "src/mod-54.ts": "eda8c28cbd8d7d8a9a65870f165be83c867f46e838b221d48e95546a7bf4c87e",
+    "src/mod-55.ts": "8448996405df15db35b635efc19890465b157b8b375ecf2701ef3185e45cc179",
+    "src/mod-56.ts": "3952b058e076467b31c1b204a29db11dccb4f5cc9f59ba780322363288167985",
+    "src/mod-57.ts": "278284294b62f98a1f0e03c469f2ccec86f478cdc39db842545699857e4feb75",
+    "src/mod-58.ts": "ccd39c70e2bdc13d8ea2ea381d87e6f7d9ce2a2188cea306d0df62d6877fc409",
+    "src/mod-59.ts": "3de3441b0282516ba1f3aeb27b956ed18d99ab3f54c10fa99c08b2f8bef37af3",
+    "src/mod-6.ts": "a131a3b07cff86de46f93f513e0523a388336aa812fa059edc4e1781ee7a37b0",
+    "src/mod-60.ts": "404f429c838e9adc5b8ba7164e765ded9aae2788fe897c89e0087385ce68e798",
+    "src/mod-61.ts": "89d86fba153f33c1e3122fdfecb9232195b7549d31470a39e864e731bda31ab0",
+    "src/mod-62.ts": "6c363cea463662640f6d40a4f8cdbec56375855ebd37a9c3e5aed868101d0ee5",
+    "src/mod-63.ts": "8204891f4ea9ac391be4c36a6c69470b81a28efc2e75ac4b1b458a4182c7e1c0",
+    "src/mod-64.ts": "e652be1170a3733a4cbe6b620ef046f373c33480298852cdac90221991aad942",
+    "src/mod-65.ts": "9d38d32d97e2c5ca8f99e647747bbc7042767b16c6573f30511efe3ff2f0685b",
+    "src/mod-66.ts": "831e1991c2163bf6ec6cbe04cd6980e9b8d1cc4ce4e491cd6e4ad2b1ba8a8f6a",
+    "src/mod-67.ts": "22f69c71a114e83f3d96ed0adb0ce49325024215a53fdda2a68a64fdc3a224f9",
+    "src/mod-68.ts": "97a965b8e305acb34ec11c6721f46951bb502af791aedc1ba9a91bada3c6ec02",
+    "src/mod-69.ts": "2b843a856b065c873990c5ab914c7655646ccf367f8ab566b7296e54ab92e426",
+    "src/mod-7.ts": "24a09748bb81d865116cb47266ca22316a9ec75e4175e968aed0e63a1b43d72e",
+    "src/mod-70.ts": "b5c582df8b9d91dad9bc4afdbce98cbe0198ba99087b826e01ef239aa937f341",
+    "src/mod-71.ts": "e8be11d2192530d1fda6f7b76250fcbf175a4ac27eba06f558f55083826fe803",
+    "src/mod-72.ts": "bffa9b4972bf21c2b0e59931dbb1f670dff5c42a53485da0a5dc9c03643a3aea",
+    "src/mod-73.ts": "b3a31ea31d7858bf40248aaba0069a664e8f26ae1d00c396b81e6d952aa1b773",
+    "src/mod-74.ts": "2eaf8b67ffcab038392071d2f43de8114b8ba7feaea4ee4031c74e21f80b6ff1",
+    "src/mod-75.ts": "8c2b091c150949b60c02e2773a3177b24bc256dddca8f38ab102db0b66f88e4f",
+    "src/mod-76.ts": "39704be6322a028d7b2c3c916a6d80fcfb4aaf11e476d8002f3ec56853789058",
+    "src/mod-77.ts": "031a72f534a08f76c3765f5fe87ed95e2446de5b30f1256930cc28f458e2380f",
+    "src/mod-78.ts": "793eada2866286b1d56ec10b3ce7c52a36eba1bbcd9fcae6061ba4b970ce4da7",
+    "src/mod-79.ts": "7a045a2551dd37bb0b3254fa356f7b128de43acad163486c1d95f582c12b89cf",
+    "src/mod-8.ts": "0bf07ffb10df1617a313ca7fa1941d7c46c041468cb157ee38c0b1c01ce766ce",
+    "src/mod-9.ts": "6c3f2e51a4680d2275fefa308ec69f85fe06f0335bd9567e724ee7f7b577fa1f",
+    "src/use-counter.ts": "722ef87af2a7888052ea4091ec6459642d6a3d6d3b324d1a379cfcac8deb890a"
+  },
+  "requestPhaseCounts": {
+    "base": [
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getDefaultProjectForFile",
+          "block": "jsonrpc"
+        },
+        "count": 1211
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getPropertiesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 4820
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getReturnTypeOfSignature",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSignaturesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSymbolsAtPositions",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getTypesOfSymbols",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "initialize",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "release",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "typeToString",
+          "block": "jsonrpc"
+        },
+        "count": 7240
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "updateSnapshot",
+          "block": "jsonrpc"
+        },
+        "count": 1211
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "describeCapabilities",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getDefaultProjectForFile",
+          "block": "jsonrpc"
+        },
+        "count": 1211
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getPropertiesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 4820
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getReturnTypeOfSignature",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSignaturesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSymbolsAtPositions",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getTypesOfSymbols",
+          "block": "jsonrpc"
+        },
+        "count": 1610
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "initialize",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "release",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "typeToString",
+          "block": "jsonrpc"
+        },
+        "count": 7240
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "updateSnapshot",
+          "block": "jsonrpc"
+        },
+        "count": 1211
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getDefaultProjectForFile",
+          "block": "jsonrpc"
+        },
+        "count": 1211
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getPropertiesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 4820
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getReturnTypeOfSignature",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSignaturesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSymbolsAtPositions",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getTypesOfSymbols",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "initialize",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "release",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "typeToString",
+          "block": "jsonrpc"
+        },
+        "count": 7240
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "updateSnapshot",
+          "block": "jsonrpc"
+        },
+        "count": 1211
+      }
+    ],
+    "head": [
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getDefaultProjectForFile",
+          "block": "jsonrpc"
+        },
+        "count": 2
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getPropertiesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 4820
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getReturnTypeOfSignature",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSignaturesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSymbolsAtPositions",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getTypesOfSymbols",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "initialize",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "release",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "typeToString",
+          "block": "jsonrpc"
+        },
+        "count": 7240
+      },
+      {
+        "key": "corsa.request.deserialize_response",
+        "attribution": {
+          "stage": "patina",
+          "pass": "updateSnapshot",
+          "block": "jsonrpc"
+        },
+        "count": 2
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "describeCapabilities",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getDefaultProjectForFile",
+          "block": "jsonrpc"
+        },
+        "count": 2
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getPropertiesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 4820
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getReturnTypeOfSignature",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSignaturesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSymbolsAtPositions",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getTypesOfSymbols",
+          "block": "jsonrpc"
+        },
+        "count": 1610
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "initialize",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "release",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "typeToString",
+          "block": "jsonrpc"
+        },
+        "count": 7240
+      },
+      {
+        "key": "corsa.request.serialize_params",
+        "attribution": {
+          "stage": "patina",
+          "pass": "updateSnapshot",
+          "block": "jsonrpc"
+        },
+        "count": 2
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getDefaultProjectForFile",
+          "block": "jsonrpc"
+        },
+        "count": 2
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getPropertiesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 4820
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getReturnTypeOfSignature",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSignaturesOfType",
+          "block": "jsonrpc"
+        },
+        "count": 2420
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getSymbolsAtPositions",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "getTypesOfSymbols",
+          "block": "jsonrpc"
+        },
+        "count": 1210
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "initialize",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "release",
+          "block": "jsonrpc"
+        },
+        "count": 1
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "typeToString",
+          "block": "jsonrpc"
+        },
+        "count": 7240
+      },
+      {
+        "key": "corsa.request.transport",
+        "attribution": {
+          "stage": "patina",
+          "pass": "updateSnapshot",
+          "block": "jsonrpc"
+        },
+        "count": 2
+      }
+    ]
+  }
+}

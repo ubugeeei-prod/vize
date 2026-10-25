@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { useCounter } from "./use-counter";
+const props = defineProps<{ items: { id: number; name: string }[] }>();
+const { count, bump, load } = useCounter(__INDEX__);
+function label(name: string): string { return name + count.value; }
+load();
+</script>
+<template>
+  <ul>
+    <li v-for="item in props.items" :key="item.id" :class="{ on: item.id === count }" :title="label(item.name)" @click="bump">
+      {{ label(item.name) }}
+    </li>
+  </ul>
+</template>

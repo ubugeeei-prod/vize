@@ -1,0 +1,3951 @@
+[
+  {
+    "file": "src/Comp0.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp0\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp1.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp1\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp10.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp10\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp11.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp11\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp12.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp12\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp13.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp13\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp14.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp14\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp15.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp15\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp16.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp16\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp17.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp17\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp18.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp18\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp19.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp19\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp2.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp2\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp20.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp20\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp21.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp21\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp22.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp22\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp23.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp23\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp24.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp24\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp25.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp25\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp26.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp26\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp27.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp27\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp28.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp28\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp29.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp29\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp3.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp3\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp30.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp30\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp31.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp31\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp32.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp32\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp33.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp33\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp34.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp34\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp35.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp35\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp36.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp36\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp37.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp37\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp38.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp38\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp39.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp39\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp4.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp4\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp5.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp5\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp6.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp6\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp7.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp7\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp8.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp8\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/Comp9.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12,
+        "help": "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 6,
+        "column": 1,
+        "endLine": 6,
+        "endColumn": 7,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      },
+      {
+        "ruleId": "vue/multi-word-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Comp9\" should be multi-word to avoid conflicts with HTML elements",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <li> is a static element and should not have interactive event handlers",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 127,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 4
+  },
+  {
+    "file": "src/mod-0.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-1.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-10.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-11.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-12.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-13.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-14.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-15.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-16.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-17.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-18.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-19.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-2.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-20.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-21.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-22.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-23.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-24.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-25.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-26.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-27.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-28.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-29.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-3.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-30.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-31.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-32.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-33.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-34.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-35.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-36.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-37.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-38.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-39.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-4.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-40.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-41.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-42.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-43.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-44.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-45.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-46.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-47.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-48.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-49.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-5.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-50.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-51.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-52.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-53.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-54.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-55.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-56.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-57.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-58.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-59.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-6.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-60.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-61.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-62.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-63.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-64.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-65.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-66.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-67.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-68.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-69.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-7.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-70.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-71.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-72.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-73.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-74.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-75.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-76.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-77.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-78.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-79.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-8.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/mod-9.ts",
+    "messages": [
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 4,
+        "column": 3,
+        "endLine": 4,
+        "endColumn": 9,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/use-counter.ts",
+    "messages": [
+      {
+        "ruleId": "script/require-function-return-type",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/require-function-return-type] Function 'useCounter' is missing a return type annotation",
+        "line": 2,
+        "column": 8,
+        "endLine": 2,
+        "endColumn": 42,
+        "help": "Add a return type annotation: function fn(...): ReturnType { ... }"
+      },
+      {
+        "ruleId": "type/no-floating-promises",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/no-floating-promises] Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "line": 5,
+        "column": 27,
+        "endLine": 5,
+        "endColumn": 33,
+        "help": "Add await, return the Promise, or prefix it with void when the fire-and-forget behavior is intentional."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  }
+]
