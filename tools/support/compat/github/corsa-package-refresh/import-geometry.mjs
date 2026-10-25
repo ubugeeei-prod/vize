@@ -81,6 +81,7 @@ const required = [
   "literal_geometry_tests::repeated_imports_keep_each_literal_and_later_symbol_coordinates",
   "literal_geometry_tests::unchanged_literal_contents_keep_every_byte_coordinate_and_callback_occurrence",
   "literal_geometry_tests::legacy_adjustment_constructor_keeps_its_existing_contract",
+  "literal_geometry_tests::overflowing_queries_cannot_wrap_onto_an_unrelated_document_byte",
   "literal_geometry_tests::zero_length_and_multiple_replacement_records_keep_exclusive_end_shifts",
   "literal_geometry_tests::changed_module_map_composes_with_the_existing_star_replacement_carrier",
   "literal_geometry_tests::source_kind_variants_use_the_same_geometry_without_an_extra_parse",

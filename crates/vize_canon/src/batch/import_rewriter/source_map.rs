@@ -89,7 +89,7 @@ impl ImportSourceMap {
             original_start: start,
             original_end: end,
             virtual_start: start,
-            virtual_end: start.checked_add(length).unwrap(),
+            virtual_end: start.saturating_add(length),
         });
     }
 
@@ -100,10 +100,8 @@ impl ImportSourceMap {
         let mut delta = 0_i64;
         for range in &mut self.replacement_ranges {
             let length = range.virtual_end - range.virtual_start;
-            range.virtual_start = (i64::from(range.original_start) + delta)
-                .try_into()
-                .unwrap();
-            range.virtual_end = range.virtual_start.checked_add(length).unwrap();
+            range.virtual_start = translated_offset(range.original_start, delta);
+            range.virtual_end = range.virtual_start.saturating_add(length);
             delta = i64::from(range.virtual_end) - i64::from(range.original_end);
         }
     }
@@ -126,9 +124,7 @@ impl ImportSourceMap {
         {
             return range.original_start;
         }
-        (i64::from(offset) - self.preceding_delta(index))
-            .try_into()
-            .unwrap()
+        translated_offset(offset, -self.preceding_delta(index))
     }
 
     fn virtual_offset_from_ranges(&self, offset: u32) -> u32 {
@@ -140,9 +136,7 @@ impl ImportSourceMap {
         {
             return range.virtual_start;
         }
-        (i64::from(offset) + self.preceding_delta(index))
-            .try_into()
-            .unwrap()
+        translated_offset(offset, self.preceding_delta(index))
     }
 
     pub(super) fn with_replacement_ranges(
@@ -262,4 +256,10 @@ impl ImportSourceMap {
         }
         (original_offset as i32 + cumulative) as u32
     }
+}
+
+/// Real document coordinates fit OXC's u32 spans. An out-of-document caller
+/// must not panic or wrap an overflowing query onto an unrelated source byte.
+fn translated_offset(offset: u32, delta: i64) -> u32 {
+    (i64::from(offset) + delta).clamp(0, i64::from(u32::MAX)) as u32
 }
