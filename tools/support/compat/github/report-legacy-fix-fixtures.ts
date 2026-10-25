@@ -227,6 +227,8 @@ function checkProduct(
           )
         : [];
     const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
+    const dtoRequired =
+      product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
     const batchRequired =
       product !== "typechecker" ||
       canonPaths.some(
@@ -243,7 +245,9 @@ function checkProduct(
           )
         : [];
     const registered =
-      (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
+      (!batchRequired || cases.length > 0) &&
+      (!protocolRequired || protocols.length > 0) &&
+      (!dtoRequired || dtoRegistered);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
