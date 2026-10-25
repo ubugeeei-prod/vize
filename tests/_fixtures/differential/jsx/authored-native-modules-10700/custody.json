@@ -6,7 +6,9 @@
     "run": 40217399231,
     "artifact": 12608118087,
     "capture": "packets.json",
-    "sha256": "1f47dc14522b43b82f5b85bbc485255a52a6b6f40ebd391ba546515d7d0938df"
+    "rawCaptureSha256": "1f47dc14522b43b82f5b85bbc485255a52a6b6f40ebd391ba546515d7d0938df",
+    "fixtureSha256": "2bbfc6262f68ff176ce5a0a55eee3087bc9430a8814879e092332e221c9795d7",
+    "derivedTokens": "Only the duplicate decoded tokens array is omitted from this golden; raw arrays remain in the artifact and every decoded segment is independently checked by the test. Whole source/code/map fields are retained."
   },
   "admission": "capture required; no qualification claim until actual source packet review",
   "statefulVdomSsr": "capture required; no qualification claim until actual source packet review"
