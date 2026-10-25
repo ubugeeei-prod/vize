@@ -101,7 +101,7 @@ pub(super) fn emit(
     }
     let renderers = vize_l0::profile!(
         "atelier.jsx.module.collisions",
-        collisions::check(components, spans, preamble, source, lang)
+        collisions::check(components, spans, preamble, &parsed.program, lang)
     )?;
     let mut writer = ModuleWriter::new(source, components, origins, source_map)?;
     // Hashbangs and directives retain their original leading position. Imports
