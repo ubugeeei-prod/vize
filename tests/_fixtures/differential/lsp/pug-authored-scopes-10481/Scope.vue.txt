@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const item = "outer";
+const items = [1, 2];
+</script>
+<template lang="pug">
+ul
+  li(v-for="item in items") 🧭{{ item }}
+</template>

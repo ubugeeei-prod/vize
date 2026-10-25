@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/pug-authored-scopes-10481",
+  "provenance": {
+    "fixCommit": "a87c897a11a1829e69a97e884536494d4764bd24",
+    "witnessPath": "tests/tooling/lsp-pug-authored-scopes.test.ts",
+    "witnessTest": "Pug authored scopes preserve local identity, nearest shadowing and exact hover excerpts",
+    "inputOrigin": "Minimal derivative of the public v0.560.0 Pug local-alias hover/definition failure in #10481",
+    "contractOrigin": "Independent physical Pug declaration coordinates and complete definition response"
+  },
+  "files": [
+    {
+      "source": "Scope.vue.txt",
+      "runtimePath": "Scope.vue",
+      "sha256": "b9194eda4fd372f8cd7ae3023877a8a9bd6ba5766f43183011b6c0f6eaf2433f"
+    },
+    {
+      "source": "Scope.crlf.vue.txt",
+      "runtimePath": "Scope.crlf.vue",
+      "sha256": "1c28eee61876cc9054492491ad2cd8c578206c20f8b9821bdab4928f4baec2c9"
+    }
+  ],
+  "entry": "Scope.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "84a4c084e5d5bbe3302e4c23ac987494195c7a3703d3710a525f348865a5a8e9"
+  },
+  "method": "textDocument/definition",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Derived Pug compatibility scope with exact authored coordinates; source custody does not establish native whole-product parity"
+}

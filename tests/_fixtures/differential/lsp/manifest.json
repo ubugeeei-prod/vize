@@ -1989,6 +1989,51 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/pug-authored-scopes-10481",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "pug-authored-scopes-10481",
+        "files": [
+          {
+            "path": "Scope.vue.txt",
+            "sha256": "b9194eda4fd372f8cd7ae3023877a8a9bd6ba5766f43183011b6c0f6eaf2433f"
+          },
+          {
+            "path": "Scope.crlf.vue.txt",
+            "sha256": "1c28eee61876cc9054492491ad2cd8c578206c20f8b9821bdab4928f4baec2c9"
+          }
+        ]
+      },
+      "case": {
+        "path": "pug-authored-scopes-10481/case.json",
+        "sha256": "d01e42eef3798b0b156bda55d3568dee20ae53201daddc1b0ec18103446aaa89"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
