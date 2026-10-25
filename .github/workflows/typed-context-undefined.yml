@@ -3,6 +3,17 @@ on:
   pull_request:
     paths:
       - .github/workflows/typed-context-undefined.yml
+      - crates/vize_canon/src/virtual_ts/helpers.rs
+      - crates/vize_canon/src/virtual_ts/helpers/setup_macros.rs
+      - crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs
+      - crates/vize_canon/src/virtual_ts/generator/template_refs.rs
+      - crates/vize_canon/src/virtual_ts/generator/options_api/variables.rs
+      - crates/vize_canon/src/virtual_ts/tests/context_undefined.rs
+      - crates/vize/tests/content_mapper_tsgo_cli.rs
+      - crates/vize/tests/content_mapper_tsgo_cli/typed_context_undefined.rs
+      - crates/vize/tests/content_mapper_tsgo_cli/typed_context_undefined/**
+      - tests/_fixtures/differential/typechecker/template-context-undefined-10667/**
+      - tools/support/github/typed-context-undefined-replay.mjs
   workflow_dispatch:
     inputs:
       source_ref:
