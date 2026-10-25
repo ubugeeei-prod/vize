@@ -25,14 +25,26 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
+      - name: Preserve the initial source authority before any qualification step
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-editor-artifact"
+          git rev-parse HEAD > "$RUNNER_TEMP/router-editor-artifact/source-sha.txt"
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/router-editor-artifact/source-tree.txt"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
-      - uses: ./.github/actions/restore-source-cli
-        with: { producer: "${{ toJSON(needs.cli.outputs) }}" }
-      - name: Install locked workspace dependencies
-        run: vp install --frozen-lockfile --prefer-offline
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.cli.outputs) }}" }
+      - name: Retain the original producer and consumer receipts
+        run: |
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/router-editor-artifact/producer-build.json"
+          cp target/ci/vize.source-build.json "$RUNNER_TEMP/router-editor-artifact/producer-transport.json"
+          cp target/ci/vize.source-use.json "$RUNNER_TEMP/router-editor-artifact/consumer-use.json"
+      - name: Install locked workspace dependencies
+        run: vp install --frozen-lockfile --prefer-offline
       - uses: ./.github/actions/setup-rust-script
       - name: Package the actual VSIX and verify its contents
         run: vp run --workspace-root test:vscode-extension:vsix

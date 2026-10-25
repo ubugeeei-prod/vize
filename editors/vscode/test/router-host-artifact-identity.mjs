@@ -21,24 +21,24 @@ export function recordRouterHostIdentity({ output, root, server, corsa, vsix, vs
   const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(head.status, 0);
   const native = fileIdentity(server);
+  fs.copyFileSync(receiptPath, path.join(output, "native-source-receipt.json"));
+  fs.copyFileSync(vsix, path.join(output, "vize.vsix"));
   validateBuildReceipt(
     receipt,
     {
       sourceRevision: head.stdout.trim(),
       binaryPath: path.relative(root, server).split(path.sep).join("/"),
       binarySha256: native.sha256,
-      cliVersion: run(server, ["--version"]).toString("utf8").trim(),
+      cliVersion: run(server, ["--version"], output).toString("utf8").trim(),
     },
     receipt.recipe,
   );
   const packagedManifest = JSON.parse(
-    run("unzip", ["-p", vsix, "extension/package.json"]).toString("utf8"),
+    run("unzip", ["-p", vsix, "extension/package.json"], output).toString("utf8"),
   );
-  const bundle = run("unzip", ["-p", vsix, "extension/dist/extension.cjs"]);
-  const corsaVersion = run(corsa, ["--version"]).toString("utf8").trim();
+  const bundle = run("unzip", ["-p", vsix, "extension/dist/extension.cjs"], output);
+  const corsaVersion = run(corsa, ["--version"], output).toString("utf8").trim();
   assert.equal(corsaVersion, "Version 7.0.2");
-  fs.copyFileSync(receiptPath, path.join(output, "native-source-receipt.json"));
-  fs.copyFileSync(vsix, path.join(output, "vize.vsix"));
   const value = {
     schema: "vize.router-installed-editor-identity",
     version: 1,
@@ -61,8 +61,12 @@ export function recordRouterHostIdentity({ output, root, server, corsa, vsix, vs
   return value;
 }
 
-function run(executable, args) {
+function run(executable, args, output) {
   const result = spawnSync(executable, args, { timeout: 30_000, maxBuffer: 32 * 1024 * 1024 });
+  fs.appendFileSync(
+    path.join(output, "identity-processes.jsonl"),
+    `${JSON.stringify({ executable, args, status: result.status, signal: result.signal, error: result.error?.message ?? null, stdoutBase64: result.stdout?.toString("base64") ?? null, stderrBase64: result.stderr?.toString("base64") ?? null })}\n`,
+  );
   assert.ifError(result.error);
   assert.equal(result.signal, null);
   assert.equal(result.status, 0, result.stderr.toString("utf8"));

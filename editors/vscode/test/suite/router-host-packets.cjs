@@ -158,10 +158,31 @@ async function capture(document, label) {
   assert.ok(offset >= "route.params.".length);
   const position = pos(document, offset + 1);
   const uri = document.uri.toString();
-  const result = { label, uri, source, version: document.version, native: {}, public: {} };
+  const result = {
+    label,
+    uri,
+    source,
+    version: document.version,
+    native: {},
+    public: {},
+    timings: [],
+  };
   const save = () => retain(label, result);
+  const invoke = async (command, ...args) => {
+    const started = performance.now();
+    try {
+      return await vscode.commands.executeCommand(command, ...args);
+    } finally {
+      result.timings.push({
+        command,
+        method: args[0]?.method ?? null,
+        elapsedMs: performance.now() - started,
+      });
+      save();
+    }
+  };
   const request = async (name, method, params) => {
-    result.native[name] = await vscode.commands.executeCommand("vize.test.executeLspRequest", {
+    result.native[name] = await invoke("vize.test.executeLspRequest", {
       method,
       params,
     });
@@ -173,10 +194,21 @@ async function capture(document, label) {
       textDocument: { uri },
       position: pos(document, offset),
     });
+    const candidate = result.native.completion?.[0]?.data?.vizeCompletion?.item?.data?.fileName;
+    if (candidate) {
+      const bytes = fs.readFileSync(candidate);
+      result.generated = {
+        file: candidate,
+        bytes: bytes.length,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+        source: bytes.toString("utf8"),
+      };
+      save();
+    }
     result.native.resolved = [];
     for (const item of result.native.completion ?? []) {
       result.native.resolved.push(
-        await vscode.commands.executeCommand("vize.test.executeLspRequest", {
+        await invoke("vize.test.executeLspRequest", {
           method: "completionItem/resolve",
           params: item,
         }),
@@ -189,14 +221,14 @@ async function capture(document, label) {
       position,
       context: { includeDeclaration: true },
     });
-    result.public.hover = (
-      await vscode.commands.executeCommand("vscode.executeHoverProvider", document.uri, position)
-    ).map((hover) => ({
-      contents: hover.contents.map(markdown),
-      range: hover.range ? describeRange(hover.range) : null,
-    }));
+    result.public.hover = (await invoke("vscode.executeHoverProvider", document.uri, position)).map(
+      (hover) => ({
+        contents: hover.contents.map(markdown),
+        range: hover.range ? describeRange(hover.range) : null,
+      }),
+    );
     save();
-    const completions = await vscode.commands.executeCommand(
+    const completions = await invoke(
       "vscode.executeCompletionItemProvider",
       document.uri,
       pos(document, offset),
@@ -209,33 +241,15 @@ async function capture(document, label) {
     };
     save();
     result.public.definition = (
-      await vscode.commands.executeCommand(
-        "vscode.executeDefinitionProvider",
-        document.uri,
-        position,
-      )
+      await invoke("vscode.executeDefinitionProvider", document.uri, position)
     ).map(publicLocation);
     save();
     result.public.references = (
-      await vscode.commands.executeCommand(
-        "vscode.executeReferenceProvider",
-        document.uri,
-        position,
-      )
+      await invoke("vscode.executeReferenceProvider", document.uri, position)
     ).map(publicLocation);
     result.public.diagnostics = vscode.languages
       .getDiagnostics(document.uri)
       .map(describeDiagnostic);
-    const candidate = result.native.completion?.[0]?.data?.vizeCompletion?.item?.data?.fileName;
-    if (candidate) {
-      const bytes = fs.readFileSync(candidate);
-      result.generated = {
-        file: candidate,
-        bytes: bytes.length,
-        sha256: createHash("sha256").update(bytes).digest("hex"),
-        source: bytes.toString("utf8"),
-      };
-    }
     result.documentRevision = documentRevision(uri);
     return result;
   } finally {

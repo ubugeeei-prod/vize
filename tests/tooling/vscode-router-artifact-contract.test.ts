@@ -65,6 +65,17 @@ test("artifact workflow executes the installed VSIX with same-source receipt cus
   );
   assert.match(workflow, /uses: \.\/\.github\/workflows\/full-source-cli\.yml/u);
   assert.match(workflow, /uses: \.\/\.github\/actions\/restore-source-cli/u);
+  const restoreAt = workflow.indexOf("uses: ./.github/actions/restore-source-cli");
+  for (const prerequisite of [
+    "uses: dtolnay/rust-toolchain@",
+    "uses: wild-linker/action@",
+    "git rev-parse 'HEAD^{tree}'",
+  ]) {
+    assert.ok(
+      workflow.indexOf(prerequisite) >= 0 && workflow.indexOf(prerequisite) < restoreAt,
+      `${prerequisite} must precede receipt authentication`,
+    );
+  }
   const packageAt = workflow.indexOf("test:vscode-extension:vsix");
   const runAt = workflow.indexOf("xvfb-run -a node editors/vscode/test/run-router-host-real.mjs");
   assert.ok(packageAt >= 0 && runAt > packageAt);
