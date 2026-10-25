@@ -93,6 +93,14 @@ jobs:
           (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
           git -C "$stable_base" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/stability-base-source.txt"
           sha256sum "$observer" "$stable_base/$observer" > "$RUNNER_TEMP/jsx-authored-native/stability-observer.sha256"
+          stability_oracle=crates/vize_atelier_jsx/tests/native_component_stability.rs
+          stability_packet=tests/_fixtures/differential/jsx/authored-native-modules-10700/component-stability.json
+          cp "$stability_oracle" "$stable_base/$stability_oracle"
+          cp "$stability_packet" "$stable_base/$stability_packet"
+          cmp "$stability_oracle" "$stable_base/$stability_oracle"
+          cmp "$stability_packet" "$stable_base/$stability_packet"
+          (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_COMPONENT_STABILITY_EXPECT_OLD=1 VIZE_JSX_COMPONENT_STABILITY_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-packets.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_stability -- --nocapture)
+          sha256sum "$stability_oracle" "$stable_base/$stability_oracle" > "$RUNNER_TEMP/jsx-authored-native/stability-oracle.sha256"
       - name: Verify measured contracts and source counters
         run: |
           python3 - <<'PYCODE'
@@ -104,6 +112,13 @@ jobs:
           assert len(base)==len(head)==16
           stability_base=json.loads((directory/'stability-base-profile.json').read_text())
           assert len(stability_base)==len(head)
+          before_packets=json.loads((directory/'stability-base-packets.json').read_text())
+          after_packets=json.loads((directory/'component-stability.json').read_text())
+          assert len(before_packets)==len(after_packets)==28
+          for previous,current in zip(before_packets,after_packets):
+            for key in ['source','name','mode','stable']: assert previous[key]==current[key]
+            if current['mode']=='Vdom' or not current['stable']:
+              assert {k:v for k,v in previous.items() if k!='counters'}=={k:v for k,v in current.items() if k!='counters'}, 'complete default/conservative code/maps/tokens remain exact'
           before_roles=json.loads((directory/'base-functional-role.json').read_text())
           after_roles=json.loads((directory/'head-functional-role.json').read_text())
           assert len(before_roles)==len(after_roles)==6
@@ -167,6 +182,7 @@ jobs:
           for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding adversarial_snapshots; do
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
+          cargo test --locked --profile ci -p vize_vitrine --lib jsx_compile_result_supports_ssr_output || status=1
           exit "$status"
       - name: Verify complete native fixture and historical custody
         if: always()
@@ -199,5 +215,6 @@ jobs:
             ${{ runner.temp }}/jsx-authored-native
             crates/vize_atelier_jsx/src/**/*.snap.new
             crates/vize_atelier_jsx/tests/**/*.snap.new
+            crates/vize_vitrine/src/napi/snapshots/*.snap.new
           if-no-files-found: error
           retention-days: 14

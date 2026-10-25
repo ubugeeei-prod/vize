@@ -425,9 +425,16 @@ mod tests {
         );
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(result.code.contains("__ssrInlineRender: true"));
-        assert!(result.code.contains("const App ="));
-        assert!(result.code.contains("_ssrInterpolate(message)"));
+        insta::assert_snapshot!(
+            "jsx_authored_ssr_dto_10701",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "code": &result.code,
+                "map": &result.map,
+                "errors": &result.errors,
+                "warnings": &result.warnings,
+                "scopedStyles": result.scoped_styles.iter().map(|style| serde_json::json!({"scopeId":&style.scope_id,"css":&style.css})).collect::<Vec<_>>(),
+            })).expect("complete NAPI result")
+        );
         let decoded: serde_json::Value =
             serde_json::from_str(&result.map.expect("SSR module source map"))
                 .expect("valid v3 map");
