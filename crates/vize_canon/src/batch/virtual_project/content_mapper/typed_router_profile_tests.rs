@@ -67,6 +67,21 @@ fn typed_router_context_admission_is_outside_repeated_projection_work() {
         .get("canon.content_mapper.project_configuration")
         .unwrap();
     let projection = profiler.get("canon.content_mapper.transform").unwrap();
+    let phases: serde_json::Value = profiler
+        .summary()
+        .entries
+        .iter()
+        .map(|entry| {
+            json!({
+                "name":entry.name,
+                "calls":entry.count,
+                "totalNs":entry.total.as_nanos(),
+                "selfNs":entry.self_total.as_nanos(),
+                "childNs":entry.child_total.as_nanos(),
+                "approxP95Ns":entry.p95.as_nanos(),
+            })
+        })
+        .collect();
     let report = json!({
         "schema":"vize.content-mapper.router-source-profile",
         "version":1,
@@ -74,6 +89,7 @@ fn typed_router_context_admission_is_outside_repeated_projection_work() {
         "sourceSha256":super::super::identity::encode_digest(Sha256::digest(source.as_bytes())),
         "projectConfiguration":observed(&configuration),
         "projection":observed(&projection),
+        "phases":phases,
     });
     let report = serde_json::to_string_pretty(&report).unwrap();
     if let Some(path) = std::env::var_os("VIZE_TEST_ROUTER_PROFILE_OUTPUT") {
