@@ -75,7 +75,9 @@ impl Fixture {
             .canonicalize()
             .expect("#7990 requires the installed Playground Vue dependency");
         let directory = tempfile::tempdir().unwrap();
-        let root = directory.path().canonicalize().unwrap();
+        let provider_root = directory.path().canonicalize().unwrap();
+        let root = provider_root.join("workspace");
+        fs::create_dir_all(&root).unwrap();
         let app = root.join("app");
         for (original, target) in [
             ("package.json", "package.json"),
@@ -139,14 +141,27 @@ impl Fixture {
         }
         fs::create_dir_all(app.join("node_modules")).unwrap();
         std::os::unix::fs::symlink("../../ui", app.join("node_modules/ui")).unwrap();
-        let providers = root.join("node_modules");
-        fs::create_dir_all(providers.join("@typescript")).unwrap();
-        std::os::unix::fs::symlink(
-            native_package,
-            providers.join(native_manifest["name"].as_str().unwrap()),
+        // Declare the actual installed platform provider outside the authored
+        // corpus; a stale platform-package symlink alone is not project authority.
+        let provider_name = native_manifest.get("name").and_then(Value::as_str).unwrap();
+        let provider_version = native_manifest
+            .get("version")
+            .and_then(Value::as_str)
+            .unwrap();
+        fs::write(
+            provider_root.join("package.json"),
+            serde_json::to_vec(&json!({
+                "private": true,
+                "devDependencies": { (provider_name): provider_version }
+            }))
+            .unwrap(),
         )
         .unwrap();
-        std::os::unix::fs::symlink(vue, providers.join("vue")).unwrap();
+        let providers = provider_root.join("node_modules");
+        fs::create_dir_all(providers.join("@typescript")).unwrap();
+        std::os::unix::fs::symlink(native_package, providers.join(provider_name)).unwrap();
+        fs::create_dir_all(root.join("node_modules")).unwrap();
+        std::os::unix::fs::symlink(vue, root.join("node_modules/vue")).unwrap();
         assert_eq!(
             discover_corsa_in_ancestors(&app)
                 .unwrap()
