@@ -57,8 +57,9 @@ reloads a changed component; local component state can reset. CSS-only
 dependencies are handled by Parcel's CSS HMR runtime.
 
 Vapor output is opt-in with `"compiler": { "vapor": true }` and needs a Vue
-runtime that provides the corresponding helpers. A separate runtime module can
-be selected with `runtimeModuleName`.
+runtime that provides the corresponding helpers. The preview uses the default
+`vue` runtime module for Vapor; Parcel aliases can select its runtime version.
+`runtimeModuleName` can select a separate module for VDOM output.
 
 SFC CSS modules, external script/template blocks, custom blocks, and emitted
 macro artifacts currently produce explicit errors. Separate `.module.css`

@@ -632,6 +632,11 @@ try {
       {},
     ],
     ["config", source(), { compiler: { filename: "other.vue" } }],
+    [
+      "vapor-custom-runtime",
+      source(),
+      { compiler: { vapor: true, runtimeModuleName: "custom-runtime" } },
+    ],
   ];
   for (const [name, text, config] of expectedFailures) {
     await fs.writeFile(path.join(consumer, "App.vue"), text);

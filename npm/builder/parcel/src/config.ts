@@ -69,7 +69,18 @@ export function validateOptions(value: unknown, filePath?: string): VizeParcelOp
       fail(`Unknown or invalid Parcel Vize compiler option: ${name}.`, filePath);
     }
   }
-  return options as VizeParcelOptions;
+  const validated = options as VizeParcelOptions;
+  if (
+    validated.compiler?.vapor &&
+    validated.compiler.runtimeModuleName &&
+    validated.compiler.runtimeModuleName !== "vue"
+  ) {
+    fail(
+      "Vapor custom runtime modules are not supported by this compiler yet. Select a compatible Vue runtime using Parcel aliases.",
+      filePath,
+    );
+  }
+  return validated;
 }
 
 export async function loadConfig({ config }: { config: Config }): Promise<VizeParcelOptions> {

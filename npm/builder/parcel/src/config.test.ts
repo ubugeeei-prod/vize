@@ -5,7 +5,7 @@ import { loadConfig, validateOptions } from "./config.ts";
 test("only documented compiler and host controls are admitted", () => {
   const config = {
     compiler: {
-      vapor: true,
+      vapor: false,
       customElements: ["x-view"],
       templateSyntax: "strict",
       runtimeModuleName: "vue-vapor",
@@ -13,6 +13,7 @@ test("only documented compiler and host controls are admitted", () => {
     transformAssetUrls: false,
   };
   assert.deepEqual(validateOptions(config), config);
+  assert.deepEqual(validateOptions({ compiler: { vapor: true } }), { compiler: { vapor: true } });
   for (const value of [
     null,
     [],
@@ -25,6 +26,7 @@ test("only documented compiler and host controls are admitted", () => {
     { compiler: { templateSyntax: ["strict"] } },
     { compiler: { customElements: [1] } },
     { transformAssetUrls: "false" },
+    { compiler: { vapor: true, runtimeModuleName: "custom-runtime" } },
   ]) {
     assert.throws(() => validateOptions(value));
   }
