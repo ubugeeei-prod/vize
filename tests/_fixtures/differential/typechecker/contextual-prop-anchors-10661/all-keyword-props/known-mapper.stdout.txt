@@ -1,0 +1,4 @@
+src/Route.vue(302,19): error TS2448: Block-scoped variable 'undefined' used before its declaration.
+  This location is in virtual code produced by the content mapper 'vize' and has no corresponding location in the original file.
+src/Route.vue(302,19): error TS2454: Variable 'undefined' is used before being assigned.
+  This location is in virtual code produced by the content mapper 'vize' and has no corresponding location in the original file.

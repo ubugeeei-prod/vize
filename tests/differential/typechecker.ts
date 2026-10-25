@@ -95,6 +95,10 @@ export const TYPECHECKER_TESTS = {
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "quoted-generic-parameters-10540":
     "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+  "narrowed-slot-host-guard-10660": "slot_host_guards_preserve_authored_impossible_comparisons",
+  "empty-generic-public-contract-10540":
+    "empty_generic_markers_preserve_functional_public_contracts",
+  "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "planned-generic-syntax-route-10598":
     "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
 } as const;
@@ -167,6 +171,9 @@ const sourceRevisions = {
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "quoted-generic-parameters-10540": "711b56b2499b9136d8965a59c65713a2b78540f4",
+  "narrowed-slot-host-guard-10660": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "empty-generic-public-contract-10540": "4fdc457df6498c4636efb35dd76af61394ad7006",
+  "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 

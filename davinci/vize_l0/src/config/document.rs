@@ -83,6 +83,11 @@ impl ConfigDocument {
         self.0.formatter_profile()
     }
 
+    /// Formatter-only file exclusions, independent of lint and compiler scopes.
+    pub fn formatter_ignore_patterns(&self) -> &[crate::String] {
+        self.0.formatter_ignore_patterns()
+    }
+
     /// Normalize the effective model and its feature flags once.
     pub fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         self.0.into_config_and_features()

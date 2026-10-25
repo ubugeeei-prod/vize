@@ -30,6 +30,8 @@ runs:
         node --test --test-concurrency=1 \
           tests/tooling/lsp-vue-language-tools-oracles.test.ts \
           tests/tooling/lsp-editor-feature-isolation.test.ts \
+          tests/tooling/lsp-local-completion-resolve.test.ts \
+          tests/tooling/lsp-local-completion-ownership.test.ts \
           tests/tooling/lsp-preprocessor-colors.test.ts \
           tests/tooling/lsp-html-void-examples.test.ts \
           tests/tooling/lsp-html-element-hover.test.ts \
@@ -41,6 +43,16 @@ runs:
           tests/tooling/lsp-project-navigation-8013.test.ts \
           tests/tooling/lsp-workspace-semantic.test.ts \
           tests/tooling/lsp-file-rename-workspace.test.ts
+    - name: Retain complete local completion resolve observations
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: local-completion-resolve-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/differential/local-completion-resolve
+          target/ci/vize.differential-build.json
+        if-no-files-found: error
+        retention-days: 7
     - name: Preserve source identity and LSP responses on failure
       if: ${{ failure() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

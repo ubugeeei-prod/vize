@@ -9,6 +9,8 @@ import { expressionWidthReference } from "../differential/formatter-expression-w
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const authority = "tests/_fixtures/differential/formatter-regressions/expression-print-width-7876";
 const manifest = "tests/_fixtures/differential/formatter/manifest.json";
+const closedManifest =
+  "tests/_fixtures/differential/formatter-regressions/sole-child-width-7876/formatter-manifest.original.json.txt";
 const original = fs.readFileSync(
   path.join(
     root,
@@ -57,6 +59,7 @@ function carrier(t) {
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   for (const relative of [
     manifest,
+    closedManifest,
     `${authority}/corpus.json`,
     `${authority}/original-deep-lf.expected`,
   ]) {
@@ -70,6 +73,7 @@ function carrier(t) {
 void test("whole manifest, corpus and expected-byte mutations are rejected", (t) => {
   for (const relative of [
     manifest,
+    closedManifest,
     `${authority}/corpus.json`,
     `${authority}/original-deep-lf.expected`,
   ]) {

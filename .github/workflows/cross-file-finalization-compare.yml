@@ -1,0 +1,75 @@
+name: Cross-file finalization work comparison
+run-name: Cross-file actual work @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Exact current integration base SHA with matching core/reset/stale source
+        type: string
+        required: true
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/cross-file-finalization-compare.yml
+      - crates/vize/src/commands/lint/cross_file.rs
+      - crates/vize_vitrine/src/wasm/cross_file.rs
+      - crates/vize_croquis_cf/benches/cross_file.rs
+      - tests/tooling/support/cross-file-finalization-compare.ts
+permissions:
+  contents: read
+concurrency:
+  group: cross-file-finalization-compare-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  BASE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
+jobs:
+  paired-optimized-source:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: cross-file-finalization-compare-head
+          target-path: target/finalization-compare-head-build
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          secondary-key: cross-file-finalization-compare-base
+          secondary-target-path: target/finalization-compare-base-build
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install frozen tools and checkout the exact matched base
+        run: |
+          vp install --frozen-lockfile --prefer-offline
+          [[ "$BASE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git worktree add --detach target/finalization-compare-base "$BASE_SOURCE_SHA"
+      - name: Compile both actual optimized providers into isolated targets
+        run: |
+          cargo build --locked --manifest-path target/finalization-compare-base/Cargo.toml --profile ci-opt -p vize --target-dir target/finalization-compare-base-build
+          cargo build --locked --profile ci-opt -p vize --target-dir target/finalization-compare-head-build
+      - name: Compare full packets and actual source work on identical physical inputs
+        run: node tests/tooling/support/cross-file-finalization-compare.ts
+      - name: Preserve both providers, full original profiles and packets
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cross-file-finalization-compare-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/cross-file-finalization-compare
+          if-no-files-found: error
+          retention-days: 14

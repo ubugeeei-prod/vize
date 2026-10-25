@@ -1,0 +1,18 @@
+{
+  "schema": "vize.lsp.local-completion-resolve-session",
+  "version": 1,
+  "plannedClientRpcCount": 23,
+  "directWrapperRpcCount": 22,
+  "genericAdapter": "unsupported-transition",
+  "executor": "tests/tooling/lsp-local-completion-resolve.test.ts",
+  "before": {
+    "version": "0.562.0",
+    "failureRequestId": 12,
+    "error": {
+      "code": -32801,
+      "message": "Content modified"
+    },
+    "observedPrefixRequests": 12,
+    "observedCleanupRequests": 1
+  }
+}

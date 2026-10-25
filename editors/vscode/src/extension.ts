@@ -142,6 +142,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
   context.subscriptions.push(
     ...workspaceLspConfig.watch((reason) => scheduleClientSync(context, reason)),
+    workspace.onDidGrantWorkspaceTrust(() =>
+      scheduleClientSync(context, "workspace trust granted"),
+    ),
   );
 
   context.subscriptions.push(
@@ -303,6 +306,7 @@ async function startClient(
   context: ExtensionContext,
   config: ReturnType<typeof workspace.getConfiguration>,
   generation: number,
+  workspaceFailure?: string,
 ): Promise<void> {
   traceConfig(`start enter generation=${generation}`);
   const initializationOptions = getInitializationOptions(config, {
@@ -318,7 +322,7 @@ async function startClient(
       void maybeOfferCapabilitySetup(context, config);
     }
   }
-  const serverPath = await findServerPath(context, config, generation);
+  const serverPath = await findServerPath(context, config, generation, workspaceFailure);
   traceConfig(`start path-return generation=${generation} current=${configurationSyncGeneration}`);
   if (generation !== configurationSyncGeneration) {
     traceConfig(`start refused generation=${generation} stage=server-path`);
@@ -368,6 +372,13 @@ async function startClient(
     traceConfig(`client start error generation=${generation}`);
     outputChannel.appendLine(`Failed to start language server: ${String(error)}`);
     if (generation !== configurationSyncGeneration) return;
+    if (!workspaceFailure && selectedServerCandidate?.source === "workspace") {
+      const reason = `Workspace server ${serverPath} (${selectedServerCandidate.version ?? "unknown version"}) failed to start: ${String(error)}`;
+      outputChannel.appendLine(`${reason}. Trying the extension server.`);
+      await nextClient.dispose();
+      if (generation !== configurationSyncGeneration) return;
+      return startClient(context, config, generation, reason);
+    }
     updateStatusBar("failed", "Failed to start language server");
     window.showErrorMessage(`Vize: Failed to start language server: ${String(error)}`);
   }

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const from = "local";
+const of = from;
+const as = of;
+const get = as;
+const set = get;
+const type = set;
+const async = type;
+const satisfies = async;
+</script>
+<template><p>{{ from }} {{ of }} {{ as }} {{ get }} {{ set }} {{ type }} {{ async }} {{ satisfies }}</p></template>

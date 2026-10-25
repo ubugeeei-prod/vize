@@ -62,6 +62,7 @@ pub(super) struct LineJoiner<'s> {
     previous_end: Option<usize>,
     /// Last ordinary opening tag, borrowed from the existing tag parser.
     opening: Option<(usize, usize, usize)>,
+    wrapped_text_close: Option<usize>,
 }
 
 impl<'s> LineJoiner<'s> {
@@ -72,6 +73,7 @@ impl<'s> LineJoiner<'s> {
             current: None,
             previous_end: None,
             opening: None,
+            wrapped_text_close: None,
         }
     }
 
@@ -134,6 +136,10 @@ impl<'s> LineJoiner<'s> {
         self.current.is_some()
     }
 
+    pub(super) fn has_locked_lines(&self) -> bool {
+        !self.locked.is_empty()
+    }
+
     #[inline]
     pub(super) fn previous_chunk_is_interpolation(&self) -> bool {
         self.previous_end
@@ -163,6 +169,14 @@ impl<'s> LineJoiner<'s> {
     /// Record the source end of the chunk just emitted.
     pub(super) fn finish(&mut self, end: usize) {
         self.previous_end = Some(end);
+    }
+
+    pub(super) fn wrapped_text(&mut self, closing_start: usize) {
+        self.wrapped_text_close = Some(closing_start);
+    }
+
+    pub(super) fn take_wrapped_text_close(&mut self, start: usize) -> bool {
+        self.wrapped_text_close.take() == Some(start)
     }
 
     fn locked_index(&self, pos: usize) -> Option<usize> {
@@ -254,6 +268,7 @@ impl TextRun {
 
     /// Append `source[start..end]`, separating it from already buffered text
     /// with a single space (an interpolation or a stray `<` split the runs).
+    #[inline(always)]
     pub(super) fn push_source(&mut self, source: &[u8], start: usize, end: usize) {
         if self.bytes.is_empty() {
             self.start = start;
