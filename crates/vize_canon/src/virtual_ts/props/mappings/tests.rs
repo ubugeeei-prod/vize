@@ -14,8 +14,8 @@ fn authored_unicode_prop_locals_follow_the_same_oxc_identifier_authority_as_anch
         "ascii",
     ];
     assert_eq!(
-        names.map(|name| prop_binding_identifier(name).to_string()),
-        names.map(str::to_owned),
+        names.map(prop_binding_identifier),
+        names.map(vize_carton::String::from),
     );
 }
 
@@ -31,7 +31,7 @@ fn reserved_and_nonidentifier_prop_keys_keep_the_existing_synthetic_alias_policy
             "9start",
             "😀"
         ]
-        .map(|name| prop_binding_identifier(name).to_string()),
+        .map(prop_binding_identifier),
         [
             "_class",
             "_default",
@@ -40,6 +40,7 @@ fn reserved_and_nonidentifier_prop_keys_keep_the_existing_synthetic_alias_policy
             "onUpdate_modelValue",
             "_9start",
             "_"
-        ],
+        ]
+        .map(vize_carton::String::from),
     );
 }
