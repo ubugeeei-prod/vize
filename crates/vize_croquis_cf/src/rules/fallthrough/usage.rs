@@ -126,7 +126,7 @@ fn usage_attr_fact(
     declared_props: &FxHashSet<CompactString>,
     declared_event: bool,
 ) -> FallthroughUsageAttrFact {
-    let declared_prop = !name_is_dynamic && declared_props.contains(&name);
+    let declared_prop = !name_is_dynamic && declared_props.contains(&camelize(&name));
     let (source_start, source_end) = source_range;
     FallthroughUsageAttrFact {
         standard_html_attr: !name_is_dynamic && is_standard_html_attr(name.as_str()),
@@ -151,7 +151,15 @@ fn declared_props_for(registry: &ModuleRegistry, child_id: FileId) -> FxHashSet<
                 .macros
                 .props()
                 .iter()
-                .map(|prop| prop.name.clone())
+                .map(|prop| camelize(&prop.name))
+                .chain(entry.analysis.macros.models().iter().flat_map(|model| {
+                    let modifiers = if model.name == "modelValue" {
+                        CompactString::const_new("modelModifiers")
+                    } else {
+                        cstr!("{}Modifiers", model.name)
+                    };
+                    [camelize(&model.name), camelize(&modifiers)]
+                }))
                 .collect()
         })
         .unwrap_or_default()
@@ -167,6 +175,14 @@ fn declared_events_for(registry: &ModuleRegistry, child_id: FileId) -> FxHashSet
                 .emits()
                 .iter()
                 .map(|event| event.name.clone())
+                .chain(
+                    entry
+                        .analysis
+                        .macros
+                        .models()
+                        .iter()
+                        .map(|model| cstr!("update:{}", model.name)),
+                )
                 .collect()
         })
         .unwrap_or_default()

@@ -271,7 +271,7 @@ fn test_props_validation_emits_type_mismatch_for_static_literal() {
             _ => None,
         })
         .expect("type mismatch issue");
-    assert_eq!(issue, ("count", "number", "string", 27));
+    assert_eq!(issue, ("count", "number", "'not a number'", 27));
 
     let diagnostic = result
         .diagnostics
@@ -292,7 +292,7 @@ fn test_props_validation_emits_type_mismatch_for_static_literal() {
         })
         .expect("type mismatch diagnostic");
 
-    assert_eq!(diagnostic, ("count", "number", "string", 27, 42));
+    assert_eq!(diagnostic, ("count", "number", "'not a number'", 27, 42));
 }
 
 fn script_analysis(script: &str) -> vize_croquis::Croquis {
