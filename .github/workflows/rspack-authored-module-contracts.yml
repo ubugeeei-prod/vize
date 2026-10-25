@@ -1,0 +1,83 @@
+name: Rspack authored module contracts
+on:
+  push:
+    branches: [test/rspack-authored-vapor-contracts]
+permissions: { contents: read }
+env:
+  SOURCE_SHA: ${{ github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  authored-modules:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          {
+            version: latest,
+            node-version: 24.14.0,
+            run-install: false,
+            cache: true,
+            cache-save: false,
+          }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          { key: rspack-authored-modules, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build the real source compiler and loader
+        run: |
+          vp install --frozen-lockfile --prefer-offline --filter './npm/builder/rspack...' --filter './npm/native...'
+          vp run --workspace-root build:native:test
+          node npm/native/scripts/native-build-receipt.mjs
+          vp run --no-cache --filter './npm/builder/rspack' build
+      - name: Retain the original fixture and snapshot custody
+        run: |
+          mkdir -p "$RUNNER_TEMP/rspack-authored"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/rspack-authored/source.txt"
+          git show 26f9dd4e19666d95a03318f943b21e2d4ff00fe1:npm/builder/rspack/src/test/fixtures/jsx-vapor/App.jsx > "$RUNNER_TEMP/rspack-authored/original-private-App.jsx"
+          cp npm/builder/rspack/src/__snapshots__/jsx.test.ts.snap "$RUNNER_TEMP/rspack-authored/before-jsx.test.ts.snap"
+      - name: Generate only the reviewed authored-export snapshot successor
+        env: { VIZE_RSPACK_JSX_CAPTURE: "${{ runner.temp }}/rspack-authored" }
+        run: |
+          node npm/native/scripts/test-preparation.mjs node --test --test-update-snapshots --test-name-pattern='^jsx: a vapor .jsx component compiles to template render code$' npm/builder/rspack/src/jsx.test.ts
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { createHash } from 'node:crypto';
+          const directory=path.join(process.env.RUNNER_TEMP,'rspack-authored');
+          const file='npm/builder/rspack/src/__snapshots__/jsx.test.ts.snap';
+          const before=fs.readFileSync(path.join(directory,'before-jsx.test.ts.snap'),'utf8');
+          const generated=fs.readFileSync(file,'utf8');
+          fs.writeFileSync(path.join(directory,'generated-jsx.test.ts.snap'),generated);
+          const marker='exports[`jsx: a vapor .jsx component compiles to template render code 1`] = ';
+          assert.equal(before.split(marker).length,2);
+          assert.equal(generated.split(marker).length,2);
+          const prefix=before.slice(0,before.indexOf(marker));
+          const successor=generated.slice(generated.indexOf(marker));
+          assert.equal((successor.match(/^exports\[/gm)||[]).length,1);
+          const final=prefix+successor;
+          fs.writeFileSync(file,final);
+          assert.equal(fs.readFileSync(file,'utf8').slice(0,prefix.length),prefix);
+          const hash=text=>createHash('sha256').update(text).digest('hex');
+          fs.writeFileSync(path.join(directory,'snapshot-custody.json'),JSON.stringify({source:process.env.SOURCE_SHA,target:marker,unchangedVdomPrefixSha256:hash(prefix),oldWholeFileSha256:hash(before),newWholeFileSha256:hash(final),scope:'one actual generated successor; original two VDOM snapshot entries retain every byte; generation is staging, final exact-head qualification remains separate'},null,2)+'\n');
+          NODE
+      - name: Run both complete test files without updating snapshots
+        env: { VIZE_RSPACK_JSX_CAPTURE: "${{ runner.temp }}/rspack-authored" }
+        run: node npm/native/scripts/test-preparation.mjs node --test npm/builder/rspack/src/jsx.test.ts npm/builder/rspack/src/shared/jsx-compile.test.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: rspack-authored-modules-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/rspack-authored
+            npm/builder/rspack/src/__snapshots__/jsx.test.ts.snap
+            npm/native/.artifacts/native/build-token-receipt.json
+          if-no-files-found: error
+          retention-days: 14
