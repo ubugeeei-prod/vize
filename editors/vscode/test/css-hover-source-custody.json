@@ -2737,12 +2737,12 @@
     ]
   },
   "productSnapshot": {
-    "sourceRevision": "3be9e876959a79bcd7b039386325a6840dd372ab",
-    "cratesSha256": "328c05bc9c94b3e49a31df257392de5bf149c213776818dc9b85c3fa7e944d32",
-    "cratesEntries": 9383,
+    "sourceRevision": "cc8e49af9193f6ccdcd319c937c8bca62743307b",
+    "cratesSha256": "ca0f3415286f7e8c850b4c2c2fda2e95b69f476eee9e286d65562081429a9bc4",
+    "cratesEntries": 9388,
     "buildInputsSha256": "eb2d9309d150a12e58c137acaf0d6104a791598ede20972d69c0717255949517",
     "vsixInputsSha256": "7ae0809dff0363fd34a8aab2acd5475dcf40ac07338195dca5aaaa77237e1669",
-    "fixturesSha256": "366dd0c032556e689dff346e00a58de5bad414db4a16fda13b22bc5c751dda30"
+    "fixturesSha256": "016a39fff4423799f50dae6335a6c0f71d0baa44bde9d555167b228349e62406"
   },
   "reviewedFixtures": [
     {
@@ -2782,6 +2782,12 @@
       "oid": "21cdbf02d341344f8c78840a20fca1e7c60ac5f9"
     },
     {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/hover.expected-concrete-colors-10556.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "4fb460fb3dc4e28d510ca15e6fd6b20f30715147"
+    },
+    {
       "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/hover.expected-stylesheet-examples-10572.json",
       "mode": "100644",
       "type": "blob",
@@ -2798,6 +2804,24 @@
       "mode": "100644",
       "type": "blob",
       "oid": "0fceb090132c41c16e3ffb7744219047a93eaa9c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-concrete-color-hover-10556/Colors.vue.txt",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "3923307ce7f2d8d15b4374725ef12218f45ff0dd"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-concrete-color-hover-10556/case.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "6de2841c2018313ad2ac3dc4d308f78655fa8799"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-concrete-color-hover-10556/responses.expected.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "0554f634abee0eb476ad0c6cfd2d38161575aecb"
     },
     {
       "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/Colors.vue.txt",
