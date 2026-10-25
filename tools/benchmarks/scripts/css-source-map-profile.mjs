@@ -6,6 +6,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { buildPhaseDriver, runPhaseDriver } from "./css-source-map-phases.mjs";
+
 const script = fileURLToPath(import.meta.url);
 const digest = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const git = (root, ...args) =>
@@ -63,6 +65,28 @@ function command(argv, cwd, env, log) {
   }
 }
 
+export function profileVectors() {
+  return [
+    { id: "two-rules", source: ".雪😀{color:red}.b{opacity:.5}", batch: 500 },
+    {
+      id: "400-rules",
+      source: Array.from(
+        { length: 400 },
+        (_, i) => `.r${i}雪😀{opacity:${i / 1000};background:url('../asset.png')}`,
+      ).join("\r\n"),
+      batch: 10,
+    },
+    {
+      id: "400-bindings",
+      source: Array.from(
+        { length: 400 },
+        (_, i) => `.r${i}雪😀{width:v-bind(width${i});opacity:${i / 1000}}`,
+      ).join("\r\n"),
+      batch: 10,
+    },
+  ];
+}
+
 function worker(identityFile, fixtureRoot, destination) {
   const identity = JSON.parse(fs.readFileSync(identityFile, "utf8"));
   const native = createRequire(import.meta.url)(identity.binary);
@@ -107,25 +131,7 @@ function worker(identityFile, fixtureRoot, destination) {
       }
     }
   }
-  const vectors = [
-    { id: "two-rules", source: ".雪😀{color:red}.b{opacity:.5}", batch: 500 },
-    {
-      id: "400-rules",
-      source: Array.from(
-        { length: 400 },
-        (_, i) => `.r${i}雪😀{opacity:${i / 1000};background:url('../asset.png')}`,
-      ).join("\r\n"),
-      batch: 10,
-    },
-    {
-      id: "400-bindings",
-      source: Array.from(
-        { length: 400 },
-        (_, i) => `.r${i}雪😀{width:v-bind(width${i});opacity:${i / 1000}}`,
-      ).join("\r\n"),
-      batch: 10,
-    },
-  ];
+  const vectors = profileVectors();
   for (const vector of vectors) {
     const row = { ...vector, samples: [] };
     packet.timings.push(row);
@@ -275,6 +281,17 @@ function run(base, head, destination) {
     write(path.join(destination, `${side}-identity.json`), identity);
     retain();
   }
+  const phaseDrivers = new Map(),
+    phasePackets = [];
+  if (sources.base === "3a3c8460f966fddbd8e1be4c083d460b24202f90") {
+    const inputs = path.join(destination, "phase-inputs.json");
+    write(inputs, { filename: "profile-雪😀.css", vectors: profileVectors() });
+    for (const image of receipt.builds)
+      phaseDrivers.set(
+        image.side,
+        buildPhaseDriver({ image, root: head, destination, inputs, receipt }),
+      );
+  }
   const packets = [];
   for (const [index, side] of receipt.order.entries()) {
     const file = path.join(destination, `${index}-${side}.json`);
@@ -291,7 +308,21 @@ function run(base, head, destination) {
       process.env,
       path.join(destination, `${index}-${side}.log`),
     );
-    packets.push(JSON.parse(fs.readFileSync(file, "utf8")));
+    const packet = JSON.parse(fs.readFileSync(file, "utf8"));
+    packets.push(packet);
+    if (phaseDrivers.has(side)) {
+      const phases = runPhaseDriver(phaseDrivers.get(side), destination, index);
+      for (const row of phases.vectors) {
+        const native = packet.timings.find((vector) => vector.id === row.id);
+        assert.deepEqual(
+          row.outputs.fullCompile,
+          native.outputs.off,
+          "isolated whole Rust output must equal actual same-source NAPI output",
+        );
+        assert.equal(row.source, native.source);
+      }
+      phasePackets.push({ side, packet: phases });
+    }
   }
   for (const packet of packets) {
     assert.equal(packet.calls.length, 84);
@@ -344,6 +375,40 @@ function run(base, head, destination) {
       }),
     ),
   }));
+  if (phasePackets.length) {
+    assert.equal(phasePackets.length, 4);
+    const values = (packet) => packet.vectors.map(({ samples: _, ...row }) => row);
+    for (const entry of phasePackets)
+      assert.deepEqual(
+        values(entry.packet),
+        values(phasePackets[0].packet),
+        "all full phase inputs/results and logical work must remain exact across both roles/repeats",
+      );
+    receipt.phaseSummary = profileVectors().map((vector) => ({
+      id: vector.id,
+      results: ["base", "head"].flatMap((side) =>
+        ["scanner", "processed-input-compile", "full-compile"].map((phase) => {
+          const samples = phasePackets
+            .filter((entry) => entry.side === side)
+            .flatMap((entry) =>
+              entry.packet.vectors
+                .find((row) => row.id === vector.id)
+                .samples.filter((sample) => sample.phase === phase)
+                .map((sample) => sample.elapsedNs / sample.calls),
+            )
+            .sort((a, b) => a - b);
+          assert.equal(samples.length, 40);
+          return {
+            side,
+            phase,
+            samples,
+            p50Ns: samples[Math.floor(samples.length / 2)],
+            p95Ns: samples[Math.floor(samples.length * 0.95)],
+          };
+        }),
+      ),
+    }));
+  }
   receipt.summary = summary;
   receipt.completed = true;
   retain();
