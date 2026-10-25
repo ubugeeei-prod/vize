@@ -1,0 +1,1623 @@
+{
+  "schemaVersion": 1,
+  "inputSha256": "efcc44bdda2c2215f898c97f90cff185435eec9c2d5dbeab17d957596878330f",
+  "versions": {
+    "jsx": "2.0.1",
+    "babel": "7.29.0",
+    "runtimeDom": "3.5.35",
+    "dom": "21.0.4"
+  },
+  "cases": [
+    {
+      "id": "empty",
+      "sourceSha256": "bda2d63f49ea9cc64b5cb6ba7984fca5d6f7efd85740b28ed3c72543e29a51a8",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, null);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 18
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 15,
+          "end": 18,
+          "fragment": {
+            "start": 13,
+            "end": 18
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": ""
+    },
+    {
+      "id": "singleton",
+      "sourceSha256": "04b275a7f01aa0e805eff7dc745ce0e817aeff62f0459ecef2c7d06113277387",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createVNode(\"div\", {\n  \"id\": \"first\"\n}, null)]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 15,
+          "end": 32
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 35
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 32,
+          "end": 35,
+          "fragment": {
+            "start": 13,
+            "end": 35
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [
+            [
+              "id",
+              "first"
+            ]
+          ],
+          "children": []
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [
+            [
+              "id",
+              "first"
+            ]
+          ],
+          "children": []
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": "<div id=\"first\"></div>"
+    },
+    {
+      "id": "siblings",
+      "sourceSha256": "9180edba8be05356b14f4e80a0246d8e20c043e5aa29ee283a39a84a134431be",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, [_createTextVNode(\"hi\\uD83D\\uDE00\")]), _createVNode(\"span\", {\n  \"data-state\": \"ok\"\n}, null)]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 15,
+          "end": 28
+        },
+        {
+          "kind": "text",
+          "start": 18,
+          "end": 24
+        },
+        {
+          "kind": "element",
+          "start": 28,
+          "end": 51
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 54
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 51,
+          "end": 54,
+          "fragment": {
+            "start": 13,
+            "end": 54
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "p",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": "hi😀"
+            }
+          ]
+        },
+        {
+          "kind": "element",
+          "tag": "span",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [
+            [
+              "data-state",
+              "ok"
+            ]
+          ],
+          "children": []
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "element",
+          "tag": "p",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": "hi😀"
+            }
+          ]
+        },
+        {
+          "kind": "element",
+          "tag": "span",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [
+            [
+              "data-state",
+              "ok"
+            ]
+          ],
+          "children": []
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": "<p>hi😀</p><span data-state=\"ok\"></span>"
+    },
+    {
+      "id": "nested-empty",
+      "sourceSha256": "25d0bdd61c2fd421011338c46b1c211538e18250fa4c9d82a6d3700d6584fe95",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createVNode(_Fragment, null, [_createVNode(\"br\", null, null)]), _createVNode(_Fragment, null, null)]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 17,
+          "end": 22
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 33
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 15,
+          "end": 17,
+          "fragment": {
+            "start": 15,
+            "end": 25
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 33
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 22,
+          "end": 25,
+          "fragment": {
+            "start": 15,
+            "end": 25
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 33
+          }
+        },
+        {
+          "kind": "opening",
+          "start": 25,
+          "end": 27,
+          "fragment": {
+            "start": 25,
+            "end": 30
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 33
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 27,
+          "end": 30,
+          "fragment": {
+            "start": 25,
+            "end": 30
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 33
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 30,
+          "end": 33,
+          "fragment": {
+            "start": 13,
+            "end": 33
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "br",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": []
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "element",
+          "tag": "br",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": []
+        },
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": "<br>"
+    },
+    {
+      "id": "inside-element",
+      "sourceSha256": "c934827cc34db2e0a4b15517bc59e37db53b7cd56b48b6dfc2e8b5ba8e5dfefb",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(\"main\", null, [_createVNode(_Fragment, null, [_createVNode(\"p\", null, [_createTextVNode(\"one\")]), _createVNode(_Fragment, null, [_createVNode(\"hr\", null, null), _createTextVNode(\"two\")])])]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 13,
+          "end": 54
+        },
+        {
+          "kind": "element",
+          "start": 21,
+          "end": 31
+        },
+        {
+          "kind": "text",
+          "start": 24,
+          "end": 27
+        },
+        {
+          "kind": "element",
+          "start": 33,
+          "end": 38
+        },
+        {
+          "kind": "text",
+          "start": 38,
+          "end": 41
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 19,
+          "end": 21,
+          "fragment": {
+            "start": 19,
+            "end": 47
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 31,
+          "end": 33,
+          "fragment": {
+            "start": 31,
+            "end": 44
+          },
+          "parentFragment": {
+            "start": 19,
+            "end": 47
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 41,
+          "end": 44,
+          "fragment": {
+            "start": 31,
+            "end": 44
+          },
+          "parentFragment": {
+            "start": 19,
+            "end": 47
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 44,
+          "end": 47,
+          "fragment": {
+            "start": 19,
+            "end": 47
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": [
+                {
+                  "kind": "text",
+                  "value": "one"
+                }
+              ]
+            },
+            {
+              "kind": "element",
+              "tag": "hr",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": "two"
+            }
+          ]
+        }
+      ],
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": ""
+            },
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": [
+                {
+                  "kind": "text",
+                  "value": "one"
+                }
+              ]
+            },
+            {
+              "kind": "text",
+              "value": ""
+            },
+            {
+              "kind": "element",
+              "tag": "hr",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": "two"
+            },
+            {
+              "kind": "text",
+              "value": ""
+            },
+            {
+              "kind": "text",
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "html": "<main><p>one</p><hr>two</main>"
+    },
+    {
+      "id": "format-lf",
+      "sourceSha256": "04e14740f256182ff94d8a7f53013bba5443edf7f8558257685380635f5dc037",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createVNode(\"div\", null, [_createVNode(_Fragment, null, [_createVNode(\"p\", null, null)])])]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 18,
+          "end": 58
+        },
+        {
+          "kind": "element",
+          "start": 37,
+          "end": 41
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 62
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 28,
+          "end": 30,
+          "fragment": {
+            "start": 28,
+            "end": 49
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 62
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 46,
+          "end": 49,
+          "fragment": {
+            "start": 28,
+            "end": 49
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 62
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 59,
+          "end": 62,
+          "fragment": {
+            "start": 13,
+            "end": 62
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": ""
+            },
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": "<div><p></p></div>"
+    },
+    {
+      "id": "format-crlf",
+      "sourceSha256": "d16b78a2de12e212f48fcb78328cca383bbb2dfd357845a47a36e7e43354f522",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createVNode(\"div\", null, [_createVNode(_Fragment, null, [_createVNode(\"p\", null, null)])])]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 18,
+          "end": 54
+        },
+        {
+          "kind": "element",
+          "start": 34,
+          "end": 38
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 59
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 27,
+          "end": 29,
+          "fragment": {
+            "start": 27,
+            "end": 45
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 59
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 42,
+          "end": 45,
+          "fragment": {
+            "start": 27,
+            "end": 45
+          },
+          "parentFragment": {
+            "start": 13,
+            "end": 59
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 56,
+          "end": 59,
+          "fragment": {
+            "start": 13,
+            "end": 59
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": ""
+            },
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": "<div><p></p></div>"
+    },
+    {
+      "id": "inline-spaces",
+      "sourceSha256": "b36207ba7e3927f79f248fc008bf7bde5e95812ef6ea77cd6c233ce437f2dba4",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createTextVNode(\" \"), _createVNode(\"div\", null, null), _createTextVNode(\" \")]);",
+      "sourceOps": [
+        {
+          "kind": "text",
+          "start": 15,
+          "end": 16
+        },
+        {
+          "kind": "element",
+          "start": 16,
+          "end": 22
+        },
+        {
+          "kind": "text",
+          "start": 22,
+          "end": 23
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 26
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 23,
+          "end": 26,
+          "fragment": {
+            "start": 13,
+            "end": 26
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "text",
+          "value": " "
+        },
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": []
+        },
+        {
+          "kind": "text",
+          "value": " "
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": " "
+        },
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": []
+        },
+        {
+          "kind": "text",
+          "value": " "
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": " <div></div> "
+    },
+    {
+      "id": "comment",
+      "sourceSha256": "da16b54aeb489e0ea6534902ce88e646faa21bac901e57b55a4c64f5dc799d04",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null)]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 31,
+          "end": 35
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 38
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 35,
+          "end": 38,
+          "fragment": {
+            "start": 13,
+            "end": 38
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "p",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": []
+        }
+      ],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "element",
+          "tag": "p",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": []
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": "<p></p>"
+    },
+    {
+      "id": "empty-layout",
+      "sourceSha256": "7d41765aad74a1ed557a1be048b9d53fcad2fef2eff6a29f85cb6b6770e8e0ef",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(_Fragment, null, null);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 13,
+          "end": 15,
+          "fragment": {
+            "start": 13,
+            "end": 23
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 20,
+          "end": 23,
+          "fragment": {
+            "start": 13,
+            "end": 23
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [],
+      "dom": [
+        {
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "kind": "text",
+          "value": ""
+        }
+      ],
+      "html": ""
+    },
+    {
+      "id": "astral-prefix",
+      "sourceSha256": "97be6ebabf722007a03bbf6039fef13848f89fa2a37e665b6c273d2debe6216a",
+      "admit": true,
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\nconst heading = '作者😀';\nconst view = _createVNode(\"div\", null, [_createVNode(_Fragment, null, [_createTextVNode(\"\\uD83D\\uDE00\"), _createVNode(\"i\", null, null), _createTextVNode(\" tail\")])]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 44,
+          "end": 73
+        },
+        {
+          "kind": "text",
+          "start": 51,
+          "end": 55
+        },
+        {
+          "kind": "element",
+          "start": 55,
+          "end": 59
+        },
+        {
+          "kind": "text",
+          "start": 59,
+          "end": 64
+        }
+      ],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 49,
+          "end": 51,
+          "fragment": {
+            "start": 49,
+            "end": 67
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 64,
+          "end": 67,
+          "fragment": {
+            "start": 49,
+            "end": 67
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": "😀"
+            },
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": " tail"
+            }
+          ]
+        }
+      ],
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "div",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": ""
+            },
+            {
+              "kind": "text",
+              "value": "😀"
+            },
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": " tail"
+            },
+            {
+              "kind": "text",
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "html": "<div>😀<i></i> tail</div>"
+    },
+    {
+      "id": "compact-control",
+      "sourceSha256": "ecc2cef00ba9a5200af96140d029a5972ddc969e4a0eb8f80995184bee753438",
+      "admit": true,
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst view = _createVNode(\"section\", {\n  \"id\": \"plain\"\n}, [_createVNode(\"p\", null, [_createTextVNode(\"ok\")])]);",
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 13,
+          "end": 52
+        },
+        {
+          "kind": "element",
+          "start": 33,
+          "end": 42
+        },
+        {
+          "kind": "text",
+          "start": 36,
+          "end": 38
+        }
+      ],
+      "boundaries": [],
+      "refusal": [],
+      "semantic": [
+        {
+          "kind": "element",
+          "tag": "section",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [
+            [
+              "id",
+              "plain"
+            ]
+          ],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": [
+                {
+                  "kind": "text",
+                  "value": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "section",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [
+            [
+              "id",
+              "plain"
+            ]
+          ],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "p",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": [
+                {
+                  "kind": "text",
+                  "value": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "html": "<section id=\"plain\"><p>ok</p></section>"
+    },
+    {
+      "id": "late-component",
+      "sourceSha256": "3dc582b68865d7794a2f7b7d4cfce81f48879afa7c4a668caab0c7d8859a5ffd",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createVNode(_Fragment, null, [_createVNode(Child, null, null)])]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 117
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 101,
+          "end": 103,
+          "fragment": {
+            "start": 101,
+            "end": 114
+          },
+          "parentFragment": {
+            "start": 95,
+            "end": 117
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 111,
+          "end": 114,
+          "fragment": {
+            "start": 101,
+            "end": 114
+          },
+          "parentFragment": {
+            "start": 95,
+            "end": 117
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 114,
+          "end": 117,
+          "fragment": {
+            "start": 95,
+            "end": 117
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "component",
+          "start": 104,
+          "end": 109
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "late-namespace",
+      "sourceSha256": "0bab70d0ea1a3ff2edfa79fba14d44eec9dac2a79916534d9765b2b9724b3fd0",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createVNode(_Fragment, null, [_createVNode(\"svg\", null, null)])]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 115
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 101,
+          "end": 103,
+          "fragment": {
+            "start": 101,
+            "end": 112
+          },
+          "parentFragment": {
+            "start": 95,
+            "end": 115
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 109,
+          "end": 112,
+          "fragment": {
+            "start": 101,
+            "end": 112
+          },
+          "parentFragment": {
+            "start": 95,
+            "end": 115
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 112,
+          "end": 115,
+          "fragment": {
+            "start": 95,
+            "end": 115
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "namespace",
+          "start": 104,
+          "end": 107
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "dynamic-child",
+      "sourceSha256": "992e433a2b518f2f0cdc5ec3a1dea5d47c9b16d1514e5a0c920d81e557dcdcbe",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createVNode(_Fragment, null, [value])]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 116
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "opening",
+          "start": 101,
+          "end": 103,
+          "fragment": {
+            "start": 101,
+            "end": 113
+          },
+          "parentFragment": {
+            "start": 95,
+            "end": 116
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 110,
+          "end": 113,
+          "fragment": {
+            "start": 101,
+            "end": 113
+          },
+          "parentFragment": {
+            "start": 95,
+            "end": 116
+          }
+        },
+        {
+          "kind": "closing",
+          "start": 113,
+          "end": 116,
+          "fragment": {
+            "start": 95,
+            "end": 116
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "dynamic-child",
+          "start": 103,
+          "end": 110
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "dynamic-attribute",
+      "sourceSha256": "2808ba27c8196384f941cd4516deacc8806ab29749aa96a2e88fe8d34872117d",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createVNode(\"div\", {\n  \"title\": value\n}, null)]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 124
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 121,
+          "end": 124,
+          "fragment": {
+            "start": 95,
+            "end": 124
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "dynamic-attribute",
+          "start": 112,
+          "end": 119
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "spread-attribute",
+      "sourceSha256": "b176139ee8f2d4e21035c9120e4093bc3bb60aefee888105055ea5e0049851e8",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createVNode(\"div\", attrs, null)]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 121
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 118,
+          "end": 121,
+          "fragment": {
+            "start": 95,
+            "end": 121
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "spread-attribute",
+          "start": 106,
+          "end": 116
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "entity",
+      "sourceSha256": "8cef10cd670f6593b3135581d7e43411303a879fd686f71b2306e5457453a304",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment, createTextVNode as _createTextVNode } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createTextVNode(\"&\")]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 109
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 106,
+          "end": 109,
+          "fragment": {
+            "start": 95,
+            "end": 109
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 101,
+          "end": 106
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "multiline-text",
+      "sourceSha256": "186ced2717a3e9b0bf04d6a5a505b3d182ff7dcb969a1435db146c67e06522d9",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment, createTextVNode as _createTextVNode } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createTextVNode(\"one two\")]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 112
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 109,
+          "end": 112,
+          "fragment": {
+            "start": 95,
+            "end": 112
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 101,
+          "end": 109
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "special-attribute",
+      "sourceSha256": "fe7affc4f860e9919e3ff8e4a164188a20d63d351f9f03869b5079198565a12e",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), _createVNode(\"div\", {\n  \"ref\": \"x\"\n}, null)]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 95,
+          "end": 97,
+          "fragment": {
+            "start": 95,
+            "end": 118
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 115,
+          "end": 118,
+          "fragment": {
+            "start": 95,
+            "end": 118
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "special-attribute",
+          "start": 106,
+          "end": 113
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "conditional-root",
+      "sourceSha256": "e7e7a606beee0d42652cfe418c81b47c4410a2c8b0dc5ca4f8bc120769b7ebc1",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nimport Child from 'dep';\nconst value = 'x';\nconst attrs = {};\nconst first = _createVNode(\"p\", null, null);\nconst view = value && _createVNode(_Fragment, null, [_createVNode(\"p\", null, null)]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 104,
+          "end": 106,
+          "fragment": {
+            "start": 104,
+            "end": 113
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 110,
+          "end": 113,
+          "fragment": {
+            "start": 104,
+            "end": 113
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "root-expression",
+          "start": 95,
+          "end": 113
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    },
+    {
+      "id": "unresolved-original-file",
+      "sourceSha256": "070fa74174a2d8779b667be0953a8116a97b4656af567cf3c9e2c7021392f113",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, Fragment as _Fragment } from \"vue\";\nconst first = _createVNode(\"p\", null, null);\nconst view = _createVNode(_Fragment, null, [_createVNode(\"p\", null, null), value]);",
+      "sourceOps": [],
+      "boundaries": [
+        {
+          "kind": "opening",
+          "start": 33,
+          "end": 35,
+          "fragment": {
+            "start": 33,
+            "end": 49
+          },
+          "parentFragment": null
+        },
+        {
+          "kind": "closing",
+          "start": 46,
+          "end": 49,
+          "fragment": {
+            "start": 33,
+            "end": 49
+          },
+          "parentFragment": null
+        }
+      ],
+      "refusal": [
+        {
+          "kind": "dynamic-child",
+          "start": 39,
+          "end": 46
+        },
+        {
+          "kind": "file-incomplete",
+          "start": 0,
+          "end": 50
+        }
+      ],
+      "semantic": null,
+      "dom": null,
+      "html": null
+    }
+  ]
+}

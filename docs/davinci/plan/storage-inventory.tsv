@@ -391,3 +391,6 @@ l2	-	davinci/vize_l2/src/lang/js/jsx_body/markup/emit.rs	0	0	0	0	1	1	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/markup/tests.rs	1	5	1	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/markup/tests/ownership.rs	1	1	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/markup/tests/formatting.rs	1	4	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments.rs	1	2	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/realize.rs	1	6	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/coordinates.rs	1	2	0	0	0	0	0	0

@@ -202,7 +202,6 @@ fn same_original_file_populates_complete_static_tree_and_preserves_all_script_fa
 fn unsupported_static_boundary_refuses_whole_markup_before_any_partial_publication() -> Law {
     use JsxMarkupIssueKind as Kind;
     for (markup, kind, needle) in [
-        ("<><div/></>", Kind::Fragment, "<><div/></>"),
         ("<Child/>", Kind::Component, "Child"),
         ("<svg/>", Kind::Namespace, "svg"),
         ("<math/>", Kind::Namespace, "math"),
@@ -270,4 +269,5 @@ fn unsupported_static_boundary_refuses_whole_markup_before_any_partial_publicati
 }
 
 mod formatting;
+mod fragments;
 mod ownership;

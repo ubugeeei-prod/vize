@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "empty",
+      "source": "const view = <></>;",
+      "admit": true
+    },
+    {
+      "id": "singleton",
+      "source": "const view = <><div id=\"first\"/></>;",
+      "admit": true
+    },
+    {
+      "id": "siblings",
+      "source": "const view = <><p>hi😀</p><span data-state=\"ok\"/></>;",
+      "admit": true
+    },
+    {
+      "id": "nested-empty",
+      "source": "const view = <><><br/></><></></>;",
+      "admit": true
+    },
+    {
+      "id": "inside-element",
+      "source": "const view = <main><><p>one</p><><hr/>two</></></main>;",
+      "admit": true
+    },
+    {
+      "id": "format-lf",
+      "source": "const view = <>\n  <div>\n    <>\n      <p/>\n    </>\n  </div>\n</>;",
+      "admit": true
+    },
+    {
+      "id": "format-crlf",
+      "source": "const view = <>\r\n\t<div>\r\n\t\t<>\r\n\t\t\t<p/>\r\n\t\t</>\r\n\t</div>\r\n</>;",
+      "admit": true
+    },
+    {
+      "id": "inline-spaces",
+      "source": "const view = <> <div/> </>;",
+      "admit": true
+    },
+    {
+      "id": "comment",
+      "source": "const view = <>{/* original */}<p/></>;",
+      "admit": true
+    },
+    {
+      "id": "empty-layout",
+      "source": "const view = <>\n \t\r\n</>;",
+      "admit": true
+    },
+    {
+      "id": "astral-prefix",
+      "source": "const heading = '作者😀';\r\nconst view = <div><>😀<i/> tail</></div>;",
+      "admit": true
+    },
+    {
+      "id": "compact-control",
+      "source": "const view = <section id=\"plain\"><p>ok</p></section>;",
+      "admit": true
+    },
+    {
+      "id": "late-component",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/><><Child/></></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "component",
+        "type": "JSXIdentifier",
+        "name": "Child"
+      }
+    },
+    {
+      "id": "late-namespace",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/><><svg/></></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "namespace",
+        "type": "JSXIdentifier",
+        "name": "svg"
+      }
+    },
+    {
+      "id": "dynamic-child",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/><>{value}</></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "dynamic-child",
+        "type": "JSXExpressionContainer",
+        "name": null
+      }
+    },
+    {
+      "id": "dynamic-attribute",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/><div title={value}/></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "dynamic-attribute",
+        "type": "JSXExpressionContainer",
+        "name": null
+      }
+    },
+    {
+      "id": "spread-attribute",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/><div {...attrs}/></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "spread-attribute",
+        "type": "JSXSpreadAttribute",
+        "name": null
+      }
+    },
+    {
+      "id": "entity",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/>&amp;</>;",
+      "admit": false,
+      "refusal": {
+        "kind": "value-normalization",
+        "type": "JSXText",
+        "name": null
+      }
+    },
+    {
+      "id": "multiline-text",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/>one\n two</>;",
+      "admit": false,
+      "refusal": {
+        "kind": "value-normalization",
+        "type": "JSXText",
+        "name": null
+      }
+    },
+    {
+      "id": "special-attribute",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = <><p/><div ref=\"x\"/></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "special-attribute",
+        "type": "JSXAttribute",
+        "name": "ref"
+      }
+    },
+    {
+      "id": "conditional-root",
+      "source": "import Child from 'dep'; const value = 'x'; const attrs = {}; const first = <p/>; const view = value && <><p/></>;",
+      "admit": false,
+      "refusal": {
+        "kind": "root-expression",
+        "type": "LogicalExpression",
+        "name": null
+      }
+    },
+    {
+      "id": "unresolved-original-file",
+      "source": "const first = <p/>; const view = <><p/>{value}</>;",
+      "admit": false,
+      "fileIncomplete": true,
+      "refusal": {
+        "kind": "dynamic-child",
+        "type": "JSXExpressionContainer",
+        "name": null
+      }
+    }
+  ]
+}
