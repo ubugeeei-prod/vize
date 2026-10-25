@@ -54,21 +54,23 @@ impl CorsaProjectClient {
             && (!self.trusts_capabilities() || self.capabilities.editor.completion)
     }
 
-    pub(in crate::lsp_client) fn can_use_api_for_uri(&self, uri: &str) -> bool {
+    pub(in crate::lsp_client) fn can_use_attached_semantic_api(&self) -> bool {
         // A derived API lineage is independently owned. An attachment alone
         // does not prove it includes this editor's complete unsaved overlay
         // graph, including unchanged requested files with edited dependencies.
-        if self.project_session_attached_to_editor
+        !(self.project_session_attached_to_editor
             && self.session.as_ref().is_some_and(|session| {
                 session.client().dialect() == Some(ApiDialect::DerivedSnapshots)
-            })
-        {
-            return false;
-        }
-        !self.document_texts.contains_key(uri)
-            || self.supports_overlay_api()
-            || (self.project_root.join("__vize_vue_modules.d.ts").is_file()
-                && file_uri_to_path(uri)
-                    .is_some_and(|path| path.starts_with(&self.project_root) && path.is_file()))
+            }))
+    }
+
+    pub(in crate::lsp_client) fn can_use_api_for_uri(&self, uri: &str) -> bool {
+        self.can_use_attached_semantic_api()
+            && (!self.document_texts.contains_key(uri)
+                || self.supports_overlay_api()
+                || (self.project_root.join("__vize_vue_modules.d.ts").is_file()
+                    && file_uri_to_path(uri).is_some_and(|path| {
+                        path.starts_with(&self.project_root) && path.is_file()
+                    })))
     }
 }
