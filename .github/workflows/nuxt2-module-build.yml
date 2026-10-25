@@ -1,4 +1,5 @@
 name: Nuxt 2 module build
+run-name: Nuxt 2 host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}
 on:
   pull_request:
     branches: [main]
@@ -51,6 +52,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version: "24"
@@ -81,7 +85,7 @@ jobs:
         working-directory: npm/framework/nuxt
         run: vp pack
       - name: Verify version-specific plans and original modern oracle
-        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts
+        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts
       - name: Install the Nuxt 2 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt2-module-build
         run: npm ci --legacy-peer-deps --no-audit --no-fund

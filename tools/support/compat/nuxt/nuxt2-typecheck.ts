@@ -15,16 +15,23 @@ const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("h
 export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt2-types-"));
   const requireRoot = createRequire(path.join(root, "package.json"));
-  const runtimeManifest = requireRoot.resolve(
-    `@typescript/typescript-${process.platform}-${process.arch}/package.json`,
-  );
-  const corsa = path.join(
-    path.dirname(runtimeManifest),
-    "lib",
-    process.platform === "win32" ? "tsc.exe" : "tsc",
-  );
+  const corsa =
+    process.env.CORSA_PATH ??
+    path.join(
+      path.dirname(
+        requireRoot.resolve(
+          `@typescript/typescript-${process.platform}-${process.arch}/package.json`,
+        ),
+      ),
+      "lib",
+      process.platform === "win32" ? "tsc.exe" : "tsc",
+    );
   assert.equal(fs.existsSync(corsa), true);
   const native = path.join(root, "npm/native/index.js");
+  const sourceHead = spawnSync("git", ["rev-parse", "HEAD"], {
+    cwd: root,
+    encoding: "utf8",
+  }).stdout.trim();
   const identity = path.join(artifacts, "typecheck-source-binding.json");
   const script = [
     `const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');`,
@@ -33,7 +40,7 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
     `if(selected.length!==1)throw new Error('source Vize binding identity is ambiguous');`,
     `const file=fs.realpathSync(selected[0]);`,
     `if(!file.startsWith(${JSON.stringify(root)}))throw new Error('typecheck must load the current workspace binding');`,
-    `fs.writeFileSync(${JSON.stringify(identity)},JSON.stringify({path:file,sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),source:process.env.GITHUB_SHA??null},null,2));`,
+    `fs.writeFileSync(${JSON.stringify(identity)},JSON.stringify({path:file,sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),source:${JSON.stringify(sourceHead)}},null,2));`,
     `native.runCli(JSON.parse(process.argv[1]));`,
   ].join("\n");
   const valid = fs.readFileSync(
@@ -111,7 +118,11 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
       assert.equal(result.signal, null);
       assert.equal(result.status, errors === 0 ? 0 : 1, result.stderr + result.stdout);
       assert.equal(packet.errorCount, errors);
-      const diagnostics = asArray(packet.diagnostics, "typecheck diagnostics");
+      assert.equal(packet.fileCount, 1);
+      const files = asArray(packet.files, "typecheck files");
+      assert.equal(files.length, 1);
+      assert.equal(at(files, 0, "file"), "App.vue");
+      const diagnostics = asArray(at(files, 0, "diagnostics"), "typecheck diagnostics");
       assert.equal(diagnostics.length, errors);
       if (errors === 1) {
         assert.equal(at(diagnostics, 0, "code"), 2339);

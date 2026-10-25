@@ -274,7 +274,10 @@ try {
     path.join(artifacts, "proof.json"),
     JSON.stringify(
       {
-        candidateHead: process.env.GITHUB_SHA ?? null,
+        candidateHead: spawnSync("git", ["rev-parse", "HEAD"], {
+          cwd: root,
+          encoding: "utf8",
+        }).stdout.trim(),
         node: process.version,
         nuxt: "2.17.3",
         buildExit: result.status,
