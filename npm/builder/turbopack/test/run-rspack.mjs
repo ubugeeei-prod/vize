@@ -53,14 +53,23 @@ export async function checkRspackConsumer(browser, measurements) {
     else assert.deepEqual(report.warnings, []);
     const mapBytes = await fs.readFile(path.join(target, "bundle.js.map"));
     const map = JSON.parse(mapBytes);
-    const authored = map.sources.findIndex((source) => decodeURI(source).endsWith(filename));
-    assert.notEqual(authored, -1);
-    assert.equal(map.sourcesContent[authored], original);
+    const traced = new TraceMap(map);
+    // The host also maps generated CSS module exports, and disambiguates shared
+    // resource paths with fallback queries. Keep those full identities intact.
+    const authored = new Set(
+      map.sources.flatMap((source, index) =>
+        decodeURI(source).split("?", 1)[0].endsWith(filename) &&
+        map.sourcesContent[index] === original
+          ? [traced.resolvedSources[index]]
+          : [],
+      ),
+    );
+    assert.ok(authored.size, "the complete original SFC must own an authored source identity");
     const prefix = original.slice(0, original.indexOf(debug ? "const initial" : "const emoji"));
     const line = prefix.split("\n").length;
     const matches = [];
-    eachMapping(new TraceMap(map), (mapping) => {
-      if (decodeURI(mapping.source ?? "").endsWith(filename) && mapping.originalLine === line) {
+    eachMapping(traced, (mapping) => {
+      if (authored.has(mapping.source) && mapping.originalLine === line) {
         matches.push(mapping);
       }
     });
@@ -80,11 +89,14 @@ export async function checkRspackConsumer(browser, measurements) {
       const marker = /🐱|\\u[dD]83[dD]\\u[dD][cC]31|\\u\{1[fF]431\}/.exec(bundle);
       assert.ok(marker, "optimized code retains the visible authored string");
       const position = bundle.slice(0, marker.index);
-      const origin = originalPositionFor(new TraceMap(map), {
+      const origin = originalPositionFor(traced, {
         line: position.split("\n").length,
         column: position.length - position.lastIndexOf("\n") - 1,
       });
-      assert.ok(decodeURI(origin.source ?? "").endsWith(filename));
+      assert.ok(
+        authored.has(origin.source),
+        "the surviving token must belong to authored SFC content",
+      );
       assert.equal(
         origin.line,
         line,
@@ -150,7 +162,12 @@ export async function checkRspackConsumer(browser, measurements) {
       assert.equal(packet.padding, "7px");
       assert.deepEqual(errors, []);
       assert.deepEqual(warnings, []);
-      packets.push({ mode, ...packet, mapSha256: sha256(mapBytes) });
+      packets.push({
+        mode,
+        ...packet,
+        authoredSources: [...authored],
+        mapSha256: sha256(mapBytes),
+      });
     } finally {
       await fs.writeFile(
         path.join(output, `rspack-${mode}-browser-errors.json`),
