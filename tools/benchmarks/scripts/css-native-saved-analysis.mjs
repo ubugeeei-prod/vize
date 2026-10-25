@@ -80,7 +80,7 @@ async function run(configFile, destination) {
     record.actualSamples = saved.samples.reduce((n, row) => n + row.sampleCount, 0);
     retain();
     const config = read(configFile),
-      llvm = process.env.VIZE_CSS_ADDR2LINE;
+      llvm = process.env.VIZE_CSS_LLVM_ADDR2LINE ?? process.env.VIZE_CSS_ADDR2LINE;
     assert.ok(llvm && path.isAbsolute(llvm));
     record.decoder = {
       file: llvm,

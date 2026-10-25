@@ -45,6 +45,13 @@ async function run(configFile, destination, savedRoot) {
     note: "Separate optimized debug-source profiling. Only exclusive leaf samples describe self cost; inclusive source/inline allocation paths overlap and are never summed. No release-image speed or allocation-count authority.",
   };
   const retain = () => write(path.join(destination, "receipt.json"), receipt);
+  // GNU's measured first debug lookup takes6.83s. perf6.8 otherwise abandons
+  // it after1s and silently falls back to symbol+offset. This is a reader I/O
+  // deadline, not a product performance ceiling or permission to omit sources.
+  const perfConfig = path.join(destination, "perf-config");
+  fs.writeFileSync(perfConfig, "[core]\n\taddr2line-timeout = 10000\n");
+  receipt.decoderReadDeadlineMs = 10000;
+  receipt.perfConfig = { file: perfConfig, sha256: digest(perfConfig) };
   retain();
   const command = async (argv, name, seconds = 180) => {
     const output = path.join(destination, `${name}.stdout`),
@@ -60,7 +67,11 @@ async function run(configFile, destination, savedRoot) {
         const child = spawn(
           "timeout",
           ["--signal=TERM", "--kill-after=5s", `${seconds}s`, ...argv],
-          { stdio: ["ignore", ...fds], shell: false },
+          {
+            stdio: ["ignore", ...fds],
+            shell: false,
+            env: { ...process.env, PERF_CONFIG: perfConfig },
+          },
         );
         child.once("error", reject);
         child.once("close", (status, signal) => resolve({ status, signal }));
@@ -93,6 +104,8 @@ async function run(configFile, destination, savedRoot) {
       "the five-byte ACK contract belongs to this actual perf binary",
     );
     assert.match(receipt.perf.version, /^perf version 6\.8\.12\n/u);
+    const effectiveConfig = await command([perf, "config", "--list"], "effective-perf-config");
+    assert.match(effectiveConfig, /^core\.addr2line-timeout=10000$/mu);
     receipt.perfEventParanoid = fs
       .readFileSync("/proc/sys/kernel/perf_event_paranoid", "utf8")
       .trim();
@@ -229,8 +242,8 @@ async function run(configFile, destination, savedRoot) {
     receipt.captureComplete = true;
     retain();
     let next = 0;
-    // Decode independently after complete raw capture. Four bounded workers
-    // avoid repeating the previous serial 676-second symbol-report phase.
+    // Decode independently after complete raw capture. The measured GNU
+    // reader peaks near4GiB; two decoders bound concurrent debug memory.
     const analyse = async () => {
       for (;;) {
         const ordinal = next++;
@@ -295,7 +308,7 @@ async function run(configFile, destination, savedRoot) {
         retain();
       }
     };
-    const results = await Promise.allSettled(Array.from({ length: 4 }, () => analyse()));
+    const results = await Promise.allSettled(Array.from({ length: 2 }, () => analyse()));
     for (const result of results) if (result.status === "rejected") throw result.reason;
     assert.equal(receipt.analyses.length, 24);
     assert.equal(receipt.controls.length, 12);

@@ -54,7 +54,7 @@ jobs:
           const files = execFileSync('dpkg-query', ['-L', packages[0]], {encoding:'utf8'})
             .split('\n').filter(file => file.endsWith('/perf')).map(file => fs.realpathSync(file));
           assert.equal(files.length, 1);
-          fs.appendFileSync(process.env.GITHUB_ENV, `VIZE_CSS_PERF=${files[0]}\nVIZE_CSS_ADDR2LINE=/usr/bin/llvm-addr2line-18\n`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `VIZE_CSS_PERF=${files[0]}\nVIZE_CSS_ADDR2LINE=/usr/bin/addr2line\nVIZE_CSS_LLVM_ADDR2LINE=/usr/bin/llvm-addr2line-18\n`);
           JS
       - name: Verify exact saved-source and decoder refusal contracts
         working-directory: harness
