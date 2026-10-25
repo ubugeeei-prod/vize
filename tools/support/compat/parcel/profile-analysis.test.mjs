@@ -52,3 +52,13 @@ void test("malformed IDs, missing intervals and non-integers remain errors", () 
   duplicate.nodes.push(duplicate.nodes[0]);
   assert.throws(() => analyseProfile(duplicate), /unique/);
 });
+
+void test("resolver samples retain their own exact module and line", () => {
+  const profile = fixture([1000, 200, 350]);
+  profile.nodes[0].callFrame.url =
+    "file:///consumer/node_modules/@vizejs/parcel-resolver/dist/resolver.cjs";
+  const result = analyseProfile(profile);
+  assert.equal(result.adapter[0].file, profile.nodes[0].callFrame.url);
+  assert.equal(result.adapter[0].line, 15);
+  assert.equal(result.adapter[0].samples, 2);
+});

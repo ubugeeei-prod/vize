@@ -1,4 +1,5 @@
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { Transformer } from "@parcel/plugin";
 import type { TransformerResult } from "@parcel/types";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@vizejs/native";
 import { fail, loadConfig, type VizeParcelOptions } from "./config.ts";
 import { blockMap, editMap, nativeMap } from "./maps.ts";
-import { hmrRuntime, instrumentHmr } from "./hmr.ts";
+import { instrumentHmr } from "./hmr.ts";
 import { styleRequest } from "./style-request.ts";
 
 export type { VizeParcelOptions } from "./config.ts";
@@ -61,8 +62,12 @@ export default new Transformer<VizeParcelOptions>({
     }
     for (const message of result.warnings) logger.warn({ message });
 
-    const componentKey = `${asset.id}-vize-component`;
-    const runtimeKey = `${asset.id}-vize-hmr`;
+    // Dependencies must belong to the final JS asset identity. Changing its type
+    // after addDependency would detach our metadata from the JS import.
+    asset.type = "js";
+    // The physical public subpath also works when the host has not opted into
+    // package.json exports support in Parcel's default resolver.
+    const runtimeKey = "@vizejs/parcel-transformer/dist/hmr-runtime.cjs";
     const needsHmr = !ssr && !isProd && Boolean(options.hmrOptions);
     const children: TransformerResult[] = [];
     const styleImports: string[] = [];
@@ -116,24 +121,30 @@ export default new Transformer<VizeParcelOptions>({
       code = imports + code;
     }
     if (needsHmr) {
-      const instrumented = await instrumentHmr(
-        code,
-        result.moduleShape,
-        runtimeKey,
-        JSON.stringify({ scope, scoped: result.hasScoped, compiler: config.compiler }),
-      );
+      const instrumented = await instrumentHmr(code, result.moduleShape, runtimeKey, asset.id);
       map = editMap(code, instrumented, map, asset.filePath, options.projectRoot);
       code = instrumented;
-      children.push({ type: "js", content: hmrRuntime, uniqueKey: runtimeKey });
     }
     const inputMap = await asset.getMap();
     if (map && inputMap) map.extends(inputMap.toBuffer());
-    children.unshift({
-      type: "js",
-      content: code,
-      uniqueKey: componentKey,
-      map,
-      sideEffects: true,
+    // A separate immutable request prevents Sass/CSS dependency invalidation
+    // from re-executing authored script module side effects. Native source maps
+    // travel as an inline map, consumed by Parcel before its JS pipeline runs.
+    if (map) {
+      code += `\n//# sourceMappingURL=${await map.stringify({
+        file: path.basename(asset.filePath),
+        sourceRoot: options.projectRoot,
+        format: "inline",
+      })}\n`;
+    }
+    const digest = createHash("sha256").update(code).digest("hex");
+    const componentKey = `vize-generated-${digest}.js`;
+    asset.addDependency({
+      specifier: componentKey,
+      specifierType: "esm",
+      meta: {
+        vizeVirtualModule: { code, digest, filePath: `${asset.filePath}.vize-${digest}.js` },
+      },
     });
 
     // The glue module has no authored bindings, so its private names cannot collide
@@ -152,11 +163,11 @@ if (module.hot) {
   _sfc_main.__hmrId = ${JSON.stringify(scope)};
   const api = globalThis.__VUE_HMR_RUNTIME__;
   const previous = module.hot.data && module.hot.data.vize;
-  const current = { component: _sfc_main, metadata: readMetadata(${shape?.hasDefaultExport ? "_sfc_main" : "compiled.render"}) };
+  const current = { token: readMetadata(${shape?.hasDefaultExport ? "_sfc_main" : "compiled.render"}, ${JSON.stringify(asset.id)}) };
   module.hot.dispose(data => { data.vize = current; });
-  // Sass invalidation may reevaluate every virtual block of the SFC. Reuse
-  // only an identical component, or identical module bytes AND import values.
-  const preserve = previous && (previous.component === _sfc_main || sameMetadata(previous.metadata, current.metadata));
+  // A token changes whenever the actual component module executes, including
+  // when a script dependency retains the same exported object identity.
+  const preserve = previous && current.token && previous.token === current.token;
   if (api && !api.createRecord(${JSON.stringify(scope)}, _sfc_main) && !preserve) api.reload(${JSON.stringify(scope)}, _sfc_main);
   module.hot.accept();
 }
@@ -165,7 +176,7 @@ if (module.hot) {
     asset.type = "js";
     asset.setMap(null);
     asset.setCode(`${styleImports.join("\n")}
-${needsHmr ? `import { read as readMetadata, same as sameMetadata } from ${JSON.stringify(runtimeKey)};` : ""}
+${needsHmr ? `import { read as readMetadata } from ${JSON.stringify(runtimeKey)};` : ""}
 import * as compiled from ${JSON.stringify(componentKey)};
 export * from ${JSON.stringify(componentKey)};
 const _sfc_main = ${component};

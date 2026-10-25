@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hmrRuntime, instrumentHmr } from "./hmr.ts";
+import { instrumentHmr } from "./hmr.ts";
+import { read } from "./hmr-runtime.ts";
 
-const runtime = `data:text/javascript,${encodeURIComponent(hmrRuntime)}`;
+const runtime = new URL("./hmr-runtime.ts", import.meta.url).href;
+const identity = "same-component-request";
 const shape = {
   hasDefaultExport: true,
   hasSfcMainDefined: false,
@@ -13,42 +15,27 @@ const shape = {
 let nonce = 0;
 
 async function evaluate(code: string) {
-  const instrumented = await instrumentHmr(code, shape, runtime, "same-host-options");
+  const instrumented = await instrumentHmr(code, shape, runtime, identity);
   assert.notEqual(instrumented, code);
   return import(`data:text/javascript,${encodeURIComponent(instrumented)}#${nonce++}`);
 }
 
-void test("identical output and imported snapshots admit CSS-only virtual reevaluation", async () => {
-  const api = await import(runtime);
-  const code = "export default { setup() { return { n: 1 } } };";
+void test("an actual reevaluation changes the token even for the same exported object", async () => {
+  const provider = `data:text/javascript,${encodeURIComponent("export const component = {};")}`;
+  const code = `import { component } from ${JSON.stringify(provider)}; export default component;`;
   const before = await evaluate(code);
+  const token = read(before.default, identity);
+  assert.ok(token);
   const after = await evaluate(code);
-  assert.notEqual(before.default, after.default);
-  assert.equal(api.same(api.read(before.default), api.read(after.default)), true);
+  assert.equal(before.default, after.default);
+  assert.notEqual(read(after.default, identity), token);
 });
 
-void test("unchanged SFC output cannot hide a changed live imported binding", async () => {
-  const provider = `data:text/javascript,${encodeURIComponent("export let value=1; export function update(next) { value=next; }")}`;
-  const dependency = await import(provider);
-  const api = await import(runtime);
-  const code = `import { value } from ${JSON.stringify(provider)}; export default { value };`;
-  const before = await evaluate(code);
-  dependency.update(2);
-  const after = await evaluate(code);
-  assert.equal(api.read(before.default).imports[0][1], 1);
-  assert.equal(api.read(after.default).imports[0][1], 2);
-  assert.equal(api.same(api.read(before.default), api.read(after.default)), false);
-});
-
-void test("namespace snapshots capture values rather than retain a live namespace", async () => {
-  const provider = `data:text/javascript,${encodeURIComponent("export let value=3; export function update(next) { value=next; }")}`;
-  const dependency = await import(provider);
-  const api = await import(runtime);
-  const code = `import * as values from ${JSON.stringify(provider)}; export default { value: values.value };`;
-  const before = await evaluate(code);
-  dependency.update(4);
-  const after = await evaluate(code);
-  assert.equal(api.same(api.read(before.default), api.read(after.default)), false);
+void test("unchanged module instances keep the exact same captured token", async () => {
+  const result = await evaluate("export default { setup() { return { n: 1 } } };");
+  const token = read(result.default, identity);
+  assert.ok(token);
+  assert.equal(read(result.default, identity), token);
 });
 
 void test("named default functions and classes keep their authored local declaration", async () => {
@@ -58,25 +45,35 @@ void test("named default functions and classes keep their authored local declara
   ]) {
     const result = await evaluate(code);
     assert.equal(result.default, result.original);
+    assert.ok(read(result.default, identity));
   }
 });
 
-void test("Unicode and escaped private-name collisions do not change authored bindings", async () => {
+void test("Unicode and escaped private-name collisions preserve exports and bindings", async () => {
   const result = await evaluate(
     "// 😺\r\nconst __vize_parcel_\\u0072emember=7; const __vize_parcel_component=8; export default { café: 9, original: __vize_parcel_remember + __vize_parcel_component }; export const later=10;",
   );
   assert.deepEqual(result.default, { café: 9, original: 15 });
   assert.equal(result.later, 10);
+  assert.deepEqual(Object.keys(result), ["default", "later"]);
 });
 
-void test("side effects, dynamic imports and malformed output disable state preservation", async () => {
+void test("side-effect imports, re-exports and dynamic imports retain actual evaluation tokens", async () => {
+  const provider = `data:text/javascript,${encodeURIComponent("export const value = 4;")}`;
   for (const code of [
-    "import './side-effect.js'; export default {};",
-    "export * from './side-effect.js'; export default {};",
-    "export { value } from './side-effect.js'; export default {};",
-    "export default { later: () => import('./dynamic.js') };",
-    "export default { invalid",
+    `import ${JSON.stringify(provider)}; export default {};`,
+    `export * from ${JSON.stringify(provider)}; export default {};`,
+    `export { value } from ${JSON.stringify(provider)}; export default {};`,
+    `export default { later: () => import(${JSON.stringify(provider)}) };`,
   ]) {
-    assert.equal(await instrumentHmr(code, shape, runtime, "host"), code);
+    const result = await evaluate(code);
+    assert.ok(read(result.default, identity));
   }
+});
+
+void test("malformed output and unsupported module shapes receive no fabricated token", async () => {
+  const code = "export default { invalid";
+  assert.equal(await instrumentHmr(code, shape, runtime, identity), code);
+  const namedOnly = "export const unrelated = 1;";
+  assert.equal(await instrumentHmr(namedOnly, undefined, runtime, identity), namedOnly);
 });

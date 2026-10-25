@@ -33,6 +33,10 @@
     "./style": {
       "types": "./dist/style.d.cts",
       "default": "./dist/style.cjs"
+    },
+    "./dist/hmr-runtime.cjs": {
+      "types": "./dist/hmr-runtime.d.cts",
+      "default": "./dist/hmr-runtime.cjs"
     }
   },
   "publishConfig": {

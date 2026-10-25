@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - npm/builder/parcel/**
+      - npm/builder/parcel-resolver/**
       - npm/native/**
       - tools/support/compat/parcel/**
       - .github/workflows/parcel-transformer.yml
@@ -56,10 +57,11 @@ jobs:
       - name: Build the actual native source
         run: vp run --filter './npm/native' build:ci
       - name: Build the published adapter shape
-        working-directory: npm/builder/parcel
-        run: vp pack
+        run: |
+          vp run --filter './npm/builder/parcel' build
+          vp run --filter './npm/builder/parcel-resolver' build
       - name: Validate geometry and configuration
-        run: node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs
+        run: node --test npm/builder/parcel/src/*.test.ts npm/builder/parcel-resolver/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs
       - name: Install the fixture browser
         working-directory: npm/builder/parcel
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium

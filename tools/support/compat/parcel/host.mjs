@@ -14,6 +14,7 @@ const preflightProvider = process.argv[3] && path.resolve(process.argv[3]);
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const processes = [];
 const browserEvents = [];
+const watchEvents = [];
 const started = performance.now();
 assert.equal(await fs.stat(proof).catch(() => null), null, "evidence destination must be absent");
 await fs.mkdir(proof, { recursive: true });
@@ -67,7 +68,9 @@ async function stagePackage(directory, output, nativeVersion) {
     manifest.files = [...manifest.files, ...images];
     delete manifest.optionalDependencies;
   } else {
-    manifest.dependencies["@vizejs/native"] = nativeVersion;
+    for (const name of Object.keys(manifest.dependencies)) {
+      if (name.startsWith("@vizejs/")) manifest.dependencies[name] = nativeVersion;
+    }
     const sourceRequire = createRequire(path.join(directory, "package.json"));
     for (const [name, version] of Object.entries(manifest.dependencies)) {
       if (!version.startsWith("catalog:")) continue;
@@ -87,7 +90,7 @@ async function stagePackage(directory, output, nativeVersion) {
 }
 
 const source = (label = "Count", color = "tomato") =>
-  `<!-- authored 😺 Unicode and CRLF -->\r\n<script setup lang="ts">\r\nimport { ref } from 'vue'\r\nimport { initialCount } from 'fixture-counter'\r\nconst n = ref<number>(initialCount)\r\nconst color = ${JSON.stringify(color)}\r\n</script>\r\n<template><button class="card" @click="n++">${label}: {{ n }}<img src="./icon.svg" alt="Fixture"></button><p class="external">External</p></template>\r\n<style scoped>.card { color: v-bind(color); background-image: url('./icon.svg'); }</style>\r\n<style scoped src="./styles/external é.css"></style>\r\n<style lang="scss" scoped>@use './styles/palette.scss' as p; .card { border: 2px solid p.$border; }</style>\r\n`;
+  `<!-- authored 😺 Unicode and CRLF -->\r\n<script lang="ts">\r\nglobalThis.parcelModuleEvaluations = (globalThis.parcelModuleEvaluations || 0) + 1;\r\n</script>\r\n<script setup lang="ts">\r\nimport { ref } from 'vue'\r\nimport { initialCount } from 'fixture-counter'\r\nconst n = ref<number>(initialCount)\r\nconst color = ${JSON.stringify(color)}\r\n</script>\r\n<template><button class="card" @click="n++">${label}: {{ n }}<img src="./icon.svg" alt="Fixture"></button><p class="external">External</p></template>\r\n<style scoped>.card { color: v-bind(color); background-image: url('./icon.svg'); }</style>\r\n<style scoped src="./styles/external é.css"></style>\r\n<style lang="scss" scoped>@use './styles/palette.scss' as p; .card { border: 2px solid p.$border; }</style>\r\n`;
 const icon =
   '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><path fill="red" d="M0 0h8v8H0z"/></svg>';
 
@@ -98,6 +101,7 @@ async function makeApp(directory) {
     JSON.stringify(
       {
         extends: "@parcel/config-default",
+        resolvers: ["@vizejs/parcel-resolver", "..."],
         transformers: {
           "*.vue": ["@vizejs/parcel-transformer"],
           "*.css": ["@vizejs/parcel-transformer/style", "..."],
@@ -229,6 +233,10 @@ try {
     "npm/builder/parcel/package.json",
     "npm/builder/parcel/vite.config.ts",
     "npm/builder/parcel/README.md",
+    "npm/builder/parcel-resolver/src",
+    "npm/builder/parcel-resolver/package.json",
+    "npm/builder/parcel-resolver/vite.config.ts",
+    "npm/builder/parcel-resolver/README.md",
     "tools/support/compat/parcel",
     ".github/workflows/parcel-transformer.yml",
   ]) {
@@ -248,6 +256,11 @@ try {
     path.join(proof, "plugin-package"),
     nativeManifest.version,
   );
+  const resolver = await stagePackage(
+    path.join(repository, "npm/builder/parcel-resolver"),
+    path.join(proof, "resolver-package"),
+    plugin.version,
+  );
   const consumer = path.join(proof, "consumer 😺 space");
   await fs.cp(path.join(repository, "tools/support/compat/parcel/fixtures/host"), consumer, {
     recursive: true,
@@ -265,11 +278,12 @@ try {
       "--no-fund",
       native.path,
       plugin.path,
+      resolver.path,
     ],
     consumer,
   );
   if (!preflightProvider) {
-    for (const name of ["dist/index.d.cts", "dist/style.d.cts"]) {
+    for (const name of ["dist/index.d.cts", "dist/style.d.cts", "dist/hmr-runtime.d.cts"]) {
       assert.ok(
         plugin.files.some((file) => file.path === name),
         `packed public declaration missing: ${name}`,
@@ -280,13 +294,15 @@ try {
       `
 import transformer, { type VizeParcelOptions } from '@vizejs/parcel-transformer';
 import styles from '@vizejs/parcel-transformer/style';
+import resolver from '@vizejs/parcel-resolver';
+import { read, remember } from '@vizejs/parcel-transformer/dist/hmr-runtime.cjs';
 const standard: VizeParcelOptions = { compiler: { customElements: ['x-view'] }, transformAssetUrls: false };
 const vapor: VizeParcelOptions = { compiler: { vapor: true, runtimeModuleName: 'vue' } };
 // @ts-expect-error Source-map ownership belongs to Parcel.
 const badMap: VizeParcelOptions = { compiler: { sourceMap: false } };
 // @ts-expect-error This compiler has no custom-runtime Vapor capability.
 const badVapor: VizeParcelOptions = { compiler: { vapor: true, runtimeModuleName: 'custom-runtime' } };
-void [transformer, styles, standard, vapor, badMap, badVapor];
+void [transformer, styles, resolver, read, remember, standard, vapor, badMap, badVapor];
 `,
     );
     const packageRequire = createRequire(path.join(repository, "npm/builder/parcel/package.json"));
@@ -361,10 +377,14 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   assert.ok(captured.bundles.some((bundle) => bundle.type === "css"));
   assert.ok(captured.bundles.some((bundle) => bundle.type === "svg"));
   const nativeAssets = [...captured.assets.values()].filter((asset) =>
-    asset.uniqueKey?.endsWith("-vize-component"),
+    /\.vue\.vize-[a-f0-9]{64}\.js$/.test(asset.filePath),
   );
   assert.equal(nativeAssets.length, 1);
   assert.ok(await nativeAssets[0].getMap(), "native authored mappings must reach Parcel");
+  assert.ok(
+    (await nativeAssets[0].getMap()).toVLQ().sourcesContent.includes(source()),
+    "virtual component maps must retain the exact authored SFC",
+  );
   const moduleCode = await nativeAssets[0].getCode();
   assert.doesNotMatch(moduleCode, /ref<number>/);
   await write("native-module.json", {
@@ -482,7 +502,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   assert.ok(!html.includes("<style"));
   await write("ssr.json", { html });
 
-  const events = [];
+  const events = watchEvents;
   const development = [];
   const port = await freePort();
   const hmrPort = await freePort();
@@ -504,18 +524,22 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   );
   const waitBuild = async (offset, type = "buildSuccess") => {
     const event = await eventually(
-      () => events.slice(offset).find((event) => event.type === type || event.type === "error"),
+      () =>
+        events
+          .slice(offset)
+          .find((event) => ["buildSuccess", "buildFailure", "error"].includes(event.type)),
       Boolean,
       `waiting for ${type}`,
     );
-    assert.equal(event.type, type);
     development.push({
       type: event.type,
       buildTime: event.buildTime,
       diagnostics: event.diagnostics,
     });
-    if (type === "buildSuccess") await captureBuild(`development-${development.length}`, event);
+    if (event.type === "buildSuccess")
+      await captureBuild(`development-${development.length}`, event);
     else await write(`development-${development.length}-failure.json`, event.diagnostics);
+    assert.equal(event.type, type);
     return event;
   };
   await waitBuild(0);
@@ -534,6 +558,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     (value) => /Count: 2/.test(value),
     "development interaction",
   );
+  assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 1);
   let offset = events.length;
   await fs.writeFile(
     path.join(consumer, "styles", "external é.css"),
@@ -550,6 +575,11 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     /Count: 2/,
     "CSS HMR retains component state",
   );
+  assert.equal(
+    await page.evaluate(() => window.parcelModuleEvaluations),
+    1,
+    "external CSS must not execute the component module again",
+  );
   offset = events.length;
   await fs.writeFile(path.join(consumer, "styles", "palette.scss"), "$border: rgb(65, 43, 21);\n");
   await waitBuild(offset);
@@ -559,6 +589,11 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     "Sass dependency HMR",
   );
   assert.match(await page.getByRole("button").textContent(), /Count: 2/);
+  assert.equal(
+    await page.evaluate(() => window.parcelModuleEvaluations),
+    1,
+    "Sass dependency invalidation must not execute the component module again",
+  );
   offset = events.length;
   await fs.writeFile(path.join(consumer, "counter.js"), "export const initialCount = 3;\n");
   await waitBuild(offset);
@@ -567,6 +602,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     (value) => /Count: 3/.test(value),
     "script dependency HMR",
   );
+  assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 2);
   offset = events.length;
   await fs.writeFile(path.join(consumer, "App.vue"), source("Updated"));
   await waitBuild(offset);
@@ -575,6 +611,38 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     (value) => /Updated: 3/.test(value),
     "component HMR",
   );
+  assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 3);
+  await page.getByRole("button").click();
+  offset = events.length;
+  const inlineSource = source("Updated").replace(
+    "background-image:",
+    "border-radius: 3px; background-image:",
+  );
+  await fs.writeFile(path.join(consumer, "App.vue"), inlineSource);
+  const inlineUpdate = await waitBuild(offset);
+  const inlineModules = new Map();
+  for (const bundle of inlineUpdate.bundleGraph.getBundles()) {
+    bundle.traverseAssets((asset) => {
+      if (/\.vue\.vize-[a-f0-9]{64}\.js$/.test(asset.filePath)) inlineModules.set(asset.id, asset);
+    });
+  }
+  assert.equal(inlineModules.size, 1);
+  const inlineModule = [...inlineModules.values()][0];
+  assert.ok(
+    (await inlineModule.getMap()).toVLQ().sourcesContent.includes(inlineSource),
+    "inline style edits must refresh the full authored source map",
+  );
+  await eventually(
+    () => page.locator(".card").evaluate((element) => getComputedStyle(element).borderRadius),
+    (value) => value === "3px",
+    "inline SFC style edit",
+  );
+  await eventually(
+    () => page.getByRole("button").textContent(),
+    (value) => /Updated: 3/.test(value),
+    "SFC edits conservatively reload the component",
+  );
+  assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 4);
   assert.equal(
     await page.evaluate(() => window.parcelNavigationMarker),
     "same-document",
@@ -709,6 +777,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     node: { version: process.version, platform: process.platform, arch: process.arch },
     native,
     plugin,
+    resolver,
     physicalImage: physicalImage[0],
     imageHash,
     nativeBuildToken: loaded.getNativeBuildToken(),
@@ -733,6 +802,9 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
       "node-ssr",
       "external-css-hmr",
       "sass-dependency-hmr",
+      "css-dependencies-do-not-evaluate-script",
+      "script-updates-evaluate-exactly-once",
+      "inline-sfc-style-update-and-faithful-map",
       "script-dependency-hmr",
       "component-hmr",
       "configuration-invalidation",
@@ -747,6 +819,15 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   });
   success = true;
 } finally {
+  await write(
+    "watch-events.json",
+    watchEvents.map(({ type, diagnostics, message, buildTime }) => ({
+      type,
+      diagnostics,
+      message,
+      buildTime,
+    })),
+  );
   if (watcher) await watcher.unsubscribe();
   if (staticServer) await new Promise((resolve) => staticServer.server.close(resolve));
   if (browser && tracing) {

@@ -4,15 +4,16 @@ Compile Vue single-file components with Vize's native compiler in Parcel 2.16.4
 and later 2.x versions. This integration is a compatibility preview.
 
 ```sh
-npm install --save-dev parcel @vizejs/parcel-transformer
+npm install --save-dev parcel @vizejs/parcel-transformer @vizejs/parcel-resolver
 npm install vue
 ```
 
-Add the SFC transformer and the CSS continuation to `.parcelrc`:
+Register the transformer and resolver in `.parcelrc`:
 
 ```json
 {
   "extends": "@parcel/config-default",
+  "resolvers": ["@vizejs/parcel-resolver", "..."],
   "transformers": {
     "*.vue": ["@vizejs/parcel-transformer"],
     "*.css": ["@vizejs/parcel-transformer/style", "..."]
@@ -20,8 +21,8 @@ Add the SFC transformer and the CSS continuation to `.parcelrc`:
 }
 ```
 
-The CSS continuation scopes styles after Parcel's preprocessor pipeline. Keep
-`"..."` so Parcel can resolve CSS imports, asset URLs, targets, and optimization.
+The resolver isolates immutable generated component modules. The CSS continuation scopes styles
+after Parcel's preprocessor pipeline and preserves its normal processing.
 Install the corresponding Parcel transformer and preprocessor when using Sass,
 Less, or Stylus. The adapter does not download these providers itself.
 
@@ -53,8 +54,9 @@ variable names use project-relative filenames.
 
 Node targets use the native SSR backend and omit client CSS imports. Build a
 browser target as well to produce its styles. Development HMR conservatively
-reloads a changed component; local component state can reset. CSS-only
-dependencies are handled by Parcel's CSS HMR runtime.
+reloads a changed component; local component state can reset, including edits to
+inline SFC styles. CSS and Sass dependency updates preserve the component state
+without executing its script module again.
 
 Vapor output is opt-in with `"compiler": { "vapor": true }` and needs a Vue
 runtime that provides the corresponding helpers. The preview uses the default
