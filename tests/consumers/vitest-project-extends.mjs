@@ -127,6 +127,8 @@ function run(stage, shape, expectedRed) {
 
 const candidate = {};
 const installedBefore = {};
+const nativePackage = path.join(fixture, "node_modules/@vizejs/native-linux-x64-gnu");
+const nativeBefore = files(nativePackage);
 try {
   fs.writeFileSync(component, componentBytes, { flag: "wx" });
   assert.deepEqual(fs.readFileSync(component), componentBytes);
@@ -161,12 +163,9 @@ try {
   // admission in a fresh actual Vitest invocation after the first repair.
   for (const shape of shapes.filter((entry) => entry.red)) run("repaired-repeat", shape, false);
 } finally {
-  assert.deepEqual(
-    fs.readFileSync(component),
-    componentBytes,
-    "both adapters preserve the whole authored component",
-  );
-  fs.rmSync(component);
+  const componentAfter = fs.existsSync(component) ? fs.readFileSync(component) : null;
+  const nativeAfter = files(nativePackage);
+  fs.rmSync(component, { force: true });
   fs.writeFileSync(path.join(fixture, "vite.config.ts"), originalConfig);
   fs.writeFileSync(
     path.join(evidence, "observations.json"),
@@ -182,12 +181,18 @@ try {
           encoding: "utf8",
         }).stdout.trim(),
         lockSha256: hash(fs.readFileSync(path.join(fixture, "package-lock.json"))),
-        nativeCompiler: "published 0.566.0; unchanged by candidate adapter installation",
+        nativeCompiler: {
+          provider: "published 0.566.0",
+          platform: "@vizejs/native-linux-x64-gnu",
+          before: nativeBefore,
+          after: nativeAfter,
+        },
         component: {
           carrier: "src/Hello.vue.txt",
           runtimePath: "src/Hello.vue",
           sha256: hash(componentBytes),
           bytes: componentBytes.length,
+          afterBase64: componentAfter?.toString("base64") ?? null,
         },
         packages,
         candidate,
@@ -197,5 +202,15 @@ try {
       null,
       2,
     ) + "\n",
+  );
+  assert.deepEqual(
+    componentAfter,
+    componentBytes,
+    "both adapters preserve the whole authored component",
+  );
+  assert.deepEqual(
+    nativeAfter,
+    nativeBefore,
+    "candidate installation preserves the exact native compiler package",
   );
 }
