@@ -7,6 +7,10 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
+import {
+  preparePrivateSdkProvider,
+  privateSdkChildEnvironment,
+} from "./support/vite-plus-private-sdk.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -63,12 +67,15 @@ export const widgetValue = 1;
       for (const [file, source] of Object.entries(sources)) {
         fs.writeFileSync(path.join(project, "src", file), source);
       }
+      const provider = preparePrivateSdkProvider(root, project);
       const result = spawnSync(
         command,
         [
           ...launch,
           "check",
           ".",
+          "--corsa-path",
+          provider.executable,
           "--declaration",
           "--declaration-dir",
           "types",
@@ -77,6 +84,7 @@ export const widgetValue = 1;
         ],
         {
           cwd: project,
+          env: privateSdkChildEnvironment(process.env),
           encoding: "utf8",
           timeout: 60_000,
         },
