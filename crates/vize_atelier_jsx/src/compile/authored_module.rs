@@ -62,7 +62,7 @@ pub(super) fn emit(
         profiler
             .record_counter_enabled("atelier.jsx.module.native_plans", native_plans.len() as u64);
         profiler.record_counter_enabled(
-            "atelier.jsx.module.generated_maps",
+            "atelier.jsx.module.native_generated_maps",
             origins
                 .iter()
                 .filter(|origin| origin.json.is_some())
