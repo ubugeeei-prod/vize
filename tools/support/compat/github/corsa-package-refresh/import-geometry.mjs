@@ -24,6 +24,8 @@ const sources = [
   "crates/vize_canon/src/batch/import_rewriter.rs",
   "crates/vize_canon/src/batch/import_rewriter/source_map.rs",
   "crates/vize_canon/src/batch/import_rewriter/literal_geometry_tests.rs",
+  "crates/vize_canon/src/batch/import_rewriter/literal_rewrite.rs",
+  "crates/vize_canon/src/batch/import_rewriter/literal_rewrite/tests.rs",
 ];
 assert.equal(git("diff", "--name-only"), "");
 const receipt = {
@@ -87,6 +89,13 @@ const required = [
   "literal_geometry_tests::shared_syntax_still_parses_once_and_resolves_every_emitted_occurrence",
   "literal_geometry_tests::tsx_module_geometry_does_not_rewrite_attribute_or_text_literals",
   "source_map::storage_tests::normal_rewrites_use_one_presized_metadata_buffer_without_reallocation",
+  "literal_rewrite::tests::both_original_quotes_preserve_the_exact_decoded_project_path",
+  "literal_rewrite::tests::backslashes_and_each_control_character_use_the_existing_ts_encoder",
+  "literal_rewrite::tests::safe_paths_preserve_the_original_quote_and_other_quote_content",
+  "literal_rewrite::tests::source_kinds_share_the_same_encoder_and_mapping_boundary",
+  "literal_rewrite::tests::repeated_safe_and_encoded_literals_keep_later_coordinates_exact",
+  "literal_rewrite::tests::literal_encoding_does_not_add_a_syntax_parse_or_retain_a_second_entry",
+  "literal_rewrite::tests::unproven_original_delimiters_cannot_apply_a_replacement",
 ].map((name) => `batch::import_rewriter::${name}`);
 const testArgs = ["batch::import_rewriter", "--nocapture", "--test-threads=1"];
 const result = spawnSync(binary, testArgs, {
@@ -100,6 +109,7 @@ assert.equal(result.status, 0, result.stdout + result.stderr);
 for (const name of required) assert(result.stdout.includes(`test ${name} ... ok`), name);
 assert.match(result.stdout, /test result: ok\. \d+ passed; 0 failed; 0 ignored;/);
 assert.match(result.stderr, /literal_mapping_syntax .*parses: 1.*resolver_calls=4/);
+assert.match(result.stderr, /literal_encoding_syntax .*parses: 1.*resolver_calls=2/);
 assert.match(
   result.stderr,
   /literal_mapping_storage rows=256 owned_buffers=1 capacity=256 bytes=4096/,
