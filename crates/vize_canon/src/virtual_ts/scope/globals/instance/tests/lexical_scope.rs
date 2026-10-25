@@ -74,11 +74,15 @@ fn assert_instance_reads(strict: bool, receiver: &str) {
         ("$self", 1500..1505),
     ];
     if !strict {
-        // The bare expression, canonical prop owner and second loop body are
-        // genuine generated emissions. Relative-cache reuse never reuses their
-        // generated coordinates or drops the corresponding authored mappings.
+        // Bare binding navigation, the canonical initializer and the mapped
+        // props literal are separate emissions of each parent-scope prop read.
+        // The loop body also has its own generated position. Relative-cache
+        // reuse never shares those positions or invents navigation on an
+        // unmapped inference copy.
         expected.extend([
             ("$before", 1293..1300),
+            ("$before", 1293..1300),
+            ("$after", 1384..1390),
             ("$after", 1384..1390),
             ("$self", 1500..1505),
         ]);
