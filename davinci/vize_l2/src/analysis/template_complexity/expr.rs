@@ -28,8 +28,11 @@ pub(super) fn score(
     facts: &mut ComplexityFacts,
 ) {
     match expr {
-        ExprRef::Js(js) if terminal(js.ast) => {}
         ExprRef::Js(js) => {
+            let ast = decision_root(js.ast);
+            if terminal(ast) {
+                return;
+            }
             let previous = (facts.contributions.len(), facts.cyclomatic, facts.cognitive);
             let mut scorer = Scorer {
                 js,
@@ -39,7 +42,7 @@ pub(super) fn score(
                 facts,
                 unprojectable: false,
             };
-            scorer.visit_expression(js.ast);
+            walk::walk_expression(&mut scorer, ast);
             if scorer.unprojectable {
                 // A contribution inside an indivisible decoded segment has no
                 // exact authored range. Keep no prefix of that expression's
@@ -53,6 +56,20 @@ pub(super) fn score(
         ExprRef::Opaque(_) | ExprRef::Foreign(_) | ExprRef::Filter(_) => {
             unknown(expr, op, depth, facts);
         }
+    }
+}
+
+/// Static member names and parentheses contain no evaluated child besides the
+/// object/inner expression. Peel them once, without a generic visitor frame.
+/// This does not join logical trees across a member: `operand` still decides
+/// whether to flatten before invoking this ordinary sub-expression visitor.
+fn decision_root<'a, 'e>(mut expr: &'e Expression<'a>) -> &'e Expression<'a> {
+    loop {
+        expr = match expr {
+            Expression::StaticMemberExpression(member) => &member.object,
+            Expression::ParenthesizedExpression(paren) => &paren.expression,
+            _ => return expr,
+        };
     }
 }
 
@@ -150,6 +167,7 @@ impl<'a> Scorer<'_, 'a> {
 
 impl<'a> Visit<'a> for Scorer<'_, 'a> {
     fn visit_expression(&mut self, it: &Expression<'a>) {
+        let it = decision_root(it);
         if !terminal(it) {
             walk::walk_expression(self, it);
         }

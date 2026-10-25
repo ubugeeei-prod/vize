@@ -141,7 +141,18 @@ fn identity_projection_keeps_utf8_bounds_and_authored_overflow_refusals() {
 #[test]
 fn terminal_leaves_preserve_facts_and_compounds_still_visit_nested_decisions() {
     let a = Allocator::default();
-    for expression in ["name", "true", "null", "42", "42n", "/a/", "'😀'", "this"] {
+    for expression in [
+        "name",
+        "true",
+        "null",
+        "42",
+        "42n",
+        "/a/",
+        "'😀'",
+        "this",
+        "obj.value.deep",
+        "((obj.value).deep)",
+    ] {
         let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
         let mut facts = expected("a && (b ? c : d)", "a && (b ? c : d)", "b ? c : d");
         let previous = facts.clone();
@@ -155,6 +166,7 @@ fn terminal_leaves_preserve_facts_and_compounds_still_visit_nested_decisions() {
         "({ value: a && (b ? c : d) })",
         "fn(a && (b ? c : d))",
         "(() => a && (b ? c : d))",
+        "(a && (b ? c : d)).value.deep",
     ] {
         let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
         let mut facts = ComplexityFacts::empty();
@@ -168,6 +180,45 @@ fn terminal_leaves_preserve_facts_and_compounds_still_visit_nested_decisions() {
             "compound {expression}",
         );
     }
+}
+
+#[test]
+fn static_members_keep_logical_trees_separate_across_the_object_boundary() {
+    let a = Allocator::default();
+    let expression = "((a && b).value) || c";
+    let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
+    let mut facts = ComplexityFacts::empty();
+    score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
+    facts
+        .contributions
+        .sort_unstable_by_key(Contribution::sort_key);
+    assert_eq!(
+        facts,
+        ComplexityFacts {
+            cyclomatic: 3,
+            cognitive: 2,
+            unknown: 0,
+            max_nesting: 0,
+            contributions: alloc::vec![
+                Contribution {
+                    span: span(expression, expression),
+                    kind: DecisionKind::Logical,
+                    op: NodeId::from_index(3),
+                    nesting: 0,
+                    cyclomatic: 1,
+                    cognitive: 1
+                },
+                Contribution {
+                    span: span(expression, "a && b"),
+                    kind: DecisionKind::Logical,
+                    op: NodeId::from_index(3),
+                    nesting: 0,
+                    cyclomatic: 1,
+                    cognitive: 1
+                },
+            ],
+        }
+    );
 }
 
 #[test]
