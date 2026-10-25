@@ -50,7 +50,7 @@ for (const file of files) {
         leaders.push({ pid: tid, argvObservation: decoded, lsp: decoded.includes("--lsp") });
     }
     const child = /clone(?:3)?\(.*\)\s+=\s+(\d+)$/.exec(line);
-    if (child) threads.set(Number(child[1]), tid);
+    if (child && line.includes("CLONE_THREAD")) threads.set(Number(child[1]), tid);
     const call =
       /^([0-9]+\.[0-9]+) (read|write)\((\d+), "((?:\\x[0-9a-f]{2})*)", [0-9]+\)\s+=\s+(\d+)/.exec(
         line,

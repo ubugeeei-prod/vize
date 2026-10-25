@@ -31,7 +31,7 @@
   "producerFiles": [
     {
       "path": ".github/workflows/native-beta-diagnostic-dto.yml",
-      "sha256": "244f25a0e1801c1468271cb89bb81f403e8d9b2a89211e7deed336f4435660e4"
+      "sha256": "5c03be469bae24df9f11eb70e1ef5f0d3f78901d952f405467f88529bb21c8c5"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
@@ -39,11 +39,15 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/provider.mjs",
-      "sha256": "ae9fcac461a5107bcd4db22f7906e67889a61861ccb2f57cea27df5f42cb90c6"
+      "sha256": "cb3c4b64797b47d4473900e1ead922b8597e3dd2504a4fe5d4c119c20029b1fb"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
-      "sha256": "be2fb8820573d71d3bc932c875a0a7f22f47e48a4a725d0fd75b378589d34a8d"
+      "sha256": "2bf2169eb4e8e88a8dba3f3051f0416dc167e568a4d86db419041101a4e2e0a4"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/run-source.mjs",
+      "sha256": "ba8db40816b172b5bc6ce0b4bc2bf2623e64a37562d0a733c0876f60a4f679e7"
     }
   ]
 }

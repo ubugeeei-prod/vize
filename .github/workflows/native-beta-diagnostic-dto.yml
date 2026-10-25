@@ -64,7 +64,8 @@ jobs:
           set -euo pipefail
           cd "$VIZE_NATIVE_DTO_SOURCE_ROOT"
           test ! -e "$CARGO_TARGET_DIR"
-          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete -- --ignored --exact --nocapture >"$VIZE_NATIVE_DTO_CAPTURE/test.stdout" 2>"$VIZE_NATIVE_DTO_CAPTURE/test.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete --no-run --message-format=json >"$VIZE_NATIVE_DTO_CAPTURE/build.jsonl" 2>"$VIZE_NATIVE_DTO_CAPTURE/build.stderr"
+          node "$GITHUB_WORKSPACE/tests/tooling/support/native-beta-dto/run-source.mjs"
       - name: Verify closed raw native frames and exact per-file request shapes
         if: ${{ !cancelled() }}
         run: node tests/tooling/support/native-beta-dto/audit-wire.mjs

@@ -55,6 +55,7 @@ const producerFiles = [
   "tests/tooling/support/native-beta-dto/prepare-role.mjs",
   "tests/tooling/support/native-beta-dto/provider.mjs",
   "tests/tooling/support/native-beta-dto/audit-wire.mjs",
+  "tests/tooling/support/native-beta-dto/run-source.mjs",
 ];
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
 const betaCommit = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
@@ -230,7 +231,7 @@ export function newNativeBetaDtoProtocolCases(
       "version: 7.1.0-beta",
       before,
       tests[3]!.selector,
-      "--ignored --exact --nocapture",
+      "run-source.mjs",
       "audit-wire.mjs",
     ])
       require(job.includes(marker), `missing actual four-role producer: ${marker}`);

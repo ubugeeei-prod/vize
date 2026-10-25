@@ -35,18 +35,19 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
         std::str::from_utf8(&actual_source.stdout).unwrap().trim(),
         expected_source
     );
-    let wrapper = PathBuf::from(std::env::var_os("VIZE_NATIVE_DTO_RUNTIME_PATH").unwrap());
+    let runtime = PathBuf::from(std::env::var_os("VIZE_NATIVE_DTO_RUNTIME_PATH").unwrap());
     let executable =
         PathBuf::from(std::env::var_os("VIZE_NATIVE_DTO_ACTUAL_RUNTIME_PATH").unwrap())
             .canonicalize()
             .unwrap();
+    assert_eq!(runtime.canonicalize().unwrap(), executable);
     let expected_version = std::env::var("VIZE_NATIVE_DTO_SDK_VERSION").unwrap();
     let expected_hash = std::env::var("VIZE_NATIVE_DTO_SDK_SHA256").unwrap();
     assert_eq!(
         hash(&std::fs::read(&executable).unwrap()).as_str(),
         expected_hash
     );
-    let version = Command::new(&wrapper).arg("--version").output().unwrap();
+    let version = Command::new(&runtime).arg("--version").output().unwrap();
     assert!(version.status.success());
     assert_eq!(
         version.stdout,
@@ -68,7 +69,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     let source_uri = path_to_file_uri(&source);
     let neighbor_uri = path_to_file_uri(&neighbor);
     let mut editor =
-        EditorLspSession::spawn_with_config(wrapper.to_str().unwrap(), &root, &root, Some(&config))
+        EditorLspSession::spawn_with_config(runtime.to_str().unwrap(), &root, &root, Some(&config))
             .unwrap();
     editor.mirror(&source_uri, VALID).unwrap();
     editor.mirror(&neighbor_uri, NEIGHBOR).unwrap();
