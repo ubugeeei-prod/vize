@@ -17,6 +17,16 @@ const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], {
 if (process.env.VIZE_TEST_SOURCE_SHA) assert.equal(sourceSha, process.env.VIZE_TEST_SOURCE_SHA);
 const evidence = path.join(extensionPath, ".vscode-test", "workspace-server");
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), "vize-ws-"));
+const userDataPath = path.join(profile, "user-data");
+fs.mkdirSync(path.join(userDataPath, "User"), { recursive: true });
+fs.writeFileSync(
+  path.join(userDataPath, "User", "settings.json"),
+  JSON.stringify({
+    "extensions.autoUpdate": false,
+    "extensions.autoCheckUpdates": false,
+    "update.mode": "none",
+  }),
+);
 const workspacePath = path.join(profile, "workspace 日本語 with spaces");
 const version = "0.566.0";
 fs.mkdirSync(evidence, { recursive: true });
@@ -108,13 +118,13 @@ try {
     onOutput: (output) => {
       if (output) process.stdout.write(String(output));
     },
-    userDataPath: path.join(profile, "data"),
+    userDataPath,
     vscodeVersion: "1.107.1",
     vsixPath,
     workspacePath,
   });
   const result = JSON.parse(fs.readFileSync(resultPath, "utf8"));
-  assert.equal(result.installedExtensionPath, installed);
+  assert.equal(path.relative(result.installedExtensionPath, installed), "");
   assert.equal(result.workspace.source, "workspace");
   assert.equal(result.workspace.version, version);
   assert.equal(result.configured.source, "configured");

@@ -36,7 +36,7 @@ exports.run = async function run() {
     );
   }
   const workspace = await info("workspace");
-  assert.equal(fs.realpathSync(workspace.path), expectedPath);
+  assert.equal(path.relative(fs.realpathSync(workspace.path), expectedPath), "");
   assert.equal(workspace.version, process.env.VIZE_TEST_WORKSPACE_SERVER_VERSION);
   assert.notEqual(workspace.version, workspace.extensionVersion);
   const hover = await vscode.commands.executeCommand("vize.test.executeLspRequest", {
@@ -49,7 +49,7 @@ exports.run = async function run() {
     .getConfiguration("vize")
     .update("serverPath", expectedPath, vscode.ConfigurationTarget.Workspace);
   const configured = await info("configured");
-  assert.equal(fs.realpathSync(configured.path), expectedPath);
+  assert.equal(path.relative(fs.realpathSync(configured.path), expectedPath), "");
   fs.writeFileSync(
     process.env.VIZE_TEST_WORKSPACE_RESULT,
     JSON.stringify({ installedExtensionPath, workspace, hover, configured }, null, 2) + "\n",

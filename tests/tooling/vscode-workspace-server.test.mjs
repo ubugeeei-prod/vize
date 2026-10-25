@@ -242,6 +242,24 @@ await test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrapp
     "@echo MUST NOT EXECUTE",
   );
   const expected = path.join(storage, "bin", "vize.cjs");
+  const aliases = [nested, f.folder];
+  if (process.platform === "win32") {
+    aliases.push(
+      f.folder.replace(
+        /^([a-z]):/i,
+        (_, drive) =>
+          `${drive === drive.toUpperCase() ? drive.toLowerCase() : drive.toUpperCase()}:`,
+      ),
+    );
+  }
+  const discovered = discoverWorkspaceServers(aliases, true, "win32");
+  assert.equal(
+    discovered.reason,
+    undefined,
+    "drive-letter casing must not create conflicting engines",
+  );
+  assert.equal(discovered.candidates.length, 1);
+  assert.equal(path.relative(discovered.candidates[0].path, expected), "");
   assert.deepEqual(discoverWorkspaceServers([nested, f.folder], true, "win32").candidates, [
     { path: expected, source: "workspace" },
   ]);

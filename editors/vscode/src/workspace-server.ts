@@ -24,7 +24,8 @@ export function discoverWorkspaceServers(
       const serverPath = packageServer(packageRoot) ?? binServer(packageRoot, platform);
       if (serverPath) {
         const realPath = fs.realpathSync(serverPath);
-        servers.set(realPath, { path: realPath, source: "workspace" });
+        const identity = platform === "win32" ? realPath.toLowerCase() : realPath;
+        servers.set(identity, { path: realPath, source: "workspace" });
       }
     }
   } catch (error) {
@@ -35,7 +36,7 @@ export function discoverWorkspaceServers(
   if (servers.size > 1) {
     return {
       candidates: [],
-      reason: `Workspace folders use different Vize installations: ${[...servers.keys()].join(", ")}. Use separate windows or vize.serverPath to select one explicitly.`,
+      reason: `Workspace folders use different Vize installations: ${[...servers.values()].map((server) => server.path).join(", ")}. Use separate windows or vize.serverPath to select one explicitly.`,
     };
   }
   return { candidates: [...servers.values()] };
