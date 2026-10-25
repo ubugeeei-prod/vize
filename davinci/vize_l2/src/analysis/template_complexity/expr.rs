@@ -21,6 +21,7 @@ mod tests;
 
 /// Score one evaluated expression position standing at template nesting
 /// `depth`, carried by op `op`.
+#[inline]
 pub(super) fn score(
     expr: ExprRef<'_>,
     op: Option<NodeId>,
@@ -29,29 +30,32 @@ pub(super) fn score(
 ) {
     match expr {
         ExprRef::Js(js) if terminal(js.ast) => {}
-        ExprRef::Js(js) => {
-            let previous = (facts.contributions.len(), facts.cyclomatic, facts.cognitive);
-            let mut scorer = Scorer {
-                js,
-                op,
-                nesting: depth,
-                facts,
-                unprojectable: false,
-            };
-            scorer.visit_expression(js.ast);
-            if scorer.unprojectable {
-                // A contribution inside an indivisible decoded segment has no
-                // exact authored range. Keep no prefix of that expression's
-                // scores, and preserve every earlier expression's facts.
-                facts.contributions.truncate(previous.0);
-                facts.cyclomatic = previous.1;
-                facts.cognitive = previous.2;
-                unknown(expr, op, depth, facts);
-            }
-        }
+        ExprRef::Js(js) => score_js(js, op, depth, facts),
         ExprRef::Opaque(_) | ExprRef::Foreign(_) | ExprRef::Filter(_) => {
             unknown(expr, op, depth, facts);
         }
+    }
+}
+
+/// Keep retained-AST traversal and its rollback frame off the terminal fast path.
+fn score_js<'a>(js: &'a JsExpr<'a>, op: Option<NodeId>, depth: u32, facts: &mut ComplexityFacts) {
+    let previous = (facts.contributions.len(), facts.cyclomatic, facts.cognitive);
+    let mut scorer = Scorer {
+        js,
+        op,
+        nesting: depth,
+        facts,
+        unprojectable: false,
+    };
+    scorer.visit_expression(js.ast);
+    if scorer.unprojectable {
+        // A contribution inside an indivisible decoded segment has no
+        // exact authored range. Keep no prefix of that expression's
+        // scores, and preserve every earlier expression's facts.
+        facts.contributions.truncate(previous.0);
+        facts.cyclomatic = previous.1;
+        facts.cognitive = previous.2;
+        unknown(ExprRef::Js(js), op, depth, facts);
     }
 }
 
