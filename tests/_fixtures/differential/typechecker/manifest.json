@@ -7123,12 +7123,12 @@
         {
           "path": "crates/vize_carton/src/corsa_resolver.rs",
           "before": "947bf22565f1948e3a2848dd90b7c1f3ec259bf293d6176941528291f0612717",
-          "after": "22da83c84ab1d0626ede00e2dbc63d52db9035b346829225bcbbdcb6facf7cd9"
+          "after": "850beef2582ea0c0e8f11afd579633e367b82bae4d3d165d1750c60b9a210231"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests.rs",
           "before": "6c15b056384611da328d4dc4bc01dc6f3cbe665bec18bbabffdb747233aa4ee2",
-          "after": "286aecabc6099ae6dc787bf51ba6f3e9015663167d6ca4bc0463e82fda7ad1cc"
+          "after": "3648f1a499135ec10c0668ddadd647fa8a827059f420813b4fe8a5015e409be2"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
@@ -7163,7 +7163,37 @@
         {
           "path": "crates/vize_canon/src/batch/executor/tests.rs",
           "before": "138020f6b6f2aca5cabf28d457b1084b87cc3732b673538e57fcf45bbd7cc1d7",
-          "after": "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082"
+          "after": "400833cf269847075fd9330a3af1fd099d268b07a7889dae6b7b32395606f190"
+        },
+        {
+          "path": "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs",
+          "before": "dc06840ea2fc02f3f25ffb9c9e8b8f17ab639a20b8616643579104df4d9d34a2",
+          "after": "288475335b06e28f3127e83cdf1a8551ae648cd1ae4ca25ecf16d69e4825fc20"
+        },
+        {
+          "path": "crates/vize_carton/src/corsa_resolver/packages.rs",
+          "before": "d87a4b3ea808b4cf805dec9cc9f4b12aee919751b7294367a48f4ababef32452",
+          "after": "ccd1c7c425de1069dde88e7ce9b016076e5f3ddbd97192acb224fc9001e9db99"
+        },
+        {
+          "path": "crates/vize_carton/src/corsa_resolver/normalize_tests.rs",
+          "before": "1c80643760d4de5765076cf8178b40654c302d52a88e49e73dc0e280f30c7436",
+          "after": "d51a53f8cd1de730c8a410ca363599d726e95e72dbd57667faea0a11d4965162"
+        },
+        {
+          "path": "crates/vize_carton/src/corsa_resolver/tests/package_runtime.rs",
+          "before": "1d6ec97de0e64a084bc4f95e0df4fc81cf4163fb893c1e6b214771bea48815ef",
+          "after": "86516dcc883e5743039b235bf845d13b575dfa9c66e0bfab9169b2fe6bfdba33"
+        },
+        {
+          "path": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "before": null,
+          "after": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/tests.rs",
+          "before": "6cdcce2ad44616ab339a1a8c3cbf2e0484af5dddc68486ef0bebbc79bdcbb280",
+          "after": "55bd45968d7b016ceadf328d0bc2b3650a26eb987dcbc71cad56e3e413bdde2e"
         }
       ],
       "tests": [
@@ -7195,7 +7225,67 @@
         {
           "selector": "batch::executor::tests::cli_global_diagnostics_do_not_trigger_session_fallback",
           "source": "crates/vize_canon/src/batch/executor/tests.rs",
-          "sha256": "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082"
+          "sha256": "400833cf269847075fd9330a3af1fd099d268b07a7889dae6b7b32395606f190"
+        },
+        {
+          "selector": "batch::executor::tests::incremental_fallback::incremental_session_fallback_is_counted_per_check",
+          "source": "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs",
+          "sha256": "288475335b06e28f3127e83cdf1a8551ae648cd1ae4ca25ecf16d69e4825fc20"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::explicit_alias_launcher_owns_config_and_all_environment_overrides",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::opaque_explicit_wrapper_is_not_replaced_by_another_provider",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::undeclared_canonical_package_does_not_supply_a_runtime",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::declared_alias_wins_over_an_undeclared_canonical_package",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::declared_canonical_and_alias_follow_their_nearest_hoisted_slot",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::declared_platform_follows_its_hoisted_slot",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::invalid_nearest_alias_is_not_rescued_by_an_ancestor_runtime",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::mismatched_nearest_platform_is_not_rescued_by_an_ancestor_runtime",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "corsa_resolver::tests::provider_authority::every_implicit_cache_requires_the_developer_flag",
+          "source": "crates/vize_carton/src/corsa_resolver/tests/provider_authority.rs",
+          "sha256": "1189386349fa8ce31ac9583c011909333f4debf3f4f3e00191e5607b656956cd"
+        },
+        {
+          "selector": "batch::executor::tests::keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview",
+          "source": "crates/vize_canon/src/batch/executor/tests.rs",
+          "sha256": "400833cf269847075fd9330a3af1fd099d268b07a7889dae6b7b32395606f190"
+        },
+        {
+          "selector": "lsp_client::tests::keeps_explicit_opaque_wrapper_instead_of_unrelated_native_binary",
+          "source": "crates/vize_canon/src/lsp_client/tests.rs",
+          "sha256": "55bd45968d7b016ceadf328d0bc2b3650a26eb987dcbc71cad56e3e413bdde2e"
         }
       ]
     }

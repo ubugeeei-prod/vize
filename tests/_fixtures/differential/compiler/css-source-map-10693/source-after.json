@@ -1,0 +1,7 @@
+{
+  "code": ".雪😀{color:red}.b{opacity:.5}",
+  "cssVars": [],
+  "errors": [],
+  "warnings": [],
+  "map": "{\"version\":3,\"file\":\"/fixture/组件 space'\\\"&😀.css\",\"names\":[],\"sources\":[\"/fixture/组件 space'\\\"&😀.css\"],\"sourcesContent\":[\"\\r\\n.雪😀 { color: red }\\r\\n.b{opacity:0.5}\"],\"mappings\":\"AACA,eACA\"}"
+}

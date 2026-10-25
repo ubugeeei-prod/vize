@@ -1,0 +1,118 @@
+name: Native CSS source maps
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/css-compile-source-maps.yml"
+      - "Cargo.lock"
+      - "crates/vize_atelier_sfc/Cargo.toml"
+      - "crates/vize_atelier_sfc/src/css.rs"
+      - "crates/vize_atelier_sfc/src/css/**"
+      - "crates/vize_atelier_sfc/tests/css_source_maps.rs"
+      - "vendor/lightningcss/src/printer.rs"
+      - "vendor/lightningcss/tests/vize_printer_utf16.rs"
+      - "tests/fixtures/css/compile-source-maps/**"
+      - "tests/native/css-compile-source-maps.mjs"
+  workflow_dispatch:
+    inputs:
+      measurements:
+        type: boolean
+        default: false
+        description: Build two pristine optimized sources and report paired map overhead
+      base_sha:
+        type: string
+        default: b0033883518f364cfbd3dd0ab9464715e9f51758
+        description: Immutable pre-fix source revision
+permissions: { contents: read }
+concurrency:
+  group: css-compile-source-maps-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_BUILD_JOBS: "12"
+  CARGO_TERM_COLOR: never
+  VIZE_CSS_MAP_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
+jobs:
+  native:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.VIZE_CSS_MAP_SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: css-source-maps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
+      - name: Verify real writer coordinates and complete existing engine contracts
+        run: |
+          test "$(git rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
+          cargo test --locked --profile ci -p vize_lightningcss --test vize_printer_utf16 --test vize_source_map_contract
+          cargo test --locked --profile ci -p vize_atelier_sfc --test css_source_maps --test css_engine_panic_boundary --test css_nesting_guard
+          cargo test --locked --profile ci -p vize_atelier_sfc --lib css::
+      - name: Build the exact source native API
+        run: vp run --filter './npm/native' build:ci
+      - name: Retain every real off/on native result before whole comparisons
+        run: node --test tests/native/css-compile-source-maps.mjs
+      - name: Retain original public capture and source protocol authority
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-source-maps-${{ env.VIZE_CSS_MAP_SOURCE_SHA }}-${{ github.run_id }}
+          path: |
+            target/css-compile-source-maps/
+            tests/fixtures/css/compile-source-maps/
+          if-no-files-found: error
+          retention-days: 14
+  measurements:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.measurements }}
+    needs: native
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      VIZE_CSS_MAP_BASE_SHA: ${{ inputs.base_sha }}
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.VIZE_CSS_MAP_SOURCE_SHA }}
+          path: head
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate immutable source roles before baseline checkout
+        run: |
+          [[ "$VIZE_CSS_MAP_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$VIZE_CSS_MAP_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C head rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
+          git -C head merge-base --is-ancestor "$VIZE_CSS_MAP_BASE_SHA" "$VIZE_CSS_MAP_SOURCE_SHA"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.base_sha }}
+          path: base
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: head/package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      # Compiled targets start absent and remain separate for each source role.
+      - name: Install the pinned shared NAPI build toolchain
+        working-directory: head
+        run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
+      - name: Qualify source role and image freshness refusals
+        run: node --test head/tests/tooling/css-source-map-profile.test.mjs
+      - name: Build both exact sources and retain ABBA native measurements
+        run: node head/tools/benchmarks/scripts/css-source-map-profile.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/artifacts/css-source-map-profile"
+      - name: Retain every original packet, image, source identity and timing sample
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-source-map-profile-${{ env.VIZE_CSS_MAP_SOURCE_SHA }}-${{ github.run_id }}
+          path: artifacts/css-source-map-profile/
+          if-no-files-found: error
+          retention-days: 14

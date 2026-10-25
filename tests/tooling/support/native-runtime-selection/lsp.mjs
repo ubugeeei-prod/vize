@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -14,12 +14,8 @@ import {
   runtimeChildEnvironment,
   sha256,
 } from "./providers.mjs";
-import {
-  BUILD_RECIPE,
-  binaryRelativePath,
-  expectedBuildIdentity,
-  validateBuildReceipt,
-} from "../../../differential/build-receipt.ts";
+import { sourceIdentity, executionAuthority } from "./lsp-source-custody.mjs";
+import { validateNativeLifecycle } from "./lsp-native-lifecycle.mjs";
 import { SourceLspWire } from "./lsp-wire.mjs";
 import { captureNativeOwners } from "./lsp-strace.mjs";
 
@@ -40,99 +36,6 @@ const range = (text, offset, length) => ({
   end: position(text, offset + length),
 });
 
-function sourceIdentity() {
-  assert.equal(process.env.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION, "1");
-  assert.equal(
-    process.platform,
-    "linux",
-    "actual native syscall capture requires its Linux Actions host",
-  );
-  assert.equal(
-    process.arch,
-    "x64",
-    "the qualified 7.0.2 image is the explicitly owned Linux x64 provider",
-  );
-  const requested = process.env.VIZE_SOURCE_CLI ?? process.env.SOURCE_CLI;
-  assert.ok(requested && path.isAbsolute(requested));
-  if (process.env.VIZE_SOURCE_CLI && process.env.SOURCE_CLI)
-    assert.equal(
-      fs.realpathSync(process.env.VIZE_SOURCE_CLI),
-      fs.realpathSync(process.env.SOURCE_CLI),
-    );
-  const executable = fs.realpathSync(requested);
-  assert.equal(
-    executable,
-    fs.realpathSync(path.join(repoRoot, binaryRelativePath())),
-    "only the original installed canonical source artifact is admitted",
-  );
-  const receiptFile = `${executable}.differential-build.json`;
-  const receipt = JSON.parse(fs.readFileSync(receiptFile, "utf8"));
-  const expected = expectedBuildIdentity(repoRoot);
-  validateBuildReceipt(receipt, expected, BUILD_RECIPE);
-  const probe = spawnSync(executable, ["--version"], { encoding: null });
-  assert.equal(probe.error, undefined);
-  assert.equal(probe.status, 0);
-  assert.equal(probe.signal, null);
-  assert.equal(probe.stdout.toString().trim(), receipt.cliVersion);
-  assert.equal(probe.stderr.length, 0);
-  const observer = {
-    file: path.relative(repoRoot, import.meta.filename),
-    sha256: sha256(fs.readFileSync(import.meta.filename)),
-    revision: receipt.sourceRevision,
-  };
-  assert.equal(
-    sha256(
-      execFileSync("git", ["show", `${observer.revision}:${observer.file}`], { cwd: repoRoot }),
-    ),
-    observer.sha256,
-  );
-  return {
-    executable,
-    receiptFile,
-    receipt,
-    observer,
-    versionProbe: {
-      stdoutBase64: probe.stdout.toString("base64"),
-      stderrBase64: probe.stderr.toString("base64"),
-      status: probe.status,
-      signal: probe.signal,
-    },
-  };
-}
-
-function executionAuthority(source, consumer, environment) {
-  const loader = path.join(repoRoot, "crates/vize_carton/src/config/loader");
-  const rust = fs.readFileSync(path.join(loader, "js.rs"), "utf8");
-  const embedded =
-    /let script = \[\s*include_str!\("vite-runtime\.mjs"\),\s*include_str!\("module-runtime\.mjs"\),\s*r#"([\s\S]*?)"#,\s*\]\s*\.concat\(\);/u.exec(
-      rust,
-    );
-  assert.ok(embedded, "exact current source config script recipe");
-  assert.match(
-    fs.readFileSync(path.join(loader, "lsp_snapshot.rs"), "utf8"),
-    /builder\.prefix\("vize-config-compile-"\)/u,
-  );
-  const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-  return {
-    source: { path: source.executable, sha256: source.receipt.binarySha256 },
-    node: {
-      path: path.join(environment.PATH, "node"),
-      physicalPath: fs.realpathSync(process.execPath),
-      sha256: sha256(fs.readFileSync(process.execPath)),
-    },
-    configScript:
-      fs.readFileSync(path.join(loader, "vite-runtime.mjs"), "utf8") +
-      fs.readFileSync(path.join(loader, "module-runtime.mjs"), "utf8") +
-      embedded[1],
-    configFile: fs.realpathSync(consumer.configFile),
-    configCachePattern: new RegExp(
-      `^${escape(environment.TMPDIR ?? os.tmpdir())}/vize-config-compile-[A-Za-z0-9]+$`,
-      "u",
-    ),
-    sdk: consumer.expectedExecutable,
-  };
-}
-
 function exactHover(packet, source, token) {
   const offset =
     token === "value" ? source.indexOf("const value") + 6 : source.indexOf("{{ doubled }}") + 3;
@@ -143,113 +46,8 @@ function exactHover(packet, source, token) {
   assert.deepEqual(result(packet), expected, `complete ${token} hover`);
 }
 
-function validateNativeLifecycle(owners, consumer, knownContract) {
-  const positive = consumer.expectedExecutable !== null;
-  if (!positive) {
-    assert.equal(owners.length, 0, "no undeclared, bundled, cached or global compiler may run");
-    return { selectedProvider: false, nativeCleanExitQualified: false, semanticCredit: false };
-  }
-  assert.ok(
-    owners.length > 0,
-    "real compiler use must be observed independently of outer responses",
-  );
-  const sdk = consumer.expectedExecutable;
-  for (const owner of owners) {
-    assert.equal(owner.executable.physicalPath, sdk.path);
-    assert.equal(owner.executable.sha256, sdk.sha256);
-    assert.equal(owner.exit.signal, null);
-  }
-  const lsp = owners.filter((owner) => owner.argv.includes("--lsp"));
-  assert.ok(lsp.length > 0, "the selected actual provider must serve LSP");
-  const packets = (owner) => ({
-    client: owner.streams.client.frames.map((frame) => frame.packet),
-    server: owner.streams.server.frames.map((frame) => frame.packet),
-  });
-  let realWrongBuffer = false,
-    realTypeError = false;
-  for (const owner of lsp) {
-    const { client, server } = packets(owner);
-    realWrongBuffer ||= client.some(
-      (packet) =>
-        (packet.method === "textDocument/didOpen" &&
-          packet.params?.textDocument?.text?.includes('"wrong"')) ||
-        (packet.method === "textDocument/didChange" &&
-          packet.params?.contentChanges?.some((change) => change.text?.includes('"wrong"'))),
-    );
-    realTypeError ||= server.some((packet) =>
-      packet.result?.items?.some((diagnostic) => diagnostic.code === 2322),
-    );
-    const initialized = server.filter(
-      (packet) =>
-        packet.id === client.find((request) => request.method === "initialize")?.id &&
-        !packet.method,
-    );
-    assert.equal(initialized.length, 1);
-    assert.equal(initialized[0].error, undefined);
-    if (consumer.kind.endsWith("702")) {
-      assert.deepEqual(
-        initialized[0].result,
-        knownContract,
-        "exact qualified image retains its complete source-owned Initialize contract",
-      );
-      const shutdown = client.filter((packet) => packet.method === "shutdown");
-      assert.equal(shutdown.length, 1);
-      assert.deepEqual(
-        server.find((packet) => !packet.method && packet.id === shutdown[0].id),
-        { jsonrpc: "2.0", id: shutdown[0].id, result: null },
-      );
-      assert.ok(
-        server.some(
-          (packet) =>
-            packet.method === "window/logMessage" &&
-            packet.params?.type === 3 &&
-            packet.params?.message?.startsWith(`handled method 'shutdown' (${shutdown[0].id}) in `),
-        ),
-        "actual current shutdown completion",
-      );
-      assert.equal(
-        client.some((packet) => packet.method === "exit"),
-        false,
-        "qualified EOF closure does not borrow the standard Exit path",
-      );
-      assert.deepEqual(owner.exit, { code: 0, signal: null });
-      assert.equal(fs.readFileSync(owner.streams.stderr.path).length, 0);
-    } else {
-      const stderr = fs.readFileSync(owner.streams.stderr.path, "utf8");
-      assert.ok(
-        (owner.exit.code === 0 && stderr === "") ||
-          (owner.exit.code === 1 && stderr === "context canceled\n") ||
-          (owner.exit.code === 0 && stderr === "error handling method 'exit': EOF\n"),
-        `unrecognized beta terminal behavior: ${owner.exit.code} ${JSON.stringify(stderr)}`,
-      );
-    }
-  }
-  assert.ok(realWrongBuffer, "actual selected LSP receives the genuine unsaved error text");
-  assert.ok(realTypeError, "actual selected native LSP returns the genuine type error");
-  const apiErrors = owners
-    .filter((owner) => owner.argv.includes("--api"))
-    .flatMap((owner) =>
-      owner.streams.server.frames
-        .filter((frame) => frame.packet.error)
-        .map((frame) => frame.packet),
-    );
-  for (const owner of owners.filter((owner) => owner.argv.includes("--api"))) {
-    assert.deepEqual(owner.exit, { code: 0, signal: null });
-    assert.equal(fs.readFileSync(owner.streams.stderr.path).length, 0);
-  }
-  return {
-    selectedProvider: true,
-    nativeCleanExitQualified: consumer.kind.endsWith("702"),
-    betaStandardExitFrontier: !consumer.kind.endsWith("702"),
-    apiCompatibilityCredit: false,
-    actualApiErrors: apiErrors,
-    actualNativeSemanticTraffic: true,
-    semanticCredit: false,
-  };
-}
-
 export async function observeSourceLspSelection() {
-  const source = sourceIdentity(),
+  const source = sourceIdentity(repoRoot, import.meta.filename),
     providers = loadNativeProviders();
   assert.ok(providers.frozen702, "the separately installed qualified 7.0.2 provider is mandatory");
   assert.ok(process.env.VIZE_NATIVE_STRACE && path.isAbsolute(process.env.VIZE_NATIVE_STRACE));
@@ -501,7 +299,7 @@ export async function observeSourceLspSelection() {
         const nativeCapture = captureNativeOwners(
           wire.prefix,
           path.join(directory, "native"),
-          executionAuthority(source, consumer, environment),
+          executionAuthority(repoRoot, source, consumer, environment),
         );
         profile.nativeOwners = nativeCapture.nativeOwners;
         profile.syscallObservation = {

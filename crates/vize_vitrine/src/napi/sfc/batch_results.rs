@@ -9,6 +9,7 @@ use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
 use vize_l0::cstr;
 
 use super::types::ModuleShapeNapi;
+use super::vue_version::resolve_sfc_vue_version;
 use super::{
     experimentals::ExperimentalTemplateOptions,
     thread_pool::BatchThreadPool,
@@ -26,13 +27,15 @@ pub fn compile_sfc_batch_with_results(
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultWithFilesNapi> {
     let opts = options.unwrap_or_default();
+    let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;
     BatchThreadPool::new(opts.threads)?
-        .install(|| compile_sfc_batch_with_results_inner(files, opts))
+        .install(|| compile_sfc_batch_with_results_inner(files, opts, vue_version))
 }
 
 fn compile_sfc_batch_with_results_inner(
     files: Vec<BatchFileInputNapi>,
     opts: BatchCompileOptionsNapi,
+    vue_version: vize_l0::config::VueVersion,
 ) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
@@ -180,6 +183,7 @@ fn compile_sfc_batch_with_results_inner(
                     is_ts,
                     is_prod: shape.is_prod,
                     custom_renderer,
+                    dialect: vue_version,
                     compiler_options: template_compiler_options,
                     ..Default::default()
                 },
