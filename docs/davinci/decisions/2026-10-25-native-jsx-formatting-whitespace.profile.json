@@ -1,0 +1,1012 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "cpu": "Apple M2 Max",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "rust": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "profile": "ci-opt (thin LTO, codegen units16)"
+  },
+  "method": {
+    "baseline": "original optimized parent probe hash matches initial native JSX receipt; same compact source",
+    "samples_per_size_and_mode": 9,
+    "rounds_per_process": 300,
+    "order": "alternating paired order across8/64/256 children",
+    "scope": "local parse/original File walk/canonical publication/shared analysis costs; layout only becomes admitted at head; no end-to-end or universal speed claim",
+    "profile": "separate100-round source profile, excluded from timing medians",
+    "background": "Ordinary browser and macOS indexing active; no compiler, transfer or benchmark detected before measurement. Local paired evidence, not an isolated-machine result."
+  },
+  "source_sha256": {
+    "davinci/vize_l2/src/artifact/builder/region.rs": "857678eb1f2dac172ed047bc37854312301ce2e13888e40a662bad8137fd5e62",
+    "davinci/vize_l2/src/lang/js/file.rs": "19e9b1f9b43845b244da20c9c970bde9b817467d683e47b21395faf492a5c222",
+    "davinci/vize_l2/src/lang/js/jsx_body.rs": "a1796e1224772fa7a293db7b3519aeec2b3ccc90370bdde89122c0025bc199c6",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup/emit.rs": "59f97af9561cdf36d8dfe2692400f719fda75f0cd63575f540d9c04998f88deb",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup/prepare.rs": "c5453de96ddec30c41aaf26e1e858558ad351421febae0f293f29c723e138118",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup/whitespace.rs": "f0cc63a997932865202693b76782ad71176c32156f665da6d244d0cf2024cecd",
+    "davinci/vize_l2/src/lang/js/jsx_body/markup.rs": "cbf520908ecfbb5b2f337a552343fe15ae30dd3a972323d033463c602691b5b6",
+    "davinci/vize_l2/examples/jsx_markup_profile.rs": "31c2914723dc875375c94904c2560828d9af00d0def2e6531f21e74bdafe68db"
+  },
+  "binary_sha256": {
+    "base": "05472bdddef5c2c1834c71a645eb491a2c807be7501abeb73b500266d9a5b0cb",
+    "head": "782bcaebf2d505b3d6358a24db98950a2ef072444022711a85ac3a5ea25dda37"
+  },
+  "median_us": {
+    "8": {
+      "base_compact": {
+        "parse_us": 1.3903133333333333,
+        "walk_us": 2.3954333333333335,
+        "canonical_us": 0.96281,
+        "analysis_us": 0.08600666666666666
+      },
+      "head_compact": {
+        "parse_us": 1.30386,
+        "walk_us": 2.4968166666666667,
+        "canonical_us": 0.9598633333333333,
+        "analysis_us": 0.08879333333333334
+      },
+      "head_layout": {
+        "parse_us": 1.5107,
+        "walk_us": 2.5273766666666666,
+        "canonical_us": 1.1493966666666666,
+        "analysis_us": 0.08916
+      }
+    },
+    "64": {
+      "base_compact": {
+        "parse_us": 6.59349,
+        "walk_us": 12.47556,
+        "canonical_us": 4.6392766666666665,
+        "analysis_us": 0.38305
+      },
+      "head_compact": {
+        "parse_us": 6.456363333333334,
+        "walk_us": 13.517086666666668,
+        "canonical_us": 4.7219066666666665,
+        "analysis_us": 0.3841866666666667
+      },
+      "head_layout": {
+        "parse_us": 7.53387,
+        "walk_us": 13.697730000000002,
+        "canonical_us": 5.6957933333333335,
+        "analysis_us": 0.3837466666666666
+      }
+    },
+    "256": {
+      "base_compact": {
+        "parse_us": 23.86349,
+        "walk_us": 43.10223,
+        "canonical_us": 17.55431666666667,
+        "analysis_us": 1.4191633333333333
+      },
+      "head_compact": {
+        "parse_us": 23.698356666666665,
+        "walk_us": 42.68528666666666,
+        "canonical_us": 17.80057,
+        "analysis_us": 1.40888
+      },
+      "head_layout": {
+        "parse_us": 27.79223,
+        "walk_us": 46.60652666666667,
+        "canonical_us": 21.891766666666665,
+        "analysis_us": 1.3969666666666667
+      }
+    }
+  },
+  "samples": {
+    "8": {
+      "base_compact": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.5476666666666667,
+          "walk_us": 2.4755700000000003,
+          "canonical_us": 1.02497,
+          "analysis_us": 0.08686333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3903133333333333,
+          "walk_us": 2.357946666666667,
+          "canonical_us": 0.9483466666666668,
+          "analysis_us": 0.08567
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.4191633333333333,
+          "walk_us": 2.4351166666666666,
+          "canonical_us": 0.9779466666666667,
+          "analysis_us": 0.0853
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.39294,
+          "walk_us": 2.4565433333333333,
+          "canonical_us": 0.9744566666666666,
+          "analysis_us": 0.08984
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.37807,
+          "walk_us": 2.3507066666666665,
+          "canonical_us": 0.94733,
+          "analysis_us": 0.08600666666666666
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3976566666666668,
+          "walk_us": 2.3954333333333335,
+          "canonical_us": 0.96281,
+          "analysis_us": 0.08845333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3216566666666667,
+          "walk_us": 2.3650066666666665,
+          "canonical_us": 0.9587199999999999,
+          "analysis_us": 0.08471333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3725066666666668,
+          "walk_us": 2.338026666666667,
+          "canonical_us": 0.9374833333333333,
+          "analysis_us": 0.08598
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3803033333333334,
+          "walk_us": 2.4122433333333335,
+          "canonical_us": 0.9741766666666666,
+          "analysis_us": 0.08929999999999999
+        }
+      ],
+      "head_compact": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.29237,
+          "walk_us": 2.52056,
+          "canonical_us": 0.9598633333333333,
+          "analysis_us": 0.08763
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3006666666666666,
+          "walk_us": 2.4793366666666667,
+          "canonical_us": 0.9585933333333333,
+          "analysis_us": 0.09182666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3091766666666667,
+          "walk_us": 2.429326666666667,
+          "canonical_us": 0.94968,
+          "analysis_us": 0.08556666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.30235,
+          "walk_us": 2.4996,
+          "canonical_us": 0.9579199999999999,
+          "analysis_us": 0.08879333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.35349,
+          "walk_us": 2.5719466666666664,
+          "canonical_us": 1.0072366666666666,
+          "analysis_us": 0.09143
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.34815,
+          "walk_us": 2.64774,
+          "canonical_us": 0.9948866666666667,
+          "analysis_us": 0.09015999999999999
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.30386,
+          "walk_us": 2.4968166666666667,
+          "canonical_us": 0.9819300000000001,
+          "analysis_us": 0.08916333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.2880833333333335,
+          "walk_us": 2.4666433333333333,
+          "canonical_us": 0.95944,
+          "analysis_us": 0.08691
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 186,
+          "nodes": 9,
+          "parse_us": 1.3315466666666667,
+          "walk_us": 2.45346,
+          "canonical_us": 0.9622333333333334,
+          "analysis_us": 0.08624666666666667
+        }
+      ],
+      "head_layout": [
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4719499999999999,
+          "walk_us": 2.5241466666666668,
+          "canonical_us": 1.1493966666666666,
+          "analysis_us": 0.09039333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.56483,
+          "walk_us": 2.6962633333333335,
+          "canonical_us": 1.1641333333333335,
+          "analysis_us": 0.09211333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.5084966666666666,
+          "walk_us": 2.5502933333333333,
+          "canonical_us": 1.1501333333333335,
+          "analysis_us": 0.08888666666666667
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.5107,
+          "walk_us": 2.4858166666666666,
+          "canonical_us": 1.11848,
+          "analysis_us": 0.09151333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4898766666666667,
+          "walk_us": 2.4951066666666666,
+          "canonical_us": 1.1136333333333333,
+          "analysis_us": 0.08916
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.52405,
+          "walk_us": 2.5273766666666666,
+          "canonical_us": 1.1275366666666669,
+          "analysis_us": 0.08891333333333333
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.5176766666666666,
+          "walk_us": 2.5335166666666664,
+          "canonical_us": 1.1526266666666667,
+          "analysis_us": 0.09192333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.5494433333333335,
+          "walk_us": 2.51696,
+          "canonical_us": 1.1595900000000001,
+          "analysis_us": 0.08845333333333334
+        },
+        {
+          "children": 8,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 211,
+          "nodes": 9,
+          "parse_us": 1.4759966666666666,
+          "walk_us": 2.57485,
+          "canonical_us": 1.12595,
+          "analysis_us": 0.08692666666666667
+        }
+      ]
+    },
+    "64": {
+      "base_compact": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.59349,
+          "walk_us": 12.469583333333333,
+          "canonical_us": 4.689006666666667,
+          "analysis_us": 0.38305
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.6894833333333334,
+          "walk_us": 12.63556,
+          "canonical_us": 4.771653333333334,
+          "analysis_us": 0.39848333333333336
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.666816666666667,
+          "walk_us": 12.80679,
+          "canonical_us": 4.734426666666667,
+          "analysis_us": 0.38417666666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.69808,
+          "walk_us": 12.997503333333334,
+          "canonical_us": 4.782943333333334,
+          "analysis_us": 0.38764333333333334
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.552093333333333,
+          "walk_us": 12.459869999999999,
+          "canonical_us": 4.59154,
+          "analysis_us": 0.37612
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.575683333333333,
+          "walk_us": 12.417773333333333,
+          "canonical_us": 4.470273333333334,
+          "analysis_us": 0.38097
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.692636666666666,
+          "walk_us": 12.651796666666668,
+          "canonical_us": 4.6392766666666665,
+          "analysis_us": 0.3925
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.572096666666666,
+          "walk_us": 12.47556,
+          "canonical_us": 4.5334900000000005,
+          "analysis_us": 0.37971333333333335
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.516113333333333,
+          "walk_us": 12.402653333333333,
+          "canonical_us": 4.5849,
+          "analysis_us": 0.37528
+        }
+      ],
+      "head_compact": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.514336666666666,
+          "walk_us": 13.790443333333332,
+          "canonical_us": 4.797420000000001,
+          "analysis_us": 0.3841866666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.675436666666667,
+          "walk_us": 13.811806666666667,
+          "canonical_us": 4.6493166666666665,
+          "analysis_us": 0.3893066666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.33113,
+          "walk_us": 13.135823333333333,
+          "canonical_us": 4.612073333333334,
+          "analysis_us": 0.3759633333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.535966666666667,
+          "walk_us": 13.51707,
+          "canonical_us": 4.750826666666667,
+          "analysis_us": 0.38042333333333334
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.44692,
+          "walk_us": 13.15151,
+          "canonical_us": 4.513616666666667,
+          "analysis_us": 0.37845999999999996
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.52321,
+          "walk_us": 13.82457,
+          "canonical_us": 4.7219066666666665,
+          "analysis_us": 0.38821999999999995
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.456363333333334,
+          "walk_us": 13.51733,
+          "canonical_us": 4.742633333333333,
+          "analysis_us": 0.38472666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.429623333333333,
+          "walk_us": 13.517086666666668,
+          "canonical_us": 4.73844,
+          "analysis_us": 0.3858266666666667
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 1304,
+          "nodes": 65,
+          "parse_us": 6.331266666666667,
+          "walk_us": 13.122336666666667,
+          "canonical_us": 4.649306666666666,
+          "analysis_us": 0.37169
+        }
+      ],
+      "head_layout": [
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.502800000000001,
+          "walk_us": 13.866666666666667,
+          "canonical_us": 5.707486666666667,
+          "analysis_us": 0.38139666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.677076666666667,
+          "walk_us": 13.998496666666666,
+          "canonical_us": 5.818053333333333,
+          "analysis_us": 0.4000033333333333
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.5408566666666665,
+          "walk_us": 13.598073333333334,
+          "canonical_us": 5.6565199999999995,
+          "analysis_us": 0.39875
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.566823333333334,
+          "walk_us": 13.63862,
+          "canonical_us": 5.6957933333333335,
+          "analysis_us": 0.3837466666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.484826666666666,
+          "walk_us": 13.697730000000002,
+          "canonical_us": 5.732766666666667,
+          "analysis_us": 0.39843999999999996
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.53387,
+          "walk_us": 13.736273333333331,
+          "canonical_us": 5.627483333333333,
+          "analysis_us": 0.38139
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.416236666666667,
+          "walk_us": 13.56985,
+          "canonical_us": 5.640236666666667,
+          "analysis_us": 0.38039666666666666
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.576533333333334,
+          "walk_us": 13.784040000000001,
+          "canonical_us": 5.723066666666667,
+          "analysis_us": 0.39181333333333335
+        },
+        {
+          "children": 64,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 1497,
+          "nodes": 65,
+          "parse_us": 7.308210000000001,
+          "walk_us": 13.398773333333333,
+          "canonical_us": 5.63445,
+          "analysis_us": 0.37363
+        }
+      ]
+    },
+    "256": {
+      "base_compact": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.827903333333335,
+          "walk_us": 43.022666666666666,
+          "canonical_us": 17.55431666666667,
+          "analysis_us": 1.4094466666666667
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.976533333333332,
+          "walk_us": 43.12412333333333,
+          "canonical_us": 17.47126666666667,
+          "analysis_us": 1.4151399999999998
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.03053,
+          "walk_us": 43.10223,
+          "canonical_us": 17.57336666666667,
+          "analysis_us": 1.4191633333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.98127333333333,
+          "walk_us": 43.646253333333334,
+          "canonical_us": 17.943886666666668,
+          "analysis_us": 1.4527666666666665
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.05276333333333,
+          "walk_us": 43.41905,
+          "canonical_us": 17.59236,
+          "analysis_us": 1.4215066666666667
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.611643333333333,
+          "walk_us": 42.83750666666667,
+          "canonical_us": 17.432623333333336,
+          "analysis_us": 1.4757
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.86349,
+          "walk_us": 43.341543333333334,
+          "canonical_us": 17.685683333333333,
+          "analysis_us": 1.4217899999999999
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.31988,
+          "walk_us": 42.328473333333335,
+          "canonical_us": 17.319903333333333,
+          "analysis_us": 1.4032200000000001
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.199453333333334,
+          "walk_us": 42.417473333333334,
+          "canonical_us": 17.329233333333335,
+          "analysis_us": 1.3739133333333333
+        }
+      ],
+      "head_compact": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.614596666666667,
+          "walk_us": 42.294866666666664,
+          "canonical_us": 17.597633333333334,
+          "analysis_us": 1.3988933333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.63933666666667,
+          "walk_us": 42.49249333333333,
+          "canonical_us": 18.100133333333332,
+          "analysis_us": 1.40888
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 24.202473333333334,
+          "walk_us": 43.08347333333333,
+          "canonical_us": 17.80057,
+          "analysis_us": 1.4180833333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.698356666666665,
+          "walk_us": 42.68528666666666,
+          "canonical_us": 17.62125,
+          "analysis_us": 1.4042466666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.927206666666667,
+          "walk_us": 42.82848333333333,
+          "canonical_us": 17.819143333333333,
+          "analysis_us": 1.4173866666666668
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.75747666666667,
+          "walk_us": 42.80653333333333,
+          "canonical_us": 17.885446666666667,
+          "analysis_us": 1.4212699999999998
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 30.999343333333332,
+          "walk_us": 58.05877,
+          "canonical_us": 21.080683333333333,
+          "analysis_us": 1.6111133333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.16724,
+          "walk_us": 41.59668333333333,
+          "canonical_us": 17.49025333333333,
+          "analysis_us": 1.3917833333333334
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": false,
+          "source_bytes": 5300,
+          "nodes": 257,
+          "parse_us": 23.694773333333334,
+          "walk_us": 42.660289999999996,
+          "canonical_us": 17.72337333333333,
+          "analysis_us": 1.4054233333333335
+        }
+      ],
+      "head_layout": [
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 28.01758333333333,
+          "walk_us": 47.34621333333333,
+          "canonical_us": 22.26888,
+          "analysis_us": 1.4645866666666665
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.93226,
+          "walk_us": 46.94486666666666,
+          "canonical_us": 21.891766666666665,
+          "analysis_us": 1.4021
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.646216666666668,
+          "walk_us": 46.72251,
+          "canonical_us": 21.765706666666667,
+          "analysis_us": 1.3930933333333333
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.825536666666668,
+          "walk_us": 46.60652666666667,
+          "canonical_us": 22.006226666666667,
+          "analysis_us": 1.4122166666666667
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.570986666666666,
+          "walk_us": 46.363589999999995,
+          "canonical_us": 21.792786666666668,
+          "analysis_us": 1.3926666666666667
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.740166666666664,
+          "walk_us": 46.36873,
+          "canonical_us": 21.83069,
+          "analysis_us": 1.3930500000000001
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 34.452056666666664,
+          "walk_us": 60.779986666666666,
+          "canonical_us": 28.94836,
+          "analysis_us": 1.4852733333333332
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.5972,
+          "walk_us": 46.366366666666664,
+          "canonical_us": 21.658626666666667,
+          "analysis_us": 1.3907466666666666
+        },
+        {
+          "children": 256,
+          "rounds": 300,
+          "layout": true,
+          "source_bytes": 6069,
+          "nodes": 257,
+          "parse_us": 27.79223,
+          "walk_us": 46.514466666666664,
+          "canonical_us": 21.930323333333334,
+          "analysis_us": 1.3969666666666667
+        }
+      ]
+    }
+  },
+  "instrumented_layout_profile": [
+    {
+      "children": 256,
+      "rounds": 100,
+      "layout": true,
+      "source_bytes": 6069,
+      "nodes": 257,
+      "parse_us": 27.965,
+      "walk_us": 58.16663,
+      "canonical_us": 22.4929,
+      "analysis_us": 1.42952
+    },
+    {
+      "span": "l2.jsx_markup.prepare",
+      "count": 100,
+      "total_us": 1110.287
+    },
+    {
+      "span": "l2.jsx_markup.emit",
+      "count": 100,
+      "total_us": 1056.415
+    },
+    {
+      "span": "l2.jsx_markup.finish_file",
+      "count": 100,
+      "total_us": 29.457
+    }
+  ]
+}

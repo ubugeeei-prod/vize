@@ -11,6 +11,7 @@ use vize_l0::{Span, profile};
 
 mod emit;
 mod prepare;
+mod whitespace;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsxMarkupIssueKind {

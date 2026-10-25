@@ -4728,6 +4728,7 @@ dependencies = [
  "oxc_ast_visit",
  "oxc_span",
  "oxc_syntax",
+ "serde_json",
  "vize_l0",
  "vize_l1",
  "vize_oxc_parser",

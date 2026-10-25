@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "compact",
+      "source": "/* 😀 retained */\nexport const view = <main><i data-case=\"a\"/><b/></main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "lf",
+      "source": "/* 😀 retained */\nexport const view = <main>\n  <i data-case=\"a\"/>\n  <b/>\n</main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "crlf",
+      "source": "/* 😀 retained */\nexport const view = <main>\r\n  <i data-case=\"a\"/>\r\n  <b/>\r\n</main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "bare-cr",
+      "source": "/* 😀 retained */\nexport const view = <main>\r  <i/>\r  <b/>\r</main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "tabs",
+      "source": "/* 😀 retained */\nexport const view = <main>\n\t<i/>\n\t<b/>\n</main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "blank-lines",
+      "source": "/* 😀 retained */\nexport const view = <main> \n \t\n <i/>\n\n </main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "comment-adjacency",
+      "source": "/* 😀 retained */\nexport const view = <main>\n{/*kept*/}\n <i/>\n</main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "nested",
+      "source": "/* 😀 retained */\nexport const view = <main>\n <section>\n  <i/>\n </section>\n</main>;",
+      "admit": true,
+      "keepText": false
+    },
+    {
+      "id": "inline-spaces",
+      "source": "/* 😀 retained */\nexport const view = <main> <i/> </main>;",
+      "admit": true,
+      "keepText": true
+    },
+    {
+      "id": "inline-multiple-spaces",
+      "source": "/* 😀 retained */\nexport const view = <main>   <i/>  </main>;",
+      "admit": true,
+      "keepText": true
+    },
+    {
+      "id": "meaningful-multiline",
+      "source": "/* 😀 retained */\nexport const view = <main>\n word\n</main>;",
+      "admit": false,
+      "keepText": false
+    },
+    {
+      "id": "entity",
+      "source": "/* 😀 retained */\nexport const view = <main>&amp;</main>;",
+      "admit": false,
+      "keepText": false
+    },
+    {
+      "id": "entity-newline",
+      "source": "/* 😀 retained */\nexport const view = <main>&#10;<i/></main>;",
+      "admit": false,
+      "keepText": false
+    },
+    {
+      "id": "inline-tab",
+      "source": "/* 😀 retained */\nexport const view = <main>\t<i/></main>;",
+      "admit": false,
+      "keepText": false
+    },
+    {
+      "id": "nonbreaking-space",
+      "source": "/* 😀 retained */\nexport const view = <main>\n&nbsp;\n<i/></main>;",
+      "admit": false,
+      "keepText": false
+    }
+  ]
+}

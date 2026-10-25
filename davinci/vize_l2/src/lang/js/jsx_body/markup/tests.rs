@@ -269,4 +269,5 @@ fn unsupported_static_boundary_refuses_whole_markup_before_any_partial_publicati
     Ok(())
 }
 
+mod formatting;
 mod ownership;

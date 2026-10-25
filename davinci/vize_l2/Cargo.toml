@@ -22,5 +22,8 @@ name = "file_program_unwind_alloc"
 # Separate fresh modes exclude libtest and the unwind runtime's own allocation.
 harness = false
 
+[dev-dependencies]
+serde_json.workspace = true
+
 [lints]
 workspace = true

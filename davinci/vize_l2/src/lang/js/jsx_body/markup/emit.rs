@@ -53,6 +53,7 @@ pub(super) fn element<'a>(
             };
             error = match row.kind {
                 Syntax::Element => element(records, child, region).err(),
+                Syntax::Text(text) if super::whitespace::ignored(text) => None,
                 Syntax::Text(text) => region.text(text, row.span).err(),
                 // Original JSX comments are retained in ProgramObservation;
                 // they do not create rendered markup nodes.

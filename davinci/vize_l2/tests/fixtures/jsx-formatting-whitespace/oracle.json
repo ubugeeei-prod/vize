@@ -1,0 +1,653 @@
+{
+  "schemaVersion": 1,
+  "inputSha256": "41f535f0c1d37c9a41ba13c7912794aedb3697ba2c55bbe5e8250fa7a0e439a0",
+  "versions": {
+    "jsx": "2.0.1",
+    "babel": "7.29.0",
+    "vue": "3.5.42",
+    "dom": "20.11.2"
+  },
+  "cases": [
+    {
+      "id": "compact",
+      "sourceSha256": "f5d46522109dada1f5db94c7f275b75e59b269772cf93946f524f46e52cd73e3",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", {\n  \"data-case\": \"a\"\n}, null), _createVNode(\"b\", null, null)]);",
+      "html": "<main><i data-case=\"a\"></i><b></b></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [["data-case", "a"]],
+              "children": []
+            },
+            {
+              "kind": "element",
+              "tag": "b",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 75
+        },
+        {
+          "kind": "element",
+          "start": 46,
+          "end": 64
+        },
+        {
+          "kind": "element",
+          "start": 64,
+          "end": 68
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "lf",
+      "sourceSha256": "13eb73f1ecb0951ec8328e7f58dc0f06cfcd743bf96e1df9426fcb5501a8f544",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", {\n  \"data-case\": \"a\"\n}, null), _createVNode(\"b\", null, null)]);",
+      "html": "<main><i data-case=\"a\"></i><b></b></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [["data-case", "a"]],
+              "children": []
+            },
+            {
+              "kind": "element",
+              "tag": "b",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 82
+        },
+        {
+          "kind": "element",
+          "start": 49,
+          "end": 67
+        },
+        {
+          "kind": "element",
+          "start": 70,
+          "end": 74
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "crlf",
+      "sourceSha256": "b4b3c6d018c8716b8a4fca8dc44c03b2cc472a110e6ceccfa29a80628d764041",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", {\n  \"data-case\": \"a\"\n}, null), _createVNode(\"b\", null, null)]);",
+      "html": "<main><i data-case=\"a\"></i><b></b></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [["data-case", "a"]],
+              "children": []
+            },
+            {
+              "kind": "element",
+              "tag": "b",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 85
+        },
+        {
+          "kind": "element",
+          "start": 50,
+          "end": 68
+        },
+        {
+          "kind": "element",
+          "start": 72,
+          "end": 76
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "bare-cr",
+      "sourceSha256": "29aecec2e05eca6a9912553fdb53f7abcc16d22f8d0a624689fc7ce40d74ab05",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", null, null), _createVNode(\"b\", null, null)]);",
+      "html": "<main><i></i><b></b></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "element",
+              "tag": "b",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 68
+        },
+        {
+          "kind": "element",
+          "start": 49,
+          "end": 53
+        },
+        {
+          "kind": "element",
+          "start": 56,
+          "end": 60
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "tabs",
+      "sourceSha256": "77ea8e386c890eb61243a4203eb4e3359869c39524f0452cfedcaa790b4c3d91",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", null, null), _createVNode(\"b\", null, null)]);",
+      "html": "<main><i></i><b></b></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "element",
+              "tag": "b",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 66
+        },
+        {
+          "kind": "element",
+          "start": 48,
+          "end": 52
+        },
+        {
+          "kind": "element",
+          "start": 54,
+          "end": 58
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "blank-lines",
+      "sourceSha256": "e8ee9ed12dc049430b479b753d88e8d270bcb1624ec0f8b0d14f4fcb8293af59",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", null, null)]);",
+      "html": "<main><i></i></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 66
+        },
+        {
+          "kind": "element",
+          "start": 52,
+          "end": 56
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "comment-adjacency",
+      "sourceSha256": "f944db89b75e46c90e12ef303a7d4fc80b6466f8b38f1583a373f20b18d6867b",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", null, null)]);",
+      "html": "<main><i></i></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 71
+        },
+        {
+          "kind": "element",
+          "start": 59,
+          "end": 63
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "nested",
+      "sourceSha256": "14d11c7080e1e688b1e6d27a9fe520faedeedb0343ee13e5608b71e35bc935aa",
+      "admit": true,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"section\", null, [_createVNode(\"i\", null, null)])]);",
+      "html": "<main><section><i></i></section></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "section",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": [
+                {
+                  "kind": "element",
+                  "tag": "i",
+                  "namespace": "http://www.w3.org/1999/xhtml",
+                  "attributes": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 84
+        },
+        {
+          "kind": "element",
+          "start": 48,
+          "end": 76
+        },
+        {
+          "kind": "element",
+          "start": 60,
+          "end": 64
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "inline-spaces",
+      "sourceSha256": "841f864b8309907f621b754fac2d895e81b2803368151ea1849f9da8a51ac5f9",
+      "admit": true,
+      "code": "import { createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createTextVNode(\" \"), _createVNode(\"i\", null, null), _createTextVNode(\" \")]);",
+      "html": "<main> <i></i> </main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": " "
+            },
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": " "
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 59
+        },
+        {
+          "kind": "text",
+          "start": 46,
+          "end": 47
+        },
+        {
+          "kind": "element",
+          "start": 47,
+          "end": 51
+        },
+        {
+          "kind": "text",
+          "start": 51,
+          "end": 52
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "inline-multiple-spaces",
+      "sourceSha256": "6900ddc7ea3032fd4c02c98343e8e409d50a1082e5f066c79ed4d39e5ade101a",
+      "admit": true,
+      "code": "import { createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createTextVNode(\"   \"), _createVNode(\"i\", null, null), _createTextVNode(\"  \")]);",
+      "html": "<main>   <i></i>  </main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": "   "
+            },
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            },
+            {
+              "kind": "text",
+              "value": "  "
+            }
+          ]
+        }
+      ],
+      "sourceOps": [
+        {
+          "kind": "element",
+          "start": 40,
+          "end": 62
+        },
+        {
+          "kind": "text",
+          "start": 46,
+          "end": 49
+        },
+        {
+          "kind": "element",
+          "start": 49,
+          "end": 53
+        },
+        {
+          "kind": "text",
+          "start": 53,
+          "end": 55
+        }
+      ],
+      "refusal": []
+    },
+    {
+      "id": "meaningful-multiline",
+      "sourceSha256": "e0c6de9800c0bd0872fab77ce9ca072ea885512472ccc2d6d9e4cc2ba58cae52",
+      "admit": false,
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createTextVNode(\"word\")]);",
+      "html": "<main>word</main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": "word"
+            }
+          ]
+        }
+      ],
+      "sourceOps": [],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 46,
+          "end": 53
+        }
+      ]
+    },
+    {
+      "id": "entity",
+      "sourceSha256": "63237af984bc7edbadeca83f00dc0f11b7e75745c17e7468fdc053818314c441",
+      "admit": false,
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createTextVNode(\"&\")]);",
+      "html": "<main>&amp;</main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": "&"
+            }
+          ]
+        }
+      ],
+      "sourceOps": [],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 46,
+          "end": 51
+        }
+      ]
+    },
+    {
+      "id": "entity-newline",
+      "sourceSha256": "32f6bdbd3e67e7586ddec10fb8a403f54939dc1def8ad9682c2bcd4ee3c0e776",
+      "admit": false,
+      "code": "import { createVNode as _createVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createVNode(\"i\", null, null)]);",
+      "html": "<main><i></i></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 46,
+          "end": 51
+        }
+      ]
+    },
+    {
+      "id": "inline-tab",
+      "sourceSha256": "d8449cffbfa99b23c1bf3ad9e9605339491776addefadba8b21d1718645055d0",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createTextVNode(\" \"), _createVNode(\"i\", null, null)]);",
+      "html": "<main> <i></i></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": " "
+            },
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 46,
+          "end": 47
+        }
+      ]
+    },
+    {
+      "id": "nonbreaking-space",
+      "sourceSha256": "7cef071b665a70bacea1f10a41ac7e0e039e9d76079b5e300d5573047650d146",
+      "admit": false,
+      "code": "import { createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\n/* 😀 retained */\nexport const view = _createVNode(\"main\", null, [_createTextVNode(\"\\xA0\"), _createVNode(\"i\", null, null)]);",
+      "html": "<main>&nbsp;<i></i></main>",
+      "dom": [
+        {
+          "kind": "element",
+          "tag": "main",
+          "namespace": "http://www.w3.org/1999/xhtml",
+          "attributes": [],
+          "children": [
+            {
+              "kind": "text",
+              "value": " "
+            },
+            {
+              "kind": "element",
+              "tag": "i",
+              "namespace": "http://www.w3.org/1999/xhtml",
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ],
+      "sourceOps": [],
+      "refusal": [
+        {
+          "kind": "value-normalization",
+          "start": 46,
+          "end": 54
+        }
+      ]
+    }
+  ]
+}

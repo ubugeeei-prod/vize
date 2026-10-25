@@ -91,7 +91,10 @@ fn element(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Iss
                 continue;
             }
             Syntax::Text(value) => {
-                normalized(row, value, source)?;
+                let original = source.get(row.span.start as usize..row.span.end as usize);
+                if !super::whitespace::ignored(value) || original != Some(value) {
+                    normalized(row, value, source)?;
+                }
                 continue;
             }
             Syntax::Closing => {

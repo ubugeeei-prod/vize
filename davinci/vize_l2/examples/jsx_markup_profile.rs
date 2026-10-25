@@ -20,6 +20,11 @@ fn main() -> Result<(), &'static str> {
         .parse()
         .map_err(|_| "children")?;
     let rounds: usize = args.next().ok_or("rounds")?.parse().map_err(|_| "rounds")?;
+    let layout = match args.next().as_deref() {
+        None | Some("compact") => false,
+        Some("layout") => true,
+        _ => return Err("layout must be compact or layout"),
+    };
     if children > 256 || rounds == 0 {
         return Err("probe bounds: children <=256, rounds >0");
     }
@@ -29,7 +34,13 @@ fn main() -> Result<(), &'static str> {
     }
     let mut source = String::from("export const view = <main>");
     for index in 0..children {
+        if layout {
+            source.push_str("\n  ");
+        }
         append!(&mut source, "<i data-index=\"{index}\"/>");
+    }
+    if layout {
+        source.push('\n');
     }
     source.push_str("</main>;");
     let block = SourceRoot::new(&source)
@@ -65,7 +76,7 @@ fn main() -> Result<(), &'static str> {
     }
     let [parsed, walked, finished, analyzed] = phases.map(|ns| parse_us(ns) / rounds as f64);
     println!(
-        "{{\"children\":{children},\"rounds\":{rounds},\"source_bytes\":{},\"nodes\":{},\"parse_us\":{parsed},\"walk_us\":{walked},\"canonical_us\":{finished},\"analysis_us\":{analyzed}}}",
+        "{{\"children\":{children},\"rounds\":{rounds},\"layout\":{layout},\"source_bytes\":{},\"nodes\":{},\"parse_us\":{parsed},\"walk_us\":{walked},\"canonical_us\":{finished},\"analysis_us\":{analyzed}}}",
         source.len(),
         children + 1
     );
