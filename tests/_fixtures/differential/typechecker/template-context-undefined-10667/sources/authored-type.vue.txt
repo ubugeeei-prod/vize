@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const undefined = "authored";
+const mustBeNumber: number = undefined;
+</script>
+<template><p>{{ mustBeNumber }}</p></template>

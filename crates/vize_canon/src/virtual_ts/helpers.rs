@@ -56,10 +56,12 @@ pub(crate) fn generate_template_context(
     if needs_global_helper {
         ctx.push_str("    type __VizeGlobalContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type __VizeGlobalContextProperty<T, F> = __VizeGlobalContextIsAny<T> extends true ? T : unknown extends T ? F : T;\n    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __VizeGlobalContextProperty<__Ctx[K], F> : F;\n");
     }
-    ctx.push_str("    const __ctx = undefined as unknown as __Ctx;\n");
+    // A prop or authored binding may be named `undefined` in this scope.
+    // Operator literals never read that lexical binding when creating placeholders.
+    ctx.push_str("    const __ctx = (void 0) as unknown as __Ctx;\n");
     if options.strict_instance_globals {
         ctx.push_str(
-            "    type __VizeStrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type __VizeStrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type __VizeStrictContextProperty<T> = [T] extends [never] ? never : __VizeStrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type __VizeStrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as __VizeStrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: __VizeStrictContextProperty<__Ctx[__K]>;\n    };\n    type __VizeStrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & __VizeStrictPublicInstanceGlobals;\n    const __vize_strict_template_context = undefined as unknown as __VizeStrictTemplateContext;\n",
+            "    type __VizeStrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type __VizeStrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type __VizeStrictContextProperty<T> = [T] extends [never] ? never : __VizeStrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type __VizeStrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as __VizeStrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: __VizeStrictContextProperty<__Ctx[__K]>;\n    };\n    type __VizeStrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & __VizeStrictPublicInstanceGlobals;\n    const __vize_strict_template_context = (void 0) as unknown as __VizeStrictTemplateContext;\n",
         );
     }
 
@@ -67,7 +69,7 @@ pub(crate) fn generate_template_context(
     if let Some(attrs_type) = attrs_type {
         append!(
             ctx,
-            "    const $attrs = undefined as unknown as {attrs_type};\n"
+            "    const $attrs = (void 0) as unknown as {attrs_type};\n"
         );
     } else {
         ctx.push_str("    const $attrs = __ctx.$attrs;\n");
@@ -78,7 +80,7 @@ pub(crate) fn generate_template_context(
     if let Some(refs_type) = refs_type {
         append!(
             ctx,
-            "    const $refs = undefined as unknown as {refs_type};\n"
+            "    const $refs = (void 0) as unknown as {refs_type};\n"
         );
     } else {
         ctx.push_str("    const $refs = __ctx.$refs;\n");
@@ -93,7 +95,7 @@ pub(crate) fn generate_template_context(
     if vue2_dialect {
         ctx.push_str("    // Vue 2 instance members (not on Vue 3 ComponentPublicInstance)\n");
         for member in VUE2_INSTANCE_MEMBERS {
-            append!(ctx, "    const {member} = undefined as any;\n");
+            append!(ctx, "    const {member} = (void 0) as any;\n");
         }
     }
 
@@ -105,7 +107,7 @@ pub(crate) fn generate_template_context(
             let type_annotation = global.context_type_annotation();
             append!(
                 ctx,
-                "    const {}: {} = undefined as any;\n",
+                "    const {}: {} = (void 0) as any;\n",
                 global.name,
                 type_annotation
             );
@@ -119,7 +121,7 @@ pub(crate) fn generate_template_context(
         for module_name in &options.css_modules {
             append!(
                 ctx,
-                "    const {module_name}: __Global<'{module_name}', Record<string, string>> = undefined as any;\n"
+                "    const {module_name}: __Global<'{module_name}', Record<string, string>> = (void 0) as any;\n"
             );
         }
     }

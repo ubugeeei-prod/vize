@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const before = undefined;
+const undefined = "authored";
+void before;
+</script>
+<template><p>{{ before }}</p></template>
