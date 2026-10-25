@@ -31,8 +31,8 @@ const baseline = JSON.parse(
 ) as { rows: Positive[] };
 const currentHovers = JSON.parse(
   readPinnedArtifact(frozenRoot, {
-    path: "hover.expected-stylesheet-examples-10572.json",
-    sha256: "f6d95ee0c3fce94d54b6790d7ce6a942f35e496f6ff4796abcdd4c121cadeb11",
+    path: "hover.expected-concrete-colors-10556.json",
+    sha256: "0443c6d94d68377ab9ec7039baca86a5585dd6d1f1725c53176fe1468c060066",
   }).toString("utf8"),
 ) as {
   rows: Array<{ language: string; newline: string; sourceSha256: string; results: unknown[] }>;

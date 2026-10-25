@@ -2471,6 +2471,47 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/css-concrete-color-hover-10556",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-concrete-color-hover-10556",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "edb68163b7b1a9e56d2f700019cc8dc7c44b2630b36b097c80ff60691558018f"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-concrete-color-hover-10556/case.json",
+        "sha256": "fe7c33875ef794b9d071b92a0b057a853ddbb183f734ac4bb6aa7f4190f9a3be"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

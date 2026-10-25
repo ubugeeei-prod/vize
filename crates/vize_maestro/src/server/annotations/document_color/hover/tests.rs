@@ -2,6 +2,9 @@ use tower_lsp::lsp_types::Url;
 
 use crate::{ide::IdeContext, server::ServerState};
 
+#[cfg(feature = "native")]
+mod publication;
+
 const DOCUMENTATION: &str = concat!(
     "**CSS color**\n\n_Concrete authored color_\n\n**Example**\n\n",
     "```css\n.example {\n  color: #336699;\n  color: rgb(51, 102, 153);\n",
@@ -69,6 +72,7 @@ fn complete_hover_packets_keep_authored_utf16_ranges_in_every_supported_style_pr
                     None
                 );
             }
+            #[cfg(feature = "native")]
             assert!(!state.has_corsa_bridge());
         }
     }
