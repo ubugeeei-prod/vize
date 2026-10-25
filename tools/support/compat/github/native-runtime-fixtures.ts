@@ -48,6 +48,11 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
         before: "e40b76d36a5a64ecfcb4e49a6df5b753ff0d83ad013a57f0378b86a2356de5da",
         after: "de87619592c61e08e6406c25bfcdea334befdd33dfc0b62fa266aa0391a07ed2",
       },
+      {
+        path: "crates/vize_canon/src/batch/executor/tests.rs",
+        before: "138020f6b6f2aca5cabf28d457b1084b87cc3732b673538e57fcf45bbd7cc1d7",
+        after: "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082",
+      },
     ],
     tests: [
       {
@@ -72,6 +77,11 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
         selector:
           "batch::error::tests::every_package_manager_keeps_the_existing_typescript_dependency",
         source: "crates/vize_canon/src/batch/error.rs",
+        consumesFixture: false,
+      },
+      {
+        selector: "batch::executor::tests::cli_global_diagnostics_do_not_trigger_session_fallback",
+        source: "crates/vize_canon/src/batch/executor/tests.rs",
         consumesFixture: false,
       },
     ],
@@ -210,6 +220,23 @@ export function unchangedNativeRuntimeHelp(before: string, after: string): boole
   return before.split(oldText).length === 2 && before.replace(oldText, newText) === after;
 }
 
+/** Only the existing fake runtime's explicit selection may change. */
+export function unchangedGlobalDiagnosticMock(before: string, after: string): boolean {
+  const marker = "fn cli_global_diagnostics_do_not_trigger_session_fallback() {";
+  const start = before.indexOf(marker);
+  if (start < 0 || before.indexOf(marker, start + 1) !== -1) return false;
+  const end = before.indexOf("\n}\n", start);
+  const previous = "    let executor = CorsaExecutor::new(&case_dir).unwrap();";
+  const current =
+    "    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();";
+  const selected = before.indexOf(previous, start);
+  return (
+    selected >= start &&
+    end > selected &&
+    before.slice(0, selected) + current + before.slice(selected + previous.length) === after
+  );
+}
+
 export function newNativeRuntimeCases(
   product: string,
   previous: unknown,
@@ -294,6 +321,12 @@ export function newNativeRuntimeCases(
             before.toString("utf8"),
             after.toString("utf8"),
           ), "unrelated mixed error module edit");
+      if (expected.path === "crates/vize_canon/src/batch/executor/tests.rs")
+        require(before !== null &&
+          unchangedGlobalDiagnosticMock(
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated executor test or oracle edit");
       if (
         expected.path === "crates/vize_patina/src/linter/native_type_aware.rs" ||
         expected.path ===

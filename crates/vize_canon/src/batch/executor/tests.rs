@@ -195,7 +195,7 @@ fn cli_global_diagnostics_do_not_trigger_session_fallback() {
 
     let mut project = VirtualProject::new(&case_dir).unwrap();
     project.register_path(&source).unwrap();
-    let executor = CorsaExecutor::new(&case_dir).unwrap();
+    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();
     let result = executor.check(&project).unwrap();
 
     assert!(!result.success);

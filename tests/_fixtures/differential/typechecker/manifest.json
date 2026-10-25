@@ -7154,6 +7154,11 @@
           "path": "crates/vize_canon/src/batch/snapshots/vize_canon__batch__error__tests__corsa_not_found_no_pm.snap",
           "before": "e40b76d36a5a64ecfcb4e49a6df5b753ff0d83ad013a57f0378b86a2356de5da",
           "after": "de87619592c61e08e6406c25bfcdea334befdd33dfc0b62fa266aa0391a07ed2"
+        },
+        {
+          "path": "crates/vize_canon/src/batch/executor/tests.rs",
+          "before": "138020f6b6f2aca5cabf28d457b1084b87cc3732b673538e57fcf45bbd7cc1d7",
+          "after": "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082"
         }
       ],
       "tests": [
@@ -7176,6 +7181,11 @@
           "selector": "batch::error::tests::every_package_manager_keeps_the_existing_typescript_dependency",
           "source": "crates/vize_canon/src/batch/error.rs",
           "sha256": "895b884def8f152505e48742ab21e6fec23f1bda4c86af15064acbd5b7974f02"
+        },
+        {
+          "selector": "batch::executor::tests::cli_global_diagnostics_do_not_trigger_session_fallback",
+          "source": "crates/vize_canon/src/batch/executor/tests.rs",
+          "sha256": "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082"
         }
       ]
     }

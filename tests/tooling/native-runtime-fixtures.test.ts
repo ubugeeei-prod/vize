@@ -11,6 +11,7 @@ import {
   runtimeFixturePath,
   unchangedNonRuntimeErrors,
   unchangedNativeRuntimeHelp,
+  unchangedGlobalDiagnosticMock,
 } from "../../tools/support/compat/github/native-runtime-fixtures.ts";
 import { planPrChecks } from "../../tools/support/compat/github/plan-pr-checks.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
@@ -299,4 +300,19 @@ void test("the type-aware help correction retains all unrelated source and packe
     assert(unchangedNativeRuntimeHelp(before, after));
     assert(!unchangedNativeRuntimeHelp(before, `${after}\n// unrelated source edit\n`));
   }
+});
+
+void test("explicit fake runtime selection retains every old source and global diagnostic assertion", () => {
+  const path = "crates/vize_canon/src/batch/executor/tests.rs";
+  const before = sourceImage("base", path)!.toString("utf8");
+  const after = sourceImage("head", path)!.toString("utf8");
+  assert(unchangedGlobalDiagnosticMock(before, after));
+  assert(!unchangedGlobalDiagnosticMock(before, before));
+  assert(!unchangedGlobalDiagnosticMock(before, `${after}\n// unrelated test edit\n`));
+  assert(
+    !unchangedGlobalDiagnosticMock(
+      before,
+      after.replace("assert_eq!(result.exit_code, 2);", "assert_eq!(result.exit_code, 0);"),
+    ),
+  );
 });
