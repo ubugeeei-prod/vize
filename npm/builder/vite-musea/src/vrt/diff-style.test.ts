@@ -245,3 +245,95 @@ for (const existing of [false, true]) {
     else await assert.rejects(stat(baselinePath), { code: "ENOENT" });
   });
 }
+
+void test("async hook configuration changes apply to the next capture without changing the current PNG or metadata", async (t) => {
+  const { root } = await fixture(t);
+  const source = path.join(root, "input.png");
+  const baselinePath = path.join(root, "baseline.png");
+  await writePng(png(1, 1, [200, 20, 30, 255]), source);
+  await writePng(png(1, 1, [10, 20, 30, 255]), baselinePath);
+  const baselineBytes = await readFile(baselinePath);
+  const comparison: ComparisonConfig = {
+    diffStyle: "diffOnly",
+    colorThreshold: 0,
+    antiAliasing: false,
+    diffColor: { r: 7, g: 8, b: 9 },
+  };
+  const runner = new MuseaVrtRunner({
+    projectRoot: root,
+    snapshotDir: root,
+    threshold: 0,
+    comparison,
+    capture: {
+      async beforeCapture() {
+        comparison.diffStyle = "sideBySide";
+        comparison.diffColor!.r = 99;
+        await Promise.resolve();
+      },
+    },
+  });
+  let closed = 0;
+  const page = {
+    async goto() {},
+    async waitForSelector() {},
+    async waitForTimeout() {},
+    async screenshot({ path: file }: { path: string }) {
+      await copyFile(source, file);
+    },
+    async close() {
+      closed++;
+    },
+  };
+  runner.getBrowser = () =>
+    ({
+      async newContext() {
+        return {
+          async newPage() {
+            return page;
+          },
+          async close() {
+            closed++;
+          },
+        };
+      },
+    }) as unknown as ReturnType<MuseaVrtRunner["getBrowser"]>;
+  runner.getSnapshotName = async () => "baseline.png";
+  const art = { path: "Pixels.art.vue" } as Parameters<MuseaVrtRunner["captureAndCompare"]>[0];
+  const viewport = { width: 1, height: 1 };
+  const expected = {
+    artPath: art.path,
+    variantName: "Default",
+    viewport,
+    passed: false,
+    snapshotPath: baselinePath,
+    currentPath: path.join(root, "current", "baseline.png"),
+    diffPath: path.join(root, "diff", "baseline.png"),
+    diffPixels: 1,
+    totalPixels: 1,
+    diffPercentage: 100,
+  };
+  const first = await runner.captureAndCompare(art, "Default", viewport, "http://localhost");
+  assert.deepEqual(first, { ...expected, diffStyle: "diffOnly" });
+  const firstPng = await readPng(first.diffPath!);
+  assert.deepEqual(
+    { width: firstPng.width, height: firstPng.height, data: [...firstPng.data] },
+    {
+      width: 1,
+      height: 1,
+      data: [7, 8, 9, 255],
+    },
+  );
+  const second = await runner.captureAndCompare(art, "Default", viewport, "http://localhost");
+  assert.deepEqual(second, { ...expected, diffStyle: "sideBySide" });
+  const secondPng = await readPng(second.diffPath!);
+  assert.deepEqual(
+    { width: secondPng.width, height: secondPng.height, data: [...secondPng.data] },
+    {
+      width: 2,
+      height: 1,
+      data: [10, 20, 30, 255, 200, 20, 30, 255],
+    },
+  );
+  assert.deepEqual(await readFile(baselinePath), baselineBytes);
+  assert.equal(closed, 4);
+});

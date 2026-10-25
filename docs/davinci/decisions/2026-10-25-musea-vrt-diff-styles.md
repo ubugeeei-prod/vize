@@ -39,6 +39,9 @@ construction. Direct comparison also validates before reading inputs or taking
 the equality shortcut. Capture revalidates before creating a browser context or
 writing PNGs, so mutation of an already constructed runner's option object cannot
 turn an invalid format into a new baseline or a passing zero-diff result.
+Each capture snapshots comparison settings, including highlight RGB values,
+before any await. Changes made by an async hook apply to the next capture; the
+current capture's format, validation, PNG contents, and metadata remain aligned.
 
 The result's optional `diffStyle` identifies non-default PNG presentation. JSON,
 gallery API responses, hosted immutable artifact URLs, and static HTML reports
@@ -68,4 +71,4 @@ merge, publication, and fresh installed-package acceptance are separate gates.
 
 This change does not add an overlay allocation to side-by-side comparison:
 its statistics pass renders the paired image only when a difference exists.
-The identical-image fast path remains allocation-free for all supported styles.
+Identical images continue to return before any presentation-image allocation.

@@ -38,7 +38,10 @@ export async function captureAndCompare(
 
   const options = runner.getOptions();
   const capture = runner.getCapture();
-  const comparison = runner.getComparison();
+  // Authored async hooks can update configuration for a later capture. Keep
+  // this capture's rendering, validation, and result metadata on one snapshot.
+  const comparison = { ...runner.getComparison() };
+  if (comparison.diffColor) comparison.diffColor = { ...comparison.diffColor };
 
   const snapshotDir = options.snapshotDir;
   const snapshotName = await runner.getSnapshotName(art, variantName, viewport);
