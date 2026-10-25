@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { test } from "node:test";
+import { compileFunction } from "node:vm";
 import { vnode } from "./native-vue2-ir-vnode.mjs";
 
 const capture = process.env.VIZE_VUE2_IR_CAPTURE;
@@ -72,7 +73,7 @@ function host(Vue, row, template, events) {
 // Foreign-realm objects change Vue 2's _s/isPlainObject behavior. This fixture
 // evaluation is never used by the production parser, resolver or emitter.
 function oracle(row) {
-  const evaluate = new Function("scope", `with (scope) { return (${row.expression}); }`);
+  const evaluate = compileFunction(`with (scope) { return (${row.expression}); }`, ["scope"]);
   let instance;
   function render() {
     return this._c("div", undefined, [this._v(this._s(evaluate(instance.scope)))]);
@@ -223,6 +224,17 @@ for (const [name, version] of Object.entries({ vue26: "2.6.14", vue27: "2.7.16" 
           ),
       );
       if (baseline) {
+        const expectedFailures = ["global", "local", "mixed"].flatMap((role) =>
+          packet.bindingRows
+            .filter((row) => row.role === role)
+            .slice(0, 9)
+            .map((row) => `${role}:${row.expression}`),
+        );
+        assert.deepEqual(
+          failing.map((row) => `${row.role}:${row.expression}`),
+          expectedFailures,
+          "baseline controls must pass and only the known admitted lexical captures may fail",
+        );
         assert.ok(
           failing.some((row) => row.role === "global" && row.expression === "_vm"),
           "baseline must reproduce genuine global receiver capture",

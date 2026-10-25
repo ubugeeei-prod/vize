@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 function plain(value) {
   if (value === undefined) return { kind: "undefined" };
   if (value === null || typeof value !== "object") {
