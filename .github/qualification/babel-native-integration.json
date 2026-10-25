@@ -5,15 +5,17 @@
     "tree": "3d7d7754b74e3294ba354498b08d5b533b84d7d8"
   },
   "native": {
-    "pin": "664c7dc3846c068a756b7562e11eab35a9497d9d",
-    "tree": "3e1d3d673c142beb6653ad8ef47109f81850e99d",
+    "pin": "b7bded1352dda0628ff1de0c94f7c6533a82db47",
+    "tree": "dafee01d7901f73ad2b7eec36bcb9eff63c46b99",
     "base": "aeab2e4994e1ccd55a9ae22b15ab849d03f93cc5",
     "integrationMerge": "b33828862c6165532d06f1e1267565244aaf8901",
     "previousPins": [
-      "931a99792e0042faf090e879dc8e39201a2c0d87"
+      "931a99792e0042faf090e879dc8e39201a2c0d87",
+      "664c7dc3846c068a756b7562e11eab35a9497d9d"
     ],
     "guardedIntegrationMerge": "0bb2db0ec51f425afb9eb39bfbb455ec85d130c2",
-    "producerTreeComparison": "allJSX/Vapor/SSRdirectories+NAPIjsx byte/treeexact664; pinned13fa has no independent producer diff fromaeab; future10709 not present and not overwritten"
+    "producerTreeComparison": "allJSX/Vapor/SSRdirectories+NAPIjsx exactb7;actualrebasedmain/runtimeoptionchangespreserved;nofrontendrewrites",
+    "staticComponentIntegrationMerge": "cd0f21024b983736b08b93274fb19bdbe4954c99"
   },
   "babelOrderedInputs": [
     {
@@ -67,11 +69,23 @@
     {
       "sha": "35db290bb9b8e867a34019df3004083c843daf18",
       "tree": "e38b0b3e1554feb6e3fb064177485d37d45ee1c3"
+    },
+    {
+      "sha": "c93b936750661bb1eacf36c0a65993e666a7c13f",
+      "tree": "ef514d27cdc9791fbb6cb3201f6d19bc81b4c434"
+    },
+    {
+      "sha": "9acc7415f30e92ff17f6a8307255cc5c2b3ea878",
+      "tree": "2bff9bc54df6c54ea88588bb2977ce2323fbc730"
+    },
+    {
+      "sha": "bd08ede7b296643f22d3bcd524cd6e0886437eb8",
+      "tree": "47e51dfb9d01e671119021a51ad352e304885cfb"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "6b39b568a94f47b31117bb7ff27c941799740968",
-    "tree": "8a5bcddeed13201e990506680a6dac000f4918ba"
+    "sha": "af56a3a7531e505f75308a7ec441405fe5330b33",
+    "tree": "a5ba74b28c4f78abb00dee8a34bdc132c021b942"
   },
   "priorCampaigns": [
     {
@@ -91,7 +105,17 @@
       "run": 40222498370,
       "artifact": 12609827645,
       "actual": "RED browser host CJS import before launch; all12CSR+12SSR compiles and all12whole independent NodeSSR packets exit0/stderr0/byteequal; no browser credit"
+    },
+    {
+      "source": "8ade0573dee7db5fe8f696c6a0cff0c7ba62add1",
+      "run": 40224271643,
+      "artifact": 12610189827,
+      "actual": "RED:stable4fullbrowser/SSR/hydrationpass;rc9fourmissingSetListenerABI;rc11fourextraDynamicComponentanchorvsindependentstaticreference;allrawunchanged"
     }
   ],
-  "runtimeQualification": "strict12 source rows against guarded664; publicPlaywrightCJS host fix+byteidentical fixture relocation+single physicalimage retention; generatorguard proposal still excluded"
+  "runtimeQualification": {
+    "supported": "8strictrows:stableVDOM3.5.44four+Vapor3.6rc11four;no skips;fullSSR/browser/nodes/effects",
+    "frontier": "historicalrc9fourstrictfunctionalrowsretainedinseparatemanualexperimentrefwithactualfailedstatus;no expectederrorPASS;all12commandretained",
+    "generator": "96actualhostcasesincludingrealoverrideorders/ASTclones/upstreammaps/collisions;60cold controls;singleNativeprepass"
+  }
 }
