@@ -149,6 +149,9 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                 "{ role: 'ok', tags: [] }",
                 "schema",
             ]);
+            // One mapped emit-argument inference literal per usage also reads
+            // these ordinary sibling props before the canonical prop check.
+            expected.extend(fields.iter().flatten().copied());
             if !callback.is_empty() {
                 for field in fields {
                     expected.extend(field);
@@ -190,17 +193,13 @@ fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
         let after = packet("src/Min.vue", &source, true);
         let text = after["text"].as_str().expect("virtual source");
         let start = text.find("void Child3;").expect("mapped component tag") + "void ".len();
-        let check = text
-            .find("const __vize_prop_check_0_count")
-            .expect("primary check");
-        let entry = "\"count\": items[0].length";
-        let end = check
-            + text
-                .get(check..)
-                .expect("check suffix")
-                .find(entry)
-                .expect("canonical props entry")
-            + entry.len();
+        // Required-slot checks are diagnostics owned by the same opening tag,
+        // after its props call. Do not truncate EXPECT at the last prop entry.
+        let required_slot_check = "  const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, { readonly \"header\": true; }> = {};\n  void __vize_required_slots_0;\n";
+        let end = text
+            .find(required_slot_check)
+            .expect("complete independently authored required-slot check")
+            + required_slot_check.len();
         let authored = before["diagnosticDirectives"]["directives"][0]
             .as_array_mut()
             .expect("one authored expectation");

@@ -48,7 +48,8 @@ pub(super) fn generate_component_handler_scope(
                 ctx.template_source,
                 ctx.template_offset,
                 &ctx.summary.scopes,
-            ),
+            )
+            .with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
             legacy_vue2: ctx.legacy_vue2,
             needs_typed_handler_assignment,
             fallthrough_listeners: ctx.check_options.fallthrough_attributes,

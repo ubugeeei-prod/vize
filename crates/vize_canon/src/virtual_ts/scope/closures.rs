@@ -321,10 +321,19 @@ pub(super) fn emit_scope_closures(
         }
         profile!("canon.virtual_ts.scope_node", {
             if let Some(packet) = root_packets.for_scope(scope) {
+                let packet_ctx = ScopeGenContext {
+                    checks: crate::virtual_ts::expressions::TemplateValueChecks {
+                        diagnostic_ownership: options
+                            .diagnostic_ownership
+                            .map(|_| &packet.diagnostic_ownership),
+                        ..ctx.checks
+                    },
+                    ..ctx
+                };
                 generate_scope_node(
                     &mut packet.text,
                     &mut ScopeMappings::new(&mut packet.mappings, &mut packet.diagnostic_mappings),
-                    &ctx,
+                    &packet_ctx,
                     scope,
                     "  ",
                 )
