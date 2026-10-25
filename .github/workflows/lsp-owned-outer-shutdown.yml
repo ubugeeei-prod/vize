@@ -45,7 +45,7 @@ jobs:
       - name: Preserve every strict TypeScript project and closed protocol controls
         run: |
           node --test tests/tooling/typescript-tooling-project.test.ts
-          node --test tests/tooling/owned-editor-shutdown-order.test.mjs tests/tooling/owned-editor-shutdown-fixtures.test.mjs tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+          node --test tests/tooling/owned-editor-shutdown-order.test.mjs tests/tooling/owned-editor-shutdown-fixtures.test.mjs tests/tooling/owned-editor-shutdown-report.test.mjs tests/tooling/native-runtime-selection-lsp-strace.test.mjs
       - name: Install official providers into fresh isolated roots
         run: |
           if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install --yes --no-install-recommends strace; fi
