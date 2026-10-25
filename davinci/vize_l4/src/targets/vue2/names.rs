@@ -23,7 +23,7 @@ impl Names {
             collision |= matches!(name, "_vm" | "render" | "staticRenderFns");
         })?;
         if !collision {
-            // CompactString's inline defaults and this scan allocate nothing.
+            // No name set is allocated on the common path; defaults fit inline.
             return Ok(Self {
                 receiver: "_vm".into(),
                 render: "render".into(),
