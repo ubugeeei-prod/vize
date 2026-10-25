@@ -142,7 +142,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     assertCleanCssSourceWorkingTree(repoRoot);
   }
   assert.equal(contract.mergedMain.sourceRevision, mergedMainRevision);
-  git("merge-base", "--is-ancestor", mergedMainRevision, revision);
+  if (!pinnedProduct) git("merge-base", "--is-ancestor", mergedMainRevision, revision);
   const baseline = readTree(historicalBaselineRevision, ["crates"]);
   assert.equal(
     git("rev-parse", `${historicalBaselineRevision}:crates`).trim(),
@@ -183,7 +183,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   assertExactCssTree(readTree(mergedMainRevision, ["crates"]), integrated);
   const successor = contract.successorMain;
   assert.equal(successor.sourceRevision, successorMainRevision);
-  git("merge-base", "--is-ancestor", successorMainRevision, revision);
+  if (!pinnedProduct) git("merge-base", "--is-ancestor", successorMainRevision, revision);
   assert.equal(git("rev-parse", `${successorMainRevision}^{tree}`).trim(), successor.sourceTreeOid);
   assert.equal(successor.integrationLayer.baseRevision, mergedMainRevision);
   assert.equal(successor.integrationLayer.reviewedRevision, successorMainRevision);
@@ -262,6 +262,9 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   };
 }
 
+// Ordinary shallow PR checks validate exact pinned trees without claiming
+// ancestry across omitted history. Strict actual-host verification retains both
+// main ancestry checks on its full-depth checkout.
 // Ordinary PR checks may run on GitHub's merge tree containing unrelated main
 // changes. They validate this explicit reviewed product snapshot; actual host
 // acceptance always calls the separate strict current-checkout verifier below.
