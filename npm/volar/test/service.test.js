@@ -3,10 +3,14 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { createRequire } from "node:module";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { createVizeLanguagePlugin, createVizeLanguageService } from "../src/index.js";
+import { toUtf16LanguageProjection } from "@vizejs/native/language-projection.js";
+
+const require = createRequire(import.meta.url);
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 const workspace = path.join(directory, "fixture");
@@ -39,7 +43,7 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
   const documents = new Map(
     Object.entries(files).map(([file, source]) => [
       path.join(workspace, file),
-      { source, version: 1 },
+      { source, version: 1, snapshot: ts.ScriptSnapshot.fromString(source) },
     ]),
   );
   const deleted = new Set();
@@ -61,7 +65,9 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
     getProjectVersion: () => String(revision),
     getScriptSnapshot: (file) => {
       if (deleted.has(file)) return;
-      const text = documents.get(file)?.source ?? ts.sys.readFile(file);
+      const document = documents.get(file);
+      if (document) return document.snapshot;
+      const text = ts.sys.readFile(file);
       return text === undefined ? undefined : ts.ScriptSnapshot.fromString(text);
     },
     getDefaultLibFileName: ts.getDefaultLibFilePath,
@@ -80,7 +86,11 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
     text: (file) => documents.get(path.join(workspace, file)).source,
     update(file, source) {
       const id = path.join(workspace, file);
-      documents.set(id, { source, version: ++revision });
+      documents.set(id, {
+        source,
+        version: ++revision,
+        snapshot: ts.ScriptSnapshot.fromString(source),
+      });
       deleted.delete(id);
       inputs.push({ name, update: file, source, revision });
     },
@@ -90,6 +100,30 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
       deleted.add(id);
       revision++;
       inputs.push({ name, delete: file, revision });
+    },
+    capture(stage) {
+      for (const [file, document] of documents) {
+        if (!/\.(vue|art)$/.test(file)) continue;
+        const root = service.language.scripts.get(file)?.generated?.root;
+        if (!root) continue;
+        const { includeArt: _includeArt, ...generationOptions } = languageOptions;
+        const rawTransformJSON = require("@vizejs/native").generateVueLanguageCode(
+          document.source,
+          { ...generationOptions, filename: file },
+        );
+        assert.deepEqual(
+          toUtf16LanguageProjection(document.source, rawTransformJSON),
+          root.projection,
+        );
+        inputs.push({
+          name,
+          stage,
+          file,
+          sourceSha256: hash(document.source),
+          rawTransformJSON,
+          projection: root.projection,
+        });
+      }
     },
   };
 }
@@ -150,6 +184,7 @@ test("actual native projection through Volar and TypeScript: complete packets an
     assert.equal(root.source, basic);
     assert(root.projection.mappings.some((row) => row[5] === 0));
     inputs.push({ name: "basic-native-projection", projection: root.projection });
+    f.capture("initial");
     const oldHover = ls.getQuickInfoAtPosition(file, title);
     assert.deepEqual(
       ls.getQuickInfoAtPosition(file, title),
@@ -162,6 +197,7 @@ test("actual native projection through Volar and TypeScript: complete packets an
     );
     assert(ts.displayPartsToString(updated.displayParts).includes("boolean"));
     query("unsaved-update-diagnostics", { file }, () => ls.getSemanticDiagnostics(file));
+    f.capture("unsaved-update");
     f.delete("lib.ts");
     const missing = query("delete-import-diagnostics", { file }, () =>
       ls.getSemanticDiagnostics(file),
@@ -172,6 +208,7 @@ test("actual native projection through Volar and TypeScript: complete packets an
       ls.getSemanticDiagnostics(file),
     );
     assert(!restored.some((d) => d.code === 2307));
+    f.capture("restored-import");
     f.delete("App.vue");
     assert.equal(f.language.scripts.get(file), undefined);
   } finally {
@@ -198,6 +235,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
       f.languageService.getQuickInfoAtPosition(file, position),
     );
     assert(hover && hover.textSpan.start === position && hover.textSpan.length === 2);
+    f.capture("unicode-crlf");
   } finally {
     f.languageService.dispose();
   }
@@ -216,6 +254,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
         ),
       ),
     );
+    d.capture("directives");
     assert(
       result.some((diagnostic) =>
         ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n").includes("realMissing"),
@@ -230,6 +269,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
       ...d.languageService.getSemanticDiagnostics(d.path("Directives.vue")),
     ]);
     assert(invalid.length > 0);
+    d.capture("invalid");
   } finally {
     d.languageService.dispose();
   }
@@ -248,6 +288,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
     query("generic-slot-hover", { position }, () =>
       g.languageService.getQuickInfoAtPosition(g.path("Parent.vue"), position),
     );
+    g.capture("generic-slots");
   } finally {
     g.languageService.dispose();
   }
@@ -271,6 +312,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
       a.languageService.getDefinitionAtPosition(a.path("Alias.vue"), position),
     );
     assert(definition.some((d) => d.fileName === a.path("src/value.ts")));
+    a.capture("resolver-options");
   } finally {
     a.languageService.dispose();
   }
@@ -294,6 +336,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
       art.languageService.getQuickInfoAtPosition(art.path("Story.art"), position),
     );
     assert(hover);
+    art.capture("art-opt-in-vue-content");
   } finally {
     art.languageService.dispose();
   }

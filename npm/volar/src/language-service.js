@@ -10,7 +10,18 @@ export function createVizeLanguageService(ts, host, options = {}) {
   const originalSnapshot = host.getScriptSnapshot.bind(host);
   const language = createLanguage([plugin], registry, (id) => {
     const snapshot = originalSnapshot(id);
-    if (snapshot) language.scripts.set(id, snapshot);
+    const standardLanguage = /\.[cm]?tsx?$/i.test(id)
+      ? /\.tsx$/i.test(id)
+        ? "typescriptreact"
+        : "typescript"
+      : /\.[cm]?jsx?$/i.test(id)
+        ? /\.jsx$/i.test(id)
+          ? "javascriptreact"
+          : "javascript"
+        : /\.json$/i.test(id)
+          ? "json"
+          : undefined;
+    if (snapshot) language.scripts.set(id, snapshot, plugin.getLanguageId(id) ?? standardLanguage);
     else language.scripts.delete(id);
   });
   // Hosts may be class instances with non-enumerable prototype methods and
@@ -36,6 +47,12 @@ export function createVizeLanguageService(ts, host, options = {}) {
     },
   });
   adapterHost.getScriptSnapshot = originalSnapshot;
+  adapterHost.getCompilationSettings = () => {
+    const settings = host.getCompilationSettings();
+    if (settings.allowNonTsExtensions === false)
+      throw new Error("Volar requires allowNonTsExtensions for Vue service scripts");
+    return { ...settings, allowNonTsExtensions: true };
+  };
   adapterHost.getScriptKind ??= () => ts.ScriptKind.Unknown;
   adapterHost.resolveModuleNameLiterals ??= (
     literals,
