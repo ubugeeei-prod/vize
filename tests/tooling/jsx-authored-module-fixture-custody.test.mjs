@@ -8,6 +8,8 @@ const nested = new URL(
   import.meta.url,
 );
 const falsy = new URL("../_fixtures/differential/jsx/", import.meta.url);
+const adversarial = new URL("authored-native-modules-10700/adversarial/", falsy);
+const snapshots = new URL("../../crates/vize_atelier_jsx/tests/snapshots/", import.meta.url);
 const read = (base, path) => readFileSync(new URL(path, base));
 const parse = (base, path) => JSON.parse(read(base, path));
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -163,6 +165,109 @@ void test("native refusal successors preserve literal capture and every historic
     assert.equal(hash(successor), row.successorSha256);
     verifySuccessor(specs[index], row, JSON.parse(historical), JSON.parse(successor), source);
   }
+});
+
+function snapshotBody(bytes) {
+  const text = bytes.toString("utf8");
+  const boundary = text.indexOf("\n---\n", 4);
+  assert.ok(text.startsWith("---\n") && boundary >= 0);
+  return text.slice(boundary + 5);
+}
+
+function verifyAdversarial(row, historical, successor, packet) {
+  fields(packet, ["source", "summary", "module"]);
+  assert.equal(hash(packet.source), row.sourceSha256);
+  assert.equal(row.runtime, false);
+  assert.equal(successor, packet[row.facet].replace(/\n*$/, "\n"));
+  if (row.observation === "scoped_style_extraction.json") {
+    assert.equal(row.facet, "summary");
+    const scoped = "<p data-v-2216d773>";
+    assert.equal(successor.split(scoped).length - 1, 2);
+    assert.equal(successor.replaceAll(scoped, "<p>"), historical);
+  } else if (row.facet === "summary") {
+    const oldDiagnostic =
+      '    diagnostics: [\n        DiagnosticSummary {\n            severity: "Error",\n            message: "Vapor/SSR authored module preservation is not supported for imports, exports or captured setup bindings; use VDOM output or consume the per-component renderer",\n            source: "export const DefaultMode = () => <main>default</main>;",\n            range: 1..55,\n        },\n    ],';
+    assert.equal(historical.split(oldDiagnostic).length - 1, 1);
+    assert.equal(historical.replace(oldDiagnostic, "    diagnostics: [],"), successor);
+  } else {
+    assert.equal(row.facet, "module");
+    assert.equal(historical, "");
+    assert.equal(packet.module.length, 1016);
+  }
+}
+
+void test("adversarial successors retain whole structural observations and frozen originals", () => {
+  assert.equal(
+    hash(read(adversarial, "custody.json")),
+    "e5f10f8def638e6b95557ec4dbf55c423e7db8eb0b68e9f697c43ffc78a699e0",
+  );
+  const authority = parse(adversarial, "custody.json");
+  assert.equal(authority.schema, 1);
+  assert.equal(authority.issue, 10700);
+  assert.equal(authority.pullRequest, 10701);
+  assert.deepEqual(authority.capture, {
+    runId: 40224832845,
+    artifactId: 12610971331,
+    head: "a4e223413856dd05826474a70e0acb248732003a",
+    entry:
+      "unchanged adversarial source -> compile_jsx/compile_to_vapor; complete summary/module captured before assertion",
+    qualification:
+      "structural source observation only; undefined capture fixture is not runtime evidence",
+  });
+  assert.equal(authority.cases.length, 3);
+  for (const row of authority.cases) {
+    fields(row, [
+      "observation",
+      "observationSha256",
+      "sourceSha256",
+      "facet",
+      "historical",
+      "historicalSha256",
+      "successor",
+      "successorSha256",
+      "runtime",
+    ]);
+    const original = read(snapshots, row.historical);
+    const next = read(snapshots, row.successor);
+    const raw = read(adversarial, row.observation);
+    assert.equal(hash(original), row.historicalSha256);
+    assert.equal(hash(next), row.successorSha256);
+    assert.equal(hash(raw), row.observationSha256);
+    verifyAdversarial(row, snapshotBody(original), snapshotBody(next), JSON.parse(raw));
+  }
+});
+
+void test("adversarial custody rejects unrelated code, scope, source and runtime mutations", () => {
+  const authority = parse(adversarial, "custody.json");
+  let negatives = 0;
+  for (const row of authority.cases) {
+    const before = snapshotBody(read(snapshots, row.historical));
+    const after = snapshotBody(read(snapshots, row.successor));
+    const packet = parse(adversarial, row.observation);
+    for (const mutate of [
+      (value) => {
+        value.source += "// changed";
+      },
+      (value) => {
+        value[row.facet] += "/* foreign code */";
+      },
+    ]) {
+      const changed = structuredClone(packet);
+      mutate(changed);
+      assert.throws(() => verifyAdversarial(row, before, after, changed), assert.AssertionError);
+      negatives++;
+    }
+    assert.throws(
+      () => verifyAdversarial({ ...row, runtime: true }, before, after, packet),
+      assert.AssertionError,
+    );
+    assert.throws(
+      () => verifyAdversarial(row, before, after + "foreign", packet),
+      assert.AssertionError,
+    );
+    negatives += 2;
+  }
+  assert.equal(negatives, 12);
 });
 
 void test("the same whole-packet custody rejects unreviewed mutations independently of hashes", () => {

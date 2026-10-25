@@ -253,7 +253,7 @@ fn scoped_style_snapshots() {
         JsxLang::Jsx,
     );
     assert_vapor_snapshot(
-        "scoped_style_extraction",
+        "scoped_style_extraction_shared_scope_10701",
         SCOPED_STYLE_EXTRACTION,
         JsxLang::Jsx,
         VaporCompileOptions::default(),
@@ -314,11 +314,11 @@ fn mode_aware_multi_component_snapshot() {
         Some(output.module_code().as_str()),
     );
     insta::assert_debug_snapshot!(
-        "mode_aware_multi_component_summary",
+        "mode_aware_multi_component_summary_authored_native_10701",
         compile_output_summary(MIXED_MODES, &output),
     );
     insta::assert_snapshot!(
-        "mode_aware_multi_component_module",
+        "mode_aware_multi_component_module_authored_native_10701",
         output.module_code().as_str()
     );
 }
