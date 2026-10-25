@@ -24,11 +24,15 @@ jobs:
     timeout-minutes: 25
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      VIZE_TEST_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
+          version: latest
           node-version-file: package.json
           run-install: false
           cache: true
@@ -58,7 +62,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: workspace-server-${{ runner.os }}-${{ github.sha }}
+          name: workspace-server-${{ runner.os }}-${{ github.event.pull_request.head.sha || github.sha }}
           path: editors/vscode/.vscode-test/workspace-server/
           if-no-files-found: warn
           retention-days: 7

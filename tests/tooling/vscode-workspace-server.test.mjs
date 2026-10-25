@@ -7,6 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 import { discoverWorkspaceServers } from "../../editors/vscode/src/workspace-server.ts";
 import { serverInvocation } from "../../editors/vscode/src/server-command.ts";
 import {
@@ -25,9 +26,13 @@ function load(file, dependencies, name) {
   const body = stripTypeScriptTypes(source)
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/^export /gm, "");
-  return new Function(...Object.keys(dependencies), `${body}\nreturn ${name};`)(
-    ...Object.values(dependencies),
-  );
+  return new vm.Script(`${body}\n${name};`).runInNewContext({
+    Buffer,
+    process,
+    setTimeout,
+    clearTimeout,
+    ...dependencies,
+  });
 }
 const inspectWorkspaceServerProtocol = load(
   "workspace-server-protocol.ts",
@@ -136,7 +141,7 @@ function discovery(f, folders = [f.folder], trusted = true, settings = {}) {
   };
 }
 
-test("workspace npm bin wins over extension version after real stdio initialize and shutdown", async (t) => {
+await test("workspace npm bin wins over extension version after real stdio initialize and shutdown", async (t) => {
   const f = fixture(t);
   const local = f.install();
   f.server(path.join(f.directory, "extension", "dist", exeName), "1.2.3");
@@ -159,7 +164,7 @@ test("workspace npm bin wins over extension version after real stdio initialize 
   assert.throws(() => process.kill(pid, 0));
 });
 
-test("configured overrides, disabled preference and untrusted folders never execute workspace bins", async (t) => {
+await test("configured overrides, disabled preference and untrusted folders never execute workspace bins", async (t) => {
   const f = fixture(t);
   f.install();
   const bundled = f.server(path.join(f.directory, "extension", "dist", exeName), "1.2.3");
@@ -176,7 +181,7 @@ test("configured overrides, disabled preference and untrusted folders never exec
   );
 });
 
-test("incompatible initialize falls back with the selected path, version and reason", async (t) => {
+await test("incompatible initialize falls back with the selected path, version and reason", async (t) => {
   const f = fixture(t);
   const local = f.install(f.folder, "0.1.0", "incompatible");
   const bundled = f.server(path.join(f.directory, "extension", "dist", exeName), "1.2.3");
@@ -190,7 +195,7 @@ test("incompatible initialize falls back with the selected path, version and rea
   assert.ok(current.state.selectedServerCandidate.workspaceFallbackReason.includes(local));
 });
 
-test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrappers resolve the package bin", (t) => {
+await test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrappers resolve the package bin", (t) => {
   const f = fixture(t);
   const installed = f.install();
   const storage = path.join(f.directory, ".pnpm", "vize@9.8.7", "node_modules", "vize");
@@ -215,7 +220,7 @@ test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrappers re
   assert.equal(invocation.env.ELECTRON_RUN_AS_NODE, "1");
 });
 
-test("distinct multi-root engines fall back even when versions match", async (t) => {
+await test("distinct multi-root engines fall back even when versions match", async (t) => {
   const f = fixture(t);
   f.install();
   const second = path.join(f.directory, "second");
@@ -236,7 +241,7 @@ test("distinct multi-root engines fall back even when versions match", async (t)
 });
 
 for (const mode of ["exit", "timeout", "overflow"]) {
-  test(`protocol ${mode} is bounded and always reaps its process`, async (t) => {
+  await test(`protocol ${mode} is bounded and always reaps its process`, async (t) => {
     const f = fixture(t);
     const server = f.install(f.folder, "1.2.3", mode);
     await assert.rejects(inspectWorkspaceServerProtocol(server, 500), /exited|timed out|exceeds/);
@@ -245,7 +250,7 @@ for (const mode of ["exit", "timeout", "overflow"]) {
   });
 }
 
-test("an actual client startup failure disposes the workspace client before one fallback", async () => {
+await test("an actual client startup failure disposes the workspace client before one fallback", async () => {
   const source = fs.readFileSync(path.join(root, "editors/vscode/src/extension.ts"), "utf8");
   const body = stripTypeScriptTypes(source);
   const start = body.slice(
@@ -279,19 +284,15 @@ test("an actual client startup failure disposes the workspace client before one 
       }
     },
   };
-  const run = new Function(
-    ...Object.keys(dependencies),
-    `
+  await new vm.Script(`
     let client, selectedServerCandidate, activeInitializationOptions;
     async function findServerPath(context, config, generation, reason) {
       selectedServerCandidate = resolve(reason);
       return selectedServerCandidate.path;
     }
     ${start}
-    return startClient({ extensionPath: "/extension", globalStorageUri: { fsPath: "/storage" } }, {}, 1);
-  `,
-  );
-  await run(...Object.values(dependencies));
+    startClient({ extensionPath: "/extension", globalStorageUri: { fsPath: "/storage" } }, {}, 1);
+  `).runInNewContext(dependencies);
   assert.equal(starts, 2);
   assert.ok(operations.indexOf("workspace-disposed") < operations.indexOf("resolve-fallback"));
   assert.equal(operations.at(-1), "ready");

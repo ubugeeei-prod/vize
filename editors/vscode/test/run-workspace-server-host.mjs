@@ -10,6 +10,11 @@ import { runPackagedExtensionHost } from "./packaged-host-contract.mjs";
 import { retainHostOutputBeforeCleanup } from "./host-output.mjs";
 
 const extensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], {
+  cwd: extensionPath,
+  encoding: "utf8",
+}).trim();
+if (process.env.VIZE_TEST_SOURCE_SHA) assert.equal(sourceSha, process.env.VIZE_TEST_SOURCE_SHA);
 const evidence = path.join(extensionPath, ".vscode-test", "workspace-server");
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), "vize-ws-"));
 const workspacePath = path.join(profile, "workspace 日本語 with spaces");
@@ -104,7 +109,7 @@ try {
     path.join(evidence, "artifact.json"),
     JSON.stringify(
       {
-        sourceSha: process.env.GITHUB_SHA,
+        sourceSha,
         vsixSha256: hash(vsixPath),
         bundleSha256: hash(bundlePath),
         npmVersion: version,
