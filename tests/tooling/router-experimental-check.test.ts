@@ -84,8 +84,9 @@ await test("published experimental page imports preserve complete native/referen
     "1",
     "require exact source build custody",
   );
-  assert.ok(process.env.VIZE_TEST_BIN, "source CLI required; no installed fallback");
-  const [binary] = resolveVizeLaunchCommand(undefined, process.env.VIZE_TEST_BIN, {
+  const requestedBinary = process.env.VIZE_TEST_BIN ?? process.env.VIZE_LSP_BIN;
+  assert.ok(requestedBinary, "source CLI required; no installed fallback");
+  const [binary] = resolveVizeLaunchCommand(undefined, requestedBinary, {
     required: true,
     repoRoot,
   });

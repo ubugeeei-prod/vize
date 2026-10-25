@@ -91,6 +91,8 @@ export const TYPECHECKER_TESTS = {
   "long-prop-kebab-case-10423": "long_prop_keys_preserve_static_and_async_listener_diagnostics",
   "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
+  "experimental-router-import-10520":
+    "experimental_page_import_preserves_published_path_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -158,6 +160,7 @@ const sourceRevisions = {
   "long-prop-kebab-case-10423": "d8849fab885cb40b9516889a464549fd29af3f92",
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+  "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

@@ -165,6 +165,21 @@ export const cacheInputs = {
     ...toolingInputs.filter((input) => input !== "docs/**"),
     "docs/davinci/plan/**",
   ],
+  // Real published Router corpus; the runtime oracle consumes the exact source
+  // CLI and the provider helper verifies the complete frozen project first.
+  toolingExperimentalRouter: [
+    ".github/**",
+    ".cargo/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/vize_canon/**",
+    "crates/vize_corsa/**",
+    "crates/vize/src/commands/check*",
+    "crates/vize/src/commands/check/**",
+    "tests/fixtures/typechecker/experimental-router-5.4/**",
+    "tools/support/compat/github/source-cli*",
+  ],
   toolingPlans: ["docs/**", "tests/tooling/**"],
   toolingLedgers: ["docs/**", "tests/**", "tools/support/compat/fixtures/**"],
   toolingFixtureUnits: ["tools/support/compat/fixtures/**", "tests/_fixtures/**", "npm/**"],

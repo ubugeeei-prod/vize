@@ -14,6 +14,7 @@ mod support {
     pub(crate) mod fix_history_contract;
     pub(crate) mod fix_history_observation;
     pub(crate) mod fix_history_paths;
+    pub(crate) mod fix_history_router_provider;
 }
 use support::fix_history_contract::{Diagnostic, Input, Pack};
 use support::fix_history_observation as observation;
@@ -839,7 +840,8 @@ fn check_pack(
             | "generic-constructor-slots-10416"
             | "long-prop-kebab-case-10423"
             | "pug-refusal-10430"
-            | "portable-pug-10434" => regression,
+            | "portable-pug-10434"
+            | "experimental-router-import-10520" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -882,9 +884,12 @@ fn check_pack(
     let mut capture = observation::Capture::from_environment();
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
-        let project_root =
-            std::fs::canonicalize(project.path()).expect("project identity must resolve");
-        if pack.project_options.is_none() {
+        let project_root = if name == "experimental-router-import-10520" {
+            support::fix_history_router_provider::prepare(&root, project.path(), &fixtures)
+        } else {
+            std::fs::canonicalize(project.path()).expect("project identity must resolve")
+        };
+        if pack.project_options.is_none() && name != "experimental-router-import-10520" {
             std::fs::create_dir(project_root.join("node_modules"))
                 .expect("node_modules must be created");
             link_vue(&vue, &project_root.join("node_modules/vue"));
@@ -1135,5 +1140,16 @@ fn portable_pug_refusals_preserve_native_batch_diagnostics() {
         "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
         Some(10434),
         &["refused-jade-with-valid-pug-sibling"],
+    );
+}
+
+#[test]
+fn experimental_page_import_preserves_published_path_diagnostics() {
+    check_pack(
+        "experimental-router-import-10520",
+        "experimental_page_import_preserves_published_path_diagnostics",
+        "a29d9c0b1961ada51037db402c3b74436a56d623",
+        Some(10520),
+        &["imported-define-page-unknown-path"],
     );
 }

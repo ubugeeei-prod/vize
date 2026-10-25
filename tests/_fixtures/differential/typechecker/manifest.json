@@ -5302,6 +5302,73 @@
           "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
         }
       ]
+    },
+    {
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "id": "typechecker/experimental-router-import-10520/imported-define-page-unknown-path",
+      "pack": "experimental-router-import-10520",
+      "case": "imported-define-page-unknown-path",
+      "test": "experimental_page_import_preserves_published_path_diagnostics",
+      "regressionCommit": "a29d9c0b1961ada51037db402c3b74436a56d623",
+      "sourceRevision": "a29d9c0b1961ada51037db402c3b74436a56d623",
+      "packReference": {
+        "path": "experimental-router-import-10520/cases.json",
+        "sha256": "bcb6bef0f6131b0ab23d96645652757072d469fe323406153b4b9f857697e391"
+      },
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "path": "experimental-router-import-10520/Page.vue.txt",
+          "sha256": "04ca06aa6030ca74925a44426f2ce526d1bbd1c7e37b6dc7863920fdff1c8798"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "experimental-router-import-10520/tsconfig.json.txt",
+          "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "path": "experimental-router-import-10520/typed-router.d.ts.txt",
+          "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974"
+        },
+        {
+          "file": "provider.json",
+          "path": "experimental-router-import-10520/provider.json.txt",
+          "sha256": "f5e5ff6197f04a3f1d50cb305bb1a6e1e5192cbb2036fd38b746f6c90828c88a"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "line": 5,
+          "column": 21,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and 'missing' does not exist in type '{ id?: \"date\" | DefinePagePathParamOptions | keyof ParamParsers_Native | undefined; }'."
+        }
+      ]
     }
   ]
 }
