@@ -118,15 +118,19 @@ impl DiagnosingApi {
     }
 
     pub(super) fn close(&self, editor: &mut EditorLspSession) -> Result<(), ConfigurationError> {
-        // The attached SDK reader keeps a full-duplex socket clone. Reap the
-        // owning LSP first so the peer closes, then drain and join that reader.
-        // observe() has already released each snapshot while the backend lived.
+        // LOCAL SDK SPLIT-DRAIN VALIDATION: observe() has released its wrappers.
+        // Drain the SDK-owned lineage before native shutdown; only join the
+        // full-duplex socket reader after its owning process has been reaped.
+        let snapshots = self.prepare_close();
         let owner = editor.shutdown().map_err(ConfigurationError::Communication);
         let attachment = self.close_attachment();
-        match (owner, attachment) {
-            (Ok(()), Ok(())) => Ok(()),
-            (Err(error), _) | (_, Err(error)) => Err(error),
-        }
+        snapshots.and(owner).and(attachment)
+    }
+
+    pub(super) fn prepare_close(&self) -> Result<(), ConfigurationError> {
+        block_on(self.client.prepare_close()).map_err(|error| {
+            ConfigurationError::Communication(cstr!("cannot drain diagnosing snapshots: {error}"))
+        })
     }
 
     pub(super) fn close_attachment(&self) -> Result<(), ConfigurationError> {

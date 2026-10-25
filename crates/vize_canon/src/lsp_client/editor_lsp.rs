@@ -287,8 +287,18 @@ impl EditorLspSession {
             return Ok(());
         }
 
-        let mut first_error = None;
-        if let Err(error) = block_on(native_shutdown::close(&self.client, self.shutdown_to_eof)) {
+        // LOCAL SDK SPLIT-DRAIN VALIDATION: release the derived lineage while
+        // its native owner is alive; joining the full-duplex reader stays below
+        // in finish_close(), after native shutdown/reap. Graceful callers must
+        // already have released every retained ProjectSession snapshot wrapper.
+        let mut first_error = self.configured_api.as_ref().and_then(|api| {
+            api.prepare_close()
+                .err()
+                .map(configured_project::configuration_error)
+        });
+        if let Err(error) = block_on(native_shutdown::close(&self.client, self.shutdown_to_eof))
+            && first_error.is_none()
+        {
             first_error = Some(cstr!(
                 "Failed to gracefully close editor LSP process: {error}"
             ));

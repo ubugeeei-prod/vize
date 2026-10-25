@@ -23,6 +23,11 @@ const paths = [
     prefix + "lsp-strace-lines.mjs",
     prefix + "lsp-native-beta-dto.mjs",
     prefix + "lsp-native-beta-workspace.mjs",
+    prefix + "lsp-api-snapshot-drain.mjs",
+    "crates/vize_canon/src/lsp_client/editor_lsp.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/project_configuration.rs",
+    ".cargo/config.toml",
+    "Cargo.lock",
     ".github/workflows/native-beta-diagnostic-dto.yml",
     ...borrowed.shutdownSourceFiles.map((row) => row.path),
   ]),
@@ -57,7 +62,7 @@ fs.writeFileSync(
   path.join(out, "composition.json"),
   JSON.stringify(
     {
-      role: "validation-only combined source; not a publication or source-session credit",
+      role: "LOCAL-PATCHED-SDK validation-only combined source; not stock SDK, publication or source-session credit",
       source: git("rev-parse", "HEAD"),
       tree: git("rev-parse", "HEAD^{tree}"),
       dtoProductionBase: base,

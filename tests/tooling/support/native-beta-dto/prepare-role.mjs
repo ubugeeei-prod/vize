@@ -70,6 +70,21 @@ const manifest = {
   role: ROLE,
   sdkVersion: SDK_VERSION,
   head: HEAD_SHA,
+  sdkClientRole:
+    ROLE === "before"
+      ? "immutable stock corsa_client 2.0.0-beta.1"
+      : "LOCAL-PATCHED-SDK split-drain validation; not stock/published dependency",
+  sdkOverrideFiles:
+    ROLE === "after"
+      ? [
+          ".cargo/config.toml",
+          "Cargo.lock",
+          "tests/tooling/support/native-beta-dto/sdk-split-drain/sdk.patch",
+          "tests/tooling/support/native-beta-dto/sdk-split-drain/stock-custody.json",
+          "tests/tooling/support/native-beta-dto/sdk-split-drain/corsa_client/src/api/client.rs",
+          "tests/tooling/support/native-beta-dto/sdk-split-drain/corsa_client/src/api/snapshot.rs",
+        ].map((file) => ({ path: file, sha256: hash(fs.readFileSync(path.join(root, file))) }))
+      : [],
   harness: { path: observer, sha256: hash(harness) },
   observerModules: observers.map((file) => ({
     path: file,

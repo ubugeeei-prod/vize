@@ -1,0 +1,94 @@
+--- a/src/api/client.rs
++++ b/src/api/client.rs
+@@ -298,6 +298,9 @@
+     /// The handshake is also where the client learns which wire dialect the
+     /// runtime speaks; see [`Self::dialect`].
+     pub async fn initialize(&self) -> Result<Arc<InitializeResponse>> {
++        if self.release_queue.is_closed() {
++            return Err(CorsaError::Closed("API client terminal snapshot drain"));
++        }
+         self.initialized
+             .get_or_try_init(
+                 || async {
+@@ -506,16 +509,40 @@
+             .transpose()
+     }
+ 
+-    /// Closes the client and shuts down the underlying worker process.
+-    ///
+-    /// This is idempotent. After closing, further requests return
+-    /// [`CorsaError::Closed`].
+-    pub async fn close(&self) -> Result<()> {
++    /// Drains terminal snapshot releases while an externally owned server remains alive.
++    ///
++    /// The caller must stop all API users and explicitly release every retained
++    /// managed snapshot, including cached sessions and clones, before this call.
++    /// This gives up the derived lineage head and drains its existing release
++    /// queue without closing or joining the full-duplex transport reader.
++    /// New requests and late explicit releases are refused after the queue
++    /// closes. A late dropped lease retains the existing queue-closed warning;
++    /// this stage does not turn unresolved or concurrent ownership into success.
++    /// Queue-worker completion is checked; individual release failures retain
++    /// their existing warning behavior and must not be treated as release ACKs.
++    /// Finish by closing the external server, then call `close` to join the
++    /// reader. This method is terminal and idempotent, not a reusable cache reset.
++    pub async fn prepare_close(&self) -> Result<()> {
+         self.lineage.clear();
+         self.release_queue
+             .close(self.driver.shutdown_timeout())
+             .await?;
+-        self.driver.close().await
++        if !self.release_queue.is_drained() {
++            return Err(CorsaError::Timeout(CompactString::from(
++                "terminal snapshot drain",
++            )));
++        }
++        Ok(())
++    }
++
++    /// Closes the client and shuts down the underlying worker process.
++    ///
++    /// This is idempotent. After closing, further requests return
++    /// [`CorsaError::Closed`]. Transport cleanup still runs if snapshot drain fails.
++    pub async fn close(&self) -> Result<()> {
++        let snapshots = self.prepare_close().await;
++        let transport = self.driver.close().await;
++        snapshots.and(transport)
+     }
+ 
+     /// Returns whether unstable upstream endpoints are allowed for this client.
+@@ -570,6 +597,9 @@
+     }
+ 
+     pub(crate) async fn release_handle(&self, handle: &super::SnapshotHandle) -> Result<()> {
++        if self.release_queue.is_closed() {
++            return Err(CorsaError::Closed("API client terminal snapshot drain"));
++        }
+         self.driver
+             .release_handle(handle, self.profiler.as_ref())
+             .await?;
+@@ -1016,3 +1046,7 @@
+         )));
+     }
+ }
++
++#[cfg(all(test, unix))]
++#[path = "close_drain_tests.rs"]
++mod close_drain_tests;
+--- a/src/api/snapshot.rs
++++ b/src/api/snapshot.rs
+@@ -90,6 +90,14 @@
+         }
+     }
+ 
++    pub(crate) fn is_closed(&self) -> bool {
++        lock_unpoisoned(&self.sender).is_none()
++    }
++
++    pub(crate) fn is_drained(&self) -> bool {
++        lock_unpoisoned(&self.done).is_none()
++    }
++
+     pub(crate) async fn close(&self, timeout: Duration) -> Result<()> {
+         lock_unpoisoned(&self.sender).take();
+         wait_for_worker(self, timeout, "snapshot release queue")

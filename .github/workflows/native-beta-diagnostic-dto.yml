@@ -17,8 +17,35 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
+  local-sdk-drain-controls:
+    name: Local patched SDK terminal drain controls (not native semantic credit)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_TARGET_DIR: ${{ runner.temp }}/native-dto-patched-sdk-controls-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: 1.99.1 }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Verify exact stock source reconstruction and isolated override
+        run: node tests/tooling/support/native-beta-dto/sdk-split-drain/custody.mjs
+      - name: Exercise cached head, cloned leases, idempotence and terminal refusal over real local IPC
+        run: |
+          test ! -e "$CARGO_TARGET_DIR"
+          cargo test --locked --profile ci -p corsa_client --lib api::client::close_drain_tests:: -- --nocapture
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: native-beta-local-sdk-controls-${{ github.sha }}
+          path: target/vize-tests/native-beta-dto-composition/**
+          if-no-files-found: error
   actual-source-wire:
-    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline refusal observation' || 'Functional source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
+    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline refusal observation' || 'Source control (after uses LOCAL patched SDK)' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     strategy:
@@ -121,8 +148,9 @@ jobs:
       - name: Pin validation composition and observer law controls
         run: |
           git diff --exit-code b3ef5520644577a1a636e1d33026991bb29b0c9c -- crates/vize_canon/src/lsp_client/initial_diagnostics.rs crates/vize_canon/src/lsp_client/editor_lsp/client.rs
-          node --test tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+          node --test tests/tooling/native-runtime-selection-lsp-strace.test.mjs tests/tooling/native-beta-workspace-packets.test.mjs tests/tooling/native-beta-snapshot-drain.test.mjs
           node tests/tooling/support/native-beta-dto/composition.mjs
+          node tests/tooling/support/native-beta-dto/sdk-split-drain/custody.mjs
       - name: Install exact independent official providers
         run: |
           command -v strace

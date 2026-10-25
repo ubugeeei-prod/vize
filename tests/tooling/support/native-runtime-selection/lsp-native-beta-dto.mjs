@@ -9,6 +9,7 @@ import {
   parseStraceCapture,
 } from "./lsp-strace.mjs";
 import { readStraceLines } from "./lsp-strace-lines.mjs";
+import { timedFrames, assertSnapshotDrainBeforeOwnerShutdown } from "./lsp-api-snapshot-drain.mjs";
 import { sha256 } from "./providers.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -237,6 +238,15 @@ function captureRetainedApi(owners) {
         1,
         "actual DerivedSnapshots handshake",
       );
+      const shutdown = timedFrames(stdio.events, "read", 0, decodeNativeFrames).find(
+        (frame) => frame.packet.method === "shutdown",
+      );
+      assert(shutdown);
+      const snapshotDrain = assertSnapshotDrainBeforeOwnerShutdown(
+        timedFrames(decoded.events, "read", fd, decodeNativeFrames),
+        timedFrames(decoded.events, "write", fd, decodeNativeFrames),
+        shutdown,
+      );
       const stem = `${observed.process}-api-${fd}`;
       fs.writeFileSync(path.join(directory, `${stem}.client.bin`), client);
       fs.writeFileSync(path.join(directory, `${stem}.server.bin`), server);
@@ -250,6 +260,7 @@ function captureRetainedApi(owners) {
         client: { sha256: sha256(client), bytes: client.length, packets: input },
         server: { sha256: sha256(server), bytes: server.length, packets: output },
         semanticApiQueries: 0,
+        snapshotDrain,
       });
     }
   }
@@ -265,7 +276,9 @@ function captureRetainedApi(owners) {
 }
 
 /** Unsaved dependency reference offsets change; exact authored geometry matters. */
-export async function observeBetaNavigation(wire, consumer, _campaign, source) {
+export async function observeBetaNavigation(wire, consumer, _campaign, source, phase) {
+  const firstId = { "dependency-open": 10, "dependency-error": 12, "dependency-repair": 14 }[phase];
+  assert.equal(typeof firstId, "number", "closed native beta navigation phase");
   const uri = pathToFileURL(path.join(consumer.configRoot, "src/support.ts")).href;
   const declaration = source.indexOf("value: number"),
     use = source.lastIndexOf("value");
@@ -277,7 +290,7 @@ export async function observeBetaNavigation(wire, consumer, _campaign, source) {
   const definition = await wire.request("textDocument/definition", request);
   assert.deepEqual(definition, {
     jsonrpc: "2.0",
-    id: definition.id,
+    id: firstId,
     result: location(declaration),
   });
   const references = await wire.request("textDocument/references", {
@@ -286,7 +299,7 @@ export async function observeBetaNavigation(wire, consumer, _campaign, source) {
   });
   assert.deepEqual(references, {
     jsonrpc: "2.0",
-    id: references.id,
+    id: firstId + 1,
     result: [location(declaration), location(use)],
   });
   return { dependencyText: source, definition, references };

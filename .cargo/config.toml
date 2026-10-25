@@ -12,3 +12,8 @@ linker = "rust-lld"
 
 [target.aarch64-pc-windows-msvc]
 linker = "rust-lld"
+
+# LOCAL VALIDATION ONLY: stock corsa_client 2.0.0-beta.1 source custody and patch
+# are retained under sdk-split-drain. This is not a production SDK dependency.
+[patch.crates-io]
+corsa_client = { path = "tests/tooling/support/native-beta-dto/sdk-split-drain/corsa_client" }

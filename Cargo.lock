@@ -681,8 +681,6 @@ dependencies = [
 [[package]]
 name = "corsa_client"
 version = "2.0.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e4a1ace5347ca6717e952f6b2fbc73ef46e641a8f3ce1143d13c366880381e1"
 dependencies = [
  "base64",
  "corsa_core",

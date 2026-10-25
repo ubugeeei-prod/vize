@@ -16,7 +16,21 @@ export function prepareSharedApiCampaign(repoRoot, consumer) {
 /** Reuse authored packets only; beta provider/view qualification is independent. */
 export function prepareNativeBetaDtoCampaign(repoRoot, consumer) {
   assert.equal(consumer.kind, "selected-config");
-  return { ...prepareCampaignInputs(repoRoot, consumer), packetWorkspace: consumer.configRoot };
+  const campaign = prepareCampaignInputs(repoRoot, consumer);
+  // This separate role inserts exactly six closed navigation requests before
+  // the original repeated-initial phases. Retain the pinned original packet
+  // corpus and change only the four independently known response IDs.
+  const wireContract = structuredClone(campaign.wireContract);
+  for (const [phase, ids] of [
+    ["repeated-initial-5", [10, 11]],
+    ["repeated-initial-6", [12, 13]],
+  ]) {
+    for (const [index, field] of ["value", "doubled"].entries()) {
+      assert.equal(wireContract.transitions[phase][field].id, ids[index]);
+      wireContract.transitions[phase][field].id = ids[index] + 6;
+    }
+  }
+  return { ...campaign, wireContract, packetWorkspace: consumer.configRoot };
 }
 
 function prepareCampaignInputs(repoRoot, consumer) {
@@ -165,6 +179,7 @@ export async function observeSharedApiTransitions({
         dependencyVersion === 2
           ? campaign.transitions.dependencyError
           : campaign.transitions.dependencyValid,
+        name,
       );
     profile.snapshotTransitions.push(phase);
   };
