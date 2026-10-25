@@ -46,6 +46,8 @@
     "convert-source-map": "2.0.0"
   },
   "devDependencies": {
+    "@babel/core": "catalog:babel-plugin-host",
+    "@types/convert-source-map": "catalog:babel-plugin-host",
     "@types/node": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack"
