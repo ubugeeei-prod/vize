@@ -56,7 +56,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
         with:
           {
-            version: latest,
+            version: "0.1.24",
             node-version-file: package.json,
             cache: true,
             cache-save: false,
@@ -88,6 +88,7 @@ jobs:
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/vize_atelier_sfc/src Cargo.lock
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- crates/vize_atelier_sfc/src
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock pnpm-lock.yaml
           rustc -Vv > "$capture/rustc.txt"
           node --version > "$capture/node.txt"
@@ -107,6 +108,9 @@ jobs:
           CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_core --lib v_for --profile ci -- --nocapture > "$capture/unit.stdout" 2> "$capture/unit.stderr"
           CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_l1_to_l2 --lib lower::forop --profile ci -- --nocapture > "$capture/native-for-unit.stdout" 2> "$capture/native-for-unit.stderr"
           CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_vapor --lib generate::operations::for_loop --profile ci -- --nocapture > "$capture/for-key-unit.stdout" 2> "$capture/for-key-unit.stderr"
+          for log in unit native-for-unit for-key-unit; do
+            grep -Eq 'test result: ok\. [1-9][0-9]* passed; 0 failed; 0 ignored;' "$capture/$log.stdout"
+          done
           sha256sum "$capture/"*.node "$capture/"*-observer > "$capture/executables.sha256"
       - name: Verify authored callback literals and current versus enclosing bindings
         run: node tests/tooling/for-key-literal-source.mjs "$RUNNER_TEMP/for-bindings" "$RUNNER_TEMP/for-bindings/key-literals"
