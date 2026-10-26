@@ -43,8 +43,8 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
 const transition: ReadonlyArray<readonly [string, string | null, string]> = [
   [
     "crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs",
-    "7b028fdf234d9ab85b18d3aa409e5f253fafd02dfafce361e8adce23f5178055",
-    "3dab901e243aa318b07c9c677310b524f009dfb3e3ae86297ba5d77085611120",
+    "d1a9ef036cd8942fcb6e16a9396045928e82b4bb7b841dccf53fcabd49636404",
+    "a39846a38f2ba05696093242380a50438f6d299c5df19d5b55806345d45c8476",
   ],
   [
     "crates/vize_canon/src/batch/virtual_project/content_mapper_config_tests.rs",
@@ -53,8 +53,8 @@ const transition: ReadonlyArray<readonly [string, string | null, string]> = [
   ],
   [
     "crates/vize_canon/src/batch/virtual_project.rs",
-    "4cd33be60f3d417447fb3244a6a01d1df435b52cf166e780a5f080923ac7a491",
-    "a39a06ec175c0b93d15ae5607fe187c91c29c870a1e24b17b31f9ff3e62d7fbc",
+    "98fdb4def0cff8c851eedff2aabe2e0d77782fbb944b864af599a1383bdaaa71",
+    "e073f2bc72e117cde99d1a87c9dab7c6cb33df5835135419b27a89c71a2d4ac4",
   ],
   [
     "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs",
