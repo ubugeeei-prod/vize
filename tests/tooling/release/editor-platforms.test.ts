@@ -125,12 +125,17 @@ test("platform providers install the extension's packager like the universal VSI
     setup("build-editor-platforms", install),
     setup("build-editor-extensions", (step) => step.name === "Package editor extensions"),
   );
+  const command = (task: unknown) => {
+    assert.ok(task !== null && typeof task === "object" && "command" in task);
+    assert.equal(typeof task.command, "string");
+    return String(task.command);
+  };
   assert.equal(
-    buildTasks["install:vscode-extension"]?.command,
-    noCacheTask(installVscodeExtensionDependencies).command,
+    command(buildTasks["install:vscode-extension"]),
+    command(noCacheTask(installVscodeExtensionDependencies)),
   );
   assert.ok(
-    buildTasks["package:vscode-extension"]?.command.startsWith(
+    command(buildTasks["package:vscode-extension"]).startsWith(
       `${installVscodeExtensionDependencies} && `,
     ),
   );
