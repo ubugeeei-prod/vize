@@ -107,16 +107,19 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
         "src/GreetingCard.vue",
     ]);
     let cli_rules = json_rule_ids(&cli);
-    let expected = BTreeSet::from([
-        "script/no-next-tick".to_owned(),
-        "vue/no-bare-strings-in-template".to_owned(),
-    ]);
+    // Vapor-only rules stay off for this vdom component (#10784).
+    let expected = BTreeSet::from(["vue/no-bare-strings-in-template".to_owned()]);
     assert_eq!(
         cli_rules
             .intersection(&expected)
             .cloned()
             .collect::<BTreeSet<_>>(),
         expected,
+        "{}",
+        output_details(&cli)
+    );
+    assert!(
+        !cli_rules.contains("script/no-next-tick"),
         "{}",
         output_details(&cli)
     );
@@ -141,6 +144,11 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
             .cloned()
             .collect::<BTreeSet<_>>(),
         expected,
+        "{}",
+        output_details(&configured)
+    );
+    assert!(
+        !configured_rules.contains("script/no-next-tick"),
         "{}",
         output_details(&configured)
     );

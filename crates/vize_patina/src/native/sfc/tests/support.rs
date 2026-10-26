@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use vize_l0::{Span, config::VueVersion};
 
 pub const RULE: &str = "script/prefer-use-template-ref";
-pub const SECOND_RULE: &str = "script/no-next-tick";
+pub const SECOND_RULE: &str = "script/no-options-api";
 pub const SOURCE: &str = "<script setup lang=\"ts\">\nconst text = \"ref(null)\"\n</script>\n<template><div ref=\"text\" /></template>\n";
 pub const FILE: &str = "/元/History.vue";
 pub const LOCALES: [Locale; 3] = [Locale::En, Locale::Ja, Locale::Zh];

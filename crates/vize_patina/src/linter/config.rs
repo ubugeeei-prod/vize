@@ -80,8 +80,8 @@ pub struct Linter {
     /// Original host requests retained for native constructor/profile admission.
     pub(crate) requested_vue_version: Option<vize_l0::config::VueVersion>,
     pub(crate) requested_vapor_mode: Option<bool>,
-    /// Whether the host selected the Vapor-only instance rule by name.
-    pub(crate) explicit_no_get_current_instance: bool,
+    /// Vapor-only script rules the host selected by name.
+    pub(crate) explicit_vapor_rules: Vec<&'static str>,
     /// Project-configured replacements for configurable built-in script rules,
     /// keyed by rule name. When present, the configured instance runs in place
     /// of the static registry singleton (see `script/no-restricted-globals` and
