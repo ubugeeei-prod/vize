@@ -1,0 +1,1473 @@
+{
+  "typescript": "5.9.3",
+  "entry": {
+    "path": "dist/experimental/index.d.ts",
+    "sha256": "13761cfc15091af523b48a5c55a9172b301df1a843e41efafbfbab9c8fe6a6c1"
+  },
+  "exports": [
+    {
+      "name": "_DefinePageHashParamOptionsAny",
+      "flags": 2097152,
+      "targetName": "DefinePageHashParamOptionsAny",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 81807,
+          "end": 81955
+        }
+      ]
+    },
+    {
+      "name": "_DefinePageQueryParamOptionsAny",
+      "flags": 2097152,
+      "targetName": "DefinePageQueryParamOptionsAny",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 79413,
+          "end": 79563
+        }
+      ]
+    },
+    {
+      "name": "_ExtractParamParserType",
+      "flags": 2097152,
+      "targetName": "ExtractParamParserType",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 38838,
+          "end": 38980
+        }
+      ]
+    },
+    {
+      "name": "_MatchMiss",
+      "flags": 2097152,
+      "targetName": "MatchMiss",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 70804,
+          "end": 70861
+        }
+      ]
+    },
+    {
+      "name": "_mergeRouteRecord",
+      "flags": 2097152,
+      "targetName": "mergeRouteRecord",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 73813,
+          "end": 73929
+        }
+      ]
+    },
+    {
+      "name": "_mergeRouteRecordViews",
+      "flags": 2097152,
+      "targetName": "mergeRouteRecordViews",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 74399,
+          "end": 74523
+        }
+      ]
+    },
+    {
+      "name": "_NavigationResult",
+      "flags": 2097152,
+      "targetName": "NavigationResult",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 126637,
+          "end": 126765
+        }
+      ]
+    },
+    {
+      "name": "_normalizeParamParser",
+      "flags": 2097152,
+      "targetName": "normalizeParamParser",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 38478,
+          "end": 38737
+        }
+      ]
+    },
+    {
+      "name": "_ParamParsers",
+      "flags": 2097152,
+      "targetName": "ParamParsers",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 77449,
+          "end": 77552
+        }
+      ]
+    },
+    {
+      "name": "_ParamParsers_Native",
+      "flags": 2097152,
+      "targetName": "ParamParsers_Native",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 76885,
+          "end": 77019
+        }
+      ]
+    },
+    {
+      "name": "_PathParamNamesForFilePath",
+      "flags": 2097152,
+      "targetName": "PathParamNamesForFilePath",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 72375,
+          "end": 72564
+        }
+      ]
+    },
+    {
+      "name": "_RoutePropsForFilePath",
+      "flags": 2097152,
+      "targetName": "RoutePropsForFilePath",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 73466,
+          "end": 73645
+        }
+      ]
+    },
+    {
+      "name": "createFixedResolver",
+      "flags": 2097152,
+      "targetName": "createFixedResolver",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 42250,
+          "end": 42399
+        }
+      ]
+    },
+    {
+      "name": "DataLoaderBasicEntry",
+      "flags": 2097152,
+      "targetName": "DataLoaderBasicEntry",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85949,
+          "end": 86124
+        }
+      ]
+    },
+    {
+      "name": "DataLoaderContext",
+      "flags": 2097152,
+      "targetName": "DataLoaderContext",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85257,
+          "end": 85317
+        }
+      ]
+    },
+    {
+      "name": "DataLoaderContextBase",
+      "flags": 2097152,
+      "targetName": "DataLoaderContextBase",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 133482,
+          "end": 133682
+        }
+      ]
+    },
+    {
+      "name": "DataLoaderEntryBase",
+      "flags": 2097152,
+      "targetName": "DataLoaderEntryBase",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 128548,
+          "end": 130620
+        }
+      ]
+    },
+    {
+      "name": "DataLoaderPlugin",
+      "flags": 2097152,
+      "targetName": "DataLoaderPlugin",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 127514,
+          "end": 127598
+        }
+      ]
+    },
+    {
+      "name": "DataLoaderPluginOptions",
+      "flags": 2097152,
+      "targetName": "DataLoaderPluginOptions",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 127650,
+          "end": 128102
+        }
+      ]
+    },
+    {
+      "name": "defineBasicLoader",
+      "flags": 2097152,
+      "targetName": "defineBasicLoader",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 83000,
+          "end": 83253
+        },
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 83571,
+          "end": 83815
+        },
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 84096,
+          "end": 84302
+        },
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 84585,
+          "end": 84782
+        }
+      ]
+    },
+    {
+      "name": "DefineDataLoaderOptions",
+      "flags": 2097152,
+      "targetName": "DefineDataLoaderOptions",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85193,
+          "end": 85256
+        }
+      ]
+    },
+    {
+      "name": "DefineDataLoaderOptions_DefinedData",
+      "flags": 2097152,
+      "targetName": "DefineDataLoaderOptions_DefinedData",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85004,
+          "end": 85117
+        }
+      ]
+    },
+    {
+      "name": "DefineDataLoaderOptions_LaxData",
+      "flags": 2097152,
+      "targetName": "DefineDataLoaderOptions_LaxData",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 84783,
+          "end": 85003
+        }
+      ]
+    },
+    {
+      "name": "DefineDataLoaderOptionsBase_DefinedData",
+      "flags": 2097152,
+      "targetName": "DefineDataLoaderOptionsBase_DefinedData",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 132872,
+          "end": 133020
+        }
+      ]
+    },
+    {
+      "name": "DefineDataLoaderOptionsBase_LaxData",
+      "flags": 2097152,
+      "targetName": "DefineDataLoaderOptionsBase_LaxData",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 132363,
+          "end": 132674
+        }
+      ]
+    },
+    {
+      "name": "defineHashParamParser",
+      "flags": 2097152,
+      "targetName": "defineHashParamParser",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 33589,
+          "end": 33750
+        }
+      ]
+    },
+    {
+      "name": "DefineLoaderFn",
+      "flags": 2097152,
+      "targetName": "DefineLoaderFn",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 136951,
+          "end": 137138
+        }
+      ]
+    },
+    {
+      "name": "definePage",
+      "flags": 2097152,
+      "targetName": "definePage",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 71849,
+          "end": 72005
+        }
+      ]
+    },
+    {
+      "name": "DefinePage",
+      "flags": 2097152,
+      "targetName": "DefinePage",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 74958,
+          "end": 76700
+        }
+      ]
+    },
+    {
+      "name": "DefinePageHashParamOptions",
+      "flags": 2097152,
+      "targetName": "DefinePageHashParamOptions",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 81496,
+          "end": 81717
+        }
+      ]
+    },
+    {
+      "name": "DefinePageParamRequiredOrDefault",
+      "flags": 2097152,
+      "targetName": "DefinePageParamRequiredOrDefault",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 80582,
+          "end": 81079
+        }
+      ]
+    },
+    {
+      "name": "DefinePagePathParamOptions",
+      "flags": 2097152,
+      "targetName": "DefinePagePathParamOptions",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 78408,
+          "end": 78931
+        }
+      ]
+    },
+    {
+      "name": "DefinePageQueryParamOptions",
+      "flags": 2097152,
+      "targetName": "DefinePageQueryParamOptions",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 79846,
+          "end": 80507
+        }
+      ]
+    },
+    {
+      "name": "defineParamParser",
+      "flags": 2097152,
+      "targetName": "defineParamParser",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 34596,
+          "end": 34835
+        }
+      ]
+    },
+    {
+      "name": "defineParamParserRaw",
+      "flags": 2097152,
+      "targetName": "defineParamParserRaw",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 33060,
+          "end": 33277
+        }
+      ]
+    },
+    {
+      "name": "EmptyParams",
+      "flags": 2097152,
+      "targetName": "EmptyParams",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 24658,
+          "end": 24704
+        }
+      ]
+    },
+    {
+      "name": "ErrorDefault",
+      "flags": 2097152,
+      "targetName": "ErrorDefault",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 82536,
+          "end": 82613
+        }
+      ]
+    },
+    {
+      "name": "experimental_createRouter",
+      "flags": 2097152,
+      "targetName": "experimental_createRouter",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 58854,
+          "end": 58955
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_Router",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_Router",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 57954,
+          "end": 58468
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_Router_Base",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_Router_Base",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 52890,
+          "end": 57953
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecord_Base",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecord_Base",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 47334,
+          "end": 48518
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecord_Group",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecord_Group",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 48784,
+          "end": 49021
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecord_Matchable",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecord_Matchable",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 49269,
+          "end": 49383
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecordNormalized",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecordNormalized",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 50854,
+          "end": 50984
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecordNormalized_Group",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecordNormalized_Group",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 50045,
+          "end": 50260
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecordNormalized_Matchable",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecordNormalized_Matchable",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 50709,
+          "end": 50853
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecordPropsOption",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecordPropsOption",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 43638,
+          "end": 43890
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouteRecordRaw",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouteRecordRaw",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 49384,
+          "end": 49487
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouterOptions",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouterOptions",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 52431,
+          "end": 52672
+        }
+      ]
+    },
+    {
+      "name": "EXPERIMENTAL_RouterOptions_Base",
+      "flags": 2097152,
+      "targetName": "EXPERIMENTAL_RouterOptions_Base",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 44615,
+          "end": 47244
+        }
+      ]
+    },
+    {
+      "name": "getCurrentContext",
+      "flags": 2097152,
+      "targetName": "getCurrentContext",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 124464,
+          "end": 124649
+        }
+      ]
+    },
+    {
+      "name": "MatcherParamsFormatted",
+      "flags": 2097152,
+      "targetName": "MatcherParamsFormatted",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 24572,
+          "end": 24626
+        }
+      ]
+    },
+    {
+      "name": "MatcherPattern",
+      "flags": 2097152,
+      "targetName": "MatcherPattern",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 19996,
+          "end": 20700
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternHash",
+      "flags": 2097152,
+      "targetName": "MatcherPatternHash",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 24366,
+          "end": 24502
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternHashParam",
+      "flags": 2097152,
+      "targetName": "MatcherPatternHashParam",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 69914,
+          "end": 70634
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternPath",
+      "flags": 2097152,
+      "targetName": "MatcherPatternPath",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 20821,
+          "end": 21098
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternPathDynamic",
+      "flags": 2097152,
+      "targetName": "MatcherPatternPathDynamic",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 22888,
+          "end": 24245
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternPathDynamic_ParamOptions",
+      "flags": 2097152,
+      "targetName": "MatcherPatternPathDynamic_ParamOptions",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 21750,
+          "end": 22244
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternPathStatic",
+      "flags": 2097152,
+      "targetName": "MatcherPatternPathStatic",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 21341,
+          "end": 21674
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternQuery",
+      "flags": 2097152,
+      "targetName": "MatcherPatternQuery",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 39194,
+          "end": 39343
+        }
+      ]
+    },
+    {
+      "name": "MatcherPatternQueryParam",
+      "flags": 2097152,
+      "targetName": "MatcherPatternQueryParam",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 39432,
+          "end": 39979
+        }
+      ]
+    },
+    {
+      "name": "MatcherQueryParams",
+      "flags": 2097152,
+      "targetName": "MatcherQueryParams",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 24844,
+          "end": 24910
+        }
+      ]
+    },
+    {
+      "name": "MatcherQueryParamsValue",
+      "flags": 2097152,
+      "targetName": "MatcherQueryParamsValue",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 24763,
+          "end": 24843
+        }
+      ]
+    },
+    {
+      "name": "miss",
+      "flags": 2097152,
+      "targetName": "miss",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 71103,
+          "end": 71168
+        }
+      ]
+    },
+    {
+      "name": "NavigationResult",
+      "flags": 2097152,
+      "targetName": "NavigationResult$1",
+      "targetFlags": 32,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 86228,
+          "end": 86361
+        }
+      ]
+    },
+    {
+      "name": "normalizeRouteRecord",
+      "flags": 2097152,
+      "targetName": "normalizeRouteRecord",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 51758,
+          "end": 52014
+        },
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 52015,
+          "end": 52326
+        }
+      ]
+    },
+    {
+      "name": "onRouteRendered",
+      "flags": 2097152,
+      "targetName": "onRouteRendered",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 69413,
+          "end": 69473
+        }
+      ]
+    },
+    {
+      "name": "OnRouteRenderedCallback",
+      "flags": 2097152,
+      "targetName": "OnRouteRenderedCallback",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 68331,
+          "end": 68443
+        }
+      ]
+    },
+    {
+      "name": "PARAM_PARSER_BOOL",
+      "flags": 2097152,
+      "targetName": "PARAM_PARSER_BOOL",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 35003,
+          "end": 35206
+        }
+      ]
+    },
+    {
+      "name": "PARAM_PARSER_INT",
+      "flags": 2097152,
+      "targetName": "PARAM_PARSER_INT",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 35375,
+          "end": 35544
+        }
+      ]
+    },
+    {
+      "name": "ParamParser",
+      "flags": 2097152,
+      "targetName": "ParamParser",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 18634,
+          "end": 18838
+        }
+      ]
+    },
+    {
+      "name": "ParamParserType",
+      "flags": 2097152,
+      "targetName": "ParamParserType",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 77620,
+          "end": 77662
+        }
+      ]
+    },
+    {
+      "name": "ParamParserType_Native",
+      "flags": 2097152,
+      "targetName": "ParamParserType_Native",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 77020,
+          "end": 77076
+        }
+      ]
+    },
+    {
+      "name": "ParamParserTypeOf",
+      "flags": 2097152,
+      "targetName": "ParamParserTypeOf",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 78180,
+          "end": 78341
+        }
+      ]
+    },
+    {
+      "name": "reroute",
+      "flags": 2097152,
+      "targetName": "reroute",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 127168,
+          "end": 127231
+        }
+      ]
+    },
+    {
+      "name": "SCROLL_RESTORATION_CAPTURE_DEFAULT",
+      "flags": 2097152,
+      "targetName": "SCROLL_RESTORATION_CAPTURE_DEFAULT",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 66248,
+          "end": 66326
+        }
+      ]
+    },
+    {
+      "name": "SCROLL_RESTORATION_RESTORE_DEFAULT",
+      "flags": 2097152,
+      "targetName": "SCROLL_RESTORATION_RESTORE_DEFAULT",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 66519,
+          "end": 66664
+        }
+      ]
+    },
+    {
+      "name": "SCROLL_RESTORATION_SETUP_LISTENERS_DEFAULT",
+      "flags": 2097152,
+      "targetName": "SCROLL_RESTORATION_SETUP_LISTENERS_DEFAULT",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 66893,
+          "end": 67070
+        }
+      ]
+    },
+    {
+      "name": "ScrollRestoration",
+      "flags": 2097152,
+      "targetName": "ScrollRestoration",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 67551,
+          "end": 67627
+        }
+      ]
+    },
+    {
+      "name": "ScrollRestorationPluginOptions",
+      "flags": 2097152,
+      "targetName": "ScrollRestorationPluginOptions",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 62955,
+          "end": 64087
+        }
+      ]
+    },
+    {
+      "name": "ScrollRestorationPosition",
+      "flags": 2097152,
+      "targetName": "ScrollRestorationPosition",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 61528,
+          "end": 62437
+        }
+      ]
+    },
+    {
+      "name": "ScrollRestorationSessionEntry",
+      "flags": 2097152,
+      "targetName": "ScrollRestorationSessionEntry",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 62625,
+          "end": 62893
+        }
+      ]
+    },
+    {
+      "name": "setCurrentContext",
+      "flags": 2097152,
+      "targetName": "setCurrentContext",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 124845,
+          "end": 124933
+        }
+      ]
+    },
+    {
+      "name": "SetupLoaderGuardOptions",
+      "flags": 2097152,
+      "targetName": "SetupLoaderGuardOptions",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 126058,
+          "end": 126321
+        }
+      ]
+    },
+    {
+      "name": "toLazyValue",
+      "flags": 2097152,
+      "targetName": "toLazyValue",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 133035,
+          "end": 133207
+        }
+      ]
+    },
+    {
+      "name": "trackRoute",
+      "flags": 2097152,
+      "targetName": "trackRoute",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 125448,
+          "end": 125926
+        }
+      ]
+    },
+    {
+      "name": "UseDataLoader",
+      "flags": 2097152,
+      "targetName": "UseDataLoader",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 133780,
+          "end": 134842
+        }
+      ]
+    },
+    {
+      "name": "UseDataLoaderBasic",
+      "flags": 2097152,
+      "targetName": "UseDataLoaderBasic",
+      "targetFlags": 524288,
+      "targetIsTypeAlias": true,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85791,
+          "end": 85856
+        }
+      ]
+    },
+    {
+      "name": "UseDataLoaderBasic_DefinedData",
+      "flags": 2097152,
+      "targetName": "UseDataLoaderBasic_DefinedData",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85857,
+          "end": 85948
+        }
+      ]
+    },
+    {
+      "name": "UseDataLoaderBasic_LaxData",
+      "flags": 2097152,
+      "targetName": "UseDataLoaderBasic_LaxData",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 85621,
+          "end": 85720
+        }
+      ]
+    },
+    {
+      "name": "UseDataLoaderInternals",
+      "flags": 2097152,
+      "targetName": "UseDataLoaderInternals",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 135007,
+          "end": 135871
+        }
+      ]
+    },
+    {
+      "name": "UseDataLoaderResult",
+      "flags": 2097152,
+      "targetName": "UseDataLoaderResult",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 135950,
+          "end": 136883
+        }
+      ]
+    },
+    {
+      "name": "useIsDataLoading",
+      "flags": 2097152,
+      "targetName": "useIsDataLoading",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 128266,
+          "end": 128323
+        }
+      ]
+    },
+    {
+      "name": "useScrollRestoration",
+      "flags": 2097152,
+      "targetName": "useScrollRestoration",
+      "targetFlags": 2,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 68047,
+          "end": 68191
+        }
+      ]
+    },
+    {
+      "name": "UseScrollRestorationOptions",
+      "flags": 2097152,
+      "targetName": "UseScrollRestorationOptions",
+      "targetFlags": 64,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 64177,
+          "end": 65973
+        }
+      ]
+    },
+    {
+      "name": "withLoaderContext",
+      "flags": 2097152,
+      "targetName": "withLoaderContext",
+      "targetFlags": 16,
+      "targetIsTypeAlias": false,
+      "declarations": [
+        {
+          "file": "dist/index-BA_Jc-EQ.d.ts",
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b",
+          "start": 125038,
+          "end": 125116
+        }
+      ]
+    }
+  ]
+}

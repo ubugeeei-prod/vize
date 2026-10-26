@@ -14,7 +14,7 @@ on:
       - "tests/_fixtures/davinci-fpfn/**"
       - ".github/workflows/davinci-unused-bindings.yml"
       - "tools/support/compat/github/compare-unused-bindings-profiles.ts"
-      - "tests/tooling/unused-bindings-profiles.test.mjs"
+      - "tests/tooling/unused-bindings-profiles.test.ts"
   workflow_dispatch:
     inputs:
       compare-profiles:

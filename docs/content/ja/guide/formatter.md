@@ -104,7 +104,7 @@ export default defineConfig({}).withVue({
 });
 ```
 
-`fmt.ignorePatterns` は両方のフォーマッタに適用されます。`.vue` ファイルも Oxfmt に任せるには、`vue.formatter` を省略し、`fmt.vue: false` を指定します。明示した `vue.formatter` はタスクの制御設定より優先されます。単独の CLI やエディターが同じ設定をどこから読むかは、[設定](./configuration.md)を参照してください。
+`fmt.ignorePatterns` は両方のフォーマッタに適用されます。ただし、すべての Vue ファイルを除外するエントリ（`**/*.vue`）は Oxfmt から `.vue` を外すだけです。`.vue` ファイルも Oxfmt に任せるには、`vue.formatter` を省略し、`fmt.vue: false` を指定します。明示した `vue.formatter` はタスクの制御設定より優先されます。単独の CLI やエディターが同じ設定をどこから読むかは、[設定](./configuration.md)を参照してください。
 
 同じオプションは CLI のフラグでも指定できます。
 

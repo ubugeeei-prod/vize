@@ -71,7 +71,7 @@ test("dependency checks start without a package-manager bootstrap inside their f
   assert.equal(setup.with?.cache, undefined);
   assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
   for (const command of [
-    "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.mjs",
+    "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.ts",
     'node tools/support/compat/davinci/level-dependencies.ts --base "$DEPENDENCY_BASE"',
   ]) {
     assert.ok(steps.findIndex((step) => step.run === command) > setupIndex);

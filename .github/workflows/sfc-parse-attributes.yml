@@ -8,7 +8,7 @@ on:
       - "crates/vize_vitrine/src/napi/sfc/types.rs"
       - "npm/native/index.d.ts"
       - "tests/native/sfc-parse-attributes-*.mjs"
-      - "tests/tooling/sfc-parse-attributes-bootstrap.test.mjs"
+      - "tests/tooling/sfc-parse-attributes-bootstrap.test.ts"
       - "tests/fixtures/sfc/parsed-attributes/**"
   workflow_dispatch:
 permissions: { contents: read }
@@ -41,7 +41,7 @@ jobs:
         with: { node-version-file: package.json, cache: true, run-install: false }
       - name: Verify observer bootstrap and source roles
         run: |
-          node --test tests/tooling/sfc-parse-attributes-bootstrap.test.mjs
+          node --test tests/tooling/sfc-parse-attributes-bootstrap.test.ts
           node tests/native/sfc-parse-attributes-source.mjs
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }

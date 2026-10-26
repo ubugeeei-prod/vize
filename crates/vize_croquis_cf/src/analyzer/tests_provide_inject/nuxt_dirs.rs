@@ -8,7 +8,7 @@ fn custom_dirs() -> NuxtRenderDirs {
         src: PathBuf::from("src"),
         pages: PathBuf::from("src/nuxt/pages"),
         layouts: PathBuf::from("src/nuxt/layouts"),
-        builtin_app: true,
+        pages_enabled: true,
     }
 }
 
@@ -103,10 +103,7 @@ fn configured_layout_and_page_dirs_keep_layout_ancestry() {
 
 #[test]
 fn configured_app_vue_in_src_dir_renders_configured_dirs() {
-    let mut analyzer = analyzer(Some(NuxtRenderDirs {
-        builtin_app: false,
-        ..custom_dirs()
-    }));
+    let mut analyzer = analyzer(Some(custom_dirs()));
     let button = add_inject_button(&mut analyzer);
     analyzer.add_file_with_analysis(
         Path::new("src/nuxt/pages/index.vue"),
@@ -168,4 +165,29 @@ fn parent_page_nuxt_page_provides_to_nested_routes_only() {
     );
     // A sibling route with a shared name prefix is not nested.
     assert_eq!(unmatched(&result), 1);
+}
+
+#[test]
+fn disabled_pages_get_no_render_ancestry() {
+    let mut analyzer = analyzer(Some(NuxtRenderDirs {
+        pages_enabled: false,
+        ..custom_dirs()
+    }));
+    add_inject_button(&mut analyzer);
+    analyzer.add_file_with_analysis(
+        Path::new("src/nuxt/pages/index.vue"),
+        "",
+        script_analysis(
+            "import NoticeButton from '../../features/NoticeButton.vue'",
+            &["NoticeButton"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("src/app.vue"),
+        "<template><NuxtPage /></template>",
+        provide("./features/keys", &["NuxtPage"]),
+    );
+    analyzer.rebuild_component_edges();
+
+    assert_eq!(unmatched(&analyzer.analyze()), 1);
 }

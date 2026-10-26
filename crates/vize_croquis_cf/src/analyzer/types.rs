@@ -280,7 +280,8 @@ pub struct NuxtRenderDirs {
     pub pages: std::path::PathBuf,
     /// Layout directory; `default.vue` wraps every page.
     pub layouts: std::path::PathBuf,
-    /// Whether Nuxt's built-in app (`<NuxtLayout><NuxtPage /></NuxtLayout>`)
-    /// renders pages when `src` has no `app.vue`.
-    pub builtin_app: bool,
+    /// Whether `pages` files are routes (`pages: false` turns routing off). With
+    /// routes and no `app.vue` in `src`, Nuxt's built-in app renders
+    /// `<NuxtLayout><NuxtPage /></NuxtLayout>`.
+    pub pages_enabled: bool,
 }

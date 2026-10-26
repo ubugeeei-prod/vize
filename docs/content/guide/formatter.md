@@ -102,7 +102,7 @@ export default defineConfig({}).withVue({
 });
 ```
 
-`fmt.ignorePatterns` applies to both formatters. To hand `.vue` files back to Oxfmt, omit `vue.formatter` and set `fmt.vue: false`. An explicit `vue.formatter` takes precedence over the task control. See [Configuration](./configuration.md) for where the standalone CLI and the editor read the same settings.
+`fmt.ignorePatterns` applies to both formatters, except that an entry excluding every Vue file (`**/*.vue`) only keeps `.vue` away from Oxfmt. To hand `.vue` files back to Oxfmt, omit `vue.formatter` and set `fmt.vue: false`. An explicit `vue.formatter` takes precedence over the task control. See [Configuration](./configuration.md) for where the standalone CLI and the editor read the same settings.
 
 The same options are available as CLI flags:
 

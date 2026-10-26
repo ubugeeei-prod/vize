@@ -206,12 +206,27 @@ export async function projectViteConfigSource(source, env, configDir) {
     const common = Object.fromEntries(
       Object.entries(source.fmt).filter(([key]) => Object.hasOwn(keys, key)),
     );
+    // Excluding every Vue file from Oxfmt hands `.vue` to Vize, like the
+    // integration's own `**/*.vue` entry; it never excludes them from Vize.
+    if (Array.isArray(common.ignorePatterns)) {
+      common.ignorePatterns = common.ignorePatterns.filter(
+        (pattern) => !excludesEveryVueFile(pattern),
+      );
+    }
     overrides.formatter = overlayVueOptions(common, object(source.fmt.vue) ? source.fmt.vue : {});
     validateVueOption(overrides.formatter, { $ref: "#/definitions/FormatterConfig" }, "fmt");
   }
   const root = typeof source.root === "string" ? resolve(configDir ?? ".", source.root) : configDir;
   const config = overlayVueOptions(merge(projectConfigDefaults(), overrides), canonical);
   return root ? { ...projectPaths(config, root, false), __vizeProjectRoot: root } : config;
+}
+
+// `*.vue` and `**/*.vue` match Vue files at every depth.
+function excludesEveryVueFile(pattern) {
+  if (typeof pattern !== "string") return false;
+  let rest = pattern;
+  while (rest.startsWith("**/")) rest = rest.slice(3);
+  return rest === "*.vue";
 }
 
 /** Validate only canonical settings; selecting them never evaluates a legacy callback. */

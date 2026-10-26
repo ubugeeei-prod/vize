@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const { href = "", active = false } = defineProps<{ href?: string; active?: boolean }>();
+function onClick(): void {}
+</script>
+
+<template>
+  <component :is="href ? 'a' : 'button'" class="btn" :class="[{ 'btn--active': active.nope }]" @click.stop="onClick">x</component>
+  <component :is="href ? 'a' : 'button'" class="btn" :class="[{ 'btn--active': active.nope }]">no listener</component>
+  <button class="btn" :class="[{ 'btn--active': active.nope }]" @click.stop="onClick">plain element</button>
+</template>

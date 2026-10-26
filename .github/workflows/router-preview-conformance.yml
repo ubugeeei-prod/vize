@@ -1,0 +1,136 @@
+name: Router preview source provider
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/router-preview-conformance.yml
+      - tests/fixtures/typechecker/experimental-router-preview-593d7ad/**
+      - tests/tooling/router-preview-*.ts
+      - tests/tooling/support/router-preview/**
+  workflow_dispatch:
+    inputs:
+      expected-source-sha:
+        description: Exact Vize source revision to qualify
+        type: string
+        required: true
+
+permissions: { contents: read, actions: read }
+concurrency:
+  group: router-preview-593d7ad-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ROUTER_PREVIEW_REVISION: 593d7ad9ff99e95c24be28e962717df0fb2be763
+
+jobs:
+  source-cli:
+    name: Original source CLI
+    uses: ./.github/workflows/full-source-cli.yml
+
+  provider:
+    name: Build the actual pinned upstream provider
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    outputs:
+      receipt-sha256: ${{ steps.build.outputs.receipt-sha256 }}
+      producer-attempt: ${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Require the selected source revision
+        if: github.event_name == 'workflow_dispatch'
+        env: { EXPECTED_SOURCE_SHA: "${{ inputs.expected-source-sha }}" }
+        run: |
+          if [[ ! "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ || "$GITHUB_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
+            echo 'The checked out source must equal the reviewed immutable revision.' >&2
+            exit 1
+          fi
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Checkout the immutable Router source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: vuejs/router
+          ref: ${{ env.ROUTER_PREVIEW_REVISION }}
+          path: target/router-preview-upstream
+          persist-credentials: false
+      - name: Install the source-declared package manager
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 12.14.0
+          package_json_file: target/router-preview-upstream/package.json
+          run_install: false
+          cache: true
+          cache_dependency_path: target/router-preview-upstream/pnpm-lock.yaml
+      - name: Build and attest the unchanged upstream package
+        id: build
+        run: node tests/tooling/support/router-preview/build-provider.ts "$GITHUB_WORKSPACE/target/router-preview-upstream" "$RUNNER_TEMP/router-preview-provider"
+      - name: Retain actual provider bytes and raw build observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: router-preview-provider-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/router-preview-provider/
+          if-no-files-found: error
+          retention-days: 7
+
+  manual-helper-probe:
+    name: Qualify manually explicit real helpers
+    needs: [source-cli, provider]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.source-cli.outputs.receipt-sha256 }}
+      VIZE_ROUTER_PREVIEW_RECEIPT_SHA256: ${{ needs.provider.outputs.receipt-sha256 }}
+      VIZE_ROUTER_PREVIEW_PRODUCER_ATTEMPT: ${{ needs.provider.outputs.producer-attempt }}
+      VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+      VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Install frozen Vize tooling dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Test frozen provider and whole packet guards
+        run: vp node --test tests/tooling/router-preview-provider.test.ts
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
+      - name: Restore the same-run actual provider
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: router-preview-provider-${{ github.run_id }}-${{ needs.provider.outputs.producer-attempt }}
+          path: ${{ runner.temp }}/router-preview-provider
+          digest-mismatch: error
+      - name: Capture every manual-helper control before strict acceptance
+        id: probe
+        continue-on-error: true
+        env:
+          VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
+        run: vp node tests/tooling/router-preview-probe.ts
+      - name: Retain complete provider, input, process, and source custody
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: router-preview-manual-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/differential/router-preview-593d7ad/
+            target/ci/vize.differential-build.json
+            target/ci/vize.source-build.json
+            target/ci/vize.source-use.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Refuse discovery as qualification credit
+        if: always()
+        env: { PROBE_OUTCOME: "${{ steps.probe.outcome }}" }
+        run: |
+          if [[ "$PROBE_OUTCOME" != success ]]; then
+            echo 'Preview discovery or a failed control cannot qualify source support.' >&2
+            exit 1
+          fi

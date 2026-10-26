@@ -9,12 +9,10 @@ impl Linter {
     /// Rules not in the list will be skipped during linting.
     #[inline]
     pub fn with_enabled_rules(mut self, rules: Option<Vec<String>>) -> Self {
-        self.explicit_no_get_current_instance = rules.as_ref().is_some_and(|rules| {
-            rules
-                .iter()
-                .any(|rule| rule == "script/no-get-current-instance")
-        });
-        if rules.is_some() {
+        self.explicit_vapor_rules = rules
+            .as_deref()
+            .map_or_else(Vec::new, |rules| explicit_vapor_rules(rules).collect());
+        if let Some(rules) = &rules {
             if matches!(self.preset, Some(LintPreset::Incremental)) {
                 self.registry = crate::RuleRegistry::with_preset(LintPreset::Opinionated);
             }
@@ -22,6 +20,9 @@ impl Linter {
             self.script_rules = super::script_rules::all_builtin_script_rule_names();
             self.css_rules = super::css_rules::all_builtin_css_rule_names();
             self.musea_rules = super::musea_rules::all_builtin_musea_rule_names();
+            // A named rule runs whatever preset seeded the registry.
+            let nuxt = matches!(self.preset, Some(LintPreset::Nuxt));
+            register_configured_rules(&mut self.registry, rules, nuxt);
         }
         if rules.as_ref().is_some_and(|rules| has_type_rule(rules)) {
             self.type_aware_enabled = true;
@@ -36,9 +37,11 @@ impl Linter {
         if rules.is_empty() {
             return self;
         }
-        self.explicit_no_get_current_instance |= rules
-            .iter()
-            .any(|rule| rule == "script/no-get-current-instance");
+        for name in explicit_vapor_rules(&rules) {
+            if !self.explicit_vapor_rules.contains(&name) {
+                self.explicit_vapor_rules.push(name);
+            }
+        }
 
         let mut enabled_rules = self.enabled_rules.take().unwrap_or_else(|| {
             let mut names = self
@@ -63,7 +66,8 @@ impl Linter {
         self.script_rules = super::script_rules::all_builtin_script_rule_names();
         self.css_rules = super::css_rules::all_builtin_css_rule_names();
         self.musea_rules = super::musea_rules::all_builtin_musea_rule_names();
-        register_configured_rules(&mut self.registry, &rules);
+        let nuxt = matches!(self.preset, Some(LintPreset::Nuxt));
+        register_configured_rules(&mut self.registry, &rules, nuxt);
         enabled_rules.extend(rules);
         self.enabled_rules = Some(enabled_rules);
         self
@@ -73,7 +77,11 @@ impl Linter {
 /// Instantiate rules named in config when the active preset never registered them.
 ///
 /// Names stay limited to `rules`. Other rules from the catalog are not enabled.
-fn register_configured_rules(registry: &mut crate::RuleRegistry, rules: &[String]) {
+fn register_configured_rules(
+    registry: &mut crate::RuleRegistry,
+    rules: &[String],
+    nuxt_preset: bool,
+) {
     let wanted: Vec<&str> = rules
         .iter()
         .map(String::as_str)
@@ -106,12 +114,26 @@ fn register_configured_rules(registry: &mut crate::RuleRegistry, rules: &[String
     if registered {
         registry.mark_has_exit_element_rules();
     }
+    // Nuxt auto-imports components, so the named rule follows the preset as
+    // `with_component_registration_globals` does.
+    if nuxt_preset && wanted.contains(&"vue/require-component-registration") {
+        registry.replace(Box::new(
+            crate::rules::opinionated::vue::RequireComponentRegistration::nuxt(),
+        ));
+    }
 }
 
 fn rule_lives_outside_registry(rule: &str) -> bool {
     super::script_rules::all_builtin_script_rule_names().contains(&rule)
         || super::css_rules::all_builtin_css_rule_names().contains(&rule)
         || super::musea_rules::all_builtin_musea_rule_names().contains(&rule)
+}
+
+fn explicit_vapor_rules(rules: &[String]) -> impl Iterator<Item = &'static str> + '_ {
+    super::script_rules::VAPOR_ONLY_SCRIPT_RULES
+        .iter()
+        .copied()
+        .filter(|name| rules.iter().any(|rule| rule == name))
 }
 
 fn has_type_rule(rules: &[String]) -> bool {

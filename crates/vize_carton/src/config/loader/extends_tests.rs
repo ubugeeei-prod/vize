@@ -14,7 +14,7 @@ fn custom_native_extends_refuses_without_evaluating_its_base() {
         let error = validate_explicit_config_path(&path).unwrap_err();
         assert_eq!(
             error,
-            format!(
+            crate::cstr!(
                 "failed to parse {}: Custom config extends is no longer supported; use defineConfig(vpConfig).withVue(vueConfig); standard tsconfig extends remains supported",
                 path.display()
             )
@@ -29,7 +29,7 @@ fn retired_dedicated_config_requires_migration_instead_of_silently_overriding_de
     std::fs::write(&retired, r#"{"formatter":{"singleQuote":true}}"#).unwrap();
     assert_eq!(
         validate_explicit_config_path(&retired).unwrap_err(),
-        format!(
+        crate::cstr!(
             "failed to parse {}: {}",
             retired.display(),
             super::discovery::CONFIG_MIGRATION
