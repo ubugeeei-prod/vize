@@ -1,7 +1,10 @@
 # @vizejs/parcel-transformer
 
 Compile Vue single-file components with Vize's native compiler in Parcel 2.
-The host matrix exercises Parcel 2.16.4. This integration is a compatibility preview.
+The host matrix exercises Parcel 2.16.4.
+
+Not yet published to npm: it is an experimental workspace package until it joins
+the release.
 
 ```sh
 npm install --save-dev parcel @vizejs/parcel-transformer
@@ -60,7 +63,7 @@ inline SFC styles. CSS and Sass dependency updates preserve the component state
 without executing its script module again.
 
 Vapor output is opt-in with `"compiler": { "vapor": true }` and needs a Vue
-runtime that provides the corresponding helpers. The preview uses the default
+runtime that provides the corresponding helpers. The transformer uses the default
 `vue` runtime module for Vapor; Parcel aliases can select its runtime version.
 `runtimeModuleName` can select a separate module for VDOM output.
 
