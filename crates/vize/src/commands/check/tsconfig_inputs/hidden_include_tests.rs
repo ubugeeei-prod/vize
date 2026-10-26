@@ -189,3 +189,43 @@ fn default_collection_keeps_hidden_root_declarations_out_of_the_checked_set() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn hidden_include_roots_stop_at_the_literal_directory_prefix() {
+    // Nuxt's server tsconfig lists module runtimes inside the pnpm store
+    // literally. Walking from `.pnpm` read the whole store once per collection.
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    let runtime = root.join("node_modules/.pnpm/mod@1/node_modules/mod/runtime/server");
+    let theme = root.join("docs/.vitepress/theme");
+    fs::create_dir_all(&runtime).unwrap();
+    fs::create_dir_all(&theme).unwrap();
+    fs::create_dir_all(root.join("node_modules/.pnpm/other@1/node_modules/other")).unwrap();
+    fs::write(runtime.join("api.ts"), "export {}").unwrap();
+    fs::write(theme.join("index.ts"), "export {}").unwrap();
+    fs::write(root.join("docs/.vitepress/config.ts"), "export {}").unwrap();
+    let includes = [
+        "node_modules/.pnpm/mod@1/node_modules/mod/runtime/server",
+        "docs/.vitepress/theme/**/*.ts",
+        "docs/.vitepress/config.ts",
+        "node_modules/.pnpm/missing@1/node_modules/missing/runtime",
+    ]
+    .into_iter()
+    .filter_map(|include| super::spec::GlobSpec::new(&root, include))
+    .collect::<Vec<_>>();
+
+    assert_eq!(
+        super::collect::explicit_hidden_pattern_roots(&includes),
+        vec![runtime.clone(), theme, root.join("docs/.vitepress")]
+    );
+
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"include":["node_modules/.pnpm/mod@1/node_modules/mod/runtime/server"]}"#,
+    )
+    .unwrap();
+    assert_eq!(
+        collect_default_check_files(&root, &root.join("tsconfig.json")),
+        vec![runtime.join("api.ts")]
+    );
+}
