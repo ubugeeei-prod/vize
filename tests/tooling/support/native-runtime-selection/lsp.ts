@@ -19,7 +19,7 @@ import {
 import { sourceIdentity, executionAuthority } from "./lsp-source-custody.ts";
 import { validateNativeLifecycle } from "./lsp-native-lifecycle.ts";
 import { SourceLspWire, type WireEvent } from "./lsp-wire.ts";
-import { captureNativeOwners, type NativeOwner } from "./lsp-strace.ts";
+import { captureNativeOwners, type NativeOwner } from "./lsp-exec-inventory.ts";
 
 interface LspPhase {
   name: string;

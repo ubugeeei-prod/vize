@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { sha256, type NativeRuntimeConsumer } from "./providers.ts";
-import type { ExecAuthority } from "./lsp-strace.ts";
+import type { ExecAuthority } from "./lsp-exec-inventory.ts";
 import {
   BUILD_RECIPE,
   binaryRelativePath,
@@ -81,10 +81,11 @@ export function executionAuthority(
   const loader = path.join(repoRoot, "crates/vize_carton/src/config/loader");
   const rust = fs.readFileSync(path.join(loader, "js.rs"), "utf8");
   const embedded =
-    /let script = \[\s*include_str!\("vite-runtime\.mjs"\),\s*include_str!\("module-runtime\.mjs"\),\s*r#"([\s\S]*?)"#,\s*\]\s*\.concat\(\);/u.exec(
+    /let script = \[\s*VITE_RUNTIME,\s*include_str!\("module-runtime\.mjs"\),\s*include_str!\("config-inputs\.mjs"\),\s*r#"([\s\S]*?)"#,\s*\]\s*\.concat\(\);/u.exec(
       rust,
     );
   assert.ok(embedded, "exact current source config script recipe");
+  assert.match(rust, /const VITE_RUNTIME: &str = include_str!\("vite-runtime\.mjs"\);/u);
   assert.match(
     fs.readFileSync(path.join(loader, "lsp_snapshot.rs"), "utf8"),
     /builder\.prefix\("vize-config-compile-"\)/u,
@@ -101,6 +102,7 @@ export function executionAuthority(
     configScript:
       fs.readFileSync(path.join(loader, "vite-runtime.mjs"), "utf8") +
       fs.readFileSync(path.join(loader, "module-runtime.mjs"), "utf8") +
+      fs.readFileSync(path.join(loader, "config-inputs.mjs"), "utf8") +
       embedded[1],
     configFile: fs.realpathSync(path.join(consumer.configRoot, "vite.config.mjs")),
     configCachePattern: new RegExp(

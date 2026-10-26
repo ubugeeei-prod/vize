@@ -9,10 +9,12 @@ import {
   decodeStraceString,
   parseStraceTexts,
   parseStraceCapture,
-  validateExecInventory,
-  type ExecAuthority,
   type TraceOwner,
 } from "./support/native-runtime-selection/lsp-strace.ts";
+import {
+  validateExecInventory,
+  type ExecAuthority,
+} from "./support/native-runtime-selection/lsp-exec-inventory.ts";
 
 type OwnerRecord = Pick<TraceOwner, "path" | "argv" | "process" | "exit" | "rows">;
 

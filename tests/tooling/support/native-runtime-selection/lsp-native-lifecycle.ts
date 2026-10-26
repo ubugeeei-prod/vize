@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import type { NativeOwner } from "./lsp-strace.ts";
+import type { NativeOwner } from "./lsp-exec-inventory.ts";
 import type { NativeRuntimeConsumer } from "./providers.ts";
 
 export function validateNativeLifecycle(
