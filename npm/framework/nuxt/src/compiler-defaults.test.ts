@@ -131,7 +131,10 @@ await test("vue.compilerOptions.comments compiles with Vize as a default other s
   assert.equal(comments(split.options, null), false);
   assert.equal(comments(split.options, { compiler: { comments: true } }), true);
   const explicit: VizeNuxtCompilerOptions = { template: { compilerOptions: { comments: true } } };
-  assert.equal(comments({ ...split.options, ...explicit }, { compiler: { comments: false } }), true);
+  assert.equal(
+    comments({ ...split.options, ...explicit }, { compiler: { comments: false } }),
+    true,
+  );
   const unset: VizeNuxtCompilerOptions = { template: { compilerOptions: { comments: undefined } } };
   assert.equal(comments({ ...split.options, ...unset }, null), false);
 });
