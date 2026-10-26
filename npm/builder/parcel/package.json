@@ -1,0 +1,79 @@
+{
+  "name": "@vizejs/parcel-transformer",
+  "version": "0.474.0",
+  "description": "Native Vue single-file component compilation for Parcel",
+  "keywords": [
+    "parcel",
+    "sfc",
+    "transformer",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/builder/parcel"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    },
+    "./style": {
+      "types": "./dist/style.d.cts",
+      "default": "./dist/style.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "test": "pnpm build && node --test src/*.test.ts",
+    "test:host": "node ../../../tools/support/compat/parcel/run.mjs"
+  },
+  "dependencies": {
+    "@parcel/diagnostic": "2.16.4",
+    "@parcel/plugin": "2.16.4",
+    "@parcel/source-map": "2.1.1",
+    "@vizejs/native": "workspace:*",
+    "diff": "8.0.4",
+    "magic-string": "0.30.21",
+    "oxc-parser": "catalog:oxc"
+  },
+  "devDependencies": {
+    "@parcel/config-default": "2.16.4",
+    "@parcel/core": "2.16.4",
+    "@parcel/transformer-sass": "2.16.4",
+    "@parcel/types": "2.16.4",
+    "@playwright/test": "1.56.1",
+    "@types/node": "catalog:typescript",
+    "sass": "1.93.2",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "engines": {
+    "node": ">=22.18",
+    "parcel": "^2.16.4"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "compatibility-preview",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}
