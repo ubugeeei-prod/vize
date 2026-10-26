@@ -1,7 +1,8 @@
 //! pug's code generator (`pug-code-gen@3.0.4`, `doctype: "html"`,
 //! `pretty: false`) replayed over the L1 tree: the derived Vue template
-//! is byte-identical to what the pinned `pug` renders for the static
-//! subset, and every refused construct leaves a diagnostic instead.
+//! is byte-identical to what the pinned `pug` renders, with build-time
+//! code evaluated where it has a fixed value ([`super::eval`]), and every
+//! refused construct leaves a diagnostic instead.
 
 use alloc::vec::Vec as StdVec;
 
@@ -9,12 +10,15 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::{Span, String, cstr};
 use vize_l1::markup::Token;
 use vize_l1::pug::{
-    PugBlock, PugCode, PugComment, PugHtmlItem, PugInline, PugNode, PugTag, PugText, PugTextPiece,
-    PugTree,
+    PugBlock, PugCode, PugComment, PugHtmlItem, PugInline, PugNode, PugRefusal, PugTag, PugText,
+    PugTextPiece, PugTree,
 };
 
-use super::literal::{Lit, evaluate, is_js_space};
+use super::control::interpolated;
+use super::eval;
+use super::literal::is_js_space;
 use super::map::PugSourceMap;
+use super::scope::Scope;
 
 /// `void-elements@3.1.0`, pug's self-closing table.
 const VOID: [&str; 14] = [
@@ -29,6 +33,8 @@ pub(super) struct Emitter<'t> {
     pub(super) diagnostics: StdVec<Diagnostic>,
     compiled_tag: bool,
     pub(super) rendering: super::PugRendering,
+    /// The bindings pug's build-time code has made so far.
+    pub(super) scope: Scope,
 }
 
 impl<'t> Emitter<'t> {
@@ -40,7 +46,12 @@ impl<'t> Emitter<'t> {
             map: PugSourceMap::default(),
             diagnostics: StdVec::new(),
             compiled_tag: false,
+            scope: Scope::default(),
         }
+    }
+
+    pub(super) fn source_start(&self) -> usize {
+        self.source.as_ptr() as usize
     }
 
     pub(super) fn offset(&self, token: &Token<'_>) -> u32 {
@@ -72,8 +83,18 @@ impl<'t> Emitter<'t> {
     }
 
     pub(super) fn nodes(&mut self, nodes: &[PugNode<'_>]) {
-        for node in nodes {
-            vize_l0::ensure_sufficient_stack(|| self.node(node));
+        let mut index = 0;
+        while let Some(node) = nodes.get(index) {
+            index += 1;
+            match node {
+                PugNode::Refused(refused)
+                    if matches!(refused.refusal, PugRefusal::Conditional | PugRefusal::Each) =>
+                {
+                    let rest = nodes.get(index..).unwrap_or_default();
+                    index += vize_l0::ensure_sufficient_stack(|| self.control(refused, rest));
+                }
+                node => vize_l0::ensure_sufficient_stack(|| self.node(node)),
+            }
         }
     }
 
@@ -160,8 +181,11 @@ impl<'t> Emitter<'t> {
                 PugTextPiece::Newline(at) => self.synth("\n", Span::new(*at, *at)),
                 PugTextPiece::Interpolation(interpolation) => self.nodes(&interpolation.nodes),
                 PugTextPiece::Code(token) => {
-                    let span = self.span(token);
-                    self.error(span, String::from(super::refusal::CODE_INTERPOLATION));
+                    // An unclosed `#{` is already a surface error.
+                    if let Some(source) = interpolated(token.text) {
+                        let span = self.span(token);
+                        self.buffer(source, token.text.starts_with('#'), span);
+                    }
                 }
                 PugTextPiece::Pipe(_) | PugTextPiece::Escape(_) | PugTextPiece::Unexpected(_) => {}
             }
@@ -179,18 +203,26 @@ impl<'t> Emitter<'t> {
                     self.text(text);
                 }
                 PugHtmlItem::Block(nodes) => {
-                    for node in nodes {
-                        if let PugNode::Html(html) = node {
-                            if open {
-                                let at = self.html_anchor(&html.items);
-                                self.synth("\n", Span::new(at, at));
-                            }
-                            self.html(&html.items);
-                            open = true;
-                        } else {
-                            self.nodes(core::slice::from_ref(node));
+                    let mut run = 0;
+                    for (index, node) in nodes.iter().enumerate() {
+                        let PugNode::Html(html) = node else {
+                            continue;
+                        };
+                        if run < index {
+                            self.nodes(nodes.get(run..index).unwrap_or_default());
                             open = false;
                         }
+                        run = index + 1;
+                        if open {
+                            let at = self.html_anchor(&html.items);
+                            self.synth("\n", Span::new(at, at));
+                        }
+                        self.html(&html.items);
+                        open = true;
+                    }
+                    if run < nodes.len() {
+                        self.nodes(nodes.get(run..).unwrap_or_default());
+                        open = false;
                     }
                 }
                 PugHtmlItem::Code(code) => {
@@ -222,13 +254,17 @@ impl<'t> Emitter<'t> {
         }
     }
 
-    /// `= value` / `!= value`: pug escapes (`=`) or copies (`!=`) the
-    /// folded value; `null`/`undefined` render nothing.
+    /// `= value` / `!= value` output the evaluated value; `- …` runs
+    /// declarations.
     fn code(&mut self, code: &PugCode<'_>) {
         let span = self.span(&code.code);
         if !code.buffered() {
             let whole = Span::new(self.offset(&code.flag), span.end);
-            self.error(whole, String::from(super::refusal::UNBUFFERED_CODE));
+            if !code.block.is_empty() {
+                self.error(whole, String::from(super::refusal::CODE_BLOCK));
+            } else if let Err(reason) = eval::statements(&mut self.scope, code.code.text) {
+                self.error(whole, super::refusal::statement(&reason));
+            }
             return;
         }
         if !code.block.is_empty() {
@@ -237,20 +273,30 @@ impl<'t> Emitter<'t> {
                 String::from("Buffered code cannot have a block attached to it"),
             );
         }
-        let Some(value) = evaluate(code.code.text) else {
-            self.error(span, String::from(super::refusal::EXECUTABLE_CODE));
-            return;
+        self.buffer(code.code.text, code.escaped(), span);
+    }
+
+    /// pug's buffered output: `null`/`undefined` render nothing, other
+    /// values their string, HTML-escaped unless `!=` / `!{…}`.
+    fn buffer(&mut self, source: &str, escaped: bool, span: Span) {
+        let value = match eval::expression(&self.scope, source) {
+            Ok(evaluated) => evaluated.value,
+            Err(reason) => {
+                self.error(span, super::refusal::code(&reason));
+                return;
+            }
         };
-        let value = match value {
-            Lit::Null | Lit::Undefined => String::default(),
-            other => other.to_js_string(),
-        };
-        let value = if code.escaped() {
-            super::attrs::escape(&value)
+        let text = if value.is_nullish() {
+            String::default()
         } else {
-            value
+            value.to_js_string()
         };
-        self.synth(&value, span);
+        let text = if escaped {
+            super::attrs::escape(&text)
+        } else {
+            text
+        };
+        self.synth(&text, span);
     }
 
     fn comment(&mut self, comment: &PugComment<'_>) {

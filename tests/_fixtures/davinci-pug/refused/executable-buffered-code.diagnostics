@@ -1,1 +1,1 @@
-3..24 Semantic "message.toUpperCase()" — pug buffered code must be a constant literal in Vue templates; use `{{ … }}` for expressions
+3..24 Semantic "message.toUpperCase()" — pug code cannot be evaluated at build time: `message.toUpperCase()` needs a JavaScript engine (use `{{ … }}` for component state)

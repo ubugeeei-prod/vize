@@ -1,0 +1,19 @@
+- var theme = 'dark'
+- const count = 3
+div
+  if theme === 'dark'
+    p.dark(v-if="ready") Dark #{theme}
+  else
+    p Light
+  unless count > 5
+    span few
+  if count < 2
+    b one
+  else if count === 3
+    b(:title="label") three
+  else if missing.value
+    b never
+  else
+    b many
+  if false
+    p= skipped.call()

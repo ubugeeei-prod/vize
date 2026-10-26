@@ -53,7 +53,7 @@ fn fixtures(dir: &str) -> Vec<(String, String, PathBuf)> {
 #[test]
 fn every_matrix_fixture_derives_the_pinned_pug_html() {
     let matrix = fixtures("matrix");
-    assert_eq!(matrix.len(), 26);
+    assert_eq!(matrix.len(), 29);
     for (name, source, path) in &matrix {
         let expected = std::fs::read_to_string(path.with_extension("html")).expect("html");
         let derived = derive_template_source(source);

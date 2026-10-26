@@ -125,7 +125,7 @@ fn every_matrix_fixture_lints_like_its_pug_rendered_html() {
         .filter(|path| path.extension().is_some_and(|ext| ext == "pug"))
         .collect();
     paths.sort();
-    assert_eq!(paths.len(), 26);
+    assert_eq!(paths.len(), 29);
     let linter = Linter::new();
     let mut findings = 0;
     for path in &paths {

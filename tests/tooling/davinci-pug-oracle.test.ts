@@ -48,7 +48,7 @@ function render(content: string, filename: string): string {
 
 test("pug oracle: every matrix fixture's HTML is the pinned pug rendering", () => {
   const matrix = names("matrix");
-  assert.equal(matrix.length, 26, "the matrix is pinned; grow it deliberately");
+  assert.equal(matrix.length, 29, "the matrix is pinned; grow it deliberately");
   for (const name of matrix) {
     const filename = `${name}.pug`;
     const content = vueContent(source("matrix", name), filename);

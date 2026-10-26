@@ -1,2 +1,2 @@
-8..15 Semantic "#{name}" — pug `#{…}` / `!{…}` interpolation is not supported in Vue templates: use `{{ … }}`
-21..27 Semantic "!{raw}" — pug `#{…}` / `!{…}` interpolation is not supported in Vue templates: use `{{ … }}`
+8..15 Semantic "#{name}" — pug code cannot be evaluated at build time: `name` is not defined by the template (use `{{ … }}` for component state)
+21..27 Semantic "!{raw}" — pug code cannot be evaluated at build time: `raw` is not defined by the template (use `{{ … }}` for component state)

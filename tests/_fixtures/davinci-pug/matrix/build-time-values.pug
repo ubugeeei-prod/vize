@@ -1,0 +1,9 @@
+- var title = 'Hello', level = 2
+- let flags = { active: true, hidden: false }
+- const styles = { color: 'red', 'font-size': '12px' }
+h1(title=title class=flags style=styles data-level=level)= `${title}, level ${level + 1}`
+p Interpolated #{title.length} chars, raw !{'<em>' + title + '</em>'}
+input(checked=level > 1 disabled=null type='text' data-config={ a: [1, 'x'] })
+input(data-raw!={ quote: "it's" } data-number=0.1 + 0.2 data-ratio=1 / 0)
+p= [1, null, 'a'] + '|' + typeof title + '|' + (title ? 'yes' : 'no')
+p(v-for="item in items" :key="item.id")= title
