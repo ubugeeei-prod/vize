@@ -284,8 +284,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // complete authored sources and edits are asserted by the focused tests.
     // HTML quote escape coverage (#6097) adds two focused calls; the source
     // variable remains an intentional scanner skip while the literal dedups.
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5 + 3 + 2 + 1 + 1 + 5 + 2,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1,
+    // The attribute-hyphenation range regression adds one nonliteral call.
+    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5 + 3 + 2 + 1 + 1 + 5 + 2 + 1,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31,
     restructured: 0,
