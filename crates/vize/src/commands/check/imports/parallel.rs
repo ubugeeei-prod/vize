@@ -5,17 +5,21 @@ use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
 use vize_canon::{
-    PackageResolutionContext, PackageResolutionMode, PackageRouteResolver, PackageSourceOptions,
+    PackageResolutionContext, PackageResolutionMode, PackageRouteLookup, PackageRouteResolver,
+    PackageSourceOptions,
 };
 use vize_l0::{FxHashMap, FxHashSet, String};
 
 use super::super::imports_aliases::PathAliasResolver;
 use super::super::path_cache::CanonicalPathCache;
-use super::session::LocalImportSession;
+use super::session::{AliasScope, LocalImportSession};
 use super::specifiers::{
     ModuleSpecifierOccurrence, extract_module_specifier_occurrences, is_relative_specifier,
 };
-use super::{ImportFileOptions, resolve_import_base};
+use super::{
+    ImportFileOptions, is_declaration_file, is_node_modules_path, resolve_import_base,
+    resolve_relative_import,
+};
 
 struct BareImport {
     file: PathBuf,
@@ -37,6 +41,9 @@ struct PackageJob {
     context: PackageResolutionContext,
 }
 
+/// Files one frontier looks ahead through before the serial walk resumes.
+const LOOKAHEAD_FILES: usize = 4096;
+
 pub(super) fn prepare_frontier(
     file: &Path,
     queue: &[(PathBuf, bool, bool)],
@@ -44,23 +51,51 @@ pub(super) fn prepare_frontier(
     packages: &PackageRouteResolver,
     aliases: Option<&PathAliasResolver>,
     options: ImportFileOptions,
-    alias_targets: &mut FxHashMap<String, Option<PathBuf>>,
+    canonical_paths: &mut CanonicalPathCache,
 ) {
     // A later pop, and the hidden-ambient pass, already cached these files.
     // Rebuilding bare imports for the whole queue repeats work the session holds.
-    let mut pending = Vec::new();
-    push_unscanned(&mut pending, file, session);
+    let mut wave = Vec::new();
+    push_unscanned(&mut wave, file, session);
     for (path, _, _) in queue {
-        push_unscanned(&mut pending, path, session);
+        push_unscanned(&mut wave, path, session);
     }
-    if pending.is_empty() {
+    if wave.is_empty() {
         return;
     }
-    prefetch_specifiers(&pending, session);
-    let bare = bare_imports(&pending, session);
-    if let Some(aliases) = aliases {
-        resolve_alias_misses(&bare, aliases, options, alias_targets, session);
+    // Look ahead through relative, alias and workspace-route edges, so one
+    // batch resolves the packages of a whole subtree instead of one file's
+    // children. Only caches fill here; the serial walk keeps its order and
+    // every decision.
+    let mut seen = wave.iter().cloned().collect::<FxHashSet<_>>();
+    let scope = AliasScope::new(aliases, options);
+    let mut prepared = 0;
+    while !wave.is_empty() && prepared < LOOKAHEAD_FILES {
+        prepared += wave.len();
+        prefetch_specifiers(&wave, session);
+        prepare_pending(&wave, session, Some(packages), aliases, options);
+        wave = next_wave(&wave, session, scope, options, canonical_paths, &mut seen);
     }
+}
+
+/// Resolve the `paths` aliases, resolution contexts and package routes of
+/// files whose specifiers the session already holds, off this thread.
+pub(super) fn prepare_pending(
+    pending: &[PathBuf],
+    session: &mut LocalImportSession,
+    packages: Option<&PackageRouteResolver>,
+    aliases: Option<&PathAliasResolver>,
+    options: ImportFileOptions,
+) {
+    let bare = bare_imports(pending, session);
+    let scope = AliasScope::new(aliases, options);
+    if let Some(aliases) = aliases {
+        resolve_alias_misses(&bare, aliases, options, scope, session);
+    }
+    let Some(packages) = packages else {
+        return;
+    };
+    let alias_targets = session.alias_targets(scope);
     let package_imports = bare
         .into_iter()
         .filter(|import| !alias_hit(alias_targets, &import.specifier))
@@ -68,6 +103,102 @@ pub(super) fn prepare_frontier(
         .collect::<Vec<_>>();
     resolve_context_misses(&package_imports, session, packages, aliases);
     resolve_package_misses(&package_imports, session, packages, options);
+}
+
+/// The files the serial walk reaches from `wave` through edges it resolves
+/// itself: relative and alias imports, and the sources of workspace routes.
+fn next_wave(
+    wave: &[PathBuf],
+    session: &LocalImportSession,
+    scope: AliasScope,
+    options: ImportFileOptions,
+    canonical_paths: &mut CanonicalPathCache,
+    seen: &mut FxHashSet<PathBuf>,
+) -> Vec<PathBuf> {
+    let source_options = PackageSourceOptions::new(options.include_js, options.include_jsx);
+    let mut next = Vec::new();
+    for path in wave {
+        let Some(dir) = path.parent() else {
+            continue;
+        };
+        let Some(occurrences) = session
+            .registration_cache
+            .module_specifiers
+            .get(path)
+            .and_then(|cached| cached.as_deref())
+        else {
+            continue;
+        };
+        let extension = path.extension().map(OsString::from);
+        for occurrence in occurrences {
+            let specifier = occurrence.specifier.as_str();
+            if is_relative_specifier(specifier) {
+                if let Some(target) =
+                    resolve_relative_import(dir, specifier, canonical_paths, options)
+                {
+                    consider(target, session, seen, &mut next);
+                }
+                continue;
+            }
+            if Path::new(specifier).is_absolute() {
+                continue;
+            }
+            if let Some(Some(target)) = session
+                .alias_targets(scope)
+                .and_then(|targets| targets.get(specifier))
+            {
+                consider(target.clone(), session, seen, &mut next);
+                continue;
+            }
+            let Some((context, _)) = session.resolution_contexts.get(&(
+                dir.to_path_buf(),
+                extension.clone(),
+                occurrence.mode,
+            )) else {
+                continue;
+            };
+            let key = (
+                dir.to_path_buf(),
+                occurrence.specifier.clone(),
+                source_options,
+                context.clone(),
+            );
+            let Some(route) = session
+                .package_lookups
+                .get(&key)
+                .and_then(PackageRouteLookup::route)
+            else {
+                continue;
+            };
+            if route.workspace_source {
+                for source in route.all_source_paths() {
+                    consider(source.clone(), session, seen, &mut next);
+                }
+            }
+        }
+    }
+    next
+}
+
+/// Queue a reached file once, unless the walk never descends into it.
+fn consider(
+    target: PathBuf,
+    session: &LocalImportSession,
+    seen: &mut FxHashSet<PathBuf>,
+    next: &mut Vec<PathBuf>,
+) {
+    if is_declaration_file(&target)
+        || is_node_modules_path(&target)
+        || session
+            .registration_cache
+            .module_specifiers
+            .contains_key(&target)
+    {
+        return;
+    }
+    if seen.insert(target.clone()) {
+        next.push(target);
+    }
 }
 
 fn push_unscanned(pending: &mut Vec<PathBuf>, path: &Path, session: &LocalImportSession) {
@@ -142,9 +273,9 @@ fn is_bare_specifier(specifier: &str) -> bool {
     !is_relative_specifier(specifier) && !Path::new(specifier).is_absolute()
 }
 
-fn alias_hit(alias_targets: &FxHashMap<String, Option<PathBuf>>, specifier: &str) -> bool {
+fn alias_hit(alias_targets: Option<&FxHashMap<String, Option<PathBuf>>>, specifier: &str) -> bool {
     alias_targets
-        .get(specifier)
+        .and_then(|targets| targets.get(specifier))
         .and_then(Option::as_ref)
         .is_some()
 }
@@ -153,13 +284,16 @@ fn resolve_alias_misses(
     imports: &[BareImport],
     aliases: &PathAliasResolver,
     options: ImportFileOptions,
-    alias_targets: &mut FxHashMap<String, Option<PathBuf>>,
-    session: &LocalImportSession,
+    scope: AliasScope,
+    session: &mut LocalImportSession,
 ) {
     let mut seen = FxHashSet::default();
     let mut missing = Vec::new();
+    let cached = session.alias_targets(scope);
     for import in imports {
-        if alias_targets.contains_key(&import.specifier) || !seen.insert(import.specifier.clone()) {
+        if cached.is_some_and(|targets| targets.contains_key(&import.specifier))
+            || !seen.insert(import.specifier.clone())
+        {
             continue;
         }
         missing.push(import.specifier.clone());
@@ -178,8 +312,9 @@ fn resolve_alias_misses(
         );
         (specifier, resolved)
     });
+    let targets = session.alias_targets_mut(scope);
     for (specifier, resolved) in resolved {
-        alias_targets.entry(specifier).or_insert(resolved);
+        targets.entry(specifier).or_insert(resolved);
     }
 }
 
@@ -302,60 +437,18 @@ fn package_probe(session: &LocalImportSession) -> Option<fn()> {
 }
 
 /// `std::thread` so `RAYON_NUM_THREADS=1` cannot serialize independent lookups.
+/// Map `items` on the shared pool, in order. The map runs on the caller for a
+/// single item, since nothing would overlap.
 fn map_concurrent<T, U, F>(items: Vec<T>, map: F) -> Vec<U>
 where
     T: Send,
     U: Send,
-    F: Fn(T) -> U + Sync,
+    F: Fn(T) -> U + Sync + Send,
 {
-    let count = items.len();
-    if count <= 1 {
+    if items.len() <= 1 {
         return items.into_iter().map(map).collect();
     }
-    let workers = std::thread::available_parallelism()
-        .map(|parallelism| parallelism.get())
-        .unwrap_or(1)
-        .min(count);
-    if workers <= 1 {
-        return items.into_iter().map(map).collect();
-    }
-    let mut chunks = Vec::with_capacity(workers);
-    for _ in 0..workers {
-        chunks.push(Vec::new());
-    }
-    let mut leftover = Vec::new();
-    for (index, item) in items.into_iter().enumerate() {
-        if let Some(chunk) = chunks.get_mut(index % workers) {
-            chunk.push((index, item));
-        } else {
-            leftover.push((index, item));
-        }
-    }
-    let mut indexed = std::thread::scope(|scope| {
-        let mut handles = Vec::with_capacity(chunks.len());
-        for chunk in chunks {
-            handles.push(scope.spawn(|| {
-                chunk
-                    .into_iter()
-                    .map(|(index, item)| (index, map(item)))
-                    .collect::<Vec<_>>()
-            }));
-        }
-        handles
-            .into_iter()
-            .map(|handle| handle.join())
-            .collect::<Vec<_>>()
-    });
-    let mut rows = Vec::with_capacity(count);
-    for part in indexed.drain(..) {
-        match part {
-            Ok(part) => rows.extend(part),
-            Err(payload) => std::panic::resume_unwind(payload),
-        }
-    }
-    rows.extend(leftover.into_iter().map(|(index, item)| (index, map(item))));
-    rows.sort_by_key(|(index, _)| *index);
-    rows.into_iter().map(|(_, value)| value).collect()
+    items.into_par_iter().map(map).collect()
 }
 
 #[cfg(test)]

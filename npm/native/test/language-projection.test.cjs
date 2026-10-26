@@ -83,6 +83,26 @@ void test("converts independent UTF-8 spaces, preserving CRLF and diagnostic-onl
   );
 });
 
+void test("ASCII projection offsets remain exact at both ends and reject invalid boundaries", () => {
+  const raw = (start, length) =>
+    JSON.stringify({
+      text: "line\r\nend",
+      extension: ".tsx",
+      mappings: [[start, length, start, length, 0, 0xfffff]],
+      diagnostics: [],
+    });
+  for (let start = 0; start <= 9; start++) {
+    for (let length = 0; length <= 9 - start; length++) {
+      assert.deepEqual(toUtf16LanguageProjection("line\r\nend", raw(start, length)).mappings, [
+        [start, length, start, length, 0, 0xfffff],
+      ]);
+    }
+  }
+  for (const offset of [-1, 10, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(() => toUtf16LanguageProjection("line\r\nend", raw(offset, 0)), /UTF-8 boundary/);
+  }
+});
+
 void test("aggregates EXPECT across the complete collection and preserves native owner-copy ignores", () => {
   const projection = {
     diagnostics: [],

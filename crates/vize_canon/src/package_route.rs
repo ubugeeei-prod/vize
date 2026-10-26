@@ -5,10 +5,11 @@
 //! cache key, so callers can later extend the identity with module-resolution
 //! conditions without replacing this contract (#4000, #4002).
 
+use std::ffi::{OsStr, OsString};
 use std::path::{Component, Path, PathBuf};
 
 use serde_json::Value;
-use vize_carton::{FxHashMap, cstr};
+use vize_carton::{FxHashMap, FxHashSet, cstr};
 
 mod cache;
 mod candidates;
@@ -83,9 +84,71 @@ impl PackageSourceOptions {
     }
 }
 
+/// One directory listing: the exact names, and the ASCII-lowercased names a
+/// case-insensitive filesystem would still match.
+struct DirectoryListing {
+    names: FxHashSet<OsString>,
+    lowercase: FxHashSet<Vec<u8>>,
+    /// Some entry is not ASCII, so case folding can reach an ASCII probe from
+    /// outside ASCII (`k.ts` matches a Kelvin-sign `K.ts` on APFS).
+    non_ascii: bool,
+}
+
+impl DirectoryListing {
+    /// `None` when the directory cannot be read in full: an entry error would
+    /// leave the listing partial, and a partial listing cannot prove absence.
+    fn read(dir: &Path) -> Option<Self> {
+        let mut names = FxHashSet::default();
+        let mut lowercase = FxHashSet::default();
+        let mut non_ascii = false;
+        for entry in std::fs::read_dir(dir).ok()? {
+            let name = entry.ok()?.file_name();
+            let bytes = name.as_encoded_bytes();
+            non_ascii |= !bytes.is_ascii();
+            lowercase.insert(bytes.to_ascii_lowercase());
+            names.insert(name);
+        }
+        Some(Self {
+            names,
+            lowercase,
+            non_ascii,
+        })
+    }
+
+    /// Whether no entry can match `name` on any filesystem: neither its exact
+    /// spelling nor, for an ASCII name among ASCII entries, one that differs
+    /// only in case. Everything else keeps its stat: a non-ASCII name, since a
+    /// normalization-insensitive filesystem matches more than case; an ASCII
+    /// name beside non-ASCII entries, since case folding can match it to one
+    /// of them; and on Windows a spelling that can open a listed entry under
+    /// another name.
+    fn lacks(&self, name: &OsStr) -> bool {
+        if self.names.contains(name) {
+            return false;
+        }
+        let bytes = name.as_encoded_bytes();
+        if !bytes.is_ascii() || self.non_ascii || (cfg!(windows) && may_alias_on_windows(bytes)) {
+            return false;
+        }
+        !self.lowercase.contains(&bytes.to_ascii_lowercase())
+    }
+}
+
+/// Whether Windows could open a listed entry through this spelling: an 8.3
+/// alias (`LONGFI~1.TS` for `Longfilename1.ts`), a name with trailing dots or
+/// spaces, which Win32 strips before the lookup, or a stream suffix after `:`.
+fn may_alias_on_windows(name: &[u8]) -> bool {
+    name.contains(&b'~')
+        || name.contains(&b':')
+        || name.last().is_some_and(|last| matches!(last, b'.' | b' '))
+}
+
 #[derive(Default)]
 pub(super) struct PackagePathCache {
     paths: FxHashMap<PathBuf, PathBuf>,
+    /// Listed directories, so a probe for an absent entry costs no syscall.
+    /// `None` is a directory that could not be read; its probes stat.
+    listings: FxHashMap<PathBuf, Option<DirectoryListing>>,
     #[cfg(test)]
     canonicalizations: usize,
 }
@@ -93,11 +156,47 @@ pub(super) struct PackagePathCache {
 impl PackagePathCache {
     fn clear(&mut self) {
         self.paths.clear();
+        self.listings.clear();
+    }
+
+    /// `path.is_file()`, answered from the parent listing when the entry is
+    /// absent. A listed entry is still checked on disk.
+    pub(super) fn is_file(&mut self, path: &Path) -> bool {
+        !self.absent(path) && path.is_file()
+    }
+
+    /// Whether a listed ancestor proves that `path` cannot exist.
+    fn absent(&mut self, path: &Path) -> bool {
+        let mut child = path;
+        for ancestor in path.ancestors().skip(1) {
+            let Some(name) = child.file_name() else {
+                return false;
+            };
+            match self.listing(ancestor) {
+                Some(listing) => return listing.lacks(name),
+                None => child = ancestor,
+            }
+        }
+        false
+    }
+
+    fn listing(&mut self, dir: &Path) -> Option<&DirectoryListing> {
+        if !self.listings.contains_key(dir) {
+            let listing = DirectoryListing::read(dir);
+            self.listings.insert(dir.to_path_buf(), listing);
+        }
+        self.listings.get(dir).and_then(Option::as_ref)
     }
 
     fn canonicalize(&mut self, path: &Path) -> PathBuf {
         if let Some(cached) = self.paths.get(path) {
             return cached.clone();
+        }
+        // An entry its parent does not list fails realpath; skip the syscall.
+        if self.absent(path) {
+            let normalized = vize_carton::path::normalize_windows_verbatim_path(path.to_path_buf());
+            self.paths.insert(path.to_path_buf(), normalized.clone());
+            return normalized;
         }
         #[cfg(test)]
         {

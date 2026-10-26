@@ -5,32 +5,21 @@ const { vueComponentDisplayParts } = require("./component-contracts.cjs");
 const { resolveVueImportDefinition } = require("./import-resolution.cjs");
 const { createMappedLanguageService } = require("./language-service.cjs");
 const { installVueVirtualModules, isSfc } = require("./virtual-modules.cjs");
+const externalFiles = new WeakMap();
+const inactiveProjects = new WeakSet();
 
 function init({ typescript: ts }) {
   return {
-    getExternalFiles(project) {
+    getExternalFiles(project, updateLevel = 0) {
+      if (inactiveProjects.has(project)) return [];
       const configFile = project.getCompilerOptions?.().configFilePath;
       if (typeof configFile !== "string") return [];
-      const config = ts.readConfigFile(configFile, ts.sys.readFile);
-      if (config.error) return [];
-      const enabled = config.config.compilerOptions?.plugins?.find(
-        (plugin) => plugin.name === "@vizejs/typescript-vue-plugin",
-      );
-      if (enabled?.enabled === false) return [];
-      const parsed = ts.parseJsonConfigFileContent(
-        config.config,
-        ts.sys,
-        path.dirname(configFile),
-        undefined,
-        configFile,
-        undefined,
-        [".vue", ".art"].map((extension) => ({
-          extension,
-          isMixedContent: true,
-          scriptKind: ts.ScriptKind.Deferred,
-        })),
-      );
-      return parsed.fileNames.filter((file) => /\.(?:vue|art)$/i.test(file));
+      // ProgramUpdateLevel.Update keeps the root names and options unchanged.
+      const cached = externalFiles.get(project);
+      if (updateLevel === 0 && cached?.configFile === configFile) return cached.files;
+      const files = discoverSfcFiles(ts, configFile);
+      externalFiles.set(project, { configFile, files });
+      return files;
     },
     create(info) {
       if (info?.config?.enabled === false || !info?.languageService) {
@@ -38,6 +27,12 @@ function init({ typescript: ts }) {
       }
       try {
         const support = createVueImportSupport(ts, info);
+        // Without an installed provider (the universal VSIX), leave tsserver untouched.
+        if (support?.virtual?.engine?.unavailable) {
+          if (info.project) inactiveProjects.add(info.project);
+          logPluginError(info, "native provider", support.virtual.engine.error);
+          return info.languageService;
+        }
         return support
           ? createLanguageServiceProxy(
               ts,
@@ -51,6 +46,30 @@ function init({ typescript: ts }) {
       }
     },
   };
+}
+
+function discoverSfcFiles(ts, configFile) {
+  const config = ts.readConfigFile(configFile, ts.sys.readFile);
+  if (config.error) return [];
+  const parsed = ts.parseJsonConfigFileContent(
+    config.config,
+    ts.sys,
+    path.dirname(configFile),
+    undefined,
+    configFile,
+    undefined,
+    [".vue", ".art"].map((extension) => ({
+      extension,
+      isMixedContent: true,
+      scriptKind: ts.ScriptKind.Deferred,
+    })),
+  );
+  // Parsed options include plugin entries inherited through `extends`.
+  const plugin = parsed.options.plugins?.find(
+    (entry) => entry.name === "@vizejs/typescript-vue-plugin",
+  );
+  if (plugin?.enabled === false) return [];
+  return parsed.fileNames.filter((file) => /\.(?:vue|art)$/i.test(file));
 }
 
 function createVueImportSupport(ts, info) {

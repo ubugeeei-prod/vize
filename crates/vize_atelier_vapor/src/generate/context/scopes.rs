@@ -49,38 +49,57 @@ impl GenerateContext<'_> {
             let Some(scope) = self.for_scopes.get(loops) else {
                 continue;
             };
+            if let Some(binding) = scope
+                .read_overrides
+                .iter()
+                .rev()
+                .find(|binding| name == binding.local.as_str())
+            {
+                return Some(if scope.callback_locals {
+                    binding.local.clone()
+                } else {
+                    binding.path.clone()
+                });
+            }
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
-
-                if let Some(binding) = scope
-                    .read_overrides
-                    .iter()
-                    .rev()
-                    .find(|binding| name == binding.local.as_str())
-                {
-                    return Some(binding.path.clone());
-                }
                 if value_alias.starts_with(['{', '[', '(']) {
                     for binding in parse_destructure_bindings(value_alias.as_str()) {
                         if name == binding.local.as_str() {
-                            return Some(cstr!("{}.value{}", for_var, binding.path));
+                            return Some(if scope.callback_locals {
+                                binding.local
+                            } else {
+                                cstr!("{}.value{}", for_var, binding.path)
+                            });
                         }
                     }
                 } else if name == value_alias.as_str() {
-                    return Some(cstr!("{}.value", for_var));
+                    return Some(if scope.callback_locals {
+                        name.to_compact_string()
+                    } else {
+                        cstr!("{}.value", for_var)
+                    });
                 }
             }
 
             if let Some(ref key_alias) = scope.key_alias
                 && name == key_alias.as_str()
             {
-                return Some(cstr!("_for_key{}.value", scope.depth));
+                return Some(if scope.callback_locals {
+                    name.to_compact_string()
+                } else {
+                    cstr!("_for_key{}.value", scope.depth)
+                });
             }
 
             if let Some(ref index_alias) = scope.index_alias
                 && name == index_alias.as_str()
             {
-                return Some(cstr!("_for_index{}.value", scope.depth));
+                return Some(if scope.callback_locals {
+                    name.to_compact_string()
+                } else {
+                    cstr!("_for_index{}.value", scope.depth)
+                });
             }
         }
 
@@ -165,11 +184,26 @@ impl GenerateContext<'_> {
 
     /// Push a loop scope. A destructured value the textual scanner cannot
     /// follow gets its parsed reads, rooted at the loop item.
-    pub(crate) fn push_for_scope(
+    pub(crate) fn push_for_scope_retained(
+        &mut self,
+        value: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
+        key: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
+        index: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
+    ) {
+        self.push_for_scope_inner(
+            value.map(|node| vize_atelier_core::steps::untyped_for_alias(node.content)),
+            key.map(|node| vize_atelier_core::steps::untyped_for_alias(node.content)),
+            index.map(|node| vize_atelier_core::steps::untyped_for_alias(node.content)),
+            [value, key, index],
+        );
+    }
+
+    fn push_for_scope_inner(
         &mut self,
         value_alias: Option<&str>,
         key_alias: Option<&str>,
         index_alias: Option<&str>,
+        retained: [Option<&vize_atelier_core::SimpleExpressionNode<'_>>; 3],
     ) {
         let depth = self.for_scopes.len();
         self.for_scopes.push(ForScope {
@@ -177,9 +211,20 @@ impl GenerateContext<'_> {
             key_alias: key_alias.map(String::new),
             index_alias: index_alias.map(String::new),
             depth,
+            callback_locals: false,
             read_overrides: std::vec::Vec::new(),
         });
-        if let Some(pattern) = value_alias
+        for (node, kind) in retained.into_iter().zip(["item", "key", "index"]) {
+            if let Some(node) = node.filter(|node| node.identifiers.is_some()) {
+                self.resolve_for_parameter_reads(node, &cstr!("_for_{kind}{depth}.value"));
+            }
+        }
+        if retained
+            .first()
+            .copied()
+            .flatten()
+            .is_none_or(|node| node.identifiers.is_none())
+            && let Some(pattern) = value_alias
             && pattern.trim_start().starts_with(['{', '['])
             && needs_parsed_reads(pattern)
         {
@@ -199,6 +244,9 @@ pub(crate) struct ForScope {
     pub(crate) index_alias: Option<String>,
     /// Depth of for nesting (0-based)
     pub(crate) depth: usize,
+    /// This scope's key callback receives raw authored locals. Resolve only
+    /// their AST references directly, leaving outer scope reads reactive.
+    pub(in crate::generate) callback_locals: bool,
     /// Parsed reads for value patterns with defaults, computed keys or rest
     /// elements; the last one recorded for a name wins.
     pub(in crate::generate) read_overrides: std::vec::Vec<DestructureBinding>,

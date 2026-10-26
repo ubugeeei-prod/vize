@@ -2,7 +2,7 @@
 mod for_bindings;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
-use vize_l0::{Allocator, Box, CompactString, String, interner::Interner};
+use vize_l0::{Allocator, Box, CompactString, String, Vec, interner::Interner};
 
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
@@ -367,6 +367,18 @@ impl<'a> TransformContext<'a> {
         index_alias: Option<&str>,
         source: &str,
     ) {
+        self.enter_v_for_scope_with_names(value_alias, key_alias, index_alias, source, [None; 3]);
+    }
+
+    pub(crate) fn enter_v_for_scope_with_names(
+        &mut self,
+        value_alias: Option<&str>,
+        key_alias: Option<&str>,
+        index_alias: Option<&str>,
+        source: &str,
+        names: [Option<&[&str]>; 3],
+    ) {
+        let [value_names, key_names, index_names] = names;
         // Scope names are the bound names, without TypeScript annotations.
         let untyped = crate::steps::untyped_for_alias;
         let (value_alias, key_alias, index_alias) = (
@@ -377,11 +389,20 @@ impl<'a> TransformContext<'a> {
         self.scope_chain.enter_v_for_scope(
             VForScopeData {
                 value_alias: CompactString::new(value_alias.unwrap_or("")),
-                value_bindings: value_alias
-                    .map(for_bindings::value_bindings)
-                    .unwrap_or_default(),
-                key_alias: key_alias.map(CompactString::new),
-                index_alias: index_alias.map(CompactString::new),
+                value_bindings: match value_names {
+                    Some(names) => names.iter().map(|name| CompactString::new(name)).collect(),
+                    None => value_alias
+                        .map(for_bindings::value_bindings)
+                        .unwrap_or_default(),
+                },
+                key_alias: match key_names {
+                    Some(names) => names.first().map(|name| CompactString::new(name)),
+                    None => key_alias.map(CompactString::new),
+                },
+                index_alias: match index_names {
+                    Some(names) => names.first().map(|name| CompactString::new(name)),
+                    None => index_alias.map(CompactString::new),
+                },
                 source: CompactString::new(source),
                 key_expression: None,
             },
@@ -526,7 +547,13 @@ pub(super) fn clone_expression<'a>(
                 loc: s.loc.clone(),
                 js_ast: s.js_ast,
                 hoisted: None,
-                identifiers: None,
+                identifiers: s.identifiers.as_ref().map(|names| {
+                    let mut retained = Vec::new_in(&allocator);
+                    for name in names {
+                        retained.push(*name);
+                    }
+                    retained
+                }),
                 is_handler_key: s.is_handler_key,
                 is_ref_transformed: s.is_ref_transformed,
             },

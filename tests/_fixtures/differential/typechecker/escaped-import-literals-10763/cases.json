@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10763,
+  "regressionCommit": "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+  "sourceRevision": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "original-quoted-alias-graph",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
+          "source": "greet.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "quoted-alias-with-authored-type-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.invalid.vue.txt"
+        },
+        {
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
+          "source": "greet.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

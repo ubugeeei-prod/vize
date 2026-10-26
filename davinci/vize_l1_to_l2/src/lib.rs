@@ -67,6 +67,7 @@ extern crate std;
 
 pub mod dialect;
 pub mod emit;
+pub use emit::exceptional_for_binding_names;
 pub mod exemptions;
 mod expression_coordinates;
 pub mod key;

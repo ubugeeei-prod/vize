@@ -3,7 +3,7 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::id::NodeId;
-use vize_l0::{FxHashSet, String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 use vize_l1_to_l2::lower::WrapperKey;
 use vize_l1_to_l2::{TransformContent, decode_template_entities};
 use vize_l2::expr::ExprRef;
@@ -12,7 +12,6 @@ use vize_l2::op::{self as l2, DynamicName};
 use super::vnode::array;
 use super::{Emitter, Result};
 use crate::codegen::element::props::quoted_js_string;
-use crate::codegen::helpers::extract_destructure_params;
 use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 use crate::l4::{AdmissionFailure, LegacyReason};
 
@@ -139,12 +138,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let aliases: std::vec::Vec<&str> =
             [Some(value), key, index].into_iter().flatten().collect();
 
-        let mark = self.exprs.enter_for([Some(value), key, index]);
-        let mut params = FxHashSet::default();
-        for alias in &aliases {
-            extract_destructure_params(alias.trim(), &mut params);
-        }
-        self.scoped_params.push(params);
+        let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
         let body = self.vnode_for_body(fact, &for_op.region.ops);
         self.scoped_params.pop();
         self.exprs.leave(mark);
