@@ -1,0 +1,210 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10661,
+  "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "original-from",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "original-from/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "all-keyword-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "all-keyword-props/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-contextual-locals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "authored-contextual-locals/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-prop-shadow-imports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "authored-prop-shadow-imports/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reactive-prop-destructure",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "reactive-prop-destructure/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "const-enum-import",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "const-enum-import/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-identities",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "unicode-identities/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-ts2552-retained",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "authored-ts2552-retained/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Route.vue",
+          "line": 3,
+          "column": 6,
+          "severity": 1,
+          "code": 2552,
+          "message": "Cannot find name 'localNmae'. Did you mean 'localName'?"
+        }
+      ]
+    },
+    {
+      "id": "non-colliding-keyword-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "non-colliding-keyword-props/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-undefined-shadow",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dep.ts",
+          "source": "dep.ts.txt"
+        },
+        {
+          "file": "src/Route.vue",
+          "source": "authored-undefined-shadow/src/Route.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -169,7 +169,7 @@ pub(crate) fn compile_template_block_with_capture(
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
             if let Some(capture) = capture {
-                vize_atelier_ssr::compile_ssr_with_sfc_context_and_capture(
+                vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture(
                     allocator,
                     &template.content,
                     ssr_opts,
@@ -177,10 +177,11 @@ pub(crate) fn compile_template_block_with_capture(
                     custom_elements.clone(),
                     ssr_experimental_options,
                     ssr_context,
+                    codegen_options,
                     capture,
                 )
             } else {
-                vize_atelier_ssr::compile_ssr_with_sfc_context(
+                vize_atelier_ssr::compile_ssr_with_sfc_context_and_codegen_options(
                     allocator,
                     &template.content,
                     ssr_opts,
@@ -188,6 +189,7 @@ pub(crate) fn compile_template_block_with_capture(
                     custom_elements.clone(),
                     ssr_experimental_options,
                     ssr_context,
+                    codegen_options,
                 )
             }
         );

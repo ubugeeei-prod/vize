@@ -95,7 +95,7 @@ pub(super) fn emit_setup_helpers(
     ts: &mut String,
     component_context: SetupHelperComponentContext<'_>,
     script_content: Option<&str>,
-    generic_param: Option<&str>,
+    generic_param: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
     hoist_shared_preamble: bool,
     template_ast: Option<&RootNode<'_>>,
 ) -> bool {

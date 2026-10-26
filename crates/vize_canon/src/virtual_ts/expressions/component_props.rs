@@ -35,6 +35,10 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) offset: u32,
     pub(crate) scopes: &'a ScopeChain,
     pub(crate) model_modifiers: Option<&'a super::model_modifiers::ModelModifierBindings>,
+    pub(crate) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
+    inference_only: bool,
+    expected_packet: bool,
 }
 
 impl<'a> ComponentPropSource<'a> {
@@ -48,6 +52,9 @@ impl<'a> ComponentPropSource<'a> {
             offset,
             scopes,
             model_modifiers: None,
+            diagnostic_ownership: None,
+            inference_only: false,
+            expected_packet: false,
         }
     }
 
@@ -58,9 +65,90 @@ impl<'a> ComponentPropSource<'a> {
         self.model_modifiers = Some(bindings);
         self
     }
+
+    pub(crate) const fn with_diagnostic_ownership<'b>(
+        self,
+        ownership: Option<
+            &'b crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
+    ) -> ComponentPropSource<'b>
+    where
+        'a: 'b,
+    {
+        ComponentPropSource {
+            template: self.template,
+            offset: self.offset,
+            scopes: self.scopes,
+            model_modifiers: self.model_modifiers,
+            diagnostic_ownership: ownership,
+            inference_only: self.inference_only,
+            expected_packet: self.expected_packet,
+        }
+    }
+
+    pub(crate) const fn with_expected_packet(mut self, expected: bool) -> Self {
+        self.expected_packet = expected;
+        self
+    }
+
+    pub(crate) fn value_source_range(self, prop: &PassedProp) -> Option<std::ops::Range<usize>> {
+        prop_value_source_range(self, prop)
+    }
+
+    pub(crate) const fn inference_only(mut self) -> Self {
+        self.inference_only = true;
+        self
+    }
+
+    pub(super) const fn is_inference_only(self) -> bool {
+        self.inference_only
+    }
+
+    pub(crate) fn record_prop_projection(
+        self,
+        usage: &ComponentUsage,
+        prop: &PassedProp,
+        name: std::ops::Range<usize>,
+        value: std::ops::Range<usize>,
+    ) {
+        use crate::virtual_ts::diagnostic_ownership::{InputOwner, InputRole};
+        let Some(collector) = self.diagnostic_ownership else {
+            return;
+        };
+        let ordinary_owner = InputOwner::for_prop(usage, prop);
+        let Some(owner) = ordinary_owner.or_else(|| {
+            self.expected_packet
+                .then(|| InputOwner::for_expected_projection(usage, prop))
+                .flatten()
+        }) else {
+            return;
+        };
+        let name_source = prop_name_source_range(self, prop);
+        let value_source = prop_value_source_range(self, prop).or_else(|| name_source.clone());
+        // Do not retain a RefCell borrow while another emitter runs.
+        let mut ledger = collector.borrow_mut();
+        let mut record = |owner, generated, source| {
+            if ordinary_owner.is_some() {
+                ledger.record(owner, generated, source, self.inference_only);
+            } else {
+                // The root relocation proof classifies the callback's creation.
+                // Its contextual body still owns diagnostics; this record only
+                // prevents an inference mapping from widening authored EXPECT.
+                ledger.record_expect_geometry(owner, generated, source, self.inference_only);
+            }
+        };
+        if let Some(source) = name_source {
+            record(owner.with_role(InputRole::Name), name, source);
+        }
+        if let Some(source) = value_source {
+            record(owner, value, source);
+        }
+    }
 }
 
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {
+    pub(crate) inference_prelude:
+        Option<&'a std::cell::RefCell<super::super::scope::RootOwnerBuffer>>,
     pub(crate) ts: &'b mut String,
     pub(crate) mappings: &'b mut Vec<VizeMapping>,
     pub(crate) template_binding_access: &'a TemplateBindingAccess,
@@ -79,6 +167,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
         indent: &'b str,
     ) -> Self {
         Self {
+            inference_prelude: None,
             ts,
             mappings,
             template_binding_access,
@@ -182,15 +271,35 @@ pub(crate) fn generate_component_prop_checks(
     } else {
         String::from(indent)
     };
-    let resolved_props = super::callback_prop_resolution::generate_callback_props_resolution(
-        ts,
-        usage,
-        idx,
-        component_ref,
-        template_binding_access,
-        source_context,
-        callback_indent.as_str(),
-    );
+    let resolve = |text: &mut String, source_context| {
+        super::callback_prop_resolution::generate_callback_props_resolution(
+            text,
+            usage,
+            idx,
+            component_ref,
+            template_binding_access,
+            source_context,
+            callback_indent.as_str(),
+        )
+    };
+    let resolved_props = if let Some(prelude) = ctx.inference_prelude {
+        let mut prelude = prelude.borrow_mut();
+        let super::super::scope::RootOwnerBuffer {
+            text,
+            diagnostic_ownership,
+            ..
+        } = &mut *prelude;
+        resolve(
+            text,
+            source_context.with_diagnostic_ownership(
+                source_context
+                    .diagnostic_ownership
+                    .map(|_| &*diagnostic_ownership),
+            ),
+        )
+    } else {
+        resolve(ts, source_context)
+    };
     let mut name_occurrences: FxHashMap<String, u32> = FxHashMap::default();
     for prop in &usage.props {
         if !is_checkable_prop(prop) && !crate::virtual_ts::scope::is_inline_ref_callback_prop(prop)
@@ -281,6 +390,7 @@ pub(crate) fn generate_component_prop_checks(
             // (TS2322-class), which vue-tsc anchors at the attribute name;
             // the initializer keeps the exact authored expression so errors
             // inside the value land on the authored bytes.
+            let diagnostic_value_span = value_span.clone();
             let name_src_range = prop_name_source_range(source_context, prop);
             let mut sub_spans = Vec::new();
             if let Some(src_range) = name_src_range.or_else(|| value_src_range.clone()) {
@@ -304,6 +414,12 @@ pub(crate) fn generate_component_prop_checks(
                 src_range: prop_src_start..prop_src_end,
                 sub_spans,
             });
+            source_context.record_prop_projection(
+                usage,
+                prop,
+                check_name_start..check_name_end,
+                diagnostic_value_span,
+            );
             if strict_v_model
                 && super::model_update::is_model_prop(usage, prop)
                 && let Some(target_source) = value_src_range

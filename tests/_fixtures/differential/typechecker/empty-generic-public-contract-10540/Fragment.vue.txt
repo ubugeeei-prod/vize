@@ -1,0 +1,1 @@
+<!-- @inferComponentDollarEl true --><script setup lang="ts" generic></script><template><a /><img /></template>

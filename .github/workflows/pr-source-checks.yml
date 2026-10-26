@@ -199,6 +199,9 @@ jobs:
     timeout-minutes: 15
     env:
       CARGO_BUILD_JOBS: "12"
+      VIZE_NATIVE_RUST_TOOLCHAIN: "1.99.1"
+      VIZE_NATIVE_RUST_COMPONENTS: clippy,rust-src,rustfmt
+      VIZE_NATIVE_RUST_TARGETS: wasm32-unknown-unknown,wasm32-wasip2
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - name: Explain unrelated skip
@@ -219,7 +222,36 @@ jobs:
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ matrix.lane != 'none' }}
-        with: { toolchain: "1.99.1" }
+        with:
+          toolchain: ${{ env.VIZE_NATIVE_RUST_TOOLCHAIN }}
+          components: ${{ env.VIZE_NATIVE_RUST_COMPONENTS }}
+          targets: ${{ env.VIZE_NATIVE_RUST_TARGETS }}
+      - name: Verify configured native runtime toolchain
+        if: ${{ matrix.lane != 'none' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Verify the repository toolchain setup here, before a Cargo proxy can
+          # implicitly download missing components inside a runtime test step.
+          host=$(rustup run "$VIZE_NATIVE_RUST_TOOLCHAIN" rustc --version --verbose | sed -n 's/^host: //p')
+          test -n "$host"
+          components=$(rustup component list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
+          targets=$(rustup target list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
+          printf '%s\n' "$components" "$targets"
+          IFS=',' read -r -a required_components <<< "$VIZE_NATIVE_RUST_COMPONENTS"
+          for component in "${required_components[@]}"; do
+            if ! grep -Fxq -- "$component" <<< "$components" && ! grep -Fxq -- "$component-$host" <<< "$components"; then
+              echo "::error::Missing configured Rust component: $component" >&2
+              exit 1
+            fi
+          done
+          IFS=',' read -r -a required_targets <<< "$VIZE_NATIVE_RUST_TARGETS"
+          for target in "${required_targets[@]}"; do
+            if ! grep -Fxq -- "$target" <<< "$targets"; then
+              echo "::error::Missing configured Rust target: $target" >&2
+              exit 1
+            fi
+          done
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ matrix.lane != 'none' }}
         with: { wild-version: "0.9.0" }

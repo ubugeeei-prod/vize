@@ -20,6 +20,28 @@ use support::fix_history_observation as observation;
 use support::fix_history_paths::{link_vue, safe_relative};
 
 #[test]
+fn contextual_prop_anchors_preserve_authored_diagnostics() {
+    check_pack(
+        "contextual-prop-anchors-10661",
+        "contextual_prop_anchors_preserve_authored_diagnostics",
+        "da6d833de40c8a084022d0229beaeec25a92eb41",
+        Some(10661),
+        &[
+            "original-from",
+            "all-keyword-props",
+            "authored-contextual-locals",
+            "authored-prop-shadow-imports",
+            "reactive-prop-destructure",
+            "const-enum-import",
+            "unicode-identities",
+            "authored-ts2552-retained",
+            "non-colliding-keyword-props",
+            "authored-undefined-shadow",
+        ],
+    );
+}
+
+#[test]
 fn inline_event_assignments_preserve_exact_diagnostics() {
     check_pack(
         "event-handler-narrowing",
@@ -455,6 +477,49 @@ fn generic_constructor_intersections_preserve_slot_payloads() {
 }
 
 #[test]
+fn planned_generic_syntax_keeps_independent_body_errors_through_repairs() {
+    check_pack(
+        "planned-generic-syntax-route-10598",
+        "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
+        "957827706dd439d9810a24f65b4a16c45f266b5e",
+        Some(10598),
+        &[
+            "lf-valid-generic-body-error",
+            "lf-broken-generic-body-error",
+            "lf-repaired-generic-body-error",
+            "lf-both-repaired",
+            "crlf-valid-generic-body-error",
+            "crlf-broken-generic-body-error",
+            "crlf-repaired-generic-body-error",
+            "crlf-both-repaired",
+            "unicode-lf-valid-generic-body-error",
+            "unicode-lf-broken-generic-body-error",
+            "unicode-lf-repaired-generic-body-error",
+            "unicode-lf-both-repaired",
+            "unicode-crlf-valid-generic-body-error",
+            "unicode-crlf-broken-generic-body-error",
+            "unicode-crlf-repaired-generic-body-error",
+            "unicode-crlf-both-repaired",
+        ],
+    );
+}
+
+#[test]
+fn quoted_generic_parameters_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "quoted-generic-parameters-10540",
+        "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+        "711b56b2499b9136d8965a59c65713a2b78540f4",
+        Some(10540),
+        &[
+            "literal-comma-valid",
+            "numeric-prop-invalid",
+            "repaired-literal-prop-valid",
+        ],
+    );
+}
+
+#[test]
 fn content_mapper_global_components_preserve_batch_acceptance() {
     check_pack(
         "content-mapper-global-component-10185",
@@ -758,6 +823,45 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
     );
 }
 
+#[test]
+fn slot_host_guards_preserve_authored_impossible_comparisons() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "narrowed-slot-host-guard-10660",
+        "slot_host_guards_preserve_authored_impossible_comparisons",
+        "da6d833de40c8a084022d0229beaeec25a92eb41",
+        Some(10660),
+        &["explicit-default", "authored-impossible-comparison"],
+    );
+}
+
+#[test]
+fn empty_generic_markers_preserve_functional_public_contracts() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "empty-generic-public-contract-10540",
+        "empty_generic_markers_preserve_functional_public_contracts",
+        "4fdc457df6498c4636efb35dd76af61394ad7006",
+        Some(10540),
+        &["frozen-root-element-contract"],
+    );
+}
+
+#[test]
+fn missing_exported_package_target_preserves_ts2307() {
+    check_pack(
+        "package-target-deletion-refresh",
+        "missing_exported_package_target_preserves_ts2307",
+        "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+        None,
+        &["missing-target"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -785,7 +889,10 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "typed-import-meta"
+            "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
+            "template-context-undefined-10667"
+            | "contextual-prop-anchors-10661"
+            | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
             | "authored-unused-symbols"
@@ -841,7 +948,12 @@ fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
-            | "unicode-prop-bindings-10573" => regression,
+            | "quoted-generic-parameters-10540"
+            | "planned-generic-syntax-route-10598"
+            | "unicode-prop-bindings-10573"
+            | "narrowed-slot-host-guard-10660"
+            | "empty-generic-public-contract-10540"
+            | "component-input-diagnostic-owners-10607" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -905,6 +1017,16 @@ fn check_pack(
             std::fs::create_dir(project_root.join("node_modules"))
                 .expect("node_modules must be created");
             link_vue(&vue, &project_root.join("node_modules/vue"));
+            if name == "empty-generic-public-contract-10540" {
+                let helpers = std::fs::canonicalize(
+                    root.join("tests/node_modules/vue-component-type-helpers"),
+                )
+                .expect("the pinned real public component type helpers must be installed");
+                link_vue(
+                    &helpers,
+                    &project_root.join("node_modules/vue-component-type-helpers"),
+                );
+            }
         }
         for input in &case.inputs {
             let file = safe_relative(&input.file);
@@ -1193,5 +1315,35 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
             "reserved-hyphen-ascii",
             "unicode-continue",
         ],
+    );
+}
+
+#[test]
+fn component_input_copies_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "component-input-diagnostic-owners-10607",
+        "component_input_copies_preserve_complete_authored_diagnostics",
+        "bd905e766c37ad5bacabaacbec02c90def36726e",
+        Some(10607),
+        &[
+            "art-generic-form-invalid",
+            "art-generic-form-repaired",
+            "slot-prop-without-children-invalid",
+            "slot-prop-named-child-invalid",
+            "slot-prop-two-named-children-invalid",
+            "slot-prop-named-child-repaired",
+            "two-files-same-offset-invalid",
+        ],
+    );
+}
+
+#[test]
+fn undefined_context_keeps_complete_authored_diagnostics() {
+    check_pack(
+        "template-context-undefined-10667",
+        "undefined_context_keeps_complete_authored_diagnostics",
+        "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+        Some(10667),
+        &["prop-used"],
     );
 }

@@ -172,7 +172,7 @@ pub(super) fn generate_inferred_emit_args(
                 mappings,
                 &usage,
                 ctx.template_binding_access,
-                ctx.source_context,
+                ctx.source_context.inference_only(),
                 call_indent,
             );
             ts.push_str(");\n");
@@ -249,6 +249,12 @@ pub(super) fn generate_inferred_emit_args(
                         value_start..entry_end,
                     ),
                 });
+                ctx.source_context.inference_only().record_prop_projection(
+                    &usage,
+                    prop,
+                    entry_start..key_end,
+                    value_start..entry_end,
+                );
                 if !ctx.template_binding_access.is_empty()
                     && prop.is_dynamic
                     && !is_inline_callback_prop(prop)

@@ -32,7 +32,8 @@ impl MaestroServer {
             if !ctx.is_in_style() {
                 return Ok(None);
             }
-            let mut response = HoverService::hover(&ctx);
+            let mut response =
+                HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx));
             if let Some(lint) = self.get_lint_hover_at_position(uri, position) {
                 response = Some(Self::merge_hover_with_lint(response, lint));
             }
@@ -106,14 +107,15 @@ impl MaestroServer {
 
         #[cfg(feature = "native")]
         let mut hover_result: Option<Hover> = if ctx.is_in_style() {
-            HoverService::hover(&ctx)
+            HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx))
         } else {
             let corsa_bridge = self.state.get_corsa_bridge().await;
             HoverService::hover_with_corsa(&ctx, corsa_bridge).await
         };
 
         #[cfg(not(feature = "native"))]
-        let mut hover_result: Option<Hover> = HoverService::hover(&ctx);
+        let mut hover_result: Option<Hover> =
+            HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx));
 
         let lint_hover = self.get_lint_hover_at_position(uri, position);
         if let Some(lint_info) = lint_hover {

@@ -161,6 +161,7 @@ impl AliasContext {
             union.query_paths.dedup();
             let current = mirror
                 .materialize_editor_union(
+                    &previous,
                     &union.files,
                     &union.package_links,
                     &union.query_paths,

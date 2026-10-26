@@ -133,6 +133,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         &descriptor,
         options,
         VueCodegenOptions {
+            diagnostic_ownership: None,
             check_options: VirtualTsCheckOptions::default(),
             typed_router_root: None,
             preserve_unused_diagnostics: false,

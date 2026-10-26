@@ -54,7 +54,7 @@ export default defineComponent({
         assert!(
             output
                 .code
-                .contains(&format!("var {name}: __U<__R_{name}> = undefined as any;")),
+                .contains(&format!("var {name}: __U<__R_{name}> = (void 0) as any;")),
             "setup spread template reference should be declared in template scope:\n{}",
             output.code
         );

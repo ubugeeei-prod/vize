@@ -21,6 +21,34 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
     context: SsrSfcContext,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner_captured_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        "vue",
+        capture,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC metadata, generated runtime and capture"
+)]
+pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    runtime_module_name: &str,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     #[cfg(feature = "legacy-differential")]
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
@@ -34,6 +62,7 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
         experimental_options,
         context,
         lane,
+        runtime_module_name,
         capture,
     )
 }
@@ -51,6 +80,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     experimental_options: SsrCompilerExperimentalOptions,
     context: SsrSfcContext,
     lane: SsrLane,
+    runtime_module_name: &str,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     capture.effective_option("template_syntax", || cstr!("{template_syntax:?}"));
@@ -109,6 +139,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 options: &options,
                 experimental: &experimental_options,
                 context,
+                runtime_module_name,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
                 frozen: Some((&root, &frozen_elements)),
@@ -187,6 +218,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 experimental_options,
             );
             codegen_ctx.apply_sfc_context(context);
+            codegen_ctx.set_runtime_module_name(runtime_module_name);
             let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
             capture.finish(|| {
                 let reason = legacy_reason

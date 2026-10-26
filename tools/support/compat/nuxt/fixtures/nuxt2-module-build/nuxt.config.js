@@ -1,8 +1,9 @@
 export default {
   modules: ["@vizejs/nuxt"],
+  build: { loaders: { imgUrl: { limit: 0 } } },
   vize: {
-    compiler: false,
-    lint: false,
+    lint: { autoInit: false },
+    checker: { include: ["components/**/*.vue"] },
     musea: false,
   },
 };

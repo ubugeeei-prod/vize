@@ -190,7 +190,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context,
+        source_context.inference_only(),
         indent,
     );
     if usage.vif_guard.is_some() {
@@ -201,6 +201,13 @@ pub(crate) fn generate_slot_host_binding(
         ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
     );
     if let Some(guard) = isolated_guard.as_ref() {
+        // The constructor's props literal inserts a newline. The factory's
+        // repeated guard needs its own physical-line suppression: it can be
+        // impossible in the already narrowed outer branch (#10660).
+        append!(
+            *ts,
+            "\n{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n{indent}"
+        );
         let guard = guard.as_str();
         append!(*ts, "({guard}) ? ");
     }
@@ -209,7 +216,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context,
+        source_context.inference_only(),
         indent,
     );
     if usage.vif_guard.is_some() {

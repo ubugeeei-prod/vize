@@ -1,0 +1,6 @@
+/*🧭*/function probe<T extends>() {
+const independent: number = 'bad';
+void independent;
+const genericValue: T | undefined = undefined;
+void genericValue;
+}

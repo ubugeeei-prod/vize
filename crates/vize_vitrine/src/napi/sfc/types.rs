@@ -59,6 +59,8 @@ pub struct MacroArtifactNapi {
 #[derive(Default)]
 pub struct SfcParseOptionsNapi {
     pub filename: Option<String>,
+    /// Include effective parser attributes in authored name order.
+    pub include_attrs: Option<bool>,
 }
 
 #[napi(object)]
@@ -80,8 +82,13 @@ pub struct SfcCompileOptionsNapi {
     pub experimental_self_component: Option<bool>,
     pub experimental_strict_slot_children: Option<bool>,
     pub experimental_server_script: Option<bool>,
+    /// Source of compiler-generated Vue helper imports. Authored module imports
+    /// and the SSR renderer module retain their independently selected sources.
     pub runtime_module_name: Option<String>,
+    /// Runtime global expression for standalone (`mode: "function"`) output.
     pub runtime_global_name: Option<String>,
+    /// Runtime dialect selector; omitted or "3" uses Vue 3.
+    /// Legacy selectors are rejected until their native runtime backend is available.
     pub vue_version: Option<String>,
     pub style_trim: Option<bool>,
     pub template_cache_handlers: Option<bool>,
@@ -171,8 +178,13 @@ pub struct BatchCompileOptionsNapi {
     pub experimental_self_component: Option<bool>,
     pub experimental_strict_slot_children: Option<bool>,
     pub experimental_server_script: Option<bool>,
+    /// Source of compiler-generated Vue helper imports. Authored module imports
+    /// and the SSR renderer module retain their independently selected sources.
     pub runtime_module_name: Option<String>,
+    /// Runtime global expression for standalone (`mode: "function"`) output.
     pub runtime_global_name: Option<String>,
+    /// Runtime dialect selector; omitted or "3" uses Vue 3.
+    /// Legacy selectors are rejected until their native runtime backend is available.
     pub vue_version: Option<String>,
     pub style_trim: Option<bool>,
     pub template_cache_handlers: Option<bool>,

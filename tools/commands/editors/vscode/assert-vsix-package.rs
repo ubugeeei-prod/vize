@@ -19,6 +19,7 @@ use std::{
 
 use vize_tool_support::common;
 use vize_tool_support::editors::archive as editor_archive;
+use vize_tool_support::editors::vsix_configuration::assert_configuration_defaults;
 
 fn main() -> ExitCode {
     common::main_result(run())
@@ -400,55 +401,6 @@ fn assert_grammar(
             return Err(format!(
                 "grammar {language} missing embedded language {scope}"
             ));
-        }
-    }
-    Ok(())
-}
-
-fn assert_configuration_defaults(package_json: &Value) -> Result<(), String> {
-    let properties = package_json
-        .pointer("/contributes/configuration/properties")
-        .and_then(Value::as_object)
-        .ok_or_else(|| "missing contributes.configuration.properties".to_string())?;
-    if properties
-        .get("vize.enable")
-        .and_then(|value| value.get("default"))
-        .and_then(Value::as_bool)
-        != Some(true)
-    {
-        return Err("vize.enable has an unexpected default".to_string());
-    }
-    assert_json_string(
-        properties
-            .get("vize.serverPath")
-            .ok_or("missing vize.serverPath")?,
-        &["default"],
-        "",
-    )?;
-    assert_json_string(
-        properties
-            .get("vize.trace.server")
-            .ok_or("missing vize.trace.server")?,
-        &["default"],
-        "off",
-    )?;
-    for (key, property) in properties {
-        if key == "vize.serverPath"
-            || key == "vize.trace.server"
-            || (key.starts_with("vize.autoInsert.") && key != "vize.autoInsert.enable")
-        {
-            continue;
-        }
-        let expected = !matches!(
-            key.as_str(),
-            "vize.diagnostics.enable"
-                | "vize.formatting.enable"
-                | "vize.optionsApi.enable"
-                | "vize.legacyVue2.enable"
-                | "vize.autoInsert.enable"
-        );
-        if property.get("default").and_then(Value::as_bool) != Some(expected) {
-            return Err(format!("{key} has an unexpected default"));
         }
     }
     Ok(())

@@ -1,9 +1,9 @@
 //! Public model defaults retain TypeScript's inference in their authored setup scope.
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::{Croquis, ScopeData, macros::ModelDefinition};
+use vize_croquis::{Croquis, macros::ModelDefinition};
 
-use super::{helpers::push_ts_string_literal, props::extract_generic_names};
+use super::{generic_parameters::GenericParameters, helpers::push_ts_string_literal};
 
 pub(crate) fn has_inferred_defaults(summary: &Croquis) -> bool {
     summary
@@ -13,21 +13,18 @@ pub(crate) fn has_inferred_defaults(summary: &Croquis) -> bool {
         .any(|model| model.model_type.is_none() && model.default_value.is_some())
 }
 
-pub(crate) fn model_value_type(summary: &Croquis, model: &ModelDefinition) -> String {
+pub(crate) fn model_value_type(
+    generic_parameters: Option<&GenericParameters>,
+    model: &ModelDefinition,
+) -> String {
     if let Some(ty) = &model.model_type {
         return ty.as_str().into();
     }
     if model.default_value.is_none() {
         return "unknown".into();
     }
-    let arguments = summary
-        .scopes
-        .iter()
-        .find_map(|scope| match scope.data() {
-            ScopeData::ScriptSetup(data) => data.generic.as_deref(),
-            _ => None,
-        })
-        .map(|generic| cstr!("<{}>", extract_generic_names(generic)))
+    let arguments = generic_parameters
+        .map(|generic| cstr!("<{}>", generic.names))
         .unwrap_or_default();
     let mut ty = cstr!("__VizeModelDefaults{arguments}[");
     push_ts_string_literal(&mut ty, model.name.as_str());
@@ -55,7 +52,7 @@ pub(crate) fn emit_defaults_artifact(ts: &mut String, summary: &Croquis, fields:
     fields.push("__vize_model_defaults".into());
 }
 
-pub(crate) fn emit_defaults_type(ts: &mut String, generic_param: Option<&str>) {
+pub(crate) fn emit_defaults_type(ts: &mut String, generic_param: Option<&GenericParameters>) {
     let (declaration, arguments) = super::generator::generics::generic_injection(generic_param)
         .map(|(declaration, names)| (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", "))))
         .unwrap_or_default();

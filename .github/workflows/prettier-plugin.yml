@@ -1,0 +1,69 @@
+name: Prettier plugin consumer
+on:
+  pull_request:
+    paths:
+      - .github/workflows/prettier-plugin.yml
+      - npm/prettier/**
+      - npm/native/**
+      - crates/vize_glyph/**
+      - crates/vize_vitrine/src/napi/format.rs
+      - pnpm-lock.yaml
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: prettier-plugin-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  source-native:
+    name: Prettier CLI and semantics with authenticated source native binding
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version: "24.14.0"
+          run-install: false
+          cache: true
+          cache-save: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          { key: prettier-plugin-native, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install frozen package and native build dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/prettier...' --filter './npm/native...'
+      - name: Build exact source binding and package exports
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(node -p 'process.versions.node')" = 24.14.0
+          vp run --workspace-root build:native:test
+          cd npm/prettier
+          vp check src test vite.config.ts
+          vp pack
+      - name: Check real host options, complete goldens, AST/render semantics and format counts
+        run: node npm/native/scripts/test-preparation.mjs node --test npm/prettier/src/plugin.test.ts
+      - name: Install the tarball in a fresh consumer and exercise actual CLI and configuration
+        run: node npm/native/scripts/test-preparation.mjs node npm/prettier/test/consumer.mjs --mode source-native --output "$RUNNER_TEMP/prettier-source-consumer"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: prettier-source-consumer-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/prettier-source-consumer/*.json
+            ${{ runner.temp }}/prettier-source-consumer/*.tgz
+            ${{ runner.temp }}/prettier-source-consumer/project*/package*.json
+            ${{ runner.temp }}/prettier-source-consumer/project*/prettier.config.mjs
+            ${{ runner.temp }}/prettier-source-consumer/project*/.prettierignore
+            ${{ runner.temp }}/prettier-source-consumer/project*/src/**
+          if-no-files-found: error
+          retention-days: 14

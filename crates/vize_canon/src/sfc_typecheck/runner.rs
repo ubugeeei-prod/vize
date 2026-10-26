@@ -115,7 +115,33 @@ fn type_check_analyzed(
     // Create allocator for template parsing
     let allocator = Allocator::new();
 
+    let generic_parameters = descriptor
+        .script_setup
+        .as_ref()
+        .and_then(|block| block.attrs.get("generic"))
+        .map(|value| value.as_ref())
+        .filter(|value: &&str| !value.trim().is_empty())
+        .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
     let mut has_script_parse_errors = false;
+    if let Some(plan) = &generic_parameters
+        && !plan.diagnostics.is_empty()
+    {
+        let offset =
+            crate::virtual_ts::generic_parameters::authored_generic_range(source, &descriptor)
+                .map_or(0, |range| range.start as u32);
+        has_script_parse_errors = true;
+        add_script_parse_diagnostics(
+            plan.diagnostics
+                .iter()
+                .map(|diagnostic| crate::script_parse::ScriptParseDiagnostic {
+                    message: diagnostic.message.clone(),
+                    start: offset + diagnostic.start,
+                    end: offset + diagnostic.end,
+                })
+                .collect(),
+            &mut result,
+        );
+    }
     if let Some(ref script) = descriptor.script {
         let script_diagnostics = collect_script_parse_diagnostics(
             &script.content,
@@ -284,6 +310,7 @@ fn type_check_analyzed(
             template_offset,
             &crate::virtual_ts::VirtualTsOptions::default(),
             crate::virtual_ts::VirtualTsGenerationOptions {
+                generic_parameters: generic_parameters.as_ref(),
                 legacy_vue2,
                 options_api,
                 preserve_authored_component: options_api,
