@@ -26,6 +26,9 @@ export default {
 };
 "#;
 
+const FORMATTED: &str = "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n";
+const NEEDS_SEMICOLONS: &str = "Found 1 file(s)\nWould reformat: src/main.ts\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n";
+
 struct Project {
     root: PathBuf,
 }
@@ -99,15 +102,16 @@ impl Project {
         }
         let output = command.output().unwrap();
         let stderr = String::from_utf8_lossy(&output.stderr);
-        assert!(
-            matches!(output.status.code(), Some(0 | 1)) && !stderr.contains("Error"),
-            "fmt failed: {stderr}"
-        );
+        // `export const value = 1` is already formatted only without semicolons.
+        let semicolons = match (output.status.code(), stderr.as_ref()) {
+            (Some(0), FORMATTED) => false,
+            (Some(1), NEEDS_SEMICOLONS) => true,
+            result => panic!("unexpected fmt result: {result:?}"),
+        };
         let evaluations = fs::read_to_string(self.root.join("evaluations.log"))
             .unwrap_or_default()
             .len();
-        // `export const value = 1` is already formatted only without semicolons.
-        (output.status.code() == Some(1), evaluations)
+        (semicolons, evaluations)
     }
 }
 
