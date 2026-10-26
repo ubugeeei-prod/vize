@@ -6,17 +6,18 @@ import {
   readFileSync,
   realpathSync,
   symlinkSync,
+  type Dirent,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
-import { readDeclaredPackagePaths } from "./typecheck-baseline-isolation.mjs";
-import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-extends.mjs";
+import { readDeclaredPackagePaths, type ShadowedPackage } from "./typecheck-baseline-isolation.ts";
+import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-extends.ts";
 
 /**
  * Close the remaining type-reference escape when Nuxt (or another generator)
  * bakes `compilerOptions.paths` to a package *outside* the fixture (#4461).
  *
- * `typecheck-baseline-isolation.mjs` will not materialize an outside target —
+ * `typecheck-baseline-isolation.ts` will not materialize an outside target —
  * that would import the contamination. If the fixture's own pnpm store holds
  * exactly one copy of that name, this links that copy instead of walking out to
  * Vize's. Several copies are different Vue peer suffixes: this then picks the
@@ -53,7 +54,10 @@ const vueRuntimePackages = [
 
 const vueRuntimeNestedPackages = ["@vue/runtime-core", "@vue/runtime-dom"];
 
-export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
+export function isolateUniqueLocalTypePackages(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+): ShadowedPackage[] {
   const root = resolve(fixtureRoot);
   return isolateUniqueDeclaredLocalTypePackages(
     root,
@@ -61,7 +65,7 @@ export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   );
 }
 
-export function isolateUniqueVueRuntimePackages(fixtureRoot) {
+export function isolateUniqueVueRuntimePackages(fixtureRoot: string): ShadowedPackage[] {
   return [
     ...isolateUniqueNamedLocalTypePackages(fixtureRoot, vueRuntimePackages),
     ...isolateUniqueStoreLocalTypePackages(fixtureRoot, vueRuntimeNestedPackages),
@@ -69,13 +73,16 @@ export function isolateUniqueVueRuntimePackages(fixtureRoot) {
   ];
 }
 
-export function isolateUniqueVueI18nPackages(fixtureRoot) {
+export function isolateUniqueVueI18nPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["vue-i18n"]);
 }
 
-function isolateUniqueNamedLocalTypePackages(fixtureRoot, names) {
+function isolateUniqueNamedLocalTypePackages(
+  fixtureRoot: string,
+  names: readonly string[],
+): ShadowedPackage[] {
   const root = resolve(fixtureRoot);
-  const declared = new Map();
+  const declared = new Map<string, string>();
   for (const name of names) {
     const ancestor = ancestorPackagePath(root, name);
     if (ancestor == null) continue;
@@ -84,9 +91,12 @@ function isolateUniqueNamedLocalTypePackages(fixtureRoot, names) {
   return isolateUniqueDeclaredLocalTypePackages(root, declared);
 }
 
-function isolateUniqueStoreLocalTypePackages(fixtureRoot, names) {
+function isolateUniqueStoreLocalTypePackages(
+  fixtureRoot: string,
+  names: readonly string[],
+): ShadowedPackage[] {
   const root = resolve(fixtureRoot);
-  const shadowed = [];
+  const shadowed: ShadowedPackage[] = [];
   for (const name of names) {
     const link = join(root, "node_modules", ...name.split("/"));
     if (existsSync(link) || isDanglingLink(link)) continue;
@@ -100,10 +110,13 @@ function isolateUniqueStoreLocalTypePackages(fixtureRoot, names) {
   return shadowed.sort((left, right) => compare(left.name, right.name));
 }
 
-function isolateUniqueDeclaredLocalTypePackages(root, declared) {
+function isolateUniqueDeclaredLocalTypePackages(
+  root: string,
+  declared: ReadonlyMap<string, string>,
+): ShadowedPackage[] {
   if (declared.size === 0) return [];
   const reachable = collectAncestorPackageNames(root);
-  const shadowed = [];
+  const shadowed: ShadowedPackage[] = [];
   for (const [name, target] of [...declared].sort(([left], [right]) => compare(left, right))) {
     if (!reachable.has(name)) continue;
     const link = join(root, "node_modules", name);
@@ -119,15 +132,15 @@ function isolateUniqueDeclaredLocalTypePackages(root, declared) {
   return shadowed;
 }
 
-function findLocalCopies(fixtureRoot, name) {
-  const copies = new Map();
+function findLocalCopies(fixtureRoot: string, name: string): string[] {
+  const copies = new Map<string, string>();
   const store = join(fixtureRoot, "node_modules", ".pnpm");
   const segments = name.split("/");
   for (const entry of readDirectory(store)) {
     if (entry.name.startsWith(".")) continue;
     const packageDir = join(store, entry.name, "node_modules", ...segments);
     if (!isPackageDirectory(packageDir) || !isInside(fixtureRoot, packageDir)) continue;
-    let real;
+    let real: string;
     try {
       real = realpathSync(packageDir);
     } catch {
@@ -139,7 +152,11 @@ function findLocalCopies(fixtureRoot, name) {
   return [...copies.values()].sort(compare);
 }
 
-function selectLocalCopy(fixtureRoot, name, copies) {
+function selectLocalCopy(
+  fixtureRoot: string,
+  name: string,
+  copies: readonly string[],
+): string | null {
   if (copies.length === 1) return copies[0];
   if (copies.length === 0) return null;
   const vueVersion = readFixtureVueVersion(fixtureRoot);
@@ -148,7 +165,7 @@ function selectLocalCopy(fixtureRoot, name, copies) {
   return matched.length === 1 ? matched[0] : null;
 }
 
-function readFixtureVueVersion(fixtureRoot) {
+function readFixtureVueVersion(fixtureRoot: string): string | null {
   const hoisted = readPackageVersion(join(fixtureRoot, "node_modules", "vue"));
   if (hoisted != null) return hoisted;
   const copies = findLocalCopies(fixtureRoot, "vue");
@@ -156,16 +173,23 @@ function readFixtureVueVersion(fixtureRoot) {
   return readPackageVersion(copies[0]);
 }
 
-function readPackageVersion(packageDir) {
+function readPackageVersion(packageDir: string): string | null {
   try {
-    const pkg = JSON.parse(readFileSync(join(packageDir, "package.json"), "utf8"));
+    const pkg = JSON.parse(readFileSync(join(packageDir, "package.json"), "utf8")) as {
+      readonly version?: unknown;
+    };
     return typeof pkg.version === "string" && pkg.version !== "" ? pkg.version : null;
   } catch {
     return null;
   }
 }
 
-function copyMatchesVue(fixtureRoot, name, packageDir, vueVersion) {
+function copyMatchesVue(
+  fixtureRoot: string,
+  name: string,
+  packageDir: string,
+  vueVersion: string,
+): boolean {
   const store = join(fixtureRoot, "node_modules", ".pnpm");
   const relativePath = relative(store, packageDir);
   if (relativePath.startsWith("..") || relativePath.startsWith("/")) return false;
@@ -178,10 +202,10 @@ function copyMatchesVue(fixtureRoot, name, packageDir, vueVersion) {
   return end === id.length || id[end] === "_" || id[end] === "(";
 }
 
-function collectAncestorPackageNames(fixtureRoot) {
-  const names = new Set();
+function collectAncestorPackageNames(fixtureRoot: string): Set<string> {
+  const names = new Set<string>();
   let directory = dirname(fixtureRoot);
-  let previous = null;
+  let previous: string | null = null;
   while (directory !== previous) {
     collectPackageNames(join(directory, "node_modules"), names);
     previous = directory;
@@ -190,7 +214,7 @@ function collectAncestorPackageNames(fixtureRoot) {
   return names;
 }
 
-function collectPackageNames(nodeModules, names) {
+function collectPackageNames(nodeModules: string, names: Set<string>): void {
   for (const entry of readDirectory(nodeModules)) {
     if (entry.name.startsWith(".")) continue;
     if (!entry.name.startsWith("@")) {
@@ -203,7 +227,7 @@ function collectPackageNames(nodeModules, names) {
   }
 }
 
-function readDirectory(directory) {
+function readDirectory(directory: string): Dirent[] {
   try {
     return readdirSync(directory, { withFileTypes: true });
   } catch {
@@ -211,16 +235,16 @@ function readDirectory(directory) {
   }
 }
 
-function isPackageDirectory(target) {
+function isPackageDirectory(target: string): boolean {
   return existsSync(join(target, "package.json"));
 }
 
-function isInside(root, target) {
+function isInside(root: string, target: string): boolean {
   const path = relative(root, target);
   return path !== "" && !path.startsWith("..") && !path.startsWith("/");
 }
 
-function isDanglingLink(link) {
+function isDanglingLink(link: string): boolean {
   try {
     lstatSync(link);
     return true;
@@ -229,19 +253,19 @@ function isDanglingLink(link) {
   }
 }
 
-function compare(left, right) {
+function compare(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-export function isolateUniqueVueUsePackages(fixtureRoot) {
+export function isolateUniqueVueUsePackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@vueuse/core", "@vueuse/shared"]);
 }
 
-export function isolateUniqueNuxtUiPackages(fixtureRoot) {
+export function isolateUniqueNuxtUiPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@nuxt/ui"]);
 }
 
-export function isolateUniqueUiLibraryPackages(fixtureRoot) {
+export function isolateUniqueUiLibraryPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, [
     "@ionic/vue",
     "@nuxt/ui",
@@ -258,21 +282,21 @@ export function isolateUniqueUiLibraryPackages(fixtureRoot) {
   ]);
 }
 
-export function isolateUniqueVueFormPackages(fixtureRoot) {
+export function isolateUniqueVueFormPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@formkit/vue", "vee-validate"]);
 }
 
-export function isolateUniqueVueQueryPackages(fixtureRoot) {
+export function isolateUniqueVueQueryPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, [
     "@tanstack/vue-query",
     "@vue/apollo-composable",
   ]);
 }
 
-export function isolateUniqueVueEditorPackages(fixtureRoot) {
+export function isolateUniqueVueEditorPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@tiptap/vue-3", "@vue-flow/core"]);
 }
 
-export function isolateUniqueVueVisualizationPackages(fixtureRoot) {
+export function isolateUniqueVueVisualizationPackages(fixtureRoot: string): ShadowedPackage[] {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@tresjs/core", "vue-chartjs"]);
 }

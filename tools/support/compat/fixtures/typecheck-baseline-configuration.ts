@@ -2,7 +2,7 @@
  * Detect a `vue-tsc` baseline that never loaded the project it was asked to
  * check (#3513).
  *
- * `typecheck-baseline-project.mjs` materializes the baseline as `files: [...]`
+ * `typecheck-baseline-project.ts` materializes the baseline as `files: [...]`
  * over Vize's exact Vue corpus, extending the fixture's pinned config for its
  * compiler options. That fixed the "solution-style config checks nothing" half
  * of the ledger's blindness, and it moved the remaining half out of reach of
@@ -47,9 +47,25 @@ const configurationFilePattern = /[jt]sconfig[^/]*\.json$/u;
 /** TS6307: not listed within the file list of project. TS6059: not under 'rootDir'. */
 const programConstructionCodes = new Set([6059, 6307]);
 
-export function evaluateBaselineConfiguration(vueTscOutput) {
+export interface ConfigurationDiagnostic {
+  readonly code: number;
+  readonly column: number | null;
+  readonly file: string | null;
+  readonly line: number | null;
+  readonly message: string;
+  readonly severity: string;
+}
+
+export interface BaselineConfiguration {
+  readonly diagnostics: readonly ConfigurationDiagnostic[];
+  readonly errorCount: number;
+  readonly unusableReason: string | null;
+  readonly verdict: "usable" | "unusable";
+}
+
+export function evaluateBaselineConfiguration(vueTscOutput: unknown): BaselineConfiguration {
   if (typeof vueTscOutput !== "string") throw new Error("vue-tsc output must be a string");
-  const diagnostics = [];
+  const diagnostics: ConfigurationDiagnostic[] = [];
   for (const line of vueTscOutput.replaceAll("\r\n", "\n").split("\n")) {
     const positioned = diagnosticPattern.exec(line);
     if (positioned != null) {
@@ -93,12 +109,12 @@ export function evaluateBaselineConfiguration(vueTscOutput) {
   };
 }
 
-function render(diagnostic) {
+function render(diagnostic: ConfigurationDiagnostic): string {
   const position =
     diagnostic.file == null ? "" : `${diagnostic.file}(${diagnostic.line},${diagnostic.column}): `;
   return `${position}${diagnostic.severity} TS${diagnostic.code}: ${diagnostic.message}`;
 }
 
-function normalize(message) {
+function normalize(message: string): string {
   return message.replace(/\s+/gu, " ").trim();
 }

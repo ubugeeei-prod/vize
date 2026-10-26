@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
-import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.mjs";
-import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
-import { resolvePackageExtends } from "./typecheck-baseline-outside-paths.mjs";
+import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.ts";
+import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.ts";
+import { resolvePackageExtends } from "./typecheck-baseline-outside-paths.ts";
 
 /**
  * Close the TypeScript plugin require unique isolation cannot retarget (#4461).
@@ -17,7 +17,11 @@ import { resolvePackageExtends } from "./typecheck-baseline-outside-paths.mjs";
  * matching tsc.
  */
 
-export function rewriteOutsideCompilerPlugins(fixtureRoot, sourceConfigPath, configDir) {
+export function rewriteOutsideCompilerPlugins(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+  configDir: string,
+): unknown[] | null {
   const root = resolve(fixtureRoot);
   const declared = winningCompilerPlugins(sourceConfigPath, root);
   if (declared.length === 0) return null;
@@ -30,7 +34,12 @@ export function rewriteOutsideCompilerPlugins(fixtureRoot, sourceConfigPath, con
   return changed ? plugins : null;
 }
 
-function retargetCompilerPlugin(fixtureRoot, sourceDir, configDir, plugin) {
+function retargetCompilerPlugin(
+  fixtureRoot: string,
+  sourceDir: string,
+  configDir: string,
+  plugin: { readonly name?: unknown } | null,
+): { value: unknown; changed: boolean } {
   if (plugin == null || typeof plugin.name !== "string") {
     return { value: plugin, changed: false };
   }
@@ -40,7 +49,12 @@ function retargetCompilerPlugin(fixtureRoot, sourceDir, configDir, plugin) {
   return { value: { ...plugin, name: retargeted }, changed: true };
 }
 
-function retargetCompilerPluginPath(fixtureRoot, sourceDir, configDir, entry) {
+function retargetCompilerPluginPath(
+  fixtureRoot: string,
+  sourceDir: string,
+  configDir: string,
+  entry: string,
+): string | null {
   const original = resolveWithConfigDir(sourceDir, sourceDir, entry);
   if (isInside(fixtureRoot, original)) return null;
   const owned = owningNodeModulePackage(original);
@@ -48,7 +62,12 @@ function retargetCompilerPluginPath(fixtureRoot, sourceDir, configDir, entry) {
   return localPackageTarget(fixtureRoot, configDir, owned.name, relative(owned.root, original));
 }
 
-function localPackageTarget(fixtureRoot, configDir, name, subpath) {
+function localPackageTarget(
+  fixtureRoot: string,
+  configDir: string,
+  name: string,
+  subpath: unknown,
+): string | null {
   const local = join(fixtureRoot, "node_modules", ...name.split("/"));
   if (!existsSync(join(local, "package.json"))) return null;
   const nested = typeof subpath === "string" ? subpath.replaceAll("\\", "/") : "";
@@ -58,7 +77,7 @@ function localPackageTarget(fixtureRoot, configDir, name, subpath) {
   return configRelativePath(configDir, target);
 }
 
-function isPathSpecifier(entry) {
+function isPathSpecifier(entry: string): boolean {
   return (
     entry.startsWith("./") ||
     entry.startsWith("../") ||
@@ -68,8 +87,11 @@ function isPathSpecifier(entry) {
   );
 }
 
-function winningCompilerPlugins(sourceConfigPath, fixtureRoot) {
-  const plugins = [];
+function winningCompilerPlugins(
+  sourceConfigPath: string,
+  fixtureRoot: string,
+): { plugin: { readonly name?: unknown } | null; dir: string }[] {
+  const plugins: { plugin: { readonly name?: unknown } | null; dir: string }[] = [];
   for (const { config, dir } of [
     ...loadTsconfigExtendsChain(
       sourceConfigPath,
@@ -85,7 +107,11 @@ function winningCompilerPlugins(sourceConfigPath, fixtureRoot) {
   return plugins;
 }
 
-function resolveRelativeExtends(fromConfig, specifier, fixtureRoot) {
+function resolveRelativeExtends(
+  fromConfig: string,
+  specifier: unknown,
+  fixtureRoot: string,
+): string | null {
   if (typeof specifier !== "string") return null;
   if (!(specifier.startsWith("./") || specifier.startsWith("../"))) return null;
   const resolved = resolve(dirname(fromConfig), specifier);
@@ -98,9 +124,9 @@ function resolveRelativeExtends(fromConfig, specifier, fixtureRoot) {
   return file;
 }
 
-function owningNodeModulePackage(resolvedPath) {
+function owningNodeModulePackage(resolvedPath: string): OwnedPackage | null {
   let directory = resolvedPath;
-  let previous = null;
+  let previous: string | null = null;
   while (directory !== previous) {
     if (existsSync(join(directory, "package.json"))) {
       const owned = nodeModulePackageName(directory);
@@ -112,7 +138,13 @@ function owningNodeModulePackage(resolvedPath) {
   return null;
 }
 
-function nodeModulePackageName(packageRoot) {
+/** A package directory directly under a `node_modules` folder. */
+interface OwnedPackage {
+  readonly name: string;
+  readonly root: string;
+}
+
+function nodeModulePackageName(packageRoot: string): OwnedPackage | null {
   const parent = dirname(packageRoot);
   const grandparent = dirname(parent);
   if (basename(parent) === "node_modules") {
@@ -127,12 +159,12 @@ function nodeModulePackageName(packageRoot) {
   return null;
 }
 
-function isInside(root, target) {
+function isInside(root: string, target: string): boolean {
   const path = relative(root, target);
   return path !== "" && !path.startsWith("..") && !path.startsWith("/");
 }
 
-function configRelativePath(from, to) {
+function configRelativePath(from: string, to: string): string {
   const path = relative(from, to).replaceAll("\\", "/");
   if (path.startsWith("/") || /^[A-Za-z]:\//u.test(path)) return path;
   return path.startsWith(".") ? path : `./${path}`;

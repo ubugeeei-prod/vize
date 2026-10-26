@@ -2,21 +2,39 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { isolatedTsconfigOverlayPath } from "./typecheck-baseline-outside-paths.mjs";
+import { isolatedTsconfigOverlayPath } from "./typecheck-baseline-outside-paths.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
-export function typecheckCorpusGlobs(project) {
+/** The fixture project fields the tool commands read. */
+export interface MatrixProject {
+  readonly vueGlobs: readonly string[];
+  readonly tsconfig?: unknown;
+  readonly fixturePath?: unknown;
+  readonly expectedVueFileCount?: number;
+  readonly typecheckPerformance?: {
+    readonly corpusGlobs?: readonly string[];
+    readonly baseline?: { readonly tsconfig?: unknown };
+  };
+}
+
+/** The globs a typecheck corpus comes from; a baseline project may omit `vueGlobs`. */
+export type CorpusProject = Partial<Pick<MatrixProject, "vueGlobs">> &
+  Pick<MatrixProject, "typecheckPerformance">;
+
+export function typecheckCorpusGlobs(project: MatrixProject): readonly string[];
+export function typecheckCorpusGlobs(project: CorpusProject): readonly string[] | undefined;
+export function typecheckCorpusGlobs(project: CorpusProject): readonly string[] | undefined {
   return project.typecheckPerformance?.corpusGlobs ?? project.vueGlobs;
 }
 
-export function typecheckSourceTsconfig(project) {
+export function typecheckSourceTsconfig(project: MatrixProject): string | null {
   const baseline = project.typecheckPerformance?.baseline?.tsconfig;
   if (typeof baseline === "string") return baseline;
   return typeof project.tsconfig === "string" ? project.tsconfig : null;
 }
 
-export function typecheckTsconfigPath(project) {
+export function typecheckTsconfigPath(project: MatrixProject): string | null {
   // vue-tsc measures `baseline.tsconfig` when it is set. Elk's root config is
   // a solution (`files: []` + `references`); using it would compare a different
   // program than the baseline (#4461).
@@ -30,7 +48,12 @@ export function typecheckTsconfigPath(project) {
   return existsSync(overlayAbs) ? overlayRel : source;
 }
 
-export function toolArgs(project, tool, compilerOutputDir, options = {}) {
+export function toolArgs(
+  project: MatrixProject,
+  tool: string,
+  compilerOutputDir: string,
+  options: { readonly typecheckTsconfigPath?: string | null } = {},
+): string[] {
   if (tool === "compiler") {
     return [
       "build",
@@ -79,10 +102,10 @@ export function toolArgs(project, tool, compilerOutputDir, options = {}) {
   return ["fmt", ...project.vueGlobs, "--check", "--no-config"];
 }
 
-export function displayCommand(command, args) {
+export function displayCommand(command: string, args: readonly string[]): string {
   return [command, ...args].map(shellQuote).join(" ");
 }
 
-function shellQuote(value) {
+function shellQuote(value: string): string {
   return /^[A-Za-z0-9_./:=@*-]+$/.test(value) ? value : `'${value.replaceAll("'", "'\\''")}'`;
 }

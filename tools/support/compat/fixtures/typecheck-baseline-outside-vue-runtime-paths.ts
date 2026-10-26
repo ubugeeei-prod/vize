@@ -16,10 +16,16 @@ import { join, relative, resolve } from "node:path";
 
 const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
 
-export function rewriteLocalVueRuntimePaths(fixtureRoot, configDir) {
+/** A `compilerOptions.paths` object: each key maps to its target list. */
+export type PathMappings = Readonly<Record<string, unknown>>;
+
+export function rewriteLocalVueRuntimePaths(
+  fixtureRoot: string,
+  configDir: string,
+): Record<string, string[]> | null {
   const root = resolve(fixtureRoot);
   const from = resolve(configDir);
-  const rewritten = {};
+  const rewritten: Record<string, string[]> = {};
   let changed = false;
   for (const name of vueRuntimePackages) {
     const local = localPackageRoot(root, name);
@@ -30,39 +36,42 @@ export function rewriteLocalVueRuntimePaths(fixtureRoot, configDir) {
   return changed ? rewritten : null;
 }
 
-export function mergeLocalVueRuntimePaths(paths, runtimePaths) {
+export function mergeLocalVueRuntimePaths(
+  paths: PathMappings | null,
+  runtimePaths: PathMappings | null,
+): PathMappings | null {
   if (runtimePaths == null) return paths;
   if (paths == null) return runtimePaths;
   return { ...paths, ...runtimePaths };
 }
 
-function configRelativePath(from, to) {
+function configRelativePath(from: string, to: string): string {
   const path = relative(from, to).replaceAll("\\", "/");
   if (path.startsWith("/") || /^[A-Za-z]:\//u.test(path)) return path;
   return path.startsWith(".") ? path : `./${path}`;
 }
 
-function localPackageRoot(root, name) {
+function localPackageRoot(root: string, name: string): string | null {
   const linked = join(root, "node_modules", ...name.split("/"));
   if (existsSync(join(linked, "package.json"))) return linked;
   return uniquePnpmStorePackageRoot(root, name);
 }
 
-function uniquePnpmStorePackageRoot(root, name) {
+function uniquePnpmStorePackageRoot(root: string, name: string): string | null {
   const store = join(root, "node_modules", ".pnpm");
   if (!existsSync(store)) return null;
-  let rootReal;
+  let rootReal: string;
   try {
     rootReal = realpathSync(root);
   } catch {
     return null;
   }
-  const matches = new Map();
+  const matches = new Map<string, string>();
   for (const entry of readdirSync(store, { withFileTypes: true })) {
     if (entry.name.startsWith(".")) continue;
     const candidate = join(store, entry.name, "node_modules", ...name.split("/"));
     if (!existsSync(join(candidate, "package.json"))) continue;
-    let real;
+    let real: string;
     try {
       real = realpathSync(candidate);
     } catch {
@@ -75,13 +84,13 @@ function uniquePnpmStorePackageRoot(root, name) {
   return unique.length === 1 ? unique[0] : null;
 }
 
-function isInsideOrEqual(parent, child) {
+function isInsideOrEqual(parent: string, child: string): boolean {
   const path = relative(parent, child);
   return (
     path === "" || (!path.startsWith("..") && !path.startsWith("/") && !/^[A-Za-z]:\//u.test(path))
   );
 }
 
-function codeUnitOrder(left, right) {
+function codeUnitOrder(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
