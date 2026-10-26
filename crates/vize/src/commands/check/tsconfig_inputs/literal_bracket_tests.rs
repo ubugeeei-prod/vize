@@ -6,9 +6,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::path::canonicalize_non_verbatim;
-
-use super::{TsconfigInputCache, resolve_tsconfig_for_files};
+use super::{TsconfigInputCache, normalize_input_path, resolve_tsconfig_for_files};
 
 fn write(root: &Path, relative: &str, content: &str) {
     let path = root.join(relative);
@@ -18,7 +16,7 @@ fn write(root: &Path, relative: &str, content: &str) {
 
 fn project(tsconfig: &str) -> (tempfile::TempDir, PathBuf) {
     let dir = tempfile::tempdir().unwrap();
-    let root = canonicalize_non_verbatim(dir.path());
+    let root = normalize_input_path(dir.path());
     for file in [
         "src/[id].vue",
         "src/i.vue",
