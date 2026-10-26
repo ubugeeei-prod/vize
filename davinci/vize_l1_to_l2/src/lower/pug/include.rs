@@ -288,7 +288,7 @@ impl<'t> Emitter<'t> {
     pub(super) fn include(&mut self, directive: &'t PugRefused<'t>) {
         if !self.includes.reads {
             let span = self.span(&directive.head);
-            return self.error(span, super::refusal::message(PugRefusal::Include));
+            return self.error(span, String::from(super::refusal::INCLUDE_UNREAD));
         }
         let loaded = self
             .includes

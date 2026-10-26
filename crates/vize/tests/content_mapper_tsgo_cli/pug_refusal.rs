@@ -6,8 +6,7 @@ use super::{
 };
 use crate::support::corsa_requirement;
 
-const REFUSAL: &str =
-    "pug `include` is not supported in Vue templates: it links other pug files at build time";
+const REFUSAL: &str = "pug cannot include `other.pug`: the file does not exist";
 
 fn project(mapper: bool) -> tempfile::TempDir {
     let fixture =

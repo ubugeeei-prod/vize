@@ -171,6 +171,17 @@ pub struct TemplateCompileOptions {
     pub compiler_options: Option<vize_atelier_dom::DomCompilerOptions>,
 }
 
+/// An authored template (a `lang="pug"` block) and the map from the Vue
+/// template derived from it back onto it, so template errors point at what
+/// the author wrote.
+#[derive(Debug)]
+pub(crate) struct DerivedTemplate {
+    /// The authored block content.
+    pub(crate) authored: String,
+    /// Derived byte → authored byte.
+    pub(crate) map: vize_l1_to_l2::lower::pug::PugSourceMap,
+}
+
 /// Experimental SFC compiler options kept separate from [`SfcCompileOptions`]
 /// so existing Rust struct literals remain source-compatible.
 #[derive(Debug, Clone, Default)]

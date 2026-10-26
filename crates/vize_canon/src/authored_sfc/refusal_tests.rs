@@ -27,7 +27,13 @@ fn complete_refusal_corpus_agrees_across_single_file_batch_and_mapper() {
         let original = std::fs::read_to_string(&path_in_corpus).unwrap();
         for ending in ["\n", "\r\n"] {
             let body = original.replace('\n', ending);
-            let lowered = vize_l1_to_l2::lower::pug::derive_template_source(&body);
+            // Includes are read against the file, as the compiler reads them.
+            let lowered = vize_l1_to_l2::lower::pug::derive_template_source_including(
+                &body,
+                vize_l1_to_l2::lower::pug::PugRendering::Pug,
+                &path.to_string_lossy(),
+                &mut vize_atelier_sfc::PugFileIncludes,
+            );
             for language in ["pug", "jade", "PuG", "JADE"] {
                 let prefix = format!("<!-- 日本 🧭 -->{ending}<template lang=\"{language}\">");
                 let source = format!(

@@ -72,15 +72,15 @@ pub use bundler::{
 };
 #[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::compile_sfc_with_vue_parser_quirks;
-pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile::{
-    SfcScriptOutputMode, compile_sfc_for_adapter,
+    PugFileIncludes, SfcScriptOutputMode, compile_sfc_for_adapter,
     compile_sfc_for_adapter_with_experimental_options, compile_sfc_for_adapter_with_nuxt_page_meta,
     compile_sfc_for_adapter_with_stage_capture,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_sfc_with_template_syntax_and_codegen_options, prepare_root_patterned_template,
 };
+pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile_script::props::{
     script_setup_has_semantic_validator_candidates, validate_script_setup_semantics,
     validate_script_setup_semantics_located,

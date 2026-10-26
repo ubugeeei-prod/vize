@@ -7,9 +7,13 @@
 //! Every position Canon reports for the analyzed text goes back through
 //! [`AuthoredSfc::to_authored`]. A refused template retains its lowering errors
 //! and a blank, byte-preserving body so unrelated script checking can continue.
+//! With the SFC's path, `include`s are read relative to it, as the compiler
+//! reads them.
 
 use std::ops::Range;
+use std::path::Path;
 
+use vize_atelier_sfc::PugFileIncludes;
 use vize_l1_to_l2::lower::pug::PugBlockView;
 
 use crate::sfc_typecheck::SfcTypeCheckResult;
@@ -52,10 +56,20 @@ pub(crate) struct AuthoredTemplateError<'a> {
 }
 
 impl<'a> AuthoredSfc<'a> {
+    /// The SFC without a file: `include`s are refused.
+    #[cfg(test)]
     pub(crate) fn new(authored: &'a str) -> Self {
         Self {
             authored,
-            view: pug_view(authored),
+            view: pug_view(authored, None),
+        }
+    }
+
+    /// [`Self::new`] for the SFC at `path`, whose pug `include`s are read.
+    pub(crate) fn at(authored: &'a str, path: &Path) -> Self {
+        Self {
+            authored,
+            view: pug_view(authored, Some(path)),
         }
     }
 
@@ -163,7 +177,7 @@ impl<'a> AuthoredSfc<'a> {
 
 /// The derived view of an inline `<template lang="pug">`, if the SFC has one
 /// the lowering accepts.
-fn pug_view(source: &str) -> Option<SfcView> {
+fn pug_view(source: &str, path: Option<&Path>) -> Option<SfcView> {
     // Cheap gate: only sources that mention pug or jade pay for the SFC parse.
     if !mentions_pug_language(source) {
         return None;
@@ -177,9 +191,18 @@ fn pug_view(source: &str) -> Option<SfcView> {
     if template.src.is_some() || !pug {
         return None;
     }
+    let body = template.loc.start..template.loc.end;
     match vize_l0::profile!(
         "canon.sfc.pug.lower",
-        PugBlockView::new(source, template.loc.start..template.loc.end)
+        match path {
+            Some(path) => PugBlockView::new_including(
+                source,
+                body,
+                &path.to_string_lossy(),
+                &mut PugFileIncludes,
+            ),
+            None => PugBlockView::new(source, body),
+        }
     ) {
         Ok(view) => Some(SfcView::Derived(view)),
         Err(refused) => {
@@ -300,7 +323,7 @@ mod tests {
         let diagnostic = transform.diagnostics.first().unwrap();
         assert_eq!(
             diagnostic.message_text.as_str(),
-            "pug `include` is not supported in Vue templates: it links other pug files at build time"
+            "pug cannot include `other.pug`: the file does not exist"
         );
         assert_eq!(diagnostic.start, source.find("include").unwrap());
     }

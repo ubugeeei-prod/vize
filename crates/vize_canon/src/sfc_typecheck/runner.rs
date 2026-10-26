@@ -38,7 +38,9 @@ fn type_check_sfc_impl(
     options_api: bool,
     legacy_vue2: bool,
 ) -> SfcTypeCheckResult {
-    let authored = crate::authored_sfc::AuthoredSfc::new(source);
+    // Includes resolve against the filename, as `compile_sfc` resolves them.
+    let path = std::path::Path::new(options.filename.as_str());
+    let authored = crate::authored_sfc::AuthoredSfc::at(source, path);
     let mut result = type_check_analyzed(authored.analyzed(), options, options_api, legacy_vue2);
     authored.remap_type_check_result(&mut result);
     for error in authored.preprocessing_errors() {

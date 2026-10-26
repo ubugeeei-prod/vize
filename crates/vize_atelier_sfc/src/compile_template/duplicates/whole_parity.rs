@@ -297,7 +297,7 @@ fn actual_post_parse_refusal_preserves_complete_results_and_checks_only_once() {
         )
         });
         let _ = take_emit_refusal();
-        let mut preflight = Preflight::new(&template, true, false);
+        let mut preflight = Preflight::new(&template, None, true, false);
         let mut capture = StageCapture::new("dom");
         let (errors, actual) = vize_atelier_dom::compile_sfc_template_with_preflight(
             &arena,

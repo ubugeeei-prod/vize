@@ -20,8 +20,8 @@ fn complete_native_error_and_repeated_requests_reuse_the_original_check_once() {
         let template = template(source);
         let arena = vize_l0::Allocator::default();
         let (tree, errors) = vize_l1::markup::parse(&arena, source);
-        let mut check = Preflight::new(&template, true, false);
-        let expected = reject_duplicate_props(&template);
+        let mut check = Preflight::new(&template, None, true, false);
+        let expected = reject_duplicate_props(&template, None);
         assert_eq!(check.check(Some((&tree, &errors))), expected.is_ok());
         assert_eq!(check.check(None), expected.is_ok());
         assert_eq!(check.native_calls, 1);
@@ -39,8 +39,8 @@ fn native_whole_refusal_keeps_all_old_spans_and_runs_the_callback_once() {
     let template = template(source);
     let arena = vize_l0::Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&arena, source);
-    let mut check = Preflight::new(&template, true, false);
-    let expected = reject_duplicate_props(&template);
+    let mut check = Preflight::new(&template, None, true, false);
+    let expected = reject_duplicate_props(&template, None);
     assert!(expected.is_err());
     assert_eq!(check.check(Some((&tree, &errors))), expected.is_ok());
     assert_eq!(check.check(None), expected.is_ok());
@@ -55,15 +55,15 @@ fn native_whole_refusal_keeps_all_old_spans_and_runs_the_callback_once() {
 #[test]
 fn actual_compatibility_entry_checks_once_and_disabled_dialect_stays_disabled() {
     let template = template("<div v-if='a' v-if='b'></div>");
-    let mut check = Preflight::new(&template, true, false);
+    let mut check = Preflight::new(&template, None, true, false);
     assert!(!check.check(None));
     assert!(!check.check(None));
     assert_eq!(check.retained_calls, 1);
     assert_eq!(
         serde_json::to_value(check.finish()).unwrap(),
-        serde_json::to_value(reject_duplicate_props(&template)).unwrap()
+        serde_json::to_value(reject_duplicate_props(&template, None)).unwrap()
     );
-    let mut check = Preflight::new(&template, false, false);
+    let mut check = Preflight::new(&template, None, false, false);
     assert!(check.check(None));
     assert_eq!(check.retained_calls, 0);
     assert!(check.finish().is_ok());
@@ -85,7 +85,7 @@ fn actual_dom_dispatch_observes_native_parse_or_original_compatibility_once() {
         for captured in [false, true] {
             let template = template(source);
             let arena = vize_l0::Allocator::default();
-            let mut check = Preflight::new(&template, true, false);
+            let mut check = Preflight::new(&template, None, true, false);
             let mut capture = vize_l0::dump::capture::StageCapture::new("dom");
             let _ = vize_atelier_dom::compile_sfc_template_with_preflight(
                 &arena,
@@ -115,7 +115,7 @@ fn actual_dom_dispatch_observes_native_parse_or_original_compatibility_once() {
             );
             assert_eq!(
                 serde_json::to_value(check.finish()).unwrap(),
-                serde_json::to_value(reject_duplicate_props(&template)).unwrap()
+                serde_json::to_value(reject_duplicate_props(&template, None)).unwrap()
             );
         }
     }
@@ -129,12 +129,12 @@ fn equal_text_from_an_unrelated_tree_cannot_skip_the_original_callback() {
     let template = template(&original);
     let arena = vize_l0::Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&arena, &foreign);
-    let mut check = Preflight::new(&template, true, false);
+    let mut check = Preflight::new(&template, None, true, false);
     assert!(!check.check(Some((&tree, &errors))));
     assert_eq!(check.retained_calls, 1);
     assert_eq!(
         serde_json::to_value(check.finish()).unwrap(),
-        serde_json::to_value(reject_duplicate_props(&template)).unwrap()
+        serde_json::to_value(reject_duplicate_props(&template, None)).unwrap()
     );
 }
 
@@ -176,6 +176,7 @@ fn rejected_preflight_preserves_complete_error_and_the_original_sidecar_boundary
                 experimental_self_component: false,
                 bindings: None,
                 croquis: None,
+                derived_from: None,
             },
             TemplateSyntaxMode::Standard,
             &CodegenOptions::default(),
@@ -183,7 +184,7 @@ fn rejected_preflight_preserves_complete_error_and_the_original_sidecar_boundary
         );
         assert_eq!(
             serde_json::to_value(result.err()).unwrap(),
-            serde_json::to_value(reject_duplicate_props(&template).err()).unwrap()
+            serde_json::to_value(reject_duplicate_props(&template, None).err()).unwrap()
         );
         assert_eq!(capture, before);
     }
@@ -219,8 +220,8 @@ fn differing_title_and_comment_policies_keep_the_complete_callback_result_once()
                 experimental_in_tag_comments: comments,
             },
         );
-        let mut check = Preflight::new(&template, true, comments);
-        let expected = reject_duplicate_props(&template);
+        let mut check = Preflight::new(&template, None, true, comments);
+        let expected = reject_duplicate_props(&template, None);
         assert_eq!(
             expected.is_err(),
             expected_error,

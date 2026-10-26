@@ -26,7 +26,9 @@ use vize_l0::Allocator;
 
 use vize_atelier_core::CompilerErrorWithSource;
 
-use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
+use crate::types::{
+    BindingMetadata, DerivedTemplate, SfcError, SfcTemplateBlock, TemplateCompileOptions,
+};
 use vize_atelier_core::options::CustomElementMatcher;
 use vize_l4::module::OutputModule;
 
@@ -71,6 +73,8 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) experimental_self_component: bool,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
+    /// The authored template `template.content` was derived from.
+    pub(crate) derived_from: Option<&'a DerivedTemplate>,
 }
 
 /// Compile template block
@@ -112,7 +116,7 @@ pub(crate) fn compile_template_block_with_capture(
     #[cfg(all(test, feature = "legacy-dom-differential"))]
     let eager_preflight = eager_preflight || duplicates::original_preflight_requested();
     if eager_preflight && !options.dialect.is_legacy() {
-        duplicates::reject_duplicate_props(template)?;
+        duplicates::reject_duplicate_props(template, ctx.derived_from)?;
     }
     let TemplateBlockCompileContext {
         scope_id,
@@ -125,6 +129,7 @@ pub(crate) fn compile_template_block_with_capture(
         experimental_self_component,
         bindings,
         croquis,
+        derived_from,
     } = ctx;
     let compiler_options = options.compiler_options.as_ref();
     let scope_attr = if apply_scope_id {
@@ -197,20 +202,8 @@ pub(crate) fn compile_template_block_with_capture(
         // Recoverable parser diagnostics (e.g. duplicate attribute) must
         // not gate SFC compilation, or a single `<div id=a id=b>` produces
         // a 0-byte module marked as success. (#958)
-        let fatal: Vec<_> = errors
-            .iter()
-            .filter(|e| !e.is_recoverable())
-            .map(|e| CompilerErrorWithSource::new(e, &template.content))
-            .collect();
-        if !fatal.is_empty() {
-            let mut message = String::from("Template compilation errors: ");
-            use std::fmt::Write as _;
-            let _ = write!(&mut message, "{:?}", fatal);
-            return Err(SfcError {
-                message,
-                code: Some("TEMPLATE_ERROR".to_compact_string()),
-                loc: Some(template.loc.clone()),
-            });
+        if let Some(error) = fatal_template_error(&errors, template, derived_from) {
+            return Err(error);
         }
 
         let output = OutputModule::from_render_chunks(result.preamble, result.code).into_code();
@@ -270,6 +263,7 @@ pub(crate) fn compile_template_block_with_capture(
     // and falls back to the compatibility path for unsupported shapes.
     let mut preflight = duplicates::Preflight::new(
         template,
+        derived_from,
         !options.dialect.is_legacy(),
         compiler_options.is_some_and(|options| options.experimental_in_tag_comments),
     );
@@ -313,20 +307,8 @@ pub(crate) fn compile_template_block_with_capture(
 
     // See above — drop recoverable parser diagnostics from the gating
     // check so duplicate-attribute SFCs still produce valid render code. (#958)
-    let fatal: Vec<_> = errors
-        .iter()
-        .filter(|e| !e.is_recoverable())
-        .map(|e| CompilerErrorWithSource::new(e, &template.content))
-        .collect();
-    if !fatal.is_empty() {
-        let mut message = String::from("Template compilation errors: ");
-        use std::fmt::Write as _;
-        let _ = write!(&mut message, "{:?}", fatal);
-        return Err(SfcError {
-            message,
-            code: Some("TEMPLATE_ERROR".to_compact_string()),
-            loc: Some(template.loc.clone()),
-        });
+    if let Some(error) = fatal_template_error(&errors, template, derived_from) {
+        return Err(error);
     }
 
     // Translate the emission-recorded section offsets into the concatenated
@@ -353,6 +335,51 @@ pub(crate) fn compile_template_block_with_capture(
         warnings: recoverable_template_warnings(&errors),
         sections,
     })
+}
+
+/// The `TEMPLATE_ERROR` for the fatal `errors`, if any.
+pub(crate) fn fatal_template_error(
+    errors: &[vize_atelier_core::CompilerError],
+    template: &SfcTemplateBlock,
+    derived: Option<&DerivedTemplate>,
+) -> Option<SfcError> {
+    let fatal: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_recoverable())
+        .cloned()
+        .collect();
+    (!fatal.is_empty()).then(|| template_error(fatal, template, derived))
+}
+
+/// A `TEMPLATE_ERROR` listing `errors`: positions and source text are the
+/// authored template's, mapped back through
+/// `derived` for a derived (pug) one.
+pub(crate) fn template_error(
+    mut errors: Vec<vize_atelier_core::CompilerError>,
+    template: &SfcTemplateBlock,
+    derived: Option<&DerivedTemplate>,
+) -> SfcError {
+    let source = match derived {
+        Some(derived) => {
+            for loc in errors.iter_mut().filter_map(|error| error.loc.as_mut()) {
+                loc.span = derived.map.to_pug(loc.span);
+            }
+            derived.authored.as_str()
+        }
+        None => &template.content,
+    };
+    let mut message = String::from("Template compilation errors: ");
+    use std::fmt::Write as _;
+    let _ = write!(
+        &mut message,
+        "{:?}",
+        CompilerErrorWithSource::list(&errors, source)
+    );
+    SfcError {
+        message,
+        code: Some("TEMPLATE_ERROR".to_compact_string()),
+        loc: Some(template.loc.clone()),
+    }
 }
 
 pub(crate) fn recoverable_template_warnings(

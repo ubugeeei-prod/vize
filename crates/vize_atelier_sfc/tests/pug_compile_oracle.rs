@@ -220,3 +220,34 @@ fn pug_includes_resolve_against_the_sfc_and_compile_like_their_html() {
         assert!(from_html.dependencies.is_empty());
     }
 }
+
+#[test]
+fn vue_template_errors_point_at_the_authored_pug() {
+    // The Vue lanes compile the derived template; their errors must name
+    // the authored pug line, column and text, not the derived HTML's.
+    let pug =
+        "<template lang=\"pug\">\ndiv\n  p(v-for=\"item\") x\n  span(v-else) y\n</template>\n";
+    let html = "<template><div><p v-for=\"item\">x</p><span v-else>y</span></div></template>\n";
+    let located = |offset: usize, line: usize, column: usize| {
+        format!(
+            "Template compilation errors: [CompilerError {{ code: VForMalformedExpression, message: \
+             \"v-for has invalid expression.\", loc: Some(SourceLocation {{ start: Position {{ \
+             offset: {offset}, line: {line}, column: {column} }}, end: Position {{ offset: {}, \
+             line: {line}, column: {} }}, source: \"item\" }}) }}, CompilerError {{ code: \
+             VElseNoAdjacentIf, message: \"v-else/v-else-if has no adjacent v-if.\", loc: None }}]",
+            offset + 4,
+            column + 4,
+        )
+    };
+    for (lane, options) in lanes() {
+        let from_pug = compile(pug, options.clone()).expect_err("invalid v-for");
+        let from_html = compile(html, options).expect_err("invalid v-for");
+        if lane == "vapor" {
+            // Vapor reports messages without positions.
+            assert_eq!(from_pug, from_html, "{lane}");
+        } else {
+            assert_eq!(from_pug, located(16, 3, 12), "{lane}");
+            assert_eq!(from_html, located(15, 1, 16), "{lane}");
+        }
+    }
+}

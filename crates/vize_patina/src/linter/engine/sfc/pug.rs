@@ -4,12 +4,13 @@
 //! The pug block is swapped for its derived Vue template
 //! (`vize_l1_to_l2::lower::pug::PugBlockView`), the SFC lints through the
 //! one template lane exactly as an HTML template would, and every range
-//! maps back onto the authored pug. Autofixes computed on the derived
+//! maps back onto the authored pug. `include`s are read relative to the
+//! file, as the compiler reads them. Autofixes computed on the derived
 //! template have no pug spelling, so a fix that edits the block is dropped
 //! (its diagnostic stays). Refused templates retain the shared lowering's
 //! authored diagnostics and never enter the HTML template lane.
 
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{PugFileIncludes, SfcParseOptions, parse_sfc};
 use vize_l1_to_l2::lower::pug::PugBlockView;
 
 use crate::diagnostic::LintDiagnostic;
@@ -56,7 +57,12 @@ impl Linter {
         }
         let view = match vize_l0::profile!(
             "patina.sfc.pug.lower",
-            PugBlockView::new(source, template.loc.start..template.loc.end)
+            PugBlockView::new_including(
+                source,
+                template.loc.start..template.loc.end,
+                filename,
+                &mut PugFileIncludes,
+            )
         ) {
             Ok(view) => view,
             Err(refused) => {

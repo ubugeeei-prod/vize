@@ -42,9 +42,9 @@ pub(super) fn compile_sfc_inner(
             .is_some_and(|options| options.experimental_in_tag_comments),
         template_syntax,
     )?;
-    let (descriptor, dependencies) = super::pug::prepare_pug_template(&descriptor)?;
+    let view = super::pug::prepare_pug_template(&descriptor)?;
     let mut result = super::super::compile_sfc_inner(
-        &descriptor,
+        &view.descriptor,
         options,
         template_syntax,
         custom_elements,
@@ -53,8 +53,9 @@ pub(super) fn compile_sfc_inner(
         experimental_options,
         nuxt_page_meta,
         capture,
+        view.derived_from.as_ref(),
     )?;
-    result.dependencies = dependencies;
+    result.dependencies = view.dependencies;
     Ok(result)
 }
 

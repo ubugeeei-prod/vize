@@ -110,6 +110,10 @@ pub(super) fn include(path: &str, reason: &str) -> String {
     cstr!("pug cannot include `{path}`: {reason}")
 }
 
+/// An include on a surface given the template text but not its file.
+pub(super) const INCLUDE_UNREAD: &str =
+    "pug `include` is not read here: this tool has no file to resolve it against";
+
 pub(super) const INCLUDE_DEPTH: &str = "pug includes nest too deeply (an include cycle?)";
 
 /// Why a value holding a mixin `block` cannot be printed.

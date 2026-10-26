@@ -35,6 +35,7 @@ pub(super) struct TemplateOnlyInput<'a, 'c> {
     pub(super) template_is_ts: bool,
     pub(super) experimental_self_component: bool,
     pub(super) capture: Option<&'c mut StageCapture>,
+    pub(super) derived_from: Option<&'a crate::types::DerivedTemplate>,
 }
 
 pub(super) fn compile_template_only(
@@ -66,6 +67,7 @@ pub(super) fn compile_template_only(
                     experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     croquis: None,
+                    derived_from: input.derived_from,
                 },
                 input.template_syntax,
                 input.codegen_options,
@@ -95,6 +97,7 @@ pub(super) fn compile_template_only(
                     experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     croquis: None,
+                    derived_from: input.derived_from,
                 },
                 input.template_syntax,
                 input.codegen_options,

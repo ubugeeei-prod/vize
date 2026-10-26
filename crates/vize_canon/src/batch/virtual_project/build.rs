@@ -95,7 +95,7 @@ pub(super) fn build_vue_registered_file(
     authored_content: &str,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
-    let authored = crate::authored_sfc::AuthoredSfc::new(authored_content);
+    let authored = crate::authored_sfc::AuthoredSfc::at(authored_content, path);
     let content = authored.analyzed();
     let descriptor = profile!(
         "canon.sfc.parse",

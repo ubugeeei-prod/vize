@@ -39,3 +39,20 @@ fn unmapped_and_refused_pug_preserve_script_bindings_without_admitting_locals() 
         }
     }
 }
+
+#[test]
+fn pug_includes_are_read_against_the_document_file() {
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join("row.pug"), "p {{ outer }}\n").unwrap();
+    let uri = Url::from_file_path(root.path().join("Page.vue")).unwrap();
+    for (partial, read) in [("row.pug", true), ("missing.pug", false)] {
+        let source = vize_l0::cstr!(
+            "<script setup lang=\"ts\">const outer = 1;</script>\n<template lang=\"pug\">\ndiv\n  include {partial}\n  span {{{{ outer }}}}\n</template>"
+        );
+        let state = ServerState::new();
+        let at = source.find("outer }}").unwrap();
+        let ctx = IdeContext::testing_completion(&state, &uri, at, source.into());
+        // A read include derives the template; a missing one refuses it.
+        assert_eq!(pug::cached_analysis(&ctx).is_some(), read, "{partial}");
+    }
+}

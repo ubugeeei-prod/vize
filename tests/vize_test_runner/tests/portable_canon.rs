@@ -41,7 +41,7 @@ fn portable_checker_retains_pug_refusals_at_authored_ranges_through_repairs() {
                     let start = source.find("include").unwrap();
                     let expected = if refused {
                         vec![(
-                            "pug `include` is not supported in Vue templates: it links other pug files at build time",
+                            "pug cannot include `portable.pug`: the file does not exist",
                             start,
                             start + "include portable.pug".len(),
                             Some("pug-template-error"),

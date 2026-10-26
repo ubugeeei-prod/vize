@@ -40,7 +40,7 @@
           "column": 1,
           "severity": 1,
           "code": null,
-          "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
+          "message": "pug cannot include `portable.pug`: the file does not exist"
         }
       ]
     }

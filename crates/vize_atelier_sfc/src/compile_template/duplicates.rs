@@ -3,10 +3,9 @@
 //! for unsupported observations, actual compatibility entries and SSR.
 
 use vize_armature::tokenizer::{Callbacks, QuoteType, Tokenizer};
-use vize_atelier_core::{CompilerError, CompilerErrorWithSource, ErrorCode, SourceLocation};
-use vize_l0::{String, ToCompactString};
+use vize_atelier_core::{CompilerError, ErrorCode, SourceLocation};
 
-use crate::types::{SfcError, SfcTemplateBlock};
+use crate::types::{DerivedTemplate, SfcError, SfcTemplateBlock};
 
 struct Candidate<'a> {
     name: &'a str,
@@ -45,30 +44,26 @@ struct DuplicateCollector<'a> {
     duplicates: Vec<SourceLocation>,
 }
 
-pub(super) fn reject_duplicate_props(template: &SfcTemplateBlock) -> Result<(), SfcError> {
-    reject_spans(template, find_duplicate_props(&template.content))
+pub(super) fn reject_duplicate_props(
+    template: &SfcTemplateBlock,
+    derived: Option<&DerivedTemplate>,
+) -> Result<(), SfcError> {
+    reject_spans(template, derived, find_duplicate_props(&template.content))
 }
 
-fn reject_spans(template: &SfcTemplateBlock, spans: Vec<SourceLocation>) -> Result<(), SfcError> {
-    let errors: Vec<_> = spans
+fn reject_spans(
+    template: &SfcTemplateBlock,
+    derived: Option<&DerivedTemplate>,
+    spans: Vec<SourceLocation>,
+) -> Result<(), SfcError> {
+    if spans.is_empty() {
+        return Ok(());
+    }
+    let errors = spans
         .into_iter()
         .map(|span| CompilerError::new(ErrorCode::DuplicateAttribute, Some(span)))
         .collect();
-    if errors.is_empty() {
-        return Ok(());
-    }
-    let with_source: Vec<_> = errors
-        .iter()
-        .map(|error| CompilerErrorWithSource::new(error, &template.content))
-        .collect();
-    let mut message = String::from("Template compilation errors: ");
-    use std::fmt::Write as _;
-    let _ = write!(&mut message, "{:?}", with_source);
-    Err(SfcError {
-        message,
-        code: Some("TEMPLATE_ERROR".to_compact_string()),
-        loc: Some(template.loc.clone()),
-    })
+    Err(super::template_error(errors, template, derived))
 }
 
 fn find_duplicate_props(source: &str) -> Vec<SourceLocation> {
@@ -163,6 +158,7 @@ mod surface;
 /// The SFC caller alone owns the complete fatal diagnostic and exact-once state.
 pub(super) struct Preflight<'t, 'a> {
     template: &'t SfcTemplateBlock<'a>,
+    derived: Option<&'t DerivedTemplate>,
     enabled: bool,
     native_in_tag_comments: bool,
     result: Option<Result<(), SfcError>>,
@@ -174,11 +170,13 @@ pub(super) struct Preflight<'t, 'a> {
 impl<'t, 'a> Preflight<'t, 'a> {
     pub(super) fn new(
         template: &'t SfcTemplateBlock<'a>,
+        derived: Option<&'t DerivedTemplate>,
         enabled: bool,
         native_in_tag_comments: bool,
     ) -> Self {
         Self {
             template,
+            derived,
             enabled,
             native_in_tag_comments,
             result: None,
@@ -193,7 +191,7 @@ impl<'t, 'a> Preflight<'t, 'a> {
         {
             self.retained_calls += 1;
         }
-        reject_duplicate_props(self.template)
+        reject_duplicate_props(self.template, self.derived)
     }
     pub(super) fn finish(mut self) -> Result<(), SfcError> {
         match self.result.take() {
@@ -226,7 +224,7 @@ impl vize_l1_to_l2::SurfacePreflight for Preflight<'_, '_> {
                 .then(|| surface::find_in_surface(tree, errors))
                 .flatten()
                 {
-                    Some(spans) => reject_spans(self.template, spans),
+                    Some(spans) => reject_spans(self.template, self.derived, spans),
                     None => self.retained(),
                 }
             } else {

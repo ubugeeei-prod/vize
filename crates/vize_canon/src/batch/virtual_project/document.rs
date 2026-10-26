@@ -100,7 +100,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     document_options: VueDocumentVirtualTsOptions,
     alias_resolver: Option<crate::batch::import_rewriter_alias::AliasSpecifierResolver<'_>>,
 ) -> CorsaResult<VueDocumentVirtualTs> {
-    let authored = crate::authored_sfc::AuthoredSfc::new(content);
+    let authored = crate::authored_sfc::AuthoredSfc::at(content, path);
     if let Some(error) = authored.preprocessing_errors().next() {
         return Err(CorsaError::SfcParse(error.message.into()));
     }

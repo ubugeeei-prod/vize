@@ -311,7 +311,7 @@ fn include_fixtures_derive_the_pinned_pug_html_and_report_their_files() {
 fn includes_without_a_reader_stay_refused() {
     assert_eq!(
         render_diagnostics("include a.pug\n"),
-        "0..13 Semantic \"include a.pug\" — pug `include` is not supported in Vue templates: it \
-         links other pug files at build time\n"
+        "0..13 Semantic \"include a.pug\" — pug `include` is not read here: this tool has no file \
+         to resolve it against\n"
     );
 }

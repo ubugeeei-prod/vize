@@ -8,31 +8,45 @@
 //! read from disk relative to the SFC's file name, as pug resolves them
 //! for `@vue/compiler-sfc`, and reported as dependencies. Refused pug
 //! (code without a build-time value) fails the compile with the first
-//! error diagnostic, located in the SFC.
+//! error diagnostic, located in the SFC; errors the Vue lanes report on
+//! the derived template map back onto the authored pug.
 
 use std::borrow::Cow;
 use std::path::{Component, Path, PathBuf};
 
 use vize_l1_to_l2::lower::pug::{PugIncludes, PugRendering, derive_template_source_including};
 
-use crate::types::{BlockLocation, SfcDescriptor, SfcError};
+use crate::types::{BlockLocation, DerivedTemplate, SfcDescriptor, SfcError};
 
-/// A compile view of `descriptor` whose pug template content is its
-/// derived Vue template, and the files it includes; borrowed unchanged
-/// for every other template.
+/// A compile view of an SFC.
+pub(super) struct PugView<'d, 's> {
+    /// The pug template content swapped for its derived Vue template;
+    /// borrowed unchanged for every other template.
+    pub(super) descriptor: Cow<'d, SfcDescriptor<'s>>,
+    /// The files the template includes.
+    pub(super) dependencies: Vec<vize_l0::String>,
+    /// The way back from the derived template to the authored pug.
+    pub(super) derived_from: Option<DerivedTemplate>,
+}
+
+/// The compile view of `descriptor`.
 pub(super) fn prepare_pug_template<'d, 's>(
     descriptor: &'d SfcDescriptor<'s>,
-) -> Result<(Cow<'d, SfcDescriptor<'s>>, Vec<vize_l0::String>), SfcError> {
+) -> Result<PugView<'d, 's>, SfcError> {
     let Some(template) = descriptor.template.as_ref().filter(|template| {
         template.src.is_none() && template.lang.as_deref().is_some_and(is_pug_language)
     }) else {
-        return Ok((Cow::Borrowed(descriptor), Vec::new()));
+        return Ok(PugView {
+            descriptor: Cow::Borrowed(descriptor),
+            dependencies: Vec::new(),
+            derived_from: None,
+        });
     };
     let derived = derive_template_source_including(
         &template.content,
         PugRendering::Pug,
         &descriptor.filename,
-        &mut FileIncludes,
+        &mut PugFileIncludes,
     );
     if let Some(error) = derived.first_error() {
         let offset = template.loc.start + error.span.start as usize;
@@ -44,19 +58,26 @@ pub(super) fn prepare_pug_template<'d, 's>(
             loc: Some(point(&descriptor.source, offset)),
         });
     }
-    let dependencies = derived.dependencies.clone();
     let mut view = descriptor.clone();
     if let Some(template) = view.template.as_mut() {
         template.content = Cow::Owned(derived.html.into());
     }
-    Ok((Cow::Owned(view), dependencies))
+    Ok(PugView {
+        descriptor: Cow::Owned(view),
+        dependencies: derived.dependencies,
+        derived_from: Some(DerivedTemplate {
+            authored: template.content.as_ref().into(),
+            map: derived.map,
+        }),
+    })
 }
 
 /// pug-load's `resolve` and `read`: `path.join(dirname(from), path)`,
-/// read from disk.
-struct FileIncludes;
+/// read from disk. Tools that read a pug template the way the compiler does
+/// (lint, type check, editor) share it.
+pub struct PugFileIncludes;
 
-impl PugIncludes for FileIncludes {
+impl PugIncludes for PugFileIncludes {
     fn read(
         &mut self,
         from: &str,

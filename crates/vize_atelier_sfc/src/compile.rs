@@ -66,6 +66,7 @@ fn compile_sfc_inner(
     experimental_options: SfcCompileExperimentalOptions,
     nuxt_page_meta: bool,
     mut capture: Option<&mut StageCapture>,
+    derived_from: Option<&crate::types::DerivedTemplate>,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
@@ -171,6 +172,7 @@ fn compile_sfc_inner(
                 template_is_ts,
                 experimental_self_component: experimental_options.self_component,
                 capture: capture.as_deref_mut(),
+                derived_from,
             },
             css,
             errors,
@@ -240,6 +242,7 @@ fn compile_sfc_inner(
                             experimental_self_component: experimental_options.self_component,
                             bindings: options_api_bindings.as_ref(),
                             croquis: None,
+                            derived_from,
                         },
                         template_syntax,
                         &codegen_options,
@@ -279,6 +282,7 @@ fn compile_sfc_inner(
                             experimental_self_component: experimental_options.self_component,
                             bindings: options_api_bindings.as_ref(),
                             croquis: None,
+                            derived_from,
                         },
                         template_syntax,
                         &codegen_options,
@@ -366,15 +370,10 @@ fn compile_sfc_inner(
             trim_trailing_newlines(&mut code);
         }
 
+        let map =
+            module_trace::module_map(&code, script_runs, script_at, rewrite, descriptor, filename);
         return Ok(SfcCompileResult {
-            map: module_trace::module_map(
-                &code,
-                script_runs,
-                script_at,
-                rewrite,
-                descriptor,
-                filename,
-            ),
+            map,
             code,
             css,
             errors,
@@ -577,6 +576,7 @@ fn compile_sfc_inner(
                         experimental_self_component: experimental_options.self_component,
                         bindings: Some(&bindings::for_vapor(&script_bindings, &setup_program)),
                         croquis: None,
+                        derived_from,
                     },
                     template_syntax,
                     &codegen_options,
@@ -615,6 +615,7 @@ fn compile_sfc_inner(
                         experimental_self_component: experimental_options.self_component,
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
+                        derived_from,
                     },
                     template_syntax,
                     &codegen_options,

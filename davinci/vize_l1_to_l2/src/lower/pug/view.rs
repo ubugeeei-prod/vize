@@ -16,7 +16,10 @@ use core::ops::Range;
 
 use vize_l0::String;
 
-use super::{PugRendering, PugTemplate, derive_template_source_with};
+use super::{
+    PugIncludes, PugRendering, PugTemplate, derive_template_source_including,
+    derive_template_source_with,
+};
 
 /// The host source with one pug block replaced by its derived template.
 #[derive(Debug, Clone)]
@@ -34,7 +37,31 @@ impl PugBlockView {
     /// Swap `host[body]` (a pug template body) for its derived template.
     /// A template the lowering refuses has no view: `Err` carries the
     /// derivation with its diagnostics.
+    /// Includes are refused: this view reads no files.
     pub fn new(host: &str, body: Range<usize>) -> Result<Self, PugTemplate> {
+        Self::derive(host, body, |pug| {
+            derive_template_source_with(pug, PugRendering::AuthoredOrder)
+        })
+    }
+
+    /// [`Self::new`] reading the block's `include`s through `reader`,
+    /// resolved against `filename` (the host's file) as the compiler does.
+    pub fn new_including(
+        host: &str,
+        body: Range<usize>,
+        filename: &str,
+        reader: &mut dyn PugIncludes,
+    ) -> Result<Self, PugTemplate> {
+        Self::derive(host, body, |pug| {
+            derive_template_source_including(pug, PugRendering::AuthoredOrder, filename, reader)
+        })
+    }
+
+    fn derive(
+        host: &str,
+        body: Range<usize>,
+        derive: impl FnOnce(&str) -> PugTemplate,
+    ) -> Result<Self, PugTemplate> {
         let (Some(before), Some(pug), Some(after)) = (
             host.get(..body.start),
             host.get(body.clone()),
@@ -42,7 +69,7 @@ impl PugBlockView {
         ) else {
             return Err(refuse_range());
         };
-        let template = derive_template_source_with(pug, PugRendering::AuthoredOrder);
+        let template = derive(pug);
         if template.has_errors() {
             return Err(template);
         }

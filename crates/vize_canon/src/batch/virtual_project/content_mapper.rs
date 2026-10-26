@@ -183,7 +183,7 @@ fn transform_with_diagnostic_ownership(
     >,
 ) -> CorsaResult<ContentMapperTransform> {
     let authored_content = content;
-    let authored = crate::authored_sfc::AuthoredSfc::new(content);
+    let authored = crate::authored_sfc::AuthoredSfc::at(content, path);
     let content = authored.analyzed();
     let descriptor = match parse_sfc(
         content,

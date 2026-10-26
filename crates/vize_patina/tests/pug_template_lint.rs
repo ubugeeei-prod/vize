@@ -171,7 +171,13 @@ fn refused_pug_and_jade_report_the_shared_lowering_errors_at_authored_bytes() {
     assert!(!paths.is_empty());
     for path in paths {
         let body = std::fs::read_to_string(&path).unwrap();
-        let lowered = vize_l1_to_l2::lower::pug::derive_template_source(&body);
+        // Includes are read against the file, as the compiler reads them.
+        let lowered = vize_l1_to_l2::lower::pug::derive_template_source_including(
+            &body,
+            vize_l1_to_l2::lower::pug::PugRendering::Pug,
+            "Refused.vue",
+            &mut vize_atelier_sfc::PugFileIncludes,
+        );
         assert!(lowered.has_errors(), "{}", path.display());
         for lang in ["pug", "jade", "PuG", "JADE"] {
             let prefix = format!("<!-- 日本 🧭 -->\r\n<template lang=\"{lang}\">");
@@ -285,4 +291,34 @@ fn pinned_original_pug_and_jade_attribute_blocks_lint_like_their_html_twin() {
         assert_eq!((result.error_count, result.warning_count), (0, 0));
         assert_eq!(signature(&result), signature(&expected));
     }
+}
+
+#[test]
+fn included_pug_lints_like_its_html_twin_and_lands_on_the_include() {
+    // The linter reads includes against the file, as the compiler does.
+    let root = tempfile::tempdir().expect("tempdir");
+    std::fs::create_dir(root.path().join("partials")).expect("partials");
+    std::fs::write(
+        root.path().join("partials/items.pug"),
+        "li(v-for=\"item in items\") {{ item }}\n",
+    )
+    .expect("partial");
+    let pug = [
+        "<template lang=\"pug\">\nul\n  include partials/items.pug\n</template>",
+        SCRIPT,
+    ]
+    .concat();
+    let html = [
+        "<template><ul><li v-for=\"item in items\">{{ item }}</li></ul></template>",
+        SCRIPT,
+    ]
+    .concat();
+    let file = root.path().join("A.vue").to_string_lossy().into_owned();
+    let linter = Linter::new();
+    let (from_pug, from_html) = (linter.lint_sfc(&pug, &file), linter.lint_sfc(&html, &file));
+    assert_eq!(signature(&from_pug), signature(&from_html));
+    assert_eq!(
+        spans(&from_pug, &pug),
+        [("vue/require-v-for-key", "include partials/items.pug")]
+    );
 }

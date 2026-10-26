@@ -111,3 +111,38 @@ fn jade_alias_reports_like_pug_at_authored_positions() {
     assert_eq!(reports[1], reports[0]);
     assert_eq!(reports[0].len(), 3);
 }
+
+#[test]
+fn mixins_and_includes_report_like_html_at_their_authored_pug() {
+    let Some(corsa) = corsa_requirement::required_or_skip(None::<String>) else {
+        return;
+    };
+    let root = tempfile::tempdir().unwrap();
+    link_workspace_vue(root.path());
+    // `check` reads includes against the SFC, as the compiler does; an
+    // error inside an included file lands inside the `include` that read it.
+    fs::create_dir(root.path().join("partials")).unwrap();
+    fs::write(
+        root.path().join("partials/actions.pug"),
+        "button(@click=\"inc('x')\") add\n",
+    )
+    .unwrap();
+    let pug = "<template lang=\"pug\">\nmixin label(text)\n  span(:title=\"count.trim()\")= text\ndiv\n  +label('A')\n  include partials/actions.pug\n</template>\n";
+    let html = "<template>\n<div><span :title=\"count.trim()\">A</span><button @click=\"inc('x')\">add</button></div>\n</template>\n";
+    for (name, template, call) in [("Pug.vue", pug, "include"), ("Html.vue", html, "'x'")] {
+        let source = format!("{SCRIPT}{template}");
+        fs::write(root.path().join(name), &source).unwrap();
+        let mut expected = [("trim", "TS2339"), (call, "TS2345")]
+            .map(|(needle, code)| {
+                let (line, column) = position(&source, needle, 0);
+                (line, column, code.to_owned())
+            })
+            .to_vec();
+        if name == "Pug.vue" {
+            // The included bytes have no authored copy: the call's offset
+            // inside `inc('x')` lands inside the directive.
+            expected[1].1 += "inc(".len();
+        }
+        assert_eq!(errors(root.path(), &corsa, name), expected, "{name}");
+    }
+}
