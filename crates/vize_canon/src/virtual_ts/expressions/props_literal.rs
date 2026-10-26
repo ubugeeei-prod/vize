@@ -126,11 +126,14 @@ pub(crate) fn append_props_literal(
             spreads.peek().is_some(),
             &mut authored_named_keys,
         );
-        if let Some(rows) = rows
-            && !rows.merged
-            && (!rows.ignored_primary || source_context.is_inference_only())
-        {
+        let Some(rows) = rows else {
+            continue;
+        };
+        if !rows.merged && (!rows.ignored_primary || source_context.is_inference_only()) {
             source_context.record_prop_projection(usage, prop, rows.name, rows.value);
+        }
+        for (binding, value) in rows.merged_values {
+            source_context.record_merged_prop_echo(usage, binding, value);
         }
     }
     for spread in spreads {

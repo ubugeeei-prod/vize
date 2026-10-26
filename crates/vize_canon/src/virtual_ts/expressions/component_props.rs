@@ -144,6 +144,24 @@ impl<'a> ComponentPropSource<'a> {
             record(owner, value, source);
         }
     }
+
+    /// A merged `class`/`style` entry repeats each dynamic value that its own
+    /// per-prop assignment already checks; that assignment owns diagnostics.
+    pub(super) fn record_merged_prop_echo(
+        self,
+        usage: &ComponentUsage,
+        prop: &PassedProp,
+        value: std::ops::Range<usize>,
+    ) {
+        let (Some(collector), Some(owner), Some(source)) = (
+            self.diagnostic_ownership,
+            crate::virtual_ts::diagnostic_ownership::InputOwner::for_prop(usage, prop),
+            prop_value_source_range(self, prop),
+        ) else {
+            return;
+        };
+        collector.borrow_mut().record(owner, value, source, true);
+    }
 }
 
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {

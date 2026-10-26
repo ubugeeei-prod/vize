@@ -309,3 +309,58 @@ fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
         }
     }
 }
+
+#[test]
+fn merged_class_and_style_values_keep_one_visible_copy() {
+    // #10788: a static and a bound class/style merge into one props-call entry
+    // that repeats each value its own prop assignment already checks.
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue';
+const { href = "", active = false } = defineProps<{ href?: string; active?: boolean }>();
+function onClick(): void {}
+</script>
+
+<template>
+  <component :is="href ? 'a' : 'button'" class="btn" :class="[{ 'btn--active': active.nope }]" @click.stop="onClick">x</component>
+  <component :is="href ? 'a' : 'button'" class="btn" :class="[{ 'btn--active': active.nope }]">no listener</component>
+  <button class="btn" :class="[{ 'btn--active': active.nope }]" @click.stop="onClick">plain element</button>
+  <Child style="color: red" :style="{ color: active.nope }" />
+</template>
+"#;
+    let packet = packet("src/App.vue", source, true);
+    let rows = |key: &str| -> Vec<[usize; 6]> {
+        serde_json::from_value(
+            key.split('.')
+                .fold(packet.clone(), |value, key| value[key].clone()),
+        )
+        .expect("protocol tuples")
+    };
+    let (spans, directives) = (rows("mappings"), rows("diagnosticDirectives.directives"));
+    let text = packet["text"].as_str().expect("virtual text");
+    let mut visible = text
+        .match_indices("active.nope")
+        .filter(|(generated, _)| {
+            !directives.iter().any(|[_, _, start, end, policy, _]| {
+                *policy == 0 && (*start..*end).contains(generated)
+            })
+        })
+        .filter_map(|(generated, _)| {
+            spans
+                .iter()
+                .filter(|[start, length, _, original_length, _, _]| {
+                    (*start..start + length).contains(&generated) && length == original_length
+                })
+                .min_by_key(|[_, length, _, _, _, _]| *length)
+                .map(|[start, _, original, _, _, _]| original + generated - start)
+        })
+        .collect::<Vec<_>>();
+    visible.sort_unstable();
+    let authored = source
+        .match_indices("active.nope")
+        .map(|(at, _)| at)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        visible, authored,
+        "one diagnostic-visible copy per authored value"
+    );
+}
