@@ -421,8 +421,13 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     currentContracts,
     vsixInfrastructure: infrastructure,
     cratesSha256: fingerprint(actual),
-    currentBuildInputsSha256: fingerprint(readTree(revision, contract.buildPaths, false)),
-    currentVsixInputsSha256: fingerprint(readTree(revision, reviewedVsixPaths)),
+    // The pinned product revision need not be fetched; only a checkout has current inputs.
+    currentBuildInputsSha256: pinnedProduct
+      ? null
+      : fingerprint(readTree(revision, contract.buildPaths, false)),
+    currentVsixInputsSha256: pinnedProduct
+      ? null
+      : fingerprint(readTree(revision, reviewedVsixPaths)),
     productionChanges: [
       ...new Set(
         [...contract.layers, integration, successor.integrationLayer].flatMap((layer) =>
