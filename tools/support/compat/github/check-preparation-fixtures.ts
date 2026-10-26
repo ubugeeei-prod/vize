@@ -16,18 +16,18 @@ export const checkPreparationRegistration = {
   sources: [
     {
       path: "crates/vize/src/commands/check/runner/execution.rs",
-      before: "efeddbdcf3ef827687aad6bf3ce23dd3d591ca6f7083517d6fe04b8b2c86d65d",
-      after: "7b8a9d169cadbce57143ee1b4debc7c96938548f9dfe74f6163dc357fc768a01",
+      before: "10c925338d4adde61228ce9fbb4f49fbd6026d64bc02121f7ce916aac0735573",
+      after: "d98c7f41c683600deff3ca0d1719ae8d8f1030f4da1cf58631531eb48c60241d",
     },
     {
       path: "crates/vize_canon/src/batch.rs",
-      before: "046a27c2f9870d3e7c8e0be955f2daad298fbf9d0c043441aaa52f8c2c379681",
-      after: "8c4b1940aeba743b43e2bb835509d8cc210839d1547c82e722c34d522b8ad5d8",
+      before: "4514867e06fc6708b8319ae711c8baf1f87dc6ca6db437cac3e0a6109ab0cc45",
+      after: "d5a45015b7d5bc44bef75366e05e9dfcab5d118be7a73e8fec3aec555b17b282",
     },
     {
       path: "crates/vize_canon/src/batch/type_checker.rs",
-      before: "e8ddc0437605f21402f26835451c69855fed051c34b5d8eb9cfbf5dae94b1d8b",
-      after: "79997491da904dcd9dd6fda06d23d22e6905139b540e337cd3681d0c1ef681c0",
+      before: "9dc84d01356be5e27721b1208506c7f0fc603721679ea5b17db66bd1b2fafe80",
+      after: "3cbb6505e7f608b531842a8aa67930e8c30750d5f36824eea9777a93f70e1d2a",
     },
     {
       path: "crates/vize_canon/src/batch/type_checker/installed_sources.rs",
