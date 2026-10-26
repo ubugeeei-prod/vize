@@ -1,14 +1,23 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { startTsserver, position } from "./tsserver-client.mjs";
-import { createNavigationFixtures, checkNavigation } from "./authored-navigation.mjs";
-import { checkProjectMetadata } from "./project-metadata.mjs";
+import { createNavigationFixtures, checkNavigation } from "./authored-navigation.ts";
+import { digest, installPackedConsumer, run } from "./packed-install.ts";
+import { checkProjectMetadata, type NativeProjectApi } from "./project-metadata.ts";
+import {
+  startTsserver,
+  position,
+  type CompletionInfo,
+  type Diagnostic,
+  type FileSpan,
+  type QuickInfo,
+  type References,
+  type RenameInfo,
+  type Response,
+} from "./tsserver-client.ts";
 
 const typescriptVersion = process.env.VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT || "6.0.3";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -18,79 +27,8 @@ const output = process.env.VIZE_TYPESCRIPT_PLUGIN_CAPTURE
   : fs.mkdtempSync(path.join(os.tmpdir(), "vize-typescript-plugin-capture-"));
 fs.mkdirSync(output, { recursive: true });
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tsserver-consumer-"));
-const digest = (data) => createHash("sha256").update(data).digest("hex");
-const run = (command, args, cwd = temporary) =>
-  execFileSync(command, args, { cwd, encoding: "utf8", timeout: 90_000, maxBuffer: 8_000_000 });
-const manifest = (name) =>
-  JSON.parse(fs.readFileSync(path.join(root, name, "package.json"), "utf8"));
-const nativeManifest = manifest("npm/native");
-const pluginManifest = manifest("npm/typescript-plugin");
-function pack(name, packageJson, files) {
-  const stage = path.join(temporary, name);
-  fs.mkdirSync(stage);
-  for (const [source, target] of files) fs.copyFileSync(source, path.join(stage, target));
-  fs.writeFileSync(path.join(stage, "package.json"), JSON.stringify(packageJson, null, 2));
-  const report = JSON.parse(
-    run("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", output], stage),
-  )[0];
-  fs.writeFileSync(path.join(output, `${name}-pack.json`), JSON.stringify(report, null, 2));
-  return path.join(output, report.filename);
-}
-const nativeFiles = fs
-  .readdirSync(path.join(root, "npm/native"))
-  .filter((name) => nativeManifest.files.includes(name) || name.endsWith(".node"));
-assert(
-  nativeFiles.some((name) => name.endsWith(".node")),
-  "Build the exact-source native binary before this test",
-);
-const native = pack(
-  "native",
-  {
-    ...nativeManifest,
-    scripts: {},
-    optionalDependencies: {},
-    devDependencies: {},
-    files: nativeFiles,
-  },
-  nativeFiles.map((name) => [path.join(root, "npm/native", name), name]),
-);
-const pluginFiles = fs
-  .readdirSync(path.join(root, "npm/typescript-plugin"))
-  .filter((name) => /\.cjs$|\.d\.cts$|^README\.md$/.test(name));
-const plugin = pack(
-  "plugin",
-  { ...pluginManifest, dependencies: { "@vizejs/native": nativeManifest.version } },
-  pluginFiles.map((name) => [path.join(root, "npm/typescript-plugin", name), name]),
-);
-const consumer = path.join(temporary, "consumer");
-fs.mkdirSync(consumer);
-fs.writeFileSync(
-  path.join(consumer, "package.json"),
-  JSON.stringify({ private: true, name: "vize-tsserver-consumer", version: "1.0.0" }),
-);
-fs.writeFileSync(
-  path.join(output, "install.log"),
-  run(
-    "npm",
-    [
-      "install",
-      "--ignore-scripts",
-      "--no-audit",
-      "--no-fund",
-      native,
-      plugin,
-      `typescript@${typescriptVersion}`,
-      "vue@3.5.35",
-    ],
-    consumer,
-  ),
-);
-const pluginPath = path.join(consumer, "node_modules/@vizejs/typescript-vue-plugin");
-for (const name of pluginFiles)
-  assert.equal(
-    digest(fs.readFileSync(path.join(pluginPath, name))),
-    digest(fs.readFileSync(path.join(root, "npm/typescript-plugin", name))),
-  );
+const { consumer, native, plugin, pluginPath, nativeFiles, pluginFiles, pluginManifest } =
+  installPackedConsumer(root, output, temporary, typescriptVersion);
 const config = {
   compilerOptions: {
     strict: true,
@@ -102,7 +40,7 @@ const config = {
     baseUrl: ".",
     paths: { "@/*": ["src/*"] },
     ...(typescriptVersion.startsWith("6.") ? { ignoreDeprecations: "6.0" } : {}),
-    plugins: [{ name: pluginManifest.name }],
+    plugins: [{ name: pluginManifest.name } as { name: string; enabled?: boolean }],
   },
   include: ["src"],
 };
@@ -146,17 +84,23 @@ fs.writeFileSync(vue, vueText);
 fs.writeFileSync(art, artText);
 fs.writeFileSync(path.join(src, "util.ts"), 'export const word = "hello";\n');
 const consumerRequire = createRequire(path.join(consumer, "package.json"));
-const nativeApi = consumerRequire("@vizejs/native");
-const projectionHelper = consumerRequire("@vizejs/native/language-projection.js");
+const nativeApi = consumerRequire("@vizejs/native") as NativeProjectApi & {
+  getNativeBuildToken(): string;
+};
+const projectionHelper = consumerRequire("@vizejs/native/language-projection.js") as {
+  toUtf16LanguageProjection(source: string, raw: string): unknown;
+};
 const loadedImages = Object.values(consumerRequire.cache).filter(
-  (entry) =>
+  (entry): entry is NodeJS.Module =>
+    entry !== undefined &&
     entry.filename.endsWith(".node") &&
     entry.exports.generateVueLanguageCode === nativeApi.generateVueLanguageCode,
 );
 assert.equal(loadedImages.length, 1, "Capture the actual native image serving this projection API");
+const [loadedModule] = loadedImages as [NodeJS.Module];
 const loadedImage = {
-  file: path.basename(loadedImages[0].filename),
-  sha256: digest(fs.readFileSync(loadedImages[0].filename)),
+  file: path.basename(loadedModule.filename),
+  sha256: digest(fs.readFileSync(loadedModule.filename)),
   nativeBuildToken: nativeApi.getNativeBuildToken(),
 };
 assert.match(loadedImage.nativeBuildToken, /^[0-9a-f]{32}$/);
@@ -184,9 +128,16 @@ for (const [file, source] of [
 const navigation = createNavigationFixtures(src, output);
 const tsserver = path.join(consumer, "node_modules/typescript/lib/tsserver.js");
 const client = startTsserver(tsserver, consumer, output);
-const results = {};
-async function request(name, command, file, text, marker, extra = {}) {
-  const response = await client.send(command, {
+const results: Record<string, Response> = {};
+async function request<Body>(
+  name: string,
+  command: string,
+  file: string,
+  text: string,
+  marker?: readonly [string, number],
+  extra: object = {},
+): Promise<Response<Body>> {
+  const response = await client.send<Body>(command, {
     file,
     ...(marker ? position(text, marker[0], marker[1]) : {}),
     ...extra,
@@ -206,10 +157,10 @@ try {
   await client.send("open", { file: main, fileContent: mainText }, false);
   await client.send("open", { file: vue, fileContent: vueText, scriptKindName: "TS" }, false);
   await client.send("open", { file: art, fileContent: artText, scriptKindName: "TS" }, false);
-  const hover = await request("hover", "quickinfo", vue, vueText, ["state.count", 7]);
+  const hover = await request<QuickInfo>("hover", "quickinfo", vue, vueText, ["state.count", 7]);
   assert(hover.success, JSON.stringify(hover));
   assert.match(hover.body.displayString, /number/);
-  const completion = await request("completion", "completionInfo", vue, vueText, [
+  const completion = await request<CompletionInfo>("completion", "completionInfo", vue, vueText, [
     "state.count",
     6,
   ]);
@@ -217,17 +168,23 @@ try {
     completion.body.entries.some((entry) => entry.name === "count"),
     JSON.stringify(completion),
   );
-  const definition = await request("definition", "definition", vue, vueText, ["double(state", 2]);
+  const definition = await request<FileSpan[]>("definition", "definition", vue, vueText, [
+    "double(state",
+    2,
+  ]);
   assert(
     definition.body.some((entry) => entry.file === vue && entry.start.line === 6),
     JSON.stringify(definition),
   );
-  const references = await request("references", "references", vue, vueText, ["double(value", 2]);
+  const references = await request<References>("references", "references", vue, vueText, [
+    "double(value",
+    2,
+  ]);
   assert(
     references.body.refs.filter((entry) => entry.file === vue).length >= 2,
     JSON.stringify(references),
   );
-  const rename = await request("rename", "rename", vue, vueText, ["double(value", 2], {
+  const rename = await request<RenameInfo>("rename", "rename", vue, vueText, ["double(value", 2], {
     findInStrings: false,
     findInComments: false,
   });
@@ -251,7 +208,7 @@ try {
     { file: brokenFile, fileContent: brokenSource, scriptKindName: "TS" },
     false,
   );
-  const syntaxPacket = await request(
+  const syntaxPacket = await request<Diagnostic[]>(
     "native-syntax-diagnostics",
     "syntacticDiagnosticsSync",
     brokenFile,
@@ -261,17 +218,32 @@ try {
     syntaxPacket.body.some((entry) => entry.code === 100001),
     JSON.stringify(syntaxPacket),
   );
-  const vueDiagnostics = await request("vue-diagnostics", "semanticDiagnosticsSync", vue, vueText);
+  const vueDiagnostics = await request<Diagnostic[]>(
+    "vue-diagnostics",
+    "semanticDiagnosticsSync",
+    vue,
+    vueText,
+  );
   assert(
     vueDiagnostics.body.some((entry) => entry.code === 2322 && entry.start.line === 5),
     JSON.stringify(vueDiagnostics),
   );
-  const artDiagnostics = await request("art-diagnostics", "semanticDiagnosticsSync", art, artText);
+  const artDiagnostics = await request<Diagnostic[]>(
+    "art-diagnostics",
+    "semanticDiagnosticsSync",
+    art,
+    artText,
+  );
   assert(
     artDiagnostics.body.some((entry) => entry.code === 2322 && entry.start.line === 2),
     JSON.stringify(artDiagnostics),
   );
-  const tsDiagnostics = await request("ts-diagnostics", "semanticDiagnosticsSync", main, mainText);
+  const tsDiagnostics = await request<Diagnostic[]>(
+    "ts-diagnostics",
+    "semanticDiagnosticsSync",
+    main,
+    mainText,
+  );
   assert(
     tsDiagnostics.body.some((entry) => entry.code === 2307 && entry.text.includes("Missing.vue")),
     JSON.stringify(tsDiagnostics),
@@ -290,7 +262,7 @@ try {
   for (let index = 0; index < vueText.length; index++)
     if (vueText[index] === "\n") lineOffsets.push(index + 1);
   const renameEdits = rename.body.locs
-    .find((group) => group.file === vue)
+    .find((group) => group.file === vue)!
     .locs.map((edit) => ({
       start: lineOffsets[edit.start.line - 1] + edit.start.offset - 1,
       end: lineOffsets[edit.end.line - 1] + edit.end.offset - 1,
@@ -306,7 +278,7 @@ try {
     endOffset: 1,
     insertString: renamed,
   });
-  const renamedDefinition = await request(
+  const renamedDefinition = await request<FileSpan[]>(
     "definition-after-applied-rename",
     "definition",
     vue,
@@ -323,7 +295,7 @@ try {
     endOffset: 1,
     insertString: edited,
   });
-  const afterEdit = await request("hover-after-unsaved-edit", "quickinfo", vue, edited, [
+  const afterEdit = await request<QuickInfo>("hover-after-unsaved-edit", "quickinfo", vue, edited, [
     "state.count",
     7,
   ]);
@@ -336,7 +308,7 @@ try {
     endOffset: 1,
     insertString: "",
   });
-  const cleared = await request(
+  const cleared = await request<Diagnostic[]>(
     "diagnostics-after-unsaved-clear",
     "semanticDiagnosticsSync",
     main,
@@ -348,12 +320,19 @@ try {
     run(process.execPath, [tsc, "-p", consumer, "--pretty", "false"], consumer);
     throw new Error("Ordinary tsc unexpectedly accepted Vue imports");
   } catch (error) {
-    if (!error.stdout) throw error;
-    fs.writeFileSync(path.join(output, "ordinary-tsc.stdout"), error.stdout);
-    assert.match(String(error.stdout), /TS2307.*App\.vue/);
+    const stdout = (error as { stdout?: string | Buffer } | null)?.stdout;
+    if (!stdout) throw error;
+    fs.writeFileSync(path.join(output, "ordinary-tsc.stdout"), stdout);
+    assert.match(String(stdout), /TS2307.*App\.vue/);
   }
   await client.stop();
-  async function isolatedScenario(name, file, source, expectedCode, predicate = () => true) {
+  async function isolatedScenario(
+    name: string,
+    file: string,
+    source: string,
+    expectedCode: number | readonly number[],
+    predicate: (entry: Diagnostic) => boolean = () => true,
+  ): Promise<void> {
     const directory = path.join(output, name);
     fs.mkdirSync(directory);
     const negative = startTsserver(tsserver, consumer, directory);
@@ -366,13 +345,14 @@ try {
       });
       await negative.send("open", { file: main, fileContent: mainText }, false);
       await negative.send("open", { file, fileContent: source }, false);
-      const response = await negative.send("semanticDiagnosticsSync", { file });
+      const response = await negative.send<Diagnostic[]>("semanticDiagnosticsSync", { file });
       results[name] = response;
       assert(
         response.body.some(
           (entry) =>
-            (Array.isArray(expectedCode) ? expectedCode : [expectedCode]).includes(entry.code) &&
-            predicate(entry),
+            (typeof expectedCode === "number" ? [expectedCode] : expectedCode).includes(
+              entry.code,
+            ) && predicate(entry),
         ),
         JSON.stringify(response),
       );
@@ -385,7 +365,7 @@ try {
   fs.writeFileSync(path.join(consumer, "tsconfig.json"), JSON.stringify(config));
   await isolatedScenario("native-nodenext", main, mainText, [2322, 2741]);
   assert(
-    !results["native-nodenext"].body.some(
+    !(results["native-nodenext"] as Response<Diagnostic[]>).body.some(
       (entry) => entry.code === 2307 && entry.text.includes("App.vue"),
     ),
   );
@@ -406,7 +386,7 @@ try {
       { file: utilFile, fileContent: fs.readFileSync(utilFile, "utf8") },
       false,
     );
-    const response = await closedReferencesClient.send("references", {
+    const response = await closedReferencesClient.send<References>("references", {
       file: utilFile,
       line: 1,
       offset: 15,
@@ -443,8 +423,10 @@ try {
         source: run("git", ["rev-parse", "HEAD"], root).trim(),
         node: process.version,
         loadedImage,
-        tsserverVersion: JSON.parse(
-          fs.readFileSync(path.join(consumer, "node_modules/typescript/package.json")),
+        tsserverVersion: (
+          JSON.parse(
+            fs.readFileSync(path.join(consumer, "node_modules/typescript/package.json"), "utf8"),
+          ) as { readonly version: string }
         ).version,
         nativeBinary: nativeFiles
           .filter((name) => name.endsWith(".node"))

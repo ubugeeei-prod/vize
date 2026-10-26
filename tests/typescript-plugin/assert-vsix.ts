@@ -10,7 +10,7 @@ const source = path.join(root, "npm/typescript-plugin");
 const files = fs
   .readdirSync(source)
   .filter((name) => /\.cjs$|\.d\.cts$|^README\.md$|^package\.json$/.test(name));
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const plugin = files.map((name) => {
   const actual = execFileSync(
     "unzip",
@@ -21,7 +21,9 @@ const plugin = files.map((name) => {
   assert.deepEqual(actual, expected, `VSIX ${name} differs from canonical npm source`);
   return { name, sha256: sha256(actual) };
 });
-const output = path.resolve(process.env.VIZE_TYPESCRIPT_PLUGIN_CAPTURE);
+const capture = process.env.VIZE_TYPESCRIPT_PLUGIN_CAPTURE;
+assert.ok(capture, "VIZE_TYPESCRIPT_PLUGIN_CAPTURE names the capture directory");
+const output = path.resolve(capture);
 fs.writeFileSync(
   path.join(output, "vsix-receipt.json"),
   JSON.stringify(
