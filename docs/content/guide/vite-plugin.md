@@ -265,7 +265,20 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 | `vize build` | Runs your installed preprocessor through Node | Native |
 | `vize fmt` | Preprocessor blocks are left byte-identical | Formatted |
 | `vize lint` | Template rules apply; style blocks are not linted as CSS | Template rules apply |
-| LSP | CSS completion and hover (indented syntax included); `v-bind()` go-to-definition; CSS-module class completion in every preprocessor | Tag completion and go-to-definition |
+| `vize check` | Not type-checked | Template expressions are type-checked |
+| LSP | CSS completion and hover (indented syntax included); `v-bind()` go-to-definition; CSS-module class completion in every preprocessor | Completion, hover, go-to-definition, references and rename |
+
+#### Pug templates
+
+Vize renders a Pug template to HTML as `pug@3` does for `@vue/compiler-sfc` and compiles that HTML in the DOM, SSR and Vapor modes. Pug code runs at build time, with no component data, exactly as pug runs it:
+
+- Tags, `.class` / `#id` shorthand, attributes, `&attributes`, text, `#{}` / `!{}` interpolation, `=` / `!=` code, `- var`, `if` / `unless` / `else`, and `each` / `for` over values the template defines.
+- Mixins, with arguments, rest arguments, `block` and `attributes`.
+- `include`, resolved against the `.vue` file. A `.pug` or `.jade` file is inserted as Pug, any other file as raw text. Vite watches included files and an edit to one reloads the components that include it.
+
+Code that needs component data or a JavaScript function call (`#{count}`, `if user.admin`), `extends` / named `block`s, `case`, `while`, filters (including filtered includes) and `doctype` are refused with an error at the construct. Use Vue syntax (`{{ }}`, `v-if`, `v-for`) for component state.
+
+Compile errors, lint findings and type errors point at the Pug line and column you wrote. A finding inside an included file is reported on the `include` line. Known gaps: lint autofixes inside a Pug template are not applied; `vize fmt` re-indents a Pug template but does not rewrite it; the editor does not re-check a component when only a file it includes changes; and ESLint cannot parse Pug, so lint parity with `eslint-plugin-vue` is measured outside the Pug template.
 
 ## Nuxt Compatibility
 
