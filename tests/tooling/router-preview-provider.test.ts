@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { type TarEntry, writeTarGz } from "../../tools/support/archive/tar.ts";
+import { packageInventory } from "./support/router-preview/archive-inventory.ts";
 import { buildProvider } from "./support/router-preview/build-provider.ts";
 import { fixtureDirectory, readAuthority } from "./support/router-preview/authority.ts";
 import { readProjectFixture } from "./support/router-preview/project.ts";
@@ -151,67 +152,40 @@ test("the real provider build cannot be started by a local helper invocation", (
 });
 
 test("archive custody keeps complete identities and rejects traversal, links, and duplicates", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-preview-archive-control-"));
-  const builder = `import io,sys,tarfile
-p,kind=sys.argv[1:]
-with tarfile.open(p,'w:gz') as t:
- d=tarfile.TarInfo('package/');d.type=tarfile.DIRTYPE;t.addfile(d)
- entries=[('package/package.json','{"name":"owned-control"}\\n'),('package/dist/index.d.ts','export type Value = number\\n')]
- if kind=='traversal':entries[0]=('package/../outside.txt','x')
- if kind=='absolute':entries[0]=('/package/outside.txt','x')
- if kind=='foreign':entries[0]=('foreign/outside.txt','x')
- if kind=='duplicate':entries.append(entries[0])
- for name,value in entries:
-  b=value.encode();m=tarfile.TarInfo(name);m.size=len(b);t.addfile(m,io.BytesIO(b))
- if kind in ('symlink','hardlink'):
-  m=tarfile.TarInfo('package/linked');m.type=tarfile.SYMTYPE if kind=='symlink' else tarfile.LNKTYPE;m.linkname='../../outside';t.addfile(m)
-`;
-  try {
-    for (const kind of [
-      "regular",
-      "traversal",
-      "absolute",
-      "foreign",
-      "duplicate",
-      "symlink",
-      "hardlink",
-    ]) {
-      const archive = path.join(root, `${kind}.tgz`);
-      const create = spawnSync("python3", ["-c", builder, archive, kind], { encoding: "utf8" });
-      assert.equal(create.error, undefined);
-      assert.equal(create.status, 0, create.stderr);
-      const read = spawnSync(
-        "python3",
-        [path.join(fixtureDirectory, "archive_inventory.py"), archive],
-        { encoding: "utf8" },
-      );
-      assert.equal(read.error, undefined);
-      if (kind === "regular") {
-        assert.equal(read.status, 0, read.stderr);
-        assert.equal(read.stderr, "");
-        assert.deepEqual(JSON.parse(read.stdout), [
-          { path: "dist/index.d.ts", bytes: 27, sha256: digest("export type Value = number\n") },
-          { path: "package.json", bytes: 25, sha256: digest('{"name":"owned-control"}\n') },
-        ]);
-      } else {
-        assert.equal(read.status, 1, kind);
-        assert.equal(read.stdout, "", kind);
-        const expected = {
-          traversal: "unsafe package member: 'package/../outside.txt'",
-          absolute: "unsafe package member: '/package/outside.txt'",
-          foreign: "unsafe package member: 'foreign/outside.txt'",
-          duplicate: "duplicate package member: 'package.json'",
-          symlink: "non-regular package member: 'package/linked'",
-          hardlink: "non-regular package member: 'package/linked'",
-        };
-        assert.deepEqual(
-          JSON.parse(read.stderr),
-          { error: expected[kind as keyof typeof expected] },
-          kind,
-        );
-      }
-    }
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+  const text = (value: string) => new TextEncoder().encode(value);
+  const archive = (kind: string) => {
+    const entries: TarEntry[] = [
+      { name: "package/", typeflag: "5" },
+      { name: "package/package.json", data: text('{"name":"owned-control"}\n') },
+      { name: "package/dist/index.d.ts", data: text("export type Value = number\n") },
+    ];
+    if (kind === "traversal") entries[1] = { name: "package/../outside.txt", data: text("x") };
+    if (kind === "absolute") entries[1] = { name: "/package/outside.txt", data: text("x") };
+    if (kind === "foreign") entries[1] = { name: "foreign/outside.txt", data: text("x") };
+    if (kind === "duplicate") entries.push(entries[1]!);
+    if (kind === "symlink" || kind === "hardlink")
+      entries.push({
+        name: "package/linked",
+        typeflag: kind === "symlink" ? "2" : "1",
+        linkname: "../../outside",
+      });
+    return writeTarGz(entries);
+  };
+  assert.deepEqual(packageInventory(archive("regular")), [
+    { path: "dist/index.d.ts", bytes: 27, sha256: digest("export type Value = number\n") },
+    { path: "package.json", bytes: 25, sha256: digest('{"name":"owned-control"}\n') },
+  ]);
+  for (const [kind, message] of [
+    ["traversal", "unsafe package member: 'package/../outside.txt'"],
+    ["absolute", "unsafe package member: '/package/outside.txt'"],
+    ["foreign", "unsafe package member: 'foreign/outside.txt'"],
+    ["duplicate", "duplicate package member: 'package.json'"],
+    ["symlink", "non-regular package member: 'package/linked'"],
+    ["hardlink", "non-regular package member: 'package/linked'"],
+  ] as const) {
+    assert.throws(() => packageInventory(archive(kind)), { message }, kind);
   }
+  assert.throws(() => packageInventory(writeTarGz([{ name: "package/", typeflag: "5" }])), {
+    message: "empty package archive",
+  });
 });

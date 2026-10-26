@@ -53,8 +53,8 @@
     },
     {
       "path": "frozen/provider-package.json",
-      "bytes": 12680,
-      "sha256": "860e855b298a23ae3638913f53830eb1ba20f86f8a8bf810c972f5bf3b447664"
+      "bytes": 12649,
+      "sha256": "f6b9682f1fae104895d7bab0c785000b95de9be18b43cc16b9e019ab1c9200c3"
     },
     {
       "path": "frozen/typed-router.d.ts.txt",

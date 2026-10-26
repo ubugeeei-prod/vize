@@ -17,7 +17,6 @@
     "nodeSha256": "e237a2839d0cbdc9a9a2adda1a184afc0f5b20306ffbe923af5686550472d8a8",
     "pnpm": "12.14.0",
     "npm": "11.9.0",
-    "python": "Python 3.12.3",
     "install": ["pnpm", "install", "--frozen-lockfile"],
     "command": ["pnpm", "--filter", "vue-router", "run", "build"]
   },

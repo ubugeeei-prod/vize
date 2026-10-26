@@ -5,7 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
-import { fileIdentity, fixtureDirectory, hash, readAuthority } from "./authority.ts";
+import { packageInventory } from "./archive-inventory.ts";
+import { fileIdentity, hash, readAuthority } from "./authority.ts";
 
 export function buildProvider(sourceRoot: string, outputRoot: string) {
   assert.equal(process.env.GITHUB_ACTIONS, "true", "upstream builds run only in Actions");
@@ -76,7 +77,6 @@ export function buildProvider(sourceRoot: string, outputRoot: string) {
   const pnpmVersion = run("package-manager-version", "pnpm", ["--version"]).trim();
   assert.equal(pnpmVersion, "12.14.0");
   const npmVersion = run("npm-version", "npm", ["--version"]).trim();
-  const pythonVersion = run("archive-reader-version", "python3", ["--version"]).trim();
   run("source-archive", "git", [
     "archive",
     "--format=tar",
@@ -114,12 +114,7 @@ export function buildProvider(sourceRoot: string, outputRoot: string) {
   const archiveBytes = fs.readFileSync(path.join(outputRoot, item.filename));
   const integrity = `sha512-${createHash("sha512").update(archiveBytes).digest("base64")}`;
   assert.equal(integrity, item.integrity);
-  const archiveFiles = JSON.parse(
-    run("read-actual-package-members", "python3", [
-      path.join(fixtureDirectory, "archive_inventory.py"),
-      path.join(outputRoot, item.filename),
-    ]),
-  );
+  const archiveFiles = packageInventory(archiveBytes);
   assert.deepEqual(
     archiveFiles.map(({ path: file }: { path: string }) => file),
     item.files.map(({ path: file }: { path: string }) => file).sort(),
@@ -153,7 +148,6 @@ export function buildProvider(sourceRoot: string, outputRoot: string) {
       nodeSha256: hash(fs.readFileSync(process.execPath)),
       pnpm: pnpmVersion,
       npm: npmVersion,
-      python: pythonVersion,
       install: authority.build.install,
       command: authority.build.command,
     },
