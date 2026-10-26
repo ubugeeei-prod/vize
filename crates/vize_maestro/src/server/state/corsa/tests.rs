@@ -53,13 +53,18 @@ fn held_backend(timeout_ms: u64) -> (tempfile::TempDir, ServerState) {
     )
     .unwrap();
     std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let state = configured_state(root.path(), &backend, timeout_ms);
+    (root, state)
+}
+
+fn configured_state(root: &Path, backend: &Path, timeout_ms: u64) -> ServerState {
     std::fs::write(
-        root.path().join("tsconfig.json"),
+        root.join("tsconfig.json"),
         r#"{"compilerOptions":{"strict":true,"moduleResolution":"Bundler"}}"#,
     )
     .unwrap();
     std::fs::write(
-        root.path().join("vite.config.mjs"),
+        root.join("vite.config.mjs"),
         vize_l0::cstr!(
             "export default {{ vue: {} }};",
             json!({
@@ -71,9 +76,9 @@ fn held_backend(timeout_ms: u64) -> (tempfile::TempDir, ServerState) {
     )
     .unwrap();
     let state = ServerState::new();
-    state.set_workspace_root(root.path().to_owned());
-    state.load_lsp_config(root.path());
-    (root, state)
+    state.set_workspace_root(root.to_owned());
+    state.load_lsp_config(root);
+    state
 }
 
 #[test]
@@ -194,4 +199,42 @@ fn superseded_startup_failure_cannot_poison_the_replacement_workspace() {
         state.get_workspace_root().as_deref(),
         Some(replacement.path())
     );
+}
+
+#[test]
+fn outer_shutdown_completes_an_initialized_compiler() {
+    let Some(tsgo) = crate::test_support::tsgo() else {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required native shutdown law has no configured runtime"
+        );
+        return;
+    };
+    let root = crate::test_support::tempdir().unwrap();
+    let state = configured_state(root.path(), &tsgo, 60_000);
+    let bridge = crate::runtime::block_on(state.get_corsa_bridge()).unwrap();
+    assert!(bridge.is_initialized());
+    crate::runtime::block_on(state.shutdown_project_contexts()).unwrap();
+    // Retirement alone dropped the slot; a request still holding the bridge
+    // kept its process alive past `exit` without a Shutdown request (#10760).
+    assert!(!bridge.is_initialized());
+    assert!(state.corsa_bridge.read().is_none());
+}
+
+#[test]
+fn outer_shutdown_does_not_wait_for_a_held_startup() {
+    let (root, state) = held_backend(60_000);
+    let cleanup = BackendCleanup(root.path());
+    let mut startup = Box::pin(state.get_corsa_bridge());
+    assert!(startup.as_mut().now_or_never().is_none());
+    await_condition(|| root.path().join("backend.pids").exists());
+    let pending = state.corsa_bridge.read().clone().unwrap();
+    assert!(matches!(
+        state.shutdown_project_contexts().now_or_never(),
+        Some(Ok(()))
+    ));
+    assert!(state.corsa_bridge.read().is_none());
+    cleanup.stop();
+    assert!(futures::executor::block_on(startup).is_none());
+    await_condition(|| !pending.is_draining());
 }
