@@ -123,11 +123,15 @@ pub(in super::super) fn runtime_project_root<'a>(
 
 pub(in super::super) fn resolve_corsa_executable(
     project_root: &Path,
+    runtime_root: &Path,
     configured_path: Option<&Path>,
 ) -> Result<PathBuf, String> {
+    // A relative configured runtime belongs to the authored project; only
+    // discovery starts from the selected tsconfig directory.
+    let configured = configured_path.map(|path| project_root.join(path));
     let request = CorsaResolveRequest {
-        explicit_path: configured_path,
-        project_root: Some(project_root),
+        explicit_path: configured.as_deref(),
+        project_root: Some(runtime_root),
     };
 
     vize_carton::corsa_resolver::resolve_corsa_executable(request).map_err(|error| cstr!("{error}"))

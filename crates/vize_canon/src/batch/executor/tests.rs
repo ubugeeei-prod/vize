@@ -236,7 +236,9 @@ fn checks_with_cli_when_project_session_api_is_unavailable() {
 
     let mut project = VirtualProject::new(&case_dir).unwrap();
     project.register_path(&source).unwrap();
-    let executor = CorsaExecutor::new(&case_dir).unwrap();
+    // Select the stub explicitly: an ambient CORSA_PATH/TSGO_PATH (such as the
+    // frozen CI runtime) must not replace the runtime without `--api`.
+    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();
     let result = executor.check(&project).unwrap();
 
     assert!(result.success);

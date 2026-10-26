@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { parse as parseToml } from "@iarna/toml";
+import { hasCheckerDependency } from "../public_install/identity.ts";
 import { readRawBlob } from "./plan.ts";
 
 export const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
@@ -105,6 +106,7 @@ export function sourceMetadata(root: string, head: string) {
   const cli = JSON.parse(read("npm/cli/package.json").toString());
   const name = "@typescript/typescript-linux-x64";
   if (cli.optionalDependencies?.[name] === undefined) {
+    assert(!hasCheckerDependency(cli), "CLI has an incomplete bundled checker declaration");
     return { ...metadata, provider: userProviderContract(root, head) };
   }
   assert.equal(cli.optionalDependencies[name], "catalog:corsa-runtime");

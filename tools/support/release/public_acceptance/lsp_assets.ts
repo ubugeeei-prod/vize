@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveBundledCorsaRuntime } from "../../../../tests/_fixtures/release/legacy-0.571/corsa-runtime.ts";
 import { unpackPublicArchive } from "../../../../tests/performance/support/warm-type-backed-public-archives.ts";
+import { hasCheckerDependency } from "../public_install/identity.ts";
 import { publicReader } from "./http.ts";
 import { rejectOverrides } from "./installed.ts";
 import { sha256, userProviderContract } from "./lsp_source.ts";
@@ -80,6 +81,7 @@ export async function installedCorsaProvider(
   const manifest = JSON.parse(fs.readFileSync(path.join(cli.directory, "package.json"), "utf8"));
   const frozenCli = JSON.parse(readRawBlob(root, head, "npm/cli/package.json").toString());
   if (frozenCli.optionalDependencies?.[name] === undefined) {
+    assert(!hasCheckerDependency(frozenCli), "CLI has an incomplete bundled checker declaration");
     rejectOverrides();
     const contract = userProviderContract(root, head);
     assert.equal(name, contract.name);

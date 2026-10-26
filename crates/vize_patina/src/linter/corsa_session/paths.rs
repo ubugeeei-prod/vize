@@ -185,7 +185,10 @@ mod tests {
         write_file(&wrapper);
         write_file(&native);
 
-        assert_eq!(resolve_corsa_executable(&root, None).unwrap(), native);
+        assert_eq!(
+            resolve_corsa_executable(&root, &root, None).unwrap(),
+            native
+        );
 
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -194,7 +197,7 @@ mod tests {
     fn configured_corsa_path_must_exist() {
         let root = case_dir("configured-missing");
         let missing = root.join("missing-corsa");
-        let error = resolve_corsa_executable(&root, Some(missing.as_path())).unwrap_err();
+        let error = resolve_corsa_executable(&root, &root, Some(missing.as_path())).unwrap_err();
 
         assert!(error.contains("Configured Corsa executable does not exist"));
         assert!(error.contains("missing-corsa"));

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { parse } from "yaml";
 import { userNativeRuntimeSelectionRequired } from "../../tools/support/compat/github/user-native-runtime-selection.ts";
 import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
 
@@ -29,6 +30,11 @@ test("runtime changes and observer-only changes select the existing CLI and sour
     "tests/tooling/native-runtime-napi-selection.test.mjs",
     "tests/tooling/support/native-runtime-selection/lsp.mjs",
     ".github/actions/test-native-runtime-selection/action.yml",
+    // Observer dependencies: build receipts, the formatter producer, the planner and the frozen runtime.
+    "tests/differential/build-receipt.ts",
+    "npm/native/scripts/formatter-history-build.mts",
+    "tools/support/compat/github/plan-pr-checks.ts",
+    ".github/actions/setup-frozen-native-test-runtime/action.yml",
   ]) {
     for (const eventName of ["pull_request", "merge_group"]) {
       assert(userNativeRuntimeSelectionRequired([path]), path);
@@ -59,24 +65,54 @@ test("unrelated markup and documentation do not add the compiler selection matri
 });
 
 test("required workflow calls reuse ordinary source producers and retain failed raw observations", () => {
-  const read = (file: string) => readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
+  type Step = {
+    name?: string;
+    if?: string;
+    uses?: string;
+    run?: string;
+    with?: Record<string, string>;
+    env?: Record<string, string>;
+  };
+  const read = (file: string) =>
+    parse(readFileSync(new URL(`../../${file}`, import.meta.url), "utf8"));
   const source = read(".github/workflows/pr-source-checks.yml");
   const js = read(".github/workflows/pr-js-checks.yml");
   const action = read(".github/actions/test-native-runtime-selection/action.yml");
-  assert(
-    source.includes(
-      "user-native-runtime-selection: ${{ steps.plan.outputs.user-native-runtime-selection }}",
-    ),
+  const selection = (workflow: { jobs: Record<string, { steps?: Step[] }> }) => {
+    const steps = Object.values(workflow.jobs)
+      .flatMap((job) => job.steps ?? [])
+      .filter((step) => step.uses === "./.github/actions/test-native-runtime-selection");
+    assert.equal(steps.length, 1);
+    return steps[0]!;
+  };
+  assert.equal(
+    source.jobs["pr-source-plan"].outputs["user-native-runtime-selection"],
+    "${{ steps.plan.outputs.user-native-runtime-selection }}",
   );
-  assert(source.includes("with: { surface: cli-lsp }"));
-  assert(js.includes("inputs.run-runtime-selection && matrix.group == 'builders'"));
-  assert(js.includes("with: { surface: napi }"));
-  assert(action.includes('VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"'));
-  assert(action.includes("node --test tests/tooling/native-runtime-cli-selection.test.mjs"));
-  assert(action.includes("node tests/tooling/support/native-runtime-selection/authority.mjs"));
-  assert(action.includes("VIZE_RUNTIME_AUTHORITY_EXPECTATION: after"));
-  assert(action.includes("node tests/tooling/support/native-runtime-selection/lsp.mjs"));
-  assert(action.includes("node --test tests/tooling/native-runtime-napi-selection.test.mjs"));
-  assert(action.includes("if: ${{ always() }}"));
-  assert(!/cargo build|build:native|build:debug|continue-on-error/.test(action));
+  const cli = selection(source);
+  assert.deepEqual(cli.with, { surface: "cli-lsp" });
+  assert.match(
+    cli.if!,
+    /matrix\.lane == 'lsp' && needs\.pr-source-plan\.outputs\.user-native-runtime-selection == 'true'/,
+  );
+  const napi = selection(js);
+  assert.deepEqual(napi.with, { surface: "napi" });
+  assert.match(napi.if!, /inputs\.run-runtime-selection && matrix\.group == 'builders'/);
+  const steps: Step[] = action.runs.steps;
+  const observe = steps.find((step) => step.env?.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION);
+  assert.equal(observe?.env?.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION, "1");
+  assert.equal(observe?.env?.VIZE_RUNTIME_AUTHORITY_EXPECTATION, "after");
+  for (const command of [
+    "node --test tests/tooling/native-runtime-cli-selection.test.mjs",
+    "node tests/tooling/support/native-runtime-selection/authority.mjs",
+    "node tests/tooling/support/native-runtime-selection/lsp.mjs",
+    "node --test tests/tooling/native-runtime-napi-selection.test.mjs",
+  ])
+    assert(observe?.run?.includes(command), command);
+  assert.equal(
+    steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))?.if,
+    "${{ always() }}",
+  );
+  assert(!steps.some((step) => /cargo build|build:native|build:debug/.test(step.run ?? "")));
+  assert(!steps.some((step) => "continue-on-error" in step));
 });

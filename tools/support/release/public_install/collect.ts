@@ -16,7 +16,7 @@ import {
   freshOutputs,
   lookup,
   majorAtLeast7,
-  hasCheckerOptionalDependency,
+  hasCheckerDependency,
   overrides,
   producerAuthority,
   rejectOverrides,
@@ -106,7 +106,7 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
   const cliRoot = path.join(install, "node_modules/vize");
   const cliManifest = readJson(exactPath(path.join(cliRoot, "package.json"), install));
   const userProvider = sourceDeclarations.corsaResolutionMode === "explicit-user-provider";
-  if (userProvider && hasCheckerOptionalDependency(cliManifest))
+  if (userProvider && hasCheckerDependency(cliManifest))
     throw new CustodyError("public CLI Corsa dependency differs from its actual H declaration");
   const corsaVersion = userProvider
     ? lookup(consumer, "devDependencies", corsa)

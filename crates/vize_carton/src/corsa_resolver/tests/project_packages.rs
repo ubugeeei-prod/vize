@@ -224,3 +224,47 @@ fn default_discovery_never_uses_ambient_runtime_or_package_manager() {
     );
     assert!(!root.join("npm-called").exists());
 }
+
+#[test]
+fn dependency_keys_cannot_escape_node_modules_on_any_host() {
+    use super::super::packages::valid_package_name;
+    for name in ["typescript", "ts7", "@typescript/typescript-linux-x64"] {
+        assert!(valid_package_name(name), "{name}");
+    }
+    for name in [
+        "",
+        "..",
+        ".bin",
+        "@scope",
+        "@scope/",
+        "@/name",
+        "a/b",
+        "@scope/a/b",
+        "a\\..\\..\\b",
+        "@scope/a\\..\\b",
+        "C:x",
+        "/abs",
+    ] {
+        assert!(!valid_package_name(name), "{name}");
+    }
+}
+
+#[test]
+fn a_broken_declared_runtime_is_reported_separately_from_a_missing_one() {
+    let temp = TempDir::new().unwrap();
+    let project = temp.path().join("project");
+    // The platform package is declared but its `lib/tsc` was never installed.
+    write_typescript_manifest(
+        &project.join("node_modules/typescript/package.json"),
+        platform_suffix(),
+        "7.1.0-beta",
+    );
+    let error = resolve(None, Some(&project), &[]).unwrap_err();
+    assert_eq!(
+        error,
+        CorsaResolveError::InvalidRuntime {
+            directory: project.join("node_modules")
+        }
+    );
+    assert!(crate::cstr!("{error}").contains(&*project.join("node_modules").to_string_lossy()));
+}

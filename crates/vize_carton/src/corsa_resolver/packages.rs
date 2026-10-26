@@ -187,12 +187,17 @@ fn nearest_package(dir: &Path, name: &str) -> Option<PathBuf> {
         })
 }
 
-fn valid_package_name(name: &str) -> bool {
-    !Path::new(name).is_absolute()
-        && !name.starts_with('.')
-        && name
-            .split('/')
-            .all(|part| !part.is_empty() && part != "." && part != "..")
+/// An npm name is `name` or `@scope/name`. Separators and prefixes of any
+/// host (`\`, `C:`) are rejected, so a key cannot leave `node_modules`.
+pub(super) fn valid_package_name(name: &str) -> bool {
+    let segment =
+        |part: &str| !part.is_empty() && !part.starts_with('.') && !part.contains(['\\', ':']);
+    match name.split_once('/') {
+        None => !name.starts_with('@') && segment(name),
+        Some((scope, package)) => scope
+            .strip_prefix('@')
+            .is_some_and(|scope| segment(scope) && segment(package) && !package.contains('/')),
+    }
 }
 
 fn read_manifest(package: &Path) -> Option<serde_json::Value> {

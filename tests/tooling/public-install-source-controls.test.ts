@@ -173,6 +173,11 @@ describe("SourceControls", () => {
     manifest.optionalDependencies = { "@typescript/typescript-linux-x64": "catalog:corsa-runtime" };
     fs.writeFileSync(file, JSON.stringify(manifest));
     assert.throws(() => sourceManifests(f.root, source(f.commit())), /incomplete bundled/);
+    // A checker in ordinary dependencies is still an automatic install.
+    delete manifest.optionalDependencies;
+    manifest.dependencies = { ...manifest.dependencies, typescript: "7.1.0-beta" };
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(() => sourceManifests(f.root, source(f.commit())), /incomplete bundled/);
   });
 
   test("current private provider must be explicit before any Node or network probe", async (t) => {

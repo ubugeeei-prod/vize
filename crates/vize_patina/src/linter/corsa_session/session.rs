@@ -33,7 +33,7 @@ impl CorsaTypeAwareSession {
     ) -> Result<Self, String> {
         let project_root = resolve_project_root(filename);
         let runtime_root = runtime_project_root(&project_root, tsconfig_path.as_deref());
-        let executable = resolve_corsa_executable(runtime_root, corsa_path)?;
+        let executable = resolve_corsa_executable(&project_root, runtime_root, corsa_path)?;
         let session_root = allocate_session_root(&project_root);
         let cleanup_guard = SessionRootCleanup::new(session_root.clone());
         profile!(

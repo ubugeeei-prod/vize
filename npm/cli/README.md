@@ -62,7 +62,7 @@ vp install -D vize
 
 The native TypeScript compiler is provided by your project, not bundled or downloaded by Vize.
 For project type checking, install `typescript@7.1.0-beta` and use its content mapper as described
-in the [Type Checking guide](https://vize.dev/guide/type-checking). `vize check`, the language
+in the [Type Checking guide](https://vizejs.dev/guide/type-checking). `vize check`, the language
 server, and type-aware linting use the same native runtime resolver. Explicit runtime settings
 such as `--corsa-path`, `typeChecker.corsaPath`, and `CORSA_PATH` take priority over discovery in
 the selected project's dependency graph. Global compiler installations require an explicit path;

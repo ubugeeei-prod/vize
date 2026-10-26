@@ -177,19 +177,22 @@ function catalogVersion(workspace: Buffer, catalog: string, packageName: string)
 export const corsaVersionPattern = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/u;
 export const majorAtLeast7 = (version: string): boolean => Number(version.split(".")[0]) >= 7;
 
-export function hasCheckerOptionalDependency(manifest: unknown): boolean {
-  const optional = lookup(manifest, "optionalDependencies");
-  return (
-    optional !== null &&
-    typeof optional === "object" &&
-    !Array.isArray(optional) &&
-    Object.keys(optional).some(
-      (name) =>
-        name === "typescript" ||
-        name.startsWith("@typescript/typescript-") ||
-        name.startsWith("@typescript/native-preview"),
-    )
-  );
+/** Whether a manifest installs a checker itself; a peer is not an install. */
+export function hasCheckerDependency(manifest: unknown): boolean {
+  return ["dependencies", "optionalDependencies"].some((section) => {
+    const declared = lookup(manifest, section);
+    return (
+      declared !== null &&
+      typeof declared === "object" &&
+      !Array.isArray(declared) &&
+      Object.keys(declared).some(
+        (name) =>
+          name === "typescript" ||
+          name.startsWith("@typescript/typescript-") ||
+          name.startsWith("@typescript/native-preview"),
+      )
+    );
+  });
 }
 
 export function sourceManifests(
@@ -229,7 +232,7 @@ export function sourceManifests(
         "@typescript/typescript-darwin-arm64",
       );
       if (declared === undefined) {
-        if (hasCheckerOptionalDependency(manifest))
+        if (hasCheckerDependency(manifest))
           throw new CustodyError("H CLI has an incomplete bundled checker declaration");
         userProvider = true;
       } else if (declared !== "catalog:corsa-runtime" && declared !== corsa)

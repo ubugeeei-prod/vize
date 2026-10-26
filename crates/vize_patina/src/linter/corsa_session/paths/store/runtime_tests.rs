@@ -1,4 +1,4 @@
-use super::{resolve_project_root, runtime_project_root};
+use super::{resolve_corsa_executable, resolve_project_root, runtime_project_root};
 use std::{fs, path::Path};
 
 #[test]
@@ -92,5 +92,21 @@ fn vue_install_remains_a_fallback_when_no_package_manifest_exists() {
     assert_eq!(
         resolve_project_root(&root.join("src/nested/App.vue").to_string_lossy()),
         root
+    );
+}
+
+#[test]
+fn relative_configured_runtime_is_anchored_at_the_authored_project() {
+    let temp = tempfile::tempdir().unwrap();
+    let package = temp.path().join("package");
+    let selected = temp.path().join("selected");
+    fs::create_dir_all(package.join("bin")).unwrap();
+    fs::create_dir_all(&selected).unwrap();
+    fs::write(package.join("bin/tsgo"), "").unwrap();
+    let resolved =
+        resolve_corsa_executable(&package, &selected, Some(Path::new("bin/tsgo"))).unwrap();
+    assert_eq!(
+        fs::canonicalize(resolved).unwrap(),
+        fs::canonicalize(package.join("bin/tsgo")).unwrap()
     );
 }

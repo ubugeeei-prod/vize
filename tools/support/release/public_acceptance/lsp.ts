@@ -14,6 +14,7 @@ import {
 } from "./lsp_assets.ts";
 import { assertBuiltSupport, cargoCommand, freezeSupportLock } from "./lsp_cargo.ts";
 import { assertAllLspPackets } from "./lsp_packets.ts";
+import { hasCheckerDependency } from "../public_install/identity.ts";
 import { assertLspSource, sha256, targets, userProviderContract } from "./lsp_source.ts";
 import { installUserProvider, assertUserProviderInstall } from "./lsp_user_provider.ts";
 import {
@@ -125,7 +126,7 @@ async function run() {
   const { name, version: providerVersion } = preparation.lsp.metadata.provider;
   let userProviderInstall;
   if (preparation.lsp.metadata.provider.resolutionMode === "explicit-user-provider") {
-    assert.equal(npmCli.optionalDependencies?.[name], undefined);
+    assert(!hasCheckerDependency(npmCli), "published CLI installs a checker");
     userProviderInstall = installUserProvider(
       consumer,
       output,

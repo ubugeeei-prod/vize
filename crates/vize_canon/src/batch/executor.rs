@@ -78,6 +78,9 @@ impl CorsaExecutor {
                 Err(CorsaNotFoundError::new_explicit(project_root, &path))
             }
             Err(CorsaResolveError::NotFound) => Err(CorsaNotFoundError::new(project_root)),
+            Err(CorsaResolveError::InvalidRuntime { directory }) => {
+                Err(CorsaNotFoundError::new_invalid(project_root, &directory))
+            }
         }
     }
 

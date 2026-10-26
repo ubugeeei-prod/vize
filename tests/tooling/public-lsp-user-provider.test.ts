@@ -198,8 +198,10 @@ if (runtimeOverrides.some((key) => process.env[key])) {
       const selected = userProviderContract(f.source, f.head);
       assert.equal(selected.cohort, "explicit-user-provider-702-v1");
       await assertInstalledCorsaProvider(f.consumer, "0.571.0", f.head, observed, f.source);
-      f.write(f.consumer, `node_modules/${contract.name}/lib/tsc`, "foreign image");
-      await assert.rejects(f.observe, /reviewed public provider|strictly equal/);
+      // Same size, so the observer reaches the image hash rather than the length check.
+      const foreign = Buffer.alloc(contract.executableBytes, 0x61);
+      f.write(f.consumer, `node_modules/${contract.name}/lib/tsc`, foreign);
+      await assert.rejects(f.observe, /reviewed public provider image required/);
     },
   );
 
