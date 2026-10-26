@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10788,
+  "regressionCommit": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "sourceRevision": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "dynamic-component-class",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 87,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'boolean'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 87,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'boolean'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 56,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'boolean'."
+        }
+      ]
+    }
+  ]
+}

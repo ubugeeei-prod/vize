@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import Child2 from "./Child2.vue";
+
+const items: string[] = [];
+</script>
+
+<template>
+  <div>
+    <Child2
+      label="x"
+      :ctx="{ request: () => String(items[0].length) }"
+    >
+      <template #form>
+        <span>x</span>
+      </template>
+    </Child2>
+  </div>
+</template>
