@@ -2389,6 +2389,47 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/explicit-type-rule-preset-10717",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "explicit-type-rule-preset-10717",
+        "files": [
+          {
+            "path": "FloatingPromise.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "3e94e3d2547e97d9f138d1a9d0e573ca03c61460cb78ef2d85313af3518e8a1d"
+          },
+          {
+            "path": "VoidRepair.vue.txt",
+            "role": "negative-control",
+            "sha256": "24dd6bb97ca815e745adc1eb66a3adf24a436a905d19a158b3829af1557c0985"
+          },
+          {
+            "path": "AwaitedCall.vue.txt",
+            "role": "negative-control",
+            "sha256": "399ad3cafd8b1d87b994ebb91b980f3f6331bb917eb5364b8644e362f5c21b2a"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
