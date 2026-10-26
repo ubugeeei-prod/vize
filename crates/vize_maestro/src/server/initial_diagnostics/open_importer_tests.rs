@@ -17,19 +17,19 @@ use super::{DiagnosticsJobCause, MaestroServer, refresh_initial_importers};
     clippy::disallowed_types,
     reason = "the actual bounded diagnostics queue is shared with its paused test consumer"
 )]
-struct QueuedOpen {
+pub(super) struct QueuedOpen {
     root: tempfile::TempDir,
-    service: LspService<MaestroServer>,
-    pending: std::sync::Arc<parking_lot::Mutex<super::PendingInitialDiagnostics>>,
+    pub(super) service: LspService<MaestroServer>,
+    pub(super) pending: std::sync::Arc<parking_lot::Mutex<super::PendingInitialDiagnostics>>,
     _receiver: std::sync::mpsc::Receiver<()>,
-    uri: Url,
+    pub(super) uri: Url,
 }
 
 #[expect(
     clippy::disallowed_types,
     reason = "the real didOpen handler queues into one owned paused diagnostics consumer"
 )]
-fn queued_open() -> QueuedOpen {
+pub(super) fn queued_open() -> QueuedOpen {
     let root = crate::test_support::tempdir().unwrap();
     file(root.path(), "app/policy.mjs", "export const hover = true;");
     file(
