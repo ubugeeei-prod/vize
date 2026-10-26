@@ -7726,7 +7726,7 @@
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
           "before": null,
-          "after": "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5"
+          "after": "bedb6e59e77c994418c401c6baf02b4e805b8177991fb15a51d82bece8332bd9"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -7766,7 +7766,7 @@
         {
           "path": "crates/vize_carton/src/corsa_resolver/packages.rs",
           "before": "d87a4b3ea808b4cf805dec9cc9f4b12aee919751b7294367a48f4ababef32452",
-          "after": "ccd1c7c425de1069dde88e7ce9b016076e5f3ddbd97192acb224fc9001e9db99"
+          "after": "57586c4208110c2538b84aabd817b9d4fc464ffe4780981eea7fda0dbf792384"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/normalize_tests.rs",
@@ -7798,7 +7798,7 @@
         {
           "selector": "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
           "source": "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
-          "sha256": "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5"
+          "sha256": "bedb6e59e77c994418c401c6baf02b4e805b8177991fb15a51d82bece8332bd9"
         },
         {
           "selector": "lsp_client::bootstrap::tests::runtime_selection_fixture_preserves_explicit_path_authority",
@@ -7966,8 +7966,8 @@
         },
         {
           "path": "crates/vize_canon/src/batch/type_checker/installed_sources.rs",
-          "before": "1c5c069a944112a794468b0897ccb0b787469d6ed8c50e151771cc500c3dab50",
-          "after": "9df773a5f70b2caceeb1e66a4c36a9d002f0a65cb106202198d403b2337d1f7d"
+          "before": "e781a14d47297b4b35b44c78c5467db0356878866f10d3751e40840309619ba5",
+          "after": "f1a264d08055e0c14b7b442e4cead85ebab766e8310c2e1c4c098c305369f3c5"
         },
         {
           "path": "crates/vize_canon/src/batch/type_checker/preparation.rs",

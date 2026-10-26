@@ -20,7 +20,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
         before: null,
-        after: "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5",
+        after: "bedb6e59e77c994418c401c6baf02b4e805b8177991fb15a51d82bece8332bd9",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -60,7 +60,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/packages.rs",
         before: "d87a4b3ea808b4cf805dec9cc9f4b12aee919751b7294367a48f4ababef32452",
-        after: "ccd1c7c425de1069dde88e7ce9b016076e5f3ddbd97192acb224fc9001e9db99",
+        after: "57586c4208110c2538b84aabd817b9d4fc464ffe4780981eea7fda0dbf792384",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/normalize_tests.rs",
@@ -208,7 +208,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
         before: null,
-        after: "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5",
+        after: "bedb6e59e77c994418c401c6baf02b4e805b8177991fb15a51d82bece8332bd9",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -218,22 +218,22 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_patina/src/linter/corsa_session/paths.rs",
         before: "520d83c671bf4965de96d35272e97e9b10fe4d98f2e4a96ae389a5934da17e2e",
-        after: "bc006e0ae6e331206ebf1c0e85cb6fd8d6ae4a298b36e023637636c83e383a00",
+        after: "34ad9e4bd4eaa321570e6959e5d708a2dbe4323615164a79d4a8c9bfd798f3b4",
       },
       {
         path: "crates/vize_patina/src/linter/corsa_session/paths/store.rs",
         before: "f6b53e7c54bb702a1ba69dc8e906c7f414c1bdcde68c20fe01964f38d1897fd6",
-        after: "5b5a3fc63a2bf6d7446220171f9b64917f417b784286f4b15641e811cfbff112",
+        after: "d8d091f2a510be377eb21c44cade1095367c5cbaaab1d6bb0b2c5c5508f5b841",
       },
       {
         path: "crates/vize_patina/src/linter/corsa_session/paths/store/runtime_tests.rs",
         before: null,
-        after: "9adfd1ceac1d790514b13915df0de205cf5b254a087e4bd662aff821d2a6c590",
+        after: "17c1842e901640ebdd3ccdad691acb1d73e139b27fe8e456105d471a48537967",
       },
       {
         path: "crates/vize_patina/src/linter/corsa_session/session.rs",
         before: "bf2aff6b0ed2aa044a39c48cb3280903d76e173da2af931f9416a454edbaeb24",
-        after: "5cf2c7cbbf2fc36109cb8f4e02e7e02db51902b00d32ce5b3ec04152dd872ee5",
+        after: "bf7e5173eb60de6a881dfb6fc2f549c1bcd153c1b3c7488d6f7c16eebfbcca5f",
       },
       {
         path: "crates/vize_patina/src/linter/native_type_aware.rs",
@@ -248,7 +248,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/packages.rs",
         before: "d87a4b3ea808b4cf805dec9cc9f4b12aee919751b7294367a48f4ababef32452",
-        after: "ccd1c7c425de1069dde88e7ce9b016076e5f3ddbd97192acb224fc9001e9db99",
+        after: "57586c4208110c2538b84aabd817b9d4fc464ffe4780981eea7fda0dbf792384",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/normalize_tests.rs",

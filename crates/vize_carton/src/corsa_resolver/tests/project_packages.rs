@@ -248,23 +248,3 @@ fn dependency_keys_cannot_escape_node_modules_on_any_host() {
         assert!(!valid_package_name(name), "{name}");
     }
 }
-
-#[test]
-fn a_broken_declared_runtime_is_reported_separately_from_a_missing_one() {
-    let temp = TempDir::new().unwrap();
-    let project = temp.path().join("project");
-    // The platform package is declared but its `lib/tsc` was never installed.
-    write_typescript_manifest(
-        &project.join("node_modules/typescript/package.json"),
-        platform_suffix(),
-        "7.1.0-beta",
-    );
-    let error = resolve(None, Some(&project), &[]).unwrap_err();
-    assert_eq!(
-        error,
-        CorsaResolveError::InvalidRuntime {
-            directory: project.join("node_modules")
-        }
-    );
-    assert!(crate::cstr!("{error}").contains(&*project.join("node_modules").to_string_lossy()));
-}

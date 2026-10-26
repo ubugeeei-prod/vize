@@ -31,8 +31,8 @@ export const checkPreparationRegistration = {
     },
     {
       path: "crates/vize_canon/src/batch/type_checker/installed_sources.rs",
-      before: "1c5c069a944112a794468b0897ccb0b787469d6ed8c50e151771cc500c3dab50",
-      after: "9df773a5f70b2caceeb1e66a4c36a9d002f0a65cb106202198d403b2337d1f7d",
+      before: "e781a14d47297b4b35b44c78c5467db0356878866f10d3751e40840309619ba5",
+      after: "f1a264d08055e0c14b7b442e4cead85ebab766e8310c2e1c4c098c305369f3c5",
     },
     {
       path: "crates/vize_canon/src/batch/type_checker/preparation.rs",

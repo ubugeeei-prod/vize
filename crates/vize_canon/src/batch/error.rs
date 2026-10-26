@@ -66,7 +66,6 @@ pub enum PackageManager {
 pub struct CorsaNotFoundError {
     detected_pm: Option<PackageManager>,
     explicit_path: Option<PathBuf>,
-    invalid_runtime: Option<PathBuf>,
 }
 
 impl CorsaNotFoundError {
@@ -76,7 +75,6 @@ impl CorsaNotFoundError {
         Self {
             detected_pm,
             explicit_path: None,
-            invalid_runtime: None,
         }
     }
 
@@ -86,16 +84,6 @@ impl CorsaNotFoundError {
         Self {
             detected_pm,
             explicit_path: Some(path.to_path_buf()),
-            invalid_runtime: None,
-        }
-    }
-
-    /// Create an error for an installed but incomplete or mismatched runtime.
-    pub fn new_invalid(project_root: &Path, directory: &Path) -> Self {
-        Self {
-            detected_pm: detect_package_manager(project_root),
-            explicit_path: None,
-            invalid_runtime: Some(directory.to_path_buf()),
         }
     }
 
@@ -108,16 +96,6 @@ impl CorsaNotFoundError {
     pub fn display_message(&self) -> String {
         let mut msg = String::default();
 
-        if let Some(directory) = &self.invalid_runtime {
-            msg.push_str("error: native TypeScript runtime is invalid\n\n");
-            append!(
-                msg,
-                "The runtime declared under {} is incomplete or mismatched (platform package version, package.json, or lib/tsc).\n\n",
-                directory.display()
-            );
-            msg.push_str("Reinstall that package, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.\n");
-            return msg;
-        }
         msg.push_str("error: native TypeScript runtime not found\n\n");
         if let Some(path) = &self.explicit_path {
             append!(
@@ -285,7 +263,6 @@ mod tests {
         let error = CorsaNotFoundError {
             detected_pm: Some(PackageManager::Pnpm),
             explicit_path: None,
-            invalid_runtime: None,
         };
 
         let msg = error.display_message();
@@ -297,7 +274,6 @@ mod tests {
         let error = CorsaNotFoundError {
             detected_pm: None,
             explicit_path: None,
-            invalid_runtime: None,
         };
 
         let msg = error.display_message();
@@ -308,7 +284,6 @@ mod tests {
         let error = CorsaNotFoundError {
             detected_pm: Some(PackageManager::Npm),
             explicit_path: Some(std::path::PathBuf::from("/project/bin/missing-tsgo")),
-            invalid_runtime: None,
         };
         assert_eq!(
             error.display_message().as_str(),
@@ -317,24 +292,10 @@ mod tests {
     }
 
     #[test]
-    fn invalid_declared_runtime_names_its_node_modules_without_install_advice() {
-        let error = CorsaNotFoundError {
-            detected_pm: Some(PackageManager::Npm),
-            explicit_path: None,
-            invalid_runtime: Some(std::path::PathBuf::from("/project/node_modules")),
-        };
-        assert_eq!(
-            error.display_message().as_str(),
-            "error: native TypeScript runtime is invalid\n\nThe runtime declared under /project/node_modules is incomplete or mismatched (platform package version, package.json, or lib/tsc).\n\nReinstall that package, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.\n"
-        );
-    }
-
-    #[test]
     fn every_package_manager_keeps_the_existing_typescript_dependency() {
         let error = CorsaNotFoundError {
             detected_pm: None,
             explicit_path: None,
-            invalid_runtime: None,
         };
         for (manager, expected) in [
             (

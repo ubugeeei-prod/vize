@@ -75,12 +75,6 @@ pub enum CorsaResolveError {
     },
     /// No executable was found by any discovery source.
     NotFound,
-    /// A runtime declared under this `node_modules` directory is installed
-    /// but incomplete or mismatched. Discovery stops there, as Node would.
-    InvalidRuntime {
-        /// The `node_modules` directory that owns the declaration.
-        directory: PathBuf,
-    },
 }
 
 impl std::fmt::Display for CorsaResolveError {
@@ -90,11 +84,6 @@ impl std::fmt::Display for CorsaResolveError {
                 f,
                 "Configured Corsa executable does not exist: {} (from {source})",
                 path.display()
-            ),
-            Self::InvalidRuntime { directory } => write!(
-                f,
-                "The native TypeScript runtime declared under {} is incomplete or mismatched (platform package version, package.json, or lib/tsc). Reinstall it, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable.",
-                directory.display()
             ),
             Self::NotFound => write!(
                 f,
@@ -184,7 +173,7 @@ fn resolve_with_env(
         return resolve_required_path(Path::new(&value), env_var, request.project_root);
     }
 
-    discover_runtime(request.project_root)?.ok_or(CorsaResolveError::NotFound)
+    discover_runtime(request.project_root).ok_or(CorsaResolveError::NotFound)
 }
 
 /// Resolve an explicitly requested path: anchor relative paths, require
@@ -213,16 +202,12 @@ fn resolve_relative_path(path: &Path, project_root: Option<&Path>) -> PathBuf {
     project_root.map_or_else(|| path.to_path_buf(), |root| root.join(path))
 }
 
-fn discover_runtime(project_root: Option<&Path>) -> Result<Option<PathBuf>, CorsaResolveError> {
+fn discover_runtime(project_root: Option<&Path>) -> Option<PathBuf> {
     let dev_paths = dev_paths_enabled();
     let cwd = std::env::current_dir().ok();
     let walk_starts = discovery_starts(project_root, cwd.as_deref());
 
-    discover_in_walk_checked(&walk_starts, dev_paths).map_err(|directory| {
-        CorsaResolveError::InvalidRuntime {
-            directory: directory.join("node_modules"),
-        }
-    })
+    discover_in_walk(&walk_starts, dev_paths)
 }
 
 /// Whether developer-checkout paths may be probed.
@@ -251,17 +236,6 @@ enum Candidate {
 /// runtime with a different ancestor's version. Resolve native packages before
 /// falling back to a local launcher.
 fn discover_in_walk(walk_starts: &[PathBuf], dev_paths: bool) -> Option<PathBuf> {
-    discover_in_walk_checked(walk_starts, dev_paths)
-        .ok()
-        .flatten()
-}
-
-/// Like [`discover_in_walk`], but an invalid declared runtime names the
-/// directory whose `node_modules` declares it.
-fn discover_in_walk_checked(
-    walk_starts: &[PathBuf],
-    dev_paths: bool,
-) -> Result<Option<PathBuf>, PathBuf> {
     let mut wrapper_fallback: Option<PathBuf> = None;
     let mut visited: Vec<&Path> = Vec::new();
 
@@ -272,19 +246,17 @@ fn discover_in_walk_checked(
             }
             visited.push(dir);
             match probe_directory(dir, dev_paths) {
-                Ok(Some(Candidate::Native(path) | Candidate::Legacy(path))) => {
-                    return Ok(Some(path));
-                }
+                Ok(Some(Candidate::Native(path) | Candidate::Legacy(path))) => return Some(path),
                 Ok(Some(Candidate::Wrapper(path))) => {
                     wrapper_fallback.get_or_insert(path);
                 }
                 Ok(None) => {}
-                Err(_) => return Err(dir.to_path_buf()),
+                Err(_) => return None,
             }
         }
     }
 
-    Ok(wrapper_fallback)
+    wrapper_fallback
 }
 
 fn probe_directory(
