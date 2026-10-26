@@ -1,0 +1,5 @@
+import { createMemoryHistory } from 'vue-router'
+import { experimental_createRouter as createRouter } from 'vue-router/experimental'
+import { resolver } from 'vue-router/auto-resolver'
+export const router = createRouter({ history: createMemoryHistory(), resolver })
+declare module 'vue-router' { interface TypesConfig { Router: typeof router } }

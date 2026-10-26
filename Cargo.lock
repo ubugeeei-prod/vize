@@ -4458,6 +4458,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
  "vize_l0",
  "which",

@@ -1,0 +1,1 @@
+<template><div class="a"><p class="start"><span class="child">x</span></p></div></template><style scoped>.a{@scope (.start){.child{color:blue}}}</style>

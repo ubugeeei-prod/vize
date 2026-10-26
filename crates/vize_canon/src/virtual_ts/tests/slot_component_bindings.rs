@@ -221,7 +221,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
 }
 
 #[test]
-fn editor_reference_paths_are_escaped_and_deduplicated() {
+fn editor_reference_paths_are_literal_and_deduplicated() {
     let summary = Analyzer::with_options(AnalyzerOptions::full()).finish();
     let options = super::VirtualTsOptions {
         reference_paths: vec![
@@ -237,11 +237,11 @@ fn editor_reference_paths_are_escaped_and_deduplicated() {
     assert_eq!(
         output
             .code
-            .matches("/// <reference path=\"/tmp/app&amp;docs/components.d.ts\" />")
-            .count(),
-        1,
+            .lines()
+            .filter(|line| line.starts_with("/// <reference path="))
+            .collect::<Vec<_>>(),
+        ["/// <reference path=\"/tmp/app&docs/components.d.ts\" />"],
         "{}",
         output.code,
     );
-    assert!(!output.code.contains("invalid"), "{}", output.code);
 }

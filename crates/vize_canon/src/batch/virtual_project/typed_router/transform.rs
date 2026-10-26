@@ -46,7 +46,7 @@ pub(super) fn apply(
         };
         if !matches!(
             import.source.value.as_str(),
-            "vue-router" | "vue-router/auto"
+            "vue-router" | "vue-router/auto" | "vue-router/experimental"
         ) || import.import_kind == ImportOrExportKind::Type
         {
             continue;
@@ -56,7 +56,13 @@ pub(super) fn apply(
                 && specifier.import_kind != ImportOrExportKind::Type
                 && specifier.imported.name().as_str() == specifier.local.name.as_str()
                 && specifier.imported.span() == specifier.local.span
-                && matches!(specifier.local.name.as_str(), "useRoute" | "definePage")
+                && match (import.source.value.as_str(), specifier.local.name.as_str()) {
+                    // The published experimental entry exports the page macro;
+                    // useRoute still belongs to the stable entry in Router 5.4.
+                    ("vue-router/experimental", "definePage") => true,
+                    ("vue-router" | "vue-router/auto", "useRoute" | "definePage") => true,
+                    _ => false,
+                }
                 && let Some(symbol) = specifier.local.symbol_id.get()
             {
                 imports.push(symbol);
@@ -178,7 +184,18 @@ impl Collector<'_> {
             self.scoping
                 .get_reference(reference)
                 .symbol_id()
-                .is_none_or(|symbol| self.imports.contains(&symbol))
+                .map_or_else(
+                    || {
+                        // Type-only imports are deliberately unresolved in the value
+                        // namespace; they must not become auto-imported global macros.
+                        self.scoping
+                            .get_root_binding(identifier.name.as_str().into())
+                            .is_none_or(|symbol| {
+                                !self.scoping.symbol_flags(symbol).is_type_import()
+                            })
+                    },
+                    |symbol| self.imports.contains(&symbol),
+                )
         })
     }
 }
@@ -188,6 +205,7 @@ impl<'a> Visit<'a> for Collector<'_> {
         if !call.optional
             && call.type_arguments.is_none()
             && let Expression::Identifier(identifier) = &call.callee
+            && matches!(identifier.name.as_str(), "useRoute" | "definePage")
             && self.authorized(identifier)
         {
             let kind = match identifier.name.as_str() {

@@ -14,6 +14,7 @@ use vize_l0::{String, cstr};
 pub(super) struct ProfileContext<'a> {
     pub(super) args: &'a LintArgs,
     pub(super) profile_rows: Option<Mutex<Vec<ProfileFileRow>>>,
+    pub(super) config_time: Duration,
     pub(super) collect_time: Duration,
     pub(super) lint_time: Duration,
     pub(super) cross_file_enabled: bool,
@@ -34,6 +35,7 @@ impl ProfileContext<'_> {
         let Self {
             args,
             profile_rows,
+            config_time,
             collect_time,
             lint_time,
             cross_file_enabled,
@@ -61,6 +63,12 @@ impl ProfileContext<'_> {
             .fold(Duration::ZERO, |acc, row| acc + row.secondary);
         let total_bytes = file_rows.iter().fold(0usize, |acc, row| acc + row.bytes);
         let mut phases = vec![
+            ProfilePhase {
+                name: "load config",
+                duration: config_time,
+                kind: ProfilePhaseKind::Wall,
+                note: "configuration discovery and evaluation",
+            },
             ProfilePhase {
                 name: "collect files",
                 duration: collect_time,

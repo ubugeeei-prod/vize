@@ -33,10 +33,14 @@ export function mergeCompilerOptions(
       ...options.template,
       compilerOptions: {
         cacheHandlers: compilerConfig.cacheHandlers,
-        comments: compilerConfig.comments ?? defaults.comments,
         hoistStatic: compilerConfig.hoistStatic,
         prefixIdentifiers: compilerConfig.prefixIdentifiers,
         ...options.template?.compilerOptions,
+        // An explicit `undefined` still admits the shared and host defaults.
+        comments:
+          options.template?.compilerOptions?.comments ??
+          compilerConfig.comments ??
+          defaults.comments,
       },
     },
     compatibility,

@@ -50,6 +50,13 @@ pub(super) fn generate_vue_virtual_ts(
     options: &VirtualTsOptions,
     mut codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
+    crate::virtual_ts::validate_reference_paths(&options.reference_paths).map_err(|error| {
+        crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
+            "Invalid declaration reference path {:?}: {}",
+            error.path,
+            error.reason
+        ))
+    })?;
     codegen_options.check_options =
         super::vue_compiler_comments::apply(source, codegen_options.check_options);
     // All consumers resolve per-SFC metadata after project and top-level options.
