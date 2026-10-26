@@ -19,6 +19,14 @@ fn compile(source: &str, ssr: bool) -> std::string::String {
     result.code.to_string()
 }
 
+/// Every `renderList`/`ssrRenderList` call head, from its source argument to
+/// the end of the line, in output order.
+fn loop_heads(code: &str) -> std::vec::Vec<&str> {
+    code.lines()
+        .filter_map(|line| line.split_once("enderList(").map(|(_, head)| head))
+        .collect()
+}
+
 fn template(script: &str, body: &str, newline: &str) -> std::string::String {
     [
         script,
@@ -39,41 +47,38 @@ const SETUP: &str = "<script setup>const fallback = 'A'; const items = [{}]</scr
 #[test]
 fn initializers_and_computed_keys_read_component_context() {
     for newline in ["\n", "\r\n"] {
-        for (body, ssr, vdom) in [
+        for (body, heads) in [
             (
                 "<p v-for=\"{ label = fallback } in items\">{{ label }}</p>",
-                "({ label = _ctx.fallback }) =>",
-                "({ label = _ctx.fallback }) =>",
+                &["_ctx.items, ({ label = _ctx.fallback }) => {"][..],
             ),
             (
                 "<p v-for=\"{ \\u006cabel = fallback } in items\">{{ label }}</p>",
-                "({ \\u006cabel = _ctx.fallback }) =>",
-                "({ \\u006cabel = _ctx.fallback }) =>",
+                &["_ctx.items, ({ \\u006cabel = _ctx.fallback }) => {"],
             ),
             (
                 "<p v-for=\"[a = fallback, b = a] of items\">{{ a }}{{ b }}</p>",
-                "([a = _ctx.fallback, b = a]) =>",
-                "([a = _ctx.fallback, b = a]) =>",
+                &["_ctx.items, ([a = _ctx.fallback, b = a]) => {"],
             ),
             (
                 "<p v-for=\"{ [key]: { name = pick(name, other) } } in items\">{{ name }}</p>",
-                "({ [_ctx.key]: { name = _ctx.pick(name, _ctx.other) } }) =>",
-                "({ [_ctx.key]: { name = _ctx.pick(name, _ctx.other) } }) =>",
+                &["_ctx.items, ({ [_ctx.key]: { name = _ctx.pick(name, _ctx.other) } }) => {"],
             ),
             (
                 "<div v-for=\"outer in rows\"><p v-for=\"{ label = outer.name } in outer.items\">{{ label }}</p></div>",
-                "({ label = outer.name }) =>",
-                "({ label = outer.name }) =>",
+                &[
+                    "_ctx.rows, (outer) => {",
+                    "outer.items, ({ label = outer.name }) => {",
+                ],
             ),
             (
                 "<p v-for=\"(item, index) in items\">{{ item }}</p>",
-                "(item, index) =>",
-                "(item, index) =>",
+                &["_ctx.items, (item, index) => {"],
             ),
         ] {
             let source = template(OPTIONS, body, newline);
-            assert!(compile(&source, true).contains(ssr), "{body}");
-            assert!(compile(&source, false).contains(vdom), "{body}");
+            assert_eq!(loop_heads(&compile(&source, true)), heads, "SSR {body}");
+            assert_eq!(loop_heads(&compile(&source, false)), heads, "VDOM {body}");
         }
     }
 }
@@ -85,7 +90,13 @@ fn setup_bindings_keep_their_render_function_access() {
         "<p v-for=\"{ label = fallback } in items\">{{ label }}</p>",
         "\n",
     );
-    assert!(compile(&source, true).contains("({ label = $setup.fallback }) =>"));
-    // The inline render closure reads the setup constant directly.
-    assert!(compile(&source, false).contains("({ label = fallback }) =>"));
+    assert_eq!(
+        loop_heads(&compile(&source, true)),
+        ["$setup.items, ({ label = $setup.fallback }) => {"]
+    );
+    // The inline render closure reads the setup constants directly.
+    assert_eq!(
+        loop_heads(&compile(&source, false)),
+        ["items, ({ label = fallback }) => {"]
+    );
 }
