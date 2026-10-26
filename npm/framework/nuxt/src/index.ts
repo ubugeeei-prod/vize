@@ -1,6 +1,6 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
-import { setupNuxtLintChecker } from "./lint/checker/setup";
-import { setupLintInspector, setupNuxtLintConfigGeneration } from "./lint/generation";
+import { setupLintInspector } from "./lint/generation";
+import { setupNuxtLint } from "./lint/module-setup";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
 import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-bridge";
@@ -16,7 +16,6 @@ import { getDetectedNuxtMajor, hasNuxtViteCompilerSupport } from "./builder";
 import * as bridgeFastPath from "./bridge-fast-path";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
-  isNuxtLintRequested,
   resolveNuxtBridgeOptions,
   resolveNuxtCompilerOptions,
   resolveNuxtDevOptions,
@@ -236,18 +235,9 @@ function patchNuxtAutoImportTransformPlugin(
   plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED] = true;
 }
 
-async function setupVizeNuxtModule(
-  options: VizeNuxtOptions,
-  nuxt: NuxtWithBuilderOptions,
-  lintRequested = false,
-) {
-  const lintGeneration = await setupNuxtLintConfigGeneration(options.lint, nuxt, {
-    reportMissingPlugin: lintRequested,
-  });
-  // Without `oxlint-plugin-vize`, generation has already skipped lint.
-  if (lintGeneration || options.lint === false) {
-    await setupNuxtLintChecker(options.checker, nuxt, lintGeneration);
-  }
+async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWithBuilderOptions) {
+  const options = resolveModuleOptions(raw, nuxt);
+  const lintGeneration = await setupNuxtLint(options, nuxt, raw);
   const resolver = createNuxtModuleResolver(nuxt.options.rootDir);
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
@@ -604,11 +594,7 @@ const vizeNuxtModule = Object.assign(
 
     markNuxtRequiredModule(nuxt);
     registerNuxt2CompatibilityHooks(nuxt);
-    await setupVizeNuxtModule(
-      resolveModuleOptions(inlineOptions, nuxt),
-      nuxt,
-      isNuxtLintRequested(inlineOptions, nuxt.options.vize),
-    );
+    await setupVizeNuxtModule(inlineOptions, nuxt);
   },
   {
     getMeta: () => moduleMeta,
