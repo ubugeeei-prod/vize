@@ -4,12 +4,18 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { parse } from "yaml";
 import {
   coAuthorCredits,
   generateReleaseNotes,
   previousPublishedTag,
   type PublishedRelease,
 } from "../../../tools/support/release/github_release_notes.ts";
+
+type Job = {
+  env?: Record<string, string>;
+  steps?: Array<{ name?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
+};
 
 const release = (
   tag_name: string,
@@ -175,24 +181,22 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
 });
 
 test("the workflow publishes only the prepared body for the release tag commit", () => {
-  const workflow = readFileSync(
-    new URL("../../../.github/workflows/release.yml", import.meta.url),
-    "utf8",
+  const workflow = parse(
+    readFileSync(new URL("../../../.github/workflows/release.yml", import.meta.url), "utf8"),
+  ) as { jobs: Record<string, Job> };
+  const job = workflow.jobs["github-release"];
+  const steps = job.steps ?? [];
+  const node = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
+  const notes = steps.findIndex((step) => step.name === "Generate release notes");
+  const create = steps.findIndex((step) => step.name === "Create Release");
+  assert.equal(
+    steps[notes]?.run,
+    'node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"',
   );
-  const job = workflow.split("  github-release:")[1].split("  verify-npm:")[0];
-  assert.ok(
-    job.includes(
-      'node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"',
-    ),
-  );
-  assert.ok(job.includes("RELEASE_SHA: ${{ needs.version.outputs.sha }}"));
-  assert.ok(job.includes("body_path: ${{ runner.temp }}/release-notes.md"));
-  assert.ok(job.includes("generate_release_notes: false"));
-  assert.ok(
-    job.indexOf("actions/setup-node@") <
-      job.indexOf("node tools/support/release/github_release_notes.ts"),
-  );
-  assert.ok(job.indexOf("name: Generate release notes") < job.indexOf("name: Create Release"));
+  assert.equal(job.env?.RELEASE_SHA, "${{ needs.version.outputs.sha }}");
+  assert.equal(steps[create]?.with?.body_path, "${{ runner.temp }}/release-notes.md");
+  assert.equal(steps[create]?.with?.generate_release_notes, false);
+  assert.ok(node >= 0 && node < notes && notes < create);
   const preflight = readFileSync(
     new URL("../../../.github/workflows/release-contracts.yml", import.meta.url),
     "utf8",

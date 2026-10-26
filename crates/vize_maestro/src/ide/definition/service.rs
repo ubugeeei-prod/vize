@@ -274,6 +274,18 @@ impl super::DefinitionService {
             return None;
         }
 
+        // A standalone Art setup has no canonical document; its setup
+        // projection answers before the spelling-based fallback below.
+        if let Some(bridge) = corsa_bridge.as_ref()
+            && let Some(query) = corsa_support::open_art_script_query(ctx, bridge).await
+            && let Ok(locations) = bridge
+                .definition(&query.request_uri, query.line, query.character)
+                .await
+            && let Some(response) = Self::convert_lsp_locations(locations, ctx)
+        {
+            return Some(response);
+        }
+
         // Try Corsa definition lookup first via the canonical Vue virtual TS.
         if let Some(bridge) = corsa_bridge.as_ref()
             && bridge.is_initialized()

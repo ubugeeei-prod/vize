@@ -141,8 +141,9 @@ fn match_current_virtual_document<'a>(
 ) -> Option<CurrentVirtualDocument<'a>> {
     let path = virtual_document_path(uri)?;
     let virtual_docs = ctx.virtual_docs.as_ref()?;
+    let is = |request: String| is_request_path(&path, &request);
 
-    if path == super::template_request_path(ctx.uri).as_str() {
+    if is(super::template_request_path(ctx.uri)) {
         return virtual_docs
             .template
             .as_ref()
@@ -150,19 +151,19 @@ fn match_current_virtual_document<'a>(
     }
 
     for (variant_index, template) in virtual_docs.art_templates.iter().enumerate() {
-        if path == super::art_template_request_path(ctx.uri, variant_index).as_str() {
+        if is(super::art_template_request_path(ctx.uri, variant_index)) {
             return template.as_ref().map(CurrentVirtualDocument::Template);
         }
     }
 
-    if path == super::script_request_path(ctx.uri, false).as_str() {
+    if is(super::script_request_path(ctx.uri, false)) {
         return virtual_docs
             .script
             .as_ref()
             .map(CurrentVirtualDocument::Script);
     }
 
-    if path == super::script_request_path(ctx.uri, true).as_str() {
+    if is(super::script_request_path(ctx.uri, true)) {
         return virtual_docs
             .script_setup
             .as_ref()
@@ -170,6 +171,16 @@ fn match_current_virtual_document<'a>(
     }
 
     None
+}
+
+/// Request names reuse the authored URI's encoded path as a file path, so the
+/// native answer encodes it once more (`%5B` becomes `%255B`); a batch-opened
+/// projection is spelled with a single encoding.
+fn is_request_path(path: &str, request: &str) -> bool {
+    path == request
+        || vize_canon::decode_uri_path(path).is_some_and(|decoded| {
+            decoded == request || vize_canon::decode_uri_path(request).as_ref() == Some(&decoded)
+        })
 }
 
 pub(super) fn virtual_document_path(uri: &str) -> Option<String> {
@@ -182,4 +193,25 @@ pub(super) fn virtual_document_path(uri: &str) -> Option<String> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_request_path;
+
+    #[test]
+    fn special_request_names_match_their_native_spelling() {
+        let request = "/app/pages/%5Bid%3Dint%5D.art.vue.setup.ts";
+        for path in [
+            request,
+            "/app/pages/%255Bid%253Dint%255D.art.vue.setup.ts",
+            "/app/pages/%5Bid=int%5D.art.vue.setup.ts",
+        ] {
+            assert!(is_request_path(path, request), "{path}");
+        }
+        assert!(!is_request_path(
+            "/app/pages/%5Bother%5D.art.vue.setup.ts",
+            request
+        ));
+    }
 }

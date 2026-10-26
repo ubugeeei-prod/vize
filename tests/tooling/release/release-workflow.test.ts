@@ -37,6 +37,12 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 const needs = (job: string) => [workflow.jobs[job]?.needs ?? []].flat();
+const verify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
+  on: { workflow_dispatch: { inputs: Record<string, unknown> } };
+  concurrency: Record<string, unknown>;
+  jobs: Record<string, Job & { if?: string }>;
+};
+const verifyNeeds = (job: string) => [verify.jobs[job]?.needs ?? []].flat();
 
 test("the next release bumps the minor above every claimed version", () => {
   assert.equal(nextReleaseVersion(["0.474.0", "v0.471.0", "v0.474.0", "0.1.0"]), "0.475.0");
@@ -202,8 +208,8 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
   const prePublish = (name: string) =>
     name.startsWith("build-") || name === "smoke" || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
-    // publish-jsr only dispatches release-jsr.yml and checks nothing out.
-    if (name === "version" || name === "publish-jsr") continue;
+    // dispatch-verify only dispatches release-verify.yml and checks nothing out.
+    if (name === "version" || name === "dispatch-verify") continue;
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     const ref = prePublish(name) ? "ref" : "tag";
@@ -232,7 +238,6 @@ test("registries publish in parallel behind one credential-free smoke", () => {
   const publishers = Object.keys(workflow.jobs).filter((name) => name.startsWith("publish-"));
   assert.deepEqual(publishers.sort(), [
     "publish-crates",
-    "publish-jsr",
     "publish-npm",
     "publish-open-vsx",
     "publish-open-vsx-platforms",
@@ -242,7 +247,7 @@ test("registries publish in parallel behind one credential-free smoke", () => {
   for (const build of ["build-packages", "build-native", "build-wasm"]) {
     assert.ok(needs("smoke").includes(build), `smoke waits for ${build}`);
   }
-  for (const name of publishers.filter((publisher) => publisher !== "publish-jsr")) {
+  for (const name of publishers) {
     assert.ok(needs(name).includes("tag"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);
   }
@@ -299,43 +304,82 @@ test("npm exposes every native platform before packages that depend on it", () =
   assert.ok((job["timeout-minutes"] ?? 0) >= 55, "the job can outlive both visibility barriers");
 });
 
-test("final registry verification checks every package and gates only JSR", () => {
-  assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
-  assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
-  assert.match(String((workflow.jobs["verify-npm"] as Job & { if?: string }).if), /always\(\)/);
-  assert.match(
-    String((workflow.jobs["verify-npm"] as Job & { if?: string }).if),
-    /publish-npm\.result == 'success'/,
+test("the release ends at publishing and dispatches verification as the maintainer", () => {
+  const dispatch = workflow.jobs["dispatch-verify"] as Job & { if?: string };
+  assert.deepEqual(needs("dispatch-verify"), ["version", "publish-npm"]);
+  assert.match(String(dispatch.if), /always\(\)/);
+  assert.match(String(dispatch.if), /publish-npm\.result == 'success'/);
+  // release-verify.yml dispatches JSR, which refuses github-actions[bot].
+  assert.equal(dispatch.environment, "release-operator");
+  assert.equal(dispatch.env, undefined);
+  const step = dispatch.steps?.[0] as { run?: string; env?: Record<string, string> };
+  assert.equal(step.env?.GH_TOKEN, "${{ secrets.RELEASE_OPERATOR_TOKEN }}");
+  assert.deepEqual(
+    [...String(step.run).matchAll(/-f (\w+)="\$(\w+)"/g)].map(([, input, name]) => [
+      input,
+      step.env?.[name],
+    ]),
+    [
+      ["version", "${{ needs.version.outputs.version }}"],
+      ["tag", "${{ needs.version.outputs.tag }}"],
+      ["sha", "${{ needs.version.outputs.sha }}"],
+      ["packages", "${{ needs.publish-npm.outputs.packages }}"],
+    ],
   );
-  assert.match(
-    String((workflow.jobs["publish-jsr"] as Job & { if?: string }).if),
-    /verify-npm\.result == 'success'/,
-  );
-  assert.ok(!needs("github-release").includes("verify-npm"));
-  // JSR runs as its own workflow so its slow server-side processing never
-  // holds this run (and with it the cadence) open.
-  const jsr = workflow.jobs["publish-jsr"];
-  assert.equal(jsr.uses, undefined);
+  assert.match(String(step.run), /^gh workflow run release-verify\.yml .*--ref main/);
+  assert.deepEqual(Object.keys(verify.on.workflow_dispatch.inputs), [
+    "version",
+    "tag",
+    "sha",
+    "packages",
+  ]);
+  // Nothing in the Release run waits on npm propagation or JSR any more.
+  for (const name of Object.keys(workflow.jobs)) {
+    assert.ok(!/^verify-|^publish-jsr$/.test(name), name);
+    assert.ok(!needs(name).includes("dispatch-verify"), name);
+  }
+});
+
+test("verification runs outside the release concurrency group and gates only JSR", () => {
+  // Its own per-version group: a slow verify never delays the next release,
+  // and a newer release's verify never cancels a pending one.
+  assert.deepEqual(verify.concurrency, {
+    group: "release-verify-${{ inputs.version }}",
+    "cancel-in-progress": false,
+  });
+  assert.equal(verifyNeeds("verify-npm").length, 0);
+  assert.match(String(verify.jobs["verify-npm"].if), /github\.ref == 'refs\/heads\/main'/);
+  const steps = (verify.jobs["verify-npm"].steps ?? []).map((step) => step.run ?? "").join("\n");
+  assert.match(steps, /^\[\[ "\$RELEASE_TAG" == "v\$RELEASE_VERSION" \]\]$/m);
+  assert.match(steps, /^\[\[ "\$\(git rev-parse HEAD\)" == "\$RELEASE_SHA" \]\]$/m);
+  assert.match(steps, /verify_published\/main\.ts "\$RELEASE_VERSION" "\$\{packages\[@\]\}"/);
+  for (const [name, job] of Object.entries(verify.jobs)) {
+    const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
+    if (name !== "publish-jsr") assert.equal(checkout?.with?.ref, "${{ inputs.tag }}", name);
+  }
+  // A failed or skipped verify-npm skips the JSR dispatch for that version.
+  const jsr = verify.jobs["publish-jsr"];
+  assert.deepEqual(verifyNeeds("publish-jsr"), ["verify-npm"]);
+  assert.equal(jsr.if, undefined);
   assert.equal(jsr.environment, "release-operator");
   assert.match(JSON.stringify(jsr.steps), /gh workflow run release-jsr\.yml/);
   assert.match(JSON.stringify(jsr.steps), /secrets\.RELEASE_OPERATOR_TOKEN/);
+  assert.match(JSON.stringify(jsr.steps), /"JSR_VERSION":"\$\{\{ inputs\.tag \}\}"/);
+  assert.match(JSON.stringify(jsr.steps), /"JSR_SOURCE":"\$\{\{ inputs\.sha \}\}"/);
 });
 
 test("post-publish product checks follow npm verification and gate nothing", () => {
   for (const check of ["verify-config", "verify-musea-vrt"]) {
-    assert.deepEqual(needs(check), ["version", "verify-npm"]);
-    assert.match(
-      String((workflow.jobs[check] as Job & { if?: string }).if),
-      /verify-npm\.result == 'success'/,
-    );
-    for (const name of Object.keys(workflow.jobs)) assert.ok(!needs(name).includes(check), name);
+    assert.deepEqual(verifyNeeds(check), ["verify-npm"]);
+    assert.equal(verify.jobs[check].if, undefined);
+    for (const name of Object.keys(verify.jobs)) assert.ok(!verifyNeeds(name).includes(check));
   }
   assert.match(
-    JSON.stringify(workflow.jobs["verify-musea-vrt"].steps),
+    JSON.stringify(verify.jobs["verify-musea-vrt"].steps),
     /verify_published\/musea_vrt\.ts/,
   );
   assert.match(
-    JSON.stringify(workflow.jobs["verify-config"].steps),
+    JSON.stringify(verify.jobs["verify-config"].steps),
     /verify_published\/config_free\.ts/,
   );
 });

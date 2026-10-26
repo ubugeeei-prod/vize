@@ -55,7 +55,13 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         descriptor.script.as_ref()
     };
 
-    if let Some(script) = script_block {
+    // A member name never refers to a same-spelled local binding; only the
+    // type service can resolve it. `this.name` still reaches the analyzed
+    // Options API and class members below.
+    let receiver = crate::ide::script_identifier::member_receiver(&ctx.content, ctx.offset);
+    if let Some(script) = script_block
+        && receiver.is_none()
+    {
         let content = script.content.as_ref();
         if let Some(binding_loc) = find_binding_location_raw(content, &word) {
             let sfc_offset = script.loc.start + binding_loc.offset;
@@ -76,7 +82,9 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
 
     // Options API object bindings (when enabled) and class-component members
     // (always, auto-detected by shape) resolve through Croquis analysis.
-    if let Some(location) = find_analyzed_binding_location(ctx, &word) {
+    if receiver.is_none_or(|receiver| receiver == "this")
+        && let Some(location) = find_analyzed_binding_location(ctx, &word)
+    {
         return Some(GotoDefinitionResponse::Scalar(location));
     }
 

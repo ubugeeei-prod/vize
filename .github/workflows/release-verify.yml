@@ -1,0 +1,113 @@
+name: Release verify
+# Post-publish checks for one release. release.yml dispatches it once npm has
+# accepted every package, so npm propagation and these checks never hold the
+# Release run, and with it the cadence's next release, open. Verifying npm
+# still gates JSR: a failed verify dispatches no JSR publication.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published release version (X.Y.Z)
+        required: true
+        type: string
+      tag:
+        description: Release tag (vX.Y.Z)
+        required: true
+        type: string
+      sha:
+        description: Commit the release tag points at
+        required: true
+        type: string
+      packages:
+        description: Space-separated npm package names the release published
+        required: true
+        type: string
+run-name: Release verify ${{ inputs.tag }}
+permissions: { contents: read }
+concurrency:
+  group: release-verify-${{ inputs.version }}
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  # Verify every package together and install the CLI from npm.
+  verify-npm:
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    name: Verify npm packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_SHA: ${{ inputs.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
+      - name: Check the release identity
+        run: |
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$RELEASE_TAG" == "v$RELEASE_VERSION" ]]
+          [[ "$(git rev-parse HEAD)" == "$RELEASE_SHA" ]]
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Wait for npm and smoke the published CLI
+        env:
+          RELEASE_PACKAGES: ${{ inputs.packages }}
+        run: |
+          read -ra packages <<< "$RELEASE_PACKAGES"
+          node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
+
+  # Gates nothing: fresh, migrated and monorepo projects configured only by
+  # vite.config.ts and tsconfig.json, using the packages just verified.
+  verify-config:
+    name: Verify config-free projects
+    needs: verify-npm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Set up fresh, migrated and monorepo projects without vize.config.*
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node tools/support/release/verify_published/config_free.ts "$RELEASE_VERSION"
+
+  # Gates nothing: Musea VRT from the published plugin in Chromium on Linux.
+  verify-musea-vrt:
+    name: Verify Musea VRT
+    needs: verify-npm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      # playwright install --with-deps uses apt.
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Capture, match, diff and update a Musea baseline
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node tools/support/release/verify_published/musea_vrt.ts "$RELEASE_VERSION"
+
+  # JSR's facade resolves the npm packages, so it follows their verification.
+  # It runs as its own workflow because JSR's processing takes 10-60 min.
+  publish-jsr:
+    name: Dispatch the JSR publication
+    needs: verify-npm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # JSR only accepts OIDC publishes whose actor is a scope member, never
+    # github-actions[bot], so dispatch as the maintainer.
+    environment: release-operator
+    steps:
+      - name: Dispatch release-jsr.yml
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
+          JSR_VERSION: ${{ inputs.tag }}
+          JSR_SOURCE: ${{ inputs.sha }}
+        run: |
+          gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"

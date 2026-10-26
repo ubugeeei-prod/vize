@@ -125,7 +125,7 @@ async function visiblePackage(name: string, version: string): Promise<boolean> {
 
 async function npmResume(version: string, runId: string): Promise<number> {
   if (!/^\d+\.\d+\.\d+$/.test(version) || !/^[1-9]\d*$/.test(runId)) {
-    return fail("Usage: npm_resume/main.ts <stable-version> <failed-release-run-id>");
+    return fail("Usage: npm_resume/main.ts <stable-version> <release-run-id>");
   }
   if ((nonEmptyEnv("RELEASE_SOURCE_INPUT") ?? "") !== "") {
     return fail("source cannot be combined with npm resume");
