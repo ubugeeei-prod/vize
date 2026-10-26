@@ -10,11 +10,15 @@ use std::{
     io::{Error as IoError, ErrorKind},
     path::{Path, PathBuf},
     process::Command,
+    time::SystemTime,
 };
 
 use crate::config::ConfigDocument;
 
-use super::BeforeConfigRead;
+use super::{
+    BeforeConfigRead,
+    js_cache::{CacheSlot, CachedEvaluation, RecordedInputs},
+};
 
 /// Evaluate a JS-like config file through Node and deserialize the result.
 pub(super) fn parse_js_config_observed(
@@ -69,6 +73,17 @@ struct EvaluatedConfig {
     dependencies: Vec<std::string::String>,
 }
 
+impl EvaluatedConfig {
+    fn new(path: PathBuf, evaluation: CachedEvaluation) -> serde_json::Result<Self> {
+        Ok(Self {
+            path,
+            json: serde_json::to_vec(&evaluation.config)?,
+            policy: evaluation.config,
+            dependencies: evaluation.dependencies,
+        })
+    }
+}
+
 fn evaluate_js_config_with_dependencies(
     path: &Path,
     observed: &mut Vec<PathBuf>,
@@ -94,10 +109,12 @@ fn evaluate_js_config_with_dependencies(
     let script = [
         include_str!("vite-runtime.mjs"),
         include_str!("module-runtime.mjs"),
+        include_str!("config-inputs.mjs"),
         r#"
 import { dirname } from "node:path";
 
 const configPath = process.argv[1];
+const stopRecording = process.env.VIZE_RECORD_CONFIG_INPUTS === "1" ? recordConfigInputs() : undefined;
 const observing = process.argv[2] === "--observe-config-inputs" || process.argv[3] === "--observe-config-inputs";
 // Existing wrappers retain their argv shape; the session adds one private path before the marker.
 enableConfigCompileCache(process.argv[3] === "--observe-config-inputs" ? process.argv[2] : undefined);
@@ -147,12 +164,25 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
   const failure = { dependencies: attemptedDependencies, watchDependenciesComplete: attemptedComplete };
   if (failureArtifacts.length) failure.failureArtifacts = failureArtifacts;
   const result = evaluated ?? failure;
+  if (stopRecording) result.inputs = stopRecording();
   if (configTimings) result.configEvaluationTimings = configTimings;
   process.stdout.write(JSON.stringify(result));
 }
 "#,
     ]
     .concat();
+    let trace = std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some_and(|value| value == "1");
+    // Editor sessions observe every read and own their reloads; only plain
+    // evaluations without tracing reuse a stored result.
+    let mut cache = (before_read.is_none() && compile_cache.is_none() && !trace)
+        .then(|| CacheSlot::new(&config_path, explicit_vite_config, &script))
+        .flatten();
+    if let Some(cached) = cache.as_mut().and_then(CacheSlot::load) {
+        *complete = cached.complete;
+        observed.extend(cached.watch_dependencies.iter().cloned());
+        observed.extend(cached.dependencies.iter().map(PathBuf::from));
+        return Ok(EvaluatedConfig::new(config_path, cached)?);
+    }
     let mut command = Command::new("node");
     command
         .arg("--input-type=module")
@@ -172,7 +202,10 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
             command.env("VIZE_EXPLICIT_NATIVE_CARRIER", "1");
         }
     }
-    let trace = std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some_and(|value| value == "1");
+    if cache.is_some() {
+        command.env("VIZE_RECORD_CONFIG_INPUTS", "1");
+    }
+    let evaluation_started = SystemTime::now();
     let started = trace.then(std::time::Instant::now);
     let output = if let Some(observe) = before_read.as_deref_mut() {
         super::js_observation::evaluate_observed(&mut command, observe)?
@@ -205,6 +238,8 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         failure_artifacts: Vec<(std::string::String, std::string::String)>,
         #[serde(default, rename = "configEvaluationTimings")]
         timings: Vec<Timing>,
+        #[serde(default)]
+        inputs: Option<RecordedInputs>,
     }
     let evaluated = serde_json::from_slice::<Evaluation>(&output.stdout);
     if let Some(elapsed) = child_elapsed {
@@ -256,11 +291,22 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         )));
     }
 
-    let evaluated = evaluated?;
-    Ok(EvaluatedConfig {
-        path: config_path,
-        json: serde_json::to_vec(&evaluated.config)?,
-        policy: evaluated.config,
-        dependencies: evaluated.dependencies,
-    })
+    let Evaluation {
+        config,
+        complete: graph_complete,
+        watch_dependencies,
+        dependencies,
+        inputs,
+        ..
+    } = evaluated?;
+    let evaluation = CachedEvaluation {
+        config,
+        complete: graph_complete,
+        watch_dependencies,
+        dependencies,
+    };
+    if let (Some(cache), Some(inputs)) = (cache, inputs) {
+        cache.store(evaluation_started, &evaluation, inputs);
+    }
+    Ok(EvaluatedConfig::new(config_path, evaluation)?)
 }
