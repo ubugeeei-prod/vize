@@ -59,6 +59,36 @@ test("formatter ignore lists remain scoped and canonical empty lists replace the
   );
 });
 
+test("an Oxfmt-side exclusion of every Vue file keeps .vue with the native formatter", async () => {
+  for (const pattern of ["**/*.vue", "*.vue", "**/**/*.vue"]) {
+    assert.deepEqual(
+      await resolveViteConfigExport({
+        fmt: { semi: false, ignorePatterns: [pattern, "src/generated/**", "**/*.art.vue"] },
+      }),
+      {
+        typeChecker: { jsxTypecheck: true },
+        formatter: { semi: false, ignorePatterns: ["src/generated/**", "**/*.art.vue"] },
+      },
+      pattern,
+    );
+  }
+  assert.deepEqual(
+    await resolveViteConfigExport({
+      fmt: { ignorePatterns: ["**/*.vue"], vue: { ignorePatterns: ["**/*.vue"] } },
+    }),
+    { typeChecker: { jsxTypecheck: true }, formatter: { ignorePatterns: ["**/*.vue"] } },
+  );
+  assert.deepEqual(
+    await resolveViteConfigExport({
+      fmt: { ignorePatterns: ["/*.vue", "src/*.vue", "!**/*.vue"] },
+    }),
+    {
+      typeChecker: { jsxTypecheck: true },
+      formatter: { ignorePatterns: ["/*.vue", "src/*.vue", "!**/*.vue"] },
+    },
+  );
+});
+
 test("malformed shared formatter controls refuse before source selection", async () => {
   for (const fmt of [
     { printWidth: "120" },
