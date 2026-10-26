@@ -1,7 +1,7 @@
 // Crates listed in tools/config/clippy-test-targets.json stay clean under
 // `cargo clippy --all-targets -- -D warnings`. PR CI lints the listed crates a
-// PR touches, so the lane costs nothing for other crates; the scheduled full
-// qualification lints the whole list. The list only grows.
+// PR touches, so the lane costs nothing for other crates; `all` lints the
+// whole list locally. The list only grows.
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
