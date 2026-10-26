@@ -1,7 +1,7 @@
 //! Whole-application regressions on small reported projects.
 use super::{analysis::analyze_application, discovery::discover_sources};
 use std::{fs, path::Path};
-use vize_carton::{String, cstr};
+use vize_l0::{String, cstr};
 
 fn write(root: &Path, relative: &str, source: &str) {
     let path = root.join(relative);

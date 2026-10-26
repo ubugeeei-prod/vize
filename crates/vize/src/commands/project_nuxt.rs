@@ -12,8 +12,8 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
 use vize_croquis_cf::NuxtRenderDirs;
+use vize_l0::String;
 
 const CONFIG_NAMES: [&str; 6] = [
     "nuxt.config.ts",
