@@ -23,7 +23,7 @@ pub struct VueLanguageProjectMetadata {
 
 /// Snapshot the explicit project's existing Canon configuration resolver.
 /// An empty path denotes an inferred project and performs no file reads.
-#[napi(js_name = "getVueLanguageProjectMetadata")]
+#[napi(js_name = "getVueLanguageProjectMetadata", catch_unwind)]
 pub fn get_vue_language_project_metadata(
     config_file_name: String,
 ) -> Result<VueLanguageProjectMetadata> {
