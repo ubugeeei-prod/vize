@@ -4,10 +4,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startTsserver } from "./tsserver-client.mjs";
+import type { createInheritedConfig } from "./inherited-config.ts";
 
 // This is an explicitly unqualified host boundary, separate from the Vue role.
 // Its full wrong warm packet is never substituted for the correct fresh oracle.
-export async function createOrdinaryHostFrontier(fixture, consumer, tsserver, output) {
+export async function createOrdinaryHostFrontier(
+  fixture: ReturnType<typeof createInheritedConfig>,
+  consumer: string,
+  tsserver: string,
+  output: string,
+) {
   const bytes = fs.readFileSync(
     fileURLToPath(
       new URL("../_fixtures/typescript-plugin/ordinary-host-frontier-10752.json", import.meta.url),
@@ -17,7 +23,7 @@ export async function createOrdinaryHostFrontier(fixture, consumer, tsserver, ou
     createHash("sha256").update(bytes).digest("hex"),
     "046eaaca3d9b35faa57b47204aea5d409e6b1321392c0c4d575623a10f873840",
   );
-  const known = JSON.parse(bytes);
+  const known = JSON.parse(bytes.toString("utf8"));
   assert.equal(known.issue, 10752);
   assert.equal(known.qualified, false);
   const root = fs.mkdtempSync(path.join(path.dirname(consumer), "ordinary-host-"));
@@ -28,8 +34,8 @@ export async function createOrdinaryHostFrontier(fixture, consumer, tsserver, ou
   fs.mkdirSync(packageRoot, { recursive: true });
   const directory = path.join(output, "ordinary-host-frontier");
   fs.mkdirSync(directory);
-  const observations = [];
-  const writeChanged = (file, bytes) => {
+  const observations: Record<string, any>[] = [];
+  const writeChanged = (file: string, bytes: string | Buffer) => {
     const content = Buffer.from(bytes);
     if (!fs.existsSync(file) || !content.equals(fs.readFileSync(file)))
       fs.writeFileSync(file, content);
@@ -72,9 +78,9 @@ export async function createOrdinaryHostFrontier(fixture, consumer, tsserver, ou
       ),
     );
   return {
-    async observe(name, pluginWarm, pluginFresh, expected) {
+    async observe(name: string, pluginWarm: any, pluginFresh: any, expected: unknown) {
       sync();
-      const observation = {
+      const observation: Record<string, any> = {
         name,
         config: JSON.parse(fs.readFileSync(path.join(root, "tsconfig.json"), "utf8")),
         pluginWarm,

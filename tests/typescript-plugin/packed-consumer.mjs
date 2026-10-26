@@ -7,14 +7,14 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startTsserver, position } from "./tsserver-client.mjs";
-import { createNavigationFixtures, checkNavigation } from "./authored-navigation.mjs";
-import { checkProjectMetadata } from "./project-metadata.mjs";
+import { createNavigationFixtures, checkNavigation } from "./authored-navigation.ts";
+import { checkProjectMetadata } from "./project-metadata.ts";
 import {
   createInheritedConfig,
   checkInheritedConfig,
   checkConfigurationLog,
   checkAutoTargetMetadata,
-} from "./inherited-config.mjs";
+} from "./inherited-config.ts";
 
 const typescriptVersion = process.env.VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT || "6.0.3";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");

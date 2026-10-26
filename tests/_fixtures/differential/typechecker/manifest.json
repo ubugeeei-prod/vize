@@ -8157,13 +8157,13 @@
         },
         {
           "selector": "checkInheritedConfig",
-          "source": "tests/typescript-plugin/inherited-config.mjs",
-          "sha256": "fd8777e8a20fd89b9de1fd0eb6d3acc008573fdc5ec33156753556022d0ee89f"
+          "source": "tests/typescript-plugin/inherited-config.ts",
+          "sha256": "17b8c03fae46c3c3d34e41d27e7901cc3b1969e1c43b13d6c5c1eceb18ec30d0"
         },
         {
           "selector": "createOrdinaryHostFrontier",
-          "source": "tests/typescript-plugin/ordinary-host-frontier.mjs",
-          "sha256": "f1472c74475b1a8ac0a20d6c422691ca9d3b024362e0c213770dd073ce16c502"
+          "source": "tests/typescript-plugin/ordinary-host-frontier.ts",
+          "sha256": "fa16979fe9c0876126b75f233e8934555ea909aefa51ea09466ab3e716bd5e9a"
         },
         {
           "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
@@ -8173,7 +8173,7 @@
         {
           "selector": "packed-consumer",
           "source": "tests/typescript-plugin/packed-consumer.mjs",
-          "sha256": "a7e8493c389cd0cbee859a905d7ee164ef124fbd24eefe5c3fa6e42733ada51c"
+          "sha256": "daf6932d21e43514e02eb41a2b4dd17c04a3396e07482d8c568e6d5e74641d30"
         },
         {
           "selector": "startTsserver",

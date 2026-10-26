@@ -4,9 +4,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { startTsserver } from "./tsserver-client.mjs";
 import fixtureLoader from "./project-fixture.cjs";
-import { createOrdinaryHostFrontier } from "./ordinary-host-frontier.mjs";
+import { createOrdinaryHostFrontier } from "./ordinary-host-frontier.ts";
+import type { NativeApi, TsserverClient } from "./project-metadata.ts";
 
-export function createInheritedConfig(consumer, src, output, typescriptVersion) {
+export function createInheritedConfig(
+  consumer: string,
+  src: string,
+  output: string,
+  typescriptVersion: string,
+) {
   const { files, expected, pack } = fixtureLoader.readProjectFixture();
   const base = path.join(consumer, "inherited.json"),
     root = path.join(consumer, "tsconfig.json");
@@ -23,7 +29,7 @@ export function createInheritedConfig(consumer, src, output, typescriptVersion) 
   fs.writeFileSync(base, files.get("inherited-before.json.txt"));
   fs.writeFileSync(sourceFile, source);
   fs.writeFileSync(control, controlSource);
-  const digest = (data) => createHash("sha256").update(data).digest("hex");
+  const digest = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
   const fixed = [root, sourceFile, control].map((file) => ({
     file,
     bytes: fs.readFileSync(file),
@@ -49,15 +55,15 @@ export function createInheritedConfig(consumer, src, output, typescriptVersion) 
 }
 
 export async function checkInheritedConfig(
-  client,
-  fixture,
-  native,
-  tsserver,
-  consumer,
-  output,
-  results,
+  client: TsserverClient,
+  fixture: ReturnType<typeof createInheritedConfig>,
+  native: NativeApi,
+  tsserver: string,
+  consumer: string,
+  output: string,
+  results: Record<string, unknown>,
 ) {
-  const packet = {
+  const packet: Record<string, any> = {
     source: fixture.source,
     beforeProjection: null,
     afterProjection: null,
@@ -74,14 +80,14 @@ export async function checkInheritedConfig(
       path.join(output, "inherited-observations.json"),
       JSON.stringify(packet, null, 2),
     );
-  const project = (source) =>
+  const project = (source: string) =>
     native.generateVueLanguageCode(source, {
       filename: fixture.sourceFile,
       configFileName: fixture.root,
       checkJavaScript: false,
       preserveUnusedDiagnostics: true,
     });
-  const request = async (server, key, command, file) => {
+  const request = async (server: TsserverClient, key: string, command: string, file: string) => {
     const response = await server.send(command, { file });
     packet[key] = response;
     results["inherited-" + key] = response;
@@ -134,7 +140,7 @@ export async function checkInheritedConfig(
   assert.deepEqual(packet.fresh.body, fixture.expected.strict);
   assert.deepEqual(packet.controlAfter.body, fixture.expected.controlAfter);
   assert(
-    packet.controlAfter.body.some((diagnostic) => diagnostic.code === 7029),
+    packet.controlAfter.body.some((diagnostic: { code: number }) => diagnostic.code === 7029),
     "the real TypeScript project consumed the changed extends file",
   );
   assert.notEqual(
@@ -194,7 +200,7 @@ export async function checkInheritedConfig(
           file.bytes,
           "root config and both authored files remain byte-identical",
         );
-      const observation = {
+      const observation: Record<string, any> = {
         name,
         options,
         base: fs.readFileSync(fixture.base, "utf8"),
@@ -206,7 +212,7 @@ export async function checkInheritedConfig(
         packet.metadata.push(observation.metadata);
         observation.projection = JSON.parse(project(fixture.source));
       } catch (cause) {
-        observation.nativeError = cause.message;
+        observation.nativeError = (cause as Error).message;
       }
       save();
       await client.send("reloadProjects", {}, false);
@@ -259,7 +265,9 @@ export async function checkInheritedConfig(
       } else {
         assert.match(observation.nativeError, /Invalid tsconfig/);
         assert(
-          observation.warm.body.some((diagnostic) => diagnostic.text.includes("Invalid tsconfig")),
+          observation.warm.body.some((diagnostic: { text: string }) =>
+            diagnostic.text.includes("Invalid tsconfig"),
+          ),
         );
       }
       // The ordinary package-option frontier is a separately retained failure,
@@ -275,8 +283,10 @@ export async function checkInheritedConfig(
           : undefined,
       );
     }
-    const repaired = packet.cases.find((item) => item.name === "parent-repaired");
-    const ordinary = packet.cases.find((item) => item.name === "ordinary-options-only");
+    const repaired = packet.cases.find((item: { name: string }) => item.name === "parent-repaired");
+    const ordinary = packet.cases.find(
+      (item: { name: string }) => item.name === "ordinary-options-only",
+    );
     assert.equal(ordinary.metadata.configIdentity, repaired.metadata.configIdentity);
     assert.deepEqual(
       ordinary.projection,
@@ -296,7 +306,7 @@ export async function checkInheritedConfig(
   };
 }
 
-export function checkConfigurationLog(output) {
+export function checkConfigurationLog(output: string) {
   const observations = JSON.parse(
     fs.readFileSync(path.join(output, "inherited-observations.json"), "utf8"),
   );
@@ -323,7 +333,7 @@ export function checkConfigurationLog(output) {
   }
 }
 
-export function checkAutoTargetMetadata(native, consumer, output) {
+export function checkAutoTargetMetadata(native: NativeApi, consumer: string, output: string) {
   const root = path.join(consumer, "自動設定");
   fs.mkdirSync(root);
   fs.writeFileSync(path.join(root, "package.json"), '{"name":"auto-target-fixture"}');
@@ -338,7 +348,10 @@ export function checkAutoTargetMetadata(native, consumer, output) {
   });
   const preferred = path.join(root, "node_modules/vue/package.json");
   const installed = path.join(consumer, "node_modules/vue/package.json");
-  const observations = { source, installed: JSON.parse(fs.readFileSync(installed, "utf8")) };
+  const observations: Record<string, any> = {
+    source,
+    installed: JSON.parse(fs.readFileSync(installed, "utf8")),
+  };
   const save = () =>
     fs.writeFileSync(
       path.join(output, "auto-target-metadata.json"),

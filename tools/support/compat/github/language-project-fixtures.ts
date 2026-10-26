@@ -24,8 +24,8 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
   ["createProjectConfiguration", "npm/typescript-plugin/virtual-modules.cjs"],
   ["createMappedLanguageService", "npm/typescript-plugin/language-service.cjs"],
   ["readProjectFixture", "tests/typescript-plugin/project-fixture.cjs"],
-  ["checkInheritedConfig", "tests/typescript-plugin/inherited-config.mjs"],
-  ["createOrdinaryHostFrontier", "tests/typescript-plugin/ordinary-host-frontier.mjs"],
+  ["checkInheritedConfig", "tests/typescript-plugin/inherited-config.ts"],
+  ["createOrdinaryHostFrontier", "tests/typescript-plugin/ordinary-host-frontier.ts"],
   [
     "one project fingerprints its native closure once per epoch and disposes exact watches",
     "tests/typescript-plugin/project-configuration.test.cjs",
