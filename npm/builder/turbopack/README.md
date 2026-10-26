@@ -2,6 +2,9 @@
 
 Native Vue SFC compilation for Next.js 16.4.3 and its Turbopack loader API.
 
+Not yet published to npm: it is an experimental workspace package until it joins
+the release.
+
 ```sh
 npm install @vizejs/turbopack-plugin vue
 ```

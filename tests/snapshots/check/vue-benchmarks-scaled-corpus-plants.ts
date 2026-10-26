@@ -80,7 +80,7 @@ const plants: ScaledPlant[] = [
     clean: "const disabled0045: boolean = false;",
     broken: 'const disabled0045: string = "yes";',
     diagnostics: [
-      "error:7:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'.",
+      "error:7:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"disabled0045\">{{ title0045 }}</button>; binding: 'disabled')",
     ],
     vueTscOutput:
       "Component0045.vue(7,26): error TS2322: Type 'string' is not assignable to type 'Booleanish | undefined'.\n",
@@ -91,7 +91,7 @@ const plants: ScaledPlant[] = [
     clean: "const handler0090 = () => {",
     broken: "const handler0090 = 123; const spare0090 = () => {",
     diagnostics: [
-      "error:8:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.",
+      "error:8:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'. (source: <button type=\"button\" @click=\"handler0090\">go 0090</button>; binding: @click)",
     ],
     vueTscOutput:
       "Component0090.vue(8,4): error TS2345: Argument of type '{ type: \"button\"; onClick: 123; }' is not assignable to parameter of type 'ButtonHTMLAttributes & ReservedProps'.\n  Type '{ type: \"button\"; onClick: 123; }' is not assignable to type 'ButtonHTMLAttributes'.\n    Types of property 'onClick' are incompatible.\n      Type 'number' is not assignable to type '(payload: PointerEvent) => void'.\n",
@@ -102,7 +102,7 @@ const plants: ScaledPlant[] = [
     clean: '  <Child variant="primary" />',
     broken: '  <Child variant="danger" />',
     diagnostics: [
-      'error:7:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.',
+      'error:7:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'. (source: <Child variant="danger" />; binding: variant)',
     ],
     vueTscOutput:
       'Component0119.vue(7,10): error TS2322: Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.\n',

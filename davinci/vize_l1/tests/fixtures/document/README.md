@@ -72,3 +72,11 @@ for `address`, `blockquote`, `figure`, `figcaption`, `hgroup` and `search`.
 Native Rust and actual Chromium consume the same packets. Every admitted case
 uses explicit matching ends; the existing implied-end, table, foreign, raw,
 formatting and Vue-syntax refusals remain authoritative.
+
+`html-implied-ends-and-tables.json` keeps twelve complete original sources and
+whole ancestry, effective attributes and direct child nodes for implied end
+tags (`p`, list items, `dt`/`dd`, ruby text, `option`/`optgroup`) and the
+table insertion modes. Native Rust and actual Chromium consume the same
+packets; native Rust also pins each element closed without an authored end
+tag. Implied starts, fostered content, table text, ignored tags and
+parse-error ends keep typed refusals.

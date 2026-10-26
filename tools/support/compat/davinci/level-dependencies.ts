@@ -32,7 +32,9 @@ export {
 export {
   assertProductAllowlistRatchet,
   combineProductAllowlists,
+  initialCanonProductAllowlist,
   initialGlyphProductAllowlist,
+  initialMaestroProductAllowlist,
   initialPatinaProductAllowlist,
   productPolicies,
   readBaseProductAllowlist,

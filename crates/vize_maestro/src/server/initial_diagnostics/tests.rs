@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use tower_lsp::lsp_types::Url;
 
-use super::{MAX_PENDING_DOCUMENTS, PendingInitialDiagnostics};
+use super::{EDIT_DIAGNOSTIC_DEBOUNCE, MAX_PENDING_DOCUMENTS, PendingInitialDiagnostics};
 
 fn finish_sync(pending: &mut PendingInitialDiagnostics) {
     while let Some((uri, job)) = pending.take_sync() {
@@ -128,4 +128,70 @@ fn completing_old_sync_never_releases_a_newer_open_before_its_feedback() {
     assert!(pending.take_ready(now).is_none());
     pending.complete_sync(&uri, current.sequence);
     assert_eq!(pending.take_ready(now).unwrap().1.version, 2);
+}
+
+#[test]
+fn an_edit_after_a_cheap_pass_starts_without_the_quiet_period() {
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let now = Instant::now();
+    let mut pending = PendingInitialDiagnostics {
+        last_pass: Some(Duration::from_millis(30)),
+        ..PendingInitialDiagnostics::default()
+    };
+    assert_eq!(pending.edit_not_before(&uri, now), now);
+    pending.insert(uri.clone(), 1, now);
+    assert_eq!(
+        pending.edit_not_before(&uri, now),
+        now + EDIT_DIAGNOSTIC_DEBOUNCE,
+        "an edit behind a queued pass waits for typing to pause"
+    );
+}
+
+#[test]
+fn an_unmeasured_or_slow_pass_keeps_the_quiet_period() {
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let now = Instant::now();
+    let mut pending = PendingInitialDiagnostics::default();
+    assert_eq!(
+        pending.edit_not_before(&uri, now),
+        now + EDIT_DIAGNOSTIC_DEBOUNCE
+    );
+    pending.last_pass = Some(EDIT_DIAGNOSTIC_DEBOUNCE);
+    assert_eq!(
+        pending.edit_not_before(&uri, now),
+        now + EDIT_DIAGNOSTIC_DEBOUNCE
+    );
+}
+
+#[test]
+fn did_change_after_a_cheap_settled_pass_validates_without_the_quiet_period() {
+    let fixture = super::open_importer_tests::queued_open();
+    {
+        let mut pending = fixture.pending.lock();
+        finish_sync(&mut pending);
+        let later = Instant::now() + Duration::from_secs(2);
+        assert_eq!(pending.take_ready(later).unwrap().1.version, 1);
+        pending.last_pass = Some(Duration::from_millis(30));
+    }
+    let change = tower_lsp::lsp_types::DidChangeTextDocumentParams {
+        text_document: tower_lsp::lsp_types::VersionedTextDocumentIdentifier {
+            uri: fixture.uri.clone(),
+            version: 2,
+        },
+        content_changes: vec![tower_lsp::lsp_types::TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: "<template>{{ edited }}</template>".into(),
+        }],
+    };
+    crate::runtime::block_on(tower_lsp::LanguageServer::did_change(
+        fixture.service.inner(),
+        change,
+    ));
+
+    let (uri, job) = fixture.pending.lock().take_ready(Instant::now()).unwrap();
+    assert_eq!(
+        (uri, job.version, job.cause),
+        (fixture.uri.clone(), 2, super::DiagnosticsJobCause::Edit)
+    );
 }

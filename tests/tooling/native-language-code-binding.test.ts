@@ -28,10 +28,12 @@ function declarationDoc(marker: string): string {
   return /^\/\*\* (.*) \*\/$/.exec(line)?.[1] ?? "";
 }
 
-void test("the editor projection binding converts panics and matches its declarations", () => {
+void test("the editor projection bindings convert panics and match their declarations", () => {
   // tsserver hosts this binding: a Canon panic must not abort the editor.
   assert.match(rust, /#\[napi\(js_name = "generateVueLanguageCode", catch_unwind\)\]/);
+  assert.match(rust, /#\[napi\(js_name = "getVueLanguageProjectMetadata", catch_unwind\)\]/);
   for (const [item, declaration] of [
+    ["pub struct VueLanguageProjectMetadata", "export interface VueLanguageProjectMetadata"],
     ["pub struct VueLanguageCodeOptions", "export interface VueLanguageCodeOptions"],
     ["pub config_file_name", "configFileName?:"],
     ["pub fn generate_vue_language_code", "export declare function generateVueLanguageCode"],

@@ -2,6 +2,9 @@
 
 Use Vize Glyph to format Vue SFCs and Art files through Prettier.
 
+Not yet published to npm: it is an experimental workspace package until it joins
+the release.
+
 ```sh
 npm install --save-dev --save-exact prettier@3.9.10 prettier-plugin-vize
 ```

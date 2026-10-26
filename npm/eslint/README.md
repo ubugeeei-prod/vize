@@ -2,6 +2,9 @@
 
 Vue lint rules powered by Vize's native engine, with complete source locations and native fixes.
 
+Not yet published to npm: it is an experimental workspace package until it joins
+the release.
+
 ```sh
 npm install --save-dev eslint eslint-plugin-vize typescript
 ```

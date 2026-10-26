@@ -14,6 +14,31 @@ use vize_canon::{
     generate_vue_content_mapper_transform_with_options,
 };
 
+/// Canon's configuration identity and the exact files observed while resolving it.
+#[napi(object)]
+pub struct VueLanguageProjectMetadata {
+    pub config_identity: String,
+    pub watched_files: Vec<String>,
+}
+
+/// Snapshot the explicit project's existing Canon configuration resolver.
+/// An empty path denotes an inferred project and performs no file reads.
+#[napi(js_name = "getVueLanguageProjectMetadata", catch_unwind)]
+pub fn get_vue_language_project_metadata(
+    config_file_name: String,
+) -> Result<VueLanguageProjectMetadata> {
+    let configuration = ContentMapperProjectConfiguration::load(Path::new(&config_file_name))
+        .map_err(|error| Error::from_reason(error.to_string()))?;
+    Ok(VueLanguageProjectMetadata {
+        config_identity: configuration.config_identity.to_string(),
+        watched_files: configuration
+            .watched_files
+            .into_iter()
+            .map(|path| path.to_string())
+            .collect(),
+    })
+}
+
 // Source text always comes from the caller.
 /// Explicit options for the shared Canon language projection.
 #[napi(object)]
