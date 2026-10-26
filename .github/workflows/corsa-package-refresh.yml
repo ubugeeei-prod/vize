@@ -132,6 +132,7 @@ jobs:
         env:
           VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/projection-import-geometry/packets
           FEATURE: ${{ matrix.feature }}
+          INSTA_UPDATE: new
         run: |
           mkdir -p "$RUNNER_TEMP/projection-import-geometry"
           git rev-parse HEAD > "$RUNNER_TEMP/projection-import-geometry/source.sha"
