@@ -185,12 +185,11 @@ fn select(
                         "versioned type conditions require the native semantic resolver",
                     ));
                 }
-                if condition == "default" || active.contains(&condition.as_str()) {
-                    if let Some(target) =
+                if (condition == "default" || active.contains(&condition.as_str()))
+                    && let Some(target) =
                         select(target, active, entered_types || condition == "types")?
-                    {
-                        return Ok(Some(target));
-                    }
+                {
+                    return Ok(Some(target));
                 }
             }
             Ok(None)

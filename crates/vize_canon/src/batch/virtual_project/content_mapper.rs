@@ -229,7 +229,7 @@ fn transform_with_diagnostic_ownership(
         VueCodegenOptions {
             diagnostic_ownership: diagnostic_ownership.as_ref(),
             check_options: transform_options.virtual_ts_check_options(),
-            typed_router_root,
+            typed_router: typed_router_root.map(super::typed_router::Config::files_only),
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
