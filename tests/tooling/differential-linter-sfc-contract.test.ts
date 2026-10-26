@@ -42,9 +42,17 @@ function packet(value: any) {
 }
 
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
-  assert.equal(
-    sha256(fs.readFileSync(manifest)),
-    "0f08336fb8644bf0c68b0f9c4957bc613794d2bda886156a494bf469b5d6e3b0",
+  // The old packs are the pinned cohort wires and oracles. Input-only cases
+  // pin their own inputs, so new registrations leave these pins alone.
+  assert.deepEqual(
+    loaded.manifest.cohorts.map((cohort: any) => [cohort.id, cohort.cases.sha256]),
+    [
+      ["current-api", "d9a4842eddd84350ce05c3c2cbb973f5a852a67f85d5b255acbb699ebcc2de16"],
+      ["next-tick", "96b1745c527e4a65fc0347566d015d5063271e90d7fdc8d21fe160c54856c5c2"],
+      ["report", "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622"],
+      ["static-class", "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"],
+      ["component-name", "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c"],
+    ],
   );
   assert.equal(
     sha256(

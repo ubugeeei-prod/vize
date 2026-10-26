@@ -101,6 +101,44 @@ void test("only a newly registered active case with a matching pinned input pass
   );
 });
 
+void test("a fix cannot drop or downgrade an already planned case", () => {
+  const files = { "head:tests/_fixtures/differential/formatter/new-fix/App.vue": input };
+  const coverage = (state: string, dialects: string[]) => ({
+    state,
+    registryRef: null,
+    evidence: [{ kind: "source-inspection", dialects }],
+  });
+  const old = {
+    ...caseRow,
+    id: "formatter/sfc/old",
+    dialectCoverage: coverage("source-inspected", ["vue3-sfc", "ts"]),
+  };
+  const state = (kept: object[]) =>
+    report({
+      before: manifest("formatter", [old]),
+      after: manifest("formatter", [...kept, caseRow]),
+      files,
+    }).products[0];
+  assert.equal(state([old])?.state, "new-inputs-registered");
+  const gained = { ...old, dialectCoverage: coverage("verified", ["vue3-sfc"]) };
+  assert.equal(state([gained])?.state, "new-inputs-registered");
+  assert.deepEqual(state([]), {
+    product: "formatter",
+    state: "invalid-manifest-or-input",
+    cases: [],
+    reason: "Error: drops planned case: formatter/sfc/old",
+  });
+  for (const lost of [
+    coverage("unknown", ["vue3-sfc", "ts"]),
+    coverage("source-inspected", ["vue3-sfc"]),
+  ]) {
+    assert.equal(
+      state([{ ...old, dialectCoverage: lost }])?.reason,
+      "Error: downgrades dialect coverage: formatter/sfc/old",
+    );
+  }
+});
+
 void test("typechecker manifests retain their registered input array shape", () => {
   const path = "tests/_fixtures/differential/typechecker/new-fix/App.vue.txt";
   const row = {

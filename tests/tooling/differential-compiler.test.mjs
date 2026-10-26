@@ -125,42 +125,44 @@ function syntheticReport(code = fixture.expected) {
 }
 
 void test("compiler fixture pins a real full-module reference without native credit", () => {
+  // Baseline cases stay registered; new cases need no edit here.
+  const ids = new Set(loaded.cases.map((current) => current.id));
   assert.deepEqual(
-    loaded.cases.map((current) => current.id),
     [
-      "compiler/sfc/ssr-slot-scope",
-      "compiler/sfc/slot-fallback-compound-text-9889",
-      "compiler/sfc/slot-fallback-adjacent-text-10087",
-      "compiler/sfc/production-v-if-comment-9920",
-      "compiler/sfc/template-asset-urls-9895",
-      "compiler/sfc/v-model-maybe-ref-9897",
-      "compiler/sfc/maybe-ref-model-parity-10044",
-      "compiler/sfc/maybe-ref-authored-handlers-10164",
-      "compiler/sfc/vue2-preserve-boundaries-9886",
-      "compiler/sfc/vue2-preserve-comment-edges-10065",
-      "compiler/sfc/package-import-prop-type-9894",
-      "compiler/sfc/scoped-where-nesting-9830",
-      "compiler/sfc/scoped-keyframes-nesting-9829",
-      "compiler/sfc/scoped-checkout-stability-10067",
-      "compiler/sfc/jsx-vapor-runtime-slots-6889",
-      "compiler/sfc/root-text-patch-flag-10168",
-      "compiler/sfc/scoped-slot-closure-10169",
-      "compiler/dialect/vue0-10-repeat",
-      "compiler/dialect/vue0-11-repeat",
       "compiler/dialect/quirks-adjacent-attributes",
       "compiler/dialect/quirks-void-close",
-      "compiler/sfc/incomplete-script-setup-recovery-10200",
-      "compiler/sfc/ordered-object-props-10458",
-      "compiler/sfc/scoped-list-nesting-10606",
-      "compiler/sfc/sibling-script-import-reads-10616",
-      "compiler/sfc/compact-scoped-at-rules-10639",
-      "compiler/sfc/sfc-runtime-options-native",
-      "compiler/sfc/escaped-for-bindings-10714",
+      "compiler/dialect/vue0-10-repeat",
+      "compiler/dialect/vue0-11-repeat",
       "compiler/sfc/asset-import-binding-collision-10710",
-      "compiler/sfc/scoped-scope-nesting-10648",
+      "compiler/sfc/compact-scoped-at-rules-10639",
+      "compiler/sfc/escaped-for-bindings-10714",
       "compiler/sfc/for-alias-initializers-10746",
+      "compiler/sfc/incomplete-script-setup-recovery-10200",
+      "compiler/sfc/jsx-vapor-runtime-slots-6889",
+      "compiler/sfc/maybe-ref-authored-handlers-10164",
+      "compiler/sfc/maybe-ref-model-parity-10044",
+      "compiler/sfc/ordered-object-props-10458",
+      "compiler/sfc/package-import-prop-type-9894",
+      "compiler/sfc/production-v-if-comment-9920",
+      "compiler/sfc/root-text-patch-flag-10168",
+      "compiler/sfc/scoped-checkout-stability-10067",
+      "compiler/sfc/scoped-keyframes-nesting-9829",
+      "compiler/sfc/scoped-list-nesting-10606",
+      "compiler/sfc/scoped-scope-nesting-10648",
+      "compiler/sfc/scoped-slot-closure-10169",
+      "compiler/sfc/scoped-where-nesting-9830",
+      "compiler/sfc/sfc-runtime-options-native",
+      "compiler/sfc/sibling-script-import-reads-10616",
+      "compiler/sfc/slot-fallback-adjacent-text-10087",
+      "compiler/sfc/slot-fallback-compound-text-9889",
+      "compiler/sfc/ssr-slot-scope",
       "compiler/sfc/template-asset-markup-10761",
-    ],
+      "compiler/sfc/template-asset-urls-9895",
+      "compiler/sfc/v-model-maybe-ref-9897",
+      "compiler/sfc/vue2-preserve-boundaries-9886",
+      "compiler/sfc/vue2-preserve-comment-edges-10065",
+    ].filter((id) => !ids.has(id)),
+    [],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
@@ -342,18 +344,22 @@ void test("compiler plans and byte-compares every registered SSR case", () => {
       recursive: true,
     });
     const manifest = JSON.parse(fs.readFileSync(path.join(compiler, "manifest.json"), "utf8"));
-    const second = structuredClone(manifest.cases[0]);
+    const sourceId = "compiler/sfc/ssr-slot-scope";
+    const second = structuredClone(manifest.cases.find((current) => current.id === sourceId));
     second.id = "compiler/sfc/second-slot-scope";
     second.inputs.root = "second-slot-scope";
     second.reference.path = "second-slot-scope/module.expected.txt";
-    manifest.cases.push(second);
+    // Registrations insert at their sorted position.
+    const position = manifest.cases.findIndex((current) => current.id > second.id);
+    manifest.cases.splice(position, 0, second);
     fs.writeFileSync(path.join(compiler, "manifest.json"), JSON.stringify(manifest));
     const multiple = loadCompilerManifest(path.join(compiler, "manifest.json"));
     assert.equal(multiple.cases.length, loaded.cases.length + 1);
 
     const report = syntheticReport();
     report.manifestSha256 = multiple.manifestSha256;
-    report.rows.push({ ...structuredClone(report.rows[0]), id: second.id });
+    const sourceRow = report.rows.find((row) => row.id === sourceId);
+    report.rows.splice(position, 0, { ...structuredClone(sourceRow), id: second.id });
     report.summary = {
       ...report.summary,
       plannedCases: report.summary.plannedCases + 1,

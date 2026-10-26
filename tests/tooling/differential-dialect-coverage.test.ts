@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 import {
+  assertSortedCases,
   canonicalDialects,
   classifyDialectCoverage,
   loadProductManifest,
@@ -30,6 +31,29 @@ function load(product: string): { cases: Fixture[] } {
     path.join(root, `tests/_fixtures/differential/${product}/manifest.json`),
     product,
   );
+}
+
+type Summary = {
+  plannedCases: number;
+  verifiedCases: number;
+  provisionalCases: number;
+  unknownReadinessCases: number;
+  verified: Record<string, number>;
+  provisional: Record<string, number>;
+};
+
+// Baseline floors: new cases need no edit here, while losing baseline cases or
+// coverage still fails. Verified claims stay exact.
+function assertCoverageFloor(summary: Summary, floor: Summary) {
+  assert.equal(summary.verifiedCases, floor.verifiedCases);
+  assert.deepEqual(summary.verified, floor.verified);
+  for (const key of ["plannedCases", "provisionalCases", "unknownReadinessCases"] as const) {
+    assert(summary[key] >= floor[key], `${key}: ${summary[key]} < ${floor[key]}`);
+  }
+  for (const [dialect, count] of Object.entries(floor.provisional)) {
+    const actual = summary.provisional[dialect] ?? 0;
+    assert(actual >= count, `provisional ${dialect}: ${actual} < ${count}`);
+  }
 }
 
 void test("every product manifest contributes to the case-level dialect denominator", () => {
@@ -86,8 +110,12 @@ void test("every product manifest contributes to the case-level dialect denomina
   }
 });
 
+void test("product manifests keep cases sorted so registrations merge cleanly", () => {
+  for (const product of products) assertSortedCases(load(product).cases);
+});
+
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
-  assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
+  assertCoverageFloor(summarizeDialectCoverage(load("compiler").cases), {
     plannedCases: 32,
     verifiedCases: 4,
     provisionalCases: 26,
@@ -162,7 +190,7 @@ void test("missing case coverage becomes explicit unknown without changing manif
 });
 
 void test("linter and LSP coverage record every pinned authored source dialect", () => {
-  assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
+  assertCoverageFloor(summarizeDialectCoverage(load("linter").cases), {
     plannedCases: 101,
     verifiedCases: 0,
     provisionalCases: 101,
@@ -179,7 +207,7 @@ void test("linter and LSP coverage record every pinned authored source dialect",
       "vue3-sfc": 81,
     },
   });
-  assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
+  assertCoverageFloor(summarizeDialectCoverage(load("lsp").cases), {
     plannedCases: 66,
     verifiedCases: 0,
     provisionalCases: 66,
@@ -211,8 +239,7 @@ void test("Pug and Jade spellings record the same authored preprocessor dialect"
 
 void test("typechecker coverage records every pinned authored source dialect", () => {
   const source = load("typechecker");
-  const summary = summarizeDialectCoverage(source.cases);
-  assert.deepEqual(summary, {
+  assertCoverageFloor(summarizeDialectCoverage(source.cases), {
     plannedCases: 164,
     verifiedCases: 0,
     provisionalCases: 163,

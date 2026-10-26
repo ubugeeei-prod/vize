@@ -22,6 +22,9 @@ const receipt = Buffer.from("synthetic unit-test receipt, not runtime evidence")
 const binarySha256 = sha256(Buffer.from("synthetic unit-test executable identity"));
 const sourceRevision = "1".repeat(40);
 
+const packIndex = (pack: keyof typeof TYPECHECKER_TESTS) =>
+  Object.keys(TYPECHECKER_TESTS).indexOf(pack);
+
 // These synthetic transport objects test rejection/accounting. Actual execution
 // is required separately through all registered full-worker JUnit cases and receipts.
 function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
@@ -59,11 +62,9 @@ function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
 }
 
 test("the shared registry retains all existing production projects and exact input bytes", () => {
-  assert.equal(loaded.cases.length, 164);
-  assert.equal(
-    loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    575,
-  );
+  // Baseline floors; new packs need no edit here.
+  assert(loaded.cases.length >= 164);
+  assert(loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0) >= 575);
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],
     Object.keys(TYPECHECKER_TESTS),
@@ -174,7 +175,7 @@ test("all available public result fields are retained without inventing their ba
   const missingCaptures = (
     Object.keys(TYPECHECKER_TESTS) as Array<keyof typeof TYPECHECKER_TESTS>
   ).map(capture);
-  missingCaptures[0] = missingBlock;
+  missingCaptures[packIndex("event-handler-narrowing")] = missingBlock;
   assert.throws(() => typecheckerReport(loaded, missingCaptures, sourceRevision));
   const droppedRow = structuredClone(original);
   droppedRow.cases[2].publicResult.diagnostics.pop();
@@ -187,8 +188,11 @@ test("all available public result fields are retained without inventing their ba
   const captures = (Object.keys(TYPECHECKER_TESTS) as Array<keyof typeof TYPECHECKER_TESTS>).map(
     capture,
   );
-  captures[0] = unbaselined;
-  const row = typecheckerReport(loaded, captures, sourceRevision).rows[2];
+  captures[packIndex("event-handler-narrowing")] = unbaselined;
+  const row = typecheckerReport(loaded, captures, sourceRevision).rows.find(
+    (current) => current.id === `typechecker/event-handler-narrowing/${unbaselined.cases[2].id}`,
+  );
+  assert(row);
   assert.equal(row.legacy.matchedContract, "batch-start-diagnostics-v1");
   assert.deepEqual(row.legacy.unbaselinedFields, [
     "diagnostics[].blockType",
@@ -218,17 +222,17 @@ test("complete legacy-only observations stay in the denominator with zero native
     capture,
   );
   const report = typecheckerReport(loaded, captures, sourceRevision);
-  assert.equal(report.summary.legacyMatches, 164);
+  assert.equal(report.summary.legacyMatches, loaded.cases.length);
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision,
     buildReceiptSha256: sha256(receipt),
     requiredStages: ["parse", "facts", "emit", "check"],
   });
   assert.deepEqual(acceptance.total, {
-    planned: 164,
+    planned: loaded.cases.length,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 164,
+    unsupported: loaded.cases.length,
     legacyBacked: 0,
     unverified: 0,
   });

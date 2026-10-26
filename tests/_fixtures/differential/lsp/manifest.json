@@ -5,33 +5,69 @@
   "baseRevision": "cc87bb5960ea9e49e82672205df919de58bb4b24",
   "cases": [
     {
-      "id": "lsp/fix-history/inactive-imports",
+      "id": "lsp/fix-history/code-action-utf16-original",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "inactive-imports",
+        "root": "code-action-utf16-original",
         "files": [
           {
-            "path": "Host.vue.txt",
-            "sha256": "e8736c9c802ea1884a3902497927fa5fb0e039cf0a6a5dddcb018a32544b90a8"
-          },
-          {
-            "path": "Multi.vue.txt",
-            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
-          },
-          {
-            "path": "Real.vue.txt",
-            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
-          },
-          {
-            "path": "Exported.vue.txt",
-            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+            "path": "CodeActionUtf16.vue.txt",
+            "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
           }
         ]
       },
       "case": {
-        "path": "inactive-imports/case.json",
-        "sha256": "287d441ea77d4873462701ba9682ce137ca8670a3d8e768145b088b0a2ff3e3e"
+        "path": "code-action-utf16-original/case.json",
+        "sha256": "1d9a4a2de6b5d7cd5de41c51e780f87d4877f7d872ba0518185d0a591f8790a4"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/document-link-module-resolution-original",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "document-link-module-resolution-original",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "4887832158be0ef54595226e4441ddf11ce433486d79446eeb7cb75499895681"
+          },
+          {
+            "path": "index.ts.txt",
+            "sha256": "6c6f805f3f3bb5f306dc9993d7ebcad35909d48fc4249432eec3aca4a8fe430c"
+          },
+          {
+            "path": "Detail.vue.txt",
+            "sha256": "c3c05a28bb0b85c98771b761a2ed2ca038f132d1af194732c38630718c250863"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "10ca0d428d6980e1a714aeee0c2a3093a41913731d2d620ef5543e6d85331db1"
+          }
+        ]
+      },
+      "case": {
+        "path": "document-link-module-resolution-original/case.json",
+        "sha256": "d9b40c4cd036cd14480838f4cde8e8fa7d1e670d1b9d22ee38715babebfd8690"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -52,28 +88,27 @@
       }
     },
     {
-      "id": "lsp/fix-history/on-type-crlf",
+      "id": "lsp/fix-history/folding-comment",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "on-type-crlf",
+        "root": "folding-comment",
         "files": [
           {
-            "path": "App.vue.txt",
-            "sha256": "6cb908dd3f570e647113f3e905b8d3da379003d3e6547e042681fd777d8d9487"
+            "path": "Comment.vue.txt",
+            "sha256": "4abc84fa40fdec42bbc0a3f0cc8dc1bfe6025a4a0f487bfc024550f77fb05a1a"
           }
         ]
       },
       "case": {
-        "path": "on-type-crlf/case.json",
-        "sha256": "c7d77329e66ffb7c5f385baabc0dcc7fcc4b0adc6535396412d7f87ddb4a99b5"
+        "path": "folding-comment/case.json",
+        "sha256": "c46177da28954d9d19d67b9fa5fafb4c7911d10d00551fe270ff6fee6aaf6fa4"
       },
-      "requestCount": 4,
+      "requestCount": 1,
       "initializationOptions": {
         "editor": true,
         "lint": false,
-        "typecheck": false,
-        "formatting": true
+        "typecheck": false
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -81,7 +116,42 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-empty-blocks",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "folding-empty-blocks",
+        "files": [
+          {
+            "path": "Empty.vue.txt",
+            "sha256": "af1d9435bac0798f57df520559be64df0300ccfb5fd7c3bd6a383344bcdc764d"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-empty-blocks/case.json",
+        "sha256": "5e4d4019317ac60d49fd299ea66effb06d8af25553e0d1d70cbc00f2ff5161e4"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -158,21 +228,21 @@
       }
     },
     {
-      "id": "lsp/fix-history/folding-comment",
+      "id": "lsp/fix-history/folding-nested-elements",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "folding-comment",
+        "root": "folding-nested-elements",
         "files": [
           {
-            "path": "Comment.vue.txt",
-            "sha256": "4abc84fa40fdec42bbc0a3f0cc8dc1bfe6025a4a0f487bfc024550f77fb05a1a"
+            "path": "Nested.vue.txt",
+            "sha256": "41ba0238a97c4d8c898b20755da0859bc974a19136653e3d824e8b8e102ed373"
           }
         ]
       },
       "case": {
-        "path": "folding-comment/case.json",
-        "sha256": "c46177da28954d9d19d67b9fa5fafb4c7911d10d00551fe270ff6fee6aaf6fa4"
+        "path": "folding-nested-elements/case.json",
+        "sha256": "86c7081ad5da34466b9e9a84915b52a2d648aee95ed6d610a1a15384acf1284a"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -228,21 +298,21 @@
       }
     },
     {
-      "id": "lsp/fix-history/folding-empty-blocks",
+      "id": "lsp/fix-history/folding-script-markup",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "folding-empty-blocks",
+        "root": "folding-script-markup",
         "files": [
           {
-            "path": "Empty.vue.txt",
-            "sha256": "af1d9435bac0798f57df520559be64df0300ccfb5fd7c3bd6a383344bcdc764d"
+            "path": "ScriptMarkup.vue.txt",
+            "sha256": "56ecbb1db4f123a81df572b310124a029c0a957bf27ba64dea9def9a11c29b68"
           }
         ]
       },
       "case": {
-        "path": "folding-empty-blocks/case.json",
-        "sha256": "5e4d4019317ac60d49fd299ea66effb06d8af25553e0d1d70cbc00f2ff5161e4"
+        "path": "folding-script-markup/case.json",
+        "sha256": "6beb364a6fae8a0c04abb983a465e8618946746b82cfc92f318ddb6de5dcabf8"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -256,42 +326,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/fix-history/folding-nested-elements",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "folding-nested-elements",
-        "files": [
-          {
-            "path": "Nested.vue.txt",
-            "sha256": "41ba0238a97c4d8c898b20755da0859bc974a19136653e3d824e8b8e102ed373"
-          }
-        ]
-      },
-      "case": {
-        "path": "folding-nested-elements/case.json",
-        "sha256": "86c7081ad5da34466b9e9a84915b52a2d648aee95ed6d610a1a15384acf1284a"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -333,41 +368,6 @@
       }
     },
     {
-      "id": "lsp/fix-history/folding-script-markup",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "folding-script-markup",
-        "files": [
-          {
-            "path": "ScriptMarkup.vue.txt",
-            "sha256": "56ecbb1db4f123a81df572b310124a029c0a957bf27ba64dea9def9a11c29b68"
-          }
-        ]
-      },
-      "case": {
-        "path": "folding-script-markup/case.json",
-        "sha256": "6beb364a6fae8a0c04abb983a465e8618946746b82cfc92f318ddb6de5dcabf8"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
       "id": "lsp/fix-history/folding-unopened",
       "state": "active",
       "targets": ["stdio"],
@@ -383,111 +383,6 @@
       "case": {
         "path": "folding-unopened/case.json",
         "sha256": "857978bb10d1034dc1cde225a210789a8f9f0f6ba71346cf2201bad8f756daab"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/fix-history/highlight-original-rw",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "highlight-original-rw",
-        "files": [
-          {
-            "path": "Dh.vue.txt",
-            "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
-          }
-        ]
-      },
-      "case": {
-        "path": "highlight-original-rw/case.json",
-        "sha256": "54cffe97d43ef7d18f86f8b717c58fdb5b236f1de3ad90def18df06dca40f66b"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/fix-history/highlight-original-pair",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "highlight-original-pair",
-        "files": [
-          {
-            "path": "FourDivs.vue.txt",
-            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
-          }
-        ]
-      },
-      "case": {
-        "path": "highlight-original-pair/case.json",
-        "sha256": "6fd5e7d5699f0213dbebeea1d49b7c3dc3d1609eddba43169ca6d155003afec3"
-      },
-      "requestCount": 4,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/fix-history/highlight-original-tag",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "highlight-original-tag",
-        "files": [
-          {
-            "path": "Dh.vue.txt",
-            "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
-          }
-        ]
-      },
-      "case": {
-        "path": "highlight-original-tag/case.json",
-        "sha256": "1a18424f61466d7e009d81ee246a490748a8deb8c919854302c226ae8b910c7b"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -578,6 +473,485 @@
       }
     },
     {
+      "id": "lsp/fix-history/highlight-original-pair",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-pair",
+        "files": [
+          {
+            "path": "FourDivs.vue.txt",
+            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-pair/case.json",
+        "sha256": "6fd5e7d5699f0213dbebeea1d49b7c3dc3d1609eddba43169ca6d155003afec3"
+      },
+      "requestCount": 4,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-rw",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-rw",
+        "files": [
+          {
+            "path": "Dh.vue.txt",
+            "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-rw/case.json",
+        "sha256": "54cffe97d43ef7d18f86f8b717c58fdb5b236f1de3ad90def18df06dca40f66b"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-tag",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-tag",
+        "files": [
+          {
+            "path": "Dh.vue.txt",
+            "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-tag/case.json",
+        "sha256": "1a18424f61466d7e009d81ee246a490748a8deb8c919854302c226ae8b910c7b"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/inactive-imports",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "inactive-imports",
+        "files": [
+          {
+            "path": "Host.vue.txt",
+            "sha256": "e8736c9c802ea1884a3902497927fa5fb0e039cf0a6a5dddcb018a32544b90a8"
+          },
+          {
+            "path": "Multi.vue.txt",
+            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+          },
+          {
+            "path": "Real.vue.txt",
+            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+          },
+          {
+            "path": "Exported.vue.txt",
+            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+          }
+        ]
+      },
+      "case": {
+        "path": "inactive-imports/case.json",
+        "sha256": "287d441ea77d4873462701ba9682ce137ca8670a3d8e768145b088b0a2ff3e3e"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/nuxt-builtins-9866",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "nuxt-builtins-9866",
+        "files": [
+          {
+            "path": "HomeLink.vue.txt",
+            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+          }
+        ]
+      },
+      "case": {
+        "path": "nuxt-builtins-9866/case.json",
+        "sha256": "8b8bcba61c8837059150e2b3f7445dfe41b1197a319f4a9d843133e401e17786"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/on-type-crlf",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "on-type-crlf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "6cb908dd3f570e647113f3e905b8d3da379003d3e6547e042681fd777d8d9487"
+          }
+        ]
+      },
+      "case": {
+        "path": "on-type-crlf/case.json",
+        "sha256": "c7d77329e66ffb7c5f385baabc0dcc7fcc4b0adc6535396412d7f87ddb4a99b5"
+      },
+      "requestCount": 4,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "formatting": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/fix-history/rename-utf16-original",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "rename-utf16-original",
+        "files": [
+          {
+            "path": "RenameUtf16.vue.txt",
+            "sha256": "837a44f09b727ec594ae7f7b54f9137c630ff109269b60ff775f3989d3229fa2"
+          }
+        ]
+      },
+      "case": {
+        "path": "rename-utf16-original/case.json",
+        "sha256": "79e878ffe046b9056885a442528b5450bd0e42a44374a09791b4baa5a98b2fdf"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/art-shared-references-10459",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "art-shared-references-10459",
+        "files": [
+          {
+            "path": "Scope.art.vue.txt",
+            "sha256": "9ba194ddf4d076b3f9a0acc9474e8b067e7f15a0eda610d61bbac7e3634daf74"
+          },
+          {
+            "path": "Scope.crlf.art.vue.txt",
+            "sha256": "68dd21b8ce4059509d727af348140693c45b4b7b6166940ec216b107138be5f0"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-shared-references-10459/case.json",
+        "sha256": "8cb08ea451687f0a75745b9b70f7f3ac3637cfa70d409d4040634a2979a57a27"
+      },
+      "requestCount": 8,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/art-variant-scopes-10451",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "art-variant-scopes-10451",
+        "files": [
+          {
+            "path": "Scope.art.vue.txt",
+            "sha256": "e0a8b578c3caf01793f9f94f0a43eed8d6d9ab3f590a4a1240191435c99ac278"
+          },
+          {
+            "path": "Scope.crlf.art.vue.txt",
+            "sha256": "1efb09e288ee03f7bbee82a9a95b2261a74ba42d992bb690687b3f03dc1f8774"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-variant-scopes-10451/case.json",
+        "sha256": "00eae5dd52c06198c196dea66879c62e32c0715e986cae4750a7fd0cda44e88d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/binding-occurrences-original",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "binding-occurrences-original",
+        "files": [
+          {
+            "path": "Field.vue",
+            "sha256": "ebc982a69ec9a5ad48156baa36aaf644999aadff6e0b1847630b6c28f63ba6a0"
+          },
+          {
+            "path": "tsconfig.json",
+            "sha256": "3e69f1b19380514b0a42913c6dc21a2fffed65855e4bad30534c3f6a71116b23"
+          }
+        ]
+      },
+      "case": {
+        "path": "binding-occurrences-original/case.json",
+        "sha256": "828d7a19f410c950bcab8cba1f4e4b8d09e0c17a2ff35ea1cb78bb108754eafb"
+      },
+      "requestCount": 7,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/broken-overlay-isolation-10201",
+      "state": "active",
+      "targets": ["stdio"],
+      "case": {
+        "path": "broken-overlay-isolation-10201/case.json",
+        "sha256": "30dc112bd507de46c73675b29ec641a4338e9720d13a66b59f4448f46f21f474"
+      },
+      "inputs": {
+        "root": "broken-overlay-isolation-10201",
+        "files": [
+          {
+            "path": "Entry.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "fdfd4dd073af9e3dd1a289bc2cc74c58f016c76747f5f59b838d5ac1695fb59e"
+          },
+          {
+            "path": "Other.vue.txt",
+            "sha256": "fb6c0afffd43f9d0758a6fb40dbae38a1db01d34657234132e7082df93c2dc75"
+          },
+          {
+            "path": "Child.broken.vue.txt",
+            "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/component-alias-hover-10787",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "component-alias-hover-10787",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "87f6ecf4054b5052bd2f5c0835acded7dc585a10993bcf3ac86d6db567737c46"
+          },
+          {
+            "path": "MyChild.vue.txt",
+            "sha256": "c844d84ffd79d0573d2981425acb5f7edb91463bda5e9678a7c22cd592dfefc4"
+          }
+        ]
+      },
+      "case": {
+        "path": "component-alias-hover-10787/case.json",
+        "sha256": "5c3076dd6978612571172e5fc5ec351c9eb2d19fd30bc8fdb2ec657e770832af"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/component-hover-readability",
       "state": "active",
       "targets": ["stdio"],
@@ -621,33 +995,234 @@
       }
     },
     {
-      "id": "lsp/fix-history/document-link-module-resolution-original",
+      "id": "lsp/regression/content-mapper-nuxt-emit-10195",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "document-link-module-resolution-original",
+        "root": "content-mapper-nuxt-emit-10195",
         "files": [
           {
             "path": "App.vue.txt",
-            "sha256": "4887832158be0ef54595226e4441ddf11ce433486d79446eeb7cb75499895681"
+            "sha256": "4b49df4d5622b04548dbc0a1f003c0fb25d98d0469645e544969bfb01c6f6940"
           },
           {
-            "path": "index.ts.txt",
-            "sha256": "6c6f805f3f3bb5f306dc9993d7ebcad35909d48fc4249432eec3aca4a8fe430c"
+            "path": "MyItem.vue.txt",
+            "sha256": "158ba53462766943952897e3a358d974ef10ae2f9b673b8cc48caeb44fa9e4de"
           },
           {
-            "path": "Detail.vue.txt",
-            "sha256": "c3c05a28bb0b85c98771b761a2ed2ca038f132d1af194732c38630718c250863"
+            "path": "augment.d.ts.txt",
+            "sha256": "72824330228b07923b47dea72f5762eebe50bfe8dd9fe09204e85dcf2cd8302d"
           },
           {
             "path": "tsconfig.json.txt",
-            "sha256": "10ca0d428d6980e1a714aeee0c2a3093a41913731d2d620ef5543e6d85331db1"
+            "sha256": "f95ed8e882385f5eba92c77e56ef6bb349a066685fed6511c7b0777f66372c63"
           }
         ]
       },
       "case": {
-        "path": "document-link-module-resolution-original/case.json",
-        "sha256": "d9b40c4cd036cd14480838f4cde8e8fa7d1e670d1b9d22ee38715babebfd8690"
+        "path": "content-mapper-nuxt-emit-10195/case.json",
+        "sha256": "9950126287a59d699eff0f241836bd3720f7747965b5f9ee37044c9036940225"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/css-color-declaration-admission-10562-css",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "css-color-declaration-admission-10562-css",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "f7effe51005cad0a23b3ca9c0f733f7f8326151b29cef51926f1de7336538e74"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-color-declaration-admission-10562-css/case.json",
+        "sha256": "724e507777645b8fbfcb507231c19466797533455db4bfcac498dc5c0da0abef"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "typecheck": false,
+        "lint": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/css-color-declaration-admission-10562-stylus",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "css-color-declaration-admission-10562-stylus",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "b0dbcf22c8274f7b03700a72850db4dee6b4f1477ef9f885381de48a5cb2e1fc"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-color-declaration-admission-10562-stylus/case.json",
+        "sha256": "4fa79196973d0099b2eb0cafe6f426cab896bd442386b2145fbc9795f0ff2cb2"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "typecheck": false,
+        "lint": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/css-concrete-color-hover-10556",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-concrete-color-hover-10556",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "edb68163b7b1a9e56d2f700019cc8dc7c44b2630b36b097c80ff60691558018f"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-concrete-color-hover-10556/case.json",
+        "sha256": "fe7c33875ef794b9d071b92a0b057a853ddbb183f734ac4bb6aa7f4190f9a3be"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/css-hover-stylesheet-examples-10572",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-hover-stylesheet-examples-10572",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "7e59a2a5690fe4a9c85299c5d0799c036d30584d885268c634282f58584930f6"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-hover-stylesheet-examples-10572/case.json",
+        "sha256": "4b8b6be0f119be9ab7d1fa23eb826d55c8e20fcfab8338c317f1481a8a49c0df"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/document-symbol-outline-myswitch",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "document-symbol-outline-original",
+        "files": [
+          {
+            "path": "MySwitch.vue.txt",
+            "sha256": "6d7fa96a27d5338e8c9f9c9f3368c2d5be78576756b70bd53e414f96d662fa66"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "116cac3641306e4bb0c53fc7ed5fd662b0a3a203868a6c648be24579f0f3c40c"
+          },
+          {
+            "path": "tsconfig.json",
+            "sha256": "94eb4537e8e6507792ab4505f0f53ba1433301bf7ec0afeea347432f35c5336e"
+          },
+          {
+            "path": "vize.config.json",
+            "sha256": "619a869b6666d8776b542ce9c2be6a067a3b33c604260bec98572c4ce64328c9"
+          }
+        ]
+      },
+      "case": {
+        "path": "document-symbol-outline-original/MySwitch.case.json",
+        "sha256": "ac3d997c28c5d2ad176fb3e16f83bcdf580d88a4462ce05f8be7732e31a26a22"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -715,201 +1290,6 @@
       }
     },
     {
-      "id": "lsp/regression/document-symbol-outline-myswitch",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "document-symbol-outline-original",
-        "files": [
-          {
-            "path": "MySwitch.vue.txt",
-            "sha256": "6d7fa96a27d5338e8c9f9c9f3368c2d5be78576756b70bd53e414f96d662fa66"
-          },
-          {
-            "path": "Parent.vue.txt",
-            "sha256": "116cac3641306e4bb0c53fc7ed5fd662b0a3a203868a6c648be24579f0f3c40c"
-          },
-          {
-            "path": "tsconfig.json",
-            "sha256": "94eb4537e8e6507792ab4505f0f53ba1433301bf7ec0afeea347432f35c5336e"
-          },
-          {
-            "path": "vize.config.json",
-            "sha256": "619a869b6666d8776b542ce9c2be6a067a3b33c604260bec98572c4ce64328c9"
-          }
-        ]
-      },
-      "case": {
-        "path": "document-symbol-outline-original/MySwitch.case.json",
-        "sha256": "ac3d997c28c5d2ad176fb3e16f83bcdf580d88a4462ce05f8be7732e31a26a22"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/binding-occurrences-original",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "binding-occurrences-original",
-        "files": [
-          {
-            "path": "Field.vue",
-            "sha256": "ebc982a69ec9a5ad48156baa36aaf644999aadff6e0b1847630b6c28f63ba6a0"
-          },
-          {
-            "path": "tsconfig.json",
-            "sha256": "3e69f1b19380514b0a42913c6dc21a2fffed65855e4bad30534c3f6a71116b23"
-          }
-        ]
-      },
-      "case": {
-        "path": "binding-occurrences-original/case.json",
-        "sha256": "828d7a19f410c950bcab8cba1f4e4b8d09e0c17a2ff35ea1cb78bb108754eafb"
-      },
-      "requestCount": 7,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/html-element-hover-documentation",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "html-element-hover-documentation",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "29b4ddec58cf798ca0494f3a564ad16967b99de65e3f035c7844725e6df4a15b"
-          }
-        ]
-      },
-      "case": {
-        "path": "html-element-hover-documentation/case.json",
-        "sha256": "42520b7b34815bfa08a52535548b27a8195dd006598fd376719041e339c33776"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/script-setup-completion-dedupe-9908",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "script-setup-completion-dedupe-9908",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "6cb1edbaef8d25b8e9de477fbddf4a371fd22b8a71b68c82bd9397d56c0528a1"
-          }
-        ]
-      },
-      "case": {
-        "path": "script-setup-completion-dedupe-9908/case.json",
-        "sha256": "d889adbd9bea9b8ed5eb149385e6c24460363ef9a74d84f804d77aa3c0de1821"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/template-slot-completion-9907",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "template-slot-completion-9907",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "b4d5a598b220640f06b64eadd75872f534aa97e4894b2b1827fc61430e405eb7"
-          },
-          {
-            "path": "MySelect.vue.txt",
-            "sha256": "128fd5e68e0ede7da66bbb4415005509933eebdf3202d51f684b58c951bee338"
-          }
-        ]
-      },
-      "case": {
-        "path": "template-slot-completion-9907/case.json",
-        "sha256": "d45332093279a3725effb7cdcd4d6ce1cd9235d36f01083530b64b5496911802"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
       "id": "lsp/regression/dynamic-slot-expression-completion-10182",
       "state": "active",
       "targets": ["stdio"],
@@ -945,80 +1325,32 @@
       }
     },
     {
-      "id": "lsp/regression/optional-prop-definition-9857",
+      "id": "lsp/regression/experimental-router-params-10518",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "optional-prop-definition-9857",
+        "root": "experimental-router-params-10518",
         "files": [
           {
-            "path": "App.vue.txt",
-            "sha256": "31c5767a2766448a4a3933e10a95a7085a92529423a44e6893503deda34b13ad"
-          },
-          {
-            "path": "Badge.vue.txt",
-            "sha256": "8cd6dcd26225fe5e85ebcc94817524ea4f5e433c17a6617dd6b638af37f61065"
-          }
-        ]
-      },
-      "case": {
-        "path": "optional-prop-definition-9857/case.json",
-        "sha256": "1b66c5dd0a7a601cf34157cd9b954f08531e78b8b3e30593fe27607e98f6800c"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "workspace-tsconfig-inheritance-9842",
-        "files": [
-          {
-            "path": "package.json.txt",
-            "sha256": "1ddc4c32d005f30baed4d7b7523da67de2047a8b5ad9201e51f54589bdd08dd3"
+            "path": "Page.vue.txt",
+            "sha256": "dfa38d4e9c1cf94a0a6d02bf31a80419d608a0a8b7376cfb360491245a81cbe6"
           },
           {
             "path": "tsconfig.json.txt",
-            "sha256": "6e602dcdb32f5eac7261a47f022c51d3964ef349bd46a2f10411d5582f802253"
-          },
-          {
-            "path": "globals.d.ts.txt",
-            "sha256": "d3cdea17934734c50f729c77b375216d1c4735eccf13692992113599ab663a0c"
-          },
-          {
-            "path": "package-ui.json.txt",
-            "sha256": "daeb5e493a5d857808a57f2848112573d0c4a47cc92762543ba597475aa95f15"
-          },
-          {
-            "path": "MyFooter.vue.txt",
-            "sha256": "73779e4741bc4769b47ad9dce5c5667d072f9bd6b1945befc284671486ab43db"
+            "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
           }
         ]
       },
       "case": {
-        "path": "workspace-tsconfig-inheritance-9842/case.json",
-        "sha256": "1fd2daace94f8410358f3bd9dd83da0826320bcbb3fa528ffcf8d9a82d9c77f2"
+        "path": "experimental-router-params-10518/case.json",
+        "sha256": "70bffee87b94ff747140cde41d14dc6add74a0463dd5dd96e91ffb42c84d3cc7"
       },
-      "requestCount": 1,
+      "requestCount": 2,
       "initializationOptions": {
+        "completion": true,
         "editor": true,
+        "ecosystem": true,
+        "hover": true,
         "lint": false,
         "typecheck": true
       },
@@ -1035,43 +1367,32 @@
       }
     },
     {
-      "id": "lsp/regression/nested-vite-project-9856",
+      "id": "lsp/regression/formatter-whitespace-entries-10031",
       "state": "active",
       "targets": ["stdio"],
+      "case": {
+        "path": "formatter-whitespace-entries-10031/case.json",
+        "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
+      },
       "inputs": {
-        "root": "nested-vite-project-9856",
+        "root": "formatter-whitespace-entries-10031",
         "files": [
           {
-            "path": "gallery/Widget.vue.txt",
-            "sha256": "0304170acb45ce75b40faf514966cf5ee4453802e920fe7d05ceea05bceb6730"
+            "path": "src/legacy/App.vue.txt",
+            "sha256": "f027d11f3080e9212d52f88955765fddc849b34a836271c1eb19a40f54dfc25d"
           },
           {
-            "path": "src/lib/math.ts.txt",
-            "sha256": "f4d9a941b45e0f47e8eb4960c27f18af1d0dc973ab399c7862c327c846c941cc"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "63c312539837b3ea8e3b67509559651dd718be2c7488fdde9ff698fdc4d90f5d"
-          },
-          {
-            "path": "vite.config.ts.txt",
-            "sha256": "160eebeab2277ee2a479183fa67d2d4cfe72366877931eaaf1d92bc960f9588b"
-          },
-          {
-            "path": "gallery/vite.config.ts.txt",
-            "sha256": "450f0af4f4c1ecc4c7180f2e364c8a59bfed69dd350fb6b47bce8641c2a37786"
+            "path": "vite.config.mjs.txt",
+            "sha256": "94f7d393ec06c222ef5fee66cf1824c1d8964d5ed8e5d4933322f66021c7adf8"
           }
         ]
       },
-      "case": {
-        "path": "nested-vite-project-9856/case.json",
-        "sha256": "7c7850896d45849025be9f04d66ad7570794498088925c7dcaf83f666d67288c"
-      },
-      "requestCount": 2,
+      "requestCount": 1,
       "initializationOptions": {
         "editor": true,
         "lint": false,
-        "typecheck": false
+        "typecheck": false,
+        "formatting": true
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1079,50 +1400,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/import-specifier-hover-9858",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "import-specifier-hover-9858",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "b622b5ac561c383eb8be67435f749c59c531a8882dd9a66f0b072a85da90ff58"
-          },
-          {
-            "path": "util.ts.txt",
-            "sha256": "b3a45c6bbf90d67d05d15d41b0d1abd46f42332260654cdece9041080f0fe092"
-          },
-          {
-            "path": "label.ts.txt",
-            "sha256": "38719ce11337851deb713b8cc4e2147224b0eee33d615b243ce0c0fccacb9613"
-          }
-        ]
-      },
-      "case": {
-        "path": "import-specifier-hover-9858/case.json",
-        "sha256": "9ad1a500f6ca25ff3ebe98205ff0d02a5f735c59b914ae93a9423dae4a17984b"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": ["vue3-sfc", "html-template", "js"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1180,23 +1458,23 @@
       }
     },
     {
-      "id": "lsp/fix-history/nuxt-builtins-9866",
+      "id": "lsp/regression/html-element-hover-documentation",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "nuxt-builtins-9866",
+        "root": "html-element-hover-documentation",
         "files": [
           {
-            "path": "HomeLink.vue.txt",
-            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+            "path": "App.vue.txt",
+            "sha256": "29b4ddec58cf798ca0494f3a564ad16967b99de65e3f035c7844725e6df4a15b"
           }
         ]
       },
       "case": {
-        "path": "nuxt-builtins-9866/case.json",
-        "sha256": "8b8bcba61c8837059150e2b3f7445dfe41b1197a319f4a9d843133e401e17786"
+        "path": "html-element-hover-documentation/case.json",
+        "sha256": "42520b7b34815bfa08a52535548b27a8195dd006598fd376719041e339c33776"
       },
-      "requestCount": 1,
+      "requestCount": 2,
       "initializationOptions": {
         "editor": true,
         "lint": false,
@@ -1209,6 +1487,88 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/html-void-hover-examples",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "html-void-hover-examples",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "3f8689dde3212bc61a47d92a6daa0760a37ec38b1f43929a89c806187889d6e5"
+          },
+          {
+            "path": "App.crlf.vue.txt",
+            "sha256": "86cfaa66f160280a7b08175f0af074f43a73e322d9e36e9df34ab1f0fe5733a3"
+          }
+        ]
+      },
+      "case": {
+        "path": "html-void-hover-examples/case.json",
+        "sha256": "023298f986f276b5e7097167f79b837cd562c7ff5a89f58efaa2177072da6c09"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/import-specifier-hover-9858",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "import-specifier-hover-9858",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b622b5ac561c383eb8be67435f749c59c531a8882dd9a66f0b072a85da90ff58"
+          },
+          {
+            "path": "util.ts.txt",
+            "sha256": "b3a45c6bbf90d67d05d15d41b0d1abd46f42332260654cdece9041080f0fe092"
+          },
+          {
+            "path": "label.ts.txt",
+            "sha256": "38719ce11337851deb713b8cc4e2147224b0eee33d615b243ce0c0fccacb9613"
+          }
+        ]
+      },
+      "case": {
+        "path": "import-specifier-hover-9858/case.json",
+        "sha256": "9ad1a500f6ca25ff3ebe98205ff0d02a5f735c59b914ae93a9423dae4a17984b"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1258,277 +1618,6 @@
       }
     },
     {
-      "id": "lsp/regression/broken-overlay-isolation-10201",
-      "state": "active",
-      "targets": ["stdio"],
-      "case": {
-        "path": "broken-overlay-isolation-10201/case.json",
-        "sha256": "30dc112bd507de46c73675b29ec641a4338e9720d13a66b59f4448f46f21f474"
-      },
-      "inputs": {
-        "root": "broken-overlay-isolation-10201",
-        "files": [
-          {
-            "path": "Entry.vue.txt",
-            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          {
-            "path": "Parent.vue.txt",
-            "sha256": "fdfd4dd073af9e3dd1a289bc2cc74c58f016c76747f5f59b838d5ac1695fb59e"
-          },
-          {
-            "path": "Other.vue.txt",
-            "sha256": "fb6c0afffd43f9d0758a6fb40dbae38a1db01d34657234132e7082df93c2dc75"
-          },
-          {
-            "path": "Child.broken.vue.txt",
-            "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
-          }
-        ]
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/pug-multiline-attributes-8908",
-      "state": "active",
-      "targets": ["stdio"],
-      "case": {
-        "path": "pug-multiline-attributes-8908/case.json",
-        "sha256": "568e4bb81c181fe86a3087c4e442b8bc96cdc964aaa4c23dccb6d9ada4e37fb3"
-      },
-      "inputs": {
-        "root": "pug-multiline-attributes-8908",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "f2f3ddb31e7144b88bebefda086a4f545c7010007c3c679089fe28973c7adc50"
-          }
-        ]
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/pug-attribute-navigation-8908",
-      "state": "active",
-      "targets": ["stdio"],
-      "case": {
-        "path": "pug-attribute-navigation-8908/case.json",
-        "sha256": "c87fe34e5586bf7860648f97d42dd50ce45e799512b01240aece92d85305eb0e"
-      },
-      "inputs": {
-        "root": "pug-attribute-navigation-8908",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "a7a9a51e51043452917f5cf1f85fe7d85dda1d0e3454a2852dae1b0685a68c00"
-          },
-          {
-            "path": "Child.vue.txt",
-            "sha256": "5c46ed7c79b79ee33980737a1033e513b98417178635c177402f505e3fb9a0d4"
-          }
-        ]
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/formatter-whitespace-entries-10031",
-      "state": "active",
-      "targets": ["stdio"],
-      "case": {
-        "path": "formatter-whitespace-entries-10031/case.json",
-        "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
-      },
-      "inputs": {
-        "root": "formatter-whitespace-entries-10031",
-        "files": [
-          {
-            "path": "src/legacy/App.vue.txt",
-            "sha256": "f027d11f3080e9212d52f88955765fddc849b34a836271c1eb19a40f54dfc25d"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "sha256": "94f7d393ec06c222ef5fee66cf1824c1d8964d5ed8e5d4933322f66021c7adf8"
-          }
-        ]
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false,
-        "formatting": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/type-aware-slot-outlet-9834",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "type-aware-slot-outlet-9834",
-        "files": [
-          {
-            "path": "MyList.vue.txt",
-            "sha256": "132514fe6d3a21c644af055aa8320102ca9b701cdf72aabf0163ed1de5c9b2fc"
-          }
-        ]
-      },
-      "case": {
-        "path": "type-aware-slot-outlet-9834/case.json",
-        "sha256": "5c6285970941a60b21e340b1759199315db3be4ad37844dff0cf8d4aec95067d"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/queued-edit-publication-10098",
-      "state": "active",
-      "targets": ["stdio"],
-      "case": {
-        "path": "queued-edit-publication-10098/case.json",
-        "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
-      },
-      "inputs": {
-        "root": "queued-edit-publication-10098",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5"
-          },
-          {
-            "path": "useToast.ts.txt",
-            "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
-          }
-        ]
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/fix-history/code-action-utf16-original",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "code-action-utf16-original",
-        "files": [
-          {
-            "path": "CodeActionUtf16.vue.txt",
-            "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
-          }
-        ]
-      },
-      "case": {
-        "path": "code-action-utf16-original/case.json",
-        "sha256": "1d9a4a2de6b5d7cd5de41c51e780f87d4877f7d872ba0518185d0a591f8790a4"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": true,
-        "typecheck": false,
-        "codeActions": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
       "id": "lsp/regression/inferred-project-tsconfig-9718",
       "state": "active",
       "targets": ["stdio"],
@@ -1566,558 +1655,6 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/script-lint-code-actions-9909",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "script-lint-code-actions-9909",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "41b44eede41d5dc643a98fca85c19261a326db77509159efe31b9b592bf589c0"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "sha256": "55162119963a60558044eb0c2850bc80444983c750b2ed69157f7955172f6b4e"
-          }
-        ]
-      },
-      "case": {
-        "path": "script-lint-code-actions-9909/case.json",
-        "sha256": "866f57f57a591533888c218c7367f86ed41a10dec14ed6938105624f5de23165"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": true,
-        "codeActions": true,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/fix-history/rename-utf16-original",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "rename-utf16-original",
-        "files": [
-          {
-            "path": "RenameUtf16.vue.txt",
-            "sha256": "837a44f09b727ec594ae7f7b54f9137c630ff109269b60ff775f3989d3229fa2"
-          }
-        ]
-      },
-      "case": {
-        "path": "rename-utf16-original/case.json",
-        "sha256": "79e878ffe046b9056885a442528b5450bd0e42a44374a09791b4baa5a98b2fdf"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/jsx-rewritten-import-diagnostic",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "jsx-rewritten-import-diagnostic",
-        "files": [
-          {
-            "path": "App.tsx.txt",
-            "sha256": "0e3c10a203d4c2aaae854e5d00ed17d50116082b5d205019379c36081ae02ea8"
-          },
-          {
-            "path": "Sibling.jsx.txt",
-            "sha256": "a3ba4c119f408171a8d61743135e72c00ebc2d23aacd3184bad8fcd22df50c54"
-          },
-          {
-            "path": "model.ts.txt",
-            "sha256": "cc6b5fc5837d0e65b20aa3bd9c797bae48f21cda0dabefa04bb4da8f15a8e00b"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "e56067e26a4d1687be31dfefc5727aba08f7abc230cecd9dc9c5c6203b531663"
-          }
-        ]
-      },
-      "case": {
-        "path": "jsx-rewritten-import-diagnostic/case.json",
-        "sha256": "e66140a6802a37fdd32edf500fe6dc6435bb7ac5c9b78ce90b0caa5647b36cdc"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["ts", "jsx", "tsx"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/registered-lowercase-component-alias",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "registered-lowercase-component-alias",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "aa067bd6f444685dbfd54250d8546c9a33b354361200062f8a3a770b2846c5f5"
-          },
-          {
-            "path": "lottie.vue.txt",
-            "sha256": "c7244ef1b281e9c08609c5dec744c8d3cfe8320446c39e95cab8725d0210e542"
-          }
-        ]
-      },
-      "case": {
-        "path": "registered-lowercase-component-alias/case.json",
-        "sha256": "459a7e603e71cd299a37a4ed978b0278b4a602628166d83833ea89f02005ed66"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/content-mapper-nuxt-emit-10195",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "content-mapper-nuxt-emit-10195",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "4b49df4d5622b04548dbc0a1f003c0fb25d98d0469645e544969bfb01c6f6940"
-          },
-          {
-            "path": "MyItem.vue.txt",
-            "sha256": "158ba53462766943952897e3a358d974ef10ae2f9b673b8cc48caeb44fa9e4de"
-          },
-          {
-            "path": "augment.d.ts.txt",
-            "sha256": "72824330228b07923b47dea72f5762eebe50bfe8dd9fe09204e85dcf2cd8302d"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "f95ed8e882385f5eba92c77e56ef6bb349a066685fed6511c7b0777f66372c63"
-          }
-        ]
-      },
-      "case": {
-        "path": "content-mapper-nuxt-emit-10195/case.json",
-        "sha256": "9950126287a59d699eff0f241836bd3720f7747965b5f9ee37044c9036940225"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/stylus-colors-10442",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "stylus-colors-10442",
-        "files": [
-          {
-            "path": "html.vue.txt",
-            "sha256": "8df49a7d9e96df82bf76719b5127446900523f16c192dbf71dac3399d9c20c0e"
-          },
-          {
-            "path": "pug.vue.txt",
-            "sha256": "bbf24c49a9b6d95ae3a8d9da7657f92cc4e49c9894c4e35a15efc765abc9e69b"
-          },
-          {
-            "path": "jade.vue.txt",
-            "sha256": "944edb6a52224f22d6f6f2c0c91a16ac9fb028df0a6fb8eadb02c351f30d000d"
-          }
-        ]
-      },
-      "case": {
-        "path": "stylus-colors-10442/case.json",
-        "sha256": "b40fc7f3f087bbde804882076ae524bc7b0d94caf858d4f5f3d56712aaca5d1a"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "html-template"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/html-void-hover-examples",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "html-void-hover-examples",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "3f8689dde3212bc61a47d92a6daa0760a37ec38b1f43929a89c806187889d6e5"
-          },
-          {
-            "path": "App.crlf.vue.txt",
-            "sha256": "86cfaa66f160280a7b08175f0af074f43a73e322d9e36e9df34ab1f0fe5733a3"
-          }
-        ]
-      },
-      "case": {
-        "path": "html-void-hover-examples/case.json",
-        "sha256": "023298f986f276b5e7097167f79b837cd562c7ff5a89f58efaa2177072da6c09"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/native-html-tag-range-10449",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "native-html-tag-range-10449",
-        "files": [
-          {
-            "path": "Field.vue.txt",
-            "sha256": "d72fc3dc532990de1bb2473eb3c9d1290a938926b93c40f479250f876b752c6c"
-          },
-          {
-            "path": "Field.crlf.vue.txt",
-            "sha256": "88e5c5d44d2a90db852c22b3c2fe308cd54683b6457b9617a810a3226da45ca8"
-          }
-        ]
-      },
-      "case": {
-        "path": "native-html-tag-range-10449/case.json",
-        "sha256": "09632dbb643e991a969e4e1f0c100e86027896f48b80449588b962a3be9e90a8"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/art-variant-scopes-10451",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "art-variant-scopes-10451",
-        "files": [
-          {
-            "path": "Scope.art.vue.txt",
-            "sha256": "e0a8b578c3caf01793f9f94f0a43eed8d6d9ab3f590a4a1240191435c99ac278"
-          },
-          {
-            "path": "Scope.crlf.art.vue.txt",
-            "sha256": "1efb09e288ee03f7bbee82a9a95b2261a74ba42d992bb690687b3f03dc1f8774"
-          },
-          {
-            "path": "Child.vue.txt",
-            "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
-          }
-        ]
-      },
-      "case": {
-        "path": "art-variant-scopes-10451/case.json",
-        "sha256": "00eae5dd52c06198c196dea66879c62e32c0715e986cae4750a7fd0cda44e88d"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/art-shared-references-10459",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "art-shared-references-10459",
-        "files": [
-          {
-            "path": "Scope.art.vue.txt",
-            "sha256": "9ba194ddf4d076b3f9a0acc9474e8b067e7f15a0eda610d61bbac7e3634daf74"
-          },
-          {
-            "path": "Scope.crlf.art.vue.txt",
-            "sha256": "68dd21b8ce4059509d727af348140693c45b4b7b6166940ec216b107138be5f0"
-          },
-          {
-            "path": "Child.vue.txt",
-            "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
-          }
-        ]
-      },
-      "case": {
-        "path": "art-shared-references-10459/case.json",
-        "sha256": "8cb08ea451687f0a75745b9b70f7f3ac3637cfa70d409d4040634a2979a57a27"
-      },
-      "requestCount": 8,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/pug-authored-scopes-10481",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "pug-authored-scopes-10481",
-        "files": [
-          {
-            "path": "Scope.vue.txt",
-            "sha256": "b9194eda4fd372f8cd7ae3023877a8a9bd6ba5766f43183011b6c0f6eaf2433f"
-          },
-          {
-            "path": "Scope.crlf.vue.txt",
-            "sha256": "1c28eee61876cc9054492491ad2cd8c578206c20f8b9821bdab4928f4baec2c9"
-          }
-        ]
-      },
-      "case": {
-        "path": "pug-authored-scopes-10481/case.json",
-        "sha256": "dae77f07cd6b38eae65821ce2cb7c5aa2714f464c743affc22af82939564aa4b"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/jsx-prop-token-ranges-10494-tsx",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "jsx-prop-token-ranges-10494-tsx",
-        "files": [
-          {
-            "path": "Child.vue.txt",
-            "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
-          },
-          {
-            "path": "Consumer.tsx.txt",
-            "sha256": "7775b11dfc288e836d32edbb678d1adc635ec5d7cf31b383df8b4d0bd3411d1d"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "sha256": "3a7b420483bb3da9deefe0ee9318981110703f829a289f8392d20e8996140e35"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "12311266f2ae09aba06fd3a1b32de339076358437684d1ef7058c36407eba6a4"
-          }
-        ]
-      },
-      "case": {
-        "path": "jsx-prop-token-ranges-10494-tsx/case.json",
-        "sha256": "1c4030a9b103298f9f8c5e9ea9db52044552a8156f1f32a3a44154b31d4f5006"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts", "tsx"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/jsx-prop-token-ranges-10494-jsx",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "jsx-prop-token-ranges-10494-jsx",
-        "files": [
-          {
-            "path": "Child.vue.txt",
-            "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
-          },
-          {
-            "path": "Consumer.jsx.txt",
-            "sha256": "7775b11dfc288e836d32edbb678d1adc635ec5d7cf31b383df8b4d0bd3411d1d"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "sha256": "3a7b420483bb3da9deefe0ee9318981110703f829a289f8392d20e8996140e35"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "12311266f2ae09aba06fd3a1b32de339076358437684d1ef7058c36407eba6a4"
-          }
-        ]
-      },
-      "case": {
-        "path": "jsx-prop-token-ranges-10494-jsx/case.json",
-        "sha256": "adaa51840f8d7c1b7b21cb496b0dc3fa8d95011716ce3733bc4ba5ce207dc1c2"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts", "jsx"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2220,28 +1757,215 @@
       }
     },
     {
-      "id": "lsp/regression/css-color-declaration-admission-10562-css",
+      "id": "lsp/regression/jsx-prop-token-ranges-10494-jsx",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "css-color-declaration-admission-10562-css",
+        "root": "jsx-prop-token-ranges-10494-jsx",
         "files": [
           {
-            "path": "Colors.vue.txt",
-            "sha256": "f7effe51005cad0a23b3ca9c0f733f7f8326151b29cef51926f1de7336538e74"
+            "path": "Child.vue.txt",
+            "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
+          },
+          {
+            "path": "Consumer.jsx.txt",
+            "sha256": "7775b11dfc288e836d32edbb678d1adc635ec5d7cf31b383df8b4d0bd3411d1d"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "3a7b420483bb3da9deefe0ee9318981110703f829a289f8392d20e8996140e35"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "12311266f2ae09aba06fd3a1b32de339076358437684d1ef7058c36407eba6a4"
           }
         ]
       },
       "case": {
-        "path": "css-color-declaration-admission-10562-css/case.json",
-        "sha256": "724e507777645b8fbfcb507231c19466797533455db4bfcac498dc5c0da0abef"
+        "path": "jsx-prop-token-ranges-10494-jsx/case.json",
+        "sha256": "adaa51840f8d7c1b7b21cb496b0dc3fa8d95011716ce3733bc4ba5ce207dc1c2"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts", "jsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/jsx-prop-token-ranges-10494-tsx",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "jsx-prop-token-ranges-10494-tsx",
+        "files": [
+          {
+            "path": "Child.vue.txt",
+            "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
+          },
+          {
+            "path": "Consumer.tsx.txt",
+            "sha256": "7775b11dfc288e836d32edbb678d1adc635ec5d7cf31b383df8b4d0bd3411d1d"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "3a7b420483bb3da9deefe0ee9318981110703f829a289f8392d20e8996140e35"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "12311266f2ae09aba06fd3a1b32de339076358437684d1ef7058c36407eba6a4"
+          }
+        ]
+      },
+      "case": {
+        "path": "jsx-prop-token-ranges-10494-tsx/case.json",
+        "sha256": "1c4030a9b103298f9f8c5e9ea9db52044552a8156f1f32a3a44154b31d4f5006"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts", "tsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/jsx-rewritten-import-diagnostic",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "jsx-rewritten-import-diagnostic",
+        "files": [
+          {
+            "path": "App.tsx.txt",
+            "sha256": "0e3c10a203d4c2aaae854e5d00ed17d50116082b5d205019379c36081ae02ea8"
+          },
+          {
+            "path": "Sibling.jsx.txt",
+            "sha256": "a3ba4c119f408171a8d61743135e72c00ebc2d23aacd3184bad8fcd22df50c54"
+          },
+          {
+            "path": "model.ts.txt",
+            "sha256": "cc6b5fc5837d0e65b20aa3bd9c797bae48f21cda0dabefa04bb4da8f15a8e00b"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "e56067e26a4d1687be31dfefc5727aba08f7abc230cecd9dc9c5c6203b531663"
+          }
+        ]
+      },
+      "case": {
+        "path": "jsx-rewritten-import-diagnostic/case.json",
+        "sha256": "e66140a6802a37fdd32edf500fe6dc6435bb7ac5c9b78ce90b0caa5647b36cdc"
       },
       "requestCount": 1,
       "initializationOptions": {
         "editor": true,
-        "hover": true,
-        "typecheck": false,
-        "lint": false
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["ts", "jsx", "tsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/native-diagnostic-warmup-10604",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "native-diagnostic-warmup-10604",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "eceeec4925439291f312e7d72771206326cd0079c2ab4feb15de7075d9abb91e"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "165f499150c9cbd451fcc2b649d0b92ac606e84cc2635819132872faae8fcb88"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "031669894f1ea9ff20445e6cc718e74d6380dced98f9bfe43a3574f5fee4938d"
+          }
+        ]
+      },
+      "case": {
+        "path": "native-diagnostic-warmup-10604/case.json",
+        "sha256": "4c14513b2998cfde5c5b04d60e0d98d670d2f1eae2c2fec3497676c145978501"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/native-html-tag-range-10449",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "native-html-tag-range-10449",
+        "files": [
+          {
+            "path": "Field.vue.txt",
+            "sha256": "d72fc3dc532990de1bb2473eb3c9d1290a938926b93c40f479250f876b752c6c"
+          },
+          {
+            "path": "Field.crlf.vue.txt",
+            "sha256": "88e5c5d44d2a90db852c22b3c2fe308cd54683b6457b9617a810a3226da45ca8"
+          }
+        ]
+      },
+      "case": {
+        "path": "native-html-tag-range-10449/case.json",
+        "sha256": "09632dbb643e991a969e4e1f0c100e86027896f48b80449588b962a3be9e90a8"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2256,28 +1980,43 @@
       }
     },
     {
-      "id": "lsp/regression/css-color-declaration-admission-10562-stylus",
+      "id": "lsp/regression/nested-vite-project-9856",
       "state": "active",
       "targets": ["stdio"],
       "inputs": {
-        "root": "css-color-declaration-admission-10562-stylus",
+        "root": "nested-vite-project-9856",
         "files": [
           {
-            "path": "Colors.vue.txt",
-            "sha256": "b0dbcf22c8274f7b03700a72850db4dee6b4f1477ef9f885381de48a5cb2e1fc"
+            "path": "gallery/Widget.vue.txt",
+            "sha256": "0304170acb45ce75b40faf514966cf5ee4453802e920fe7d05ceea05bceb6730"
+          },
+          {
+            "path": "src/lib/math.ts.txt",
+            "sha256": "f4d9a941b45e0f47e8eb4960c27f18af1d0dc973ab399c7862c327c846c941cc"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "63c312539837b3ea8e3b67509559651dd718be2c7488fdde9ff698fdc4d90f5d"
+          },
+          {
+            "path": "vite.config.ts.txt",
+            "sha256": "160eebeab2277ee2a479183fa67d2d4cfe72366877931eaaf1d92bc960f9588b"
+          },
+          {
+            "path": "gallery/vite.config.ts.txt",
+            "sha256": "450f0af4f4c1ecc4c7180f2e364c8a59bfed69dd350fb6b47bce8641c2a37786"
           }
         ]
       },
       "case": {
-        "path": "css-color-declaration-admission-10562-stylus/case.json",
-        "sha256": "4fa79196973d0099b2eb0cafe6f426cab896bd442386b2145fbc9795f0ff2cb2"
+        "path": "nested-vite-project-9856/case.json",
+        "sha256": "7c7850896d45849025be9f04d66ad7570794498088925c7dcaf83f666d67288c"
       },
-      "requestCount": 1,
+      "requestCount": 2,
       "initializationOptions": {
         "editor": true,
-        "hover": true,
-        "typecheck": false,
-        "lint": false
+        "lint": false,
+        "typecheck": false
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2285,7 +2024,621 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/optional-prop-definition-9857",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "optional-prop-definition-9857",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "31c5767a2766448a4a3933e10a95a7085a92529423a44e6893503deda34b13ad"
+          },
+          {
+            "path": "Badge.vue.txt",
+            "sha256": "8cd6dcd26225fe5e85ebcc94817524ea4f5e433c17a6617dd6b638af37f61065"
+          }
+        ]
+      },
+      "case": {
+        "path": "optional-prop-definition-9857/case.json",
+        "sha256": "1b66c5dd0a7a601cf34157cd9b954f08531e78b8b3e30593fe27607e98f6800c"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/owned-outer-shutdown-10760",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "owned-outer-shutdown-10760",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "2018eaf2ec82680c0915259929668b9ed10ef99e63b41ca3e88bc804410d5cd4"
+          },
+          {
+            "path": "support.ts.txt",
+            "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "c3e09cb9baa6c0a23baf156c4b07f0e611dd86ec4720e5b33688877cc601e8be"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "1bade57e87822239cd015f10ef6b4da08349ceac7e9873928807cef741e676f9"
+          }
+        ]
+      },
+      "case": {
+        "path": "owned-outer-shutdown-10760/case.json",
+        "sha256": "a33f7d6a5604e88bbc37cd54c3e2e8a66ff3273c41555f9043d8c9082801bb5d"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "typecheck": true,
+        "lint": false,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/private-setup-references-10785-crlf",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "private-setup-references-10785-crlf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "837ec287f930c9f9286cd818c682d92298dcea5d6f992c25fd4bce97c8d2ea87"
+          }
+        ]
+      },
+      "case": {
+        "path": "private-setup-references-10785-crlf/case.json",
+        "sha256": "de8bf17560c24a27eaebadd237444f41da8103426fd73b75a61a9f4314b7809e"
+      },
+      "requestCount": 6,
+      "initializationOptions": {
+        "editor": true,
+        "references": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/private-setup-references-10785-lf",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "private-setup-references-10785-lf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "a7608121624f02d2faab612134bd45077cc6e9ed422b5d11e7315a352e0106d3"
+          }
+        ]
+      },
+      "case": {
+        "path": "private-setup-references-10785-lf/case.json",
+        "sha256": "887a24cd61ab5fb8aa1ee2ec62d6afcd2b815096b70aead756282d85436a431f"
+      },
+      "requestCount": 6,
+      "initializationOptions": {
+        "editor": true,
+        "references": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/pug-attribute-navigation-8908",
+      "state": "active",
+      "targets": ["stdio"],
+      "case": {
+        "path": "pug-attribute-navigation-8908/case.json",
+        "sha256": "c87fe34e5586bf7860648f97d42dd50ce45e799512b01240aece92d85305eb0e"
+      },
+      "inputs": {
+        "root": "pug-attribute-navigation-8908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "a7a9a51e51043452917f5cf1f85fe7d85dda1d0e3454a2852dae1b0685a68c00"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "5c46ed7c79b79ee33980737a1033e513b98417178635c177402f505e3fb9a0d4"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/pug-authored-scopes-10481",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "pug-authored-scopes-10481",
+        "files": [
+          {
+            "path": "Scope.vue.txt",
+            "sha256": "b9194eda4fd372f8cd7ae3023877a8a9bd6ba5766f43183011b6c0f6eaf2433f"
+          },
+          {
+            "path": "Scope.crlf.vue.txt",
+            "sha256": "1c28eee61876cc9054492491ad2cd8c578206c20f8b9821bdab4928f4baec2c9"
+          }
+        ]
+      },
+      "case": {
+        "path": "pug-authored-scopes-10481/case.json",
+        "sha256": "dae77f07cd6b38eae65821ce2cb7c5aa2714f464c743affc22af82939564aa4b"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/pug-multiline-attributes-8908",
+      "state": "active",
+      "targets": ["stdio"],
+      "case": {
+        "path": "pug-multiline-attributes-8908/case.json",
+        "sha256": "568e4bb81c181fe86a3087c4e442b8bc96cdc964aaa4c23dccb6d9ada4e37fb3"
+      },
+      "inputs": {
+        "root": "pug-multiline-attributes-8908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f2f3ddb31e7144b88bebefda086a4f545c7010007c3c679089fe28973c7adc50"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/queued-edit-publication-10098",
+      "state": "active",
+      "targets": ["stdio"],
+      "case": {
+        "path": "queued-edit-publication-10098/case.json",
+        "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
+      },
+      "inputs": {
+        "root": "queued-edit-publication-10098",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5"
+          },
+          {
+            "path": "useToast.ts.txt",
+            "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/registered-lowercase-component-alias",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "registered-lowercase-component-alias",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "aa067bd6f444685dbfd54250d8546c9a33b354361200062f8a3a770b2846c5f5"
+          },
+          {
+            "path": "lottie.vue.txt",
+            "sha256": "c7244ef1b281e9c08609c5dec744c8d3cfe8320446c39e95cab8725d0210e542"
+          }
+        ]
+      },
+      "case": {
+        "path": "registered-lowercase-component-alias/case.json",
+        "sha256": "459a7e603e71cd299a37a4ed978b0278b4a602628166d83833ea89f02005ed66"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/script-lint-code-actions-9909",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "script-lint-code-actions-9909",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "41b44eede41d5dc643a98fca85c19261a326db77509159efe31b9b592bf589c0"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "55162119963a60558044eb0c2850bc80444983c750b2ed69157f7955172f6b4e"
+          }
+        ]
+      },
+      "case": {
+        "path": "script-lint-code-actions-9909/case.json",
+        "sha256": "866f57f57a591533888c218c7367f86ed41a10dec14ed6938105624f5de23165"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "codeActions": true,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/script-setup-completion-dedupe-9908",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "script-setup-completion-dedupe-9908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "6cb1edbaef8d25b8e9de477fbddf4a371fd22b8a71b68c82bd9397d56c0528a1"
+          }
+        ]
+      },
+      "case": {
+        "path": "script-setup-completion-dedupe-9908/case.json",
+        "sha256": "d889adbd9bea9b8ed5eb149385e6c24460363ef9a74d84f804d77aa3c0de1821"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/stylus-colors-10442",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "stylus-colors-10442",
+        "files": [
+          {
+            "path": "html.vue.txt",
+            "sha256": "8df49a7d9e96df82bf76719b5127446900523f16c192dbf71dac3399d9c20c0e"
+          },
+          {
+            "path": "pug.vue.txt",
+            "sha256": "bbf24c49a9b6d95ae3a8d9da7657f92cc4e49c9894c4e35a15efc765abc9e69b"
+          },
+          {
+            "path": "jade.vue.txt",
+            "sha256": "944edb6a52224f22d6f6f2c0c91a16ac9fb028df0a6fb8eadb02c351f30d000d"
+          }
+        ]
+      },
+      "case": {
+        "path": "stylus-colors-10442/case.json",
+        "sha256": "b40fc7f3f087bbde804882076ae524bc7b0d94caf858d4f5f3d56712aaca5d1a"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "pug-template", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/template-slot-completion-9907",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "template-slot-completion-9907",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b4d5a598b220640f06b64eadd75872f534aa97e4894b2b1827fc61430e405eb7"
+          },
+          {
+            "path": "MySelect.vue.txt",
+            "sha256": "128fd5e68e0ede7da66bbb4415005509933eebdf3202d51f684b58c951bee338"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-slot-completion-9907/case.json",
+        "sha256": "d45332093279a3725effb7cdcd4d6ce1cd9235d36f01083530b64b5496911802"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/type-aware-slot-outlet-9834",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "type-aware-slot-outlet-9834",
+        "files": [
+          {
+            "path": "MyList.vue.txt",
+            "sha256": "132514fe6d3a21c644af055aa8320102ca9b701cdf72aabf0163ed1de5c9b2fc"
+          }
+        ]
+      },
+      "case": {
+        "path": "type-aware-slot-outlet-9834/case.json",
+        "sha256": "5c6285970941a60b21e340b1759199315db3be4ad37844dff0cf8d4aec95067d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "workspace-tsconfig-inheritance-9842",
+        "files": [
+          {
+            "path": "package.json.txt",
+            "sha256": "1ddc4c32d005f30baed4d7b7523da67de2047a8b5ad9201e51f54589bdd08dd3"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "6e602dcdb32f5eac7261a47f022c51d3964ef349bd46a2f10411d5582f802253"
+          },
+          {
+            "path": "globals.d.ts.txt",
+            "sha256": "d3cdea17934734c50f729c77b375216d1c4735eccf13692992113599ab663a0c"
+          },
+          {
+            "path": "package-ui.json.txt",
+            "sha256": "daeb5e493a5d857808a57f2848112573d0c4a47cc92762543ba597475aa95f15"
+          },
+          {
+            "path": "MyFooter.vue.txt",
+            "sha256": "73779e4741bc4769b47ad9dce5c5667d072f9bd6b1945befc284671486ab43db"
+          }
+        ]
+      },
+      "case": {
+        "path": "workspace-tsconfig-inheritance-9842/case.json",
+        "sha256": "1fd2daace94f8410358f3bd9dd83da0826320bcbb3fa528ffcf8d9a82d9c77f2"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2376,359 +2729,6 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "js", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/native-diagnostic-warmup-10604",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "native-diagnostic-warmup-10604",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "eceeec4925439291f312e7d72771206326cd0079c2ab4feb15de7075d9abb91e"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "165f499150c9cbd451fcc2b649d0b92ac606e84cc2635819132872faae8fcb88"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "sha256": "031669894f1ea9ff20445e6cc718e74d6380dced98f9bfe43a3574f5fee4938d"
-          }
-        ]
-      },
-      "case": {
-        "path": "native-diagnostic-warmup-10604/case.json",
-        "sha256": "4c14513b2998cfde5c5b04d60e0d98d670d2f1eae2c2fec3497676c145978501"
-      },
-      "requestCount": 1,
-      "initializationOptions": {
-        "editor": true,
-        "lint": true,
-        "typecheck": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/experimental-router-params-10518",
-      "state": "active",
-      "targets": ["stdio"],
-      "inputs": {
-        "root": "experimental-router-params-10518",
-        "files": [
-          {
-            "path": "Page.vue.txt",
-            "sha256": "dfa38d4e9c1cf94a0a6d02bf31a80419d608a0a8b7376cfb360491245a81cbe6"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
-          }
-        ]
-      },
-      "case": {
-        "path": "experimental-router-params-10518/case.json",
-        "sha256": "70bffee87b94ff747140cde41d14dc6add74a0463dd5dd96e91ffb42c84d3cc7"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "completion": true,
-        "editor": true,
-        "ecosystem": true,
-        "hover": true,
-        "lint": false,
-        "typecheck": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/css-hover-stylesheet-examples-10572",
-      "state": "active",
-      "targets": [
-        "stdio"
-      ],
-      "inputs": {
-        "root": "css-hover-stylesheet-examples-10572",
-        "files": [
-          {
-            "path": "Colors.vue.txt",
-            "sha256": "7e59a2a5690fe4a9c85299c5d0799c036d30584d885268c634282f58584930f6"
-          }
-        ]
-      },
-      "case": {
-        "path": "css-hover-stylesheet-examples-10572/case.json",
-        "sha256": "4b8b6be0f119be9ab7d1fa23eb826d55c8e20fcfab8338c317f1481a8a49c0df"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "hover": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/css-concrete-color-hover-10556",
-      "state": "active",
-      "targets": [
-        "stdio"
-      ],
-      "inputs": {
-        "root": "css-concrete-color-hover-10556",
-        "files": [
-          {
-            "path": "Colors.vue.txt",
-            "sha256": "edb68163b7b1a9e56d2f700019cc8dc7c44b2630b36b097c80ff60691558018f"
-          }
-        ]
-      },
-      "case": {
-        "path": "css-concrete-color-hover-10556/case.json",
-        "sha256": "fe7c33875ef794b9d071b92a0b057a853ddbb183f734ac4bb6aa7f4190f9a3be"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "hover": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/private-setup-references-10785-lf",
-      "state": "active",
-      "targets": [
-        "stdio"
-      ],
-      "inputs": {
-        "root": "private-setup-references-10785-lf",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "a7608121624f02d2faab612134bd45077cc6e9ed422b5d11e7315a352e0106d3"
-          }
-        ]
-      },
-      "case": {
-        "path": "private-setup-references-10785-lf/case.json",
-        "sha256": "887a24cd61ab5fb8aa1ee2ec62d6afcd2b815096b70aead756282d85436a431f"
-      },
-      "requestCount": 6,
-      "initializationOptions": {
-        "editor": true,
-        "references": true,
-        "lint": false,
-        "typecheck": true,
-        "crossFile": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/private-setup-references-10785-crlf",
-      "state": "active",
-      "targets": [
-        "stdio"
-      ],
-      "inputs": {
-        "root": "private-setup-references-10785-crlf",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "837ec287f930c9f9286cd818c682d92298dcea5d6f992c25fd4bce97c8d2ea87"
-          }
-        ]
-      },
-      "case": {
-        "path": "private-setup-references-10785-crlf/case.json",
-        "sha256": "de8bf17560c24a27eaebadd237444f41da8103426fd73b75a61a9f4314b7809e"
-      },
-      "requestCount": 6,
-      "initializationOptions": {
-        "editor": true,
-        "references": true,
-        "lint": false,
-        "typecheck": true,
-        "crossFile": true
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/component-alias-hover-10787",
-      "state": "active",
-      "targets": [
-        "stdio"
-      ],
-      "inputs": {
-        "root": "component-alias-hover-10787",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "87f6ecf4054b5052bd2f5c0835acded7dc585a10993bcf3ac86d6db567737c46"
-          },
-          {
-            "path": "MyChild.vue.txt",
-            "sha256": "c844d84ffd79d0573d2981425acb5f7edb91463bda5e9678a7c22cd592dfefc4"
-          }
-        ]
-      },
-      "case": {
-        "path": "component-alias-hover-10787/case.json",
-        "sha256": "5c3076dd6978612571172e5fc5ec351c9eb2d19fd30bc8fdb2ec657e770832af"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "lint": false,
-        "typecheck": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "LSP manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "lsp/regression/owned-outer-shutdown-10760",
-      "state": "active",
-      "targets": [
-        "stdio"
-      ],
-      "inputs": {
-        "root": "owned-outer-shutdown-10760",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "2018eaf2ec82680c0915259929668b9ed10ef99e63b41ca3e88bc804410d5cd4"
-          },
-          {
-            "path": "support.ts.txt",
-            "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
-          },
-          {
-            "path": "tsconfig.json.txt",
-            "sha256": "c3e09cb9baa6c0a23baf156c4b07f0e611dd86ec4720e5b33688877cc601e8be"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "sha256": "1bade57e87822239cd015f10ef6b4da08349ceac7e9873928807cef741e676f9"
-          }
-        ]
-      },
-      "case": {
-        "path": "owned-outer-shutdown-10760/case.json",
-        "sha256": "a33f7d6a5604e88bbc37cd54c3e2e8a66ff3273c41555f9043d8c9082801bb5d"
-      },
-      "requestCount": 2,
-      "initializationOptions": {
-        "editor": true,
-        "typecheck": true,
-        "lint": false,
-        "ecosystem": false
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]

@@ -41,8 +41,8 @@ test("all pinned LSP cases retain their inputs and only the two configured outli
   assert.deepEqual(
     configured.map((fixture) => fixture.id),
     [
-      "lsp/regression/document-symbol-outline-parent",
       "lsp/regression/document-symbol-outline-myswitch",
+      "lsp/regression/document-symbol-outline-parent",
     ],
   );
   for (const fixture of loaded.cases) {
