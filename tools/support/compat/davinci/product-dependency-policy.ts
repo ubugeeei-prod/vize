@@ -64,6 +64,71 @@ export const initialPatinaProductAllowlist: ProductAllowlist = {
   })),
 };
 
+export const initialCanonProductAllowlist: ProductAllowlist = {
+  schema: "vize.product-dependency-allowlist",
+  version: 1,
+  baselineRevision: "d858ffb3bd9e0bfeae7b64bb3afd577426ff2dc1",
+  root: "vize_canon",
+  entries: [
+    ["vize_canon", "vize_armature", "Remove Canon's direct legacy Armature dependency."],
+    ["vize_canon", "vize_atelier_core", "Remove Canon's direct legacy Atelier Core dependency."],
+    ["vize_canon", "vize_atelier_jsx", "Remove Canon's direct legacy Atelier JSX dependency."],
+    ["vize_canon", "vize_atelier_sfc", "Remove Canon's direct legacy Atelier SFC dependency."],
+    ["vize_canon", "vize_croquis", "Remove Canon's direct legacy Croquis dependency."],
+    ["vize_canon", "vize_relief", "Remove Canon's direct legacy Relief dependency."],
+  ].map(([from, to, reason]) => ({
+    from,
+    to,
+    rename: null,
+    target: null,
+    optional: false,
+    workspace: true,
+    roots: ["vize_canon"],
+    issue: 6851,
+    reason,
+  })),
+};
+
+export const initialMaestroProductAllowlist: ProductAllowlist = {
+  schema: "vize.product-dependency-allowlist",
+  version: 1,
+  baselineRevision: "d858ffb3bd9e0bfeae7b64bb3afd577426ff2dc1",
+  root: "vize_maestro",
+  entries: [
+    ["vize_canon", "vize_armature", "Remove Maestro's inherited Canon-to-Armature path."],
+    ["vize_canon", "vize_atelier_core", "Remove Maestro's inherited Canon-to-Atelier Core path."],
+    ["vize_canon", "vize_atelier_jsx", "Remove Maestro's inherited Canon-to-Atelier JSX path."],
+    ["vize_canon", "vize_atelier_sfc", "Remove Maestro's inherited Canon-to-Atelier SFC path."],
+    ["vize_canon", "vize_croquis", "Remove Maestro's inherited Canon-to-Croquis path."],
+    ["vize_canon", "vize_relief", "Remove Maestro's inherited Canon-to-Relief path."],
+    ["vize_glyph", "vize_atelier_sfc", "Remove Maestro's inherited Glyph-to-Atelier SFC path."],
+    ["vize_incremental", "vize_croquis", "Remove Maestro's inherited Incremental-to-Croquis path."],
+    ["vize_incremental", "vize_relief", "Remove Maestro's inherited Incremental-to-Relief path."],
+    ["vize_maestro", "vize_armature", "Remove Maestro's direct legacy Armature dependency."],
+    ["vize_maestro", "vize_atelier_jsx", "Remove Maestro's direct legacy Atelier JSX dependency."],
+    ["vize_maestro", "vize_atelier_sfc", "Remove Maestro's direct legacy Atelier SFC dependency."],
+    ["vize_maestro", "vize_croquis", "Remove Maestro's direct legacy Croquis dependency."],
+    ["vize_maestro", "vize_croquis_cf", "Remove Maestro's direct legacy Croquis CF dependency."],
+    ["vize_maestro", "vize_relief", "Remove Maestro's direct legacy Relief dependency."],
+    ["vize_musea", "vize_croquis", "Remove Maestro's inherited Musea-to-Croquis path."],
+    ["vize_patina", "vize_armature", "Remove Maestro's inherited Patina-to-Armature path."],
+    ["vize_patina", "vize_atelier_jsx", "Remove Maestro's inherited Patina-to-Atelier JSX path."],
+    ["vize_patina", "vize_atelier_sfc", "Remove Maestro's inherited Patina-to-Atelier SFC path."],
+    ["vize_patina", "vize_croquis", "Remove Maestro's inherited Patina-to-Croquis path."],
+    ["vize_patina", "vize_relief", "Remove Maestro's inherited Patina-to-Relief path."],
+  ].map(([from, to, reason]) => ({
+    from,
+    to,
+    rename: null,
+    target: null,
+    optional: false,
+    workspace: true,
+    roots: ["vize_maestro"],
+    issue: 6851,
+    reason,
+  })),
+};
+
 export const productPolicies = [
   {
     path: "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json",
@@ -72,6 +137,14 @@ export const productPolicies = [
   {
     path: "docs/davinci/plan/product-dependency-allowlists/vize_patina.json",
     initial: initialPatinaProductAllowlist,
+  },
+  {
+    path: "docs/davinci/plan/product-dependency-allowlists/vize_canon.json",
+    initial: initialCanonProductAllowlist,
+  },
+  {
+    path: "docs/davinci/plan/product-dependency-allowlists/vize_maestro.json",
+    initial: initialMaestroProductAllowlist,
   },
 ] as const;
 
