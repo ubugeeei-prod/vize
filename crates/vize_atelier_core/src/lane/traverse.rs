@@ -233,7 +233,17 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                             compound_source.as_str()
                         }
                     };
-                    ctx.enter_v_for_scope(value, key, index, source);
+                    ctx.enter_v_for_scope_with_names(
+                        value,
+                        key,
+                        index,
+                        source,
+                        [
+                            for_node.value_alias.as_ref().and_then(alias_names),
+                            for_node.key_alias.as_ref().and_then(alias_names),
+                            for_node.object_index_alias.as_ref().and_then(alias_names),
+                        ],
+                    );
 
                     // Traverse for children
                     let for_ptr = for_node.as_mut() as *mut ForNode<'a>;
@@ -320,7 +330,17 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                         compound_source.as_str()
                     }
                 };
-                ctx.enter_v_for_scope(value, key, index, source);
+                ctx.enter_v_for_scope_with_names(
+                    value,
+                    key,
+                    index,
+                    source,
+                    [
+                        for_node.value_alias.as_ref().and_then(alias_names),
+                        for_node.key_alias.as_ref().and_then(alias_names),
+                        for_node.object_index_alias.as_ref().and_then(alias_names),
+                    ],
+                );
 
                 // Traverse for children
                 let for_ptr = for_node.as_mut() as *mut ForNode<'a>;
@@ -415,5 +435,12 @@ mod tests {
                 root.children.last_mut().map(|node| node as *mut _)
             );
         }
+    }
+}
+
+fn alias_names<'n, 'a>(expression: &'n ExpressionNode<'a>) -> Option<&'n [&'a str]> {
+    match expression {
+        ExpressionNode::Simple(node) => node.retained_parameter_names(),
+        _ => None,
     }
 }

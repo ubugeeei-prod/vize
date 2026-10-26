@@ -158,6 +158,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
     session: &mut LocalImportSession,
 ) -> TransitiveLocalImports {
     let options = options.into();
+    let alias_scope = self::session::AliasScope::new(aliases, options);
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
     let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
@@ -177,7 +178,6 @@ pub(super) fn collect_transitive_local_imports_with_session(
     let mut package_routes = Vec::new();
     let mut reachability_graph = ImportReachabilityGraph::default();
     let mut deferred_workspace_routes = Vec::new();
-    let mut alias_targets: FxHashMap<String, Option<PathBuf>> = FxHashMap::default();
 
     // Queue entries below this length were already handed to a frontier.
     // The queue is a stack, so only entries pushed since then are new.
@@ -199,7 +199,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
             packages,
             aliases,
             options,
-            &mut alias_targets,
+            canonical_paths,
         );
         prepared_queue_len = queue.len();
         let Some(cached) = session.registration_cache.module_specifiers.remove(&file) else {
@@ -223,7 +223,8 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
             } else {
                 let aliased = aliases.and_then(|aliases| {
-                    alias_targets
+                    session
+                        .alias_targets_mut(alias_scope)
                         .entry(specifier.clone())
                         .or_insert_with(|| {
                             aliases.resolve(
@@ -375,7 +376,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                         options,
                         aliases,
                         Some(packages),
-                        &mut session.registration_cache,
+                        session,
                         &mut discovery,
                     );
                 }
@@ -389,7 +390,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     options,
                     aliases,
                     None,
-                    &mut session.registration_cache,
+                    session,
                     &mut discovery,
                 )
             };

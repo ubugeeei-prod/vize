@@ -10,7 +10,7 @@ use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
 use vize_carton::{String, ToCompactString};
 
-use super::{ImportRewriter, ImportSourceMap, OffsetAdjustment, collect::BareStarExport};
+use super::{ImportRewriter, ImportSourceMap, collect::BareStarExport};
 use crate::PackageResolutionMode;
 
 fn mirror_vue(path: &str, _: PackageResolutionMode) -> Option<String> {
@@ -299,14 +299,13 @@ fn ordinary_api_and_literal_only_debug_and_maps_remain_exact() {
     let source = "export * from './A.vue';";
     let result = ImportRewriter::new().rewrite(source, SourceType::ts(), None);
     assert_eq!(result.code.as_str(), "export * from './A.vue.ts';");
-    let expected = ImportSourceMap::new(vec![OffsetAdjustment {
-        original_offset: 15,
-        adjustment: 3,
-    }]);
+    // Authored './A.vue' occupies [15, 22); the emitted literal has ten bytes.
+    // Interior coordinates now belong to that literal rather than a shift at 15.
+    let expected = ImportSourceMap::with_replacement_ranges(Vec::new(), vec![(15, 22, 10)]);
     assert_eq!(result.source_map, expected);
     assert_eq!(
         format!("{:?}", result.source_map),
-        "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 15, adjustment: 3 }] }"
+        "ImportSourceMap { adjustments: [], replacement_ranges: [ReplacementRange { original_start: 15, original_end: 22, virtual_start: 15, virtual_end: 25 }] }"
     );
     assert_eq!(
         format!("{:#?}", ImportSourceMap::empty()),

@@ -2,6 +2,7 @@ use std::borrow::Cow;
 
 use vize_carton::{String, profile};
 
+use crate::compile_script::runtime_imports::RuntimeModule;
 use crate::module_map::{Runs, edit_runs, replace_traced};
 use crate::script::{ScriptCompileContext, transform_destructured_props_with_edits};
 use crate::types::{CssModuleMapping, SfcError};
@@ -51,6 +52,7 @@ pub(super) fn compile_script_setup_inline_body(
     needs_vapor_setup_context: bool,
     vapor_render_alias: Option<String>,
     is_async: bool,
+    runtime: &RuntimeModule<'_>,
     trace: Option<&mut SetupTrace>,
 ) -> Result<ScriptCompileResult, SfcError> {
     let mut tracer = Tracer(trace);
@@ -62,9 +64,7 @@ pub(super) fn compile_script_setup_inline_body(
         .transpose()?
         .flatten();
     if rest_proxy.is_some() {
-        output.extend_from_slice(
-            b"import { createPropsRestProxy as _createPropsRestProxy } from 'vue'\n",
-        );
+        runtime.push_import(&mut output, "createPropsRestProxy as _createPropsRestProxy");
     }
     let has_css_vars = !css_vars.is_empty();
     let has_css_modules = !setup_css_module_names.is_empty();
@@ -86,6 +86,7 @@ pub(super) fn compile_script_setup_inline_body(
         is_vapor,
         is_ts,
         is_async,
+        runtime,
         &mut tracer,
     );
 

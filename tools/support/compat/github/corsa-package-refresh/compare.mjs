@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { comparisonSources, sourceProvenance } from "./source.mjs";
 
 assert.equal(
   process.env.GITHUB_ACTIONS,
@@ -16,6 +17,8 @@ fs.mkdirSync(capture, { recursive: true });
 const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 const observer = git("rev-parse", "HEAD");
+const provenance = sourceProvenance(observer);
+fs.writeFileSync(path.join(capture, "source.json"), JSON.stringify(provenance, null, 2));
 const sdk = path.join(capture, "sdk");
 fs.mkdirSync(sdk);
 fs.writeFileSync(path.join(sdk, "package.json"), '{"private":true}');
@@ -40,6 +43,7 @@ const expectedImage = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37ead
 assert.equal(hash(executable), expectedImage);
 const receipt = {
   observer,
+  provenance,
   executable,
   sha256: expectedImage,
   version: execFileSync(executable, ["--version"], { encoding: "utf8" }).trim(),
@@ -59,14 +63,7 @@ const cases = [
     "corsa_server::request::tests::persistent_check_server_refreshes_package_target_create_and_delete",
   ],
 ];
-const refs =
-  process.env.VIZE_COMPARE_HISTORICAL === "true"
-    ? [
-        ["before-policy", "13fa41356d075047a229f580014b637d3bbeb57f"],
-        ["runtime-policy", "9469f272b189d0220a9838539f2c878fc5d70edd"],
-        ["fixed", observer],
-      ]
-    : [["fixed", observer]];
+const refs = comparisonSources(observer, process.env.VIZE_COMPARE_HISTORICAL === "true");
 for (const [label, source] of refs) {
   git("checkout", "--detach", source);
   assert.equal(git("rev-parse", "HEAD"), source);

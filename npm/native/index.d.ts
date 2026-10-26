@@ -98,7 +98,9 @@ export interface BatchCompileOptionsNapi {
   experimentalSelfComponent?: boolean;
   experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
+  /** Module for generated Vue helpers; preserves authored imports and the SSR renderer. */
   runtimeModuleName?: string;
+  /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
   /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
@@ -318,7 +320,10 @@ export interface CompilerOptions {
   experimentalStrictSlotChildren?: boolean;
   /** Enable experimental server-script related RFC surface. */
   experimentalServerScript?: boolean;
-  /** Module name for runtime imports. */
+  /**
+   * Module for compiler-generated Vue helpers. Authored module imports and the
+   * SSR renderer module retain their own sources. Defaults to "vue".
+   */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
   runtimeGlobalName?: string;
@@ -1332,7 +1337,9 @@ export interface SfcCompileOptionsNapi {
   experimentalSelfComponent?: boolean;
   experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
+  /** Module for generated Vue helpers; preserves authored imports and the SSR renderer. */
   runtimeModuleName?: string;
+  /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
   /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
@@ -1513,11 +1520,25 @@ export declare function transformViteCssVarsForPipeline(
   productionFilename?: string | undefined | null,
 ): string;
 
+/** Explicit options for the shared Canon language projection. */
+export interface VueLanguageCodeOptions {
+  filename: string;
+  /** Explicit host-selected tsconfig; omitted performs no config file reads. */
+  configFileName?: string;
+  optionsApi?: boolean;
+  checkJavaScript?: boolean;
+  preserveUnusedDiagnostics?: boolean;
+}
+
+/** Canon's existing Content Mapper protocol JSON, with UTF-8 offsets. */
+export declare function generateVueLanguageCode(
+  source: string,
+  options: VueLanguageCodeOptions,
+): string;
+
 /**
- * Perform type checking on a Vue SFC
- *
- * This performs AST-based type analysis without requiring a TypeScript compiler.
- * For full type checking, use the CLI with Corsa integration.
+ * Perform type checking on a Vue SFC.
+ * This performs AST-based analysis. For full checking, use the CLI with Corsa.
  */
 export declare function typeCheck(
   source: string,

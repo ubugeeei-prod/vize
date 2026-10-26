@@ -95,6 +95,9 @@ export function nuxtMusea() {
     'module.exports = require("./native-binding");\n',
   );
   fs.writeFileSync(path.join(nativeDir, "native-binding-identity.js"), "module.exports = {};\n");
+  fs.writeFileSync(path.join(nativeDir, "index.d.ts"), "export {};\n");
+  fs.writeFileSync(path.join(nativeDir, "language-projection.js"), "module.exports = {};\n");
+  fs.writeFileSync(path.join(nativeDir, "language-projection.d.ts"), "export {};\n");
   fs.writeFileSync(
     path.join(nativeDir, "native-binding.js"),
     `const path = require("node:path");
