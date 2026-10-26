@@ -1,0 +1,12 @@
+<script setup lang="ts" vapor>
+import { nextTick, ref } from "vue";
+const n = ref(0);
+async function bump(): Promise<void> {
+  n.value++;
+  await nextTick();
+}
+</script>
+
+<template>
+  <button type="button" @click="bump">{{ n }}</button>
+</template>

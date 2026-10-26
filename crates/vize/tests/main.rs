@@ -178,6 +178,7 @@ mod fmt_trailing_line_comment_cli;
 mod fmt_typed_arrow_last_argument_cli;
 mod fmt_v_for_alias_cli;
 mod fmt_vue2_filters_cli;
+mod fmt_vue_ownership_cli;
 mod git_metadata_fmt_cli;
 mod inspector_art_cli;
 mod inspector_cli;

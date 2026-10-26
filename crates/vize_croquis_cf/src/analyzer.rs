@@ -7,7 +7,7 @@ mod core;
 mod types;
 
 pub use core::CrossFileAnalyzer;
-pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
+pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats, NuxtRenderDirs};
 
 #[cfg(test)]
 mod tests_basic;

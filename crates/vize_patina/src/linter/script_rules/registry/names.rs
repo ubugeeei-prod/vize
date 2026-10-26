@@ -2,9 +2,9 @@
 //!
 //! Each rule has a `RULE_*` identifier and an entry in the ordered name lists.
 //! When adding a rule, add its `RULE_*` const here and append the name to
-//! [`ALL_BUILTIN_SCRIPT_RULE_NAMES`] (and, for non-always-on rules, to the
-//! test-only [`OPT_IN_SCRIPT_RULE_NAMES`]), matching the entry order used in
-//! `rules.rs`.
+//! [`ALL_BUILTIN_SCRIPT_RULE_NAMES`] (and, unless it is one of the first two
+//! opinionated rules, to the test-only [`OPT_IN_SCRIPT_RULE_NAMES`]), matching
+//! the entry order used in `rules.rs`.
 
 pub(crate) const RULE_NO_OPTIONS_API: &str = "script/no-options-api";
 pub(crate) const RULE_NO_GET_CURRENT_INSTANCE: &str = "script/no-get-current-instance";
@@ -188,6 +188,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
 
 #[cfg(test)]
 pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
+    RULE_NO_NEXT_TICK,
     RULE_PINIA_PREFER_STORE_TO_REFS,
     RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,

@@ -2,13 +2,13 @@ use tower_lsp::lsp_types::{Location, Url};
 use vize_canon::{LspPosition, LspRange};
 use vize_l0::{FxHashMap, FxHashSet, String};
 
-use super::{CanonicalVirtualDocument, location_matches_uri_cached};
+use super::{CanonicalVirtualDocument, IndexedDocument, location_matches_uri_cached};
 use crate::ide::diagnostics::VirtualTsResult;
 
 mod binding_links;
 mod binding_roles;
 
-pub(crate) use binding_links::linked_semantic_positions;
+pub(crate) use binding_links::{indexed_linked_semantic_positions, linked_semantic_positions};
 mod component_arguments;
 mod component_props;
 
@@ -139,21 +139,29 @@ pub(super) fn virtual_result<'a>(
     document: &'a CanonicalVirtualDocument,
     uri: &str,
 ) -> Option<(&'a String, &'a VirtualTsResult)> {
-    if location_matches_uri_cached(state, uri, document.request_uri.as_str()) {
-        return Some((&document.request_uri, &document.virtual_result));
+    indexed_result(
+        document,
+        super::uri_index::matching_document(state, document, uri),
+    )
+}
+
+impl<'a> super::CanonicalUriIndex<'a> {
+    pub(crate) fn virtual_result(&self, uri: &str) -> Option<(&'a String, &'a VirtualTsResult)> {
+        indexed_result(self.document(), self.get(uri))
     }
-    document
-        .dependencies
-        .iter()
-        .find(|dependency| location_matches_uri_cached(state, uri, dependency.request_uri.as_str()))
-        .map(|dependency| (&dependency.request_uri, &dependency.virtual_result))
-        .or_else(|| {
-            document
-                .materialized_sources
-                .iter()
-                .find(|source| location_matches_uri_cached(state, uri, source.request_uri.as_str()))
-                .map(|source| (&source.request_uri, &source.virtual_result))
-        })
+}
+
+fn indexed_result<'a>(
+    document: &'a CanonicalVirtualDocument,
+    matched: Option<IndexedDocument<'a>>,
+) -> Option<(&'a String, &'a VirtualTsResult)> {
+    Some(match matched? {
+        IndexedDocument::Primary => (&document.request_uri, &document.virtual_result),
+        IndexedDocument::Dependency(dependency) => {
+            (&dependency.request_uri, &dependency.virtual_result)
+        }
+        IndexedDocument::Materialized(source) => (&source.request_uri, &source.virtual_result),
+    })
 }
 
 pub(crate) fn tower_range(range: tower_lsp::lsp_types::Range) -> LspRange {

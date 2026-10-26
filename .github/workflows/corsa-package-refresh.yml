@@ -4,7 +4,7 @@ on:
     paths:
       - .github/workflows/corsa-package-refresh.yml
       - tools/support/compat/github/corsa-package-refresh/**
-      - tests/tooling/corsa-package-refresh-bootstrap.test.mjs
+      - tests/tooling/corsa-package-refresh-bootstrap.test.ts
       - crates/vize_canon/src/batch/**
       - crates/vize_canon/tests/fix_history_diagnostics.rs
       - crates/vize_canon/tests/support/fix_history_*.rs
@@ -67,7 +67,7 @@ jobs:
       - name: Install the frozen real Vue fixture dependency
         run: vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Verify observer bootstrap and source roles
-        run: vp node --test tests/tooling/corsa-package-refresh-bootstrap.test.mjs
+        run: vp node --test tests/tooling/corsa-package-refresh-bootstrap.test.ts
       - name: Compare unchanged tests with one physical historical SDK
         env:
           VIZE_PACKAGE_REFRESH_CAPTURE: ${{ runner.temp }}/corsa-package-refresh

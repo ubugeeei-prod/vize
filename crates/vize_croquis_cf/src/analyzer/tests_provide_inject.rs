@@ -92,6 +92,7 @@ fn an_aliased_import_pairs_through_the_imported_file() {
 }
 
 mod basic;
+mod nuxt_dirs;
 mod nuxt_layout;
 mod patterns;
 mod playground;

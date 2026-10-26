@@ -804,5 +804,45 @@
         "after": "    \"mapped\": 139,\n    \"unimplemented\": 111\n"
       }
     ]
+  },
+  {
+    "reason": "opt-in script/no-next-tick listed in the rule catalog and gated to Vapor components like script/no-get-current-instance (#10784)",
+    "path": "crates/vize_patina/src/linter/script_rules/registry.rs",
+    "before": {
+      "bytes": 5196,
+      "sha256": "8a1c6f90c889f8174546d363ce30b2318cd3873155ccd921a898b81f8c7981a0"
+    },
+    "after": {
+      "bytes": 5215,
+      "sha256": "5ae0dc6ed8213db2d4290129da4266255d9c5373e0a4bae57680a08a7cc87487"
+    },
+    "hunks": [
+      {
+        "before": "//!    and append the name to `ALL_BUILTIN_SCRIPT_RULE_NAMES` (and, unless it is\n//!    one of the first three always-on rules, to the test-only\n//!    `OPT_IN_SCRIPT_RULE_NAMES`).\n",
+        "after": "//!    and append the name to `ALL_BUILTIN_SCRIPT_RULE_NAMES` (and, unless it is\n//!    one of the first two opinionated rules, to the test-only\n//!    `OPT_IN_SCRIPT_RULE_NAMES`).\n"
+      },
+      {
+        "before": "    RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS,\n    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,\n",
+        "after": "    RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS,\n    RULE_NO_NEXT_TICK, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,\n"
+      }
+    ]
+  },
+  {
+    "reason": "opt-in script/no-next-tick listed in the rule catalog and gated to Vapor components like script/no-get-current-instance (#10784)",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 33723,
+      "sha256": "819cc9f300f8ce8fb012998e6ae74765fad80ada58d862ed128c0845bdf10edd"
+    },
+    "after": {
+      "bytes": 33750,
+      "sha256": "2043073f9c246bf295b7a0b5c6d3fb7777055004b41bbd372c1e2a05ed60696c"
+    },
+    "hunks": [
+      {
+        "before": "    \"vue/max-template-complexity\",\n    \"ecosystem/pinia-prefer-store-to-refs\",\n",
+        "after": "    \"vue/max-template-complexity\",\n    \"script/no-next-tick\",\n    \"ecosystem/pinia-prefer-store-to-refs\",\n"
+      }
+    ]
   }
 ]

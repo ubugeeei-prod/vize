@@ -53,7 +53,7 @@ fn actual_registry_order_and_declared_default_severity_survive_requested_name_or
         HelpLevel::Full,
     );
     let point = script_span(SOURCE).start;
-    // no-next-tick is earlier in the original catalog than prefer-use-template-ref.
+    // no-options-api is earlier in the original catalog than prefer-use-template-ref.
     let full = expected(
         FILE,
         vec![

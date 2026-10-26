@@ -38,6 +38,7 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     inference_only: bool,
+    inert: bool,
     expected_packet: bool,
 }
 
@@ -54,6 +55,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: None,
             diagnostic_ownership: None,
             inference_only: false,
+            inert: false,
             expected_packet: false,
         }
     }
@@ -82,6 +84,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: self.model_modifiers,
             diagnostic_ownership: ownership,
             inference_only: self.inference_only,
+            inert: self.inert,
             expected_packet: self.expected_packet,
         }
     }
@@ -97,6 +100,14 @@ impl<'a> ComponentPropSource<'a> {
 
     pub(crate) const fn inference_only(mut self) -> Self {
         self.inference_only = true;
+        self
+    }
+
+    /// An inference copy whose mappings are discarded. The native checker drops
+    /// its diagnostics as unmapped, so the content mapper ignores them too.
+    pub(crate) const fn inert(mut self) -> Self {
+        self.inference_only = true;
+        self.inert = true;
         self
     }
 
@@ -117,7 +128,7 @@ impl<'a> ComponentPropSource<'a> {
         };
         let ordinary_owner = InputOwner::for_prop(usage, prop);
         let Some(owner) = ordinary_owner.or_else(|| {
-            self.expected_packet
+            (self.expected_packet || self.inert)
                 .then(|| InputOwner::for_expected_projection(usage, prop))
                 .flatten()
         }) else {
@@ -128,7 +139,9 @@ impl<'a> ComponentPropSource<'a> {
         // Do not retain a RefCell borrow while another emitter runs.
         let mut ledger = collector.borrow_mut();
         let mut record = |owner, generated, source| {
-            if ordinary_owner.is_some() {
+            if self.inert {
+                ledger.record_inert(owner, generated, source);
+            } else if ordinary_owner.is_some() {
                 ledger.record(owner, generated, source, self.inference_only);
             } else {
                 // The root relocation proof classifies the callback's creation.
@@ -143,6 +156,24 @@ impl<'a> ComponentPropSource<'a> {
         if let Some(source) = value_source {
             record(owner, value, source);
         }
+    }
+
+    /// A merged `class`/`style` entry repeats each dynamic value that its own
+    /// per-prop assignment already checks; that assignment owns diagnostics.
+    pub(super) fn record_merged_prop_echo(
+        self,
+        usage: &ComponentUsage,
+        prop: &PassedProp,
+        value: std::ops::Range<usize>,
+    ) {
+        let (Some(collector), Some(owner), Some(source)) = (
+            self.diagnostic_ownership,
+            crate::virtual_ts::diagnostic_ownership::InputOwner::for_prop(usage, prop),
+            prop_value_source_range(self, prop),
+        ) else {
+            return;
+        };
+        collector.borrow_mut().record(owner, value, source, true);
     }
 }
 

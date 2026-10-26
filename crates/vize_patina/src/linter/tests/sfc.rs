@@ -221,6 +221,28 @@ fn test_explicit_vapor_false_disables_get_current_instance_in_vapor_sfc() {
 }
 
 #[test]
+fn test_all_rules_gate_next_tick_by_vapor_target() {
+    let source = "<script setup lang=\"ts\">\nimport { nextTick } from 'vue'\nawait nextTick()\n</script>\n<template><div /></template>\n";
+    let count = |linter: Linter, source: &str| {
+        let result = linter.lint_sfc(source, "Component.vue");
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "script/no-next-tick")
+            .count()
+    };
+    assert_eq!(count(Linter::with_all(), source), 0);
+    let vapor_source = source.replacen('>', " vapor>", 1);
+    assert_eq!(count(Linter::with_all(), &vapor_source), 2);
+    assert_eq!(
+        count(Linter::with_all().with_vapor_mode(Some(true)), source),
+        2
+    );
+    let explicit = Linter::with_all().with_additional_rules(vec!["script/no-next-tick".into()]);
+    assert_eq!(count(explicit, source), 2);
+}
+
+#[test]
 fn test_lint_sfc_byte_offset() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">

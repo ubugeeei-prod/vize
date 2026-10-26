@@ -6,7 +6,7 @@ use vize_l0::config::VueVersion;
 
 #[test]
 fn actual_builtin_and_namesake_unprovided_instance_refuse_before_source_parsing() {
-    // The genuine still-unprovided NoNextTick instance retains the provider's
+    // The genuine still-unprovided NoOptionsApi instance retains the provider's
     // capability-first refusal after PreferUseTemplateRef gains its own proof.
     let builtin = Linter::new().with_enabled_rules(Some(vec![SECOND_RULE.into()]));
     assert_eq!(

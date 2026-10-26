@@ -101,6 +101,9 @@ export const TYPECHECKER_TESTS = {
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
   "literal-reference-paths-10551": "literal_reference_paths_preserve_complete_authored_diagnostics",
+  "content-mapper-merged-class-10788": "content_mapper_merged_class_values_keep_native_diagnostics",
+  "content-mapper-slot-host-callbacks-10774":
+    "content_mapper_slot_host_callbacks_keep_native_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -182,4 +185,6 @@ export const sourceRevisions = {
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
   "literal-reference-paths-10551": "0a7f029e3be412a89232bd82127d3ac9bb058514",
+  "content-mapper-merged-class-10788": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "content-mapper-slot-host-callbacks-10774": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;

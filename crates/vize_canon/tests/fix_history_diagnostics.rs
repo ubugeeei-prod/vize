@@ -951,6 +951,28 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
 }
 
 #[test]
+fn content_mapper_merged_class_values_keep_native_diagnostics() {
+    check_pack(
+        "content-mapper-merged-class-10788",
+        "content_mapper_merged_class_values_keep_native_diagnostics",
+        "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+        Some(10788),
+        &["dynamic-component-class"],
+    );
+}
+
+#[test]
+fn content_mapper_slot_host_callbacks_keep_native_diagnostics() {
+    check_pack(
+        "content-mapper-slot-host-callbacks-10774",
+        "content_mapper_slot_host_callbacks_keep_native_diagnostics",
+        "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+        Some(10774),
+        &["function-prop-with-named-slot"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

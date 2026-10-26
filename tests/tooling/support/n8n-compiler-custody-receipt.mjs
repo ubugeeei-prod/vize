@@ -8,7 +8,7 @@ import {
   capturePaths,
   driverPaths,
   official,
-} from "./n8n-compiler-capture-paths.mjs";
+} from "./n8n-compiler-capture-paths.ts";
 import { validateInstanceMode } from "./n8n-compiler-diagnostic-validation.mjs";
 import { validateTemplateNotices } from "./n8n-compiler-compatibility-validation.mjs";
 export {
@@ -17,7 +17,7 @@ export {
   cases,
   official,
   driverPaths,
-} from "./n8n-compiler-capture-paths.mjs";
+} from "./n8n-compiler-capture-paths.ts";
 export const recipe = [
   "run",
   "--locked",

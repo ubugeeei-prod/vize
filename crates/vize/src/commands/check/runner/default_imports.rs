@@ -7,6 +7,8 @@ use super::{
     CollectedRoots,
     collect::path_is_inside_root,
     ignores::{CheckIgnoreSet, retain_unignored},
+    input_scope::default_run_scope_counts_files,
+    programs::keeps_invocation_program,
 };
 use crate::commands::check::{
     imports::{
@@ -19,6 +21,7 @@ use crate::commands::check::{
     tsconfig_inputs::{
         TsconfigInputCache, collect_ambient_declaration_files, collect_default_check_files,
         collect_hidden_ambient_declaration_files, collect_tsconfig_type_declaration_files,
+        resolve_tsconfig_program_inputs,
     },
 };
 
@@ -80,12 +83,70 @@ impl<'a> ExplicitAmbientImportContext<'a> {
     }
 }
 
+#[cfg(test)]
 pub(super) fn collect_default_run_files(
     context: DefaultRunFileContext<'_>,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     resolver: &mut vize_canon::PackageRouteResolver,
 ) -> CollectedRoots {
+    let inputs = collect_default_run_inputs(context, tsconfig_input_cache);
+    complete_default_run_files(
+        inputs,
+        context,
+        tsconfig_input_cache,
+        canonical_paths,
+        resolver,
+    )
+}
+
+/// Default-run roots. A shell that splits into referenced programs drops its
+/// own closure, since each program rebuilds one, so only a scope report below
+/// the project root still needs it.
+pub(super) fn collect_default_roots(
+    context: DefaultRunFileContext<'_>,
+    tsconfig_input_cache: &mut TsconfigInputCache,
+    canonical_paths: &mut CanonicalPathCache,
+    resolver: &mut vize_canon::PackageRouteResolver,
+) -> CollectedRoots {
+    let inputs = collect_default_run_inputs(context, tsconfig_input_cache);
+    if inputs.is_empty() || default_run_scope_counts_files(context.cwd, context.project_root) {
+        return complete_default_run_files(
+            inputs,
+            context,
+            tsconfig_input_cache,
+            canonical_paths,
+            resolver,
+        );
+    }
+    let groups = resolve_tsconfig_program_inputs(
+        context.tsconfig_path,
+        &inputs,
+        context.import_options.include_jsx,
+        tsconfig_input_cache,
+    );
+    if keeps_invocation_program(&groups, context.tsconfig_path, canonical_paths) {
+        return complete_default_run_files(
+            inputs,
+            context,
+            tsconfig_input_cache,
+            canonical_paths,
+            resolver,
+        );
+    }
+    CollectedRoots {
+        reported: canonical_file_set(&inputs, canonical_paths),
+        files: inputs.clone(),
+        inputs,
+        package_routes: Vec::new(),
+    }
+}
+
+/// The tsconfig inputs of a default run, before their import closure.
+fn collect_default_run_inputs(
+    context: DefaultRunFileContext<'_>,
+    tsconfig_input_cache: &mut TsconfigInputCache,
+) -> Vec<PathBuf> {
     let mut files = vize_l0::profile!(
         "cli.check.collect.tsconfig_files",
         collect_default_check_files(
@@ -96,6 +157,17 @@ pub(super) fn collect_default_run_files(
         )
     );
     retain_unignored(&mut files, context.check_ignore_set);
+    files
+}
+
+/// Extend default-run inputs with their local imports and ambient declarations.
+fn complete_default_run_files(
+    mut files: Vec<PathBuf>,
+    context: DefaultRunFileContext<'_>,
+    tsconfig_input_cache: &mut TsconfigInputCache,
+    canonical_paths: &mut CanonicalPathCache,
+    resolver: &mut vize_canon::PackageRouteResolver,
+) -> CollectedRoots {
     let inputs = files.clone();
     let mut reported_files = vize_l0::profile!(
         "cli.check.collect.canonical",
@@ -373,5 +445,7 @@ fn local_import_is_allowed(
     !validate_inputs || explicit_input_root.is_none_or(|root| path_is_inside_root(root, path))
 }
 
+#[cfg(test)]
+mod shell_tests;
 #[cfg(test)]
 mod tests;
