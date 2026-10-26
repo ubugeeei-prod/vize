@@ -50,6 +50,7 @@ class CompilerConfig {
   prefixIdentifiers: Boolean? = null
   hoistStatic: Boolean? = null
   cacheHandlers: Boolean? = null
+  comments: Boolean? = null
   isTs: Boolean? = null
   scriptExt: ScriptExt? = null
   runtimeModuleName: String? = null

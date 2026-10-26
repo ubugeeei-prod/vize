@@ -1,0 +1,218 @@
+name: Platform VSIX native projection
+on:
+  pull_request:
+    paths:
+      - .github/workflows/typescript-provider-vsix.yml
+      - npm/typescript-plugin/**
+      - npm/native/language-projection.*
+      - tools/support/editors/typescript-provider/**
+      - tools/commands/editors/vscode/package-typescript-provider.rs
+      - tools/commands/editors/vscode/sync-typescript-plugin.rs
+      - editors/vscode/test/run-typescript-provider-host.mjs
+      - editors/vscode/test/suite/typescript-provider-host.cjs
+      - tests/typescript-plugin/provider-packaging.test.ts
+  workflow_dispatch:
+  merge_group:
+    types: [checks_requested]
+permissions: { contents: read }
+concurrency:
+  group: typescript-provider-vsix-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  native:
+    name: Produce current-host native image (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2204, target: x86_64-unknown-linux-gnu }
+          - { os: Windows, runner: blacksmith-32vcpu-windows-2025, target: x86_64-pc-windows-msvc }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            persist-credentials: false,
+            ref: "${{ github.event.pull_request.head.sha || github.sha }}",
+          }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with: { version: latest, node-version-file: package.json, run-install: false, cache: true }
+      - name: Read exact source toolchain and version
+        id: source
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          const channel = /^channel = "([^"]+)"$/m.exec(readFileSync('rust-toolchain.toml', 'utf8'))?.[1];
+          const { version } = JSON.parse(readFileSync('npm/native/package.json', 'utf8'));
+          if (!channel || !/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version)) throw new Error('Invalid source toolchain/version');
+          appendFileSync(process.env.GITHUB_OUTPUT, `channel=${channel}\nversion=${version}\n`);
+          JS
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "${{ steps.source.outputs.channel }}", targets: "${{ matrix.target }}" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with: { wild-version: "0.9.0" }
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        if: runner.os == 'Windows'
+        with: { arch: amd64 }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.os == 'Linux'
+        with:
+          {
+            key: "release-native-${{ matrix.target }}",
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+            reuse-target: "true",
+          }
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        if: runner.os == 'Windows'
+        with:
+          {
+            shared-key: "release-native-${{ matrix.target }}",
+            cache-workspace-crates: "true",
+            save-if: "false",
+          }
+      - name: Install locked native build dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Match the existing Windows native release profile
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+      - name: Use the canonical native producer with a same-invocation receipt
+        env:
+          VIZE_RELEASE_VERSION: ${{ steps.source.outputs.version }}
+          VIZE_NATIVE_BUILD_RECEIPT: ${{ runner.temp }}/native/build-receipt.${{ matrix.target }}.json
+        run: vp node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.target }}
+      - name: Collect only this image
+        shell: bash
+        env: { IMAGE_TARGET: "${{ matrix.target }}" }
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, copyFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const directory = join(process.env.RUNNER_TEMP, 'native');
+          const receipt = JSON.parse(readFileSync(join(directory, `build-receipt.${process.env.IMAGE_TARGET}.json`)));
+          copyFileSync(join('npm/native', receipt.nodeFile), join(directory, receipt.nodeFile));
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          {
+            name: "typescript-provider-native-${{ matrix.target }}-${{ github.event.pull_request.head.sha || github.sha }}",
+            path: "${{ runner.temp }}/native",
+            if-no-files-found: error,
+            compression-level: 0,
+            retention-days: 7,
+          }
+  package:
+    name: Package the current Linux and Windows platform VSIXs
+    needs: native
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            persist-credentials: false,
+            ref: "${{ github.event.pull_request.head.sha || github.sha }}",
+          }
+      - uses: ./.github/actions/setup-js-package-tests
+      - uses: ./.github/actions/setup-rust-script
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          {
+            pattern: "typescript-provider-native-*-${{ github.event.pull_request.head.sha || github.sha }}",
+            path: .native-artifacts,
+            merge-multiple: true,
+          }
+      - name: Verify eight controlled inventories and failure controls
+        run: vp node --test tests/typescript-plugin/provider-packaging.test.ts tests/tooling/github-native-build-receipt.test.ts tests/tooling/vscode-vsix-policy.test.ts
+      - name: Preserve and qualify the universal metadata-only artifact
+        env:
+          VIZE_TYPESCRIPT_PROVIDER_OUTPUT: ${{ runner.temp }}/typescript-provider-vsix
+        run: |
+          vp run --workspace-root package:vscode-extension
+          mkdir -p "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT"
+          cp editors/vscode/dist/vize.vsix "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize.vsix"
+      - name: Package each corresponding same-source image
+        env:
+          VIZE_TYPESCRIPT_PROVIDER_OUTPUT: ${{ runner.temp }}/typescript-provider-vsix
+        run: |
+          rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-unknown-linux-gnu .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-linux-x64.vsix"
+          rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-pc-windows-msvc .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-win32-x64.vsix"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/typescript-provider-vsix
+          if-no-files-found: error
+          retention-days: 7
+  installed-extension:
+    name: Installed platform VSIX native service (${{ matrix.os }})
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2404, platform: linux-x64 }
+          - { os: Windows, runner: blacksmith-32vcpu-windows-2025, platform: win32-x64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            persist-credentials: false,
+            ref: "${{ github.event.pull_request.head.sha || github.sha }}",
+          }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with: { version: latest, node-version-file: package.json, run-install: false, cache: true }
+      - uses: ./.github/actions/setup-rust-script
+      - run: vp install --frozen-lockfile --prefer-offline
+      - run: vp run --workspace-root check:vscode-extension
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          {
+            name: "typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}",
+            path: editors/vscode/dist,
+          }
+      - name: Ensure the Linux virtual display
+        if: runner.os == 'Linux'
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+      - name: Run the actual installed platform extension
+        env:
+          VIZE_TYPESCRIPT_PROVIDER_VSIX: editors/vscode/dist/vize-${{ matrix.platform }}.vsix
+          VIZE_TYPESCRIPT_PROVIDER_CAPTURE: ${{ runner.temp }}/typescript-provider-host
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            xvfb-run -a vp node editors/vscode/test/run-typescript-provider-host.mjs
+          else
+            vp node editors/vscode/test/run-typescript-provider-host.mjs
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          {
+            name: "typescript-provider-host-${{ matrix.os }}-${{ github.event.pull_request.head.sha || github.sha }}",
+            path: "${{ runner.temp }}/typescript-provider-host",
+            if-no-files-found: warn,
+            retention-days: 7,
+          }

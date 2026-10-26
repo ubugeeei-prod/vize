@@ -237,7 +237,7 @@ jobs:
         env:
           VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
           VIZE_CSS_MAP_SOURCE_SHA: ${{ github.sha }}
-        run: node --test tests/native/css-compile-source-maps.mjs
+        run: node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs
       - name: Retain every actual CSS API result and source identity
         if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

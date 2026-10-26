@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("node:path");
-const { isRelativeSpecifier, resolveExistingModuleSpecifier } = require("./module-resolution.cjs");
+const { resolveExistingModuleSpecifier } = require("./module-resolution.cjs");
 
 const vueExtension = ".vue";
 

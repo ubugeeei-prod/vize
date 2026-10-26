@@ -12,3 +12,4 @@ vite.config.ts
 pnpm-lock.yaml
 pnpm-workspace.yaml
 packageManager
+**/*.vsix.receipt.json

@@ -30,8 +30,8 @@ use serde_json::Value;
 use vize_carton::{String, ToCompactString};
 
 use super::{
-    CssAstInternalResult, CssInternalResult, bundle_css_internal, compile_css_internal,
-    parse_css_ast_internal, print_css_ast_internal,
+    CssAstInternalResult, CssInternalResult, CssSourceMapInput, bundle_css_internal,
+    compile_css_internal, parse_css_ast_internal, print_css_ast_internal,
 };
 
 /// Shared detail appended to every boundary error message.
@@ -101,7 +101,7 @@ pub(crate) fn compile_css_guarded(
     targets: Targets,
     custom_media: bool,
     css_modules: bool,
-    source_map: bool,
+    source_map: Option<CssSourceMapInput<'_>>,
 ) -> CssInternalResult {
     if value_guard::css_contains_crashing_math_function(css) {
         return CssInternalResult {

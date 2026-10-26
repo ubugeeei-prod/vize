@@ -13,17 +13,18 @@ const ts = require(
     paths: [path.join(root, "editors/vscode"), path.join(root, "tests")],
   }),
 ) as typeof import("typescript");
-const initVuePlugin = require(
-  path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs"),
-) as (modules: { typescript: typeof ts }) => {
+const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")) as (modules: {
+  typescript: typeof ts;
+}) => {
   create(info: {
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;
     serverHost: typeof ts.sys;
+    config?: { nativePath: string };
   }): import("typescript").LanguageService;
 };
 
-test("TypeScript Vue plugin resolves relative .vue imports from TSX under NodeNext", () => {
+test("TypeScript Vue plugin keeps missing-provider errors under NodeNext while retaining import navigation", () => {
   const project = createVueProject(
     'import Card from "./Card.vue";\nconst render = () => <Card label="ok" />;\nrender;\n',
     {
@@ -45,10 +46,15 @@ test("TypeScript Vue plugin resolves relative .vue imports from TSX under NodeNe
       formatDiagnostics(withoutPlugin),
     );
 
-    const withPlugin = collectDiagnostics(project.mainTs, true, project.compilerOptions);
+    const withPlugin = collectDiagnostics(
+      project.mainTs,
+      true,
+      project.compilerOptions,
+      path.join(project.root, "missing-native-provider"),
+    );
     assert.equal(
       hasCannotFindVueModule(withPlugin, "./Card.vue"),
-      false,
+      true,
       formatDiagnostics(withPlugin),
     );
 
@@ -98,16 +104,21 @@ function collectDiagnostics(
   mainTs: string,
   enablePlugin: boolean,
   compilerOptions: import("typescript").CompilerOptions,
+  nativePath?: string,
 ) {
-  return createLanguageService(mainTs, enablePlugin, compilerOptions).getSemanticDiagnostics(
+  return createLanguageService(
     mainTs,
-  );
+    enablePlugin,
+    compilerOptions,
+    nativePath,
+  ).getSemanticDiagnostics(mainTs);
 }
 
 function createLanguageService(
   mainTs: string,
   enablePlugin: boolean,
   compilerOptions: import("typescript").CompilerOptions,
+  nativePath?: string,
 ) {
   const host = createHost(path.dirname(path.dirname(mainTs)), mainTs, compilerOptions);
   const service = ts.createLanguageService(host);
@@ -116,6 +127,7 @@ function createLanguageService(
         languageService: service,
         languageServiceHost: host,
         serverHost: ts.sys,
+        ...(nativePath ? { config: { nativePath } } : {}),
       })
     : service;
 }

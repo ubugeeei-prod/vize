@@ -2,6 +2,8 @@ use vize_l0::String;
 
 use super::blocks::parse_descriptor;
 
+mod names;
+
 const DEFAULT_ASSET_URL_TAGS: &[(&str, &[&str])] = &[
     ("img", &["src"]),
     ("video", &["src", "poster"]),
@@ -46,13 +48,17 @@ pub fn collect_template_asset_urls(
     let Some(descriptor) = parse_descriptor(source, filename) else {
         return Vec::new();
     };
-    let Some(template) = descriptor.template else {
+    let Some(template) = descriptor.template.as_ref() else {
         return Vec::new();
     };
 
     let mut urls: Vec<TemplateAssetUrl> = Vec::new();
     let mut counter = 0usize;
     scan_template_asset_urls(template.content.as_ref(), rules, &mut urls, &mut counter);
+    // Namespace work is unnecessary until an actual asset import exists.
+    if !urls.is_empty() {
+        names::avoid_authored_names(&descriptor, &mut urls);
+    }
     urls
 }
 

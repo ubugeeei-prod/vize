@@ -1,0 +1,464 @@
+{
+  "schema": "vize.css.compile-binding-map.public-before",
+  "version": 1,
+  "scope": "Published complete non-map neighbor preservation only. The primary missing map has a separate exact3a source-before observation.",
+  "packages": [
+    {
+      "name": "@vizejs/native",
+      "version": "0.571.0",
+      "tarball": "https://registry.npmjs.org/@vizejs/native/-/native-0.571.0.tgz",
+      "integrity": "sha512-XFdgq0UOPozFdIwxXl4SmzJ/xW56Owo2hbp2kgMXg9XnnPyl0sZkynsO8jaOmAY8JZClQp69H9+3n4+pCvIaRQ==",
+      "archiveSha256": "9c28110bb6c60580dc0be2d8ec74520bf29419e11038133af595391cf0185917",
+      "retainedFile": "package/index.js",
+      "fileSha256": "39efc6c3a18d4ef39232d0fcc713c11114a29bef8c8942cdb8492ae9d939ebec"
+    },
+    {
+      "name": "@vizejs/native-darwin-arm64",
+      "version": "0.571.0",
+      "tarball": "https://registry.npmjs.org/@vizejs/native-darwin-arm64/-/native-darwin-arm64-0.571.0.tgz",
+      "integrity": "sha512-o6n7fLmFqt3d1/RE2zCuvfZBqflMecV5Q0JA4cMQRii9Ysdfazr9UqBU/d++Bp4mFsD8hsHy/RcnWEAayMgEqQ==",
+      "archiveSha256": "3ea9ab11d4bdf850f80507ebd14b987d470197a8d739e4e26b4d2d7ffc1386ee",
+      "retainedFile": "package/vize-vitrine.darwin-arm64.node",
+      "fileSha256": "7817eb27dfa1708a59e19eebf8052eb42dc840313289d4719572ab032d1cd24d"
+    }
+  ],
+  "buildToken": "4a833c6793600c1f36aada2e025c9e84",
+  "captures": [
+    {
+      "id": "basic",
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: var(--123abc-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [4, 0],
+          "original": [0, 23]
+        }
+      ]
+    },
+    {
+      "id": "basic",
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:var(--123abc-theme)}.b{color:#00f}",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [0, 29],
+          "original": [0, 23]
+        }
+      ]
+    },
+    {
+      "id": "unicode-multiline",
+      "source": ".雪😀{color:v-bind(\r\n '主题😀'\r\n)}.b{opacity:v-bind(next)}\r\n.c{color:red}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".雪😀 {\n  color: var(--v6c12f146);\n}\n\n.b {\n  opacity: var(--123abc-next);\n}\n\n.c {\n  color: red;\n}\n",
+        "cssVars": ["主题😀", "next"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [4, 0],
+          "original": [2, 2]
+        },
+        {
+          "generated": [8, 0],
+          "original": [3, 0]
+        }
+      ]
+    },
+    {
+      "id": "unicode-multiline",
+      "source": ".雪😀{color:v-bind(\r\n '主题😀'\r\n)}.b{opacity:v-bind(next)}\r\n.c{color:red}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".雪😀{color:var(--v6c12f146)}.b{opacity:var(--123abc-next)}.c{color:red}",
+        "cssVars": ["主题😀", "next"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [0, 28],
+          "original": [2, 2]
+        },
+        {
+          "generated": [0, 58],
+          "original": [3, 0]
+        }
+      ]
+    },
+    {
+      "id": "same-line",
+      "source": ".a{color:v-bind(a)}.b{opacity:v-bind(b)}.c{width:v-bind(c)}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: var(--123abc-a);\n}\n\n.b {\n  opacity: var(--123abc-b);\n}\n\n.c {\n  width: var(--123abc-c);\n}\n",
+        "cssVars": ["a", "b", "c"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [4, 0],
+          "original": [0, 19]
+        },
+        {
+          "generated": [8, 0],
+          "original": [0, 40]
+        }
+      ]
+    },
+    {
+      "id": "same-line",
+      "source": ".a{color:v-bind(a)}.b{opacity:v-bind(b)}.c{width:v-bind(c)}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:var(--123abc-a)}.b{opacity:var(--123abc-b)}.c{width:var(--123abc-c)}",
+        "cssVars": ["a", "b", "c"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [0, 25],
+          "original": [0, 19]
+        },
+        {
+          "generated": [0, 52],
+          "original": [0, 40]
+        }
+      ]
+    },
+    {
+      "id": "quoted-comment",
+      "source": "/* v-bind(fake) */.a{--note:\"v-bind(fake)\";color:v-bind(real)}.b{opacity:.5}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  --note: \"v-bind(fake)\";\n  color: var(--123abc-real);\n}\n\n.b {\n  opacity: .5;\n}\n",
+        "cssVars": ["real"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 18]
+        },
+        {
+          "generated": [5, 0],
+          "original": [0, 62]
+        }
+      ]
+    },
+    {
+      "id": "quoted-comment",
+      "source": "/* v-bind(fake) */.a{--note:\"v-bind(fake)\";color:v-bind(real)}.b{opacity:.5}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{--note:\"v-bind(fake)\";color:var(--123abc-real)}.b{opacity:.5}",
+        "cssVars": ["real"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 18]
+        },
+        {
+          "generated": [0, 50],
+          "original": [0, 62]
+        }
+      ]
+    },
+    {
+      "id": "nested-expression",
+      "source": ".a{width:v-bind(\"theme.get('width')\")}.b{opacity:.5}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  width: var(--v51525f9e);\n}\n\n.b {\n  opacity: .5;\n}\n",
+        "cssVars": ["theme.get('width')"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [4, 0],
+          "original": [0, 38]
+        }
+      ]
+    },
+    {
+      "id": "nested-expression",
+      "source": ".a{width:v-bind(\"theme.get('width')\")}.b{opacity:.5}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{width:var(--v51525f9e)}.b{opacity:.5}",
+        "cssVars": ["theme.get('width')"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [0, 26],
+          "original": [0, 38]
+        }
+      ]
+    },
+    {
+      "id": "adjacent-bindings",
+      "source": ".a{padding:v-bind(x) v-bind(y)}.b{color:red}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  padding: var(--123abc-x) var(--123abc-y);\n}\n\n.b {\n  color: red;\n}\n",
+        "cssVars": ["x", "y"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [4, 0],
+          "original": [0, 31]
+        }
+      ]
+    },
+    {
+      "id": "adjacent-bindings",
+      "source": ".a{padding:v-bind(x) v-bind(y)}.b{color:red}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{padding:var(--123abc-x) var(--123abc-y)}.b{color:red}",
+        "cssVars": ["x", "y"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        },
+        {
+          "generated": [0, 43],
+          "original": [0, 31]
+        }
+      ]
+    },
+    {
+      "id": "unterminated",
+      "source": ".a{width:v-bind(",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  width: v-bind();\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        }
+      ]
+    },
+    {
+      "id": "unterminated",
+      "source": ".a{width:v-bind(",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{width:v-bind()}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0]
+        }
+      ]
+    },
+    {
+      "id": "parse-error",
+      "source": ".a{color:v-bind(theme)} }",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a{color:var(--123abc-theme)} }",
+        "cssVars": ["theme"],
+        "errors": ["CSS parse error: Unexpected end of input at style.css:0:32"],
+        "warnings": []
+      },
+      "tokens": []
+    },
+    {
+      "id": "parse-error",
+      "source": ".a{color:v-bind(theme)} }",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:var(--123abc-theme)} }",
+        "cssVars": ["theme"],
+        "errors": ["CSS parse error: Unexpected end of input at style.css:0:32"],
+        "warnings": []
+      },
+      "tokens": []
+    },
+    {
+      "id": "scoped-unqualified",
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false,
+        "scoped": true
+      },
+      "output": {
+        "code": ".a[data-v-123abc] {\n  color: var(--123abc-theme);\n}\n\n.b[data-v-123abc] {\n  color: #00f;\n}\n",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": []
+    },
+    {
+      "id": "scoped-unqualified",
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true,
+        "scoped": true
+      },
+      "output": {
+        "code": ".a[data-v-123abc]{color:var(--123abc-theme)}.b[data-v-123abc]{color:#00f}",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": []
+    },
+    {
+      "id": "embedded-unqualified",
+      "source": ".a{color:v-bind(theme)}/*# sourceMappingURL=data:application/json;base64,e30= */",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: var(--123abc-theme);\n}\n",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": []
+    },
+    {
+      "id": "embedded-unqualified",
+      "source": ".a{color:v-bind(theme)}/*# sourceMappingURL=data:application/json;base64,e30= */",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:var(--123abc-theme)}",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      },
+      "tokens": []
+    }
+  ]
+}

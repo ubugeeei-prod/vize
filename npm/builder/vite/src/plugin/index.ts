@@ -33,7 +33,7 @@ import { patchUnoCssBridge } from "./unocss.ts";
 import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
-import { mergeCompilerOptions } from "./compiler-config.ts";
+import { mergeCompilerOptions, type VizeCompilerDefaults } from "./compiler-config.ts";
 import { createFileCompilerOptions } from "./compiler-scopes.ts";
 import {
   createLegacyVueCompatibilityPlugin,
@@ -50,7 +50,7 @@ export type { VizePluginState } from "./state.ts";
 /** Framework-derived defaults yield to project, entry, and explicit plugin options. */
 export function vize(
   options: VizeOptions = {},
-  compilerDefaults: Pick<VizeOptions, "whitespace"> = {},
+  compilerDefaults: VizeCompilerDefaults = {},
   /** @internal Only the Nuxt constructor supplies its host configuration context. */
   hostContext?: "nuxt",
 ): Plugin[] {

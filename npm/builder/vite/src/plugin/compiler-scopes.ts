@@ -1,7 +1,7 @@
 import path from "node:path";
 import { createRequire } from "node:module";
 import type { ResolvedVizeConfig, VizeOptions } from "../types.ts";
-import { mergeCompilerOptions } from "./compiler-config.ts";
+import { mergeCompilerOptions, type VizeCompilerDefaults } from "./compiler-config.ts";
 
 const picomatch = createRequire(import.meta.url)("picomatch") as (
   pattern: string,
@@ -99,7 +99,7 @@ export function createFileCompilerOptions(
   config: ResolvedVizeConfig | null,
   root: string,
   explicit: VizeOptions,
-  defaults: Pick<VizeOptions, "whitespace"> = {},
+  defaults: VizeCompilerDefaults = {},
 ): ((file: string) => VizeOptions) | undefined {
   if (!config) return undefined;
   const scopes = compileScopes(config, root);
