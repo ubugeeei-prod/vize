@@ -1,0 +1,56 @@
+{
+  "name": "@vizejs/volar-plugin",
+  "version": "0.474.0",
+  "description": "Vize's native Vue projection for Volar language and TypeScript services",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/volar"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "tsc --ignoreConfig --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ESNext src/index.d.ts",
+    "test": "node --test test/service.test.js"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*",
+    "@volar/language-core": "2.4.30",
+    "@volar/typescript": "2.4.30"
+  },
+  "devDependencies": {
+    "typescript": "catalog:typescript",
+    "vue": "catalog:vue-production"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.7 <7"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "alpha-supported",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

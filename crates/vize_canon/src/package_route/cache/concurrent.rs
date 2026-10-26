@@ -2,13 +2,17 @@
 //!
 //! Independent specifiers can overlap. The resolution map is still updated
 //! under the lock, with the same hit and eviction rules as the serial lookup.
-//! Each miss borrows a search and path cache from the resolver, so manifests
-//! and realpaths are not read again for every specifier.
+//! Each miss borrows a search, path and stamp cache from the resolver, so
+//! manifests, realpaths and input stamps are not read again for every
+//! specifier.
 
 use std::path::Path;
 
 use super::super::search::PackageSearchCache;
-use super::super::stamp::{stamp_paths, stamps_are_current, stamps_are_current_with_cache};
+use super::super::stamp::{
+    InputStampCache, stamp_paths, stamp_paths_with_cache, stamps_are_current,
+    stamps_are_current_with_cache,
+};
 use super::super::{
     PackagePathCache, PackageResolutionContext, PackageResolutionMode, PackageSourceOptions,
     logical_absolute, lookup_uncached,
@@ -21,6 +25,8 @@ use super::{CachedPackageRouteLookup, PackageRouteResolver, ResolutionKey};
 pub(super) struct ConcurrentLookupCaches {
     search: PackageSearchCache,
     canonical_paths: PackagePathCache,
+    /// Input stamps this worker captured in the epoch, off the lock.
+    stamps: InputStampCache,
     epoch_generation: u64,
 }
 
@@ -30,6 +36,7 @@ impl ConcurrentLookupCaches {
     fn enter(&mut self, validation_epoch: u64, epoch_generation: u64) {
         if validation_epoch == 0 || self.epoch_generation != epoch_generation {
             self.canonical_paths.clear();
+            self.stamps.clear();
             self.search.enter_validation_epoch(validation_epoch);
             self.epoch_generation = epoch_generation;
         }
@@ -74,7 +81,7 @@ impl PackageRouteResolver {
             options,
             context,
         );
-        let mut caches = {
+        let (mut caches, validation_epoch) = {
             let mut state = self
                 .state
                 .lock()
@@ -89,7 +96,7 @@ impl PackageRouteResolver {
             }
             let mut caches = state.concurrent_caches.pop().unwrap_or_default();
             caches.enter(state.validation_epoch, state.epoch_generation);
-            caches
+            (caches, state.validation_epoch)
         };
 
         let reads_before = caches.search.manifest_reads();
@@ -101,7 +108,14 @@ impl PackageRouteResolver {
             &mut caches.canonical_paths,
         );
         let manifest_reads = caches.search.manifest_reads() - reads_before;
-        let stamps = stamp_paths(&lookup.invalidation_paths);
+        // Outside an epoch every stamp is fresh, like the serial lookup. Inside
+        // one, the lent snapshots capture each input once per epoch and worker
+        // instead of once per miss, still off the lock.
+        let stamps = if validation_epoch == 0 {
+            stamp_paths(&lookup.invalidation_paths)
+        } else {
+            stamp_paths_with_cache(&lookup.invalidation_paths, &mut caches.stamps)
+        };
 
         let mut state = self
             .state

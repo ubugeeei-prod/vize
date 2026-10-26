@@ -26,6 +26,14 @@ const LanguageFeature = Object.freeze({
 });
 
 function utf8Boundaries(text) {
+  if (Buffer.byteLength(text, "utf8") === text.length) {
+    return (offset) => {
+      if (!Number.isSafeInteger(offset) || offset < 0 || offset > text.length) {
+        throw new RangeError(`Native projection offset ${offset} is not a UTF-8 boundary`);
+      }
+      return offset;
+    };
+  }
   const boundaries = new Map([[0, 0]]);
   let bytes = 0;
   let units = 0;
@@ -131,6 +139,8 @@ function applyDiagnosticDirectives(projection, generatedDiagnostics) {
  * Content Mapper VirtualToOriginalSpan law in the normalized UTF-16 spaces.
  * Diagnostic boundaries may surround mapped tokens with synthetic punctuation.
  * This does not make those gaps eligible for navigation or edit write-back.
+ * Matches Canon's content_mapper/tests/diagnostic_origin.rs and upstream
+ * microsoft/TypeScript@d6c4afdd tsc/internal/spanmap/spanmap.go.
  */
 function mapLanguageDiagnosticRange(projection, start, length) {
   if (!Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(length) || length < 0)

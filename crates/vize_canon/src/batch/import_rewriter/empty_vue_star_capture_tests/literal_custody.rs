@@ -9,7 +9,7 @@ use oxc_span::SourceType;
 use vize_carton::ToCompactString;
 
 use super::{Contextual, ImportRewriter, apply_captured_empty_vue_stars};
-use crate::batch::import_rewriter::{ImportSourceMap, OffsetAdjustment};
+use crate::batch::import_rewriter::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 
 #[test]
 fn complete_projected_literals_survive_each_prior_and_current_expand_shrink_pair() {
@@ -180,11 +180,17 @@ fn malformed_ambiguous_or_unmapped_literal_spans_cannot_request_target_authority
     assert_eq!(refused.code, baseline.code);
     assert_eq!(refused.source_map, bad_map);
     for current_literal in ["bad'path", "bad\\path", "bad\r\npath"] {
-        let (baseline, stars) =
-            ImportRewriter::new().rewrite_with_captured_stars(source, SourceType::ts(), |_, _| {
-                Some(current_literal.to_compact_string())
-            });
         let expected = format!("export * from '{current_literal}';");
+        // The producer now encodes unsafe paths. Keep this separate corrupt
+        // baseline control: no target authority may be inferred from its text.
+        let start = source.find("./A.vue").unwrap() as u32;
+        let baseline = RewriteResult {
+            code: expected.to_compact_string(),
+            source_map: ImportSourceMap::with_replacement_ranges(
+                Vec::new(),
+                vec![(start, start + 7, current_literal.len() as u32)],
+            ),
+        };
         assert_eq!(baseline.code.as_str(), expected);
         let refused = apply_captured_empty_vue_stars(
             &baseline.code,

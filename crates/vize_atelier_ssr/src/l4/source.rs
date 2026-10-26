@@ -74,6 +74,7 @@ fn lower_and_emit_plain(
         root: &s2.root,
         root_origin: None,
         facts: emit::PlanFacts {
+            scopes: &s2.scopes,
             texts: &s2.texts,
             for_wrappers: &s2.for_wrappers,
             wrappers: &s2.wrappers,
@@ -201,6 +202,7 @@ fn lower_and_emit<C: CaptureSink>(
         root: &s2.root,
         root_origin: None,
         facts: emit::PlanFacts {
+            scopes: &s2.scopes,
             texts: &s2.texts,
             for_wrappers: &s2.for_wrappers,
             wrappers: &s2.wrappers,

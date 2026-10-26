@@ -44,7 +44,7 @@ fn package_aware_registration_walks_a_package_closure_once_per_source() {
     let mut canonical_paths = CanonicalPathCache::default();
     let entry = canonical_paths.canonicalize(&entry);
     let mut packages = PackageRouteResolver::default();
-    let mut cache = registration::VirtualRegistrationCache::default();
+    let mut cache = LocalImportSession::default();
 
     let mut answers = Vec::new();
     for call in 0..8 {
@@ -76,7 +76,7 @@ fn package_aware_registration_walks_a_package_closure_once_per_source() {
         "memoized answers must replay the walked answer: {answers:?}"
     );
     assert_eq!(
-        cache.registration_entries(),
+        cache.registration_cache.registration_entries(),
         1,
         "one package closure keeps one memo entry, however many importers reach it"
     );
@@ -117,7 +117,7 @@ fn package_route_reachability_is_scanned_once_per_route() {
     let first = canonical_paths.canonicalize(&first);
     let second = canonical_paths.canonicalize(&second);
     let mut packages = PackageRouteResolver::default();
-    let mut cache = registration::VirtualRegistrationCache::default();
+    let mut cache = LocalImportSession::default();
 
     for entry in [&first, &second] {
         let mut discovery = registration::VirtualRegistrationDiscovery::default();
@@ -133,7 +133,7 @@ fn package_route_reachability_is_scanned_once_per_route() {
     }
 
     assert_eq!(
-        cache.registration_entries(),
+        cache.registration_cache.registration_entries(),
         2,
         "each authored source keeps its own memo entry"
     );
@@ -170,7 +170,7 @@ fn exhausted_package_closure_tracks_inputs_without_materializing_a_shadow() {
     let mut canonical_paths = CanonicalPathCache::default();
     let entry = canonical_paths.canonicalize(&entry);
     let mut packages = PackageRouteResolver::default();
-    let mut cache = registration::VirtualRegistrationCache::default();
+    let mut cache = LocalImportSession::default();
     let mut discovery = registration::VirtualRegistrationDiscovery::default();
 
     let needs_registration = registration::non_relative_import_needs_virtual_registration(

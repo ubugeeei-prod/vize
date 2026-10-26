@@ -14,6 +14,10 @@ impl PackageRouteLookup {
         (self.route, self.invalidation_paths)
     }
 
+    pub fn route(&self) -> Option<&PackageRoute> {
+        self.route.as_ref()
+    }
+
     pub fn is_watchable_negative(&self) -> bool {
         self.route.is_none() && self.watchable_negative
     }

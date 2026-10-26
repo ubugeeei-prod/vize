@@ -21,7 +21,13 @@ pub(crate) fn collect_for_scoped_params(for_node: &ForNode, source: &str) -> FxH
 
 fn collect_expression_params(expr: &ExpressionNode, params: &mut FxHashSet<String>, source: &str) {
     let content = match expr {
-        ExpressionNode::Simple(simple) => String::new(simple.content),
+        ExpressionNode::Simple(simple) => {
+            if let Some(names) = simple.retained_parameter_names() {
+                params.extend(names.iter().map(|name| String::from(*name)));
+                return;
+            }
+            String::new(simple.content)
+        }
         ExpressionNode::Compound(compound) => {
             let mut content = String::default();
             for child in &compound.children {

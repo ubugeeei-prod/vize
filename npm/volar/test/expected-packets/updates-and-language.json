@@ -1,0 +1,442 @@
+[
+  {
+    "name": "unsaved-update-hover",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 63
+    },
+    "result": {
+      "kind": "const",
+      "kindModifiers": "",
+      "textSpan": {
+        "start": 63,
+        "length": 5
+      },
+      "displayParts": [
+        {
+          "text": "const",
+          "kind": "keyword"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "title",
+          "kind": "localName"
+        },
+        {
+          "text": ":",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "boolean",
+          "kind": "keyword"
+        }
+      ],
+      "documentation": []
+    }
+  },
+  {
+    "name": "unsaved-update-diagnostics",
+    "params": {
+      "file": "<workspace>/App.vue"
+    },
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 92,
+        "length": 5,
+        "code": 2322,
+        "category": 1,
+        "messageText": "Type 'string' is not assignable to type 'number'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 260,
+        "length": 11,
+        "code": 2339,
+        "category": 1,
+        "messageText": "Property 'toUpperCase' does not exist on type 'true'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 286,
+        "length": 5,
+        "code": 2345,
+        "category": 1,
+        "messageText": "Argument of type 'boolean' is not assignable to parameter of type 'string'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 299,
+        "length": 6,
+        "messageText": "Cannot find name 'absent'.",
+        "category": 1,
+        "code": 2304
+      }
+    ]
+  },
+  {
+    "name": "delete-import-diagnostics",
+    "params": {
+      "file": "<workspace>/App.vue"
+    },
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 48,
+        "length": 7,
+        "messageText": "Cannot find module './lib' or its corresponding type declarations.",
+        "category": 1,
+        "code": 2307
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 92,
+        "length": 5,
+        "code": 2322,
+        "category": 1,
+        "messageText": "Type 'string' is not assignable to type 'number'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 260,
+        "length": 11,
+        "code": 2339,
+        "category": 1,
+        "messageText": "Property 'toUpperCase' does not exist on type 'true'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 286,
+        "length": 5,
+        "code": 2345,
+        "category": 1,
+        "messageText": "Argument of type 'boolean' is not assignable to parameter of type 'string'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 299,
+        "length": 6,
+        "messageText": "Cannot find name 'absent'.",
+        "category": 1,
+        "code": 2304
+      }
+    ]
+  },
+  {
+    "name": "recreate-import-diagnostics",
+    "params": {
+      "file": "<workspace>/App.vue"
+    },
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 92,
+        "length": 5,
+        "code": 2322,
+        "category": 1,
+        "messageText": "Type 'string' is not assignable to type 'number'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 260,
+        "length": 11,
+        "code": 2339,
+        "category": 1,
+        "messageText": "Property 'toUpperCase' does not exist on type 'true'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 286,
+        "length": 5,
+        "code": 2345,
+        "category": 1,
+        "messageText": "Argument of type 'boolean' is not assignable to parameter of type 'string'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: boolean = true;\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 299,
+        "length": 6,
+        "messageText": "Cannot find name 'absent'.",
+        "category": 1,
+        "code": 2304
+      }
+    ]
+  },
+  {
+    "name": "unicode-diagnostics",
+    "params": {
+      "file": "<workspace>/Unicode.vue"
+    },
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/Unicode.vue",
+          "text": "<script setup lang=\"ts\">\r\nconst 日本 = \"😀\";\r\nconst 数: number = \"bad\";\r\n</script>\r\n<template>{{ 日本 }}</template>\r\n"
+        },
+        "start": 50,
+        "length": 1,
+        "code": 2322,
+        "category": 1,
+        "messageText": "Type 'string' is not assignable to type 'number'."
+      }
+    ]
+  },
+  {
+    "name": "unicode-template-hover",
+    "params": {
+      "file": "<workspace>/Unicode.vue",
+      "position": 94
+    },
+    "result": {
+      "kind": "const",
+      "kindModifiers": "",
+      "textSpan": {
+        "start": 94,
+        "length": 2
+      },
+      "displayParts": [
+        {
+          "text": "const",
+          "kind": "keyword"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "日本",
+          "kind": "localName"
+        },
+        {
+          "text": ":",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "\"😀\"",
+          "kind": "stringLiteral"
+        }
+      ],
+      "documentation": []
+    }
+  },
+  {
+    "name": "unicode-authored-line-column",
+    "params": {
+      "file": "<workspace>/Unicode.vue",
+      "position": 50
+    },
+    "result": {
+      "line": 2,
+      "character": 6
+    }
+  },
+  {
+    "name": "directive-diagnostics",
+    "params": {},
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/Directives.vue",
+          "text": "<script setup lang=\"ts\">const valid = 'ok';</script>\n<template>\n<!-- @vue-ignore -->{{ ignoredMissing }}\n<!-- @vue-expect-error -->{{ expectedMissing }}\n<!-- @vue-expect-error -->{{ valid }}\n<p>{{ realMissing }}</p>\n<!-- @vue-ignore --><p :id=\"valid\">{{ childMissing }}</p>\n</template>"
+        },
+        "start": 197,
+        "length": 11,
+        "messageText": "Cannot find name 'realMissing'.",
+        "category": 1,
+        "code": 2304
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/Directives.vue",
+          "text": "<script setup lang=\"ts\">const valid = 'ok';</script>\n<template>\n<!-- @vue-ignore -->{{ ignoredMissing }}\n<!-- @vue-expect-error -->{{ expectedMissing }}\n<!-- @vue-expect-error -->{{ valid }}\n<p>{{ realMissing }}</p>\n<!-- @vue-ignore --><p :id=\"valid\">{{ childMissing }}</p>\n</template>"
+        },
+        "start": 254,
+        "length": 12,
+        "messageText": "Cannot find name 'childMissing'.",
+        "category": 1,
+        "code": 2304
+      },
+      {
+        "code": 4,
+        "messageText": "Unused '@vue-expect-error' directive",
+        "start": 158,
+        "length": 17,
+        "file": {
+          "fileName": "<workspace>/Directives.vue",
+          "text": "<script setup lang=\"ts\">const valid = 'ok';</script>\n<template>\n<!-- @vue-ignore -->{{ ignoredMissing }}\n<!-- @vue-expect-error -->{{ expectedMissing }}\n<!-- @vue-expect-error -->{{ valid }}\n<p>{{ realMissing }}</p>\n<!-- @vue-ignore --><p :id=\"valid\">{{ childMissing }}</p>\n</template>"
+        },
+        "category": 1,
+        "source": "vize"
+      }
+    ]
+  },
+  {
+    "name": "invalid-code-diagnostics",
+    "params": {},
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/Directives.vue",
+          "text": "<script setup lang=\"ts\">const x = ;</script><template>{{ x }}</template>"
+        },
+        "start": 34,
+        "length": 1,
+        "messageText": "Expression expected.",
+        "category": 1,
+        "code": 1109
+      }
+    ]
+  },
+  {
+    "name": "malformed-sfc-diagnostics",
+    "params": {},
+    "result": [
+      {
+        "messageText": "Malformed <script> block: the closing tag is missing.",
+        "start": 0,
+        "length": 40,
+        "code": 100001,
+        "file": {
+          "fileName": "<workspace>/Directives.vue",
+          "text": "<script setup lang=\"ts\">const value = 1;"
+        },
+        "category": 1,
+        "source": "vize"
+      }
+    ]
+  },
+  {
+    "name": "generic-slot-diagnostics",
+    "params": {},
+    "result": []
+  },
+  {
+    "name": "generic-slot-hover",
+    "params": {
+      "position": 127
+    },
+    "result": {
+      "kind": "property",
+      "kindModifiers": "",
+      "textSpan": {
+        "start": 127,
+        "length": 2
+      },
+      "displayParts": [
+        {
+          "text": "(",
+          "kind": "punctuation"
+        },
+        {
+          "text": "property",
+          "kind": "text"
+        },
+        {
+          "text": ")",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "id",
+          "kind": "propertyName"
+        },
+        {
+          "text": ":",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "number",
+          "kind": "keyword"
+        }
+      ],
+      "documentation": []
+    }
+  },
+  {
+    "name": "alias-diagnostics",
+    "params": {},
+    "result": []
+  },
+  {
+    "name": "alias-definition",
+    "params": {
+      "position": 72
+    },
+    "result": [
+      {
+        "fileName": "<workspace>/src/value.ts",
+        "textSpan": {
+          "start": 13,
+          "length": 5
+        },
+        "kind": "const",
+        "name": "value",
+        "containerName": "\"@lib/value\"",
+        "contextSpan": {
+          "start": 0,
+          "length": 24
+        },
+        "isLocal": false,
+        "isAmbient": false,
+        "unverified": false
+      }
+    ]
+  }
+]
