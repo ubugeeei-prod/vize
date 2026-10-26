@@ -42,7 +42,7 @@ for (const name of ["App.vue", "App.invalid.vue"]) {
     .map((d) => ({
       code: d.code,
       category: d.category,
-      file: d.file?.fileName,
+      file: d.file ? path.relative(root, d.file.fileName).split(path.sep).join("/") : undefined,
       start: d.start,
       length: d.length,
       message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
@@ -70,7 +70,7 @@ const out = {
     moduleSha256: createHash("sha256").update(fs.readFileSync(typescriptModule)).digest("hex"),
   },
   note: "Independent handwritten script extraction. This proves authored type semantics, not generated literal/navigation geometry. Raw Vize map source witness is mandatory separately.",
-  root,
+  root: ".",
   outputs,
 };
 fs.writeFileSync(
