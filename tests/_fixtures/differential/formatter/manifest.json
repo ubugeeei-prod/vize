@@ -3089,6 +3089,138 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/prettier-preserved-layout",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-prettier-preserved-layout",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "ba13dc758485df96d3b2d41d5f72fc53203b7ee280ce7000e6f4c315bc8ac0f1",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "8426a8802f455610fb05dfb92795b1a287844efcb37165334f15f99a8970a120",
+            "role": "project-vue-version-and-formatter-preset"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          10771
+        ],
+        "commits": [
+          {
+            "sha": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/script/expression.rs",
+              "crates/vize_glyph/src/template/formatter.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 10771,
+            "path": "crates/vize_glyph/tests/prettier_preserved_layout.rs",
+            "symbol": "prettier_preset_keeps_authored_layouts_prettier_keeps"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/prettier_preserved_layout.rs",
+          "symbol": "prettier_preset_keeps_authored_layouts_prettier_keeps",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "LF-CRLF"
+          ],
+          "limitations": [
+            "Exact-head source execution is required in Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "directive-expression-layout"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI with the issue-authored object literal and interpolation lines.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-prettier-preserved-layout/reference.expected.txt",
+              "sha256": "b5f920eeaae46305d26c549e89a6791db695a99477e28a26dcdcc8a3d7648b18",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 10771,
+                "path": "crates/vize_glyph/tests/prettier_preserved_layout.rs",
+                "symbol": "prettier_preset_keeps_authored_layouts_prettier_keeps",
+                "assertion": "Prettier 3.8.3 output: authored object expansion and inline nodes on their own lines stay."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-10771-prettier-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
