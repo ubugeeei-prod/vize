@@ -216,8 +216,6 @@ pub(super) fn emit_call(
                 skip_is,
                 for_item,
                 is_plain_element: false,
-                once_layout: false,
-                once_cache_initializer: false,
                 force_multiline: for_item && if_key.is_some() && has_component_root_slot,
             },
         )?;

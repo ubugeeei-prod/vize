@@ -29,8 +29,6 @@ pub(super) struct BindPropsOptions<'a> {
     pub skip_is: bool,
     pub for_item: bool,
     pub is_plain_element: bool,
-    pub once_layout: bool,
-    pub once_cache_initializer: bool,
     pub force_multiline: bool,
 }
 
@@ -120,8 +118,6 @@ fn emit_owned_bind_props(
         skip_is,
         for_item,
         is_plain_element,
-        once_layout,
-        once_cache_initializer,
         force_multiline,
     } = options;
     if super::merge::has_object_spread(bindings) {
@@ -150,11 +146,12 @@ fn emit_owned_bind_props(
             if_key,
             skip_normalize: false,
             empty_key_multiline: for_item
-                && (super::directive::has_runtime(bindings) || once_layout || force_multiline),
+                && (super::directive::has_runtime(bindings)
+                    || super::once::has(bindings)
+                    || force_multiline),
             is_plain_element,
             for_item,
-            suppress_once_cache_dynamic: once_cache_initializer,
-            force_multiline: once_layout || force_multiline,
+            force_multiline,
         },
     )?;
     if normalize {

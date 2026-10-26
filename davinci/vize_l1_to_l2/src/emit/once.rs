@@ -43,21 +43,23 @@ pub(super) fn emit_element(
     for_item: bool,
 ) -> Result<(), EmitError> {
     emit_cached(cx, |cx| {
-        cx.buf.use_create_element_vnode();
-        let previous_once_element_depth = cx.once_element_depth;
-        cx.once_element_depth = 0;
+        // The same vnode as without `v-once`, minus handler caching.
+        let in_once = core::mem::replace(&mut cx.in_once, true);
         cx.once_depth += 1;
-        let result = vnode::emit_call(
-            cx,
-            element,
-            /* block */ false,
-            key,
-            /* hoist */ (false, None, super::props_static::PropHoistPosition::Nested),
-            for_item,
-            /* once */ true,
-        );
+        let result = super::directive::wrap_element(cx, element, |cx| {
+            cx.buf.use_create_element_vnode();
+            vnode::emit_call(
+                cx,
+                element,
+                /* block */ false,
+                key,
+                /* hoist */ (false, None, super::props_static::PropHoistPosition::Nested),
+                for_item,
+                /* once */ true,
+            )
+        });
         cx.once_depth -= 1;
-        cx.once_element_depth = previous_once_element_depth;
+        cx.in_once = in_once;
         result
     })
 }
@@ -70,9 +72,9 @@ pub(super) fn emit_component(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     emit_cached(cx, |cx| {
-        let once_component = core::mem::replace(&mut cx.once_component, true);
+        let in_once = core::mem::replace(&mut cx.in_once, true);
         let result = super::component::emit_once(cx, component, id);
-        cx.once_component = once_component;
+        cx.in_once = in_once;
         result
     })
 }

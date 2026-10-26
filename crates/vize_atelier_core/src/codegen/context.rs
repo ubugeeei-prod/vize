@@ -87,8 +87,8 @@ pub struct CodegenContext {
     /// the cached array — no nested `_cache[...]` wrappers and no per-descendant
     /// `CACHED` patch flag. This flag suppresses re-caching inside that subtree.
     pub(super) in_cached_static: bool,
-    /// True while emitting a cached `v-once` component: Vue caches no
-    /// handlers inside `v-once`.
+    /// True while emitting a cached `v-once` vnode: Vue caches no handlers
+    /// inside `v-once`.
     pub(super) in_v_once: bool,
     /// Template-wide counter for v-if branch keys. Each branch in any
     /// conditional chain in the template consumes one value, so sibling

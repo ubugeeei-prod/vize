@@ -74,6 +74,11 @@ required-features = ["legacy-differential"]
 name = "component_v_once"
 required-features = ["legacy-differential"]
 
+# Both lanes cache the full native element vnode under `v-once`.
+[[test]]
+name = "element_v_once"
+required-features = ["legacy-differential"]
+
 # These read process-global walk and selector counters, so each keeps its own process under cargo test.
 [[test]]
 name = "davinci_expr_reparse_floor"

@@ -75,19 +75,6 @@ impl EmitCx<'_> {
         result
     }
 
-    pub(super) fn with_once_element<T>(
-        &mut self,
-        write: impl FnOnce(&mut Self) -> Result<T, EmitError>,
-    ) -> Result<T, EmitError> {
-        let previous = self.once_element_depth;
-        if self.once_depth > 0 {
-            self.once_element_depth = self.once_element_depth.saturating_add(1);
-        }
-        let result = write(self);
-        self.once_element_depth = previous;
-        result
-    }
-
     // ---- `prefix_identifiers` (P2-11 installment 85) ----
 
     /// Whether the expression pipeline runs at all: the shipped
@@ -163,7 +150,7 @@ impl EmitCx<'_> {
     /// capture the first scoped value. The default lane stores aliases as
     /// raw patterns, so the gate has to read both param stacks.
     pub(super) fn caches_handlers(&self) -> bool {
-        self.cache_handlers && !self.once_component && !self.scope.has_codegen_scope_params()
+        self.cache_handlers && !self.in_once && !self.scope.has_codegen_scope_params()
     }
 
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the
