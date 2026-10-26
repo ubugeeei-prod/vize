@@ -19,6 +19,16 @@ function installVueVirtualModules(ts, info) {
   const root = host.getCurrentDirectory?.() || info.project?.getCurrentDirectory?.();
   const engine = loadNative(root, info.config?.nativePath);
   const snapshots = new Map();
+  const projectVersion = bind("getProjectVersion");
+  let config;
+  // Every SFC query shares one config read per project version.
+  const configText = (fileName) => {
+    if (typeof fileName !== "string") return "";
+    const version = projectVersion?.();
+    if (version === undefined || config?.fileName !== fileName || config.version !== version)
+      config = { fileName, version, text: readFile(fileName) };
+    return config.text;
+  };
   const get = (fileName) => {
     if (!isSfc(fileName)) return undefined;
     const originalSnapshot = getSnapshot(fileName);
@@ -36,8 +46,7 @@ function installVueVirtualModules(ts, info) {
       scriptInfo.reloadFromFile?.(fileName);
     }
     const settings = host.getCompilationSettings?.() || {};
-    const configSource =
-      typeof settings.configFilePath === "string" ? readFile(settings.configFilePath) : "";
+    const configSource = configText(settings.configFilePath);
     const configuration = JSON.stringify([settings.checkJs, settings.configFilePath, configSource]);
     const cached = snapshots.get(fileName);
     if (cached?.source === source && cached.configuration === configuration) return cached;
@@ -89,6 +98,11 @@ function installVueVirtualModules(ts, info) {
       );
     },
   };
+  // A spread omits Project prototype methods, such as its own current directory.
+  for (const name of ["getCurrentDirectory", "directoryExists", "getDirectories", "realpath"]) {
+    const method = bind(name);
+    if (method) resolverHost[name] = method;
+  }
   function resolve(name, containingFile, redirectedReference, resolutionMode) {
     if (typeof name !== "string") return undefined;
     const result = ts.resolveModuleName(
@@ -122,23 +136,32 @@ function installVueVirtualModules(ts, info) {
     getScriptVersion: (name) =>
       isSfc(name) ? (get(name)?.version ?? "0") : (previousVersion?.(name) ?? "0"),
     resolveModuleNameLiterals(...args) {
-      const [literals, containingFile, redirectedReference] = args;
+      const [literals, containingFile, redirectedReference, compilerOptions, sourceFile] = args;
       const prior = previousLiterals?.(...args) || [];
       return literals.map((literal, index) => {
-        const resolvedModule = resolve(
-          literal.text,
-          containingFile,
-          redirectedReference,
-          literal.resolutionMode,
-        );
+        // Ordinary imports keep the host's own result and resolution cache.
+        if (previousLiterals && !isSfc(literal.text)) return prior[index];
+        // String literals carry no mode; NodeNext must select import or require conditions.
+        const mode =
+          sourceFile && ts.getModeForUsageLocation
+            ? ts.getModeForUsageLocation(sourceFile, literal, compilerOptions || options())
+            : undefined;
+        // ESM performs no extension probing, so the virtual .vue.ts probe keeps the
+        // mode-less resolver when the selected import conditions find nothing.
+        const resolvedModule =
+          (mode !== undefined &&
+            resolve(literal.text, containingFile, redirectedReference, mode)) ||
+          resolve(literal.text, containingFile, redirectedReference);
         return resolvedModule ? { resolvedModule } : prior[index] || { resolvedModule: undefined };
       });
     },
     resolveModuleNames(...args) {
       const [names, containingFile, , redirectedReference] = args;
       const prior = previousNames?.(...args) || [];
-      return names.map(
-        (name, index) => resolve(name, containingFile, redirectedReference) || prior[index],
+      return names.map((name, index) =>
+        previousNames && !isSfc(name)
+          ? prior[index]
+          : resolve(name, containingFile, redirectedReference) || prior[index],
       );
     },
   };
@@ -151,10 +174,18 @@ function installVueVirtualModules(ts, info) {
 
 function loadNative(projectRoot, nativePath) {
   try {
-    const entry =
-      nativePath === undefined
-        ? require.resolve("@vizejs/native")
-        : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
+    let entry;
+    try {
+      entry =
+        nativePath === undefined
+          ? require.resolve("@vizejs/native")
+          : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
+    } catch (cause) {
+      // An absent default package is not a projection failure. An explicit path still is.
+      if (nativePath === undefined && cause?.code === "MODULE_NOT_FOUND")
+        return { error: cause.message, unavailable: true };
+      throw cause;
+    }
     const native = require(entry);
     const directory = path.dirname(entry);
     const metadata = require(path.join(directory, "package.json"));
