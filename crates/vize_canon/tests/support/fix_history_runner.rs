@@ -110,7 +110,8 @@ pub(crate) fn check_pack(
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607"
             | "content-mapper-merged-class-10788"
-            | "content-mapper-slot-host-callbacks-10774" => regression,
+            | "content-mapper-slot-host-callbacks-10774"
+            | "native-completion-order-10747" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

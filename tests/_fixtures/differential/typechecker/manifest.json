@@ -7909,6 +7909,57 @@
           "message": "Object is possibly 'undefined'."
         }
       ]
+    },
+    {
+      "id": "typechecker/native-completion-order-10747/imported-identifier-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-completion-order-10747",
+      "case": "imported-identifier-project",
+      "test": "native_completion_project_keeps_clean_diagnostics",
+      "regressionCommit": "7e710ef9e094eb3244e332c90f21727d290b4a35",
+      "sourceRevision": "7e710ef9e094eb3244e332c90f21727d290b4a35",
+      "packReference": {
+        "path": "native-completion-order-10747/cases.json",
+        "sha256": "160bede768183b3ea581f8d18a7eb5498fbd7734085a1271a76cebe3bcbcb3dc"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-completion-order-10747/tsconfig.json.txt",
+          "sha256": "5dc636e84e2ef6c0d1100fdc37fd51aa46e0cca64538bf692942b21ff7690df6"
+        },
+        {
+          "file": "src/main.ts",
+          "path": "native-completion-order-10747/src/main.ts.txt",
+          "sha256": "f12992025f325853ef60c02137c77a598e8cc4177a2632b86a1fe542e150004f"
+        },
+        {
+          "file": "src/greet.ts",
+          "path": "native-completion-order-10747/src/greet.ts.txt",
+          "sha256": "58ee4e4b6b2719b0bc67f7a72c50d7d315069a24be996998d6dd6d40be92cfc7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ],
   "protocolCases": [
