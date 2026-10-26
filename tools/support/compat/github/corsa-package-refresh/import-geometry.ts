@@ -1,6 +1,6 @@
 // Execute the actual source libtest and preserve its full output before asserting.
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -9,11 +9,11 @@ assert.equal(process.env.GITHUB_ACTIONS, "true");
 const capture = process.env.VIZE_IMPORT_GEOMETRY_CAPTURE;
 assert(capture);
 fs.mkdirSync(capture, { recursive: true });
-const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
-const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-const save = (name, data) =>
+const hash = (file: fs.PathLike) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
+const save = (name: string, data: unknown) =>
   fs.writeFileSync(path.join(capture, name), JSON.stringify(data, null, 2) + "\n");
-const state = (result) => ({
+const state = (result: SpawnSyncReturns<string>) => ({
   status: result.status,
   signal: result.signal,
   error: result.error?.message ?? null,
@@ -28,7 +28,7 @@ const sources = [
   "crates/vize_canon/src/batch/import_rewriter/literal_rewrite/tests.rs",
 ];
 assert.equal(git("diff", "--name-only"), "");
-const receipt = {
+const receipt: Record<string, unknown> = {
   schema: "vize.import-literal-geometry-source",
   version: 1,
   source: git("rev-parse", "HEAD"),
