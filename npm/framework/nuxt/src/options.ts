@@ -189,6 +189,7 @@ export interface VizeNuxtOptions {
 
   /**
    * Generate the Nuxt-aware oxlint config consumed by Vize's linting engine.
+   * Needs the optional `oxlint-plugin-vize` peer; lint is skipped without it.
    * @default true
    */
   lint?: boolean | VizeNuxtLintOptions;

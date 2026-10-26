@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "id": "lsp/regression/private-setup-references-10785-crlf",
+  "provenance": {
+    "fixCommit": "fbacecb076be726e7e4d2992ea4c219314a7d36c",
+    "inputOrigin": "Minimized private setup binding searches from #10785; baseline revision before the fix",
+    "contractOrigin": "Authored lexical declarations and reads, excluding the same named function parameters"
+  },
+  "documentVersion": 1,
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "App.vue",
+    "sha256": "837ec287f930c9f9286cd818c682d92298dcea5d6f992c25fd4bce97c8d2ea87"
+  },
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "13d76518ff7e10d37d9b9f85280803840fafac052986ecf028a4e8e765d23c08"
+  },
+  "method": "textDocument/references",
+  "initializationOptions": {
+    "editor": true,
+    "references": true,
+    "lint": false,
+    "typecheck": true,
+    "crossFile": true
+  }
+}

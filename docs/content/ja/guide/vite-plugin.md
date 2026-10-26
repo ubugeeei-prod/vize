@@ -139,7 +139,7 @@ vize({
 | `customElements` | `vue.compiler.customElements` または `vize({ customElements })` | Vue コンポーネントではなくカスタム要素としてコンパイルするタグのパターンです。TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。 |
 | `templateSyntax` | `vue.compiler.templateSyntax` または `vize({ templateSyntax })` | テンプレート構文の処理を `"standard"`、`"strict"`、`"quirks"` から選びます。 |
 | `whitespace` | `vue.compiler.whitespace`、`vize({ whitespace })`、または `template.compilerOptions.whitespace` | Vue の `"condense"`（既定）と `"preserve"` を選びます。Vize の独自コンパイラ/Vite オプションでは `"vue2-line-breaks"` も指定でき、Vue 3 がテキストや補間の後の改行を空白一つにまとめる箇所で改行を残します。移行用の限定的なモードであり、Vue 2 の空白処理全体を再現するものではありません。Vue 2.7 の `whitespace: "preserve"`（Vue 2、vue-loader 15、Nuxt 2 が使う設定）と同じ出力にするには `"vue2-preserve"` を使います。テキストや補間の前後の空白は書いたとおりに残り、要素の間にある空白だけの部分は空白一つになります。 |
-| `template.compilerOptions.comments` | `vize({ template: { compilerOptions: { comments } } })` | テンプレートに書いたコメントは、既定では開発時に残し、本番ビルド時に省略します。`true` / `false` で変更できます。ネイティブ API を直接呼ぶ場合は `templateComments` を使い、既定値は `false` です。 |
+| `template.compilerOptions.comments` | `vue.compiler.comments` または `vize({ template: { compilerOptions: { comments } } })` | テンプレートに書いたコメントは、既定では開発時に残し、本番ビルド時に省略します。`true` / `false` で変更できます。ネイティブ API を直接呼ぶ場合は `templateComments` を使い、既定値は `false` です。 |
 | `experimentals` | トップレベルの `experimentals` または `vize({ experimentals })` | Vue RFC とバックエンドの実験的機能を明示的に有効にします。キーの省略、`false`、`null` は無効です。 |
 | `include` | `vue.vite.include` または `vize({ include })` | プラグインがコンパイルするファイルを指定します。 |
 | `exclude` | `vue.vite.exclude` または `vize({ exclude })` | プラグインが処理しないファイルを指定します。 |

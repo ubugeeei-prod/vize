@@ -59,6 +59,63 @@ fn disabled_references_do_not_start_an_enabled_checker() {
     assert_eq!(server.state.corsa_init_failure(), None);
 }
 
+#[cfg(feature = "native")]
+#[test]
+fn private_setup_references_keep_exact_local_ranges_without_initializing_a_checker() {
+    for (name, initializer) in [
+        ("item", "computed(() => 1)"),
+        ("route", "computed(() => 1)"),
+        ("itemId", "computed(() => 1)"),
+        ("item", "1"),
+    ] {
+        for newline in ["\n", "\r\n"] {
+            for cross_file in [false, true] {
+                let service = service_with_options(serde_json::json!({
+                    "references": true, "typecheck": true, "crossFile": cross_file
+                }));
+                let server = service.inner();
+                let uri = uri("PrivateReferences.vue");
+                let source = "<!-- 日本 🧭 -->\n<script setup lang=\"ts\">\nimport { computed } from 'vue';\nconst PRIVATE = INIT;\nfunction shadow(PRIVATE: number) { return PRIVATE; }\n</script>\n<template><p>🧭{{ PRIVATE }}</p></template>\n<style>.c{color:v-bind(PRIVATE)}</style>\n"
+                    .replace("INIT", initializer)
+                    .replace("PRIVATE", name)
+                    .replace('\n', newline);
+                open_vue(server, &uri, &source);
+                for include_declaration in [false, true] {
+                    let mut params = references_params(&uri);
+                    params.text_document_position.position = Position::new(3, 6);
+                    params.context.include_declaration = include_declaration;
+                    let length = name.len() as u32;
+                    let mut expected = vec![
+                        Location::new(
+                            uri.clone(),
+                            Range::new(Position::new(6, 18), Position::new(6, 18 + length)),
+                        ),
+                        Location::new(
+                            uri.clone(),
+                            Range::new(Position::new(7, 23), Position::new(7, 23 + length)),
+                        ),
+                    ];
+                    if include_declaration {
+                        expected.insert(
+                            0,
+                            Location::new(
+                                uri.clone(),
+                                Range::new(Position::new(3, 6), Position::new(3, 6 + length)),
+                            ),
+                        );
+                    }
+                    assert_eq!(
+                        futures::executor::block_on(server.references(params)).unwrap(),
+                        Some(expected)
+                    );
+                    assert!(!server.state.has_corsa_bridge());
+                    assert_eq!(server.state.corsa_init_failure(), None);
+                }
+            }
+        }
+    }
+}
+
 #[test]
 fn root_completion_returns_block_snippet_labels() {
     let service = service_with_options(options(&[("completion", true)]));

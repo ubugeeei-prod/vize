@@ -5,9 +5,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { test } from "node:test";
-import { resolveNuxtCompilerOptions, splitNuxtCompilerDefaults } from "./compiler-option-bridge.ts";
+import {
+  resolveNuxtCompilerOptions,
+  splitNuxtCompilerDefaults,
+  unsupportedNuxtVueCompilerOptions,
+} from "./compiler-option-bridge.ts";
 import { mergeCompilerOptions } from "../../../builder/vite/src/plugin/compiler-config.ts";
 import { createFileCompilerOptions } from "../../../builder/vite/src/plugin/compiler-scopes.ts";
+import { getCompileOptionsForRequest } from "../../../builder/vite/src/plugin/state.ts";
 import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 
 await test("Nuxt defaults yield to top-level, scoped, explicit and template compiler values", () => {
@@ -56,6 +61,7 @@ await test("Nuxt defaults yield to top-level, scoped, explicit and template comp
   const nested = { template: { compilerOptions: { whitespace: "preserve" as const } } };
   assert.deepEqual(mergeCompilerOptions(nested, config, split.defaults).template?.compilerOptions, {
     cacheHandlers: undefined,
+    comments: undefined,
     hoistStatic: undefined,
     prefixIdentifiers: undefined,
     whitespace: "preserve",
@@ -92,7 +98,7 @@ await test("explicit undefined still admits the Nuxt default; unsupported/legacy
     "/_nuxt/",
     true,
     {},
-    { whitespace: "preserve", comments: true },
+    { whitespace: "preserve", delimiters: ["${", "}"] },
   );
   assert.equal((host as VizeNuxtCompilerOptions).compatibility?.hostCompiler, true);
   assert.equal((host as VizeNuxtCompilerOptions).whitespace, "preserve");
@@ -106,6 +112,26 @@ await test("explicit undefined still admits the Nuxt default; unsupported/legacy
   );
   assert.equal((legacy as VizeNuxtCompilerOptions).compatibility?.hostCompiler, true);
   assert.equal((legacy as VizeNuxtCompilerOptions).whitespace, "preserve");
+});
+
+await test("vue.compilerOptions.comments compiles with Vize as a default other sources override", () => {
+  assert.deepEqual(unsupportedNuxtVueCompilerOptions({ comments: false }), []);
+  assert.deepEqual(unsupportedNuxtVueCompilerOptions({ comments: "no" }), ["comments"]);
+  const host = { comments: false };
+  const resolved = resolveNuxtCompilerOptions("/repo", "/", "/_nuxt/", true, {}, host);
+  assert.notEqual(resolved, false);
+  assert.equal((resolved as VizeNuxtCompilerOptions).compatibility, undefined);
+  const split = splitNuxtCompilerDefaults(resolved as VizeNuxtCompilerOptions, true, host);
+  assert.deepEqual(split.defaults, { comments: false });
+  const comments = (options: VizeNuxtCompilerOptions, shared: object | null) =>
+    getCompileOptionsForRequest(
+      { isProduction: false, mergedOptions: mergeCompilerOptions(options, shared, split.defaults) },
+      false,
+    ).templateComments;
+  assert.equal(comments(split.options, null), false);
+  assert.equal(comments(split.options, { compiler: { comments: true } }), true);
+  const explicit = { ...split.options, template: { compilerOptions: { comments: true } } };
+  assert.equal(comments(explicit, { compiler: { comments: false } }), true);
 });
 
 await test("inline native compiler policies remain typed and retain scope precedence", () => {
