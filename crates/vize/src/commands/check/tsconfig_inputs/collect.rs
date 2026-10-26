@@ -50,14 +50,13 @@ pub(super) fn collect_supported_files_with_options(
         Box::new(move |entry| {
             if let Ok(entry) = entry {
                 let path = entry.path();
-                if path.is_file()
-                    && is_supported_check_file_with_options(
-                        path,
-                        SupportedFileOptions {
-                            include_js: options.include_js,
-                            include_jsx: options.include_jsx,
-                        },
-                    )
+                if is_supported_check_file_with_options(
+                    path,
+                    SupportedFileOptions {
+                        include_js: options.include_js,
+                        include_jsx: options.include_jsx,
+                    },
+                ) && is_walked_file(&entry)
                     && (!skip_generated || !is_generated_path(path))
                     && !is_nuxt_import_manifest_path(path)
                     && !is_generated_codegen_declaration_path(path)
@@ -77,6 +76,14 @@ pub(super) fn collect_supported_files_with_options(
     collected.sort();
     collected.dedup();
     collected
+}
+
+/// Readdir already typed every entry; only a symlink needs a stat.
+fn is_walked_file(entry: &ignore::DirEntry) -> bool {
+    match entry.file_type() {
+        Some(kind) if !kind.is_symlink() => kind.is_file(),
+        _ => entry.path().is_file(),
+    }
 }
 
 /// Avoid walking installed dependencies once filesystem ignore rules no longer
@@ -194,19 +201,27 @@ fn path_has_hidden_component_under_root(path: &Path, root: &Path) -> bool {
     })
 }
 
+/// The literal directory prefix of an include that spells out a hidden
+/// segment, i.e. `tsc`'s include base path. Stopping at the hidden segment
+/// instead walked a whole `node_modules/.pnpm` store for one Nuxt module path.
 fn hidden_pattern_root(base_dir: &Path, pattern: &str) -> Option<PathBuf> {
-    let mut root = base_dir.to_path_buf();
-    for segment in pattern.split('/') {
-        if segment.is_empty() {
-            continue;
-        }
-        if segment.contains(['*', '?', '[']) {
-            break;
-        }
-        root.push(segment);
-        if is_hidden_path_segment(segment) {
-            return Some(root);
-        }
+    let segments = pattern
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect::<Vec<_>>();
+    // A pattern without wildcards names a file (see `normalize_tsconfig_glob`).
+    let directories = segments
+        .iter()
+        .position(|segment| segment.contains(['*', '?', '[']))
+        .unwrap_or(segments.len().saturating_sub(1));
+    let literal = segments.get(..directories)?;
+    if !literal
+        .iter()
+        .any(|segment| is_hidden_path_segment(segment))
+    {
+        return None;
     }
-    None
+    let mut root = base_dir.to_path_buf();
+    root.extend(literal);
+    Some(root)
 }

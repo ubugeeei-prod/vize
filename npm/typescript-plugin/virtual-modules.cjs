@@ -1,7 +1,7 @@
 "use strict";
 
 const crypto = require("node:crypto");
-const path = require("node:path");
+const { loadNative } = require("./provider.cjs");
 const installedHosts = new WeakMap();
 
 // A source snapshot is the sole invalidation authority, including unsaved edits.
@@ -18,6 +18,13 @@ function installVueVirtualModules(ts, info) {
   if (!readFile || !fileExists || !getSnapshot) return undefined;
   const root = host.getCurrentDirectory?.() || info.project?.getCurrentDirectory?.();
   const engine = loadNative(root, info.config?.nativePath);
+  try {
+    info.project?.projectService?.logger?.info?.(
+      `[vize] TypeScript native provider ${JSON.stringify({ origin: engine.origin, path: engine.path, version: engine.version, source: engine.source, target: engine.target, nativeBuildToken: engine.nativeBuildToken, error: engine.error, unavailable: engine.unavailable })}`,
+    );
+  } catch {
+    /* Logging cannot affect the host. */
+  }
   const snapshots = new Map();
   const projectVersion = bind("getProjectVersion");
   let config;
@@ -170,47 +177,6 @@ function installVueVirtualModules(ts, info) {
   if (!installAtomically(host, replacements)) return undefined;
   installedHosts.set(host, support);
   return support;
-}
-
-function loadNative(projectRoot, nativePath) {
-  try {
-    let entry;
-    try {
-      entry =
-        nativePath === undefined
-          ? require.resolve("@vizejs/native")
-          : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
-    } catch (cause) {
-      // An absent default package is not a projection failure. An explicit path still is.
-      if (nativePath === undefined && cause?.code === "MODULE_NOT_FOUND")
-        return { error: cause.message, unavailable: true };
-      throw cause;
-    }
-    const native = require(entry);
-    const directory = path.dirname(entry);
-    const metadata = require(path.join(directory, "package.json"));
-    if (metadata.name !== "@vizejs/native")
-      throw new Error("nativePath must identify @vizejs/native");
-    if (nativePath === undefined && metadata.version !== require("./package.json").version)
-      throw new Error("The default native provider must match the plugin release");
-    const helper = require(path.join(directory, "language-projection.js"));
-    if (
-      typeof native.generateVueLanguageCode !== "function" ||
-      typeof helper.toUtf16LanguageProjection !== "function" ||
-      typeof helper.applyDiagnosticDirectives !== "function" ||
-      typeof helper.mapLanguageDiagnosticRange !== "function"
-    )
-      throw new Error("Native projection capabilities are unavailable");
-    return {
-      native,
-      ...helper,
-      path: entry,
-      version: metadata.version,
-      origin: nativePath === undefined ? "package" : "explicit",
-    };
-  } catch (cause) {
-    return { error: cause instanceof Error ? cause.message : String(cause) };
-  }
 }
 
 function installAtomically(host, replacements) {

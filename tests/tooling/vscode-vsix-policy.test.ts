@@ -72,6 +72,7 @@ test("VSIX TypeScript plugin staging follows the runtime require closure", () =>
     "language-service.cjs",
     "module-resolution.cjs",
     "package.json",
+    "provider.cjs",
     "virtual-modules.cjs",
   ]);
   for (const file of runtimeFiles) {

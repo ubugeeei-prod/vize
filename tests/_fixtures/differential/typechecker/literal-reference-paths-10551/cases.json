@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10551,
+  "regressionCommit": "0a7f029e3be412a89232bd82127d3ac9bb058514",
+  "sourceRevision": "0a7f029e3be412a89232bd82127d3ac9bb058514",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "valid-external-reference",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/Valid.vue.txt"
+        },
+        {
+          "file": "reference-options.json",
+          "source": "reference-options.json.txt"
+        },
+        {
+          "file": "fixture-inputs/ambient.d.ts.txt",
+          "source": "fixture-inputs/ambient.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "invalid-external-reference",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/Invalid.vue.txt"
+        },
+        {
+          "file": "reference-options.json",
+          "source": "reference-options.json.txt"
+        },
+        {
+          "file": "fixture-inputs/ambient.d.ts.txt",
+          "source": "fixture-inputs/ambient.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

@@ -124,6 +124,7 @@ mod check_with_defaults_boolean_casting_cli;
 mod check_workspace_package_boundary_cli;
 mod check_workspace_server_deps_cli;
 mod check_workspace_vue_cli;
+mod config_cache_cli;
 mod config_init_cli;
 mod content_mapper_declaration_map_support;
 mod content_mapper_frames_cli;

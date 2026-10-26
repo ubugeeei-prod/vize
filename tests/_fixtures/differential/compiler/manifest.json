@@ -1252,6 +1252,54 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/scoped-scope-nesting-10648",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "scoped-scope-nesting-10648",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "05364a643306a18efcc109fea3bf8dd9b0e02760b968645868ba2593e8cb14d3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-scope-nesting-10648/module.expected.txt",
+        "sha256": "92004b09fa867b7741fac50495d8f34a919b30788ca8343ad932482213d16012",
+        "cssPath": "scoped-scope-nesting-10648/style.expected.css",
+        "cssSha256": "64027b3e1ccce9e3bf2964e9763a8115adc905901bea5fd4f84731ee935776fa",
+        "source": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/nesting.rs:nested_lists_keep_their_whole_parent_specificity_and_scope_positions"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10648",
+        "reporter": "ubugeeei"
+      }
     }
   ],
   "runtimePacks": [

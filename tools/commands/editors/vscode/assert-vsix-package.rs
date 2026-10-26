@@ -55,6 +55,7 @@ fn run() -> Result<(), String> {
         "extension/node_modules/@vizejs/typescript-vue-plugin/language-service.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/module-resolution.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/package.json",
+        "extension/node_modules/@vizejs/typescript-vue-plugin/provider.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/virtual-modules.cjs",
         "extension/package.json",
         "extension/readme.md",
@@ -231,6 +232,7 @@ fn assert_allowed_entries(entries: &[String]) -> Result<(), String> {
         "extension/node_modules/@vizejs/typescript-vue-plugin/language-service.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/module-resolution.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/package.json",
+        "extension/node_modules/@vizejs/typescript-vue-plugin/provider.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/virtual-modules.cjs",
         "extension/package.json",
         "extension/readme.md",
@@ -269,6 +271,7 @@ fn assert_forbidden_entries(entries: &[String]) -> Result<(), String> {
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/language-service.cjs"
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/module-resolution.cjs"
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/package.json"
+                        | "extension/node_modules/@vizejs/typescript-vue-plugin/provider.cjs"
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/virtual-modules.cjs"
                 ))
             || name == "extension/package-lock.json"
