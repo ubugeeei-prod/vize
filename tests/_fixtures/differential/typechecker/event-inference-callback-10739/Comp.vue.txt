@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ pick: (x: number) => boolean }>()
+defineEmits<{ save: [] }>()
+</script>
+<template><div /></template>

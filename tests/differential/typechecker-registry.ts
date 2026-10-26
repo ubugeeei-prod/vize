@@ -56,6 +56,7 @@ export const TYPECHECKER_TESTS = {
     "empty_generic_markers_preserve_functional_public_contracts",
   "escaped-import-literals-10763": "escaped_module_paths_preserve_complete_authored_diagnostics",
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
+  "event-inference-callback-10739": "event_inference_callbacks_keep_contextual_native_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
   "generic-constructor-slots-10416": "generic_constructor_intersections_preserve_slot_payloads",
@@ -151,6 +152,7 @@ export const sourceRevisions = {
   "empty-generic-public-contract-10540": "4fdc457df6498c4636efb35dd76af61394ad7006",
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
+  "event-inference-callback-10739": "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",

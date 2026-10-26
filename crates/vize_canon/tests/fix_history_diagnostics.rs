@@ -1006,6 +1006,17 @@ fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
 }
 
 #[test]
+fn event_inference_callbacks_keep_contextual_native_diagnostics() {
+    check_pack(
+        "event-inference-callback-10739",
+        "event_inference_callbacks_keep_contextual_native_diagnostics",
+        "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
+        Some(10739),
+        &["untyped-contextual-callback", "genuine-callback-body-error"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

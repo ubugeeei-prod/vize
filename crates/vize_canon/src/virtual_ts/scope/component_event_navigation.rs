@@ -346,14 +346,25 @@ fn emit_resolved_events(
         if !emitted.insert(name.clone()) {
             continue;
         }
+        // Like the canonical props literal, never copy an inline callback: under
+        // the `any` fallback its parameters would be implicitly `any` (#10739).
+        let inline_callback = super::is_inline_callback_prop(prop);
         append!(*ts, "{indent}  ");
         let key_start = ts.len();
         append!(*ts, "\"{name}\"");
         let key_end = ts.len();
         ts.push_str(": ");
         let value_start = ts.len();
-        ts.push_str(value.as_str());
-        let value_end = ts.len();
+        ts.push_str(if inline_callback {
+            "undefined as never"
+        } else {
+            value.as_str()
+        });
+        let value_end = if inline_callback {
+            value_start
+        } else {
+            ts.len()
+        };
         crate::virtual_ts::expressions::ComponentPropSource::new(
             ctx.template_source,
             ctx.template_offset,
