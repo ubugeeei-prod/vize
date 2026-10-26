@@ -9,7 +9,6 @@ import {
   editorPlatformMatrix,
 } from "../../../tools/support/release/editor-platforms.ts";
 import { installVscodeExtensionDependencies } from "../../../tools/config/vite-plus/task-commands.ts";
-import { noCacheTask } from "../../../tools/config/vite-plus/task-definition.ts";
 import { buildTasks } from "../../../tools/config/vite-plus/tasks/build.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
@@ -105,7 +104,7 @@ test("platform providers install the extension's packager like the universal VSI
   type Step = { name?: string; uses?: string; run?: string };
   const steps = (job: string): Step[] => release.jobs[job].steps;
   const index = (job: string, match: (step: Step) => boolean) => steps(job).findIndex(match);
-  const install = (step: Step) => step.run === "vp run --workspace-root install:vscode-extension";
+  const install = (step: Step) => step.run === "vp run --workspace-root package:vscode-extension";
   const rustScript = (step: Step) => step.uses === "./.github/actions/setup-rust-script";
   const packaging = (step: Step) => step.name === "Package the exact target provider";
   // vsce and the prepublish `vp pack` resolve from editors/vscode/node_modules.
@@ -130,10 +129,6 @@ test("platform providers install the extension's packager like the universal VSI
     assert.equal(typeof task.command, "string");
     return String(task.command);
   };
-  assert.equal(
-    command(buildTasks["install:vscode-extension"]),
-    command(noCacheTask(installVscodeExtensionDependencies)),
-  );
   assert.ok(
     command(buildTasks["package:vscode-extension"]).startsWith(
       `${installVscodeExtensionDependencies} && `,
