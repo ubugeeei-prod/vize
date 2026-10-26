@@ -8105,6 +8105,131 @@
           "message": "Type 'number' is not assignable to type 'string'."
         }
       ]
+    },
+    {
+      "id": "typechecker/global-scope-build-info-10819/imported-global-declaration",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "global-scope-build-info-10819",
+      "case": "imported-global-declaration",
+      "test": "global_scope_build_info_keeps_complete_diagnostics",
+      "regressionCommit": "61d756842bb44a72c84982f01dc40d3423c96503",
+      "sourceRevision": "61d756842bb44a72c84982f01dc40d3423c96503",
+      "packReference": {
+        "path": "global-scope-build-info-10819/cases.json",
+        "sha256": "e64d6e832cc9870033f35f101d6a7dd4f02bd0ad01f815c66dd15c9a10b51cf7"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "global-scope-build-info-10819/tsconfig.json.txt",
+          "sha256": "44e3bebb8b7989ee8abfeb50a628b5621c780bb72c12aaab5156923d25409f6a"
+        },
+        {
+          "file": "src/Page.vue",
+          "path": "global-scope-build-info-10819/Page.vue.txt",
+          "sha256": "2ae97f84afc3b2506e07f772ace03b2c68c60e50f91d12cf4a5992d87dd76fe1"
+        },
+        {
+          "file": "src/entry.ts",
+          "path": "global-scope-build-info-10819/imported/entry.ts.txt",
+          "sha256": "6ecfc994160b8d9f8a1a2e3306cbd2b586efb70585f3dfa143a2a5c64128101d"
+        },
+        {
+          "file": "node_modules/scoped-globals/package.json",
+          "path": "global-scope-build-info-10819/imported/package.json.txt",
+          "sha256": "58a9a4402e45ab35747bab099a92b1959901e1b7931e304ad87a9db83c21ec66"
+        },
+        {
+          "file": "node_modules/scoped-globals/index.d.ts",
+          "path": "global-scope-build-info-10819/imported/index.d.ts.txt",
+          "sha256": "3b75cd2284d120cf07cd5caf60f4bcd07eff3bca0045f6f8aaff63b8a9c82633"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/global-scope-build-info-10819/edited-global-declaration",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "global-scope-build-info-10819",
+      "case": "edited-global-declaration",
+      "test": "global_scope_build_info_keeps_complete_diagnostics",
+      "regressionCommit": "61d756842bb44a72c84982f01dc40d3423c96503",
+      "sourceRevision": "61d756842bb44a72c84982f01dc40d3423c96503",
+      "packReference": {
+        "path": "global-scope-build-info-10819/cases.json",
+        "sha256": "e64d6e832cc9870033f35f101d6a7dd4f02bd0ad01f815c66dd15c9a10b51cf7"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "global-scope-build-info-10819/tsconfig.json.txt",
+          "sha256": "44e3bebb8b7989ee8abfeb50a628b5621c780bb72c12aaab5156923d25409f6a"
+        },
+        {
+          "file": "src/Page.vue",
+          "path": "global-scope-build-info-10819/Page.vue.txt",
+          "sha256": "2ae97f84afc3b2506e07f772ace03b2c68c60e50f91d12cf4a5992d87dd76fe1"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "path": "global-scope-build-info-10819/edited/globals.d.ts.txt",
+          "sha256": "2eddaaef2e924b85674064a8954e25e01cd7917aed8c543c99b7c63520187d89"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Page.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
     }
   ],
   "protocolCases": [

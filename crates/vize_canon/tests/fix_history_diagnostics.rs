@@ -848,6 +848,17 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
 }
 
 #[test]
+fn global_scope_build_info_keeps_complete_diagnostics() {
+    check_pack(
+        "global-scope-build-info-10819",
+        "global_scope_build_info_keeps_complete_diagnostics",
+        "61d756842bb44a72c84982f01dc40d3423c96503",
+        Some(10819),
+        &["imported-global-declaration", "edited-global-declaration"],
+    );
+}
+
+#[test]
 fn missing_exported_package_target_preserves_ts2307() {
     check_pack(
         "package-target-deletion-refresh",
