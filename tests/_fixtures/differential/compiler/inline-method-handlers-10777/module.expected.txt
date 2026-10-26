@@ -1,0 +1,30 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[-->`)
+  _push(_ssrRenderComponent($setup.MyButton, { onPing: $setup.onPing, onPong: 
+      $setup.onPing
+    , onDone: $setup.hooks.done, onStop: $setup.hooks.stop, onCall: $event => ($setup.hooks.done($event)) }, null, _parent))
+  _push(`<p>box</p><button>a</button><button>b</button><button>c</button><!--]-->`)
+}
+import { ref } from 'vue'
+import MyButton from './MyButton.js'
+import { useHandlers } from './useHandlers.js'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const { onPing, hooks } = useHandlers()
+let swap = () => {}
+const fnRef = ref(() => {})
+
+const __returned__ = { swap, ref, MyButton, fnRef, onPing, useHandlers, hooks }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}
