@@ -181,6 +181,7 @@ fn node_modules_vize_artifact_paths(root: &Path) -> Vec<PathBuf> {
     let node_modules_vize_dir = node_modules_vize_dir(root);
     [
         "check-profile",
+        "config-cache",
         "corsa",
         "corsa-overlay",
         "lsp.log",

@@ -232,9 +232,6 @@ fn format_expression_with_layout(
                 .saturating_sub(value_indent as u32)
                 .max(1);
             oxc_options.line_width = LineWidth::try_from(width as u16).unwrap_or_default();
-            if options.canonical_directive_layout {
-                oxc_options.expand = oxc_formatter::Expand::Never;
-            }
             let code =
                 oxc_formatter::format_unary_argument(oxc_allocator, &parsed.program, oxc_options)?
                     .print()

@@ -65,7 +65,9 @@ mod suppression;
 pub(crate) mod rules;
 
 // Re-exports
-pub use analyzer::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats};
+pub use analyzer::{
+    CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats, NuxtRenderDirs,
+};
 pub use diagnostics::{
     CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity, DiagnosticSource,
 };

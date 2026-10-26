@@ -130,8 +130,13 @@ await test("vue.compilerOptions.comments compiles with Vize as a default other s
     ).templateComments;
   assert.equal(comments(split.options, null), false);
   assert.equal(comments(split.options, { compiler: { comments: true } }), true);
-  const explicit = { ...split.options, template: { compilerOptions: { comments: true } } };
-  assert.equal(comments(explicit, { compiler: { comments: false } }), true);
+  const explicit: VizeNuxtCompilerOptions = { template: { compilerOptions: { comments: true } } };
+  assert.equal(
+    comments({ ...split.options, ...explicit }, { compiler: { comments: false } }),
+    true,
+  );
+  const unset: VizeNuxtCompilerOptions = { template: { compilerOptions: { comments: undefined } } };
+  assert.equal(comments({ ...split.options, ...unset }, null), false);
 });
 
 await test("inline native compiler policies remain typed and retain scope precedence", () => {
@@ -173,6 +178,7 @@ await test("consumer compiler config uses the public native option types", () =>
 import type { VizeNuxtCompilerOptions } from ${JSON.stringify(options)};
 const inline: VizeNuxtCompilerOptions = { config: { compiler: { whitespace: "preserve" }, entries: [{ files: ["app/tight/**"], compiler: { whitespace: "condense" } }] } };
 const list: VizeNuxtCompilerOptions = { config: [{ compiler: { whitespace: "preserve" } }] };
+const template: VizeNuxtCompilerOptions = { template: { compilerOptions: { comments: false } } };
 const factory: VizeNuxtCompilerOptions = { config: async (env) => ({ compiler: { whitespace: env.command === "serve" ? "preserve" : "condense" } }) };
 // @ts-expect-error Native whitespace leaves retain their registered values.
 const invalid: VizeNuxtCompilerOptions = { config: { compiler: { whitespace: "invalid" } } };

@@ -12,6 +12,8 @@ mod tui;
 pub use tui::DoctorTuiBenchmark;
 
 #[cfg(test)]
+mod project_tests;
+#[cfg(test)]
 mod tests;
 
 use clap::{Args, ValueEnum};

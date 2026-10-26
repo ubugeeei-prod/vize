@@ -20,6 +20,7 @@ mod experimental_tests;
 #[cfg(test)]
 mod extends_tests;
 mod js;
+mod js_cache;
 mod js_observation;
 mod jsx;
 mod language_server;
@@ -50,6 +51,7 @@ use super::{
     ConfigFeatureFlags, LinterConfig, VizeConfig,
 };
 pub use compiler_keys::*;
+pub use js_cache::enable_config_evaluation_cache;
 pub use library::{LoadedLibConfig, load_lib_config_with_source};
 pub use lsp_snapshot::{
     ConfigEvaluationSession, LoadedLspConfig, load_lsp_config_snapshot,

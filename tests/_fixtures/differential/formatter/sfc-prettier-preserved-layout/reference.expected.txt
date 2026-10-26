@@ -1,0 +1,26 @@
+<script setup lang="ts">
+const phase = { kind: "after", view: "default" };
+const noop = () => {};
+</script>
+
+<template>
+  <section>
+    <MyPanel
+      :state="{
+        kind: phase.kind,
+        view: phase.view
+      }"
+      :dialog="{ open: noop, isDisabled: true, toggle: noop }"
+    />
+    <p>
+      {{ $t("label.range") }}
+      {{ phase.kind }}
+    </p>
+    <p>
+      {{ phase.kind }} after
+      {{ phase.view }}
+
+      {{ phase.kind }} {{ phase.view }}
+    </p>
+  </section>
+</template>

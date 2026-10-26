@@ -15,23 +15,7 @@ use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::Croquis;
 
 pub(super) fn emit_reference_path_directives(ts: &mut String, paths: &[String]) {
-    let mut seen = FxHashSet::default();
-    for path in paths {
-        if path.is_empty() || path.contains(['\n', '\r']) || !seen.insert(path.as_str()) {
-            continue;
-        }
-        ts.push_str("/// <reference path=\"");
-        for character in path.chars() {
-            match character {
-                '&' => ts.push_str("&amp;"),
-                '"' => ts.push_str("&quot;"),
-                '<' => ts.push_str("&lt;"),
-                '>' => ts.push_str("&gt;"),
-                _ => ts.push(character),
-            }
-        }
-        ts.push_str("\" />\n");
-    }
+    super::super::reference_paths::emit(ts, paths);
 }
 
 pub(super) fn emit_reference_type_directives(
