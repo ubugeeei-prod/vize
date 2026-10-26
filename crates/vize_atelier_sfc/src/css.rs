@@ -218,16 +218,29 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
     let filename = options.filename.as_deref().unwrap_or("style.css");
 
     // Extract v-bind() expressions before parsing
-    let (processed_css, css_vars) =
-        extract_and_transform_v_bind_with_scope(&bump, css, options.scope_id.as_deref());
+    let (processed_css, css_vars, edits) = if options.source_map {
+        let mut edits = Vec::new();
+        let (code, vars) = vize_croquis::sfc::__internal::extract_and_transform_v_bind_with_edits(
+            &bump,
+            css,
+            options.scope_id.as_deref(),
+            None,
+            |edit| edits.push(edit),
+        );
+        (code, vars, Some(edits))
+    } else {
+        let (code, vars) =
+            extract_and_transform_v_bind_with_scope(&bump, css, options.scope_id.as_deref());
+        (code, vars, None)
+    };
 
     // Apply scoped transformation if needed
-    let scoped_css = options
+    let scoped_output = options
         .scope_id
         .as_deref()
         .filter(|_| options.scoped)
         .map(|scope_id| scope_mode::scope_css(processed_css, scope_id));
-    let scoped_css = scoped_css.as_deref().unwrap_or(processed_css);
+    let scoped_css = scoped_output.as_deref().unwrap_or(processed_css);
 
     // Apply targets for autoprefixing
     let targets = options
@@ -244,9 +257,16 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         targets,
         options.custom_media,
         options.css_modules,
-        // String-only prepasses do not yet own original source links. Never
-        // return their generated coordinates as if they belonged to `css`.
-        options.source_map && scoped_css == css,
+        // Scoped emitters still require their own origins. The v-bind emitter
+        // now owns exact replacement intervals in its otherwise copied input.
+        edits
+            .as_deref()
+            .filter(|_| {
+                scoped_output
+                    .as_deref()
+                    .is_none_or(|code| code == processed_css)
+            })
+            .map(|edits| parser::CssSourceMapInput { source: css, edits }),
     );
 
     CssCompileResult {

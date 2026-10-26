@@ -116,6 +116,10 @@
           "default": true,
           "type": "boolean"
         },
+        "comments": {
+          "description": "Keep template comments. Unset follows Vue: kept in development, dropped in production",
+          "type": "boolean"
+        },
         "isTs": {
           "description": "Enable TypeScript parsing in <script> blocks",
           "default": true,

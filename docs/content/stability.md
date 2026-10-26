@@ -70,6 +70,7 @@ the move is called out in release notes when it changes. Downstream packagers sh
 | Experimental                  | `eslint-plugin-vize`                                                                                          | Opt-in ESLint rules through Vize Patina; plugin APIs and diagnostics may change during alpha.                      |
 | Experimental                  | `prettier-plugin-vize`                                                                                        | Opt-in Prettier formatting through Vize Glyph; plugin APIs may change during alpha.                                |
 | Experimental (workspace only) | `@vizejs/data`, `@vizejs/devtools`, `@vizejs/router`, `@vizejs/state`                                         | Implemented in this repository but not yet published to npm. These packages cannot be installed from the registry. |
+| Experimental (workspace only) | `@vizejs/typescript-vue-plugin`                                                                               | TypeScript server plugin staged into the VS Code extension; not yet published to npm.                              |
 | Incubating                    | `@vizejs/fresco`, `@vizejs/fresco-native`, editor extension packages                                          | Useful for development and feedback, but not yet part of the v1 alpha production-ready target.                     |
 
 ## Rust Crate Support Tiers

@@ -88,18 +88,18 @@ void test("every product manifest contributes to the case-level dialect denomina
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 28,
+    plannedCases: 29,
     verifiedCases: 4,
-    provisionalCases: 22,
-    unknownReadinessCases: 24,
+    provisionalCases: 23,
+    unknownReadinessCases: 25,
     verified: {
       "vue0-template": 2,
       "vue-quirks": 2,
     },
     provisional: {
-      "html-template": 22,
+      "html-template": 23,
       ts: 5,
-      "vue3-sfc": 22,
+      "vue3-sfc": 23,
     },
   });
 });
@@ -180,19 +180,19 @@ void test("linter and LSP coverage record every pinned authored source dialect",
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
-    plannedCases: 62,
+    plannedCases: 64,
     verifiedCases: 0,
-    provisionalCases: 62,
-    unknownReadinessCases: 62,
+    provisionalCases: 64,
+    unknownReadinessCases: 64,
     verified: {},
     provisional: {
-      "html-template": 53,
+      "html-template": 55,
       js: 9,
       jsx: 4,
       "pug-template": 4,
-      ts: 44,
+      ts: 46,
       tsx: 4,
-      "vue3-sfc": 61,
+      "vue3-sfc": 63,
     },
   });
 });

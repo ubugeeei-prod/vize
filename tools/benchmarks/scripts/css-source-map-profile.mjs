@@ -12,7 +12,24 @@ const git = (root, ...args) =>
   execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 
-export function validateCargoDelta(base, head) {
+export function validateCargoDelta(
+  base,
+  head,
+  source = "b0033883518f364cfbd3dd0ab9464715e9f51758",
+) {
+  if (source === "3a3c8460f966fddbd8e1be4c083d460b24202f90") {
+    assert.equal(
+      head,
+      base,
+      "the binding composition campaign changes no Cargo package or dependency",
+    );
+    return;
+  }
+  assert.equal(
+    source,
+    "b0033883518f364cfbd3dd0ab9464715e9f51758",
+    "unregistered CSS source campaign",
+  );
   const marker = /(name = "vize_atelier_sfc"\n[\s\S]*? "vize_oxc_parser",\n)/u;
   const admitted = base.replace(marker, '$1 "vize_parcel_sourcemap",\n');
   assert.notEqual(admitted, base, "the exact producer package must exist");
@@ -74,7 +91,20 @@ function worker(identityFile, fixtureRoot, destination) {
       retain();
       const { map, ...preserved } = result;
       assert.deepEqual(preserved, entry.output);
-      if (!sourceMap || identity.side === "base") assert.equal(map, undefined);
+      if (
+        !sourceMap ||
+        (identity.side === "base" &&
+          process.env.VIZE_CSS_MAP_BASE_SHA === "b0033883518f364cfbd3dd0ab9464715e9f51758")
+      )
+        assert.equal(map, undefined);
+      if (
+        entry.id === "v-bind" &&
+        sourceMap &&
+        process.env.VIZE_CSS_MAP_BASE_SHA === "3a3c8460f966fddbd8e1be4c083d460b24202f90"
+      ) {
+        if (identity.side === "base") assert.equal(map, undefined);
+        else assert.equal(typeof map, "string");
+      }
     }
   }
   const vectors = [
@@ -84,6 +114,14 @@ function worker(identityFile, fixtureRoot, destination) {
       source: Array.from(
         { length: 400 },
         (_, i) => `.r${i}雪😀{opacity:${i / 1000};background:url('../asset.png')}`,
+      ).join("\r\n"),
+      batch: 10,
+    },
+    {
+      id: "400-bindings",
+      source: Array.from(
+        { length: 400 },
+        (_, i) => `.r${i}雪😀{width:v-bind(width${i});opacity:${i / 1000}}`,
       ).join("\r\n"),
       batch: 10,
     },
@@ -133,6 +171,7 @@ function run(base, head, destination) {
   validateCargoDelta(
     fs.readFileSync(path.join(base, "Cargo.lock"), "utf8"),
     fs.readFileSync(path.join(head, "Cargo.lock"), "utf8"),
+    sources.base,
   );
   assert.equal(
     digest(path.join(base, "pnpm-lock.yaml")),
@@ -262,9 +301,26 @@ function run(base, head, destination) {
         options,
         result: (({ map: _, ...rest }) => rest)(result),
       })),
-      packets[0].calls.map(({ source, options, result }) => ({ source, options, result })),
+      packets[0].calls.map(({ source, options, result }) => ({
+        source,
+        options,
+        result: (({ map: _, ...rest }) => rest)(result),
+      })),
     );
   }
+  for (const side of ["base", "head"]) {
+    const same = packets.filter((packet) => packet.identity.side === side);
+    assert.deepEqual(
+      same[0].calls,
+      same[1].calls,
+      "repeat processes must preserve every whole result, including maps",
+    );
+  }
+  assert.equal(
+    receipt.builds[0].declaration.sha256,
+    receipt.builds[1].declaration.sha256,
+    "native public declarations must remain exact",
+  );
   const summary = packets[0].timings.map((vector) => ({
     id: vector.id,
     results: ["base", "head"].flatMap((side) =>

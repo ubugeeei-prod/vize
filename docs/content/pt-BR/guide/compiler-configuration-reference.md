@@ -24,6 +24,7 @@ Essas opções pertencem a `vue.compiler` em `vite.config.*` e também podem ser
 | `prefixIdentifiers` | `boolean`                             | Identificadores de prefixos com `_ctx`                                                 |
 | `hoistStatic`       | `boolean`                             | Controle o içamento estático do nó                                                     |
 | `cacheHandlers`     | `boolean`                             | Cache do gerenciador de eventos de controle                                            |
+| `comments`          | `boolean`                             | Mantém comentários do template; sem valor, só em desenvolvimento                       |
 | `isTs`              | `boolean`                             | Analisar blocos de script como TypeScript                                              |
 | `runtimeModuleName` | `string`                              | Módulo de importação em tempo de execução Override                                     |
 | `runtimeGlobalName` | `string`                              | Override global em tempo de execução para saída no estilo função/IIFE                  |

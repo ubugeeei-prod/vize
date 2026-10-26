@@ -2,21 +2,15 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 
-export const cssMapProducerPaths = [
-  "crates/vize_atelier_sfc/src/css.rs",
-  "crates/vize_atelier_sfc/src/css/parser.rs",
-  "crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs",
-  "crates/vize_atelier_sfc/src/css/parser/source_map.rs",
-  "vendor/lightningcss/src/printer.rs",
-] as const;
-const caseRoot = "tests/_fixtures/differential/compiler/css-source-map-10693/";
-const id = "compiler/css/source-map-10693";
-const roles = [
+import {
+  compilerCssSpec,
+  cssMapProducerPaths,
+  knownCompilerCssSource,
+} from "./compiler-css-api-registry.ts";
+export { compilerCssApiSources, cssMapProducerPaths } from "./compiler-css-api-registry.ts";
+const commonRoles = [
   ["input.css", "source"],
   ["options.json", "options"],
-  ["public-before.json", "public-before"],
-  ["source-after.json", "source-after"],
-  ["authority.json", "authority"],
 ] as const;
 type Reader = (path: string) => Buffer | null;
 type SideReader = (side: "base" | "head", path: string) => Buffer | null;
@@ -31,7 +25,8 @@ function object(value: unknown, keys: readonly string[]): Record<string, unknown
 export function loadCompilerCssApiCases(value: unknown, read: Reader) {
   if (value === undefined) return [];
   assert(Array.isArray(value));
-  assert.equal(value.length, 1, "only the registered direct-CSS family is admitted");
+  assert(value.length <= 2, "only the registered direct-CSS families are admitted");
+  const ids = new Set<unknown>();
   return value.map((raw: unknown) => {
     const row = object(raw, [
       "id",
@@ -43,18 +38,31 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
       "nativeCompatibility",
       "witness",
     ]);
-    assert.equal(row.id, id);
+    const spec = compilerCssSpec(row.id);
+    assert(spec !== undefined, "unknown direct-CSS family");
+    assert(!ids.has(row.id), "duplicate direct-CSS family");
+    ids.add(row.id);
+    const roles = [
+      ...commonRoles,
+      [
+        spec.sourceBefore ? "source-before.json" : "public-before.json",
+        spec.sourceBefore ? "source-before" : "public-before",
+      ],
+      ["source-after.json", "source-after"],
+      ["authority.json", "authority"],
+      ...(spec.sourceBefore
+        ? [["source-before-observation.json", "source-before-observation"]]
+        : []),
+    ];
+    const caseRoot = `tests/_fixtures/differential/compiler/${spec.root}/`;
     assert.equal(row.state, "active");
-    assert.equal(row.adapter, "compile-css-original-input-map-10693");
+    assert.equal(row.adapter, spec.adapter);
     assert.deepEqual(row.targets, ["css"]);
     assert.equal(row.genericCli, "unsupported-css-api");
     assert.equal(row.nativeCompatibility, "unsupported");
-    assert.deepEqual(row.witness, {
-      runner: "tests/native/css-compile-source-maps.mjs",
-      requestCount: 84,
-    });
+    assert.deepEqual(row.witness, spec.witness);
     const input = object(row.inputs, ["root", "files"]);
-    assert.equal(input.root, "css-source-map-10693");
+    assert.equal(input.root, spec.root);
     assert(Array.isArray(input.files));
     assert.equal(input.files.length, roles.length);
     const bytes = input.files.map((raw: unknown, index: number) => {
@@ -69,15 +77,9 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
       return content;
     });
     const source = bytes[0].toString("utf8");
-    const options = object(JSON.parse(bytes[1].toString("utf8")), [
-      "filename",
-      "minify",
-      "sourceMap",
-    ]);
-    assert.equal(source, "\r\n.雪😀 { color: red }\r\n.b{opacity:0.5}");
-    assert.equal(options.filename, "/fixture/组件 space'\"&😀.css");
-    assert.equal(options.minify, true);
-    assert.equal(options.sourceMap, true);
+    const options = object(JSON.parse(bytes[1].toString("utf8")), Object.keys(spec.options));
+    assert.equal(source, spec.source);
+    assert.deepEqual(options, spec.options);
     const before = object(JSON.parse(bytes[2].toString("utf8")), [
       "code",
       "cssVars",
@@ -91,22 +93,31 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
       "errors",
       "warnings",
     ]);
-    assert.deepEqual(before, {
-      code: ".雪😀{color:red}.b{opacity:.5}",
-      cssVars: [],
-      errors: [],
-      warnings: [],
-    });
+    assert.deepEqual(before, { code: spec.code, cssVars: spec.vars, errors: [], warnings: [] });
+    if (spec.sourceBefore) {
+      const observation = object(JSON.parse(bytes[5].toString("utf8")), ["identity", "call"]);
+      const identity = observation.identity as Record<string, unknown>;
+      assert.equal(identity.source, spec.beforeRevision);
+      // This was the head in its original, retained first-slice ABBA campaign.
+      assert.equal(identity.side, "head");
+      assert.equal(identity.targetInitiallyEmpty, true);
+      assert.equal(
+        identity.binarySha256,
+        "143afa198462e88b50e9ba9201207b406e015df7bce0f995b4e6795239a63707",
+      );
+      assert.equal(identity.token, "692c0d492de2d9c6736e365c5e2314e0");
+      assert.deepEqual(observation.call, { source, options, result: before });
+    }
     const { map, ...preserved } = after;
     assert.deepEqual(preserved, before);
     assert(typeof map === "string");
     assert.deepEqual(JSON.parse(map), {
       version: 3,
-      file: options.filename,
+      file: spec.filename,
       names: [],
-      sources: [options.filename],
+      sources: [spec.filename],
       sourcesContent: [source],
-      mappings: "AACA,eACA",
+      mappings: spec.mappings,
     });
     const authority = object(JSON.parse(bytes[4].toString("utf8")), [
       "beforeRevision",
@@ -114,38 +125,40 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
       "sourceFiles",
       "scope",
     ]);
-    assert.equal(authority.beforeRevision, "b0033883518f364cfbd3dd0ab9464715e9f51758");
-    assert.equal(authority.fixRevision, "510b0bb1033a22265e3408693a4aa00b78351cef");
+    assert.equal(authority.beforeRevision, spec.beforeRevision);
+    assert.equal(authority.fixRevision, spec.fixRevision);
     assert.equal(
       authority.scope,
       "source-inspected direct API; generic CLI unsupported; no whole-product native credit",
     );
     assert(Array.isArray(authority.sourceFiles));
-    assert.equal(authority.sourceFiles.length, cssMapProducerPaths.length);
+    assert.equal(authority.sourceFiles.length, spec.paths.length);
     const sourceFiles = authority.sourceFiles.map((raw: unknown, index: number) => {
       const file = object(raw, ["path", "beforeSha256", "afterSha256"]);
-      assert.equal(file.path, cssMapProducerPaths[index]);
+      assert.equal(file.path, spec.paths[index]);
       assert(typeof file.afterSha256 === "string");
       assert.match(file.afterSha256, /^[0-9a-f]{64}$/u);
-      if (index === 3) assert.equal(file.beforeSha256, null);
+      if (spec.missingBefore.includes(index)) assert.equal(file.beforeSha256, null);
       else {
         assert(typeof file.beforeSha256 === "string");
         assert.match(file.beforeSha256, /^[0-9a-f]{64}$/u);
       }
       return {
-        path: cssMapProducerPaths[index],
+        path: spec.paths[index],
         beforeSha256: file.beforeSha256,
         afterSha256: file.afterSha256,
       };
     });
     return {
-      id,
+      id: spec.id,
       source,
       options,
       before,
       after,
       sourceFiles,
-      publicBeforeSha256: hash(bytes[2]),
+      beforeKind: spec.sourceBefore ? "source" : "public",
+      beforeSha256: hash(bytes[2]),
+      witness: spec.witness,
       sourceAfterSha256: hash(bytes[3]),
     };
   });
@@ -173,14 +186,16 @@ export function newCompilerCssApiCases(previous: unknown, current: unknown, read
     });
 }
 
-export function onlyCompilerCssChanges(paths: readonly string[]) {
-  const compiler = paths.filter((file) =>
-    /^crates\/vize_(?:armature|relief|atelier_[^/]+)\/src\//u.test(file),
+export function onlyCompilerCssChanges(
+  paths: readonly string[],
+  admitted: ReadonlySet<string> = new Set(cssMapProducerPaths),
+) {
+  const compiler = paths.filter(
+    (file) =>
+      knownCompilerCssSource(file) ||
+      /^crates\/vize_(?:armature|relief|atelier_[^/]+)\/src\//u.test(file),
   );
-  return (
-    compiler.length > 0 &&
-    compiler.every((file) => cssMapProducerPaths.some((owned) => owned === file))
-  );
+  return compiler.length > 0 && compiler.every((file) => admitted.has(file));
 }
 
 export function compilerCssApiReport(rows: ReturnType<typeof loadCompilerCssApiCases>) {
@@ -196,9 +211,9 @@ export function compilerCssApiReport(rows: ReturnType<typeof loadCompilerCssApiC
       genericCli: "unsupported-css-api",
       wholeProductNative: "unsupported",
       inputSha256: hash(Buffer.from(row.source)),
-      publicBeforeSha256: row.publicBeforeSha256,
+      [row.beforeKind === "source" ? "sourceBeforeSha256" : "publicBeforeSha256"]: row.beforeSha256,
       sourceAfterSha256: row.sourceAfterSha256,
-      witness: { runner: "tests/native/css-compile-source-maps.mjs", requestCount: 84 },
+      witness: row.witness,
     })),
   };
 }

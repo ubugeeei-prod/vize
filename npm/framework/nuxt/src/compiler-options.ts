@@ -77,6 +77,8 @@ export interface VizeNuxtCompilerOptions {
   templateSyntax?: "standard" | "strict" | "quirks";
   /** Vue template whitespace strategy, or Vize's opt-in Vue 2 line-break migration mode. */
   whitespace?: "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve";
+  /** `@vitejs/plugin-vue`-compatible template options, such as `compilerOptions.comments`. */
+  template?: VizeOptions["template"];
   /** Root directory to scan for .vue files. */
   root?: string;
   /** Glob patterns to scan for .vue files during pre-compilation. */
