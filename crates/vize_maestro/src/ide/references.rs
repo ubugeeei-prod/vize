@@ -71,6 +71,16 @@ impl ReferencesService {
         if let Some(locations) = Self::setup_local_references(ctx, include_declaration) {
             return Some(locations);
         }
+        Self::project_references_with_corsa(ctx, include_declaration, corsa_bridge).await
+    }
+
+    /// Project-aware references once private setup bindings were ruled out.
+    #[cfg(feature = "native")]
+    pub(crate) async fn project_references_with_corsa(
+        ctx: &IdeContext<'_>,
+        include_declaration: bool,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+    ) -> Option<Vec<Location>> {
         // The ordinary canonical SFC does not contain custom art templates.
         // Resolve the selected variant before another template can answer.
         if let Some(BlockType::Art(ArtCursorPosition::VariantTemplate(ref info))) = ctx.block_type

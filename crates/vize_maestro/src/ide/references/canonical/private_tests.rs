@@ -1,5 +1,5 @@
 use tower_lsp::lsp_types::Url;
-use vize_l0::format_compact;
+use vize_l0::cstr;
 
 use super::setup_local_references;
 use crate::ide::IdeContext;
@@ -45,6 +45,11 @@ fn public_or_property_linked_bindings_keep_project_navigation() {
         ),
         (
             "App.vue",
+            "<script setup>const item = 1;</script><template>{{ item }}</template>\n<art title=\"A\" component=\"./Child.vue\">\n<variant name=\"First\" default><p>{{ item }}</p></variant>\n</art>\n",
+            "item =",
+        ),
+        (
+            "App.vue",
             "<script setup>const item = 1;</script><template><Child :item=\"item\" /></template>",
             "item=\"",
         ),
@@ -55,7 +60,7 @@ fn public_or_property_linked_bindings_keep_project_navigation() {
         ),
     ] {
         let state = ServerState::new();
-        let uri = Url::parse(&format_compact!("file:///{filename}")).unwrap();
+        let uri = Url::parse(&cstr!("file:///{filename}")).unwrap();
         state
             .documents
             .open(uri.clone(), source.to_string(), 1, "vue".to_string());

@@ -62,7 +62,12 @@ fn disabled_references_do_not_start_an_enabled_checker() {
 #[cfg(feature = "native")]
 #[test]
 fn private_setup_references_keep_exact_local_ranges_without_initializing_a_checker() {
-    for name in ["item", "route", "itemId"] {
+    for (name, initializer) in [
+        ("item", "computed(() => 1)"),
+        ("route", "computed(() => 1)"),
+        ("itemId", "computed(() => 1)"),
+        ("item", "1"),
+    ] {
         for newline in ["\n", "\r\n"] {
             for cross_file in [false, true] {
                 let service = service_with_options(serde_json::json!({
@@ -70,7 +75,8 @@ fn private_setup_references_keep_exact_local_ranges_without_initializing_a_check
                 }));
                 let server = service.inner();
                 let uri = uri("PrivateReferences.vue");
-                let source = "<!-- 日本 🧭 -->\n<script setup lang=\"ts\">\nimport { computed } from 'vue';\nconst PRIVATE = computed(() => 1);\nfunction shadow(PRIVATE: number) { return PRIVATE; }\n</script>\n<template><p>🧭{{ PRIVATE }}</p></template>\n<style>.c{color:v-bind(PRIVATE)}</style>\n"
+                let source = "<!-- 日本 🧭 -->\n<script setup lang=\"ts\">\nimport { computed } from 'vue';\nconst PRIVATE = INIT;\nfunction shadow(PRIVATE: number) { return PRIVATE; }\n</script>\n<template><p>🧭{{ PRIVATE }}</p></template>\n<style>.c{color:v-bind(PRIVATE)}</style>\n"
+                    .replace("INIT", initializer)
                     .replace("PRIVATE", name)
                     .replace('\n', newline);
                 open_vue(server, &uri, &source);

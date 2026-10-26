@@ -21,7 +21,14 @@ pub(super) fn setup_local_references(
 ) -> Option<Vec<Location>> {
     if corsa_support::is_component_attribute_query(ctx)
         || ctx.uri.path().ends_with(".art.vue")
-        || !is_script_setup_local_binding(ctx)
+        || ctx
+            .virtual_docs
+            .as_ref()
+            .is_some_and(|documents| documents.art_templates.iter().any(Option::is_some))
+        || !matches!(
+            setup_local_binding_type(ctx),
+            Some(binding) if is_setup_local(binding) || binding == BindingType::LiteralConst
+        )
     {
         return None;
     }
@@ -32,22 +39,32 @@ pub(super) fn setup_local_references(
     ReferencesService::references(ctx, include_declaration)
 }
 
-/// Keep independent setup locals on the inexpensive existing surface. A
-/// shorthand object binding also names its source property, so its native
-/// references may cross modules even though the setup variable is not exported.
+/// Keep independent setup locals on the inexpensive existing surface.
 fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
-    let Some(word) = ReferencesService::get_word_at_offset(&ctx.content, ctx.offset) else {
-        return false;
-    };
+    setup_local_binding_type(ctx).is_some_and(is_setup_local)
+}
+
+fn is_setup_local(binding: BindingType) -> bool {
+    matches!(
+        binding,
+        BindingType::SetupLet
+            | BindingType::SetupMaybeRef
+            | BindingType::SetupRef
+            | BindingType::SetupReactiveConst
+            | BindingType::SetupConst
+    )
+}
+
+/// The setup binding kind of a name that no import or macro exposes beyond
+/// this SFC. A shorthand object binding also names its source property, so its
+/// native references may cross modules even though the variable is not exported.
+fn setup_local_binding_type(ctx: &IdeContext<'_>) -> Option<BindingType> {
+    let word = ReferencesService::get_word_at_offset(&ctx.content, ctx.offset)?;
     if crate::ide::definition::helpers::find_import_path(ctx, &word).is_some() {
-        return false;
+        return None;
     }
-    let Some(descriptor) = ctx.descriptor() else {
-        return false;
-    };
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return false;
-    };
+    let descriptor = ctx.descriptor()?;
+    let script_setup = descriptor.script_setup.as_ref()?;
     // Reuse the original analysis parse for the pattern decision and Croquis.
     let allocator = Allocator::default();
     let parsed = vize_croquis::script_parser::parse_program_for_analysis(
@@ -59,7 +76,7 @@ fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
         || !parsed.diagnostics.is_empty()
         || local_binding::property_linked(&parsed.program, &word)
     {
-        return false;
+        return None;
     }
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
     analyzer.analyze_script_setup_program(&parsed.program, &script_setup.content, None);
@@ -71,18 +88,9 @@ fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
             .iter()
             .any(|model| model.local_name == word.as_str())
     {
-        return false;
+        return None;
     }
-    matches!(
-        croquis.get_binding_type(&word),
-        Some(
-            BindingType::SetupLet
-                | BindingType::SetupMaybeRef
-                | BindingType::SetupRef
-                | BindingType::SetupReactiveConst
-                | BindingType::SetupConst
-        )
-    )
+    croquis.get_binding_type(&word)
 }
 
 /// Query the project-aware canonical Vue document before the block-local
