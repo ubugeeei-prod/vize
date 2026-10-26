@@ -19,7 +19,7 @@ use vize_l0::{Allocator, Box, Vec};
 use super::error::{PugError, PugErrorCode};
 use super::lex::{Tk, Tok};
 use super::logical::Logical;
-use super::tree::{PugCode, PugComment, PugNode, PugRefused, PugTree, PugUnexpected};
+use super::tree::{PugCode, PugComment, PugNode, PugRefusal, PugRefused, PugTree, PugUnexpected};
 use crate::markup::surface::Token;
 
 pub(crate) struct Builder<'a, 't> {
@@ -30,6 +30,8 @@ pub(crate) struct Builder<'a, 't> {
     at: usize,
     cursor: usize,
     errors: &'t mut Vec<'a, PugError>,
+    /// How many `mixin` definitions enclose the current node.
+    in_mixin: u32,
 }
 
 pub(crate) fn build<'a>(
@@ -47,6 +49,7 @@ pub(crate) fn build<'a>(
         at: 0,
         cursor: 0,
         errors,
+        in_mixin: 0,
     };
     let mut nodes = Vec::new_in(&allocator);
     loop {
@@ -215,14 +218,21 @@ impl<'a> Builder<'a, '_> {
     fn parse_expr(&mut self) -> PugNode<'a> {
         match self.peek() {
             Tk::Tag | Tk::Class | Tk::Id => self.parse_tag(),
+            Tk::Call => self.parse_call(),
             Tk::Keyword(refusal) => {
+                if refusal == PugRefusal::MixinBlock && self.in_mixin == 0 {
+                    self.error(PugErrorCode::BlockOutsideMixin);
+                }
                 let head = self.take();
                 let body = self.peek_is(Tk::PipelessStart).then(|| self.text_block());
+                let mixin = u32::from(refusal == PugRefusal::Mixin);
+                self.in_mixin += mixin;
                 let block = if self.peek_is(Tk::Indent) {
                     self.block()
                 } else {
                     self.nodes()
                 };
+                self.in_mixin -= mixin;
                 PugNode::Refused(self.boxed(PugRefused {
                     refusal,
                     head,

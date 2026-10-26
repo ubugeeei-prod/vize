@@ -1,0 +1,5 @@
+- var extra = { title: 'x < y', hidden: true, tabindex: 0, data: { a: 'b' } }
+div.a(class="b" style="color:red")&attributes({ class: ['c', { d: true }], style: { top: 0 } })
+p#first&attributes({ id: 'second', class: 'k' })
+section&attributes(extra)
+my-panel(:open="open")&attributes({ 'v-if': 'visible', class: 'panel' })&attributes({ class: 'wide' })
