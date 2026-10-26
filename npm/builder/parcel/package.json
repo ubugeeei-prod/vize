@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/parcel-transformer",
-  "version": "0.474.0",
+  "version": "0.579.0",
   "description": "Native Vue single-file component compilation for Parcel",
   "keywords": [
     "parcel",
