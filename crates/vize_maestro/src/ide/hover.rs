@@ -31,6 +31,8 @@ mod v_model;
 
 pub use builder::HoverBuilder;
 #[cfg(feature = "native")]
+pub(crate) use component_import::{component_contract_inline, contains_generated_component_marker};
+#[cfg(feature = "native")]
 use std::sync::Arc;
 use tower_lsp::lsp_types::Hover;
 

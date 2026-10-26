@@ -2,6 +2,7 @@ import { appendFileSync } from "node:fs";
 import { collectStdout, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs, nonEmptyEnv, readFileToString } from "../command_runtime.ts";
 import { npmRegistryPackagePath } from "../publish_npm_package/registry.ts";
+import { editorArtifactsForResume } from "../editor-platforms.ts";
 import {
   backfillTag,
   higherStableVersions,
@@ -185,6 +186,18 @@ async function npmResume(version: string, runId: string): Promise<number> {
   });
   if (errors.length > 0) return fail(errors.join("\n"));
 
+  const taggedWorkflow = await collectStdout("git", [
+    "show",
+    `${tagSha}:.github/workflows/release.yml`,
+  ]);
+  if (taggedWorkflow.status !== 0) return fail("Failed to read immutable release workflow");
+  let editorPlatforms: boolean;
+  try {
+    editorPlatforms = editorArtifactsForResume(taggedWorkflow.stdout, artifactNames);
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : String(error));
+  }
+
   const publishTag = higherVersions.length === 0 ? "" : backfillTag(version);
   const output = nonEmptyEnv("GITHUB_OUTPUT");
   if (output === undefined) return fail("GITHUB_OUTPUT is required");
@@ -196,6 +209,7 @@ async function npmResume(version: string, runId: string): Promise<number> {
       `sha=${tagSha}`,
       `publish_tag=${publishTag}`,
       `allow_newer_tag=${higherVersions.length === 0 ? "" : "true"}`,
+      `editor_platform_artifacts=${editorPlatforms ? "1" : "0"}`,
     ].join("\n") + "\n",
   );
   println(

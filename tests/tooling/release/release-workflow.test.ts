@@ -216,6 +216,10 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
   for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
   }
+  // Platform editor packaging is never a release gate.
+  for (const name of ["tag", "publish-npm", "publish-vscode", "publish-open-vsx"]) {
+    assert.ok(!needs(name).includes("build-editor-platforms"), name);
+  }
   assert.match(JSON.stringify(workflow.jobs.tag.steps), /refs\/tags\/\$RELEASE_TAG/);
   for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
     assert.deepEqual(needs(build), ["version"], build);
@@ -231,12 +235,14 @@ test("registries publish in parallel behind one credential-free smoke", () => {
     "publish-jsr",
     "publish-npm",
     "publish-open-vsx",
+    "publish-open-vsx-platforms",
     "publish-vscode",
+    "publish-vscode-platforms",
   ]);
   for (const build of ["build-packages", "build-native", "build-wasm"]) {
     assert.ok(needs("smoke").includes(build), `smoke waits for ${build}`);
   }
-  for (const name of ["publish-crates", "publish-npm", "publish-open-vsx", "publish-vscode"]) {
+  for (const name of publishers.filter((publisher) => publisher !== "publish-jsr")) {
     assert.ok(needs(name).includes("tag"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);
   }

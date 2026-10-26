@@ -973,6 +973,17 @@ fn content_mapper_slot_host_callbacks_keep_native_diagnostics() {
 }
 
 #[test]
+fn native_completion_project_keeps_clean_diagnostics() {
+    check_pack(
+        "native-completion-order-10747",
+        "native_completion_project_keeps_clean_diagnostics",
+        "7e710ef9e094eb3244e332c90f21727d290b4a35",
+        Some(10747),
+        &["imported-identifier-project"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

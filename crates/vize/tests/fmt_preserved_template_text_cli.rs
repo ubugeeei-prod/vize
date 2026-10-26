@@ -150,17 +150,14 @@ fn vue2_and_entry_whitespace_keep_preserved_compile_output_across_formatting() {
         SOURCE
     );
 
+    // The build compiles each file with its own entry whitespace (#10781), so
+    // reformatting the condense-scoped file keeps its compiled output too.
     build("after");
-    for file in ["Root.js", "src/legacy/Legacy.js"] {
+    for file in ["Root.js", "src/Modern.js", "src/legacy/Legacy.js"] {
         assert_eq!(
             fs::read(project.path().join("before").join(file)).unwrap(),
             fs::read(project.path().join("after").join(file)).unwrap(),
             "formatting changed the compiled output of {file}"
         );
     }
-    assert_ne!(
-        fs::read(project.path().join("before/src/Modern.js")).unwrap(),
-        fs::read(project.path().join("after/src/Modern.js")).unwrap(),
-        "the condense entry must retain the existing formatter path"
-    );
 }

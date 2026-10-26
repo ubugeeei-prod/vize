@@ -2633,6 +2633,51 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/component-alias-hover-10787",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "component-alias-hover-10787",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "87f6ecf4054b5052bd2f5c0835acded7dc585a10993bcf3ac86d6db567737c46"
+          },
+          {
+            "path": "MyChild.vue.txt",
+            "sha256": "c844d84ffd79d0573d2981425acb5f7edb91463bda5e9678a7c22cd592dfefc4"
+          }
+        ]
+      },
+      "case": {
+        "path": "component-alias-hover-10787/case.json",
+        "sha256": "5c3076dd6978612571172e5fc5ec351c9eb2d19fd30bc8fdb2ec657e770832af"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

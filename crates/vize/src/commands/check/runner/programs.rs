@@ -11,7 +11,7 @@ use super::default_imports::canonical_file_set;
 use super::resolve::{find_nearest_tsconfig_path, find_nearest_tsconfig_path_within};
 use crate::commands::check::{
     path_cache::CanonicalPathCache,
-    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_program_inputs},
+    tsconfig_inputs::{TsconfigInputCache, TsconfigProgramInputs, resolve_tsconfig_program_inputs},
 };
 
 pub(super) struct ProgramCandidate {
@@ -89,12 +89,7 @@ pub(super) fn split_program_candidates(
         }
     }
     let groups = resolve_tsconfig_program_inputs(tsconfig_path, &inputs, include_jsx, cache);
-    let single_group_uses_invocation_config = groups.first().is_none_or(|group| {
-        tsconfig_path.is_none_or(|path| {
-            canonical_paths.canonicalize(path) == canonical_paths.canonicalize(&group.tsconfig_path)
-        })
-    });
-    if groups.len() <= 1 && single_group_uses_invocation_config {
+    if keeps_invocation_program(&groups, tsconfig_path, canonical_paths) {
         return vec![ProgramCandidate {
             files,
             inputs,
@@ -125,6 +120,22 @@ pub(super) fn split_program_candidates(
             }
         })
         .collect()
+}
+
+/// Whether the invocation config stays the only program. Otherwise each
+/// referenced program rebuilds its own closure from its inputs.
+pub(super) fn keeps_invocation_program(
+    groups: &[TsconfigProgramInputs],
+    tsconfig_path: Option<&Path>,
+    canonical_paths: &mut CanonicalPathCache,
+) -> bool {
+    groups.len() <= 1
+        && groups.first().is_none_or(|group| {
+            tsconfig_path.is_none_or(|path| {
+                canonical_paths.canonicalize(path)
+                    == canonical_paths.canonicalize(&group.tsconfig_path)
+            })
+        })
 }
 
 #[cfg(test)]

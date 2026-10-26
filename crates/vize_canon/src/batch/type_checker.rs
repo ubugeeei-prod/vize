@@ -248,6 +248,11 @@ impl BatchTypeChecker {
         self.project.adopt_diagnostic_sources(paths)
     }
 
+    /// The directory this checker materializes into.
+    pub fn virtual_root(&self) -> &Path {
+        self.project.virtual_root()
+    }
+
     /// Get the number of registered files.
     pub fn file_count(&self) -> usize {
         self.project.file_count()

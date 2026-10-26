@@ -51,8 +51,20 @@ pub(super) struct ProgramExecution {
     _checker_tsconfig: PreparedCheckerTsconfig,
 }
 
+/// A generated program whose native check has not run yet.
+pub(super) struct PendingProgram {
+    checker: BatchTypeChecker,
+    input_files: Vec<PathBuf>,
+    reported_files: FxHashSet<PathBuf>,
+    tsconfig_path: Option<PathBuf>,
+    program_root: PathBuf,
+    pub(super) import_time: Duration,
+    gen_time: Duration,
+    checker_tsconfig: PreparedCheckerTsconfig,
+}
+
 pub(super) struct ProgramPreparation {
-    pub(super) execution: Option<ProgramExecution>,
+    pub(super) execution: Option<PendingProgram>,
     /// Existing explicit inputs rejected by their owning program's file options.
     pub(super) excluded_explicit_inputs: bool,
 }
@@ -89,10 +101,10 @@ fn resolve_program_dialect(
     Ok(super::dialect_from_features(target))
 }
 
-pub(super) fn execute_program(
+pub(super) fn prepare_program(
     input: ProgramExecutionInput<'_>,
     settings: &CheckerSettings,
-) -> Result<ProgramExecution, String> {
+) -> Result<PendingProgram, String> {
     let dialect = resolve_program_dialect(
         settings.dialect,
         input.project_root,
@@ -194,43 +206,73 @@ pub(super) fn execute_program(
             checker.virtual_files().len()
         );
     }
-    let check_start = Instant::now();
-    let mut result = checker
-        .check_project()
-        .map_err(|error| cstr!("{}", error))?;
-    if wait_for_active_config_test_barrier(&checker_tsconfig).map_err(|error| {
-        cstr!(
-            "Failed to synchronize active type checker config: {}",
-            error
-        )
-    })? {
-        result = checker
-            .check_project()
-            .map_err(|error| cstr!("{}", error))?;
-    }
-    if let (Some(authored), Some(prepared)) =
-        (input.tsconfig_path.as_ref(), checker_tsconfig.path())
-    {
-        let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
-        for diagnostic in &mut result.diagnostics {
-            if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
-                diagnostic.file = authored.clone();
-            }
-        }
-    }
-
-    Ok(ProgramExecution {
+    Ok(PendingProgram {
         checker,
-        result,
         input_files: input.files.to_vec(),
         reported_files: input.reported_files,
         tsconfig_path: input.tsconfig_path,
         program_root: input.program_root,
         import_time: Duration::ZERO,
         gen_time,
-        check_time: check_start.elapsed(),
-        _checker_tsconfig: checker_tsconfig,
+        checker_tsconfig,
     })
+}
+
+impl PendingProgram {
+    pub(super) fn virtual_root(&self) -> &std::path::Path {
+        self.checker.virtual_root()
+    }
+
+    /// Run the native check. Programs own separate checkers, so a caller may
+    /// overlap this with preparing the next program.
+    pub(super) fn check(self) -> Result<ProgramExecution, String> {
+        let Self {
+            checker,
+            input_files,
+            reported_files,
+            tsconfig_path,
+            program_root,
+            import_time,
+            gen_time,
+            checker_tsconfig,
+        } = self;
+        let check_start = Instant::now();
+        let mut result = checker
+            .check_project()
+            .map_err(|error| cstr!("{}", error))?;
+        if wait_for_active_config_test_barrier(&checker_tsconfig).map_err(|error| {
+            cstr!(
+                "Failed to synchronize active type checker config: {}",
+                error
+            )
+        })? {
+            result = checker
+                .check_project()
+                .map_err(|error| cstr!("{}", error))?;
+        }
+        if let (Some(authored), Some(prepared)) = (tsconfig_path.as_ref(), checker_tsconfig.path())
+        {
+            let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
+            for diagnostic in &mut result.diagnostics {
+                if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
+                    diagnostic.file = authored.clone();
+                }
+            }
+        }
+
+        Ok(ProgramExecution {
+            checker,
+            result,
+            input_files,
+            reported_files,
+            tsconfig_path,
+            program_root,
+            import_time,
+            gen_time,
+            check_time: check_start.elapsed(),
+            _checker_tsconfig: checker_tsconfig,
+        })
+    }
 }
 
 #[cfg(test)]

@@ -1,0 +1,1 @@
+<script>export default { data: () => ({ fallback: "A", key: "k", items: [{}] }) }</script><template><p v-for="{ label = fallback, [key]: tag } in items">{{ label }}{{ tag }}</p></template>

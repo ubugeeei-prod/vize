@@ -26,46 +26,10 @@ function createMappedLanguageService(ts, service, support) {
       document.authoredFile ??= ts.createSourceFile(file, document.source, ts.ScriptTarget.Latest);
       return ts.getLineAndCharacterOfPosition(document.authoredFile, position);
     };
-  function span(file, value, feature, edit = false) {
-    if (!value) return value;
-    const document = get(file);
-    if (!document) return value;
-    if (!document.projection) return undefined;
-    const rows = document.projection.mappings.filter(
-      (row) =>
-        (!feature || row[5] & feature) &&
-        value.start >= row[0] &&
-        value.start + value.length <= row[0] + row[1] &&
-        (!edit ||
-          (row[4] === 0 &&
-            row[1] === row[3] &&
-            document.projection.text.slice(row[0], row[0] + row[1]) ===
-              document.source.slice(row[2], row[2] + row[3]))),
-    );
-    rows.sort((a, b) => a[1] - b[1]);
-    const row = rows[0];
-    if (!row) return undefined;
-    return row[4] === 0
-      ? { start: row[2] + value.start - row[0], length: value.length }
-      : { start: row[2], length: row[3] };
-  }
-  function positions(file, position, feature) {
-    const document = get(file);
-    if (!document) return [position];
-    return [
-      ...new Set(
-        (document.projection?.mappings || [])
-          .filter(
-            (row) =>
-              row[5] & feature &&
-              (feature !== Feature.completion || (row[4] === 0 && row[1] === row[3])) &&
-              position >= row[2] &&
-              position <= row[2] + row[3],
-          )
-          .map((row) => (row[4] === 0 ? row[0] + position - row[2] : row[0])),
-      ),
-    ];
-  }
+  const span = (file, value, feature, edit = false) =>
+    authoredSpan(support, file, value, feature, edit);
+  const positions = (file, position, feature) =>
+    generatedPositions(support, file, position, feature);
   function location(value, feature, edit = false) {
     const textSpan = span(value.fileName, value.textSpan, feature, edit);
     if (!textSpan) return undefined;
@@ -131,6 +95,9 @@ function createMappedLanguageService(ts, service, support) {
   ]) {
     query(method, feature, locations(feature, feature === Feature.rename), true);
   }
+  if (service.getFileReferences)
+    proxy.getFileReferences = (file) =>
+      locations(Feature.references)(service.getFileReferences(file));
   query("getDefinitionAndBoundSpan", Feature.definition, (value, file) => {
     if (!value) return undefined;
     const textSpan = span(file, value.textSpan, Feature.definition);
@@ -319,6 +286,15 @@ function createMappedLanguageService(ts, service, support) {
       return edits ? { ...result, edits } : undefined;
     };
   }
+  // Preparation is deliberately unsupported for SFCs. Follow-up requests can
+  // arrive directly, including cross-file results queried from ordinary TS.
+  for (const method of ["provideCallHierarchyIncomingCalls", "provideCallHierarchyOutgoingCalls"]) {
+    if (!service[method]) continue;
+    proxy[method] = (file, ...args) => {
+      if (isSfc(file)) return [];
+      return service[method](file, ...args).filter((call) => !isSfc((call.from || call.to)?.file));
+    };
+  }
   if (service.organizeImports)
     proxy.organizeImports = (scope, ...args) =>
       isSfc(scope.fileName)
@@ -361,4 +337,45 @@ function unique(values) {
     return true;
   });
 }
-module.exports = { createMappedLanguageService };
+function authoredSpan(support, file, value, feature, edit = false) {
+  if (!value) return value;
+  const document = support?.get(file);
+  if (!document) return value;
+  if (!document.projection) return undefined;
+  const rows = document.projection.mappings.filter(
+    (row) =>
+      (!feature || row[5] & feature) &&
+      value.start >= row[0] &&
+      value.start + value.length <= row[0] + row[1] &&
+      (!edit ||
+        (row[4] === 0 &&
+          row[1] === row[3] &&
+          document.projection.text.slice(row[0], row[0] + row[1]) ===
+            document.source.slice(row[2], row[2] + row[3]))),
+  );
+  rows.sort((a, b) => a[1] - b[1]);
+  const row = rows[0];
+  if (!row) return undefined;
+  return row[4] === 0
+    ? { start: row[2] + value.start - row[0], length: value.length }
+    : { start: row[2], length: row[3] };
+}
+function generatedPositions(support, file, position, feature) {
+  const document = support?.get(file);
+  if (!document) return [position];
+  return [
+    ...new Set(
+      (document.projection?.mappings || [])
+        .filter(
+          (row) =>
+            row[5] & feature &&
+            (feature !== support?.engine?.LanguageFeature?.Completion ||
+              (row[4] === 0 && row[1] === row[3])) &&
+            position >= row[2] &&
+            position <= row[2] + row[3],
+        )
+        .map((row) => (row[4] === 0 ? row[0] + position - row[2] : row[0])),
+    ),
+  ];
+}
+module.exports = { createMappedLanguageService, authoredSpan, generatedPositions };
