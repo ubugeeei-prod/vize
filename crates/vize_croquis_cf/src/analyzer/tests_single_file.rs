@@ -42,8 +42,8 @@ fn project_ssr_capability_preserves_the_public_boundary_group_switch() {
         codes.sort_unstable();
         assert_eq!(codes, expected);
         if !group_enabled {
-            assert_eq!(format!("{:?}", result.diagnostics), "[]");
-            assert_eq!(format!("{:?}", result.boundaries), "[]");
+            assert_eq!(vize_l0::cstr!("{:?}", result.diagnostics), "[]");
+            assert_eq!(vize_l0::cstr!("{:?}", result.boundaries), "[]");
         }
     }
 }
