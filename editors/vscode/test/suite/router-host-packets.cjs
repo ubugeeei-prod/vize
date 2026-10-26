@@ -7,6 +7,13 @@ const vscode = require("vscode");
 const { describeDiagnostic, describeRange } = require("./real-server-support.cjs");
 const { waitFor } = require("./wait-for.cjs");
 const { captureCompilerDocument } = require("./router-host-compiler-capture.cjs");
+const {
+  diagnostics,
+  plainArt,
+  pos,
+  publicDiagnostics,
+  range,
+} = require("./router-host-diagnostics.cjs");
 
 const output = process.env.VIZE_TEST_ROUTER_OUTPUT;
 function retain(name, value) {
@@ -22,42 +29,6 @@ function records(file = process.env.VIZE_TEST_CONFIG_PROTOCOL_PATH) {
     .map(JSON.parse);
 }
 const frames = () => records().filter((record) => record.kind === "frame");
-const pos = (document, offset) => {
-  assert.ok(offset >= 0);
-  const value = document.positionAt(offset);
-  return { line: value.line, character: value.character };
-};
-const range = (document, offset, length) => ({
-  start: pos(document, offset),
-  end: pos(document, offset + length),
-});
-function diagnostics(document, enabled, invalid) {
-  const source = document.getText();
-  const result = [];
-  // Art's dedicated diagnostic pipeline has no filename-only Router warnings.
-  if (!enabled && document.languageId !== "art-vue")
-    for (const match of source.matchAll(/route\.params\.(page|tags|at|heading)\b/gu)) {
-      result.push({
-        range: range(document, match.index + "route.params.".length, match[1].length),
-        severity: 2,
-        code: "ecosystem/vue-router-route-param",
-        source: "vize/ecosystem",
-        message: `Route param \`${match[1]}\` is not defined by this page file. Available params: id`,
-      });
-    }
-  if (invalid) {
-    const start = source.lastIndexOf("toUpperCase");
-    result.push({
-      code: 2339,
-      message: "Property 'toUpperCase' does not exist on type 'number'.",
-      range: range(document, start, "toUpperCase".length),
-      severity: 1,
-      source: "vize/types",
-    });
-  }
-  return result;
-}
-
 async function publication(document, after = 0) {
   return waitFor(
     () =>
@@ -333,6 +304,23 @@ function syntaxLocations(project, document, generated) {
 }
 
 function assertCapture(actual, project, document, enabled, invalid = false) {
+  if (plainArt(document)) {
+    assert.deepEqual(actual.native, {
+      hover: null,
+      completion: null,
+      resolved: [],
+      definition: null,
+      references: null,
+    });
+    assert.deepEqual(actual.public, {
+      hover: [],
+      completion: { isIncomplete: false, items: [] },
+      definition: [],
+      references: [],
+      diagnostics: publicDiagnostics(document, enabled, invalid),
+    });
+    return;
+  }
   const source = document.getText();
   const property = source.indexOf("route.params.page") + "route.params.".length;
   const hover = {
@@ -444,20 +432,7 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
       value.range.end.character,
     ],
   });
-  const expectedDiagnostics = diagnostics(document, enabled, invalid).map((value) => ({
-    code: value.code,
-    message: value.message,
-    range: [
-      value.range.start.line,
-      value.range.start.character,
-      value.range.end.line,
-      value.range.end.character,
-    ],
-    relatedInformation: undefined,
-    severity: value.severity - 1,
-    source: value.source,
-    tags: undefined,
-  }));
+  const expectedDiagnostics = publicDiagnostics(document, enabled, invalid);
   const expectedPublic = {
     hover: [publicHover],
     completion: { isIncomplete: false, items: expectedPublicCompletion },
