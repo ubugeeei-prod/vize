@@ -76,9 +76,9 @@ fn dedicated_pkl_requires_vite_migration_before_runtime_evaluation() {
         let error = validate_explicit_config_path(selected).unwrap_err();
         let migration = "vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json";
         let expected = if selected.is_file() {
-            format!("failed to parse {}: {migration}", selected.display())
+            vize_carton::cstr!("failed to parse {}: {migration}", selected.display())
         } else {
-            migration.to_owned()
+            vize_carton::cstr!("{migration}")
         };
         assert_eq!(error, expected);
     }
