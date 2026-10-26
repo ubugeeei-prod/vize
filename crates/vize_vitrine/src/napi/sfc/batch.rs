@@ -1,3 +1,4 @@
+use super::codegen_options::sfc_codegen_options;
 use glob::glob;
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
@@ -220,7 +221,11 @@ fn compile_sfc_batch_inner(
                     compile_opts,
                     template_syntax,
                     custom_elements.clone(),
-                    vize_atelier_core::CodegenOptions::default(),
+                    sfc_codegen_options(
+                        false,
+                        opts.runtime_module_name.as_deref(),
+                        opts.runtime_global_name.as_deref(),
+                    ),
                     script_output,
                     experimentals.sfc_options(),
                 )

@@ -79,7 +79,7 @@ pub fn generate_vapor_with_options_and_experimentals(
     options: VaporGenerateOptions,
     experimental_options: VaporGenerateExperimentalOptions<'_>,
 ) -> VaporGenerateResult {
-    generate_vapor_with_spans(ir, binding_metadata, options, experimental_options, None)
+    super::generate_vapor_with_spans(ir, binding_metadata, options, experimental_options, None)
 }
 
 /// Generate Vapor code, taking the authored anchors a map-requesting compile
@@ -91,6 +91,24 @@ pub(crate) fn generate_vapor_with_spans(
     options: VaporGenerateOptions,
     experimental_options: VaporGenerateExperimentalOptions<'_>,
     spans: Option<&VaporSourceSpans>,
+) -> VaporGenerateResult {
+    generate_vapor_with_spans_and_runtime(
+        ir,
+        binding_metadata,
+        options,
+        experimental_options,
+        spans,
+        "vue",
+    )
+}
+
+pub(crate) fn generate_vapor_with_spans_and_runtime(
+    ir: &RootIRNode<'_>,
+    binding_metadata: Option<&BindingMetadata>,
+    options: VaporGenerateOptions,
+    experimental_options: VaporGenerateExperimentalOptions<'_>,
+    spans: Option<&VaporSourceSpans>,
+    runtime_module_name: &str,
 ) -> VaporGenerateResult {
     let ir_only =
         (spans.is_none() && experimental_options.source_map).then(VaporSourceSpans::default);
@@ -226,7 +244,7 @@ pub(crate) fn generate_vapor_with_spans(
         }
     }
 
-    let imports = generate_imports(&ctx);
+    let imports = generate_imports(&ctx, runtime_module_name);
     let capacity = imports.len() + template_code.len() + delegate_code.len() + 1 + ctx.out.len();
     let mut document = EmitDocument::with_capacity(capacity, spans.is_some());
     document.push_str(&imports);

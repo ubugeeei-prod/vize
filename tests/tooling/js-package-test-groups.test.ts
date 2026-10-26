@@ -331,8 +331,8 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
   assert.ok(selected, "the real production configuration selects an example package");
   const fixtureManifest = fileURLToPath(new URL(selected[1], pathToFileURL(configPath)));
   const fixture = path.relative(root, path.dirname(fixtureManifest)).split(path.sep).join("/");
-  const fixtureFilter = `./${fixture}...`;
-  assert.equal(fixtureFilter, "./npm/builder/vite/example...");
+  const fixtureFilter = `{./${fixture}}...`;
+  assert.equal(fixtureFilter, "{./npm/builder/vite/example}...");
   const installerPlan = planAffectedJs(readJsWorkspace(root), [
     "tools/support/compat/github/install-js-checks.ts",
   ]);
@@ -375,8 +375,8 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
   for (const { name, packages, prebuilt } of testedPackageGroups) {
     const baseline = [
       packageName,
-      "./npm/native...",
-      ...[...packages, ...prebuilt].map((pkg) => `${pkg}...`),
+      "{./npm/native}...",
+      ...[...packages, ...prebuilt].map((pkg) => `{${pkg}}...`),
     ];
     assert.deepEqual(
       jsInstallFilters(name),
@@ -389,6 +389,10 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
     ["fresco-conformance", "./npm/fresco-native"],
     ["original-project", "./npm/oxlint"],
   ]) {
-    assert.deepEqual(jsInstallFilters(group), [packageName, "./npm/native...", `${pkg}...`], group);
+    assert.deepEqual(
+      jsInstallFilters(group),
+      [packageName, "{./npm/native}...", `{${pkg}}...`],
+      group,
+    );
   }
 });

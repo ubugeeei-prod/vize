@@ -1,3 +1,4 @@
+use super::codegen_options::sfc_codegen_options;
 use napi::{Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
@@ -204,10 +205,11 @@ fn compile_sfc_batch_with_results_inner(
                     template_syntax,
                     custom_elements.clone(),
                     // A requested map is the compiler's structured SFC module map.
-                    vize_atelier_core::CodegenOptions {
-                        source_map: include_source_map,
-                        ..Default::default()
-                    },
+                    sfc_codegen_options(
+                        include_source_map,
+                        opts.runtime_module_name.as_deref(),
+                        opts.runtime_global_name.as_deref(),
+                    ),
                     script_output,
                     experimentals.sfc_options(),
                 )

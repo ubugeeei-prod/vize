@@ -142,6 +142,7 @@ fn select_l2_lane_with_experimental_options<'a>(
         options,
         experimental,
         crate::SsrSfcContext::new(true),
+        "vue",
         || {
             if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
                 return Err(LegacyReason::Options);

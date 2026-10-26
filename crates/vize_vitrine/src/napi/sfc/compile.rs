@@ -1,3 +1,4 @@
+use super::codegen_options::sfc_codegen_options;
 use napi::{Result, Status};
 use napi_derive::napi;
 use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
@@ -152,10 +153,11 @@ pub fn compile_sfc(
             template_syntax,
             custom_elements,
             // A requested map is the compiler's structured SFC module map.
-            vize_atelier_core::CodegenOptions {
+            sfc_codegen_options(
                 source_map,
-                ..Default::default()
-            },
+                opts.runtime_module_name.as_deref(),
+                opts.runtime_global_name.as_deref(),
+            ),
             if shape.inline_render {
                 SfcScriptOutputMode::InlineTemplate
             } else {

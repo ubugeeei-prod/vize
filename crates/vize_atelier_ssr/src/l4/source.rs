@@ -93,6 +93,7 @@ fn lower_and_emit_plain(
         request.options,
         request.experimental,
         request.context,
+        request.runtime_module_name,
         || {
             if let Some(summary) = request.options.croquis.as_deref()
                 && !croquis::projectable(summary, request.options.binding_metadata.as_ref())
@@ -219,6 +220,7 @@ fn lower_and_emit<C: CaptureSink>(
         request.options,
         request.experimental,
         request.context,
+        request.runtime_module_name,
         capture,
         || {
             if let Some(summary) = request.options.croquis.as_deref()
