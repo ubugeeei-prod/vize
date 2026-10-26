@@ -5,6 +5,8 @@ export const TYPECHECKER_TESTS = {
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
   "cache-maintenance-9860": "bounded_cache_maintenance_preserves_project_diagnostics",
+  "callback-render-position-10738":
+    "callback_render_position_preserves_complete_authored_diagnostics",
   "component-event-tuples": "component_event_tuples_preserve_all_argument_diagnostics",
   "component-input-diagnostic-owners-10607":
     "component_input_copies_preserve_complete_authored_diagnostics",
@@ -119,6 +121,7 @@ export const sourceRevisions = {
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
+  "callback-render-position-10738": "78719553cf550bcffbf1d0fb891fda642f42de3a",
   "component-event-tuples": originalFixtureRevision,
   "component-input-diagnostic-owners-10607": "bd905e766c37ad5bacabaacbec02c90def36726e",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",

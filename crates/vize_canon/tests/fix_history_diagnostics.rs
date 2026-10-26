@@ -1017,6 +1017,17 @@ fn editor_alias_import_extension_styles_keep_native_diagnostics() {
 }
 
 #[test]
+fn callback_render_position_preserves_complete_authored_diagnostics() {
+    check_pack(
+        "callback-render-position-10738",
+        "callback_render_position_preserves_complete_authored_diagnostics",
+        "78719553cf550bcffbf1d0fb891fda642f42de3a",
+        Some(10738),
+        &["type-query-before-delete"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

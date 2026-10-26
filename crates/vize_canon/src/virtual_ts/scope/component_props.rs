@@ -28,6 +28,7 @@ use super::component_slots::{
 };
 use super::context::{ComponentBindingCheck, ComponentPropsContext, VForPropsContext};
 use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
+use super::root_callback_owners::RootCallbackOwners;
 use super::root_owner_packets::RootOwnerPackets;
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
@@ -40,8 +41,9 @@ pub(super) fn generate_component_props(
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
-    root_packets: &mut RootOwnerPackets,
+    owners: (&mut RootOwnerPackets, &RootCallbackOwners),
 ) {
+    let (root_packets, callback_owners) = owners;
     let summary = ctx.summary;
     if checkable_usages.is_empty() {
         return;
@@ -164,8 +166,8 @@ pub(super) fn generate_component_props(
         if is_empty_props_usage(usage) {
             continue;
         }
-        if !root_packets.contains(idx) {
-            generate_root_usage_checks(ts, mappings, ctx, idx, usage);
+        if !root_packets.contains(idx) && !callback_owners.contains(idx) {
+            generate_root_usage_checks(ts, mappings, ctx, idx, usage, false);
         }
     }
 
@@ -229,6 +231,7 @@ pub(super) fn generate_component_props(
                 &packet_ctx,
                 idx,
                 usage,
+                false,
             );
             packet.append_to(
                 ts,
@@ -368,12 +371,13 @@ fn shared_component_contracts(
     contracts
 }
 
-fn generate_root_usage_checks(
+pub(super) fn generate_root_usage_checks(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,
     usage: &ComponentUsage,
+    protect_callbacks: bool,
 ) {
     let summary = ctx.summary;
     let slot_check_meta = ComponentSlotCheckMeta {
@@ -397,7 +401,8 @@ fn generate_root_usage_checks(
             ts,
             mappings,
             ctx.template_binding_access,
-            ctx.source_context(),
+            ctx.source_context()
+                .with_callback_primary_protection(protect_callbacks),
             "  ",
         )
         .strict_v_model(ctx.strict_v_model)
