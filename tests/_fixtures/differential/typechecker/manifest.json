@@ -8082,7 +8082,7 @@
         {
           "selector": "generate_vue_language_code",
           "source": "crates/vize_vitrine/src/napi/language_code.rs",
-          "sha256": "7fe63a387f77750054d8a12552ff758b6c1d1b610e754189a332e0a5b7f1ee6b"
+          "sha256": "7954365cd0a7d91c5c411fb3e56883092f1185d6115f4810973318264ee42864"
         },
         {
           "selector": "init",
