@@ -24,6 +24,11 @@ on:
         required: false
         default: false
         type: boolean
+      check_diagnostic_messages:
+        description: Compare complete checker diagnostics on fresh uncached source builds
+        required: false
+        default: false
+        type: boolean
 
 run-name: "Benchmark ${{ github.event_name == 'schedule' && format('long baseline...{0}', github.sha) || github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
 
@@ -44,6 +49,93 @@ env:
   VIZE_BENCH_BUILD_PROFILE_KEY: ci-opt-release-thin-lto-cgu16
 
 jobs:
+  check-diagnostic-messages:
+    name: Complete checker diagnostic source pairs
+    if: github.event_name == 'workflow_dispatch' && inputs.check_diagnostic_messages
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    env:
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: head
+          ref: ${{ env.BENCHMARK_HEAD_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: base
+          ref: ${{ env.BENCHMARK_BASE_SHA }}
+          persist-credentials: false
+      - name: Validate exact source roles
+        env:
+          RUN_HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$BENCHMARK_BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BENCHMARK_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BENCHMARK_BASE_SHA" != "$BENCHMARK_HEAD_SHA" && "$RUN_HEAD_SHA" == "$BENCHMARK_HEAD_SHA" ]]
+          [[ "$(git -C base rev-parse HEAD)" == "$BENCHMARK_BASE_SHA" ]]
+          [[ "$(git -C head rev-parse HEAD)" == "$BENCHMARK_HEAD_SHA" ]]
+          git -C head merge-base --is-ancestor "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "head/package.json"
+          cache: true
+          run-install: false
+      - name: Install one pinned physical native runtime
+        working-directory: head
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Validate focused complete-packet observers
+        run: node --test head/tools/benchmarks/scripts/check-diagnostic-messages.test.mjs
+      - name: Build sequential source and SHA roles without compilation caches
+        run: |
+          set -euo pipefail
+          mkdir check-message-build
+          compiler="$(rustup which rustc)"
+          cargo_binary="$(rustup which cargo)"
+          "$compiler" -vV > check-message-build/rustc.txt
+          "$cargo_binary" -V > check-message-build/cargo.txt
+          sha256sum "$compiler" "$cargo_binary" > check-message-build/toolchain.sha256
+          for role in base head; do
+            sha="$(git -C "$role" rev-parse HEAD)"
+            target="$RUNNER_TEMP/check-message-$role-$sha-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            [[ ! -e "$target" && ! -L "$target" ]]
+            printf '{"role":"%s","sourceSha":"%s","target":"%s","initialAbsent":true,"compilationCache":false,"profile":"ci-opt-release-thin-lto-cgu16"}\n' "$role" "$sha" "$target" > "check-message-build/$role.json"
+            git -C "$role" status --porcelain > "check-message-build/$role-status-before.txt"
+            [[ ! -s "check-message-build/$role-status-before.txt" ]]
+            env -u CARGO_TARGET_DIR -u RUSTFLAGS -u CARGO_ENCODED_RUSTFLAGS \
+              RUSTC="$compiler" RUSTC_WRAPPER= RUSTC_WORKSPACE_WRAPPER= \
+              "$cargo_binary" build --manifest-path "$role/Cargo.toml" --locked --profile ci-opt -p vize --target-dir "$target" \
+              --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' \
+              > "check-message-build/$role.stdout" 2> "check-message-build/$role.stderr"
+            git -C "$role" diff --exit-code
+            sha256sum "$target/ci-opt/vize" > "check-message-build/$role-binary.sha256"
+            printf 'MESSAGE_%s_BIN=%s\n' "${role^^}" "$target/ci-opt/vize" >> "$GITHUB_ENV"
+          done
+      - name: Compare whole reports, alternating latency and separate source observations
+        run: |
+          node head/tools/benchmarks/scripts/check-diagnostic-messages.mjs \
+            "$MESSAGE_BASE_BIN" "$MESSAGE_HEAD_BIN" "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
+            "$GITHUB_WORKSPACE/check-message-evidence"
+          cat check-message-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Retain complete source qualification including failed observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: check-diagnostic-messages
+          path: |
+            check-message-build/
+            check-message-evidence/
+          if-no-files-found: error
+          retention-days: 14
+
   pr-benchmark:
     name: pr-benchmark
     runs-on: blacksmith-32vcpu-ubuntu-2404

@@ -1,0 +1,8 @@
+<template><div class="sample">Color custody</div></template>
+<style scoped>
+.sample {
+  color: red;
+  background-color: #336699;
+  border-color: rgba(51, 102, 153, 0.5);
+}
+</style>

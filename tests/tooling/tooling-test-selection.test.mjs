@@ -137,3 +137,26 @@ void test("the runner keeps shared fixtures serial and rejects unrecognized or d
     /retain every test/,
   );
 });
+
+void test("real Nuxt host inputs reach both strict TypeScript project gates before merge", () => {
+  const gates = [
+    "tests/tooling/typescript-tooling-project.test.ts",
+    "tests/tooling/typescript-ci-gates.test.ts",
+  ];
+  for (const path of [
+    "tools/support/compat/nuxt/nuxt2-module-build.ts",
+    "tools/support/compat/nuxt/host-types.ts",
+    "tools/support/compat/nuxt/nuxt2-typecheck.ts",
+    // Deleted project members still invalidate the strict project checks.
+    "tools/support/compat/nuxt/deleted-typecheck-probe.ts",
+  ]) {
+    const plan = planToolingTests([path], { tier: "pr" });
+    assert.equal(plan.reason, "import closures and named repository paths");
+    for (const gate of gates) assert.ok(plan.tests.includes(gate), `${path}: ${gate}`);
+  }
+  const prose = planToolingTests(["docs/content/integrations/nuxt.md"], { tier: "pr" });
+  assert.ok(!prose.tests.includes(gates[0]), "prose does not change the TypeScript solution");
+  // The CI gate contract dynamically loads an authored historical module.
+  // Preserve the selector's existing broad fallback for incomplete imports.
+  assert.ok(prose.tests.includes(gates[1]));
+});

@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gzipSync, gunzipSync } from "node:zlib";
+import { readPinnedArtifact } from "../differential/harness.mjs";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { validateLspReport } from "../differential/lsp-report.ts";
 import {
@@ -131,7 +132,7 @@ test("unsupported transitions get no synthetic wire, reference match or native c
   }
 });
 
-test("the handler compares complete CSS documentation from the retained public response", () => {
+test("the handler compares complete CURRENT CSS documentation and preserves the public response", () => {
   const before = JSON.parse(
     gunzipSync(fixture.files.get("custody/public-before-observation.json.gz")!).toString("utf8"),
   );
@@ -147,5 +148,24 @@ test("the handler compares complete CSS documentation from the retained public r
   );
   const literal = source.match(/documentation\.value,\s*r#"([\s\S]*?)"#/u);
   assert.ok(literal);
-  assert.deepEqual({ kind: "markdown", value: literal[1] }, response.documentation);
+  const current = JSON.parse(
+    readPinnedArtifact(
+      path.join(root, "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572"),
+      {
+        path: "local-completion-resolve.expected-current.json",
+        sha256: "33f35ddde74f1bc0221e47d07d891d594bac2c86fdaea0c21b3ae2539a667035",
+      },
+    ).toString("utf8"),
+  );
+  // This reference-only law permits exactly the authored Example delta.
+  // Runtime comparisons use the complete fixed CURRENT object unchanged.
+  assert.deepEqual({ ...current, documentation: response.documentation }, response);
+  assert.equal(
+    current.documentation.value,
+    response.documentation.value.replace(
+      "```css\ndisplay: block;\n```",
+      "```css\n.example {\n  display: block;\n}\n```",
+    ),
+  );
+  assert.deepEqual({ kind: "markdown", value: literal[1] }, current.documentation);
 });

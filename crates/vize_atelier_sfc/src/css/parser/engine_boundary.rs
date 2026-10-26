@@ -83,6 +83,7 @@ pub(crate) fn print_css_ast_guarded(
     recover_engine(
         || print_css_ast_internal(ast, minify, targets),
         || CssInternalResult {
+            map: None,
             code: String::from(""),
             errors: vec![engine_panic_message("CSS print error: ")],
             exports: None,
@@ -100,17 +101,30 @@ pub(crate) fn compile_css_guarded(
     targets: Targets,
     custom_media: bool,
     css_modules: bool,
+    source_map: bool,
 ) -> CssInternalResult {
     if value_guard::css_contains_crashing_math_function(css) {
         return CssInternalResult {
+            map: None,
             code: css.to_compact_string(),
             errors: vec![String::from(value_guard::MATH_FUNCTION_GUARD_ERROR)],
             exports: None,
         };
     }
     recover_engine(
-        || compile_css_internal(css, filename, minify, targets, custom_media, css_modules),
+        || {
+            compile_css_internal(
+                css,
+                filename,
+                minify,
+                targets,
+                custom_media,
+                css_modules,
+                source_map,
+            )
+        },
         || CssInternalResult {
+            map: None,
             code: css.to_compact_string(),
             errors: vec![engine_panic_message("CSS compile error: ")],
             exports: None,
@@ -129,6 +143,7 @@ pub(crate) fn bundle_css_guarded(
     recover_engine(
         || bundle_css_internal(entry_path, minify, targets, css_modules, custom_media),
         || CssInternalResult {
+            map: None,
             code: String::from(""),
             errors: vec![engine_panic_message("CSS bundle error: ")],
             exports: None,
@@ -169,6 +184,7 @@ mod tests {
             let result = recover_engine(
                 || -> CssInternalResult { panic!("injected output failure") },
                 || CssInternalResult {
+                    map: None,
                     code: source.to_compact_string(),
                     errors: vec![engine_panic_message(operation)],
                     exports: None,

@@ -391,6 +391,94 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
   }
 });
 
+void test("authored source files share work per snapshot without sharing file identities", () => {
+  const source =
+    '<script setup lang="ts">const value: number = "bad";</script><template>{{ value }}</template>';
+  const initial = ts.ScriptSnapshot.fromString(source);
+  const snapshots = new Map([
+    ["A.vue", initial],
+    ["B.vue", initial],
+  ]);
+  const parsed = [];
+  const f = fixture(
+    "source-file-cache",
+    { "A.vue": source, "B.vue": source },
+    {},
+    {},
+    {
+      typescript: {
+        ...ts,
+        createSourceFile(file, ...args) {
+          if (file.endsWith(".vue")) parsed.push(file);
+          return ts.createSourceFile(file, ...args);
+        },
+      },
+      host: {
+        getScriptSnapshot(file) {
+          const snapshot = snapshots.get(path.basename(file));
+          if (snapshot) return snapshot;
+          const text = ts.sys.readFile(file);
+          return text === undefined ? undefined : ts.ScriptSnapshot.fromString(text);
+        },
+      },
+    },
+  );
+  try {
+    for (const name of ["A.vue", "B.vue", "A.vue", "B.vue"]) {
+      const file = f.path(name);
+      const diagnostics = f.languageService.getSemanticDiagnostics(file);
+      assert(diagnostics.some((d) => d.code === 2322 && d.file.fileName === file));
+      assert.deepEqual(f.languageService.toLineColumnOffset(file, 0), { line: 0, character: 0 });
+    }
+    assert.deepEqual(parsed.sort(), [f.path("A.vue"), f.path("B.vue")].sort());
+    const updated = source.replace('"bad"', '"still bad"');
+    snapshots.set("A.vue", ts.ScriptSnapshot.fromString(updated));
+    f.update("A.vue", updated);
+    const diagnostics = f.languageService.getSemanticDiagnostics(f.path("A.vue"));
+    assert(diagnostics.some((d) => d.code === 2322 && d.file.text === updated));
+    f.languageService.toLineColumnOffset(f.path("B.vue"), 0);
+    assert.equal(parsed.filter((file) => file === f.path("A.vue")).length, 2);
+    assert.equal(parsed.filter((file) => file === f.path("B.vue")).length, 1);
+  } finally {
+    f.languageService.dispose();
+  }
+});
+
+void test("the host's legacy module resolver keeps authority over virtual modules", () => {
+  const requested = [];
+  const f = fixture(
+    "host-resolver",
+    {
+      "main.ts": "import { value } from '#virtual'; const result: number = value;",
+      "implementation.ts": "export const value = 42;",
+    },
+    {},
+    {},
+    {
+      host: {
+        resolveModuleNames(names) {
+          requested.push(...names);
+          return names.map((name) =>
+            name === "#virtual"
+              ? {
+                  resolvedFileName: path.join(workspace, "implementation.ts"),
+                  extension: ts.Extension.Ts,
+                  isExternalLibraryImport: false,
+                }
+              : undefined,
+          );
+        },
+      },
+    },
+  );
+  try {
+    assert.deepEqual(f.languageService.getSemanticDiagnostics(f.path("main.ts")), []);
+    assert(requested.includes("#virtual"));
+  } finally {
+    f.languageService.dispose();
+  }
+});
+
 void test("all captured packets equal the reviewed complete source expectations", () => {
   fs.mkdirSync(evidence, { recursive: true });
   fs.writeFileSync(path.join(evidence, "packets.json"), JSON.stringify(packets, null, 2) + "\n");

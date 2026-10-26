@@ -26,6 +26,14 @@ const LanguageFeature = Object.freeze({
 });
 
 function utf8Boundaries(text) {
+  if (Buffer.byteLength(text, "utf8") === text.length) {
+    return (offset) => {
+      if (!Number.isSafeInteger(offset) || offset < 0 || offset > text.length) {
+        throw new RangeError(`Native projection offset ${offset} is not a UTF-8 boundary`);
+      }
+      return offset;
+    };
+  }
   const boundaries = new Map([[0, 0]]);
   let bytes = 0;
   let units = 0;

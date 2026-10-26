@@ -15,6 +15,7 @@ on:
       - "tests/tooling/native-declarations.test.ts"
       - "tests/tooling/benchmark-musea-*.test.ts"
       - "tools/benchmarks/scripts/musea-artifacts.mjs"
+      - "tools/support/release/smoke_release_install/**"
       - ".github/workflows/volar-plugin.yml"
   workflow_dispatch: {}
 
@@ -80,3 +81,4 @@ jobs:
           path: ${{ runner.temp }}/volar-plugin-evidence
           if-no-files-found: error
           compression-level: 0
+          overwrite: true

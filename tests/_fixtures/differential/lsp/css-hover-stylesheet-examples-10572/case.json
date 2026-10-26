@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "lsp/regression/css-hover-stylesheet-examples-10572",
+  "provenance": {
+    "fixCommit": "ad8f22af89306aab5d06a6ae7573098d890b4a4e",
+    "witnessPath": "crates/vize_maestro/src/ide/style/tests/hover.rs",
+    "witnessTest": "named_color_hover_keeps_the_whole_packet_with_a_stylesheet_example",
+    "inputOrigin": "Authored real packaged-VSCode fixture; color positions preserved from unchanged-source baseline artifacts",
+    "contractOrigin": "Explicit current whole property/named hover packets for intentional executable-example byte delta; descriptions, links and abstract syntax metadata preserved"
+  },
+  "input": {
+    "source": "Colors.vue.txt",
+    "runtimePath": "Colors.vue",
+    "sha256": "7e59a2a5690fe4a9c85299c5d0799c036d30584d885268c634282f58584930f6"
+  },
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "960473c4e0710e368718bf14c3842d8d14afd2310c42c056a2b45d92cf7297d0"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Current CSS stylesheet-context Markdown examples; real syntax-token colors/picker qualified separately in pinned Electron; no native whole-product LSP or concrete-literal hover acceptance"
+}

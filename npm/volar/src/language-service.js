@@ -57,22 +57,23 @@ export function createVizeLanguageService(ts, host, options = {}) {
     return { ...settings, allowNonTsExtensions: true };
   };
   adapterHost.getScriptKind ??= () => ts.ScriptKind.Unknown;
-  adapterHost.resolveModuleNameLiterals ??= (
-    literals,
-    containingFile,
-    redirectedReference,
-    compilerOptions,
-  ) =>
-    literals.map((literal) =>
-      ts.resolveModuleName(
-        literal.text,
-        containingFile,
-        compilerOptions,
-        adapterHost,
-        undefined,
-        redirectedReference,
-      ),
-    );
+  if (!adapterHost.resolveModuleNameLiterals && !adapterHost.resolveModuleNames)
+    adapterHost.resolveModuleNameLiterals = (
+      literals,
+      containingFile,
+      redirectedReference,
+      compilerOptions,
+    ) =>
+      literals.map((literal) =>
+        ts.resolveModuleName(
+          literal.text,
+          containingFile,
+          compilerOptions,
+          adapterHost,
+          undefined,
+          redirectedReference,
+        ),
+      );
   decorateLanguageServiceHost(ts, language, adapterHost);
   const rawService = ts.createLanguageService(adapterHost);
   const diagnosticCache = new WeakMap();
@@ -104,16 +105,24 @@ export function createVizeLanguageService(ts, host, options = {}) {
   proxied.initialize(language);
   const proxy = proxied.proxy;
 
+  const sourceFiles = new WeakMap();
   function sourceFileFor(fileName) {
     const source = language.scripts.get(fileName);
     if (!source?.generated) return;
-    return ts.createSourceFile(
-      fileName,
-      source.snapshot.getText(0, source.snapshot.getLength()),
-      ts.ScriptTarget.Latest,
-      false,
-      ts.ScriptKind.TSX,
-    );
+    let files = sourceFiles.get(source.snapshot);
+    if (!files) sourceFiles.set(source.snapshot, (files = new Map()));
+    let file = files.get(fileName);
+    if (!file) {
+      file = ts.createSourceFile(
+        fileName,
+        source.snapshot.getText(0, source.snapshot.getLength()),
+        ts.ScriptTarget.Latest,
+        false,
+        ts.ScriptKind.TSX,
+      );
+      files.set(fileName, file);
+    }
+    return file;
   }
   function authoredDiagnostic(diagnostic) {
     const root = diagnostic.file && rootFor(diagnostic.file.fileName);

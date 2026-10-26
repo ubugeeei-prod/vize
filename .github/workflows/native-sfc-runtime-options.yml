@@ -1,0 +1,139 @@
+name: SFC runtime option transport
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/native-sfc-runtime-options.yml
+      - crates/vize_vitrine/src/napi/sfc.rs
+      - crates/vize_vitrine/src/napi/sfc/**
+      - crates/vize_atelier_core/src/codegen/**
+      - crates/vize_atelier_sfc/src/**
+      - crates/vize_atelier_ssr/src/**
+      - crates/vize_atelier_vapor/src/**
+      - davinci/vize_l0/src/js_string.rs
+      - davinci/vize_l1_to_l2/src/emit/**
+      - tests/tooling/native-sfc-runtime-options.test.mjs
+      - tests/_fixtures/differential/compiler/sfc-runtime-options-native/**
+      - npm/native/**
+      - crates/vize_vitrine/src/napi/**
+      - Cargo.lock
+  workflow_dispatch:
+
+permissions: { contents: read }
+concurrency:
+  group: sfc-runtime-options-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-runtime-options-baseline:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: 7c62954a718a7137dc81c6723db696b674458360
+      VIZE_NATIVE_SFC_RUNTIME_OPTIONS_REQUIRED: "1"
+      VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF: target/vize-tests/sfc-runtime-options
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: 7c62954a718a7137dc81c6723db696b674458360
+          persist-credentials: false
+      - name: Read the candidate qualification recipe without changing producer source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualification
+          persist-credentials: false
+          sparse-checkout: tests/tooling/native-sfc-runtime-options.test.mjs
+          sparse-checkout-cone-mode: false
+      - run: cp qualification/tests/tooling/native-sfc-runtime-options.test.mjs tests/tooling/native-sfc-runtime-options.test.mjs
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: sfc-runtime-options, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Build the actual source-native package
+        run: vp run --filter './npm/native' build:ci
+      - name: Seal the selected image and exact source
+        run: GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+      - name: Verify runtime option transport and complete code/maps
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF"
+          node --experimental-vm-modules --test --test-name-pattern "^capture all" tests/tooling/native-sfc-runtime-options.test.mjs 2>&1 | tee "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF/tap.log"
+      - name: Preserve source identity and all observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: sfc-runtime-options-baseline-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/sfc-runtime-options/
+          if-no-files-found: error
+          include-hidden-files: true
+
+  native-runtime-options:
+    needs: native-runtime-options-baseline
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE: target/vize-tests/sfc-runtime-options-baseline/matrix.json
+      VIZE_NATIVE_SFC_RUNTIME_OPTIONS_REQUIRED: "1"
+      VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF: target/vize-tests/sfc-runtime-options
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: sfc-runtime-options, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Build the actual source-native package
+        run: vp run --filter './npm/native' build:ci
+      - name: Seal the selected image and exact source
+        run: GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+      - name: Install the actual DOM runtime for standalone execution
+        run: |
+          mkdir -p "$RUNNER_TEMP/sfc-option-runtime"
+          npm --prefix "$RUNNER_TEMP/sfc-option-runtime" install --save-exact --ignore-scripts --no-audit --no-fund vue@3.5.44
+          printf 'VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE=%s/sfc-option-runtime\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Read the whole before-source packets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sfc-runtime-options-baseline-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/sfc-runtime-options-baseline
+      - name: Verify runtime option transport and complete code/maps
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF"
+          node --experimental-vm-modules --test tests/tooling/native-sfc-runtime-options.test.mjs 2>&1 | tee "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF/tap.log"
+      - name: Preserve source identity and all observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: sfc-runtime-options-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            target/vize-tests/sfc-runtime-options/
+            npm/native/.artifacts/native/build-token-receipt.json
+          if-no-files-found: error
+          include-hidden-files: true

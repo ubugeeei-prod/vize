@@ -37,7 +37,7 @@ export function query(name, params, invoke) {
   return result;
 }
 
-export function fixture(name, files, extraOptions = {}, languageOptions = {}) {
+export function fixture(name, files, extraOptions = {}, languageOptions = {}, overrides = {}) {
   const documents = new Map(
     Object.entries(files).map(([file, source]) => [
       path.join(workspace, file),
@@ -76,7 +76,8 @@ export function fixture(name, files, extraOptions = {}, languageOptions = {}) {
     directoryExists: (dir) => dir.startsWith(workspace) || ts.sys.directoryExists(dir),
     realpath: (file) => ts.sys.realpath?.(file) ?? file,
   };
-  const service = createVizeLanguageService(ts, host, languageOptions);
+  Object.assign(host, overrides.host);
+  const service = createVizeLanguageService(overrides.typescript ?? ts, host, languageOptions);
   inputs.push({ name, files, compilerOptions: settings, languageOptions });
   return {
     ...service,

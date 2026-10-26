@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "lsp/regression/css-concrete-color-hover-10556",
+  "provenance": {
+    "fixCommit": "57bebab35af931379eb9089b33cc3b3c20d81bd1",
+    "witnessPath": "crates/vize_maestro/src/server/annotations/document_color/hover/tests.rs",
+    "witnessTest": "complete_hover_packets_keep_authored_utf16_ranges_in_every_supported_style_profile",
+    "inputOrigin": "Minimal derivative of frozen complete fresh public v0.565.0 literal-null hover packets",
+    "contractOrigin": "Independently authored normalized CSS forms and physical UTF-16 ranges; existing catalogue is unchanged"
+  },
+  "files": [
+    {
+      "source": "Colors.vue.txt",
+      "runtimePath": "Colors.vue",
+      "sha256": "edb68163b7b1a9e56d2f700019cc8dc7c44b2630b36b097c80ff60691558018f"
+    }
+  ],
+  "entry": "Colors.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "1b9d45624d694fa9bcdc6a8b507ec578c4213e1d0ab71e821254279d0c8c556f"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Whole concrete CSS color hover packets and authored ranges; source-inspected custody grants no native whole-product LSP credit"
+}
