@@ -5680,6 +5680,7 @@ docs: docs/content/rules/vue.md
 invalid:
   <MyComponent @myEvent="handler" />
   <MyComponent v-on:myEvent="handler" />
+  <my-component @update:modelValue="handler" />
 
 valid:
   <MyComponent @my-event="handler" />

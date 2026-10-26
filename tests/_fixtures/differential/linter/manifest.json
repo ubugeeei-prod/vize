@@ -2509,6 +2509,38 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/v-on-hyphenation-custom-tags-10822",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "v-on-hyphenation-custom-tags-10822",
+        "files": [
+          {
+            "path": "ColorPalette.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
