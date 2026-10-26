@@ -3,6 +3,7 @@
 mod build_cli;
 mod build_custom_elements_cli;
 mod build_declaration_emit_cli;
+mod build_entry_compiler_cli;
 mod build_inputs_cli;
 mod build_output_paths_cli;
 mod build_profile_cli;
@@ -178,6 +179,7 @@ mod fmt_trailing_line_comment_cli;
 mod fmt_typed_arrow_last_argument_cli;
 mod fmt_v_for_alias_cli;
 mod fmt_vue2_filters_cli;
+mod fmt_vue_ownership_cli;
 mod git_metadata_fmt_cli;
 mod inspector_art_cli;
 mod inspector_cli;

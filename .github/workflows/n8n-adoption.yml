@@ -36,7 +36,7 @@ jobs:
       - name: Verify complete fixture and frozen adoption configuration
         env:
           VIZE_N8N_FIXTURE_REQUIRED: "1"
-        run: vp node --test tests/tooling/n8n-adoption-fixture.test.mjs
+        run: vp node --test tests/tooling/n8n-adoption-fixture.test.ts
 
   compiler-custody:
     name: Complete n8n compiler source before and after

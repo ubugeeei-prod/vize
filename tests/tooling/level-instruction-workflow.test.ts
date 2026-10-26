@@ -191,7 +191,7 @@ test("original formatter calibration preserves level enforcement and retains its
   assert.equal(upload?.["continue-on-error"], undefined);
   const tests = gate?.steps?.find((step) => step.name === "Test instruction parser and gates");
   assert.match(tests?.run ?? "", /level-instruction-counts\.test\.mjs/);
-  assert.match(tests?.run ?? "", /formatter-instruction-counts\.test\.mjs/);
+  assert.match(tests?.run ?? "", /formatter-instruction-counts\.test\.ts/);
 });
 
 test("formatter caps fail closed on every source and are enforced for every actual measurement", () => {

@@ -18,8 +18,11 @@ mod project;
 pub(super) mod rename;
 mod script;
 mod semantic_links;
+mod uri_index;
 pub(crate) use attribute_query::{component_attribute_position, is_component_attribute_query};
 pub(crate) use script::open_canonical_script_document;
+pub(crate) use uri_index::CanonicalUriIndex;
+use uri_index::IndexedDocument;
 
 pub(crate) use component_completion::canonical_component_prop_position;
 pub(crate) use component_project::open_canonical_virtual_navigation_project_document_strict;
@@ -42,7 +45,8 @@ pub(crate) use semantic_links::materialized_semantic_positions;
 pub(crate) use semantic_links::{
     CanonicalSemanticPosition, ComponentPropNavigationIdentities, ComponentPropSourceCache,
     component_prop_location_matches, component_prop_navigation_identity_matches,
-    linked_semantic_positions, matching_component_prop_navigation_positions, tower_range,
+    indexed_linked_semantic_positions, linked_semantic_positions,
+    matching_component_prop_navigation_positions, tower_range,
 };
 
 pub(crate) struct CanonicalVirtualDocument {
@@ -102,9 +106,10 @@ pub(crate) fn map_canonical_corsa_locations(
     doc: &CanonicalVirtualDocument,
     locations: Vec<LspLocation>,
 ) -> Vec<Location> {
+    let index = CanonicalUriIndex::new(ctx.state, doc);
     locations
         .iter()
-        .filter_map(|location| map_canonical_corsa_location(ctx, doc, location))
+        .filter_map(|location| map_location(ctx, doc, location, index.get(&location.uri)))
         .collect()
 }
 
@@ -113,7 +118,21 @@ pub(crate) fn map_canonical_corsa_location(
     doc: &CanonicalVirtualDocument,
     location: &LspLocation,
 ) -> Option<Location> {
-    if location_matches_uri_cached(ctx.state, &location.uri, doc.request_uri.as_str())
+    map_location(
+        ctx,
+        doc,
+        location,
+        uri_index::matching_document(ctx.state, doc, &location.uri),
+    )
+}
+
+fn map_location(
+    ctx: &IdeContext<'_>,
+    doc: &CanonicalVirtualDocument,
+    location: &LspLocation,
+    matched: Option<IndexedDocument<'_>>,
+) -> Option<Location> {
+    if matches!(matched, Some(IndexedDocument::Primary))
         || super::virtual_document_path(&location.uri).as_deref()
             == Some(canonical_request_path(ctx.uri).as_str())
     {
@@ -124,9 +143,7 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    if let Some(dependency) = doc.dependencies.iter().find(|dependency| {
-        location_matches_uri_cached(ctx.state, &location.uri, &dependency.request_uri)
-    }) {
+    if let Some(IndexedDocument::Dependency(dependency)) = matched {
         let range = map_virtual_result_lsp_range_to_source(
             &dependency.source,
             &dependency.virtual_result,
@@ -138,11 +155,7 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    if let Some(materialized) = doc
-        .materialized_sources
-        .iter()
-        .find(|source| location_matches_uri_cached(ctx.state, &location.uri, &source.request_uri))
-    {
+    if let Some(IndexedDocument::Materialized(materialized)) = matched {
         if !materialized.mapping_kind.is_mappable() {
             return None;
         }

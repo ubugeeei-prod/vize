@@ -36,7 +36,7 @@ impl CrossFileAnalyzer {
             src: resolve(&dirs.src),
             pages: resolve(&dirs.pages),
             layouts: resolve(&dirs.layouts),
-            builtin_app: dirs.builtin_app,
+            pages_enabled: dirs.pages_enabled,
         });
         let mut edges = Vec::new();
         let mut configured_app = false;
@@ -54,9 +54,11 @@ impl CrossFileAnalyzer {
             }
             let layout = uses(app, ["NuxtLayout", "nuxt-layout"]);
             match configured {
-                Some(dirs) => {
+                Some(dirs) if dirs.pages_enabled => {
                     self.page_edges(Some(app.id), layout, &dirs.pages, &dirs.layouts, &mut edges)
                 }
+                // Without filesystem routing, `<NuxtPage>` renders no `pages` files.
+                Some(_) => {}
                 None => self.page_edges(
                     Some(app.id),
                     layout,
@@ -67,7 +69,7 @@ impl CrossFileAnalyzer {
             }
         }
         if let Some(dirs) = &dirs
-            && dirs.builtin_app
+            && dirs.pages_enabled
             && !configured_app
         {
             // Without `app.vue`, Nuxt's own app renders `<NuxtLayout><NuxtPage /></NuxtLayout>`.

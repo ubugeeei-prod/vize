@@ -8,7 +8,7 @@ use std::{
 use super::{
     CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
     collect_roots, exit_after_execution_error, explicit_input_root,
-    external_input_tsconfig_boundary, finish_executions, prepare_and_execute, report_no_inputs,
+    external_input_tsconfig_boundary, finish_executions, prepare_candidate, report_no_inputs,
     resolve_from_config_dir, resolve_invocation_program, split_program_candidates,
     template_syntax_mode, validate_corsa_server_count, warn_for_disabled_legacy,
 };
@@ -146,30 +146,50 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         quiet: args.quiet,
     };
     let validate_inputs = !args.patterns.is_empty() && invocation_tsconfig_path.is_some();
-    let mut executions = Vec::new();
     let mut only_excluded_explicit_inputs = !candidates.is_empty();
-    for candidate in candidates {
-        let prepared = match prepare_and_execute(
-            args,
-            candidate,
-            &cwd,
-            &invocation_project_root,
-            &explicit_input_root,
-            validate_inputs,
-            tsconfig_boundary.as_deref(),
-            jsx_typecheck,
-            &settings,
-            &mut tsconfig_input_cache,
-            &mut canonical_paths,
-            &mut package_route_resolver,
-        ) {
-            Ok(prepared) => prepared,
-            Err(error) => exit_after_execution_error(executions, error),
-        };
-        only_excluded_explicit_inputs &= prepared.excluded_explicit_inputs;
-        if let Some(execution) = prepared.execution {
-            executions.push(execution);
+    // Preparation shares the path and package caches, so it stays serial. Each
+    // native check owns its checker and overlaps the next preparation; programs
+    // sharing a mirror take turns, since its materialize lock wait times out.
+    let (checked, preparation_error) = super::overlap::prepare_and_check_overlapped(
+        candidates,
+        |candidate| {
+            prepare_candidate(
+                args,
+                candidate,
+                &cwd,
+                &invocation_project_root,
+                &explicit_input_root,
+                validate_inputs,
+                tsconfig_boundary.as_deref(),
+                jsx_typecheck,
+                &settings,
+                &mut tsconfig_input_cache,
+                &mut canonical_paths,
+                &mut package_route_resolver,
+            )
+            .map(|prepared| {
+                only_excluded_explicit_inputs &= prepared.excluded_explicit_inputs;
+                prepared.execution
+            })
+        },
+        |pending| pending.virtual_root().to_path_buf(),
+        super::execution::PendingProgram::check,
+    );
+    // Report in program order: an earlier failure ends the run as it did
+    // serially. Later executions drop first so their storage is removed.
+    let mut executions = Vec::new();
+    let mut failure = None;
+    for result in checked {
+        match result {
+            Ok(execution) if failure.is_none() => executions.push(execution),
+            Ok(_) => {}
+            Err(error) => {
+                failure.get_or_insert(error);
+            }
         }
+    }
+    if let Some(error) = failure.or(preparation_error) {
+        exit_after_execution_error(executions, error);
     }
     if executions.is_empty() {
         // Finding inputs that their owning program intentionally excludes is

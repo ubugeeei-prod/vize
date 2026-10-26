@@ -193,7 +193,9 @@ responsibility to Vite+. The integration option `conflicts: false` disables
 automatic overlap handling.
 
 `fmt.ignorePatterns` applies to both formatters, so generated or vendored Vue files
-stay untouched. To use `lint.vue: false` or `fmt.vue: false`, omit the corresponding
+stay untouched. An entry that excludes every Vue file (`**/*.vue` or `*.vue`) only keeps
+`.vue` away from Oxfmt, as the integration does by default, so `conflicts: false` projects
+can add it themselves; `vize fmt` still formats them. To use `lint.vue: false` or `fmt.vue: false`, omit the corresponding
 shared native settings that would explicitly enable that tool. `lint.vue.locale` (`en`, `ja`, or `zh`) and `helpLevel` (`full`,
 `short`, or `none`) control native diagnostics without passing unsupported flags
 to Oxlint.

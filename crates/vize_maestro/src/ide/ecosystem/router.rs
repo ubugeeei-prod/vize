@@ -19,7 +19,9 @@ pub(crate) fn completions(
     ctx: &IdeContext<'_>,
     descriptor: &SfcDescriptor<'_>,
 ) -> Vec<CompletionItem> {
-    if let Some(items) = route_param_completions(ctx, descriptor) {
+    if !super::typed_route_authority(ctx.state)
+        && let Some(items) = route_param_completions(ctx, descriptor)
+    {
         return items;
     }
 

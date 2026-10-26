@@ -229,7 +229,7 @@ mod tests {
         let mut expected = discovery_paths(root.path());
         expected.extend(
             ["pkl", "ts", "mts", "cts", "js", "mjs", "cjs", "json"]
-                .map(|extension| root.path().join(format!("vize.config.{extension}"))),
+                .map(|extension| root.path().join(crate::cstr!("vize.config.{extension}"))),
         );
         assert_eq!(observed, expected);
     }
@@ -253,7 +253,7 @@ mod tests {
         };
         assert_eq!(
             error,
-            format!(
+            crate::cstr!(
                 "failed to parse {}: node failed to load config: authored-specificreason ({status}; observation transport: failed to fill whole buffer)",
                 path.display()
             )

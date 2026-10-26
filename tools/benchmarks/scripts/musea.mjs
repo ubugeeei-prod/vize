@@ -59,7 +59,7 @@ import { createMuseaStages } from "./musea-stages.mjs";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(benchDir, "..", "..", "..");
-const workerPath = join(benchDir, "musea-worker.mjs");
+const workerPath = join(benchDir, "musea-worker.ts");
 
 export const DEFAULT_MUSEA_RUNS = 5;
 export const DEFAULT_MUSEA_WARMUPS = 1;

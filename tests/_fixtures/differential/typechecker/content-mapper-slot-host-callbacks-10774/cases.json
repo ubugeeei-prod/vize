@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10774,
+  "regressionCommit": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "sourceRevision": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "function-prop-with-named-slot",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/P3.vue",
+          "source": "src/P3.vue.txt"
+        },
+        {
+          "file": "src/Child2.vue",
+          "source": "src/Child2.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/P3.vue",
+          "line": 11,
+          "column": 37,
+          "severity": 1,
+          "code": 2532,
+          "message": "Object is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

@@ -5,24 +5,26 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-// Python, Lean and MoonBit tooling were retired by the maintainer on
-// 2026-10-13 (#8840). Python and MoonBit tooling are rewritten in TypeScript
-// and Lean proofs become Rust Kani harnesses. The ledger lists every file that
-// still waits for its port, and this test makes the ledger a ratchet.
+// Python, Lean, MoonBit and `.mjs` tooling were retired by the maintainer on
+// 2026-10-13 (#8840). Python, MoonBit and `.mjs` tooling are rewritten in strictly
+// typed TypeScript and Lean proofs become Rust Kani harnesses. The ledger lists
+// every file that still waits for its port, and this test makes the ledger a ratchet.
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const ledgerPath = "tools/config/retired-tooling-languages.json";
-const languages = ["py", "lean", "mbt"] as const;
+const languages = ["py", "lean", "mbt", "mjs"] as const;
 type Language = (typeof languages)[number];
 
 const trackedPatterns: Readonly<Record<Language, readonly string[]>> = {
   py: ["*.py"],
   lean: ["*.lean", "lean-toolchain", "*/lean-toolchain"],
   mbt: ["*.mbt"],
+  mjs: ["*.mjs"],
 };
 const replacement: Readonly<Record<Language, string>> = {
   py: "write TypeScript instead",
   lean: "write a Rust Kani harness instead",
   mbt: "write TypeScript instead",
+  mjs: "write strictly typed TypeScript that Node runs directly instead",
 };
 
 interface PermanentPrefix {
@@ -75,6 +77,7 @@ function parseLedger(text: string): Ledger {
       py: stringList(retiring.py, "retiring.py"),
       lean: stringList(retiring.lean, "retiring.lean"),
       mbt: stringList(retiring.mbt, "retiring.mbt"),
+      mjs: stringList(retiring.mjs, "retiring.mjs"),
     },
   };
 }
@@ -102,7 +105,7 @@ function retiringFiles(ledger: Ledger, language: Language): readonly string[] {
 
 const ledger = parseLedger(readFileSync(path.join(repoRoot, ledgerPath), "utf8"));
 
-void test("every Python, Lean and MoonBit tooling file is listed for retirement", () => {
+void test("every Python, Lean, MoonBit and .mjs tooling file is listed for retirement", () => {
   for (const language of languages) {
     const tracked = retiringFiles(ledger, language);
     const listed = ledger.retiring[language];
