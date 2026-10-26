@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import type { NativeOwner } from "./lsp-strace.ts";
+import type { NativeRuntimeConsumer } from "./providers.ts";
 
-export function validateNativeLifecycle(owners, consumer, knownContract) {
+export function validateNativeLifecycle(
+  owners: readonly NativeOwner[],
+  consumer: Pick<NativeRuntimeConsumer, "expectedExecutable" | "kind">,
+  knownContract: unknown,
+) {
   const positive = consumer.expectedExecutable !== null;
   if (!positive) {
     assert.equal(owners.length, 0, "no undeclared, bundled, cached or global compiler may run");
@@ -12,6 +18,7 @@ export function validateNativeLifecycle(owners, consumer, knownContract) {
     "real compiler use must be observed independently of outer responses",
   );
   const sdk = consumer.expectedExecutable;
+  assert.ok(sdk);
   for (const owner of owners) {
     assert.equal(owner.executable.physicalPath, sdk.path);
     assert.equal(owner.executable.sha256, sdk.sha256);
@@ -19,7 +26,7 @@ export function validateNativeLifecycle(owners, consumer, knownContract) {
   }
   const lsp = owners.filter((owner) => owner.argv.includes("--lsp"));
   assert.ok(lsp.length > 0, "the selected actual provider must serve LSP");
-  const packets = (owner) => ({
+  const packets = (owner: NativeOwner) => ({
     client: owner.streams.client.frames.map((frame) => frame.packet),
     server: owner.streams.server.frames.map((frame) => frame.packet),
   });
@@ -32,10 +39,12 @@ export function validateNativeLifecycle(owners, consumer, knownContract) {
         (packet.method === "textDocument/didOpen" &&
           packet.params?.textDocument?.text?.includes('"wrong"')) ||
         (packet.method === "textDocument/didChange" &&
-          packet.params?.contentChanges?.some((change) => change.text?.includes('"wrong"'))),
+          packet.params?.contentChanges?.some((change: { text?: string }) =>
+            change.text?.includes('"wrong"'),
+          )),
     );
     realTypeError ||= server.some((packet) =>
-      packet.result?.items?.some((diagnostic) => diagnostic.code === 2322),
+      packet.result?.items?.some((diagnostic: { code?: unknown }) => diagnostic.code === 2322),
     );
     const initialized = server.filter(
       (packet) =>

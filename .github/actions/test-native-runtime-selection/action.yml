@@ -46,11 +46,11 @@ runs:
         set -euo pipefail
         export VIZE_NATIVE_STRACE="$(command -v strace)"
         if [[ "$SURFACE" == cli-lsp ]]; then
-          node --test tests/tooling/native-runtime-cli-selection.test.mjs
-          node tests/tooling/support/native-runtime-selection/authority.mjs
-          node tests/tooling/support/native-runtime-selection/lsp.mjs
+          node --test tests/tooling/native-runtime-cli-selection.test.ts
+          node tests/tooling/support/native-runtime-selection/authority.ts
+          node tests/tooling/support/native-runtime-selection/lsp.ts
         else
-          node --test tests/tooling/native-runtime-napi-selection.test.mjs
+          node --test tests/tooling/native-runtime-napi-selection.test.ts
         fi
     - name: Preserve all source, provider, input and raw observation custody
       if: ${{ always() }}

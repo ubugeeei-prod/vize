@@ -24,11 +24,11 @@ test("runtime changes and observer-only changes select the existing CLI and sour
     "crates/vize_patina/src/linter/corsa_session/paths/store.rs",
     "npm/cli/package.json",
     "editors/vscode/src/corsa-runtime.ts",
-    "tests/tooling/native-runtime-cli-selection.test.mjs",
+    "tests/tooling/native-runtime-cli-selection.test.ts",
     "crates/vize_maestro/src/ide/diagnostics.rs",
     "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
-    "tests/tooling/native-runtime-napi-selection.test.mjs",
-    "tests/tooling/support/native-runtime-selection/lsp.mjs",
+    "tests/tooling/native-runtime-napi-selection.test.ts",
+    "tests/tooling/support/native-runtime-selection/lsp.ts",
     ".github/actions/test-native-runtime-selection/action.yml",
     // Observer dependencies: build receipts, the formatter producer, the planner and the frozen runtime.
     "tests/differential/build-receipt.ts",
@@ -103,10 +103,10 @@ test("required workflow calls reuse ordinary source producers and retain failed 
   assert.equal(observe?.env?.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION, "1");
   assert.equal(observe?.env?.VIZE_RUNTIME_AUTHORITY_EXPECTATION, "after");
   for (const command of [
-    "node --test tests/tooling/native-runtime-cli-selection.test.mjs",
-    "node tests/tooling/support/native-runtime-selection/authority.mjs",
-    "node tests/tooling/support/native-runtime-selection/lsp.mjs",
-    "node --test tests/tooling/native-runtime-napi-selection.test.mjs",
+    "node --test tests/tooling/native-runtime-cli-selection.test.ts",
+    "node tests/tooling/support/native-runtime-selection/authority.ts",
+    "node tests/tooling/support/native-runtime-selection/lsp.ts",
+    "node --test tests/tooling/native-runtime-napi-selection.test.ts",
   ])
     assert(observe?.run?.includes(command), command);
   assert.equal(

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, type BinaryLike } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -12,7 +12,72 @@ export const CORSA_OVERRIDES = [
   "TSRS_PATH",
   "TSRS_EXECUTABLE",
 ];
-export const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+export interface PackageIdentity {
+  path: string;
+  name: string;
+  version: string;
+  manifestSha256: string;
+  lockFile: string;
+  lockSha256: string;
+  resolved: string;
+  integrity: string;
+  manifest: any;
+}
+export interface Executable {
+  path: string;
+  sha256: string;
+  version: string;
+}
+export interface NativeProvider {
+  root: string;
+  meta: PackageIdentity;
+  platform: PackageIdentity;
+  executable: Executable;
+  versionProbe: { status: number | null; signal: string | null; stdout: string; stderr: string };
+  vue?: PackageIdentity;
+}
+export interface NativeProviders {
+  beta: NativeProvider;
+  six: PackageIdentity;
+  vue: PackageIdentity;
+  frozen702: NativeProvider | null;
+}
+export type ConsumerKind =
+  | "canonical-beta"
+  | "alias-beta"
+  | "explicit-beta"
+  | "selected-config"
+  | "absent"
+  | "stale-decoys"
+  | "canonical-702"
+  | "alias-702"
+  | "explicit-702";
+export interface ConsumerInput {
+  path: string;
+  bytes: number;
+  sha256: string;
+  text: string;
+}
+export interface CacheDecoy {
+  kind: string;
+  packageRoot: string;
+  physicalExecutable: Executable;
+  [detail: string]: unknown;
+}
+export interface NativeRuntimeConsumer {
+  kind: ConsumerKind;
+  workspace: string;
+  configRoot: string;
+  configFile: string;
+  entry: string;
+  expectedExecutable: Executable | null;
+  cacheDecoys: CacheDecoy[];
+  explicitExecutable: Executable | null;
+  inputPaths: string[];
+  providers: NativeProviders;
+  inputFiles: ConsumerInput[];
+}
+export const sha256 = (value: BinaryLike) => createHash("sha256").update(value).digest("hex");
 export const SOURCES = {
   valid:
     '<script setup lang="ts">\nimport { twice } from "./support";\nconst value: number = 2;\nconst doubled = twice(value);\n</script>\n<template><p>{{ value }} {{ doubled }}</p></template>\n',
@@ -30,12 +95,12 @@ export const COMPILER_OPTIONS = {
   skipLibCheck: true,
   noEmit: true,
 };
-const json = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
-function packageIdentity(root, name, expectedVersion) {
+const json = (file: string): any => JSON.parse(fs.readFileSync(file, "utf8"));
+function packageIdentity(root: string, name: string, expectedVersion?: string): PackageIdentity {
   const packagePath = fs.realpathSync(path.join(root, "node_modules", name));
   const file = path.join(packagePath, "package.json"),
     bytes = fs.readFileSync(file),
-    manifest = JSON.parse(bytes);
+    manifest = JSON.parse(bytes.toString("utf8"));
   assert.equal(manifest.name, name);
   if (expectedVersion) assert.equal(manifest.version, expectedVersion);
   const lockFile = path.join(root, "package-lock.json"),
@@ -60,12 +125,12 @@ function packageIdentity(root, name, expectedVersion) {
     manifest,
   };
 }
-function nativeProvider(root, version, requireMeta = true) {
+function nativeProvider(root: string, version: string): NativeProvider {
   const selected = fs.realpathSync(root),
     platformName = `@typescript/typescript-${process.platform}-${process.arch}`;
-  const meta = requireMeta ? packageIdentity(selected, "typescript", version) : null;
+  const meta = packageIdentity(selected, "typescript", version);
   const platform = packageIdentity(selected, platformName, version);
-  if (meta) assert.equal(meta.manifest.optionalDependencies?.[platformName], version);
+  assert.equal(meta.manifest.optionalDependencies?.[platformName], version);
   const binary = fs.realpathSync(
     path.join(platform.path, "lib", process.platform === "win32" ? "tsc.exe" : "tsc"),
   );
@@ -92,7 +157,7 @@ function nativeProvider(root, version, requireMeta = true) {
     },
   };
 }
-export function loadNativeProviders(env = process.env) {
+export function loadNativeProviders(env: NodeJS.ProcessEnv = process.env): NativeProviders {
   assert.ok(env.VIZE_NATIVE_BETA_ROOT, "VIZE_NATIVE_BETA_ROOT is mandatory; no compiler fallback");
   assert.ok(
     env.VIZE_TYPESCRIPT_SIX_ROOT,
@@ -109,7 +174,10 @@ export function loadNativeProviders(env = process.env) {
   if (frozen702) frozen702.vue = packageIdentity(frozen702.root, "vue");
   return { beta, six, vue, frozen702 };
 }
-export function runtimeChildEnvironment(base = process.env, directory) {
+export function runtimeChildEnvironment(
+  base: NodeJS.ProcessEnv = process.env,
+  directory?: string,
+): NodeJS.ProcessEnv {
   const env = { ...base };
   for (const key of [...CORSA_OVERRIDES, "CORSA_BIN"]) delete env[key];
   env.VIZE_CORSA_DEV_PATHS = "0";
@@ -147,11 +215,19 @@ export function runtimeChildEnvironment(base = process.env, directory) {
   for (const key of CORSA_OVERRIDES) assert.equal(env[key], undefined);
   return env;
 }
-function link(target, destination) {
+function link(target: string, destination: string) {
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.symlinkSync(target, destination, process.platform === "win32" ? "junction" : "dir");
 }
-export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
+export function prepareNativeRuntimeConsumer({
+  directory,
+  kind,
+  providers,
+}: {
+  directory: string;
+  kind: ConsumerKind;
+  providers: NativeProviders;
+}): NativeRuntimeConsumer {
   assert.ok(
     [
       "canonical-beta",
@@ -171,9 +247,9 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
     configRoot = kind === "selected-config" ? path.join(workspace, "selected") : workspace;
   const entry = path.join(configRoot, "src/App.vue"),
     configFile = path.join(configRoot, "tsconfig.json"),
-    inputPaths = [];
-  const cacheDecoys = [];
-  const write = (file, text) => {
+    inputPaths: string[] = [];
+  const cacheDecoys: CacheDecoy[] = [];
+  const write = (file: string, text: string) => {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, text);
     inputPaths.push(file);
@@ -182,15 +258,17 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
   const native = frozen ? providers.frozen702 : providers.beta;
   assert.ok(native, "the selected official native provider must be explicitly installed");
   const vue = frozen ? native.vue : providers.vue;
+  assert.ok(vue, "the selected provider must carry its Vue package");
   const explicit = kind === "explicit-beta" || kind === "explicit-702";
   const expectedExecutable =
     kind === "absent" || kind === "stale-decoys" ? null : native.executable;
-  const deps = { vue: vue.version };
+  const meta = native.meta;
+  const deps: Record<string, string> = { vue: vue.version };
   if (["canonical-beta", "canonical-702", "selected-config"].includes(kind))
-    deps.typescript = native.meta.version;
+    deps.typescript = meta.version;
   if (["alias-beta", "alias-702"].includes(kind)) {
     deps.typescript = "6.0.3";
-    deps["typescript-native"] = `npm:typescript@${native.meta.version}`;
+    deps["typescript-native"] = `npm:typescript@${meta.version}`;
   }
   write(
     path.join(configRoot, "package.json"),
@@ -208,15 +286,15 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
   write(path.join(configRoot, "src/support.ts"), SOURCES.support);
   write(
     path.join(configRoot, "vite.config.mjs"),
-    `export default ${JSON.stringify({ vue: { languageServer: { editor: true, typecheck: true, lint: false, ecosystem: false }, ...(explicit ? { typeChecker: { corsaPath: expectedExecutable.path } } : {}) } })};\n`,
+    `export default ${JSON.stringify({ vue: { languageServer: { editor: true, typecheck: true, lint: false, ecosystem: false }, ...(explicit ? { typeChecker: { corsaPath: expectedExecutable?.path } } : {}) } })};\n`,
   );
   link(vue.path, path.join(configRoot, "node_modules/vue"));
   link(path.join(path.dirname(vue.path), "@vue"), path.join(configRoot, "node_modules/@vue"));
   if (["canonical-beta", "canonical-702", "selected-config"].includes(kind))
-    link(native.meta.path, path.join(configRoot, "node_modules/typescript"));
+    link(meta.path, path.join(configRoot, "node_modules/typescript"));
   if (["alias-beta", "alias-702"].includes(kind)) {
     link(providers.six.path, path.join(configRoot, "node_modules/typescript"));
-    link(native.meta.path, path.join(configRoot, "node_modules/typescript-native"));
+    link(meta.path, path.join(configRoot, "node_modules/typescript-native"));
   }
   if (kind === "selected-config") {
     write(
@@ -277,7 +355,7 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
     );
   }
 
-  const consumer = {
+  const consumer: NativeRuntimeConsumer = {
     kind,
     workspace,
     configRoot,
@@ -288,11 +366,14 @@ export function prepareNativeRuntimeConsumer({ directory, kind, providers }) {
     explicitExecutable: explicit ? expectedExecutable : null,
     inputPaths,
     providers,
+    inputFiles: [],
   };
   consumer.inputFiles = captureConsumerInputs(consumer);
   return consumer;
 }
-export function captureConsumerInputs(consumer) {
+export function captureConsumerInputs(
+  consumer: Pick<NativeRuntimeConsumer, "inputPaths" | "workspace">,
+): ConsumerInput[] {
   return consumer.inputPaths.map((file) => {
     const bytes = fs.readFileSync(file);
     return {
@@ -303,8 +384,8 @@ export function captureConsumerInputs(consumer) {
     };
   });
 }
-export function assertProviderFiles(providers) {
-  for (const provider of [providers.beta, providers.frozen702].filter(Boolean))
+export function assertProviderFiles(providers: NativeProviders) {
+  for (const provider of [providers.beta, providers.frozen702].filter((value) => value !== null))
     assert.equal(sha256(fs.readFileSync(provider.executable.path)), provider.executable.sha256);
   for (const pkg of [
     providers.beta.meta,
@@ -314,6 +395,6 @@ export function assertProviderFiles(providers) {
     providers.frozen702?.meta,
     providers.frozen702?.platform,
     providers.frozen702?.vue,
-  ].filter(Boolean))
+  ].filter((value) => value !== null && value !== undefined))
     assert.equal(sha256(fs.readFileSync(path.join(pkg.path, "package.json"))), pkg.manifestSha256);
 }

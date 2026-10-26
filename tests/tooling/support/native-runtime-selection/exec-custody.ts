@@ -1,18 +1,77 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
-import { CORSA_OVERRIDES, sha256 } from "./providers.mjs";
+import { CORSA_OVERRIDES, sha256, type Executable } from "./providers.ts";
+
+export interface ExecRow {
+  line: number;
+  raw: string;
+  executable: string;
+  argv: string[];
+  success: boolean;
+  result: string;
+}
+interface TraceExecution extends ExecRow {
+  trace: string;
+}
+interface SelectedExecution extends TraceExecution {
+  physicalPath: string;
+  sha256: string;
+}
+interface RawTraceFile {
+  file: string;
+  bytes: number;
+  sha256: string;
+  events?: ExecRow[];
+}
+interface StreamReceipt {
+  file: string;
+  bytes: number;
+  sha256: string;
+  text: string | null;
+}
+export interface StracedCliReceipt {
+  argv: string[];
+  cwd: string;
+  childEnvironment: {
+    HOME: string | null;
+    PATH: string | null;
+    VIZE_CORSA_DEV_PATHS: string | null;
+    overrides: Record<string, string | null>;
+  };
+  status: number | null;
+  signal: NodeJS.Signals | null;
+  error: string | null;
+  streams: Record<string, StreamReceipt>;
+  rawFiles: RawTraceFile[];
+  allExecutions: TraceExecution[];
+  selectedExecutions: SelectedExecution[];
+  validation: string;
+  meaning: string;
+  validationError?: { message: string; stack: string | null };
+}
 
 // strace writes C byte escapes, including octal UTF8 bytes, rather than JSON.
-function decodeExecString(quoted) {
+function decodeExecString(quoted: string): string {
   assert.ok(quoted.isWellFormed(), "lossless C trace text");
-  const bytes = [];
-  const escapes = { a: 7, b: 8, f: 12, n: 10, r: 13, t: 9, v: 11, "\\": 92, '"': 34 };
+  const bytes: number[] = [];
+  const escapes: Record<string, number> = {
+    a: 7,
+    b: 8,
+    f: 12,
+    n: 10,
+    r: 13,
+    t: 9,
+    v: 11,
+    "\\": 92,
+    '"': 34,
+  };
   for (let offset = 1; offset < quoted.length - 1; offset++) {
     if (quoted[offset] !== "\\") {
       const point = quoted.codePointAt(offset);
+      assert.ok(point !== undefined);
       bytes.push(...Buffer.from(String.fromCodePoint(point)));
       if (point > 0xffff) offset++;
       continue;
@@ -21,7 +80,8 @@ function decodeExecString(quoted) {
     const escaped = quoted[offset];
     if (Object.hasOwn(escapes, escaped)) bytes.push(escapes[escaped]);
     else if (/[0-7]/u.test(escaped)) {
-      const octal = /^[0-7]{1,3}/u.exec(quoted.slice(offset))[0];
+      const octal = /^[0-7]{1,3}/u.exec(quoted.slice(offset))?.[0];
+      assert.ok(octal);
       const byte = Number.parseInt(octal, 8);
       assert.ok(byte <= 255, "C octal escape is one byte");
       bytes.push(byte);
@@ -38,8 +98,8 @@ function decodeExecString(quoted) {
   assert.equal(text.includes("\0"), false, "exec strings cannot contain NUL");
   return text;
 }
-function decodeExecArgv(quoted) {
-  const result = [];
+function decodeExecArgv(quoted: string): string[] {
+  const result: string[] = [];
   let rest = quoted.slice(1, -1).trim();
   while (rest.length) {
     const match = /^"(?:[^"\\]|\\.)*"/u.exec(rest);
@@ -55,8 +115,8 @@ function decodeExecArgv(quoted) {
   return result;
 }
 
-export function parseExecTrace(text) {
-  const rows = [];
+export function parseExecTrace(text: string): ExecRow[] {
+  const rows: ExecRow[] = [];
   for (const [index, line] of text.split("\n").entries()) {
     if (!line.includes("execve(")) continue;
     const match = /^execve\(("(?:[^"\\]|\\.)*"), (\[.*\]), .*\)\s+= (.*)$/u.exec(line);
@@ -74,7 +134,7 @@ export function parseExecTrace(text) {
   }
   return rows;
 }
-function fileHash(file) {
+function fileHash(file: string): string {
   const hash = createHash("sha256"),
     fd = fs.openSync(file, "r"),
     buffer = Buffer.alloc(65536);
@@ -87,14 +147,30 @@ function fileHash(file) {
   }
   return hash.digest("hex");
 }
-export function runStracedCli({ strace, cli, args, cwd, env, directory, expectedExecutable }) {
+export function runStracedCli({
+  strace,
+  cli,
+  args,
+  cwd,
+  env,
+  directory,
+  expectedExecutable,
+}: {
+  strace: string;
+  cli: string;
+  args: readonly string[];
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+  directory: string;
+  expectedExecutable: Executable | null | undefined;
+}): StracedCliReceipt {
   fs.mkdirSync(directory, { recursive: true });
   const prefix = path.join(directory, "execve"),
     stdout = path.join(directory, "stdout.bin"),
     stderr = path.join(directory, "stderr.bin");
   const out = fs.openSync(stdout, "w"),
     err = fs.openSync(stderr, "w");
-  let result;
+  let result: SpawnSyncReturns<Buffer> | undefined;
   const argv = [
     "--kill-on-exit",
     "-ff",
@@ -117,12 +193,13 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
     .readdirSync(directory)
     .filter((x) => x.startsWith("execve."))
     .sort()
-    .map((file) => ({
+    .map((file): RawTraceFile => ({
       file,
       bytes: fs.statSync(path.join(directory, file)).size,
       sha256: fileHash(path.join(directory, file)),
     }));
-  const streams = Object.fromEntries(
+  assert.ok(result);
+  const streams: Record<string, StreamReceipt> = Object.fromEntries(
     [
       ["stdout", stdout],
       ["stderr", stderr],
@@ -139,7 +216,7 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
       ];
     }),
   );
-  const receipt = {
+  const receipt: StracedCliReceipt = {
     argv: [strace, ...argv],
     cwd,
     childEnvironment: {
@@ -175,7 +252,7 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
       file.events = parseExecTrace(fs.readFileSync(path.join(directory, file.file), "utf8"));
     }
     receipt.allExecutions = rawFiles.flatMap((file) =>
-      file.events.map((event) => ({ trace: file.file, ...event })),
+      (file.events ?? []).map((event) => ({ trace: file.file, ...event })),
     );
     save();
     assert.ok(
@@ -219,7 +296,10 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
     return receipt;
   } catch (error) {
     receipt.validation = "FAILED";
-    receipt.validationError = { message: String(error), stack: error?.stack ?? null };
+    receipt.validationError = {
+      message: String(error),
+      stack: (error as { stack?: string } | null)?.stack ?? null,
+    };
     save();
     throw error;
   }

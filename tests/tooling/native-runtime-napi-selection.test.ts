@@ -16,11 +16,17 @@ import {
   assertProviderFiles,
   CORSA_OVERRIDES,
   sha256,
-} from "./support/native-runtime-selection/providers.mjs";
+} from "./support/native-runtime-selection/providers.ts";
 import {
   napiNativeExecutions,
   runNapiObservation,
-} from "./support/native-runtime-selection/napi-custody.mjs";
+} from "./support/native-runtime-selection/napi-custody.ts";
+
+/** The fields of a validated formatter history build this test reads. */
+interface NativeHistoryBuild {
+  frozen: { path: string; sha256: string };
+  source: { head: string };
+}
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const floating =
@@ -28,10 +34,10 @@ const floating =
 const ignored = floating.replace("loadData()\n</script>", "void loadData()\n</script>");
 const runtimeHelp =
   "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.";
-function empty(filename) {
+function empty(filename: string) {
   return { filename, errorCount: 0, warningCount: 0, diagnostics: [] };
 }
-function expectedFloating(filename, source) {
+function expectedFloating(filename: string, source: string) {
   const start = source.lastIndexOf("loadData()"),
     prefix = source.slice(0, start);
   const line = prefix.split("\n").length;
@@ -55,7 +61,7 @@ function expectedFloating(filename, source) {
     ],
   };
 }
-function expectedMissing(filename, message) {
+function expectedMissing(filename: string, message: string) {
   return {
     filename,
     errorCount: 0,
@@ -151,9 +157,13 @@ void test("source type-aware NAPI follows real user compiler graphs and preserve
   }
   assert.equal(process.platform, "linux");
   assert(process.env.VIZE_NATIVE_STRACE, "absolute strace path required");
+  const strace = process.env.VIZE_NATIVE_STRACE;
   const nativeDir = path.join(root, "npm/native"),
     buildBytes = fs.readFileSync(nativeHistoryReceipt(nativeDir));
-  const build = validateNativeHistoryBuild(nativeDir, JSON.parse(buildBytes));
+  const build = validateNativeHistoryBuild(
+    nativeDir,
+    JSON.parse(buildBytes.toString("utf8")),
+  ) as NativeHistoryBuild;
   const addon = { path: fs.realpathSync(build.frozen.path), sha256: build.frozen.sha256 };
   assert.equal(sha256(fs.readFileSync(addon.path)), addon.sha256);
   const providers = loadNativeProviders();
@@ -165,7 +175,7 @@ void test("source type-aware NAPI follows real user compiler graphs and preserve
   const archive = path.join(root, "target/vize-tests/native-runtime-napi-selection-10694");
   fs.mkdirSync(archive, { recursive: true });
   const output = fs.mkdtempSync(path.join(archive, "source-"));
-  const write = (name, value) =>
+  const write = (name: string, value: unknown) =>
     fs.writeFileSync(path.join(output, name), `${JSON.stringify(value, null, 2)}\n`);
   write("identities.json", {
     source: build.source,
@@ -177,7 +187,7 @@ void test("source type-aware NAPI follows real user compiler graphs and preserve
       "source NAPI selection with qualified 7.0.2 and an explicit beta API capability probe; no beta support claim before whole output success",
   });
   const worker = fileURLToPath(
-    new URL("./support/native-runtime-selection/napi-worker.mjs", import.meta.url),
+    new URL("./support/native-runtime-selection/napi-worker.ts", import.meta.url),
   );
   for (const kind of [
     "canonical-702",
@@ -187,7 +197,7 @@ void test("source type-aware NAPI follows real user compiler graphs and preserve
     "absent",
     "stale-decoys",
     "explicit-missing",
-  ]) {
+  ] as const) {
     await t.test(kind, () => {
       const consumer = prepareNativeRuntimeConsumer({
         directory: path.join(base, kind === "alias-702" ? `${kind}-利用者` : kind),
@@ -204,7 +214,13 @@ void test("source type-aware NAPI follows real user compiler graphs and preserve
       const validSource =
         kind === "alias-702" ? ignored.replace("\nasync", "\n// 日本語 🧭\nasync") : ignored;
       fs.writeFileSync(consumer.entry, validSource);
-      const options = {
+      const options: {
+        filename: string;
+        preset: string;
+        enabledRules: string[];
+        typeAware: boolean;
+        corsaPath?: string;
+      } = {
         filename: consumer.entry,
         preset: "opinionated",
         enabledRules: ["type/no-floating-promises"],
@@ -226,7 +242,7 @@ void test("source type-aware NAPI follows real user compiler graphs and preserve
       );
       assertProviderFiles(providers);
       const observed = runNapiObservation({
-        strace: fs.realpathSync(process.env.VIZE_NATIVE_STRACE),
+        strace: fs.realpathSync(strace),
         worker,
         input: { addon, source: build.source.head, steps },
         cwd: consumer.workspace,

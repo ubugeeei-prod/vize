@@ -14,12 +14,38 @@ import {
   SOURCES,
   COMPILER_OPTIONS,
   sha256,
-} from "./providers.mjs";
-import { runStracedCli } from "./exec-custody.mjs";
+  type ConsumerInput,
+  type Executable,
+  type NativeProviders,
+  type NativeRuntimeConsumer,
+} from "./providers.ts";
+import { runStracedCli, type StracedCliReceipt } from "./exec-custody.ts";
+
+interface AuthorityLink {
+  path: string;
+  target: string;
+  physicalPath: string;
+  sha256: string;
+}
+interface AuthorityConsumer extends NativeRuntimeConsumer {
+  wrapper?: string;
+  authorityLinks?: AuthorityLink[];
+}
+interface AuthorityRow {
+  kind: string;
+  expectedProvider: Executable | null;
+  intendedProvider: Executable | null;
+  links: AuthorityLink[] | undefined;
+  phases: { phase: string; inputs: ConsumerInput[]; observed: StracedCliReceipt }[];
+  state: string;
+  failure?: { message: string; stack: string | undefined };
+}
 
 const observerRoot = fileURLToPath(new URL("../../../../", import.meta.url));
-const git = (root, args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
-const write = (file, value) => fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+const git = (root: string, args: string[]) =>
+  execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+const write = (file: string, value: unknown) =>
+  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 export const AUTHORITY_CASES = [
   "wrapper-configuration",
   ...CORSA_OVERRIDES.map((name) => `wrapper-${name}`),
@@ -27,7 +53,7 @@ export const AUTHORITY_CASES = [
   "undeclared-canonical-declared-alias",
   "project-cache",
 ];
-function expectedJson(phase) {
+function expectedJson(phase: string) {
   return {
     files: [
       {
@@ -52,17 +78,17 @@ function expectedJson(phase) {
     fileCount: 2,
   };
 }
-function prepare(directory, kind, providers) {
+function prepare(directory: string, kind: string, providers: NativeProviders): AuthorityConsumer {
   assert(providers.frozen702, "both official native providers are required");
   const wrapper = kind.startsWith("wrapper-");
-  const consumer = prepareNativeRuntimeConsumer({
+  const consumer: AuthorityConsumer = prepareNativeRuntimeConsumer({
     directory,
     providers,
     kind: wrapper ? "canonical-702" : kind.endsWith("declared-alias") ? "alias-beta" : "absent",
   });
   const manifest = path.join(directory, "package.json");
   const pkg = JSON.parse(fs.readFileSync(manifest, "utf8"));
-  const symlink = (target, relative) => {
+  const symlink = (target: string, relative: string): AuthorityLink => {
     const destination = path.join(directory, relative);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.symlinkSync(target, destination);
@@ -73,7 +99,7 @@ function prepare(directory, kind, providers) {
       sha256: sha256(fs.readFileSync(target)),
     };
   };
-  const links = [];
+  const links: AuthorityLink[] = [];
   if (wrapper) {
     pkg.devDependencies["typescript-native"] = "npm:typescript@7.1.0-beta";
     fs.symlinkSync(
@@ -95,7 +121,7 @@ function prepare(directory, kind, providers) {
     wrapper || kind.endsWith("declared-alias") ? providers.beta.executable : null;
   return consumer;
 }
-export async function observeProviderAuthority(env = process.env) {
+export async function observeProviderAuthority(env: NodeJS.ProcessEnv = process.env) {
   assert.equal(env.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION, "1");
   assert.equal(process.platform, "linux");
   const mode = env.VIZE_RUNTIME_AUTHORITY_EXPECTATION ?? "after";
@@ -105,7 +131,7 @@ export async function observeProviderAuthority(env = process.env) {
   assert.equal(git(sourceRoot, ["status", "--porcelain", "--untracked-files=no"]), "");
   if (mode === "before") assert.equal(source, "cbda7c7e410151d440871ecb97f2ad3fda0f8419");
   const observer = git(observerRoot, ["rev-parse", "HEAD"]);
-  const observerFiles = ["authority.mjs", "providers.mjs", "exec-custody.mjs"].map((name) => {
+  const observerFiles = ["authority.ts", "providers.ts", "exec-custody.ts"].map((name) => {
     const file = path.join(path.dirname(import.meta.filename), name);
     const relative = path.relative(observerRoot, file);
     const bytes = fs.readFileSync(file);
@@ -118,11 +144,14 @@ export async function observeProviderAuthority(env = process.env) {
   const { expectedBuildIdentity, validateBuildReceipt, BUILD_RECIPE } = await import(
     pathToFileURL(path.join(sourceRoot, "tests/differential/build-receipt.ts")).href
   );
+  assert.ok(env.VIZE_SOURCE_CLI, "VIZE_SOURCE_CLI names the source CLI");
   const cli = fs.realpathSync(env.VIZE_SOURCE_CLI);
   assert.equal(cli, fs.realpathSync(path.join(sourceRoot, "target/ci/vize")));
   const receipt = JSON.parse(fs.readFileSync(`${cli}.differential-build.json`, "utf8"));
   validateBuildReceipt(receipt, expectedBuildIdentity(sourceRoot), BUILD_RECIPE);
   const providers = loadNativeProviders(env);
+  assert.ok(providers.frozen702, "both official native providers are required");
+  assert.ok(env.VIZE_NATIVE_STRACE, "VIZE_NATIVE_STRACE names the observer");
   const strace = fs.realpathSync(env.VIZE_NATIVE_STRACE);
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "vize-provider-authority-"));
   const output =
@@ -130,7 +159,7 @@ export async function observeProviderAuthority(env = process.env) {
     path.join(sourceRoot, "target/vize-tests/native-runtime-authority");
   fs.mkdirSync(output, { recursive: true });
   const directory = fs.mkdtempSync(path.join(output, "observation-"));
-  const journal = (event) =>
+  const journal = (event: Record<string, unknown>) =>
     fs.appendFileSync(
       path.join(directory, "progress.jsonl"),
       `${JSON.stringify({ at: new Date().toISOString(), pid: process.pid, mode, ...event })}\n`,
@@ -180,7 +209,7 @@ export async function observeProviderAuthority(env = process.env) {
     scope:
       "Physical CLI provider authority only; before image never grants current-source/API/LSP/performance credit.",
   });
-  const cases = [];
+  const cases: AuthorityRow[] = [];
   for (const kind of AUTHORITY_CASES) {
     journal({ event: "case-start", kind });
     const consumer = prepare(path.join(base, kind), kind, providers);
@@ -200,12 +229,14 @@ export async function observeProviderAuthority(env = process.env) {
       "1",
       "--no-config",
     ];
-    if (kind === "wrapper-configuration") args.push("--corsa-path", consumer.wrapper);
-    else if (kind.startsWith("wrapper-"))
-      childEnv[kind.slice("wrapper-".length)] = consumer.wrapper;
+    const wrapper = consumer.wrapper;
+    if (kind === "wrapper-configuration") {
+      assert.ok(wrapper);
+      args.push("--corsa-path", wrapper);
+    } else if (kind.startsWith("wrapper-")) childEnv[kind.slice("wrapper-".length)] = wrapper;
     const expected =
       mode === "before" ? providers.frozen702.executable : consumer.expectedExecutable;
-    const row = {
+    const row: AuthorityRow = {
       kind,
       expectedProvider: expected,
       intendedProvider: consumer.expectedExecutable,
@@ -221,7 +252,7 @@ export async function observeProviderAuthority(env = process.env) {
       ),
     });
     try {
-      for (const phase of ["valid", "error", "repair"]) {
+      for (const phase of ["valid", "error", "repair"] as const) {
         fs.writeFileSync(consumer.entry, SOURCES[phase]);
         assertProviderFiles(providers);
         journal({ event: "phase-start", kind, phase, args, expectedProvider: expected });
@@ -249,7 +280,7 @@ export async function observeProviderAuthority(env = process.env) {
             observed.streams.stderr.text,
             `Building Corsa virtual project for 2 files under ${consumer.workspace}...\nRunning Corsa diagnostics for 2 files...\n`,
           );
-          assert.deepEqual(JSON.parse(observed.streams.stdout.text), expectedJson(phase));
+          assert.deepEqual(JSON.parse(String(observed.streams.stdout.text)), expectedJson(phase));
         } else {
           assert.equal(observed.status, 1);
           assert.equal(observed.streams.stdout.text, "");
@@ -273,7 +304,7 @@ export async function observeProviderAuthority(env = process.env) {
       row.state = "PASS";
     } catch (error) {
       row.state = "FAILED";
-      row.failure = { message: String(error), stack: error.stack };
+      row.failure = { message: String(error), stack: (error as { stack?: string }).stack };
     }
     write(path.join(caseOutput, "comparison.json"), row);
     cases.push(row);

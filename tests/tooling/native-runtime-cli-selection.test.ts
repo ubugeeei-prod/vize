@@ -20,12 +20,23 @@ import {
   COMPILER_OPTIONS,
   CORSA_OVERRIDES,
   sha256,
-} from "./support/native-runtime-selection/providers.mjs";
-import { parseExecTrace, runStracedCli } from "./support/native-runtime-selection/exec-custody.mjs";
+  type ConsumerInput,
+  type Executable,
+  type NativeRuntimeConsumer,
+} from "./support/native-runtime-selection/providers.ts";
+import {
+  parseExecTrace,
+  runStracedCli,
+  type StracedCliReceipt,
+} from "./support/native-runtime-selection/exec-custody.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-function expectedCheckJson(consumer, phase) {
-  const relative = (file) => path.relative(consumer.workspace, file).split(path.sep).join("/");
+function expectedCheckJson(
+  consumer: Pick<NativeRuntimeConsumer, "workspace" | "configRoot" | "entry" | "configFile">,
+  phase: string,
+) {
+  const relative = (file: string) =>
+    path.relative(consumer.workspace, file).split(path.sep).join("/");
   const app = relative(consumer.entry),
     support = relative(path.join(consumer.configRoot, "src/support.ts"));
   return {
@@ -109,6 +120,7 @@ void test("native CLI exec custody preserves full argv and rejects incomplete tr
     assert.equal(child.HOME, path.join(isolated, "empty-home"));
     assert.equal(fs.statSync(child.HOME).isDirectory(), true);
     assert.equal(child.CORSA_PATH, undefined);
+    assert.ok(child.PATH);
     assert.deepEqual(fs.readdirSync(child.PATH), [
       process.platform === "win32" ? "node.exe" : "node",
     ]);
@@ -132,7 +144,7 @@ void test("native CLI exec custody preserves full argv and rejects incomplete tr
     configFile: "/project/tsconfig.json",
   };
   const before = expectedCheckJson(dummy, "error");
-  const changed = structuredClone(before);
+  const changed: Record<string, unknown> = structuredClone(before);
   changed.opaque = "unapproved";
   assert.throws(() => assert.deepEqual(changed, before));
   assert.deepEqual(
@@ -182,7 +194,8 @@ void test("source CLI selects actual user-installed native packages and retains 
   const archive = path.join(root, "target/vize-tests/native-runtime-cli-selection-10694");
   fs.mkdirSync(archive, { recursive: true });
   const output = fs.mkdtempSync(path.join(archive, "source-"));
-  const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
+  const write = (file: string, value: unknown) =>
+    fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
   write(path.join(output, "identities.json"), {
     source: receipt,
     cliVersionProbe: { status: version.status, stdout: version.stdout, stderr: version.stderr },
@@ -191,7 +204,12 @@ void test("source CLI selects actual user-installed native packages and retains 
     consumerBase: base,
     observerSourceSha256: sha256(fs.readFileSync(fileURLToPath(import.meta.url))),
   });
-  const cases = [];
+  const cases: {
+    kind: string;
+    wholeDiagnosticPhases: number;
+    expectedExecutable: Executable | null;
+    scope: string;
+  }[] = [];
   for (const kind of [
     "absent",
     "canonical-beta",
@@ -199,7 +217,7 @@ void test("source CLI selects actual user-installed native packages and retains 
     "explicit-beta",
     "selected-config",
     "stale-decoys",
-  ]) {
+  ] as const) {
     await t.test(kind, () => {
       const consumer = prepareNativeRuntimeConsumer({
         directory: path.join(base, kind),
@@ -211,7 +229,8 @@ void test("source CLI selects actual user-installed native packages and retains 
       const env = runtimeChildEnvironment(process.env, path.join(caseOutput, "environment"));
       assertProviderFiles(providers);
       assert.equal(sha256(fs.readFileSync(cli)), expected.binarySha256);
-      const phaseRows = [];
+      const phaseRows: { phase: string; inputs: ConsumerInput[]; observed: StracedCliReceipt }[] =
+        [];
       write(path.join(caseOutput, "inputs.json"), consumer.inputFiles);
       if (!consumer.expectedExecutable) {
         const formatted = runStracedCli({
@@ -226,7 +245,10 @@ void test("source CLI selects actual user-installed native packages and retains 
         assert.equal(formatted.status, 0);
         fs.writeFileSync(consumer.entry, SOURCES.valid);
       }
-      for (const phase of consumer.expectedExecutable ? ["valid", "error", "repair"] : ["valid"]) {
+      const phases = consumer.expectedExecutable
+        ? (["valid", "error", "repair"] as const)
+        : (["valid"] as const);
+      for (const phase of phases) {
         fs.writeFileSync(consumer.entry, SOURCES[phase]);
         const args = [
           "check",
@@ -257,16 +279,16 @@ void test("source CLI selects actual user-installed native packages and retains 
         if (consumer.expectedExecutable) {
           assert.equal(observed.status, phase === "error" ? 1 : 0);
           assert.deepEqual(
-            JSON.parse(observed.streams.stdout.text),
+            JSON.parse(String(observed.streams.stdout.text)),
             expectedCheckJson(consumer, phase),
             "entire JSON envelope, compiler options, files and diagnostics remain exact",
           );
         } else {
           assert.equal(observed.status, 1);
           assert.equal(observed.streams.stdout.text, "");
-          assert.match(observed.streams.stderr.text, /native TypeScript runtime not found/u);
+          assert.match(observed.streams.stderr.text ?? "", /native TypeScript runtime not found/u);
           assert.match(
-            observed.streams.stderr.text,
+            observed.streams.stderr.text ?? "",
             /typescript-native@npm:typescript@7\.1\.0-beta/u,
           );
         }

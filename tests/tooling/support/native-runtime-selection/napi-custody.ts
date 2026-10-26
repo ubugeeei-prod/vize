@@ -2,12 +2,54 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { parseExecTrace } from "./exec-custody.mjs";
-import { sha256, CORSA_OVERRIDES } from "./providers.mjs";
+import { parseExecTrace, type ExecRow } from "./exec-custody.ts";
+import { sha256, CORSA_OVERRIDES, type Executable } from "./providers.ts";
 
-export function napiNativeExecutions(files, node, expected) {
+interface NapiTrace {
+  file: string;
+  bytes: number;
+  sha256: string;
+  text: string;
+}
+interface NapiExecution extends ExecRow {
+  physicalPath: string;
+  imageSha256: string;
+  exitCode: number;
+  trace: string;
+}
+interface ByteReceipt {
+  bytes: number;
+  sha256: string;
+}
+export interface NapiReceipt {
+  argv: string[];
+  cwd: string;
+  environment: {
+    HOME: string | undefined;
+    PATH: string | undefined;
+    selectors: Record<string, string | null>;
+  };
+  status: number | null;
+  signal: NodeJS.Signals | null;
+  error: string | null;
+  stdin: ByteReceipt;
+  stdout: ByteReceipt;
+  stderr: ByteReceipt;
+  traces: NapiTrace[];
+  allExecutions: (ExecRow & { trace: string })[];
+  selectedExecutions: NapiExecution[];
+  state: string;
+  meaning: string;
+  validationError?: { message: string; stack: string | null };
+}
+
+export function napiNativeExecutions(
+  files: readonly Pick<NapiTrace, "file" | "text">[],
+  node: string,
+  expected: Pick<Executable, "path" | "sha256"> | null | undefined,
+): NapiExecution[] {
   const frontend = fs.realpathSync(node);
-  const selected = [];
+  const selected: NapiExecution[] = [];
   let entered = false;
   for (const file of files) {
     const events = parseExecTrace(file.text);
@@ -47,7 +89,23 @@ export function napiNativeExecutions(files, node, expected) {
   return selected;
 }
 
-export function runNapiObservation({ strace, worker, input, cwd, env, directory, expected }) {
+export function runNapiObservation({
+  strace,
+  worker,
+  input,
+  cwd,
+  env,
+  directory,
+  expected,
+}: {
+  strace: string;
+  worker: string;
+  input: { addon: unknown; source: unknown; [field: string]: unknown };
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+  directory: string;
+  expected: Executable | null | undefined;
+}): { receipt: NapiReceipt; packet: any } {
   fs.mkdirSync(directory, { recursive: true });
   const stdin = Buffer.from(JSON.stringify(input));
   fs.writeFileSync(path.join(directory, "stdin.bin"), stdin);
@@ -76,11 +134,11 @@ export function runNapiObservation({ strace, worker, input, cwd, env, directory,
     .readdirSync(directory)
     .filter((name) => name.startsWith("execve."))
     .sort()
-    .map((file) => {
+    .map((file): NapiTrace => {
       const bytes = fs.readFileSync(path.join(directory, file));
       return { file, bytes: bytes.length, sha256: sha256(bytes), text: bytes.toString("utf8") };
     });
-  const receipt = {
+  const receipt: NapiReceipt = {
     argv: [strace, ...argv],
     cwd,
     environment: {
@@ -135,7 +193,10 @@ export function runNapiObservation({ strace, worker, input, cwd, env, directory,
     return { receipt, packet };
   } catch (error) {
     receipt.state = "FAILED";
-    receipt.validationError = { message: String(error), stack: error?.stack ?? null };
+    receipt.validationError = {
+      message: String(error),
+      stack: (error as { stack?: string } | null)?.stack ?? null,
+    };
     save();
     throw error;
   }

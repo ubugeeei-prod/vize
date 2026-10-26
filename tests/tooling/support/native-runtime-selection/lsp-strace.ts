@@ -1,19 +1,89 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { createHash } from "node:crypto";
+import { createHash, type BinaryLike } from "node:crypto";
+import type { Executable } from "./providers.ts";
 
-const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
+export interface NativeFrame {
+  offset: number;
+  bytes: number;
+  packet: any;
+}
+interface SyscallRow {
+  tid: number;
+  at: string;
+  completedAt: string;
+  call: string;
+  duration: string | null;
+  interval: { startNanoseconds: string; endNanoseconds: string };
+}
+interface PendingSyscall {
+  tid: number;
+  at: string;
+  call: string;
+  raw: string;
+}
+interface ExecAttempt {
+  tid: number;
+  path: string;
+  argv: string[];
+  at: string;
+  result: number;
+  call: string;
+}
+interface ProcessExit {
+  code: number | null;
+  signal: string | null;
+}
+interface TerminalUnknownSyscall extends PendingSyscall {
+  process: number;
+  classification: string;
+  exitGroup: SyscallRow;
+  sameCodeThreadTerminals: number[];
+  syscallBytesCaptured: boolean;
+}
+interface IoEvent extends SyscallRow {
+  operation: string;
+  fd: number;
+  count: number | null;
+  returnKind?: string;
+  restart?: string;
+  bytes?: Buffer;
+}
+export interface TraceOwner extends ExecAttempt {
+  process: number;
+  rows: SyscallRow[];
+  exit: ProcessExit | null;
+  terminalUnknownSyscalls?: TerminalUnknownSyscall[];
+  events?: IoEvent[];
+}
+export interface StraceCapture {
+  owners: TraceOwner[];
+  attempts: ExecAttempt[];
+  syscallsComplete: boolean;
+  terminalUnknownSyscalls: TerminalUnknownSyscall[];
+}
+/** The source, config and SDK images an LSP run may execute. */
+export interface ExecAuthority {
+  source: { path: string; sha256: string };
+  node: { path: string; physicalPath: string; sha256: string };
+  configScript: string;
+  configFile: string;
+  configCachePattern: RegExp;
+  sdk: Pick<Executable, "path" | "sha256"> | null;
+}
+
+const sha = (bytes: BinaryLike) => createHash("sha256").update(bytes).digest("hex");
 const encoded = '"(?:\\\\x[0-9a-fA-F]{2})*"';
-export function decodeStraceString(value) {
+export function decodeStraceString(value: string): Buffer {
   assert.match(value, new RegExp(`^${encoded}$`, "u"), "complete hex-encoded syscall string");
   return Buffer.from(
     [...value.matchAll(/\\x([0-9a-f]{2})/giu)].map((match) => Number.parseInt(match[1], 16)),
   );
 }
-export function decodeNativeFrames(bytes) {
+export function decodeNativeFrames(bytes: Buffer): NativeFrame[] {
   let offset = 0;
-  const frames = [];
+  const frames: NativeFrame[] = [];
   while (offset < bytes.length) {
     const boundary = bytes.indexOf("\r\n\r\n", offset);
     assert.ok(boundary >= 0, "complete native frame header");
@@ -37,7 +107,7 @@ export function decodeNativeFrames(bytes) {
   return frames;
 }
 
-const clock = (value) => {
+const clock = (value: string) => {
   const match = /^(\d+)\.(\d{1,9})$/u.exec(value);
   assert.ok(match, "decimal syscall timestamp/duration preserves nanosecond precision");
   return {
@@ -45,12 +115,13 @@ const clock = (value) => {
     quantum: 10n ** BigInt(9 - match[2].length),
   };
 };
-const compareRows = (a, b) => {
+type Timed = { interval: { startNanoseconds: string } };
+const compareRows = (a: Timed, b: Timed) => {
   const left = BigInt(a.interval.startNanoseconds),
     right = BigInt(b.interval.startNanoseconds);
   return left < right ? -1 : left > right ? 1 : 0;
 };
-function syscallRow(tid, at, completedAt, call) {
+function syscallRow(tid: number, at: string, completedAt: string, call: string): SyscallRow {
   const start = clock(at),
     resumed = clock(completedAt);
   const duration = / <(\d+\.\d+)>$/u.exec(call)?.[1];
@@ -77,14 +148,16 @@ function syscallRow(tid, at, completedAt, call) {
 }
 
 /** Preserve every exec attempt before any protocol-owner selection. */
-export function parseStraceCapture(traces) {
-  const rows = [];
-  const parents = new Map();
-  const executables = new Map();
-  const attempts = [];
-  const unfinished = [];
+export function parseStraceCapture(
+  traces: readonly { tid: number; text: string }[],
+): StraceCapture {
+  const rows: SyscallRow[] = [];
+  const parents = new Map<number, number>();
+  const executables = new Map<number, ExecAttempt>();
+  const attempts: ExecAttempt[] = [];
+  const unfinished: PendingSyscall[] = [];
   for (const { tid, text } of traces) {
-    let pending;
+    let pending: PendingSyscall | undefined;
     for (const line of text.split("\n").filter(Boolean)) {
       const match = /^(\d+\.\d+)\s+(.*)$/u.exec(line);
       assert.ok(match, `timestamped complete strace line for ${tid}: ${line}`);
@@ -133,7 +206,7 @@ export function parseStraceCapture(traces) {
       );
       const remaining = exec[2].replace(new RegExp(encoded, "gu"), "").replace(/[\s,]/gu, "");
       assert.equal(remaining, "", "complete exec argv without truncation");
-      const attempt = {
+      const attempt: ExecAttempt = {
         tid: row.tid,
         path: decodeStraceString(exec[1]).toString("utf8"),
         argv,
@@ -154,22 +227,24 @@ export function parseStraceCapture(traces) {
     if (/^execve(?:at)?\(/u.test(row.call))
       assert.ok(exec, "every exec attempt has its complete supported path/argv/result recipe");
   }
-  const leader = (tid) => {
-    const seen = new Set();
-    while (parents.has(tid)) {
+  const leader = (tid: number) => {
+    const seen = new Set<number>();
+    let parent = parents.get(tid);
+    while (parent !== undefined) {
       assert.equal(seen.has(tid), false, "acyclic thread ownership");
       seen.add(tid);
-      tid = parents.get(tid);
+      tid = parent;
+      parent = parents.get(tid);
     }
     return tid;
   };
-  const owners = [...executables.values()].map((exec) => ({
+  const owners = [...executables.values()].map((exec): TraceOwner => ({
     ...exec,
     process: leader(exec.tid),
     rows: [],
     exit: null,
   }));
-  const byPid = new Map(owners.map((owner) => [owner.process, owner]));
+  const byPid = new Map<number, TraceOwner>(owners.map((owner) => [owner.process, owner]));
   for (const row of rows) {
     const owner = byPid.get(leader(row.tid));
     if (!owner) continue;
@@ -186,17 +261,19 @@ export function parseStraceCapture(traces) {
     const exits = owner.rows.filter((row) => /^exit_group\(\d+\)\s+=\s+\?(?:\s|$)/u.test(row.call));
     assert.equal(exits.length, 1, "one explicit exit_group owns terminal interruption");
     const exit = exits[0],
-      code = Number(/^exit_group\((\d+)\)/u.exec(exit.call)[1]);
+      exitCode = /^exit_group\((\d+)\)/u.exec(exit.call);
+    assert.ok(exitCode);
+    const code = Number(exitCode[1]);
     assert.ok(
       BigInt(exit.interval.endNanoseconds) < clock(unknown.at).nanoseconds,
       "unknown interval must be strictly after the same-group explicit exit_group",
     );
-    const members = new Set([
+    const members = new Set<number>([
       process,
       ...[...parents.keys()].filter((tid) => leader(tid) === process),
     ]);
     for (const tid of members) {
-      const terminals = owner.rows.filter(
+      const terminals: SyscallRow[] = owner.rows.filter(
         (row) => row.tid === tid && /^\+\+\+ (?:exited|killed)/u.test(row.call),
       );
       assert.equal(
@@ -233,9 +310,9 @@ export function parseStraceCapture(traces) {
   };
 }
 
-export function decodeNativeIo(owner) {
-  owner.events = [];
-  for (const row of owner.rows) {
+export function decodeNativeIo<T extends TraceOwner>(owner: T): T & { events: IoEvent[] } {
+  const decoded = Object.assign(owner, { events: [] as IoEvent[] });
+  for (const row of decoded.rows) {
     const io = /^(read|write|readv|writev)\((\d+),/u.exec(row.call);
     if (io && [0, 1, 2].includes(Number(io[2]))) {
       // Upstream strace documents ERESTARTSYS as a terminated kernel call
@@ -246,7 +323,7 @@ export function decodeNativeIo(owner) {
           row.call,
         );
       if (restart) {
-        owner.events.push({
+        decoded.events.push({
           ...row,
           operation: io[1],
           fd: Number(io[2]),
@@ -260,7 +337,7 @@ export function decodeNativeIo(owner) {
       assert.ok(returned, "native IO has an explicit return count");
       const count = Number(returned[1]);
       if (count <= 0) {
-        owner.events.push({ ...row, operation: io[1], fd: Number(io[2]), count });
+        decoded.events.push({ ...row, operation: io[1], fd: Number(io[2]), count });
         continue;
       }
       assert.ok(
@@ -273,7 +350,7 @@ export function decodeNativeIo(owner) {
       assert.ok(data, "complete successful native IO buffer, without truncation");
       const bytes = decodeStraceString(data[1]);
       assert.ok(count <= bytes.length && count <= Number(data[2]));
-      owner.events.push({
+      decoded.events.push({
         ...row,
         operation: io[1],
         fd: Number(io[2]),
@@ -286,9 +363,9 @@ export function decodeNativeIo(owner) {
     ["read", 0],
     ["write", 1],
     ["write", 2],
-  ]) {
-    const latestEnds = new Map();
-    for (const event of owner.events
+  ] as const) {
+    const latestEnds = new Map<number, bigint>();
+    for (const event of decoded.events
       .filter((event) => event.operation === operation && event.fd === fd && event.bytes)
       .sort(compareRows)) {
       assert.ok(event.duration, "successful native IO has its actual syscall duration");
@@ -304,15 +381,18 @@ export function decodeNativeIo(owner) {
       latestEnds.set(event.tid, previous === undefined || end > previous ? end : previous);
     }
   }
-  return owner;
+  return decoded;
 }
 
 /** Pure protocol decoder: production admission additionally validates every exec. */
-export function parseStraceTexts(traces) {
+export function parseStraceTexts(traces: readonly { tid: number; text: string }[]) {
   return parseStraceCapture(traces).owners.map(decodeNativeIo);
 }
 
-export function validateExecInventory(capture, authority) {
+export function validateExecInventory<O extends Pick<TraceOwner, "path" | "argv" | "exit">>(
+  capture: { owners: readonly O[]; attempts: readonly Pick<ExecAttempt, "result">[] },
+  authority: ExecAuthority,
+) {
   for (const attempt of capture.attempts)
     assert.equal(attempt.result, 0, "failed execution/discovery attempts remain explicit failures");
   let sourceCount = 0;
@@ -323,7 +403,7 @@ export function validateExecInventory(capture, authority) {
       physicalPath,
       sha256: sha(fs.readFileSync(physicalPath)),
     };
-    let role;
+    let role: string;
     if (owner.path === authority.source.path) {
       assert.equal(executable.sha256, authority.source.sha256);
       assert.deepEqual(owner.argv, [authority.source.path, "lsp", "--stdio"]);
@@ -372,7 +452,11 @@ export function validateExecInventory(capture, authority) {
   return owners;
 }
 
-export function captureNativeOwners(tracePrefix, directory, authority) {
+export function captureNativeOwners(
+  tracePrefix: string,
+  directory: string,
+  authority: ExecAuthority,
+) {
   const parent = path.dirname(tracePrefix),
     prefix = path.basename(tracePrefix) + ".";
   const traces = fs
@@ -411,29 +495,33 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
   const nativeOwners = owners.map((owner) => {
     assert.ok(owner.exit, "each native process has its own actual terminal status");
     const physicalPath = fs.realpathSync(owner.path);
-    const streams = {};
-    for (const [name, operation, fd] of [
-      ["client", "read", 0],
-      ["server", "write", 1],
-      ["stderr", "write", 2],
-    ]) {
+    const stream = <F>(
+      name: string,
+      operation: string,
+      fd: number,
+      decode: (bytes: Buffer) => F,
+    ) => {
       const bytes = Buffer.concat(
         owner.events
           .filter((event) => event.operation === operation && event.fd === fd && event.bytes)
-          .map((event) => event.bytes),
+          .map((event) => event.bytes ?? Buffer.alloc(0)),
       );
       const file = path.join(directory, `${owner.process}.${name}.bin`);
       fs.writeFileSync(file, bytes);
-      const frames = name === "stderr" ? null : decodeNativeFrames(bytes);
-      streams[name] = { path: file, bytes: bytes.length, sha256: sha(bytes), frames };
-    }
+      return { path: file, bytes: bytes.length, sha256: sha(bytes), frames: decode(bytes) };
+    };
+    const streams = {
+      client: stream("client", "read", 0, decodeNativeFrames),
+      server: stream("server", "write", 1, decodeNativeFrames),
+      stderr: stream("stderr", "write", 2, () => null),
+    };
     const observation = {
       process: owner.process,
       executable: { path: owner.path, physicalPath, sha256: sha(fs.readFileSync(physicalPath)) },
       argv: owner.argv,
       exit: owner.exit,
       streams,
-      ioFailures: owner.events.filter((event) => event.count < 0),
+      ioFailures: owner.events.filter((event) => (event.count ?? 0) < 0),
       ioRestarts: owner.events.filter((event) => event.returnKind === "kernel-restart"),
       syscallsComplete: !owner.terminalUnknownSyscalls?.length,
       terminalUnknownSyscalls: owner.terminalUnknownSyscalls ?? [],
@@ -452,3 +540,5 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
     qualifiedExecInventory: path.join(directory, "qualified-exec-inventory.json"),
   };
 }
+
+export type NativeOwner = ReturnType<typeof captureNativeOwners>["nativeOwners"][number];

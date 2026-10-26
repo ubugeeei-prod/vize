@@ -13,30 +13,73 @@ import {
   prepareNativeRuntimeConsumer,
   runtimeChildEnvironment,
   sha256,
-} from "./providers.mjs";
-import { sourceIdentity, executionAuthority } from "./lsp-source-custody.mjs";
-import { validateNativeLifecycle } from "./lsp-native-lifecycle.mjs";
-import { SourceLspWire } from "./lsp-wire.mjs";
-import { captureNativeOwners } from "./lsp-strace.mjs";
+  type ConsumerInput,
+  type NativeRuntimeConsumer,
+} from "./providers.ts";
+import { sourceIdentity, executionAuthority } from "./lsp-source-custody.ts";
+import { validateNativeLifecycle } from "./lsp-native-lifecycle.ts";
+import { SourceLspWire, type WireEvent } from "./lsp-wire.ts";
+import { captureNativeOwners, type NativeOwner } from "./lsp-strace.ts";
 
-const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
+interface LspPhase {
+  name: string;
+  version: number;
+  authoredSha256: string;
+  diagnostics?: any;
+  value?: any;
+  doubled?: any;
+  unavailable?: any;
+  unavailableDiagnostics?: any;
+}
+interface Failure {
+  message: string;
+  stack: string | undefined;
+}
+interface LspProfile {
+  kind: string;
+  consumer: NativeRuntimeConsumer;
+  initialInputFiles: ConsumerInput[];
+  overrideEnvironment: Record<string, string | null>;
+  phases: LspPhase[];
+  initialize?: any;
+  shutdown?: any;
+  failure?: Failure;
+  cleanupShutdown?: any;
+  cleanupProtocolFailure?: string;
+  closeFailure?: string;
+  outer?: ReturnType<SourceLspWire["save"]>;
+  nativeOwners?: NativeOwner[];
+  syscallObservation?: Pick<
+    ReturnType<typeof captureNativeOwners>,
+    "syscallsComplete" | "terminalUnknownSyscalls" | "execInventory" | "qualifiedExecInventory"
+  >;
+  qualification?: ReturnType<typeof validateNativeLifecycle>;
+  userWarnings?: WireEvent[];
+  outerWarnings?: string[];
+  negativeProfileWarningsQualified?: boolean;
+  auditFailure?: Failure;
+  functionalQualified?: boolean;
+}
+
+const write = (file: string, value: unknown) =>
+  fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 const repoRoot = fs.realpathSync(
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../.."),
 );
-const result = (response) => {
+const result = (response: any): any => {
   assert.equal(response.error, undefined, JSON.stringify(response));
   return response.result;
 };
-const position = (text, offset) => {
+const position = (text: string, offset: number) => {
   const lines = text.slice(0, offset).split("\n");
-  return { line: lines.length - 1, character: lines.at(-1).length };
+  return { line: lines.length - 1, character: (lines.at(-1) ?? "").length };
 };
-const range = (text, offset, length) => ({
+const range = (text: string, offset: number, length: number) => ({
   start: position(text, offset),
   end: position(text, offset + length),
 });
 
-function exactHover(packet, source, token) {
+function exactHover(packet: any, source: string, token: string) {
   const offset =
     token === "value" ? source.indexOf("const value") + 6 : source.indexOf("{{ doubled }}") + 3;
   const expected = {
@@ -75,6 +118,7 @@ export async function observeSourceLspSelection() {
     "qualified lifecycle cannot borrow an unrecognized image",
   );
 
+  const profiles: LspProfile[] = [];
   const report = {
     source,
     strace: {
@@ -84,7 +128,7 @@ export async function observeSourceLspSelection() {
     },
     providers,
     shutdownSourceSha256: sha256(Buffer.from(nativeSource)),
-    profiles: [],
+    profiles,
     scope:
       "Real source CLI/LSP selection and complete authored packets. No published/editor/cache dispatch, generic source-session, blanket API or beta clean-exit credit.",
   };
@@ -97,7 +141,7 @@ export async function observeSourceLspSelection() {
     "stale-decoys",
     "canonical-702",
     "alias-702",
-  ]) {
+  ] as const) {
     const directory = path.join(output, kind),
       consumer = prepareNativeRuntimeConsumer({
         directory: path.join(temporary, kind),
@@ -117,7 +161,7 @@ export async function observeSourceLspSelection() {
     ])
       delete environment[key];
     for (const key of CORSA_OVERRIDES) assert.equal(environment[key], undefined);
-    const profile = {
+    const profile: LspProfile = {
       kind,
       consumer,
       initialInputFiles: inputs,
@@ -157,7 +201,7 @@ export async function observeSourceLspSelection() {
         ["error", SOURCES.error, 2, false],
         ["repair", SOURCES.repair, 3, false],
         ["reopen", SOURCES.valid, 4, true],
-      ]) {
+      ] as const) {
         if (name === "reopen") wire.notify("textDocument/didClose", { textDocument: { uri } });
         const from = wire.events.length;
         if (open)
@@ -169,7 +213,7 @@ export async function observeSourceLspSelection() {
             textDocument: { uri, version },
             contentChanges: [{ text }],
           });
-        const phase = { name, version, authoredSha256: sha256(Buffer.from(text)) };
+        const phase: LspPhase = { name, version, authoredSha256: sha256(Buffer.from(text)) };
         if (consumer.expectedExecutable) {
           phase.diagnostics = await wire.wait(
             (packet) =>
@@ -196,7 +240,7 @@ export async function observeSourceLspSelection() {
             method: "textDocument/publishDiagnostics",
             params: { uri, version, diagnostics },
           });
-          for (const token of ["value", "doubled"]) {
+          for (const token of ["value", "doubled"] as const) {
             const offset =
               token === "value"
                 ? text.indexOf("const value") + 6
@@ -271,7 +315,7 @@ export async function observeSourceLspSelection() {
       wire.notify("exit");
       await wire.end();
     } catch (error) {
-      profile.failure = { message: String(error), stack: error.stack };
+      profile.failure = { message: String(error), stack: (error as { stack?: string }).stack };
     } finally {
       // A failed functional oracle remains failed, but its owned server still
       // receives the real shutdown protocol before administrative cleanup.
@@ -339,7 +383,10 @@ export async function observeSourceLspSelection() {
         assertProviderFiles(providers);
         assert.equal(sha256(fs.readFileSync(source.executable)), source.receipt.binarySha256);
       } catch (error) {
-        profile.auditFailure = { message: String(error), stack: error.stack };
+        profile.auditFailure = {
+          message: String(error),
+          stack: (error as { stack?: string }).stack,
+        };
       }
       profile.functionalQualified = Boolean(
         consumer.expectedExecutable &&

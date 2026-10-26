@@ -1,15 +1,62 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
+import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { createHash, type BinaryLike } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { decodeNativeFrames } from "./lsp-strace.mjs";
+import { decodeNativeFrames, type NativeFrame } from "./lsp-strace.ts";
 
-const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
+interface ProcessStatus {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+}
+export interface WireEvent {
+  direction?: "server" | "client";
+  packet?: any;
+  kind?: string;
+  status?: ProcessStatus;
+  error?: string;
+}
+interface StreamMetadata {
+  path: string;
+  bytes: number;
+  sha256: string;
+  packets?: NativeFrame[];
+  framing?: string;
+  framingError?: string;
+}
+
+const sha = (bytes: BinaryLike) => createHash("sha256").update(bytes).digest("hex");
 
 /** Own the actual straced source process and retain every original outer byte. */
 export class SourceLspWire {
-  constructor({ executable, strace, environment, workspace, directory }) {
+  directory: string;
+  prefix: string;
+  argv: string[];
+  events: WireEvent[];
+  input: Buffer[];
+  output: Buffer[];
+  errors: Buffer[];
+  pending: Buffer;
+  waiters: Set<() => void>;
+  status: ProcessStatus | null;
+  failure: string | null;
+  nextId: number;
+  child: ChildProcessWithoutNullStreams;
+  closed: Promise<ProcessStatus>;
+  forcedTermination?: boolean;
+  constructor({
+    executable,
+    strace,
+    environment,
+    workspace,
+    directory,
+  }: {
+    executable: string;
+    strace: string;
+    environment: NodeJS.ProcessEnv;
+    workspace: string;
+    directory: string;
+  }) {
     fs.mkdirSync(directory, { recursive: true });
     this.directory = directory;
     this.prefix = path.join(directory, "syscalls");
@@ -44,12 +91,13 @@ export class SourceLspWire {
       stdio: "pipe",
       detached: true,
     });
-    this.closed = new Promise((done) =>
+    this.closed = new Promise<ProcessStatus>((done) =>
       this.child.once("close", (code, signal) => {
-        this.status = { code, signal };
-        this.events.push({ kind: "process-closed", status: this.status });
+        const status = { code, signal };
+        this.status = status;
+        this.events.push({ kind: "process-closed", status });
         this.wake();
-        done(this.status);
+        done(status);
       }),
     );
     this.child.on("error", (error) => {
@@ -60,8 +108,8 @@ export class SourceLspWire {
       this.events.push({ kind: "stdin-error", error: String(error) });
       this.wake();
     });
-    this.child.stderr.on("data", (bytes) => this.errors.push(Buffer.from(bytes)));
-    this.child.stdout.on("data", (bytes) => {
+    this.child.stderr.on("data", (bytes: Buffer) => this.errors.push(Buffer.from(bytes)));
+    this.child.stdout.on("data", (bytes: Buffer) => {
       this.output.push(Buffer.from(bytes));
       this.pending = Buffer.concat([this.pending, bytes]);
       try {
@@ -103,22 +151,27 @@ export class SourceLspWire {
         });
     }
   }
-  send(packet) {
+  send(packet: Record<string, unknown>) {
     const body = Buffer.from(JSON.stringify(packet));
     const frame = Buffer.concat([Buffer.from(`Content-Length: ${body.length}\r\n\r\n`), body]);
     this.input.push(frame);
     this.events.push({ direction: "client", packet });
     this.child.stdin.write(frame);
   }
-  notify(method, params) {
+  notify(method: string, params?: unknown) {
     this.send({ jsonrpc: "2.0", method, ...(params === undefined ? {} : { params }) });
   }
-  async request(method, params) {
+  async request(method: string, params?: unknown): Promise<any> {
     const id = ++this.nextId;
     this.send({ jsonrpc: "2.0", id, method, ...(params === undefined ? {} : { params }) });
     return this.wait((packet) => packet.id === id && !packet.method, method);
   }
-  async wait(predicate, operation, from = 0, timeout = 20000) {
+  async wait(
+    predicate: (packet: any) => boolean,
+    operation: string,
+    from = 0,
+    timeout = 20000,
+  ): Promise<any> {
     const deadline = performance.now() + timeout;
     while (true) {
       const found = this.events
@@ -129,7 +182,7 @@ export class SourceLspWire {
       assert.equal(this.status, null, `source process exited before ${operation}`);
       const remaining = deadline - performance.now();
       assert.ok(remaining > 0, `${operation} timed out`);
-      await new Promise((done, reject) => {
+      await new Promise<void>((done, reject) => {
         const timer = setTimeout(() => {
           this.waiters.delete(wake);
           reject(new Error(`${operation} timed out`));
@@ -145,7 +198,7 @@ export class SourceLspWire {
   }
   async end() {
     this.child.stdin.end();
-    let timer;
+    let timer: NodeJS.Timeout | undefined;
     try {
       await Promise.race([
         this.closed,
@@ -172,7 +225,7 @@ export class SourceLspWire {
     }
   }
   save() {
-    const streams = {};
+    const streams: Record<string, StreamMetadata> = {};
     for (const [name, chunks] of Object.entries({
       client: this.input,
       server: this.output,
@@ -181,7 +234,11 @@ export class SourceLspWire {
       const bytes = Buffer.concat(chunks),
         destination = path.join(this.directory, `${name}.bin`);
       fs.writeFileSync(destination, bytes);
-      const metadata = { path: destination, bytes: bytes.length, sha256: sha(bytes) };
+      const metadata: StreamMetadata = {
+        path: destination,
+        bytes: bytes.length,
+        sha256: sha(bytes),
+      };
       if (name !== "stderr") {
         try {
           metadata.packets = decodeNativeFrames(bytes);

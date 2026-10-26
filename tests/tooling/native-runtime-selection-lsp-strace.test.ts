@@ -3,18 +3,22 @@ import { test } from "node:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { createHash } from "node:crypto";
+import { createHash, type BinaryLike } from "node:crypto";
 import {
   decodeNativeFrames,
   decodeStraceString,
   parseStraceTexts,
   parseStraceCapture,
   validateExecInventory,
-} from "./support/native-runtime-selection/lsp-strace.mjs";
+  type ExecAuthority,
+  type TraceOwner,
+} from "./support/native-runtime-selection/lsp-strace.ts";
 
-const hex = (bytes) =>
+type OwnerRecord = Pick<TraceOwner, "path" | "argv" | "process" | "exit" | "rows">;
+
+const hex = (bytes: string | Buffer) =>
   `"${[...Buffer.from(bytes)].map((byte) => `\\x${byte.toString(16).padStart(2, "0")}`).join("")}"`;
-const frame = (packet) => {
+const frame = (packet: unknown) => {
   const bytes = Buffer.from(JSON.stringify(packet));
   return Buffer.concat([Buffer.from(`Content-Length: ${bytes.length}\r\n\r\n`), bytes]);
 };
@@ -46,7 +50,7 @@ void test("native syscall custody preserves complete framed bytes and original G
 });
 
 void test("native byte custody refuses cross-thread timestamp ties and overlapping syscall intervals", () => {
-  const trace = (first, second) => [
+  const trace = (first: string, second: string) => [
     {
       tid: 100,
       text: `${exec}\n1.100000 clone(child_stack=NULL, flags=CLONE_VM|CLONE_THREAD) = 101 <0.000001>\n${second}\n3.000000 +++ exited with 0 +++\n`,
@@ -76,9 +80,9 @@ void test("native byte custody refuses cross-thread timestamp ties and overlappi
     ),
   );
   assert.deepEqual(
-    decodeNativeFrames(Buffer.concat(large[0].events.map((event) => event.bytes))).map(
-      (frame) => frame.packet.id,
-    ),
+    decodeNativeFrames(
+      Buffer.concat(large[0].events.map((event) => event.bytes ?? Buffer.alloc(0))),
+    ).map((frame) => frame.packet.id),
     [1, 2],
   );
 });
@@ -91,7 +95,10 @@ void test("exec custody retains failed probes and refuses unparsed execveat rath
   assert.equal(capture.attempts.length, 2);
   assert.equal(capture.attempts[1].path, "/isolated/npm");
   assert.equal(capture.attempts[1].result, -1);
-  assert.throws(() => validateExecInventory(capture, {}), /failed execution\/discovery attempts/u);
+  assert.throws(
+    () => validateExecInventory(capture, {} as ExecAuthority),
+    /failed execution\/discovery attempts/u,
+  );
   assert.throws(
     () =>
       parseStraceCapture([
@@ -109,8 +116,8 @@ void test("exec custody admits only exact source, embedded config, and selected 
     fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-exec-custody-")),
   );
   try {
-    const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
-    const file = (name) => {
+    const digest = (bytes: BinaryLike) => createHash("sha256").update(bytes).digest("hex");
+    const file = (name: string) => {
       const filename = path.join(directory, name);
       fs.writeFileSync(filename, name);
       return { path: filename, sha256: digest(Buffer.from(name)) };
@@ -119,7 +126,7 @@ void test("exec custody admits only exact source, embedded config, and selected 
       node = file("node"),
       sdk = file("sdk"),
       foreign = file("foreign");
-    const owner = (image, argv, process) => ({
+    const owner = (image: { path: string }, argv: string[], process: number): OwnerRecord => ({
       path: image.path,
       argv,
       process,
@@ -141,7 +148,7 @@ void test("exec custody admits only exact source, embedded config, and selected 
         200,
       );
     const sdkOwner = owner(sdk, [sdk.path, "--lsp", "--stdio"], 300);
-    const authority = {
+    const authority: ExecAuthority = {
       source,
       node: { ...node, physicalPath: node.path },
       sdk,
@@ -149,7 +156,7 @@ void test("exec custody admits only exact source, embedded config, and selected 
       configFile: "/authored/vite.config.mjs",
       configCachePattern: /^\/tmp\/vize-config-compile-[A-Za-z0-9]+$/u,
     };
-    const verify = (owners, overrides = {}) =>
+    const verify = (owners: OwnerRecord[], overrides: Partial<ExecAuthority> = {}) =>
       validateExecInventory({ owners, attempts: [] }, { ...authority, ...overrides });
     assert.deepEqual(
       verify([sourceOwner, nodeOwner, sdkOwner]).map((owner) => owner.role),
@@ -188,8 +195,8 @@ void test("native syscall custody joins only its actual unfinished call and hono
       text: `${exec}\n1.100000 read(0, <unfinished ...>\n1.200000 <... read resumed>${hex("abc")}, 3) = 3 <0.100000>\n1.300000 write(1, ${hex("abcdef")}, 6) = 3 <0.000001>\n2.000000 +++ exited with 1 +++\n`,
     },
   ]);
-  assert.equal(owners[0].events[0].bytes.toString(), "abc");
-  assert.equal(owners[0].events[1].bytes.toString(), "abc");
+  assert.equal(String(owners[0].events[0].bytes), "abc");
+  assert.equal(String(owners[0].events[1].bytes), "abc");
   assert.deepEqual(owners[0].exit, { code: 1, signal: null });
   assert.throws(
     () =>
@@ -230,7 +237,7 @@ void test("kernel-restarted native reads remain explicit and never manufacture i
   assert.equal(owners[0].events[0].returnKind, "kernel-restart");
   assert.equal(owners[0].events[0].count, null);
   assert.equal(owners[0].events[0].bytes, undefined);
-  assert.equal(owners[0].events[1].bytes.toString(), "a");
+  assert.equal(String(owners[0].events[1].bytes), "a");
   assert.throws(
     () =>
       parseStraceTexts([

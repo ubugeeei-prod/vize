@@ -3,7 +3,8 @@ import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { sha256 } from "./providers.mjs";
+import { sha256, type NativeRuntimeConsumer } from "./providers.ts";
+import type { ExecAuthority } from "./lsp-strace.ts";
 import {
   BUILD_RECIPE,
   binaryRelativePath,
@@ -11,7 +12,7 @@ import {
   validateBuildReceipt,
 } from "../../../differential/build-receipt.ts";
 
-export function sourceIdentity(repoRoot, observerFile) {
+export function sourceIdentity(repoRoot: string, observerFile: string) {
   assert.equal(process.env.VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION, "1");
   assert.equal(
     process.platform,
@@ -71,7 +72,12 @@ export function sourceIdentity(repoRoot, observerFile) {
   };
 }
 
-export function executionAuthority(repoRoot, source, consumer, environment) {
+export function executionAuthority(
+  repoRoot: string,
+  source: { executable: string; receipt: { binarySha256: string } },
+  consumer: Pick<NativeRuntimeConsumer, "configRoot" | "expectedExecutable">,
+  environment: NodeJS.ProcessEnv,
+): ExecAuthority {
   const loader = path.join(repoRoot, "crates/vize_carton/src/config/loader");
   const rust = fs.readFileSync(path.join(loader, "js.rs"), "utf8");
   const embedded =
@@ -83,7 +89,8 @@ export function executionAuthority(repoRoot, source, consumer, environment) {
     fs.readFileSync(path.join(loader, "lsp_snapshot.rs"), "utf8"),
     /builder\.prefix\("vize-config-compile-"\)/u,
   );
-  const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  assert.ok(environment.PATH, "the child PATH holds the observed Node alias");
   return {
     source: { path: source.executable, sha256: source.receipt.binarySha256 },
     node: {
