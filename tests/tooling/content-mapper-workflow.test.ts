@@ -52,6 +52,43 @@ function jobSteps(workflow: string, jobName: string): WorkflowStep[] {
   return steps;
 }
 
+type CampaignInputs = Partial<
+  Record<
+    | "event-rename-only"
+    | "official-css-options-only"
+    | "published-defaults-only"
+    | "router-experimental-only",
+    boolean
+  >
+>;
+
+// Evaluates a workflow expression for one trigger, as Actions would.
+function evaluateWorkflowExpression(
+  expression: string,
+  eventName: string,
+  inputs: CampaignInputs,
+): unknown {
+  return runInNewContext(
+    expression
+      .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
+      .replace(/\binputs\.([a-z-]+)/gu, 'inputs["$1"]'),
+    {
+      github: { event_name: eventName, event: { pull_request: {} }, ref: "refs/heads/main" },
+      inputs,
+    },
+  );
+}
+
+function selectedJobs(
+  jobs: Record<string, { if: string }>,
+  eventName: string,
+  inputs: CampaignInputs,
+): string[] {
+  return Object.entries(jobs)
+    .filter(([, job]) => evaluateWorkflowExpression(job.if, eventName, inputs))
+    .map(([name]) => name);
+}
+
 function stepsRunning(steps: WorkflowStep[], command: string): number[] {
   return steps.flatMap((step, index) => (step.run?.includes(command) ? [index] : []));
 }
@@ -288,47 +325,48 @@ test("manual focused campaigns preserve the full default and upload before gatin
     ["official-css-options", "-official-css-options", false, true, false],
     ["router-experimental", "-router-experimental", false, false, true],
   ] as const) {
-    const context = {
-      github: {
-        event_name: "workflow_dispatch",
-        event: { pull_request: {} },
-        ref: "refs/heads/main",
-      },
-      inputs: {
-        "event-rename-only": rename,
-        "official-css-options-only": official,
-        "router-experimental-only": router,
-      },
+    const inputs = {
+      "event-rename-only": rename,
+      "official-css-options-only": official,
+      "router-experimental-only": router,
     };
-    const evaluate = (expression: string): unknown =>
-      runInNewContext(
-        expression
-          .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
-          .replace(/\binputs\.([a-z-]+)/gu, 'inputs["$1"]'),
-        context,
-      );
     const group: string = workflow.concurrency.group.replace(/\$\{\{(.*?)\}\}/gu, (_, expression) =>
-      String(evaluate(expression)),
+      String(evaluateWorkflowExpression(expression, "workflow_dispatch", inputs)),
     );
     assert.equal(group, `content-mapper-refs/heads/main${suffix}`);
     groups.push(group);
-    assert.deepEqual(
-      Object.entries(workflow.jobs)
-        .filter(([, candidate]) => evaluate(candidate.if))
-        .map(([name]) => name),
-      [job],
-    );
+    assert.deepEqual(selectedJobs(workflow.jobs, "workflow_dispatch", inputs), [job]);
   }
   assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
-  assert.equal(
-    workflow.jobs["exact-tsgo-project"].if,
-    "${{ !inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
+  // Scheduled runs keep the default project and add the Router campaign.
+  assert.deepEqual(selectedJobs(workflow.jobs, "schedule", {}), [
+    "exact-tsgo-project",
+    "router-experimental",
+  ]);
+  assert.deepEqual(selectedJobs(workflow.jobs, "pull_request", {}), ["exact-tsgo-project"]);
+  // The Router input wins over any other focused input.
+  for (const other of [
+    "event-rename-only",
+    "official-css-options-only",
+    "published-defaults-only",
+  ] as const) {
+    assert.deepEqual(
+      selectedJobs(workflow.jobs, "workflow_dispatch", {
+        "router-experimental-only": true,
+        [other]: true,
+      }),
+      ["router-experimental"],
+      other,
+    );
+  }
+  assert.deepEqual(
+    selectedJobs(workflow.jobs, "workflow_dispatch", {
+      "event-rename-only": true,
+      "official-css-options-only": true,
+    }),
+    ["official-css-options"],
   );
   const focused = workflow.jobs["event-rename"];
-  assert.equal(
-    focused.if,
-    "github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
-  );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
   assert.ok(pinned);
@@ -366,10 +404,14 @@ test("official TypeScript acceptance keeps the reported host and complete instal
     jobs: Record<string, { if: string; steps: WorkflowStep[]; "timeout-minutes": number }>;
   };
   const job = workflow.jobs["official-css-options"];
-  assert.equal(
-    job.if,
-    "github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)",
-  );
+  for (const [eventName, inputs, selected] of [
+    ["workflow_dispatch", { "official-css-options-only": true }, true],
+    ["workflow_dispatch", { "published-defaults-only": true }, true],
+    ["workflow_dispatch", {}, false],
+    ["schedule", { "official-css-options-only": true }, false],
+  ] as const) {
+    assert.equal(Boolean(evaluateWorkflowExpression(job.if, eventName, inputs)), selected);
+  }
   assert.equal(job["timeout-minutes"], 15);
   const setup = job.steps.find((step) => step.name === "Setup pinned Node and Vite Plus")!;
   assert.equal(setup.uses, "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af");
