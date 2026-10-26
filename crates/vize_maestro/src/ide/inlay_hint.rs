@@ -9,6 +9,8 @@
 //! revision, shared with the other request paths.
 
 mod builtin;
+#[cfg(feature = "native")]
+mod component;
 mod expr_regions;
 #[cfg(feature = "native")]
 mod native;

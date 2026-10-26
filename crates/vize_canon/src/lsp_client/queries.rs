@@ -203,6 +203,19 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
+        let mut response = self.unordered_completion(uri, line, character)?;
+        if let Some(response) = response.as_mut() {
+            super::completion_order::stabilize(response);
+        }
+        Ok(response)
+    }
+
+    fn unordered_completion(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
         self.ensure_project_transport()?;
         // Like hover, the project-session API rejects completion as
         // unsupported on every pinned runtime (corsa-bind#409); the editor LSP

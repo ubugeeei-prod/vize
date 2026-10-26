@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "lsp/regression/component-alias-hover-10787",
+  "provenance": {
+    "fixCommit": "fbb3cd6c370cf9be32ba1c841052c244b0e8f742",
+    "issue": 10787,
+    "inputOrigin": "Minimized async and alias component constants from #10787; baseline revision before the fix",
+    "contractOrigin": "Authored MyChild.vue props and emits, with no generated __vize* component type"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "87f6ecf4054b5052bd2f5c0835acded7dc585a10993bcf3ac86d6db567737c46"
+    },
+    {
+      "source": "MyChild.vue.txt",
+      "runtimePath": "MyChild.vue",
+      "sha256": "c844d84ffd79d0573d2981425acb5f7edb91463bda5e9678a7c22cd592dfefc4"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "dfed1fae094643fa47c3d5abb0d34dcc96b860f232049b7cd416859b85b63a12"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Whole component-tag hovers for constants that hold an SFC; source-inspected custody grants no native whole-product LSP credit"
+}

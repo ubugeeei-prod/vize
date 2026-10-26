@@ -88,18 +88,18 @@ void test("every product manifest contributes to the case-level dialect denomina
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 30,
+    plannedCases: 31,
     verifiedCases: 4,
-    provisionalCases: 24,
-    unknownReadinessCases: 26,
+    provisionalCases: 25,
+    unknownReadinessCases: 27,
     verified: {
       "vue0-template": 2,
       "vue-quirks": 2,
     },
     provisional: {
-      "html-template": 24,
+      "html-template": 25,
       ts: 5,
-      "vue3-sfc": 24,
+      "vue3-sfc": 25,
     },
   });
 });
@@ -163,36 +163,36 @@ void test("missing case coverage becomes explicit unknown without changing manif
 
 void test("linter and LSP coverage record every pinned authored source dialect", () => {
   assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
-    plannedCases: 99,
+    plannedCases: 100,
     verifiedCases: 0,
-    provisionalCases: 99,
-    unknownReadinessCases: 99,
+    provisionalCases: 100,
+    unknownReadinessCases: 100,
     verified: {},
     provisional: {
       "html-template": 56,
       js: 10,
       jsx: 2,
       "pug-template": 4,
-      ts: 41,
+      ts: 42,
       tsx: 2,
       "vue2-sfc": 2,
-      "vue3-sfc": 79,
+      "vue3-sfc": 80,
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
-    plannedCases: 64,
+    plannedCases: 65,
     verifiedCases: 0,
-    provisionalCases: 64,
-    unknownReadinessCases: 64,
+    provisionalCases: 65,
+    unknownReadinessCases: 65,
     verified: {},
     provisional: {
-      "html-template": 55,
+      "html-template": 56,
       js: 9,
       jsx: 4,
       "pug-template": 4,
-      ts: 46,
+      ts: 47,
       tsx: 4,
-      "vue3-sfc": 63,
+      "vue3-sfc": 64,
     },
   });
 });
@@ -213,17 +213,17 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 159,
+    plannedCases: 160,
     verifiedCases: 0,
-    provisionalCases: 158,
-    unknownReadinessCases: 159,
+    provisionalCases: 159,
+    unknownReadinessCases: 160,
     verified: {},
     provisional: {
       "html-template": 152,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 157,
+      ts: 158,
       tsx: 4,
       "vue3-sfc": 156,
     },

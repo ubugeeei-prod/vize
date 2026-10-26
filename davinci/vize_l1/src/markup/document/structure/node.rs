@@ -37,38 +37,14 @@ pub(super) fn children<'s, 'o, 'a>(
     tree: &'s DocumentHtmlStructure<'o, 'a>,
     parent: &'s Element,
 ) -> Result<DocumentHtmlChildNodes<'s, 'o, 'a>, Refusal> {
-    if !matches!(
-        parent.name,
-        "body"
-            | "div"
-            | "span"
-            | "br"
-            | "hr"
-            | "img"
-            | "input"
-            | "area"
-            | "embed"
-            | "source"
-            | "track"
-            | "wbr"
-            | "article"
-            | "aside"
-            | "footer"
-            | "header"
-            | "main"
-            | "nav"
-            | "section"
-            | "address"
-            | "blockquote"
-            | "figure"
-            | "figcaption"
-            | "hgroup"
-            | "search"
-    ) {
+    if matches!(parent.name, "html" | "head" | "base" | "link" | "meta") {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }
-    if parent.name == "body"
-        && let Some(span) = tree.body_tail_text
+    if let Some(span) = tree.body_tail_text
+        && tree
+            .tail_owner
+            .and_then(|index| tree.elements.get(index))
+            .is_some_and(|owner| core::ptr::eq(owner, parent))
     {
         return Err(Refusal::OutsideBodyText(span));
     }

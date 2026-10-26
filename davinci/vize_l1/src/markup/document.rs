@@ -2,8 +2,8 @@
 //!
 //! One private producer runs the shared lexer once over the complete checked
 //! source. Token views and lexical completion borrow that original owner;
-//! neither a Component nor caller-built token vectors can mint them. The
-//! browser tree policies remain explicitly unfinished under #6835/#6843.
+//! neither a Component nor caller-built token vectors can mint them. Browser
+//! tree policies belong to the bounded [`DocumentHtmlStructure`] provider.
 
 use vize_l0::{Allocator, SourceRoot, Span, Vec};
 
@@ -87,22 +87,6 @@ pub struct DocumentLexicalError {
     pub code: LexErrorCode,
     pub offset: u32,
 }
-
-/// Browser tree semantics which this lexical owner cannot certify.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DocumentTreePolicy {
-    FoldNameCase,
-    HtmlSelfClosing,
-    ImpliedEndTags,
-    TableContentModel,
-}
-
-const UNFINISHED_TREE_POLICIES: [DocumentTreePolicy; 4] = [
-    DocumentTreePolicy::FoldNameCase,
-    DocumentTreePolicy::HtmlSelfClosing,
-    DocumentTreePolicy::ImpliedEndTags,
-    DocumentTreePolicy::TableContentModel,
-];
 
 /// The whole original source and its sole completed Document lexer run.
 ///
@@ -194,19 +178,14 @@ impl<'a> NativeDocument<'a> {
         &self.errors
     }
 
-    /// Construct only the admitted explicit HTML envelope's element ancestry.
-    /// The original retained events are consumed directly, without lexing again.
-    /// Direct child text/comment readback is scoped to the admitted body subtree;
-    /// this does not certify general HTML tree or petite-vue semantics.
+    /// Construct only the admitted explicit HTML envelope's element ancestry,
+    /// under the Document profile's name folding, self-closing, implied end
+    /// tag and table rules. The original retained events are consumed
+    /// directly, without lexing again. Direct child text/comment readback is
+    /// scoped to the admitted body subtree; this does not certify general
+    /// HTML tree or petite-vue semantics.
     pub fn html_structure(&self) -> Result<DocumentHtmlStructure<'_, 'a>, DocumentHtmlRefusal> {
         structure::construct(self)
-    }
-
-    /// Declaration tolerance is implemented; these four tree policies are
-    /// only declarations on `Profile`, never completion credit for this run.
-    #[must_use]
-    pub fn unfinished_tree_policies(&self) -> &[DocumentTreePolicy; 4] {
-        &UNFINISHED_TREE_POLICIES
     }
 
     /// Certify only a normal complete lexical run of this original source.

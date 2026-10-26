@@ -379,7 +379,7 @@ function assertBrokenCheck(result: VizeCheckResult): void {
       {
         file: sourcePath,
         diagnostics: [
-          "error:2:20 [TS2339] Property 'missingList' does not exist on the component instance.",
+          "error:2:20 [TS2339] Property 'missingList' does not exist on the component instance. (source: <el-table :data=\"missingList\" style=\"width: 100%;padding-top: 15px;\">; binding: 'data')",
         ],
       },
     ],

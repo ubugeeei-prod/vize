@@ -129,6 +129,6 @@ fn new_void_names_do_not_admit_wrong_modes_prefixes_or_explicit_closes() {
     let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     assert!(matches!(
         owner.html_structure(),
-        Err(DocumentHtmlRefusal::UnsupportedPolicy(_))
+        Err(DocumentHtmlRefusal::IgnoredTag(_))
     ));
 }

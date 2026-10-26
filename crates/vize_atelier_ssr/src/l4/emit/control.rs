@@ -124,17 +124,26 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push_indent();
         self.ctx.push_mapped("_ssrRenderList(", for_op.span.start);
         self.push_expression(&source, expression_span(&binding.source));
+        let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
+        let aliases = match self.for_alias_texts([Some(value), key, index]) {
+            Ok(aliases) => aliases,
+            Err(error) => {
+                self.scoped_params.pop();
+                self.exprs.leave(mark);
+                return Err(error);
+            }
+        };
         self.ctx.push(", (");
         // The walker anchors the loop source but not the aliases it binds.
-        self.ctx.push(value);
-        for alias in [key, index].into_iter().flatten() {
-            self.ctx.push(", ");
+        for (index, alias) in aliases.iter().flatten().enumerate() {
+            if index > 0 {
+                self.ctx.push(", ");
+            }
             self.ctx.push(alias);
         }
         self.ctx.push(") => {\n");
         self.ctx.indent_level += 1;
 
-        let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
         let body = self.scan_region(self.pos).and_then(|shape| {
             self.children(Flags {
                 as_fragment: !disable_nested_fragments

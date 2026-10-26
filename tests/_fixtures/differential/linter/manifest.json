@@ -2430,6 +2430,42 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/corsa-session-waiters-10393",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "corsa-session-waiters-10393",
+        "files": [
+          {
+            "path": "First.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "7a213646cef6f4a7b7ad2e54438cded5d9d8655c8d7765c6116819ffca929403"
+          },
+          {
+            "path": "Second.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "3c51146ec0bafb495ba45717c9a36df72e716b43e6455220983283c734fa935b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

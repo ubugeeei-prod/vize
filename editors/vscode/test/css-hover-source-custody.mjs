@@ -333,7 +333,16 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
       contract.reviewedFixtures,
     );
   const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
-  if (!pinnedProduct) assertExactCssTree(actual, expected);
+  // A current checkout must carry the reviewed owned CSS inputs exactly. Other
+  // crates, build and VSIX inputs follow main; the build receipt binds the
+  // capture to this exact clean HEAD, so they are not frozen here.
+  if (!pinnedProduct) {
+    assertExactCssTree(
+      readTree(revision, ownedSourcePaths),
+      expected.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
+    );
+    assertExactCssTree(readTree(revision, ownedFixturePaths), contract.reviewedFixtures);
+  }
   assert.deepEqual(
     sorted(readTree(mergedMainRevision, contract.buildPaths, false)),
     contract.mergedMain.buildInputs,
@@ -345,12 +354,6 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     "successor main build context changed",
   );
   assert.equal(contract.productSnapshot.buildInputsSha256, fingerprint(contract.buildInputs));
-  if (!pinnedProduct)
-    assert.deepEqual(
-      sorted(readTree(revision, contract.buildPaths, false)),
-      contract.buildInputs,
-      "workspace build inputs changed",
-    );
   const infrastructure = contract.vsixInfrastructure;
   assert.equal(infrastructure.baseRevision, successorMainRevision);
   assert.equal(infrastructure.sourceRevision, vsixInfrastructureRevision);
@@ -367,12 +370,6 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   assert.deepEqual(sorted(readTree(vsixInfrastructureRevision, reviewedVsixPaths)), vsixInputs);
   const expectedVsixInputs = composeCurrentVsixInputs(vsixInputs, currentContracts.toolingChanges);
   assert.equal(contract.productSnapshot.vsixInputsSha256, fingerprint(expectedVsixInputs));
-  if (!pinnedProduct)
-    assert.deepEqual(
-      sorted(readTree(revision, reviewedVsixPaths)),
-      expectedVsixInputs,
-      "VSIX infrastructure inputs changed",
-    );
   assert.deepEqual(
     currentContracts.witnesses.map(({ path }) => path),
     [
@@ -424,6 +421,13 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     currentContracts,
     vsixInfrastructure: infrastructure,
     cratesSha256: fingerprint(actual),
+    // The pinned product revision need not be fetched; only a checkout has current inputs.
+    currentBuildInputsSha256: pinnedProduct
+      ? null
+      : fingerprint(readTree(revision, contract.buildPaths, false)),
+    currentVsixInputsSha256: pinnedProduct
+      ? null
+      : fingerprint(readTree(revision, reviewedVsixPaths)),
     productionChanges: [
       ...new Set(
         [...contract.layers, integration, successor.integrationLayer].flatMap((layer) =>

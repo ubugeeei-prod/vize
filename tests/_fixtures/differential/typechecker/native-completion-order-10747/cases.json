@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10747,
+  "regressionCommit": "7e710ef9e094eb3244e332c90f21727d290b4a35",
+  "sourceRevision": "7e710ef9e094eb3244e332c90f21727d290b4a35",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-identifier-project",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "src/main.ts.txt"
+        },
+        {
+          "file": "src/greet.ts",
+          "source": "src/greet.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -220,7 +220,7 @@ pub(super) fn with_corsa_session<T>(
                     CorsaTypeAwareSession::new_with_corsa_path(
                         filename,
                         corsa_path.as_deref(),
-                        spawn_tsconfig,
+                        spawn_tsconfig.clone(),
                     )
                 )
             },
