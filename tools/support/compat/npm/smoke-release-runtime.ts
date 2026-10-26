@@ -5,6 +5,30 @@ import path from "node:path";
 
 import { runFreshProjectInitChecks } from "./smoke-release-init-fresh.mjs";
 import { runInitTypecheckChecks } from "./smoke-release-init-typecheck.mjs";
+import type { RunOptions } from "./smoke-process.ts";
+
+/** A packed package tarball and the manifest identity it was packed from. */
+export interface PackedPackage {
+  readonly compatible: boolean;
+  readonly name: string;
+  readonly packageDir: string;
+  readonly tarball: string;
+  readonly version: string;
+}
+
+export type RunCommand = (command: string, args: readonly string[], options?: RunOptions) => string;
+
+export interface RuntimeCheckOptions {
+  readonly allPackages?: readonly PackedPackage[];
+  readonly repoRoot: string;
+  readonly resolveInstalledBin: (
+    installDir: string,
+    packageName: string,
+    binName: string,
+  ) => string;
+  readonly run: RunCommand;
+  readonly tempDir: string;
+}
 
 export const RUNTIME_PEER_DEPENDENCIES = {
   typescript: "6.0.3",
@@ -13,7 +37,7 @@ export const RUNTIME_PEER_DEPENDENCIES = {
   vue: "3.5.34",
 };
 
-function writeRuntimeSmokeProject(installDir) {
+function writeRuntimeSmokeProject(installDir: string): void {
   const sourceDir = path.join(installDir, "src");
   fs.mkdirSync(sourceDir, { recursive: true });
   fs.writeFileSync(
@@ -85,10 +109,12 @@ function writeRuntimeSmokeProject(installDir) {
   );
 }
 
-export function assertInstalledMapperContract(installDir) {
+export function assertInstalledMapperContract(installDir: string): void {
   const packageRoot = path.join(installDir, "node_modules", "vize");
   assert.equal(fs.lstatSync(packageRoot).isSymbolicLink(), false);
-  const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"));
+  const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")) as {
+    readonly typescript?: { readonly contentMapper?: unknown };
+  };
   assert.deepEqual(
     manifest.typescript?.contentMapper,
     {
@@ -107,7 +133,11 @@ export function assertInstalledMapperContract(installDir) {
   }
 }
 
-export function runInstalledContentMapperChecks(installDir, repoRoot, run) {
+export function runInstalledContentMapperChecks(
+  installDir: string,
+  repoRoot: string,
+  run: RunCommand,
+): void {
   const tsgo = process.env.VIZE_TEST_CONTENT_MAPPER_TSGO;
   if (tsgo == null || tsgo === "") return;
 
@@ -172,10 +202,10 @@ export function runInstalledContentMapperChecks(installDir, repoRoot, run) {
 }
 
 export function runRuntimeChecks(
-  installDir,
-  packages,
-  { allPackages = packages, repoRoot, resolveInstalledBin, run, tempDir },
-) {
+  installDir: string,
+  packages: readonly PackedPackage[],
+  { allPackages = packages, repoRoot, resolveInstalledBin, run, tempDir }: RuntimeCheckOptions,
+): void {
   writeRuntimeSmokeProject(installDir);
 
   if (packages.some((pkg) => pkg.name === "@vizejs/native")) {

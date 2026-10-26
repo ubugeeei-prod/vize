@@ -1,10 +1,12 @@
-import { VITE_VUE_JS_CHECKJS_SHAPE } from "./smoke-release-init-js-shapes.mjs";
+import { VITE_VUE_JS_CHECKJS_SHAPE } from "./smoke-release-init-js-shapes.ts";
+import type { PackageManager, PackageManagerId } from "./smoke-release-init-managers.ts";
+import type { CheckReportFile } from "./smoke-release-init-outcome.ts";
 
 /**
  * Matrix data for the fresh-project release smoke (#3956).
  *
  * A matrix cell is a (package manager, project shape) pair and both are data:
- * the manager table in `smoke-release-init-managers.mjs` holds the argv that
+ * the manager table in `smoke-release-init-managers.ts` holds the argv that
  * manager needs, the shape table here holds the files the project starts with,
  * the flags `vize init` is given, the plan text it must print, and the
  * diagnostics `vize check` must report for the clean/broken/repaired triple.
@@ -12,8 +14,46 @@ import { VITE_VUE_JS_CHECKJS_SHAPE } from "./smoke-release-init-js-shapes.mjs";
  * #3956, is a new entry here rather than new code in the driver.
  */
 
+/** Runtime peer versions the authored project files pin. */
+export type Peers = Readonly<Record<string, string>>;
+
+/** `vize init` detection lines for one package manager. */
+export type Detection = (manager: PackageManager) => readonly string[];
+
+export interface ProjectShape {
+  readonly id: string;
+  readonly requires: readonly string[];
+  readonly files: (peers: Peers) => Record<string, string>;
+  readonly initFlags: readonly string[];
+  readonly initialAbsentFiles: readonly string[];
+  readonly detection: Detection;
+  readonly bootstrappedDetection?: Detection;
+  readonly postBootstrapFiles?: Readonly<Record<string, string>>;
+  readonly features: readonly string[];
+  readonly reconfiguredDetection: Detection;
+  readonly bootstrappedReconfiguredDetection?: Detection;
+  readonly reconfiguredFeatures: readonly string[];
+  readonly createdFiles: readonly string[];
+  readonly updatedFiles: readonly string[];
+  readonly addedScripts: readonly string[];
+  readonly plannedDependencies: readonly string[];
+  readonly expectedDevDependencies: readonly string[];
+  readonly expectedScripts: Readonly<Record<string, string>>;
+  readonly expectedFiles: Readonly<Record<string, string>>;
+  readonly check: {
+    readonly broken: Readonly<Record<string, string>>;
+    readonly brokenDiagnostics: readonly CheckReportFile[];
+  };
+}
+
+export interface FreshInitCell {
+  readonly packageManager: PackageManagerId;
+  readonly shape: string;
+  readonly projectDirectory?: string;
+}
+
 /** Cells this slice runs. Further cells are added here, not in the driver. */
-export const FRESH_INIT_MATRIX = [
+export const FRESH_INIT_MATRIX: readonly FreshInitCell[] = [
   // The npm cell also validates CLI, installer, and diagnostic paths on every smoke host.
   { packageManager: "npm", shape: "vite-vue-ts", projectDirectory: "vite vue 日本語" },
   { packageManager: "npm", shape: "vite-vue-js-checkjs" },
@@ -33,7 +73,7 @@ const APP_TITLE_BROKEN = 'const title: number = "vize";';
 const GREETING_CLEAN = "greeting.toUpperCase()";
 const GREETING_BROKEN = "greeting.notAMethod()";
 
-function appSource(broken) {
+function appSource(broken: boolean): string {
   return [
     "<template>",
     '  <HelloWorld :msg="title" />',
@@ -48,7 +88,7 @@ function appSource(broken) {
   ].join("\n");
 }
 
-function helloWorldSource(broken) {
+function helloWorldSource(broken: boolean): string {
   return [
     "<template>",
     `  <p class="greeting">{{ ${broken ? GREETING_BROKEN : GREETING_CLEAN} }}</p>`,
@@ -63,7 +103,7 @@ function helloWorldSource(broken) {
   ].join("\n");
 }
 
-function viteVueTsFiles(peers) {
+function viteVueTsFiles(peers: Peers): Record<string, string> {
   return {
     "package.json": `${JSON.stringify(
       {
@@ -117,9 +157,13 @@ function viteVueTsFiles(peers) {
   };
 }
 
-function vitePlusVueTsFiles(peers) {
+function vitePlusVueTsFiles(peers: Peers): Record<string, string> {
   const files = viteVueTsFiles(peers);
-  const packageJson = JSON.parse(files["package.json"]);
+  const packageJson = JSON.parse(files["package.json"]) as {
+    name: string;
+    scripts: Record<string, string>;
+    devDependencies: Record<string, string>;
+  };
   packageJson.name = "vize-fresh-init-vite-plus-vue-ts";
   packageJson.scripts = { dev: "vp dev", check: "vp check" };
   packageJson.devDependencies["vite-plus"] = peers["vite-plus"];
@@ -135,7 +179,7 @@ function vitePlusVueTsFiles(peers) {
   return files;
 }
 
-function viteDetection(manager, framework = "Vite") {
+function viteDetection(manager: PackageManager, framework = "Vite"): string[] {
   return [
     `  framework:       ${framework} (vite.config.ts)`,
     `  package manager: ${manager.detectedPackageManager}`,
@@ -146,7 +190,7 @@ function viteDetection(manager, framework = "Vite") {
   ];
 }
 
-function configuredViteDetection(manager, framework = "Vite") {
+function configuredViteDetection(manager: PackageManager, framework = "Vite"): string[] {
   return [
     `  framework:       ${framework} (vite.config.ts)`,
     `  package manager: ${manager.detectedPackageManager}`,
@@ -217,7 +261,7 @@ const CHECK_TRIPLE = {
  * packages were not packed for this run is skipped rather than red-lighted, so
  * the narrower `release-npm-native` smoke stays green.
  */
-export const PROJECT_SHAPES = {
+export const PROJECT_SHAPES: Readonly<Record<string, ProjectShape>> = {
   "vite-vue-js-checkjs": VITE_VUE_JS_CHECKJS_SHAPE,
   "vite-vue-ts": {
     id: "vite-vue-ts",

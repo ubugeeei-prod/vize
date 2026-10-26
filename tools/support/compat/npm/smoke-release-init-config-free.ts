@@ -4,17 +4,18 @@
  * For the archived shapes, only generated plans/files change; their authored
  * inputs and complete diagnostic oracles remain owned by the historical modules.
  */
-import { PROJECT_SHAPES } from "./smoke-release-init-shapes.mjs";
-import { NUXT_VUE_TS_SHAPE } from "./smoke-release-init-nuxt-shape.mjs";
+import type { PackageManager } from "./smoke-release-init-managers.ts";
+import { NUXT_VUE_TS_SHAPE } from "./smoke-release-init-nuxt-shape.ts";
+import { PROJECT_SHAPES, type Detection, type ProjectShape } from "./smoke-release-init-shapes.ts";
 
-function sharedDetection(detect) {
+function sharedDetection(detect: Detection): Detection {
   return (manager) =>
     detect(manager).map((line) =>
       line.startsWith("  vize config:") ? "  Vue settings:    vue: in vite.config.*" : line,
     );
 }
 
-function configFreeShape(shape) {
+function configFreeShape(shape: ProjectShape): ProjectShape {
   const javascript = shape.id === "vite-vue-js-checkjs";
   const { "vize.config.ts": historicalConfig, ...expectedFiles } = shape.expectedFiles;
   if (historicalConfig === undefined) throw new Error(`${shape.id}: missing historical config`);
@@ -31,7 +32,7 @@ function configFreeShape(shape) {
       shape.features[4],
     ],
     reconfiguredDetection: javascript
-      ? (manager) => [
+      ? (manager: PackageManager) => [
           "  framework:       Vite (vite.config.js)",
           `  package manager: ${manager.detectedPackageManager}`,
           "  language:        TypeScript (tsconfig.json)",
@@ -52,7 +53,7 @@ function configFreeShape(shape) {
   };
 }
 
-export const CONFIG_FREE_PROJECT_SHAPES = {
+export const CONFIG_FREE_PROJECT_SHAPES: Readonly<Record<string, ProjectShape>> = {
   ...Object.fromEntries(
     Object.entries(PROJECT_SHAPES).map(([id, shape]) => [id, configFreeShape(shape)]),
   ),

@@ -1,3 +1,6 @@
+import type { PackageManager } from "./smoke-release-init-managers.ts";
+import type { Peers, ProjectShape } from "./smoke-release-init-shapes.ts";
+
 const NUXT_VERSION = "4.5.1";
 
 const APP_CLEAN = [
@@ -22,7 +25,7 @@ const CONFIGURED_NUXT_CONFIG = NUXT_CONFIG.replace("modules: []", 'modules: ["@v
 
 const EXPECTED_EXTENSIONS = `${JSON.stringify({ recommendations: ["ubugeeei.vize"] }, null, 2)}\n`;
 
-function nuxtFiles(peers) {
+function nuxtFiles(peers: Peers): Record<string, string> {
   return {
     "package.json": `${JSON.stringify(
       {
@@ -56,7 +59,7 @@ function nuxtFiles(peers) {
   };
 }
 
-function detection(manager) {
+function detection(manager: PackageManager): string[] {
   return [
     "  framework:       Nuxt (nuxt.config.ts)",
     `  package manager: ${manager.detectedPackageManager}`,
@@ -67,7 +70,7 @@ function detection(manager) {
   ];
 }
 
-function bootstrappedDetection(manager) {
+function bootstrappedDetection(manager: PackageManager): string[] {
   return [
     "  framework:       Nuxt (nuxt.config.ts)",
     `  package manager: ${manager.detectedPackageManager}`,
@@ -140,4 +143,4 @@ export const NUXT_VUE_TS_SHAPE = {
       },
     ],
   },
-};
+} satisfies ProjectShape;

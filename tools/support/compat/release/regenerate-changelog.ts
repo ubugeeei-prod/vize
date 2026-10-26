@@ -24,7 +24,7 @@ const scriptPath = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(scriptPath);
 const repoRoot = path.resolve(__dirname, "../../../..");
 
-function resolveAsset() {
+function resolveAsset(): string {
   const platform = osPlatform();
   const arch = osArch();
   if (platform === "linux" && arch === "x64") {
@@ -45,13 +45,13 @@ function resolveAsset() {
   throw new Error(`Unsupported platform/arch for git-cliff fallback: ${platform}/${arch}`);
 }
 
-function hasGitCliffOnPath() {
+function hasGitCliffOnPath(): boolean {
   const probe = spawnSync("git-cliff", ["--version"], { stdio: "ignore" });
   return probe.status === 0;
 }
 
-async function downloadFile(url, dest) {
-  await new Promise((resolve, reject) => {
+async function downloadFile(url: string, dest: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
     const request = https.get(url, (response) => {
       if (
         (response.statusCode === 301 ||
@@ -73,7 +73,7 @@ async function downloadFile(url, dest) {
   });
 }
 
-async function ensureGitCliff() {
+async function ensureGitCliff(): Promise<string> {
   if (hasGitCliffOnPath()) return "git-cliff";
 
   const asset = resolveAsset();
@@ -98,7 +98,7 @@ async function ensureGitCliff() {
   return bin;
 }
 
-export function buildGitCliffArgs(argv) {
+export function buildGitCliffArgs(argv: readonly string[]): string[] {
   const args = ["--config", "cliff.toml", "--output", "CHANGELOG.md"];
 
   for (let i = 0; i < argv.length; i++) {
@@ -126,7 +126,7 @@ export function buildGitCliffArgs(argv) {
   return args;
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = buildGitCliffArgs(process.argv.slice(2));
   await mkdir(path.dirname(path.join(repoRoot, "CHANGELOG.md")), { recursive: true });
   const cliffBin = await ensureGitCliff();

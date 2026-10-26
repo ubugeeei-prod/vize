@@ -7,17 +7,19 @@ const dependencySections = [
   "optionalDependencies",
   "peerDependencies",
   "devDependencies",
-];
+] as const;
 
-function readJsonFile(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+type PackageJson = Record<string, unknown>;
+
+function readJsonFile(filePath: string): PackageJson {
+  return JSON.parse(fs.readFileSync(filePath, "utf8")) as PackageJson;
 }
 
-function writeJsonFile(filePath, value) {
+function writeJsonFile(filePath: string, value: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function findRepoRoot(start) {
+function findRepoRoot(start: string): string | null {
   let current = path.resolve(start);
   for (;;) {
     if (
@@ -33,7 +35,10 @@ function findRepoRoot(start) {
   }
 }
 
-function collectWorkspacePackageVersions(directory, versions = new Map()) {
+function collectWorkspacePackageVersions(
+  directory: string,
+  versions = new Map<string, string>(),
+): Map<string, string> {
   if (!fs.existsSync(directory)) return versions;
 
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -57,7 +62,7 @@ function collectWorkspacePackageVersions(directory, versions = new Map()) {
   return versions;
 }
 
-function yamlScalar(value) {
+function yamlScalar(value: string): string {
   const trimmed = value.trim();
   if (
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
@@ -68,8 +73,8 @@ function yamlScalar(value) {
   return trimmed;
 }
 
-function parseCatalogVersions(content) {
-  const versions = new Map();
+function parseCatalogVersions(content: string): Map<string, string> {
+  const versions = new Map<string, string>();
   let inCatalogs = false;
   let currentCatalog = "";
 
@@ -101,7 +106,7 @@ function parseCatalogVersions(content) {
   return versions;
 }
 
-function normalizeWorkspaceSpec(spec, version) {
+function normalizeWorkspaceSpec(spec: string, version: string): string {
   const suffix = spec.slice("workspace:".length);
   if (suffix === "" || suffix === "*") return version;
   if (suffix === "^") return `^${version}`;
@@ -109,17 +114,27 @@ function normalizeWorkspaceSpec(spec, version) {
   return version;
 }
 
+function dependencyTable(
+  packageJson: PackageJson,
+  section: string,
+): Record<string, unknown> | null {
+  const dependencies = packageJson[section];
+  return dependencies == null || typeof dependencies !== "object" || Array.isArray(dependencies)
+    ? null
+    : (dependencies as Record<string, unknown>);
+}
+
 function normalizeDependencySections(
-  packageJson,
-  workspaceVersions,
-  catalogVersions,
-  nativeBinaryVersion,
-) {
-  const unresolved = [];
+  packageJson: PackageJson,
+  workspaceVersions: ReadonlyMap<string, string>,
+  catalogVersions: ReadonlyMap<string, string>,
+  nativeBinaryVersion: unknown,
+): string[] {
+  const unresolved: string[] = [];
 
   for (const section of dependencySections) {
-    const dependencies = packageJson[section];
-    if (dependencies == null || typeof dependencies !== "object" || Array.isArray(dependencies)) {
+    const dependencies = dependencyTable(packageJson, section);
+    if (dependencies === null) {
       continue;
     }
 
@@ -160,16 +175,16 @@ function normalizeDependencySections(
   return unresolved;
 }
 
-export function preparePublishManifest(packageDir) {
+export function preparePublishManifest(packageDir: string): void {
   const packageJsonPath = path.join(packageDir, "package.json");
   const packageJson = readJsonFile(packageJsonPath);
   const repoRoot = findRepoRoot(packageDir);
 
   if (repoRoot == null) {
-    const unresolved = [];
+    const unresolved: string[] = [];
     for (const section of dependencySections) {
-      const dependencies = packageJson[section];
-      if (dependencies == null || typeof dependencies !== "object" || Array.isArray(dependencies)) {
+      const dependencies = dependencyTable(packageJson, section);
+      if (dependencies === null) {
         continue;
       }
       for (const [dependencyName, versionSpec] of Object.entries(dependencies)) {

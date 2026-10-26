@@ -2,7 +2,7 @@
  * Package-manager table for the fresh-project release smoke (#3956).
  *
  * A matrix cell is a (package manager, project shape) pair and both are data.
- * This half holds the argv each manager needs; `smoke-release-init-shapes.mjs`
+ * This half holds the argv each manager needs; `smoke-release-init-shapes.ts`
  * holds the project shapes. Adding a manager is a new entry here rather than new
  * code in the driver.
  *
@@ -14,12 +14,43 @@
  * instead, because npm rejects an override that collides with a direct spec.
  *
  * `installFlags` deliberately omits `--legacy-peer-deps`, which the umbrella
- * install in `smoke-release-install.mjs` needs: a real user installing the plan
+ * install in `smoke-release-install.ts` needs: a real user installing the plan
  * does not pass it, so a genuine peer conflict in the published packages has to
  * red-light here.
  */
 
-function pnpmWorkspaceOverrides(redirects) {
+/** A package.json under construction; `redirect` adds its override table. */
+export interface ProjectManifest {
+  [field: string]: unknown;
+  overrides?: Readonly<Record<string, string>>;
+  resolutions?: Readonly<Record<string, string>>;
+}
+
+export type PackageManagerId = "npm" | "pnpm" | "yarn" | "bun" | "vp";
+
+export interface PackageManager {
+  readonly id: PackageManagerId;
+  readonly binary: string;
+  readonly binaryEnv: string;
+  readonly corepackSpec?: string;
+  readonly detectedPackageManager: string;
+  readonly corsaInstallCommand: string;
+  readonly lockfile: string;
+  readonly bootstrapArgs: readonly string[];
+  readonly installArgs: readonly string[];
+  readonly installFlags: readonly string[];
+  readonly environment: Readonly<Record<string, string>>;
+  readonly projectFiles: Readonly<Record<string, string>>;
+  readonly redirectPlannedDependencies: boolean;
+  readonly runScriptArgs: (script: string, extra: readonly string[]) => string[];
+  /** Returns extra project files when the manager reads redirects from one. */
+  readonly redirect: (
+    manifest: ProjectManifest,
+    redirects: Readonly<Record<string, string>>,
+  ) => Readonly<Record<string, string>> | undefined;
+}
+
+function pnpmWorkspaceOverrides(redirects: Readonly<Record<string, string>>): string {
   return [
     "overrides:",
     ...Object.entries(redirects).map(
@@ -29,7 +60,7 @@ function pnpmWorkspaceOverrides(redirects) {
   ].join("\n");
 }
 
-export const PACKAGE_MANAGERS = {
+export const PACKAGE_MANAGERS: Readonly<Record<PackageManagerId, PackageManager>> = {
   npm: {
     id: "npm",
     binary: "npm",

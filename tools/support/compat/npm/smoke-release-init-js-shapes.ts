@@ -1,7 +1,10 @@
+import type { PackageManager } from "./smoke-release-init-managers.ts";
+import type { Peers, ProjectShape } from "./smoke-release-init-shapes.ts";
+
 const MAIN_LABEL_CLEAN = '"root"';
 const MAIN_LABEL_BROKEN = "42";
 
-function mainJsSource(broken) {
+function mainJsSource(broken: boolean): string {
   return [
     'import { createApp } from "vue";',
     'import App from "./App.vue";',
@@ -15,7 +18,7 @@ function mainJsSource(broken) {
   ].join("\n");
 }
 
-function appJsSource() {
+function appJsSource(): string {
   return [
     "<template>",
     '  <HelloWorld :msg="message" />',
@@ -30,7 +33,7 @@ function appJsSource() {
   ].join("\n");
 }
 
-function helloWorldJsSource() {
+function helloWorldJsSource(): string {
   return [
     "<template>",
     '  <p class="greeting">{{ props.msg.toUpperCase() }}</p>',
@@ -45,7 +48,7 @@ function helloWorldJsSource() {
   ].join("\n");
 }
 
-function viteVueJsCheckJsFiles(peers) {
+function viteVueJsCheckJsFiles(peers: Peers): Record<string, string> {
   return {
     "package.json": `${JSON.stringify(
       {
@@ -75,7 +78,7 @@ function viteVueJsCheckJsFiles(peers) {
   };
 }
 
-function viteJsDetection(manager) {
+function viteJsDetection(manager: PackageManager): string[] {
   return [
     "  framework:       Vite (vite.config.js)",
     `  package manager: ${manager.detectedPackageManager}`,
@@ -86,7 +89,7 @@ function viteJsDetection(manager) {
   ];
 }
 
-function configuredViteJsDetection(manager) {
+function configuredViteJsDetection(manager: PackageManager): string[] {
   return [
     "  framework:       Vite (vite.config.js)",
     `  package manager: ${manager.detectedPackageManager}`,
@@ -141,7 +144,7 @@ const EXPECTED_VIZE_CONFIG = [
 
 const EXPECTED_EXTENSIONS = `${JSON.stringify({ recommendations: ["ubugeeei.vize"] }, null, 2)}\n`;
 
-export const VITE_VUE_JS_CHECKJS_SHAPE = {
+export const VITE_VUE_JS_CHECKJS_SHAPE: ProjectShape = {
   id: "vite-vue-js-checkjs",
   requires: ["vize", "@vizejs/vite-plugin"],
   files: viteVueJsCheckJsFiles,

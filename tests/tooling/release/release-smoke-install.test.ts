@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { preparePublishManifest } from "../../../tools/support/compat/npm/prepare-publish-manifest.mjs";
+import { preparePublishManifest } from "../../../tools/support/compat/npm/prepare-publish-manifest.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";
@@ -14,7 +14,7 @@ const smokeCommand = path.join(
   root,
   `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`,
 );
-const smokeModule = path.join(root, "tools/support/compat/npm/smoke-release-install.mjs");
+const smokeModule = path.join(root, "tools/support/compat/npm/smoke-release-install.ts");
 
 test("release install smoke packs and installs local package tarballs", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
@@ -237,7 +237,7 @@ test("release install smoke skips libc-incompatible tarballs", () => {
 test("release install smoke can run runtime checks for Vize packages", () => {
   const script = fs.readFileSync(smokeModule, "utf8");
   const runtimeScript = fs.readFileSync(
-    path.join(root, "tools/support/compat/npm/smoke-release-runtime.mjs"),
+    path.join(root, "tools/support/compat/npm/smoke-release-runtime.ts"),
     "utf8",
   );
   const smokeSources = `${script}\n${runtimeScript}`;

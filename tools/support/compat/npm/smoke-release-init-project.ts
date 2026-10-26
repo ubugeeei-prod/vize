@@ -11,10 +11,59 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
-import { normalizeReportedFile } from "./smoke-release-init-paths.mjs";
-import { machineCheckReport } from "./smoke-release-init-outcome.mjs";
-import { satisfiesVersionRange } from "./smoke-release-semver.mjs";
-import { renderOutput, run, runResult } from "./smoke-process.mjs";
+import type { PackageManager, ProjectManifest } from "./smoke-release-init-managers.ts";
+import {
+  machineCheckReport,
+  type CheckReport,
+  type CheckReportFile,
+  type MachineCheckReport,
+} from "./smoke-release-init-outcome.ts";
+import { normalizeReportedFile } from "./smoke-release-init-paths.ts";
+import type { ProjectShape } from "./smoke-release-init-shapes.ts";
+import { satisfiesVersionRange } from "./smoke-release-semver.ts";
+import {
+  renderOutput,
+  run,
+  runResult,
+  type ProcessResult,
+  type RunOptions,
+} from "./smoke-process.ts";
+
+/** The packed release a fresh-project cell installs from. */
+export interface FreshProjectContext {
+  readonly installDir: string;
+  readonly repoRoot: string;
+  readonly tempDir: string;
+  readonly versions: ReadonlyMap<string, string>;
+}
+
+/** The package.json fields the smoke reads back. */
+export interface PackageJson extends ProjectManifest {
+  readonly name?: string;
+  readonly version?: string;
+  readonly scripts?: Readonly<Record<string, string>>;
+  readonly devDependencies?: Readonly<Record<string, string>>;
+  readonly optionalDependencies?: Readonly<Record<string, string>>;
+}
+
+export type InitMode = "dry" | "apply" | "rerun";
+
+type DetectionField =
+  | "detection"
+  | "bootstrappedDetection"
+  | "reconfiguredDetection"
+  | "bootstrappedReconfiguredDetection";
+
+interface InitPlan {
+  readonly verb: string;
+  readonly detection: readonly string[];
+  readonly features: readonly string[];
+  readonly created: readonly string[];
+  readonly updated: readonly string[];
+  readonly scripts: readonly string[];
+  readonly command: string | null;
+  readonly editors: boolean;
+}
 
 /** Overrides that would let the host, not the installed package, pick Corsa. */
 const CORSA_ENV_VARS = ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"];
@@ -32,11 +81,15 @@ const EDITOR_REPORT = [
   "  Emacs: editors/emacs",
 ];
 
-export function managerBinary(manager) {
+export function managerBinary(manager: PackageManager): string {
   return process.env[manager.binaryEnv] || manager.binary;
 }
 
-export function managerCommand(manager, args, platform = process.platform) {
+export function managerCommand(
+  manager: PackageManager,
+  args: readonly string[],
+  platform: NodeJS.Platform = process.platform,
+): { readonly command: string; readonly args: readonly string[] } {
   const envBinary = process.env[manager.binaryEnv];
   if (envBinary !== undefined) {
     return { command: envBinary, args };
@@ -53,7 +106,7 @@ export function managerCommand(manager, args, platform = process.platform) {
 }
 
 /** Code-unit order, so the comparison is locale-independent across runners. */
-export function byCodeUnit(left, right) {
+export function byCodeUnit(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
@@ -64,7 +117,7 @@ export function byCodeUnit(left, right) {
  * discovery of `typescript@7`; a host that exported `CORSA_PATH`
  * would otherwise hide a packaging failure.
  */
-export function projectEnv(extra = {}) {
+export function projectEnv(extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
   const env = { ...process.env, ...extra };
   for (const name of CORSA_ENV_VARS) {
     if (!(name in extra)) delete env[name];
@@ -72,7 +125,10 @@ export function projectEnv(extra = {}) {
   return env;
 }
 
-export function managerEnv(manager, extra = {}) {
+export function managerEnv(
+  manager: PackageManager,
+  extra: NodeJS.ProcessEnv = {},
+): NodeJS.ProcessEnv {
   const env = projectEnv({ ...manager.environment, ...extra });
   if (manager.corepackSpec !== undefined && !("COREPACK_ENABLE_PROJECT_SPEC" in extra)) {
     env.COREPACK_ENABLE_PROJECT_SPEC = "0";
@@ -80,7 +136,11 @@ export function managerEnv(manager, extra = {}) {
   return env;
 }
 
-export function runManager(manager, args, options = {}) {
+export function runManager(
+  manager: PackageManager,
+  args: readonly string[],
+  options: RunOptions = {},
+): string {
   const runner = managerCommand(manager, args);
   return run(runner.command, runner.args, {
     ...options,
@@ -88,12 +148,12 @@ export function runManager(manager, args, options = {}) {
   });
 }
 
-function isOutside(base, target) {
+function isOutside(base: string, target: string): boolean {
   const relative = path.relative(base, target);
   return relative !== "" && (path.isAbsolute(relative) || relative.startsWith(".."));
 }
 
-export function writeFiles(root, files) {
+export function writeFiles(root: string, files: Readonly<Record<string, string>>): void {
   for (const [relative, source] of Object.entries(files)) {
     const filename = path.join(root, relative);
     fs.mkdirSync(path.dirname(filename), { recursive: true });
@@ -101,7 +161,10 @@ export function writeFiles(root, files) {
   }
 }
 
-export function snapshotFiles(root, names) {
+export function snapshotFiles(
+  root: string,
+  names: readonly string[],
+): Record<string, string | null> {
   return Object.fromEntries(
     names.map((name) => {
       const filename = path.join(root, name);
@@ -110,13 +173,18 @@ export function snapshotFiles(root, names) {
   );
 }
 
-export function readJson(filename) {
-  return JSON.parse(fs.readFileSync(filename, "utf8"));
+export function readJson(filename: string): PackageJson {
+  return JSON.parse(fs.readFileSync(filename, "utf8")) as PackageJson;
 }
 
-function resolveShapeField(shape, name, ...args) {
+function resolveShapeField(
+  shape: ProjectShape,
+  name: DetectionField,
+  manager: PackageManager,
+): readonly string[] {
   const value = shape[name];
-  return typeof value === "function" ? value(...args) : value;
+  if (value === undefined) throw new Error(`${shape.id} has no ${name}`);
+  return value(manager);
 }
 
 /**
@@ -126,7 +194,11 @@ function resolveShapeField(shape, name, ...args) {
  * `vize` from outside the project, which is exactly the workspace link the
  * issue's first acceptance criterion rules out.
  */
-export function assertFreshProject(projectRoot, context, initialAbsentFiles = []) {
+export function assertFreshProject(
+  projectRoot: string,
+  context: Pick<FreshProjectContext, "installDir" | "repoRoot" | "tempDir">,
+  initialAbsentFiles: readonly string[] = [],
+): void {
   assert.ok(
     isOutside(context.installDir, projectRoot),
     `${projectRoot} is inside the install tree`,
@@ -152,7 +224,10 @@ export function assertFreshProject(projectRoot, context, initialAbsentFiles = []
   assert.equal(fs.existsSync(path.join(projectRoot, "node_modules")), false);
 }
 
-function planLines(verb, { features, created, updated, scripts, command }) {
+function planLines(
+  verb: string,
+  { features, created, updated, scripts, command }: InitPlan,
+): string[] {
   const lines = ["[vize init] plan:", ...features];
   for (const filename of created) lines.push(`[vize init] ${verb} create ${filename}`);
   for (const filename of updated) lines.push(`[vize init] ${verb} update ${filename}`);
@@ -169,7 +244,13 @@ function planLines(verb, { features, created, updated, scripts, command }) {
  * cell performs: the dry run, the run that applies the plan, and the re-run that
  * proves idempotency.
  */
-export function expectedInitOutput(shape, projectRoot, manager, mode, options = {}) {
+export function expectedInitOutput(
+  shape: ProjectShape,
+  projectRoot: string,
+  manager: PackageManager,
+  mode: InitMode,
+  options: { readonly bootstrapped?: boolean } = {},
+): string {
   const dependencies = shape.plannedDependencies.join(" ");
   const installer = shape.id === "vite-plus-vue-ts" ? "vp" : manager.detectedPackageManager;
   const installCommand = `${installer} ${manager.installArgs.join(" ")} ${dependencies}`;
@@ -188,7 +269,7 @@ export function expectedInitOutput(shape, projectRoot, manager, mode, options = 
     updated: shape.updatedFiles,
     scripts: shape.addedScripts,
   };
-  const plans = {
+  const plans: Readonly<Record<InitMode, InitPlan>> = {
     dry: { ...applied, verb: "would", command: installCommand, editors: false },
     apply: { ...applied, verb: "will", command: null, editors: true },
     rerun: {
@@ -220,10 +301,14 @@ export function expectedInitOutput(shape, projectRoot, manager, mode, options = 
  * an optional dependency -- the release-only failure an `--omit=optional`
  * install or a trimmed tarball would cause.
  */
-export function assertProjectLocalToolchain(context, projectRoot, shape) {
+export function assertProjectLocalToolchain(
+  context: Pick<FreshProjectContext, "installDir" | "repoRoot" | "versions">,
+  projectRoot: string,
+  shape: Pick<ProjectShape, "plannedDependencies">,
+): void {
   const nodeModules = path.join(projectRoot, "node_modules");
   const realProjectRoot = fs.realpathSync(projectRoot);
-  const installedRoots = new Map();
+  const installedRoots = new Map<string, string>();
   for (const name of shape.plannedDependencies) {
     const installed = path.join(nodeModules, ...name.split("/"));
     assert.ok(fs.existsSync(installed), `${name} is missing from the fresh project`);
@@ -238,7 +323,7 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
     installedRoots.set(name, resolved);
   }
   const vizeRoot = installedRoots.get("vize");
-  assert.equal(typeof vizeRoot, "string", "fresh project did not install vize");
+  assert.ok(typeof vizeRoot === "string", "fresh project did not install vize");
   const vizeBin = projectLocalVizeBin(projectRoot);
   assert.ok(fs.existsSync(vizeBin), "fresh project did not install project-local vize bin");
   assert.ok(
@@ -249,9 +334,8 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   const corsaPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
   const vizePackageJson = readJson(path.join(vizeRoot, "package.json"));
   const declaredCorsaRange = vizePackageJson.optionalDependencies?.[corsaPackage];
-  assert.equal(
-    typeof declaredCorsaRange,
-    "string",
+  assert.ok(
+    typeof declaredCorsaRange === "string",
     `installed vize does not declare optional dependency ${corsaPackage}`,
   );
   const corsaManifest = vizeRequire.resolve(`${corsaPackage}/package.json`);
@@ -259,7 +343,7 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   const corsaVersion = corsaPackageJson.version;
   assert.equal(corsaPackageJson.name, corsaPackage);
   assert.ok(
-    satisfiesVersionRange(corsaVersion, declaredCorsaRange),
+    satisfiesVersionRange(corsaVersion ?? "", declaredCorsaRange),
     `${corsaPackage}@${corsaVersion} does not satisfy installed vize optional dependency ${declaredCorsaRange}`,
   );
   assert.ok(
@@ -273,7 +357,12 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
 }
 
 /** Runs the `vize:check` script `init` generated, through the project's manager. */
-export function runGeneratedCheck(projectRoot, manager, extra, env = {}) {
+export function runGeneratedCheck(
+  projectRoot: string,
+  manager: PackageManager,
+  extra: readonly string[],
+  env: NodeJS.ProcessEnv = {},
+): ProcessResult {
   const runner = managerCommand(manager, manager.runScriptArgs("vize:check", extra));
   return runResult(runner.command, runner.args, {
     cwd: projectRoot,
@@ -281,18 +370,22 @@ export function runGeneratedCheck(projectRoot, manager, extra, env = {}) {
   });
 }
 
-export function projectLocalVizeBin(projectRoot) {
+export function projectLocalVizeBin(projectRoot: string): string {
   return path.join(projectRoot, "node_modules", "vize", "bin", "vize");
 }
 
-export function runProjectLocalCheck(projectRoot, extra, env = {}) {
+export function runProjectLocalCheck(
+  projectRoot: string,
+  extra: readonly string[],
+  env: NodeJS.ProcessEnv = {},
+): ProcessResult {
   return runResult(process.execPath, [projectLocalVizeBin(projectRoot), "check", ...extra], {
     cwd: projectRoot,
     env: projectEnv(env),
   });
 }
 
-export function checkReport(projectRoot) {
+export function checkReport(projectRoot: string): MachineCheckReport {
   const args = [projectLocalVizeBin(projectRoot), "check", "--format", "json", "--quiet"];
   const result = runResult(process.execPath, args, {
     cwd: projectRoot,
@@ -301,7 +394,10 @@ export function checkReport(projectRoot) {
   return machineCheckReport(process.execPath, args, projectRoot, result);
 }
 
-export function reportedDiagnostics(report, projectRoot) {
+export function reportedDiagnostics(
+  report: Pick<CheckReport, "files">,
+  projectRoot: string,
+): CheckReportFile[] {
   return report.files
     .filter((file) => file.diagnostics.length > 0)
     .map((file) => ({
@@ -320,7 +416,7 @@ export function reportedDiagnostics(report, projectRoot) {
  * colours this path unconditionally today, and neither honouring `NO_COLOR`
  * later nor Windows' separator may red-light the release smoke.
  */
-export function assertMissingCorsaGuidance(projectRoot, manager) {
+export function assertMissingCorsaGuidance(projectRoot: string, manager: PackageManager): void {
   const missing = path.join(projectRoot, "no-such-corsa-runtime");
   const direct = runProjectLocalCheck(projectRoot, ["--quiet"], { CORSA_PATH: missing });
   assert.notEqual(direct.status, 0, "a missing Corsa runtime silently disabled type checking");

@@ -3,7 +3,7 @@ import path from "node:path";
 
 const POISON_MESSAGE = "outside vize executable reached";
 
-function writeExecutable(filename, source) {
+function writeExecutable(filename: string, source: string): void {
   fs.writeFileSync(filename, source);
   if (process.platform !== "win32") {
     fs.chmodSync(filename, 0o755);
@@ -17,7 +17,10 @@ function writeExecutable(filename, source) {
  * `node_modules/.bin`; reaching this executable means the release smoke stopped
  * proving the generated command against project-local artifacts.
  */
-export function withPoisonedVizePath(projectRoot, env = process.env) {
+export function withPoisonedVizePath(
+  projectRoot: string,
+  env: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv & { PATH: string } {
   const poisonDir = path.join(projectRoot, ".vize-path-poison");
   fs.mkdirSync(poisonDir, { recursive: true });
   writeExecutable(

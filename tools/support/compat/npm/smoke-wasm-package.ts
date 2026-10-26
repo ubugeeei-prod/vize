@@ -7,6 +7,59 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+interface TemplateRoot {
+  readonly children: readonly { readonly isSelfClosing?: boolean }[];
+}
+
+interface SourceMapLike {
+  readonly version?: number;
+  readonly sources?: readonly string[];
+}
+
+type Options = Readonly<Record<string, unknown>>;
+
+/** The parts of the @vizejs/wasm entry point this smoke calls. */
+interface WasmEntry {
+  readonly default: unknown;
+  readonly init: (input?: unknown) => Promise<unknown>;
+  readonly isInitialized: () => boolean;
+  readonly compile: (
+    template: string,
+    options?: Options,
+  ) => { preamble: string; code: string; ast: TemplateRoot; map?: SourceMapLike };
+  readonly parseTemplate: (template: string, options?: Options) => TemplateRoot;
+  readonly compileSfc: (
+    source: string,
+    options?: Options,
+  ) => { script: { code: string }; template: { map?: SourceMapLike } };
+  readonly lintSfc: (
+    source: string,
+    options?: Options,
+  ) => {
+    filename: string;
+    errorCount: number;
+    warningCount: number;
+    diagnostics: readonly {
+      rule: string;
+      severity: string;
+      location: { start: { offset: number } };
+      help?: string;
+    }[];
+  };
+  readonly formatSfc: (source: string, options?: Options) => { code: string; changed: boolean };
+}
+
+interface WasmPackageJson {
+  readonly name?: unknown;
+  readonly type?: unknown;
+  readonly main?: unknown;
+  readonly types?: unknown;
+  readonly exports?: Readonly<
+    Record<string, { readonly import?: string; readonly types?: string } | string>
+  >;
+  readonly files?: readonly string[];
+}
+
 const REQUIRED_FILES = [
   "index.js",
   "index.d.ts",
@@ -32,27 +85,38 @@ const EXPECTED_EXPORTS = [
   "parseTemplate",
 ];
 
-function requireArg(argv) {
+function requireArg(argv: readonly string[]): string {
   const packageDir = argv[0];
   if (!packageDir) {
-    throw new Error("Usage: smoke-wasm-package.mjs <npm/wasm>");
+    throw new Error("Usage: smoke-wasm-package.ts <npm/wasm>");
   }
   return path.resolve(packageDir);
 }
 
-function readPackageJson(packageDir) {
-  return JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8"));
+function readPackageJson(packageDir: string): WasmPackageJson {
+  return JSON.parse(
+    fs.readFileSync(path.join(packageDir, "package.json"), "utf8"),
+  ) as WasmPackageJson;
 }
 
-function assertManifest(packageJson) {
+function exportCondition(
+  packageJson: WasmPackageJson,
+  subpath: string,
+  condition: "import" | "types",
+): string | undefined {
+  const target = packageJson.exports?.[subpath];
+  return typeof target === "object" ? target[condition] : undefined;
+}
+
+function assertManifest(packageJson: WasmPackageJson): void {
   assert.equal(packageJson.name, "@vizejs/wasm");
   assert.equal(packageJson.type, "module");
   assert.equal(packageJson.main, "./index.js");
   assert.equal(packageJson.types, "./index.d.ts");
-  assert.equal(packageJson.exports?.["."]?.import, "./index.js");
-  assert.equal(packageJson.exports?.["."]?.types, "./index.d.ts");
-  assert.equal(packageJson.exports?.["./vize_vitrine.js"]?.import, "./vize_vitrine.js");
-  assert.equal(packageJson.exports?.["./vize_vitrine.js"]?.types, "./vize_vitrine.d.ts");
+  assert.equal(exportCondition(packageJson, ".", "import"), "./index.js");
+  assert.equal(exportCondition(packageJson, ".", "types"), "./index.d.ts");
+  assert.equal(exportCondition(packageJson, "./vize_vitrine.js", "import"), "./vize_vitrine.js");
+  assert.equal(exportCondition(packageJson, "./vize_vitrine.js", "types"), "./vize_vitrine.d.ts");
   assert.equal(packageJson.exports?.["./vize_vitrine_bg.wasm"], "./vize_vitrine_bg.wasm");
 
   for (const file of REQUIRED_FILES) {
@@ -60,13 +124,13 @@ function assertManifest(packageJson) {
   }
 }
 
-function assertFilesExist(packageDir) {
+function assertFilesExist(packageDir: string): void {
   for (const file of REQUIRED_FILES) {
     assert.ok(fs.existsSync(path.join(packageDir, file)), `${file} is missing`);
   }
 }
 
-function assertCompilerOptions(entry) {
+function assertCompilerOptions(entry: WasmEntry): void {
   const moduleResult = entry.compile("<div>{{ message }}</div>", {
     mode: "module",
     runtimeModuleName: "@acme/vue-runtime",
@@ -117,10 +181,10 @@ function assertCompilerOptions(entry) {
   assert.doesNotMatch(standaloneSfc.script.code, /@acme\/vue-runtime/);
 }
 
-async function assertEntryPoint(packageDir) {
-  const entry = await import(
+async function assertEntryPoint(packageDir: string): Promise<void> {
+  const entry = (await import(
     `${pathToFileURL(path.join(packageDir, "index.js")).href}?smoke=${Date.now()}`
-  );
+  )) as WasmEntry;
   assert.deepEqual(Object.keys(entry).sort(), EXPECTED_EXPORTS);
 
   assert.equal(entry.default, entry.init);
@@ -175,7 +239,7 @@ async function assertEntryPoint(packageDir) {
   assert.equal(formatResult.changed, true);
 }
 
-export async function smokeWasmPackage(packageDir) {
+export async function smokeWasmPackage(packageDir: string): Promise<void> {
   const packageJson = readPackageJson(packageDir);
   assertManifest(packageJson);
   assertFilesExist(packageDir);

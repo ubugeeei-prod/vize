@@ -1,4 +1,12 @@
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
+
+export interface RunOptions {
+  readonly cwd?: string | undefined;
+  readonly env?: NodeJS.ProcessEnv | undefined;
+  readonly input?: string | undefined;
+}
+
+export type ProcessResult = SpawnSyncReturns<string>;
 
 /**
  * Child-process helpers shared by the release smoke scripts.
@@ -16,7 +24,11 @@ import { spawnSync } from "node:child_process";
  * resolved command ends in a Windows batch suffix; the smoke args contain no
  * shell metacharacters, so quoting them is a no-op.
  */
-export function runResult(command, args, options = {}) {
+export function runResult(
+  command: string,
+  args: readonly string[],
+  options: RunOptions = {},
+): ProcessResult {
   const isWindowsBatch = process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
   const result = spawnSync(command, args, {
     cwd: options.cwd,
@@ -35,12 +47,12 @@ export function runResult(command, args, options = {}) {
 }
 
 /** Renders a completed process's output the way the smoke reports failures. */
-export function renderOutput(result) {
+export function renderOutput(result: Pick<ProcessResult, "stdout" | "stderr">): string {
   return [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
 }
 
 /** Runs a command and throws with its output unless it exits zero. */
-export function run(command, args, options = {}) {
+export function run(command: string, args: readonly string[], options: RunOptions = {}): string {
   const result = runResult(command, args, options);
   if (result.status !== 0) {
     throw new Error(

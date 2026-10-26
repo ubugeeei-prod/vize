@@ -1,19 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
 
-function normalizePortablePath(value) {
+function normalizePortablePath(value: string): string {
   return path.posix
     .normalize(value.replaceAll("\\", "/"))
-    .replace(/^([A-Za-z]):/u, (_, drive) => `${drive.toUpperCase()}:`);
+    .replace(/^([A-Za-z]):/u, (_, drive: string) => `${drive.toUpperCase()}:`);
 }
 
-function stripLeadingCurrentDirectory(value) {
+function stripLeadingCurrentDirectory(value: string): string {
   return value.startsWith("./") ? value.slice(2) : value;
 }
 
-function existingRealpathCandidates(filename) {
+function existingRealpathCandidates(filename: string): string[] {
   if (!fs.existsSync(filename)) return [];
-  const candidates = [];
+  const candidates: string[] = [];
   for (const realpath of [fs.realpathSync.native, fs.realpathSync]) {
     try {
       candidates.push(realpath(filename));
@@ -25,13 +25,13 @@ function existingRealpathCandidates(filename) {
   return candidates;
 }
 
-function projectRootCandidates(projectRoot) {
+function projectRootCandidates(projectRoot: string): string[] {
   return [...new Set([projectRoot, ...existingRealpathCandidates(projectRoot)])].map((candidate) =>
     normalizePortablePath(candidate),
   );
 }
 
-function relativeInsideRoot(root, target) {
+function relativeInsideRoot(root: string, target: string): string | null {
   const relative = path.posix.relative(root, target);
   if (relative === "" || (!relative.startsWith("../") && relative !== "..")) {
     return stripLeadingCurrentDirectory(relative);
@@ -39,7 +39,7 @@ function relativeInsideRoot(root, target) {
   return null;
 }
 
-function relativeInsideAliasedReleaseSmokeRoot(root, target) {
+function relativeInsideAliasedReleaseSmokeRoot(root: string, target: string): string | null {
   const rootParts = root.split("/");
   const targetParts = target.split("/");
   const rootPartsLower = rootParts.map((part) => part.toLowerCase());
@@ -57,10 +57,10 @@ function relativeInsideAliasedReleaseSmokeRoot(root, target) {
   return null;
 }
 
-export function normalizeReportedFile(file, projectRoot) {
+export function normalizeReportedFile(file: string, projectRoot: string): string {
   const normalized = normalizePortablePath(file);
   const roots = projectRootCandidates(projectRoot);
-  const targets = [];
+  const targets: string[] = [];
 
   if (path.posix.isAbsolute(normalized) || /^[A-Za-z]:\//u.test(normalized)) {
     targets.push(normalized);

@@ -5,13 +5,29 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { preparePublishManifest } from "./prepare-publish-manifest.mjs";
-import { run as runProcess } from "./smoke-process.mjs";
+import { preparePublishManifest } from "./prepare-publish-manifest.ts";
+import { run as runProcess, type RunOptions } from "./smoke-process.ts";
 import {
   RUNTIME_PEER_DEPENDENCIES,
   runInstalledContentMapperChecks,
   runRuntimeChecks,
-} from "./smoke-release-runtime.mjs";
+  type PackedPackage,
+} from "./smoke-release-runtime.ts";
+
+interface InstallOptions {
+  contentMapperChecks: boolean;
+  keepTemp: boolean;
+  packageDirs: string[];
+  prepareManifests: boolean;
+  runtimeChecks: boolean;
+}
+
+interface PackageJson {
+  readonly [field: string]: unknown;
+  readonly name: string;
+  readonly version: string;
+  readonly bin?: string | Readonly<Record<string, string>>;
+}
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const dependencySections = [
@@ -21,11 +37,11 @@ const dependencySections = [
   "devDependencies",
 ];
 
-function parseArgs(argv) {
-  const options = {
+function parseArgs(argv: readonly string[]): InstallOptions {
+  const options: InstallOptions = {
     contentMapperChecks: false,
     keepTemp: false,
-    packageDirs: /** @type {string[]} */ ([]),
+    packageDirs: [],
     prepareManifests: false,
     runtimeChecks: false,
   };
@@ -62,20 +78,20 @@ function parseArgs(argv) {
   return options;
 }
 
-function run(command, args, options = {}) {
+function run(command: string, args: readonly string[], options: RunOptions = {}): string {
   return runProcess(command, args, { ...options, cwd: options.cwd ?? root });
 }
 
-function readPackageJson(packageDir) {
+function readPackageJson(packageDir: string): PackageJson {
   const packageJsonPath = path.join(packageDir, "package.json");
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as PackageJson;
   assert.notEqual(packageJson.private, true, `${packageJsonPath} must be publishable`);
   assert.equal(typeof packageJson.name, "string", `${packageJsonPath} is missing name`);
   assert.equal(typeof packageJson.version, "string", `${packageJsonPath} is missing version`);
   return packageJson;
 }
 
-function collectStrings(value, out) {
+function collectStrings(value: unknown, out: string[]): void {
   if (typeof value === "string") {
     out.push(value);
     return;
@@ -91,7 +107,7 @@ function collectStrings(value, out) {
   }
 }
 
-function normalizeManifestPath(value) {
+function normalizeManifestPath(value: string): string | null {
   const trimmed = value.trim();
   if (
     trimmed === "" ||
@@ -106,14 +122,14 @@ function normalizeManifestPath(value) {
   return trimmed.startsWith("./") ? trimmed.slice(2) : trimmed;
 }
 
-function assertPublishEntrypointsExist(packageDir, packageJson) {
-  const manifestPaths = [];
+function assertPublishEntrypointsExist(packageDir: string, packageJson: PackageJson): void {
+  const manifestPaths: string[] = [];
   collectStrings(packageJson.main, manifestPaths);
   collectStrings(packageJson.types, manifestPaths);
   collectStrings(packageJson.bin, manifestPaths);
   collectStrings(packageJson.exports, manifestPaths);
 
-  const missing = [];
+  const missing: string[] = [];
   for (const manifestPath of new Set(manifestPaths)) {
     const normalized = normalizeManifestPath(manifestPath);
     if (normalized == null) continue;
@@ -125,8 +141,8 @@ function assertPublishEntrypointsExist(packageDir, packageJson) {
   assert.deepEqual(missing, [], `${packageJson.name} publishes missing entrypoint files`);
 }
 
-function assertNoWorkspaceProtocols(packageDir, packageJson) {
-  const unresolved = [];
+function assertNoWorkspaceProtocols(packageDir: string, packageJson: PackageJson): void {
+  const unresolved: string[] = [];
 
   for (const section of dependencySections) {
     const dependencies = packageJson[section];
@@ -142,7 +158,7 @@ function assertNoWorkspaceProtocols(packageDir, packageJson) {
   assert.deepEqual(unresolved, [], `${path.join(packageDir, "package.json")} is not publishable`);
 }
 
-function npmAllows(list, current) {
+function npmAllows(list: unknown, current: string | undefined): boolean {
   if (!Array.isArray(list)) return true;
   if (list.includes(`!${current}`)) return false;
 
@@ -150,10 +166,12 @@ function npmAllows(list, current) {
   return positives.length === 0 || positives.includes(current);
 }
 
-function currentLibc() {
+function currentLibc(): "glibc" | "musl" | undefined {
   if (process.platform !== "linux") return undefined;
 
-  const report = process.report?.getReport?.();
+  const report = process.report?.getReport?.() as
+    | { readonly header?: { readonly glibcVersionRuntime?: unknown } }
+    | undefined;
   const header = report?.header;
   if (header != null && typeof header.glibcVersionRuntime === "string") {
     return "glibc";
@@ -171,7 +189,7 @@ function currentLibc() {
   return undefined;
 }
 
-function isCompatibleWithCurrentRunner(packageJson) {
+function isCompatibleWithCurrentRunner(packageJson: PackageJson): boolean {
   return (
     npmAllows(packageJson.os, process.platform) &&
     npmAllows(packageJson.cpu, process.arch) &&
@@ -179,7 +197,7 @@ function isCompatibleWithCurrentRunner(packageJson) {
   );
 }
 
-function packPackage(packageDir, packDir) {
+function packPackage(packageDir: string, packDir: string): string {
   const before = new Set(fs.readdirSync(packDir));
   run(process.env.NPM_BIN || "npm", ["pack", "--ignore-scripts", "--pack-destination", packDir], {
     cwd: packageDir,
@@ -193,7 +211,7 @@ function packPackage(packageDir, packDir) {
   assert.equal(created.length, 1, `expected exactly one tarball from ${packageDir}`);
   return fs.realpathSync.native(created[0]);
 }
-function installedPackageDir(nodeModules, name) {
+function installedPackageDir(nodeModules: string, name: string): string {
   if (name.startsWith("@")) {
     const [scope, packageName] = name.split("/");
     return path.join(nodeModules, scope, packageName);
@@ -201,7 +219,7 @@ function installedPackageDir(nodeModules, name) {
   return path.join(nodeModules, name);
 }
 
-function assertInstalledPackage(nodeModules, packageInfo) {
+function assertInstalledPackage(nodeModules: string, packageInfo: PackedPackage): void {
   const packageDir = installedPackageDir(nodeModules, packageInfo.name);
   const packageJson = readPackageJson(packageDir);
 
@@ -234,7 +252,11 @@ function assertInstalledPackage(nodeModules, packageInfo) {
   }
 }
 
-function installPackedPackages(tempDir, packages, options = {}) {
+function installPackedPackages(
+  tempDir: string,
+  packages: readonly PackedPackage[],
+  options: { readonly includeRuntimePeers?: boolean } = {},
+): string {
   const installDir = path.join(tempDir, "install");
   fs.mkdirSync(installDir, { recursive: true });
 
@@ -243,7 +265,7 @@ function installPackedPackages(tempDir, packages, options = {}) {
   // lets npm's optional-dependency resolver settle once consistently;
   // splitting it into two installs hits npm/cli#4828, where the second pass
   // can drop transitive optional deps that the first pass already resolved.
-  const dependencies = {};
+  const dependencies: Record<string, string> = {};
   for (const pkg of packages) {
     dependencies[pkg.name] = `file:${pkg.tarball}`;
   }
@@ -283,7 +305,7 @@ function installPackedPackages(tempDir, packages, options = {}) {
   return installDir;
 }
 
-function resolveInstalledBin(installDir, packageName, binName) {
+function resolveInstalledBin(installDir: string, packageName: string, binName: string): string {
   const packageDir = installedPackageDir(path.join(installDir, "node_modules"), packageName);
   const packageJson = readPackageJson(packageDir);
   const bin = packageJson.bin;
@@ -293,15 +315,14 @@ function resolveInstalledBin(installDir, packageName, binName) {
       : bin != null && typeof bin === "object"
         ? (bin[binName] ?? bin[packageName.replace(/^@[^/]+\//, "")])
         : undefined;
-  assert.equal(
-    typeof relative,
-    "string",
+  assert.ok(
+    typeof relative === "string",
     `installed ${packageName} does not expose a "${binName}" bin entry`,
   );
   return path.join(packageDir, relative);
 }
 
-function main() {
+function main(): void {
   const options = parseArgs(process.argv.slice(2));
   const tempPrefix = path.join(os.tmpdir(), "vize-release-smoke-");
   const tempDir = fs.realpathSync.native(fs.mkdtempSync(tempPrefix));
@@ -309,7 +330,7 @@ function main() {
   fs.mkdirSync(packDir, { recursive: true });
 
   try {
-    const packages = [];
+    const packages: PackedPackage[] = [];
     for (const packageDir of options.packageDirs) {
       if (!fs.existsSync(path.join(packageDir, "package.json"))) {
         throw new Error(`${packageDir} does not contain package.json`);
