@@ -1,6 +1,7 @@
 import { cacheInputs, packedPackages } from "../task-inputs.ts";
 import {
   defineTasks,
+  installVscodeExtensionDependencies,
   nodeTool,
   noCacheTask,
   runInPackages,
@@ -85,6 +86,9 @@ export const buildTasks = defineTasks({
     ),
   ),
   "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
+  // Release provider packaging needs the extension's own packager without
+  // building the universal VSIX.
+  "install:vscode-extension": noCacheTask(installVscodeExtensionDependencies),
   "package:vscode-extension": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
   ),
