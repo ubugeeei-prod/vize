@@ -20,7 +20,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
         before: null,
-        after: "6c9478ad3b08dbf596316aa5a3b04ee00ca958e64c88a7f2599dae94c243d3b2",
+        after: "5e07a6e0b21780b9e1beed2c0c681f8ae73850c928a807e3739d0dcd50acf516",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -236,7 +236,7 @@ export const nativeRuntimeRegistry: Record<string, { sources: SourcePair[]; test
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
         before: null,
-        after: "6c9478ad3b08dbf596316aa5a3b04ee00ca958e64c88a7f2599dae94c243d3b2",
+        after: "5e07a6e0b21780b9e1beed2c0c681f8ae73850c928a807e3739d0dcd50acf516",
       },
       {
         path: "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",

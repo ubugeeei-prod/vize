@@ -267,5 +267,11 @@ fn a_broken_declared_runtime_is_reported_separately_from_a_missing_one() {
             package: package.clone()
         }
     );
-    assert!(crate::cstr!("{error}").contains(&*package.to_string_lossy()));
+    assert_eq!(
+        crate::cstr!("{error}"),
+        crate::cstr!(
+            "The declared native TypeScript package {} is incomplete or mismatched (platform package version, package.json, or lib/tsc). Reinstall it, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable.",
+            package.display()
+        )
+    );
 }
