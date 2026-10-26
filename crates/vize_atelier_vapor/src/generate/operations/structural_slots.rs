@@ -135,10 +135,10 @@ fn looped(
         params.push_str(&cstr!(", _for_index{depth}"));
     }
     ctx.push(&cstr!("), ({params}) =>"));
-    ctx.push_for_scope(
-        Some(each.value.content),
-        each.key.as_ref().map(|key| key.content),
-        each.index.as_ref().map(|index| index.content),
+    ctx.push_for_scope_retained(
+        Some(each.value.as_ref()),
+        each.key.as_deref(),
+        each.index.as_deref(),
     );
     generate_slot_fn(ctx, slot, templates, ComponentKind::Regular);
     // Name/key callbacks receive raw values, while the slot body owns reactive refs.

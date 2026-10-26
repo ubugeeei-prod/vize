@@ -61,10 +61,13 @@ function bundledProvider(root) {
   if (JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version !== ownVersion)
     throw new Error("Extension and adapter release versions differ");
   const directory = path.join(root, "native/typescript-projection");
+  // The universal VSIX has no provider, so the plugin leaves tsserver untouched.
   if (!fs.existsSync(path.join(directory, "provider.json")))
-    throw new Error(
-      "This universal VSIX provides component metadata only; install the matching platform VSIX for the native TypeScript service",
-    );
+    return {
+      error:
+        "This universal VSIX provides component metadata only; install the matching platform VSIX for the native TypeScript service",
+      unavailable: true,
+    };
   const directoryStat = fs.lstatSync(directory);
   if (!directoryStat.isDirectory() || directoryStat.isSymbolicLink())
     throw new Error("Bundled provider directory is not physical");
@@ -144,10 +147,18 @@ function loadNative(projectRoot, nativePath) {
   try {
     const extension = ownExtensionRoot();
     if (extension) return bundledProvider(extension);
-    const entry =
-      nativePath === undefined
-        ? require.resolve("@vizejs/native")
-        : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
+    let entry;
+    try {
+      entry =
+        nativePath === undefined
+          ? require.resolve("@vizejs/native")
+          : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
+    } catch (cause) {
+      // An absent default package is not a projection failure. An explicit path still is.
+      if (nativePath === undefined && cause?.code === "MODULE_NOT_FOUND")
+        return { error: cause.message, unavailable: true };
+      throw cause;
+    }
     const native = require(entry),
       directory = path.dirname(entry);
     const metadata = require(path.join(directory, "package.json"));

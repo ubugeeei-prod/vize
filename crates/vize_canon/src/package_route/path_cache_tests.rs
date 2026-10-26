@@ -62,3 +62,99 @@ fn physical_identity_keeps_symlink_boundaries_hardlinks_failures_and_epoch_refre
         canonicalize_non_verbatim(&other.join("entry.ts"))
     );
 }
+
+#[test]
+fn listed_directories_answer_absent_probes_without_filesystem_calls() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pkg");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("index.ts"), "export {};\n").unwrap();
+    let present = dir.join("index.ts");
+    let absent = dir.join("index.d.ts");
+    let nested_absent = dir.join("missing/deep/index.ts");
+    let mut cache = PackagePathCache::default();
+    assert!(cache.is_file(&present));
+    assert!(!cache.is_file(&absent));
+    assert!(!cache.is_file(&nested_absent));
+    // Absent entries normalize without a realpath; a present one still resolves.
+    assert_eq!(
+        cache.canonicalize(&absent),
+        canonicalize_non_verbatim(&absent)
+    );
+    assert_eq!(
+        cache.canonicalize(&nested_absent),
+        canonicalize_non_verbatim(&nested_absent)
+    );
+    assert_eq!(cache.canonicalizations, 0);
+    assert_eq!(
+        cache.canonicalize(&present),
+        canonicalize_non_verbatim(&present)
+    );
+    assert_eq!(cache.canonicalizations, 1);
+    // The listing is an epoch snapshot, like the realpaths beside it.
+    std::fs::write(&absent, "export {};\n").unwrap();
+    assert!(!cache.is_file(&absent));
+    cache.clear();
+    assert!(cache.is_file(&absent));
+}
+
+#[test]
+fn probes_that_differ_only_in_case_or_normalization_keep_their_stat() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pkg");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("Index.ts"), "export {};\n").unwrap();
+    // Beside non-ASCII entries an ASCII probe keeps its stat too: on APFS,
+    // `k.ts` matches a Kelvin-sign `K.ts` through case folding.
+    let unicode = dir.join("unicode");
+    std::fs::create_dir_all(&unicode).unwrap();
+    std::fs::write(unicode.join("caf\u{e9}.ts"), "export {};\n").unwrap();
+    std::fs::write(unicode.join("\u{212a}.ts"), "export {};\n").unwrap();
+    let mut cache = PackagePathCache::default();
+    for probe in [
+        dir.join("index.ts"),
+        dir.join("INDEX.TS"),
+        dir.join("other.ts"),
+        unicode.join("cafe\u{301}.ts"),
+        unicode.join("k.ts"),
+        unicode.join("K.ts"),
+        unicode.join("other.ts"),
+    ] {
+        assert_eq!(
+            cache.is_file(&probe),
+            probe.is_file(),
+            "{}",
+            probe.display()
+        );
+    }
+}
+
+#[test]
+fn windows_alias_spellings_keep_their_stat() {
+    for name in ["LONGFI~1.TS", "Index.ts.", "Index.ts ", "Index.ts:stream"] {
+        assert!(super::may_alias_on_windows(name.as_bytes()), "{name}");
+    }
+    for name in ["Index.ts", "index.d.ts", ".gitignore", "a b.ts"] {
+        assert!(!super::may_alias_on_windows(name.as_bytes()), "{name}");
+    }
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_opens_listed_entries_through_alias_spellings() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pkg");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("Index.ts"), "export {};\n").unwrap();
+    let mut cache = PackagePathCache::default();
+    // Win32 strips trailing dots and spaces before the lookup, so these open
+    // `Index.ts`; the listing must leave them to the stat.
+    for probe in [dir.join("Index.ts."), dir.join("Index.ts ")] {
+        assert_eq!(
+            cache.is_file(&probe),
+            probe.is_file(),
+            "{}",
+            probe.display()
+        );
+    }
+}

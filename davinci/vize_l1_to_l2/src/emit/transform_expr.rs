@@ -203,6 +203,20 @@ impl<'b> TransformExpressions<'b> {
         mark
     }
 
+    /// Enter source-owned original parameter facts alongside their exact alias
+    /// positions. Ordinary aliases retain the historical transform behavior.
+    #[doc(hidden)]
+    pub fn enter_for_bindings(
+        &mut self,
+        aliases: [Option<&str>; 3],
+        spans: [Option<vize_l0::Span>; 3],
+        facts: Option<&vize_l2::scope::ScopeFacts>,
+    ) -> TransformScopeMark {
+        let mark = TransformScopeMark(self.scope.mark());
+        self.scope.push_for_bindings(aliases, spans, facts, false);
+        mark
+    }
+
     /// Enter a scoped-slot scope: the slot props stop being prefixed.
     pub fn enter_slot(&mut self, params: &str) -> TransformScopeMark {
         let mark = TransformScopeMark(self.scope.mark());
