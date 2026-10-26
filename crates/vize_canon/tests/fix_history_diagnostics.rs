@@ -1006,6 +1006,17 @@ fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
 }
 
 #[test]
+fn requested_file_keeps_its_own_diagnostics_beside_foreign_suggestions() {
+    check_pack(
+        "foreign-suggestion-rows-10694",
+        "requested_file_keeps_its_own_diagnostics_beside_foreign_suggestions",
+        "dec2b4a8dcc87392b2c57cd4b1798ec00f8e220e",
+        Some(10694),
+        &["requested-file-error"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

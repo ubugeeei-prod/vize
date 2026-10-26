@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { label } from "./support";
+const value: number = label;
+</script>
+<template><p>{{ value }}</p></template>

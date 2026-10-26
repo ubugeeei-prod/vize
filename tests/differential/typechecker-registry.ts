@@ -58,6 +58,8 @@ export const TYPECHECKER_TESTS = {
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
+  "foreign-suggestion-rows-10694":
+    "requested_file_keeps_its_own_diagnostics_beside_foreign_suggestions",
   "generic-constructor-slots-10416": "generic_constructor_intersections_preserve_slot_payloads",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "global-scope-build-info-10819": "global_scope_build_info_keeps_complete_diagnostics",
@@ -152,6 +154,7 @@ export const sourceRevisions = {
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
+  "foreign-suggestion-rows-10694": "dec2b4a8dcc87392b2c57cd4b1798ec00f8e220e",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "global-scope-build-info-10819": "61d756842bb44a72c84982f01dc40d3423c96503",
