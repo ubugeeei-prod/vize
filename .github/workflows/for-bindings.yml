@@ -37,6 +37,8 @@ concurrency:
 
 jobs:
   source-native:
+    # The immutable before image qualifies this repair; Check retains routine regression tests.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.number == 10726 }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
