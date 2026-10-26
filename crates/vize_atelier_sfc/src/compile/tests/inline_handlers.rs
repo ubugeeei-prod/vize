@@ -183,3 +183,56 @@ const { onEnter, onAfterEnter, hooks } = useExpand()
         )
     );
 }
+
+/// A padded identifier is a compound expression in Vue, never a constant, so
+/// a component that receives it uncached patches it.
+#[test]
+fn padded_const_handlers_on_components_stay_dynamic() {
+    let code = compile_inline(
+        r#"<script setup>
+import { ref } from 'vue'
+import MyButton from './MyButton.vue'
+const show = ref(true)
+function save() {}
+</script>
+<template>
+  <MyButton
+    @ping="
+      save
+    "
+  />
+  <MyButton
+    v-if="show"
+    @ping="
+      save
+    "
+  />
+  <MyButton @ping="save" />
+</template>"#,
+    );
+    // Vue indents a conditional branch two columns deeper; the rest is
+    // byte-identical.
+    assert_eq!(
+        render(&code),
+        concat!(
+            "return (_ctx, _cache) => {\n",
+            "  return (_openBlock(), _createElementBlock(_Fragment, null, [\n",
+            "    _createVNode(MyButton, {\n",
+            "      onPing: \n",
+            "      save\n",
+            "    \n",
+            "    }, null, 8 /* PROPS */, [\"onPing\"]),\n",
+            "    (show.value)\n",
+            "      ? (_openBlock(), _createBlock(MyButton, {\n",
+            "        key: 0,\n",
+            "        onPing: \n",
+            "      save\n",
+            "    \n",
+            "      }, null, 8 /* PROPS */, [\"onPing\"]))\n",
+            "      : _createCommentVNode(\"v-if\", true),\n",
+            "    _createVNode(MyButton, { onPing: save })\n",
+            "  ], 64 /* STABLE_FRAGMENT */))\n",
+            "}",
+        )
+    );
+}
