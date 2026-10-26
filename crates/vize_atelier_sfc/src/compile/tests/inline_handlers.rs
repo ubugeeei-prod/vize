@@ -28,11 +28,14 @@ fn compile_inline(source: &str) -> vize_carton::String {
     result.code
 }
 
-fn assert_contains(code: &str, expected: &str) {
-    assert!(
-        code.contains(expected),
-        "expected:\n{expected}\n\nin:\n{code}"
-    );
+/// The inline render function, from its `return` to its closing brace.
+fn render(code: &str) -> &str {
+    let start = code
+        .find("return (_ctx, _cache) => {")
+        .expect("inline render");
+    let rest = code.get(start..).expect("render start");
+    rest.get(..rest.find("\n}\n").expect("render end") + 2)
+        .expect("render body")
 }
 
 /// #10777: a handler held in a ref is read through `unref` / `.value`.
@@ -55,21 +58,28 @@ const fnRef = ref(() => {})
   <button @click="fnRef">d</button>
 </template>"#,
     );
-    assert_contains(
-        &code,
-        "      onPing: _unref(pingA)\n    }, null, 8 /* PROPS */, [\"onPing\"])",
-    );
-    assert_contains(
-        &code,
-        "onClick: _cache[0] || (_cache[0] = (...args) => (_unref(pingB) && _unref(pingB)(...args)))",
-    );
-    assert_contains(
-        &code,
-        "onClick: _cache[1] || (_cache[1] = (...args) => (_unref(swap) && _unref(swap)(...args)))",
-    );
-    assert_contains(
-        &code,
-        "onClick: _cache[2] || (_cache[2] = (...args) => (fnRef.value && fnRef.value(...args)))",
+    assert_eq!(
+        render(&code),
+        concat!(
+            "return (_ctx, _cache) => {\n",
+            "  return (_openBlock(), _createElementBlock(_Fragment, null, [\n",
+            "    _createVNode(MyButton, {\n",
+            "      id: \"a\",\n",
+            "      onPing: _unref(pingA)\n",
+            "    }, null, 8 /* PROPS */, [\"onPing\"]),\n",
+            "    _createElementVNode(\"button\", {\n",
+            "      id: \"b\",\n",
+            "      onClick: _cache[0] || (_cache[0] = (...args) => (_unref(pingB) && _unref(pingB)(...args)))\n",
+            "    }, \"b\"),\n",
+            "    _createElementVNode(\"button\", {\n",
+            "      onClick: _cache[1] || (_cache[1] = (...args) => (_unref(swap) && _unref(swap)(...args)))\n",
+            "    }, \"c\"),\n",
+            "    _createElementVNode(\"button\", {\n",
+            "      onClick: _cache[2] || (_cache[2] = (...args) => (fnRef.value && fnRef.value(...args)))\n",
+            "    }, \"d\")\n",
+            "  ], 64 /* STABLE_FRAGMENT */))\n",
+            "}",
+        )
     );
 }
 
@@ -99,17 +109,31 @@ const { increment: incrementC } = useCounter()
   <button @click=" incrementC ">d</button>
 </template>"#,
     );
-    assert_contains(
-        &code,
-        "      onPing: \n      _unref(incrementA)\n    \n    }, null, 8 /* PROPS */, [\"onPing\"])",
-    );
-    assert_contains(
-        &code,
-        "onClick: _cache[0] || (_cache[0] = (...args) => (\n      _unref(incrementC)\n     && \n      _unref(incrementC)\n    (...args)))",
-    );
-    assert_contains(
-        &code,
-        "onClick: _cache[1] || (_cache[1] = (...args) => ( _unref(incrementC)  &&  _unref(incrementC) (...args)))",
+    assert_eq!(
+        render(&code),
+        concat!(
+            "return (_ctx, _cache) => {\n",
+            "  return (_openBlock(), _createElementBlock(_Fragment, null, [\n",
+            "    _createVNode(MyButton, {\n",
+            "      id: \"a\",\n",
+            "      onPing: \n",
+            "      _unref(incrementA)\n",
+            "    \n",
+            "    }, null, 8 /* PROPS */, [\"onPing\"]),\n",
+            "    _createElementVNode(\"button\", {\n",
+            "      id: \"c\",\n",
+            "      onClick: _cache[0] || (_cache[0] = (...args) => (\n",
+            "      _unref(incrementC)\n",
+            "     && \n",
+            "      _unref(incrementC)\n",
+            "    (...args)))\n",
+            "    }, \"c\"),\n",
+            "    _createElementVNode(\"button\", {\n",
+            "      onClick: _cache[1] || (_cache[1] = (...args) => ( _unref(incrementC)  &&  _unref(incrementC) (...args)))\n",
+            "    }, \"d\")\n",
+            "  ], 64 /* STABLE_FRAGMENT */))\n",
+            "}",
+        )
     );
 }
 
@@ -132,13 +156,30 @@ const { onEnter, onAfterEnter, hooks } = useExpand()
   <MyButton @ping="hooks.ping" @pong.stop="hooks.pong" @done="hooks.done($event)" />
 </template>"#,
     );
-    assert_contains(
-        &code,
-        "      onEnter: _unref(onEnter),\n      onAfterEnter: _unref(onAfterEnter)\n    }",
-    );
-    assert_contains(&code, "}, 8 /* PROPS */, [\"onEnter\", \"onAfterEnter\"])");
-    assert_contains(
-        &code,
-        "      onPing: _unref(hooks).ping,\n      onPong: _withModifiers(_unref(hooks).pong, [\"stop\"]),\n      onDone: _cache[0] || (_cache[0] = $event => (_unref(hooks).done($event)))\n    }, null, 8 /* PROPS */, [\"onPing\", \"onPong\"])",
+    assert_eq!(
+        render(&code),
+        concat!(
+            "return (_ctx, _cache) => {\n",
+            "  return (_openBlock(), _createElementBlock(_Fragment, null, [\n",
+            "    _createVNode(_Transition, {\n",
+            "      css: false,\n",
+            "      onEnter: _unref(onEnter),\n",
+            "      onAfterEnter: _unref(onAfterEnter)\n",
+            "    }, {\n",
+            "      default: _withCtx(() => [\n",
+            "        (show.value)\n",
+            "          ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, \"box\"))\n",
+            "          : _createCommentVNode(\"v-if\", true)\n",
+            "      ]),\n",
+            "      _: 1 /* STABLE */\n",
+            "    }, 8 /* PROPS */, [\"onEnter\", \"onAfterEnter\"]),\n",
+            "    _createVNode(MyButton, {\n",
+            "      onPing: _unref(hooks).ping,\n",
+            "      onPong: _withModifiers(_unref(hooks).pong, [\"stop\"]),\n",
+            "      onDone: _cache[0] || (_cache[0] = $event => (_unref(hooks).done($event)))\n",
+            "    }, null, 8 /* PROPS */, [\"onPing\", \"onPong\"])\n",
+            "  ], 64 /* STABLE_FRAGMENT */))\n",
+            "}",
+        )
     );
 }
