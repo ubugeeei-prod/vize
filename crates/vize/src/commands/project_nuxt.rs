@@ -100,15 +100,24 @@ impl<'a> ConfigObject<'a> {
             };
             match static_key(&property.key, property.computed) {
                 None => found = Lookup::Unknown,
-                Some(name) if self.root && name.starts_with('$') => {
-                    // Environment blocks can replace root settings.
-                    let Some(block) = Self::nested(&property.value) else {
+                // `$env` maps custom environment names to override blocks.
+                Some("$env") if self.root => {
+                    let Some(environments) = Self::nested(&property.value) else {
                         return Lookup::Unknown;
                     };
-                    match block.get(key) {
-                        Lookup::Absent => {}
-                        Lookup::Value(value) => overrides.push(value),
-                        Lookup::Unknown => return Lookup::Unknown,
+                    for environment in &environments.object.properties {
+                        let ObjectPropertyKind::ObjectProperty(environment) = environment else {
+                            return Lookup::Unknown;
+                        };
+                        if !collect_override(&environment.value, key, &mut overrides) {
+                            return Lookup::Unknown;
+                        }
+                    }
+                }
+                // Environment blocks such as `$production` can replace root settings.
+                Some(name) if self.root && name.starts_with('$') => {
+                    if !collect_override(&property.value, key, &mut overrides) {
+                        return Lookup::Unknown;
                     }
                 }
                 Some(name) if name == key => found = Lookup::Value(unwrap(&property.value)),
@@ -124,6 +133,25 @@ impl<'a> ConfigObject<'a> {
             Lookup::Unknown => found,
             _ => Lookup::Unknown,
         }
+    }
+}
+
+/// Record an environment block's literal `key`; `false` when the block is not static.
+fn collect_override<'a>(
+    block: &'a Expression<'a>,
+    key: &str,
+    overrides: &mut Vec<&'a Expression<'a>>,
+) -> bool {
+    let Some(block) = ConfigObject::nested(block) else {
+        return false;
+    };
+    match block.get(key) {
+        Lookup::Absent => true,
+        Lookup::Value(value) => {
+            overrides.push(value);
+            true
+        }
+        Lookup::Unknown => false,
     }
 }
 
@@ -167,7 +195,7 @@ pub(super) fn read<T>(
 /// `srcDir`, `dir.pages` and `dir.layouts`, relative to `root` like doctor sources.
 pub(super) fn render_dirs(root: &Path) -> Option<NuxtRenderDirs> {
     let config = find(root)?;
-    let (src_dir, pages, layouts, builtin_app) = read(config.source.as_deref()?, |object| {
+    let (src_dir, pages, layouts, pages_enabled) = read(config.source.as_deref()?, |object| {
         let src_dir = optional_path(object.get("srcDir"))?;
         let (pages, layouts) = match object.get("dir") {
             Lookup::Absent => (None, None),
@@ -180,14 +208,12 @@ pub(super) fn render_dirs(root: &Path) -> Option<NuxtRenderDirs> {
             }
             Lookup::Unknown => return None,
         };
-        // Pages enable Nuxt's built-in `<NuxtLayout><NuxtPage /></NuxtLayout>` app.
-        let builtin_app = match object.get("pages") {
-            Lookup::Absent => true,
+        let pages_enabled = match object.get("pages") {
+            Lookup::Absent | Lookup::Value(Expression::ObjectExpression(_)) => true,
             Lookup::Value(Expression::BooleanLiteral(value)) => value.value,
-            Lookup::Value(Expression::ObjectExpression(_)) => true,
-            _ => false,
+            _ => return None,
         };
-        Some((src_dir, pages, layouts, builtin_app))
+        Some((src_dir, pages, layouts, pages_enabled))
     })?;
     let src = match src_dir {
         Some(src_dir) => config.dir.join(src_dir),
@@ -211,7 +237,7 @@ pub(super) fn render_dirs(root: &Path) -> Option<NuxtRenderDirs> {
         pages: relative(src.join(pages.as_deref().unwrap_or("pages")))?,
         layouts: relative(src.join(layouts.as_deref().unwrap_or("layouts")))?,
         src: relative(src)?,
-        builtin_app,
+        pages_enabled,
     })
 }
 
@@ -321,12 +347,12 @@ mod tests {
         render_dirs(project.path())
     }
 
-    fn dirs(src: &str, pages: &str, layouts: &str, builtin_app: bool) -> Option<NuxtRenderDirs> {
+    fn dirs(src: &str, pages: &str, layouts: &str, pages_enabled: bool) -> Option<NuxtRenderDirs> {
         Some(NuxtRenderDirs {
             src: PathBuf::from(src),
             pages: PathBuf::from(pages),
             layouts: PathBuf::from(layouts),
-            builtin_app,
+            pages_enabled,
         })
     }
 
@@ -364,6 +390,8 @@ mod tests {
             r#"export default defineNuxtConfig({ dir: { pages: "~/routes" } })"#,
             r#"export default defineNuxtConfig({ $development: { dir: { pages: "dev" } } })"#,
             r#"export default defineNuxtConfig({ srcDir: "../outside" })"#,
+            r#"export default defineNuxtConfig({ srcDir: "src", $env: { staging: { srcDir: "app" } } })"#,
+            "export default defineNuxtConfig({ pages: process.env.PAGES })",
         ] {
             assert_eq!(dirs_for(config, &[]), None, "{config}");
         }

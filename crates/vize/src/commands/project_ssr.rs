@@ -54,6 +54,7 @@ mod tests {
             "export default defineNuxtConfig({ ssr: false, $development: {} })",
             "export default defineNuxtConfig({ ssr: false, $development: { devtools: { enabled: false } } })",
             "export default defineNuxtConfig({ ssr: false, $production: { ssr: false } })",
+            "export default defineNuxtConfig({ ssr: false, $env: { staging: { devtools: {} } } })",
         ] {
             assert_eq!(nuxt_ssr(source), Some(false), "{source}");
         }
@@ -64,6 +65,8 @@ mod tests {
             "export default defineNuxtConfig({ ssr: false, $production: { ...base } })",
             "export default defineNuxtConfig({ ssr: false, $development: overrides })",
             "export default defineNuxtConfig({ $production: { ssr: false } })",
+            "export default defineNuxtConfig({ ssr: false, $env: { staging: { ssr: true } } })",
+            "export default defineNuxtConfig({ ssr: false, $env: environments })",
             "export default defineNuxtConfig({ ssr: process.env.SSR })",
             "export default transform({ ssr: false })",
             "const defineNuxtConfig = () => ({ssr:true}); export default defineNuxtConfig({ssr:false})",
