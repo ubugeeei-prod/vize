@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashMap;
 
-use super::{AliasContext, PreparedAliasContext, ProjectMember, build};
+use super::{AliasContext, PreparedAliasContext, ProjectMember, RevisionKey, build};
 use crate::batch::ModuleSpecifierFactsCache;
 
 impl AliasContext {
@@ -145,12 +145,13 @@ impl AliasContext {
                 materialized_sources,
             );
             let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
+            let revision = RevisionKey::new(source_path.clone(), &fingerprint);
             let expected_files = mirror.expected_materialized_files();
             let package_links = mirror.desired_package_links();
             let member_query_paths = mirror.editor_query_paths(&source_path);
             let mut union = cache.project_union_snapshot(
                 mirror.virtual_root(),
-                &source_path,
+                &revision,
                 fingerprint.overlay_identity(),
             );
             union.query_paths.extend(member_query_paths.iter().cloned());
@@ -181,7 +182,7 @@ impl AliasContext {
             cache.set_materialized_snapshot(mirror.virtual_root().to_path_buf(), current);
             cache.record_project_member(
                 mirror.virtual_root().to_path_buf(),
-                source_path,
+                revision,
                 ProjectMember {
                     source_paths: mirror.registered_original_paths_sorted(),
                     expected_files,

@@ -14,7 +14,7 @@ impl SessionCache {
         &self,
         root: &Path,
         overlay_identity: u64,
-        observed: &mut crate::package_route::stamp::InputStampCache,
+        observed: &mut crate::package_route::stamp::InputStampValidation,
     ) -> bool {
         self.project_overlay_identities.get(root) == Some(&overlay_identity)
             && self.project_members.get(root).is_none_or(|members| {
@@ -22,7 +22,7 @@ impl SessionCache {
                     member
                         .stamps
                         .iter()
-                        .all(|stamp| stamp.is_current_with_cache(observed))
+                        .all(|stamp| observed.is_current(stamp, None))
                 })
             })
     }
