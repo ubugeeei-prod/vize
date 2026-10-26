@@ -1,0 +1,26 @@
+[
+  {
+    "id": "consumer-10771",
+    "input": "<script setup lang=\"ts\">\nconst phase = { kind: \"after\", view: \"default\" };\nconst noop = () => {};\n</script>\n\n<template>\n  <section>\n    <MyPanel\n      :state=\"{\n        kind: phase.kind,\n        view: phase.view,\n      }\"\n      :dialog=\"{ open: noop, isDisabled: true, toggle: noop }\"\n    />\n    <p>\n      {{ $t(\"label.range\") }}\n      {{ phase.kind }}\n    </p>\n  </section>\n</template>\n",
+    "expected": "<script setup lang=\"ts\">\nconst phase = { kind: \"after\", view: \"default\" };\nconst noop = () => {};\n</script>\n\n<template>\n  <section>\n    <MyPanel\n      :state=\"{\n        kind: phase.kind,\n        view: phase.view,\n      }\"\n      :dialog=\"{ open: noop, isDisabled: true, toggle: noop }\"\n    />\n    <p>\n      {{ $t(\"label.range\") }}\n      {{ phase.kind }}\n    </p>\n  </section>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "authored-object-expansion",
+    "input": "<template>\n  <section>\n    <MyPanel\n      :state=\"{\n        kind: phase.kind, view: { a: 1,\n          b: 2 },\n      }\"\n      :nested=\"{ outer: {\n        inner: 1,\n      } }\"\n      :list=\"[\n        1, 2,\n      ]\"\n      :call=\"fn({\n        a: 1,\n      })\"\n      v-bind=\"{\n        id,\n      }\"\n      :cls=\"[{\n        active: a,\n      }, 'x']\"\n      :ternary=\"ok ? {\n        a: 1,\n      } : null\"\n      :dialog=\"{ open: noop, isDisabled: true, toggle: noop }\"\n    />\n    <Other :opts=\"{\n      a: 1 }\" @click=\"go({\n        x: 1,\n      })\" />\n  </section>\n</template>\n",
+    "expected": "<template>\n  <section>\n    <MyPanel\n      :state=\"{\n        kind: phase.kind,\n        view: { a: 1, b: 2 },\n      }\"\n      :nested=\"{\n        outer: {\n          inner: 1,\n        },\n      }\"\n      :list=\"[1, 2]\"\n      :call=\"\n        fn({\n          a: 1,\n        })\n      \"\n      v-bind=\"{\n        id,\n      }\"\n      :cls=\"[\n        {\n          active: a,\n        },\n        'x',\n      ]\"\n      :ternary=\"\n        ok\n          ? {\n              a: 1,\n            }\n          : null\n      \"\n      :dialog=\"{ open: noop, isDisabled: true, toggle: noop }\"\n    />\n    <Other\n      :opts=\"{\n        a: 1,\n      }\"\n      @click=\"\n        go({\n          x: 1,\n        })\n      \"\n    />\n  </section>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "inline-node-line-breaks",
+    "input": "<template>\n  <section>\n    <p>\n      {{ a }}\n      {{ b }}\n    </p>\n    <p>{{ a }} {{ b }}</p>\n    <p>\n      {{ a }} {{ b }}\n      {{ c }}\n    </p>\n    <p>\n      {{ a }}\n      {{ b }} {{ c }}\n    </p>\n    <p>\n      {{ a }}\n      text here\n    </p>\n    <p>\n      text here\n      {{ a }}\n    </p>\n    <p>\n      {{ a }} foo\n      bar\n      {{ b }}\n    </p>\n    <p>\n      foo {{ a }}\n      {{ b }}\n    </p>\n    <p>\n      foo\n      {{ a }} bar\n    </p>\n    <p>\n      {{ a }}\n\n      {{ b }}\n    </p>\n    <p>\n      {{ a }} foo\n\n      {{ b }} bar\n    </p>\n    <p>\n      foo\n\n\n      {{ b }}\n    </p>\n    <span>\n      {{ a }}\n      {{ b }}\n    </span>\n    <div>\n      <span>x</span>{{ a }}\n      {{ b }}\n    </div>\n    <div>\n      <span>x</span>\n      {{ a }}\n      {{ b }}\n    </div>\n    <div>{{ a }} {{ b }}</div>\n  </section>\n</template>\n",
+    "expected": "<template>\n  <section>\n    <p>\n      {{ a }}\n      {{ b }}\n    </p>\n    <p>{{ a }} {{ b }}</p>\n    <p>\n      {{ a }} {{ b }}\n      {{ c }}\n    </p>\n    <p>\n      {{ a }}\n      {{ b }} {{ c }}\n    </p>\n    <p>\n      {{ a }}\n      text here\n    </p>\n    <p>\n      text here\n      {{ a }}\n    </p>\n    <p>\n      {{ a }} foo bar\n      {{ b }}\n    </p>\n    <p>\n      foo {{ a }}\n      {{ b }}\n    </p>\n    <p>\n      foo\n      {{ a }} bar\n    </p>\n    <p>\n      {{ a }}\n\n      {{ b }}\n    </p>\n    <p>\n      {{ a }} foo\n\n      {{ b }} bar\n    </p>\n    <p>\n      foo\n\n      {{ b }}\n    </p>\n    <span>\n      {{ a }}\n      {{ b }}\n    </span>\n    <div>\n      <span>x</span>{{ a }}\n      {{ b }}\n    </div>\n    <div>\n      <span>x</span>\n      {{ a }}\n      {{ b }}\n    </div>\n    <div>{{ a }} {{ b }}</div>\n  </section>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "inline-node-joins",
+    "input": "<template>\n  <div>{{ a }}\n    {{ b }}</div>\n  <p>a {{ b }}\n    c</p>\n</template>\n",
+    "expected": "<template>\n  <div>{{ a }} {{ b }}</div>\n  <p>a {{ b }} c</p>\n</template>\n",
+    "printWidth": 80
+  }
+]
