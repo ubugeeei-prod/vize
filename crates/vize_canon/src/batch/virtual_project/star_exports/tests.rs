@@ -389,8 +389,11 @@ fn project_config_routes_and_explicit_modes_do_not_grant_alias_credit() {
         );
         denied["files"][0]["map"] =
             serde_json::json!(before["files"][0]["map"].as_str().unwrap().replace(
-                "original_offset: 15, adjustment: 3",
-                "original_offset: 15, adjustment: 0"
+                "ReplacementRange { original_start: 15, original_end: 26, virtual_start: 15, virtual_end: 29 }, ",
+                ""
+            ).replace(
+                "original_start: 75, original_end: 82, virtual_start: 78, virtual_end: 92",
+                "original_start: 75, original_end: 82, virtual_start: 75, virtual_end: 89"
             ));
         assert_eq!(owner_packet(&project, "routes.ts"), denied);
         for mode in ["import", "require"] {
