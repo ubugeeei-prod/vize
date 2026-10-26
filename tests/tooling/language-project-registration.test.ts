@@ -10,7 +10,7 @@ import { LANGUAGE_PROJECT_CASE_ID } from "../../tools/support/compat/github/lang
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
 const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestPath), "utf8"));
-const pairs: Array<{ source: string; before: string; head: string }> = JSON.parse(
+const pairs: Array<{ source: string; before: string | null; head: string }> = JSON.parse(
   fs.readFileSync(
     path.join(root, "tests/_fixtures/tooling/language-project-source-pairs-10740.json"),
     "utf8",
@@ -64,11 +64,11 @@ function observe({
         return Buffer.from(JSON.stringify(side === "base" ? before : head));
       if (file === ordinaryPath) return side === "head" ? ordinaryInput : null;
       const pair = pairs.find((pair) => pair.source === file);
-      if (pair)
-        return Buffer.from(
-          (side === "base" ? pair.before : pair.head) +
-            (future && side === "head" && pair === pairs[0] ? "\n" : ""),
-        );
+      if (pair) {
+        const text = side === "base" ? pair.before : pair.head;
+        if (text === null) return null;
+        return Buffer.from(text + (future && side === "head" && pair === pairs[0] ? "\n" : ""));
+      }
       if (side === "base") return null;
       const source = path.join(root, file);
       return fs.existsSync(source) ? fs.readFileSync(source) : null;

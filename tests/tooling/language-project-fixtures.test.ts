@@ -9,7 +9,7 @@ import {
 } from "../../tools/support/compat/github/language-project-fixtures.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const pairs: Array<{ source: string; before: string; head: string }> = JSON.parse(
+const pairs: Array<{ source: string; before: string | null; head: string }> = JSON.parse(
   fs.readFileSync(
     path.join(root, "tests/_fixtures/tooling/language-project-source-pairs-10740.json"),
     "utf8",
@@ -24,7 +24,10 @@ const manifest = JSON.parse(
 const rows: unknown[] = manifest.languageProjectCases;
 const read = (side: "base" | "head", file: string) => {
   const pair = pairs.find((item) => item.source === file);
-  if (pair) return Buffer.from(side === "base" ? pair.before : pair.head);
+  if (pair) {
+    const text = side === "base" ? pair.before : pair.head;
+    return text === null ? null : Buffer.from(text);
+  }
   if (side === "base") return null;
   const source = path.join(root, file);
   return fs.existsSync(source) ? fs.readFileSync(source) : null;

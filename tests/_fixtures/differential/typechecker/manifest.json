@@ -7947,22 +7947,22 @@
         {
           "selector": "generate_vue_language_code",
           "source": "crates/vize_vitrine/src/napi/language_code.rs",
-          "sha256": "d1238ecb6e79538c99cef4f2a85d9d12219415953fefb5f66ab2cec112ff99a3"
+          "sha256": "7fe63a387f77750054d8a12552ff758b6c1d1b610e754189a332e0a5b7f1ee6b"
         },
         {
           "selector": "init",
           "source": "npm/typescript-plugin/index.cjs",
-          "sha256": "dd3fe796cdf28022f4cae9ca9e0d28cbef08fbed5eae9a459ed14f6ea279121e"
+          "sha256": "728bd36e03f2e4c6cb9fe48332c804ac5606102b72c3a07999391b6b1616cdf8"
         },
         {
           "selector": "createProjectConfiguration",
           "source": "npm/typescript-plugin/virtual-modules.cjs",
-          "sha256": "6b09582840ead1ba8c1a42bcaf91e7b15b8193364b97591f36ad3aa36bcb8343"
+          "sha256": "053dda9154be1c4bf3fa470b3e87226aaaccd100493002228b325baca84665d0"
         },
         {
           "selector": "createMappedLanguageService",
           "source": "npm/typescript-plugin/language-service.cjs",
-          "sha256": "58941c91699596575411c77c6064a56eb0a599291d26d9a3637cd021f530ad92"
+          "sha256": "108028b9cb18a19510ac5b379885adab9e469e9c2b939842762c88a4548c8d57"
         },
         {
           "selector": "readProjectFixture",
@@ -7981,18 +7981,18 @@
         },
         {
           "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
-          "source": "tests/typescript-plugin/mapped-language-service.test.cjs",
-          "sha256": "7ef225887dcdbe157cd1bee8aa0b3ff0fab0c77cfd43800458dcee70921bad97"
+          "source": "tests/typescript-plugin/project-configuration.test.cjs",
+          "sha256": "63a73f74aef8bd472c4c2482240c108725cc4c129374d79da34b84d61e461039"
         },
         {
           "selector": "packed-consumer",
           "source": "tests/typescript-plugin/packed-consumer.mjs",
-          "sha256": "80549250ffe87a5584e58c35361a91791e7d7485068a8f937ac8cc269d4ec3c9"
+          "sha256": "a7e8493c389cd0cbee859a905d7ee164ef124fbd24eefe5c3fa6e42733ada51c"
         },
         {
           "selector": "startTsserver",
           "source": "tests/typescript-plugin/tsserver-client.mjs",
-          "sha256": "ba2b1eecb52ab9796982c2ab62d574e5f295d757d02c6c86eae2611c49e77f52"
+          "sha256": "03a93ea537ad511f17b6b2ef35030098c3e8f6bdac3ef2657d5cec8e4fb3b2af"
         },
         {
           "selector": "checkInheritedConfiguration",
@@ -8007,7 +8007,7 @@
         {
           "selector": "TypeScript 5.7.3 and 6.0.3",
           "source": ".github/workflows/typescript-plugin.yml",
-          "sha256": "542c667a930839ff18f8d483a341f96df978b1e8dbc39b11079ca93130ba8f2d"
+          "sha256": "87a6393c96aa7943cdc88696e0350ea082e4f088146ea4b9305efe03c3455a16"
         },
         {
           "selector": "Linux and Windows physical VSIX",

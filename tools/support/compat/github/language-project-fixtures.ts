@@ -28,7 +28,7 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
   ["createOrdinaryHostFrontier", "tests/typescript-plugin/ordinary-host-frontier.mjs"],
   [
     "one project fingerprints its native closure once per epoch and disposes exact watches",
-    "tests/typescript-plugin/mapped-language-service.test.cjs",
+    "tests/typescript-plugin/project-configuration.test.cjs",
   ],
   ["packed-consumer", "tests/typescript-plugin/packed-consumer.mjs"],
   ["startTsserver", "tests/typescript-plugin/tsserver-client.mjs"],
@@ -39,19 +39,39 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
 ] as const;
 
 // These are whole-file identities of the reviewed transition, not a path or
-// directory exemption. Another edit to either file follows the ordinary law.
-const transition = [
+// directory exemption. Another edit to any of these files follows the ordinary law.
+const transition: ReadonlyArray<readonly [string, string | null, string]> = [
   [
     "crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs",
     "7b028fdf234d9ab85b18d3aa409e5f253fafd02dfafce361e8adce23f5178055",
-    "ec91c7cf1dd91e4ef53320b215235b2f0bda64ab844fca00db1345566f6b0320",
+    "3dab901e243aa318b07c9c677310b524f009dfb3e3ae86297ba5d77085611120",
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/content_mapper_config_tests.rs",
+    null,
+    "228e6f47714892e892d53af57a97e3c3fcd7ef1004e8bd543bd10c1f1b0fdfff",
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project.rs",
+    "4cd33be60f3d417447fb3244a6a01d1df435b52cf166e780a5f080923ac7a491",
+    "a39a06ec175c0b93d15ae5607fe187c91c29c870a1e24b17b31f9ff3e62d7fbc",
   ],
   [
     "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs",
     "66200f1e40bef06c53a252134659eccb0bd876a34ae87868de388bbfc2824a81",
-    "5dd43b379ee6c8dcfd4901c6c4203811b7131e747fe0af6ab7ff553b07675bfc",
+    "7c7d7c8d71b82e288c81b2fcb462d1fec29dbe4c60e8687fb1a7366d21bbb612",
   ],
-] as const;
+  [
+    "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options/extends.rs",
+    null,
+    "6f819ecd03963fddfaa3be40bd69efcf484c5a83a002be4464a2bb217c45380f",
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options/tests.rs",
+    "9a18acbeb1f013efc35f8e2f8da266d46ef5e373e45fdba790b67db4688e3255",
+    "993f7e02c951234951be843db702dfff2d3875c298d6089d228c9d3a21aed46e",
+  ],
+];
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 function require(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(`invalid language project case: ${message}`);
@@ -77,7 +97,11 @@ export function newLanguageProjectCases(
   const applicable = transition.every(([source, before, head]) => {
     const a = readFile("base", source),
       b = readFile("head", source);
-    return a !== null && b !== null && digest(a) === before && digest(b) === head;
+    return (
+      (before === null ? a === null : a !== null && digest(a) === before) &&
+      b !== null &&
+      digest(b) === head
+    );
   });
   require(current === undefined || Array.isArray(current), "languageProjectCases must be an array");
   require(previous === undefined ||
