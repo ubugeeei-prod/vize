@@ -128,7 +128,7 @@ test("the recorded command is the one CI measures with", () => {
   }
 });
 
-test("the measured server links like the shipped x86_64 Linux CLI", () => {
+test("the measured server and the x86_64 gnu release CLI link without Wild", () => {
   // Wild ignores `--icf=all`, so a Wild-linked server would measure 4.8 MiB more than ships.
   const workflow = parse(
     readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
@@ -145,11 +145,39 @@ test("the measured server links like the shipped x86_64 Linux CLI", () => {
       "runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'",
     ],
   );
-  const build = readRepoFile("crates", "vize", "build.rs");
-  assert.deepEqual(
-    [...build.matchAll(/cargo:rustc-link-arg-bins=([^"]+)"/gu)].map(([, flag]) => flag),
-    ["-Wl,--icf=all", "-Wl,-z,pack-relative-relocs"],
-  );
+});
+
+test("the CLI build script asks only rust-lld release links to fold and pack", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-build-script-"));
+  try {
+    const script = path.join(dir, "build-script");
+    const compiled = spawnSync(
+      process.env.RUSTC ?? "rustc",
+      ["--edition", "2024", "-o", script, path.join(repoRoot, "crates/vize/build.rs")],
+      { encoding: "utf8" },
+    );
+    assert.equal(compiled.status, 0, compiled.stderr);
+    const run = (env: Record<string, string>) =>
+      spawnSync(script, { env: { PATH: process.env.PATH ?? "", ...env }, encoding: "utf8" }).stdout;
+    const release = { TARGET: "x86_64-unknown-linux-gnu", PROFILE: "release" };
+    const rerun = "cargo:rerun-if-changed=build.rs\n";
+    assert.equal(
+      run(release),
+      `${rerun}cargo:rustc-link-arg-bins=-Wl,--icf=all\ncargo:rustc-link-arg-bins=-Wl,-z,pack-relative-relocs\n`,
+    );
+    for (const env of [
+      { ...release, PROFILE: "debug" },
+      { ...release, TARGET: "aarch64-unknown-linux-gnu" },
+      { ...release, RUSTC_LINKER: "clang" },
+      { ...release, CARGO_ENCODED_RUSTFLAGS: "-Clink-arg=--ld-path=/opt/wild" },
+      { ...release, CARGO_ENCODED_RUSTFLAGS: "-Clinker-features=-lld" },
+      { ...release, CARGO_ENCODED_RUSTFLAGS: "-C\u001flinker=cc" },
+    ]) {
+      assert.equal(run(env), rerun, JSON.stringify(env));
+    }
+  } finally {
+    fs.rmSync(dir, { force: true, recursive: true });
+  }
 });
 
 test("the committed budgets validate", () => {
