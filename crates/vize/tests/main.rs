@@ -207,6 +207,7 @@ mod lint_incomplete_type_project_cli;
 mod lint_legacy_instance_api_cli;
 mod lint_musea_cli;
 mod lint_musea_component_names_cli;
+mod lint_nuxt_render_dirs_cli;
 mod lint_pinia_dependency_cli;
 mod lint_plain_script_ownership_cli;
 mod lint_prefixed_suppressions_cli;
