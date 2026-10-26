@@ -32,7 +32,7 @@ const helloWorldSha256 = "c4daba95e3842514356ca909968bfe243a803d31b0303d3cce23bd
 const cleanHeading = '    <h1 class="green">{{ msg }}</h1>';
 const brokenHeading = '    <h1 class="green">{{ msg.lenght }}</h1>';
 const brokenDiagnostic =
-  "error:9:30 [TS2551] Property 'lenght' does not exist on type 'string'. Did you mean 'length'?";
+  "error:9:30 [TS2551] Property 'lenght' does not exist on type 'string'. Did you mean 'length'? (source: <h1 class=\"green\">{{ msg.lenght }}</h1>)";
 const brokenBaselineOutput = `${helloWorldPath}(9,30): error TS2551: Property 'lenght' does not exist on type 'string'. Did you mean 'length'?\n`;
 
 const tsconfig = {
