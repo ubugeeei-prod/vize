@@ -159,6 +159,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/asset-import-binding-collision-10710",
       "compiler/sfc/scoped-scope-nesting-10648",
       "compiler/sfc/for-alias-initializers-10746",
+      "compiler/sfc/template-asset-markup-10761",
     ],
   );
   const report = syntheticReport();
