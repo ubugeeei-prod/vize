@@ -128,11 +128,21 @@ export default defineNuxtConfig({
 
 Le [guide du plugin Vite](../guide/vite-plugin.md#compiler-options) décrit chaque option du compilateur. Avec `compiler: false`, Nuxt garde son compilateur par défaut et vous n’utilisez que le lint ou Musea.
 
+Les options `vue.compilerOptions.whitespace` et `vue.compilerOptions.comments` de Nuxt parviennent à Vize comme valeurs par défaut ; `vue.compiler` dans `vite.config.*` et `vize.compiler` les remplacent. Toute autre clé de `vue.compilerOptions` conserve le compilateur Vue de Nuxt et affiche un avertissement.
+
 <span id="lint"></span>
 
 ### Lint
 
 Lorsque `lint` est activé, le module écrit `.oxlint.vize.json` à la racine du projet. C’est l’équivalent Oxlint de la configuration générée par `@nuxt/eslint` : des blocs de règles adaptés à votre version de Nuxt et à vos répertoires. Ajoutez ce fichier à `.gitignore`.
+
+La génération du lint et `checker` nécessitent `oxlint-plugin-vize`, et `oxlint` exécute les règles. Ce sont deux dépendances peer optionnelles : installez-les vous-même.
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+Sans le plugin, le module ignore le lint et tout le reste continue de fonctionner. Il affiche un seul avertissement avec la commande d’installation lorsque vous définissez `lint` ou `checker` vous-même, ou lorsqu’un ancien `.oxlint.vize.json` est encore présent.
 
 Si le projet n’a encore ni configuration Oxlint ni configuration Vite, le module crée aussi un `oxlint.config.mts` qui charge le fichier généré. Une configuration existante n’est jamais réécrite : chargez-y `.oxlint.vize.json` vous-même.
 

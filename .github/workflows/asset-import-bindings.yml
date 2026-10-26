@@ -1,0 +1,169 @@
+name: SFC asset import bindings
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize_atelier_sfc/src/bundler/assets.rs"
+      - "crates/vize_atelier_sfc/src/bundler/assets/**"
+      - "crates/vize_atelier_sfc/src/bundler/tests/asset_names.rs"
+      - "crates/vize_croquis/src/drawer/helpers/v_for/**"
+      - "crates/vize_atelier_sfc/examples/asset_import_names_profile.rs"
+      - "tests/tooling/asset-import-binding-source.mjs"
+      - ".github/workflows/asset-import-bindings.yml"
+
+permissions: { contents: read }
+concurrency:
+  group: asset-import-bindings-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-native:
+    # The immutable before image qualifies this repair; Check retains routine regression tests.
+    if: ${{ github.event.pull_request.number == 10711 }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTC_WRAPPER: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
+      BASE_SHA: "e466c0366d303baf725d67942a8a6a0f872c0dc0"
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          {
+            version: "1.1.0",
+            node-version-file: package.json,
+            cache: true,
+            cache-save: false,
+            run-install: false,
+          }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: asset-bindings-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Build immutable before and head producers in separate source targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git merge-base "$BASE_SHA" "$HEAD_SHA")" == "$BASE_SHA" ]]
+          capture="$RUNNER_TEMP/asset-import-bindings"
+          baseline="$RUNNER_TEMP/asset-import-bindings-base"
+          mkdir -p "$capture"
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          observer=crates/vize_atelier_sfc/examples/asset_import_names_profile.rs
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/vize_atelier_sfc/src Cargo.lock
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock pnpm-lock.yaml
+          rustc -Vv > "$capture/rustc.txt"
+          node --version > "$capture/node.txt"
+          sha256sum Cargo.lock pnpm-lock.yaml "$observer" tests/tooling/asset-import-binding-source.mjs > "$capture/inputs.sha256"
+          for epoch in head base; do
+            if [[ "$epoch" == base ]]; then source="$baseline"; sha="$BASE_SHA"; else source="$GITHUB_WORKSPACE"; sha="$HEAD_SHA"; fi
+            target="$RUNNER_TEMP/asset-bindings-targets/$sha"
+            token="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(16).toString("hex"))')"
+            printf '%s\n' "$sha $target $token" >> "$capture/source-target-token.txt"
+            (cd "$source" && CARGO_TARGET_DIR="$target" VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked -p vize_vitrine --features napi,legacy --profile ci --message-format=json-render-diagnostics) > "$capture/$epoch-native-build.jsonl" 2> "$capture/$epoch-native-build.stderr"
+            cp "$target/ci/libvize_vitrine.so" "$capture/$epoch.node"
+            (cd "$source" && CARGO_TARGET_DIR="$target" cargo build --locked -p vize_atelier_sfc --example asset_import_names_profile --profile ci-opt --message-format=json-render-diagnostics) > "$capture/$epoch-observer-build.jsonl" 2> "$capture/$epoch-observer-build.stderr"
+            cp "$target/ci-opt/examples/asset_import_names_profile" "$capture/$epoch-observer"
+            SOURCE_SHA="$sha" "$capture/$epoch-observer" > "$capture/$epoch-profile.json" 2> "$capture/$epoch-profile.stderr"
+            SOURCE_SHA="$sha" node tests/tooling/asset-import-binding-source.mjs "$epoch" "$capture/$epoch.node" "$capture" > "$capture/$epoch-native.stdout" 2> "$capture/$epoch-native.stderr"
+          done
+          CARGO_TARGET_DIR="$RUNNER_TEMP/asset-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_sfc --lib bundler::tests --profile ci -- --nocapture > "$capture/unit.stdout" 2> "$capture/unit.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/asset-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_croquis --lib drawer::helpers::v_for --profile ci -- --nocapture > "$capture/for-helper-unit.stdout" 2> "$capture/for-helper-unit.stderr"
+          sha256sum "$capture/"*.node "$capture/"*-observer > "$capture/executables.sha256"
+      - name: Verify full unchanged packets, actual collision repair and source custody
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const root = `${process.env.RUNNER_TEMP}/asset-import-bindings`;
+          const read = name => JSON.parse(fs.readFileSync(`${root}/${name}.json`));
+          const base = read('base-native'), head = read('head-native');
+          assert.equal(base.packets.length, 64);
+          assert.equal(head.packets.length, base.packets.length);
+          assert.equal(base.sourceSha, process.env.BASE_SHA);
+          assert.equal(head.sourceSha, process.env.HEAD_SHA);
+          assert.notEqual(base.native.buildToken, head.native.buildToken);
+          assert.notEqual(base.native.sha256, head.native.sha256);
+          const targets = fs.readFileSync(`${root}/source-target-token.txt`, 'utf8').trim().split('\n').map(line => line.split(' '));
+          assert.equal(targets.length, 2);
+          assert.notEqual(targets[0][1], targets[1][1]);
+          for (const [epoch, report] of [['base', base], ['head', head]]) {
+            const [sha, target, token] = targets.find(row => row[0] === report.sourceSha);
+            assert.equal(sha, report.sourceSha);
+            assert.equal(report.native.buildToken, token, 'actual loaded image immutable identity');
+            const messages = fs.readFileSync(`${root}/${epoch}-native-build.jsonl`, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+            const emissions = messages.filter(row => row.reason === 'compiler-artifact' && row.target.name === 'vize_vitrine' && row.target.kind.includes('cdylib'));
+            assert.equal(emissions.length, 1);
+            assert.equal(emissions[0].fresh, false, 'actual source producer must compile in its isolated target');
+            const sourceRoot = epoch === 'head' ? process.env.GITHUB_WORKSPACE : `${process.env.RUNNER_TEMP}/asset-import-bindings-base`;
+            assert.equal(emissions[0].target.src_path, `${sourceRoot}/crates/vize_vitrine/src/lib.rs`);
+            assert.ok(emissions[0].filenames.includes(`${target}/ci/libvize_vitrine.so`));
+            assert.deepEqual(fs.readFileSync(`${target}/ci/libvize_vitrine.so`), fs.readFileSync(report.native.image));
+          }
+          let repaired = 0, unchanged = 0;
+          for (let index = 0; index < base.packets.length; index++) {
+            const before = base.packets[index], after = head.packets[index];
+            assert.equal(before.source, after.source);
+            assert.deepEqual(before.options, after.options);
+            assert.deepEqual(before.result, after.result, 'full compiler/map/resource packet');
+            assert.deepEqual(before.assets.map(row => row.url), after.assets.map(row => row.url));
+            assert.equal(after.check.status, 0);
+            if (before.assets.every((row, i) => row.varName === after.assets[i].varName)) {
+              assert.deepEqual(before.assets, after.assets);
+              assert.equal(before.rewritten, after.rewritten);
+              assert.equal(before.assembled, after.assembled);
+              unchanged++;
+            } else repaired++;
+          }
+          assert.ok(base.packets.some(row => row.check.status !== 0), 'before must witness real syntax failures');
+          assert.ok(base.packets.some(row => row.observedFreeValue === 'asset:./a.svg'), 'before must witness captured global');
+          assert.ok(repaired > 0 && unchanged > 0);
+          const profiles = [read('base-profile'), read('head-profile')];
+          for (const report of profiles) {
+            assert.equal(report.cases.length, 6);
+            for (const row of report.cases) {
+              assert.equal(row.attribution_calls, 1);
+              assert.equal(row.timing_samples_ns.length, 9);
+              assert.equal(row.timing_profiler_enabled, false);
+              assert.ok(row.attribution_allocation_calls > 0);
+            }
+          }
+          for (const name of ['ordinary', 'no-assets']) {
+            const before = profiles[0].cases.find(row => row.case === name), after = profiles[1].cases.find(row => row.case === name);
+            assert.equal(after.attribution_allocation_calls, before.attribution_allocation_calls);
+            assert.equal(after.attribution_alloc_bytes, before.attribution_alloc_bytes);
+            assert.equal(after.counters.filter(row => row.name.startsWith('sfc.asset_names.')).length, 0);
+          }
+          fs.writeFileSync(`${root}/acceptance.json`, JSON.stringify({sourceBefore: base.sourceSha, sourceHead: head.sourceSha, cases: head.packets.length, repaired, unchanged, nativeBefore: base.native, nativeHead: head.native, scope: 'correctness and isolated collector observations; no whole-tool speed ratio'}, null, 2) + '\n');
+          JS
+      - name: Preserve complete source evidence, images, packets and unnormalized logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: asset-import-bindings-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.HEAD_SHA }}
+          path: |
+            ${{ runner.temp }}/asset-import-bindings/**
+            !${{ runner.temp }}/asset-import-bindings/node_modules/**
+          if-no-files-found: error
+          retention-days: 14

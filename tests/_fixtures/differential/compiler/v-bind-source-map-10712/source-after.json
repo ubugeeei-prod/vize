@@ -1,0 +1,7 @@
+{
+  "code": ".a {\n  color: var(--123abc-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
+  "cssVars": ["theme"],
+  "errors": [],
+  "warnings": [],
+  "map": "{\"version\":3,\"file\":\"style.css\",\"names\":[],\"sources\":[\"style.css\"],\"sourcesContent\":[\".a{color:v-bind(theme)}.b{color:blue}\"],\"mappings\":\"AAAA;;;;AAAuB\"}"
+}

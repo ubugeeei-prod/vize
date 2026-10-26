@@ -1,6 +1,8 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::*;
 
+mod asset_names;
+
 #[test]
 fn scope_id_matches_sha_prefix_and_normalizes_paths() {
     assert_eq!(

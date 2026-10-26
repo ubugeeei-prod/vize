@@ -1,0 +1,6 @@
+{
+  "code": ".a {\n  color: var(--123abc-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
+  "cssVars": ["theme"],
+  "errors": [],
+  "warnings": []
+}

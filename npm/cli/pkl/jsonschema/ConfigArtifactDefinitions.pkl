@@ -135,6 +135,10 @@ compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Cache v-on handlers"
       default = true
     }
+    ["comments"] = new JsonSchema {
+      type = "boolean"
+      description = "Keep template comments. Unset follows Vue: kept in development, dropped in production"
+    }
     ["isTs"] = new JsonSchema {
       type = "boolean"
       description = "Enable TypeScript parsing in <script> blocks"
