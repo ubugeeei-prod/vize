@@ -731,6 +731,54 @@
       }
     },
     {
+      "id": "lsp/regression/art-script-navigation-10593",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "art-script-navigation-10593",
+        "files": [
+          {
+            "path": "Page.art.vue.txt",
+            "sha256": "3bd06f83fee5d75401a6b657039e1c48d17f20911222ffbf514534840fa649d8"
+          },
+          {
+            "path": "route.d.ts.txt",
+            "sha256": "26a933773daa011a95a48672548206ed2903f115534cc5c4f08931981288b0f2"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-script-navigation-10593/case.json",
+        "sha256": "c1c8c81cfb8d2ef2065bf61ff8d9a261e58d3b9c97ff47f125d73fb2f909e9c6"
+      },
+      "requestCount": 4,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/art-shared-references-10459",
       "state": "active",
       "targets": ["stdio"],
