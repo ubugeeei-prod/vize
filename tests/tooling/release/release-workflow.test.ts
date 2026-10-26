@@ -10,6 +10,7 @@ import { cadenceDecision } from "../../../tools/support/release/release/cadence.
 import {
   cadenceRegistryDecision,
   incompletePriorReleaseTargets,
+  laggingPriorReleaseCrates,
   priorReleaseCompleteness,
 } from "../../../tools/support/release/release/main.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
@@ -48,35 +49,36 @@ test("the next release bumps the minor above every claimed version", () => {
   assert.ok(!isUnclaimedVersion("0.476.0-rc", ["0.474.0"]));
 });
 
-test("a new release requires the prior tag on npm and every crates.io target", async () => {
-  const complete = await incompletePriorReleaseTargets("0.510.0", ["0.510.0"], async () => ({
-    kind: "published",
-  }));
-  assert.deepEqual(complete, []);
+test("a new release requires the prior tag on npm", () => {
+  assert.deepEqual(incompletePriorReleaseTargets("0.510.0", ["0.510.0"]), []);
+  assert.deepEqual(incompletePriorReleaseTargets("0.510.0", ["0.509.0"]), ["npm:vize@0.510.0"]);
+});
 
+test("crates.io gaps of the prior tag are reported for every published crate", async () => {
   let calls = 0;
-  const incomplete = await incompletePriorReleaseTargets("0.510.0", [], async (crate) => {
+  const lagging = await laggingPriorReleaseCrates("0.510.0", async (crate) => {
     calls += 1;
     if (crate === "vize_oxc_parser") return { kind: "missing" };
     if (crate === "vize_patina") return { kind: "query-failed", message: "HTTP 429" };
     return { kind: "published" };
   });
   assert.equal(calls, 28);
-  assert.deepEqual(incomplete, [
-    "npm:vize@0.510.0",
-    "crates:vize_oxc_parser@0.510.0",
-    "crates:vize_patina@0.510.0",
-  ]);
+  assert.deepEqual(lagging, ["crates:vize_oxc_parser@0.510.0", "crates:vize_patina@0.510.0"]);
 });
 
-test("cadence stops redispatching while the prior release is incomplete", async () => {
-  const incomplete = await priorReleaseCompleteness(
+test("cadence waits for npm but not for a stalled crates.io index", async () => {
+  const stalledIndex = await priorReleaseCompleteness(
     ["v0.509.0", "v0.510.0"],
     ["0.510.0"],
-    async (crate) =>
-      crate === "vize_patina"
-        ? { kind: "query-failed", message: "HTTP 429" }
-        : { kind: "published" },
+    async (crate) => (crate === "vize_patina" ? { kind: "missing" } : { kind: "published" }),
+  );
+  assert.deepEqual(stalledIndex.lagging, ["crates:vize_patina@0.510.0"]);
+  assert.equal(cadenceRegistryDecision(stalledIndex), null);
+
+  const incomplete = await priorReleaseCompleteness(
+    ["v0.509.0", "v0.510.0"],
+    ["0.509.0"],
+    async () => ({ kind: "published" }),
   );
   assert.deepEqual(cadenceRegistryDecision(incomplete), {
     release: false,
