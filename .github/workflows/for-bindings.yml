@@ -58,7 +58,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
         with:
           {
-            version: "0.1.24",
+            version: "1.1.0",
             node-version-file: package.json,
             cache: true,
             cache-save: false,
