@@ -1,0 +1,94 @@
+{
+  "name": "@vizejs/turbopack-plugin",
+  "version": "0.474.0",
+  "description": "Native Vue SFC compilation for Turbopack",
+  "keywords": [
+    "compiler",
+    "loader",
+    "turbopack",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/builder/turbopack"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
+    },
+    "./loader": {
+      "types": "./dist/loader.d.mts",
+      "import": "./dist/loader.cjs",
+      "require": "./dist/loader.cjs",
+      "default": "./dist/loader.cjs"
+    },
+    "./style-loader": {
+      "types": "./dist/style-loader.d.mts",
+      "import": "./dist/style-loader.cjs",
+      "require": "./dist/style-loader.cjs",
+      "default": "./dist/style-loader.cjs"
+    },
+    "./scope-loader": {
+      "types": "./dist/scope-loader.d.mts",
+      "import": "./dist/scope-loader.cjs",
+      "require": "./dist/scope-loader.cjs",
+      "default": "./dist/scope-loader.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check src vite.config.ts",
+    "test": "node --test src/*.test.ts",
+    "test:host": "node test/run-host.mjs"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*",
+    "diff": "8.0.4",
+    "oxc-parser": "catalog:oxc",
+    "oxc-transform": "catalog:oxc",
+    "webpack-sources": "3.5.1"
+  },
+  "devDependencies": {
+    "@jridgewell/trace-mapping": "0.3.31",
+    "@types/node": "catalog:typescript",
+    "@vizejs/builder-shared": "workspace:*",
+    "next": "16.4.3",
+    "playwright": "catalog:testing",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "next": "^16.4.3",
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "compatibility-preview",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

@@ -15,6 +15,7 @@ mod component_tag;
 mod defaults_key_links_tests;
 #[cfg(test)]
 mod define_emits_usage_tests;
+pub(crate) mod diagnostic_ownership;
 #[cfg(test)]
 mod dynamic_component_names_tests;
 #[cfg(test)]

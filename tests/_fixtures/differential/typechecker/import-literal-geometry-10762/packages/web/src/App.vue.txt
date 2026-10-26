@@ -1,0 +1,1 @@
+<script setup lang="ts">import { greet } from '#lib/greet'; const message: string = greet('vize')</script><template>{{ message }}</template>

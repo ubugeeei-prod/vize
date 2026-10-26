@@ -72,7 +72,9 @@ fn lower_and_emit_plain(
     let artifact = select::L2Artifact {
         source,
         root: &s2.root,
+        root_origin: None,
         facts: emit::PlanFacts {
+            scopes: &s2.scopes,
             texts: &s2.texts,
             for_wrappers: &s2.for_wrappers,
             wrappers: &s2.wrappers,
@@ -92,6 +94,7 @@ fn lower_and_emit_plain(
         request.options,
         request.experimental,
         request.context,
+        request.runtime_module_name,
         || {
             if let Some(summary) = request.options.croquis.as_deref()
                 && !croquis::projectable(summary, request.options.binding_metadata.as_ref())
@@ -197,7 +200,9 @@ fn lower_and_emit<C: CaptureSink>(
     let artifact = select::L2Artifact {
         source,
         root: &s2.root,
+        root_origin: None,
         facts: emit::PlanFacts {
+            scopes: &s2.scopes,
             texts: &s2.texts,
             for_wrappers: &s2.for_wrappers,
             wrappers: &s2.wrappers,
@@ -217,6 +222,7 @@ fn lower_and_emit<C: CaptureSink>(
         request.options,
         request.experimental,
         request.context,
+        request.runtime_module_name,
         capture,
         || {
             if let Some(summary) = request.options.croquis.as_deref()

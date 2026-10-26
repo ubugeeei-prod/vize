@@ -58,6 +58,9 @@ impl Generation {
         script: Option<&str>,
         script_offset: u32,
         split: Option<(usize, usize)>,
+        diagnostic_ownership: Option<
+            &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
     ) -> bool {
         let mut imported = self.template_options.is_some();
         if let Some(literal) = self.literal.as_deref()
@@ -87,6 +90,7 @@ impl Generation {
                 setup.loc.start..setup.loc.start + setup.content.len(),
                 source_type,
                 literal,
+                diagnostic_ownership,
             );
         }
         imported

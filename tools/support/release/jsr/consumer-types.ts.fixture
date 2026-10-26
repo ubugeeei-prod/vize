@@ -1,0 +1,31 @@
+import { defineConfig } from "@vizejs/vize";
+import { loadConfig } from "@vizejs/vize/config";
+import { compileSfc } from "@vizejs/vize/native";
+import vize from "@vizejs/vize/vite";
+
+type Assert<T extends true> = T;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type TypedCompiler = Assert<IsAny<typeof compileSfc> extends false ? true : false>;
+type TypedConfiguration = Assert<IsAny<typeof defineConfig> extends false ? true : false>;
+type TypedLoader = Assert<IsAny<typeof loadConfig> extends false ? true : false>;
+type TypedVitePlugin = Assert<IsAny<typeof vize> extends false ? true : false>;
+
+defineConfig({ compiler: { vapor: false } });
+const compiled = compileSfc("<template><h1>Typed JSR consumer</h1></template>", {
+  filename: "App.vue",
+});
+const emittedCode: string = compiled.code;
+const plugins = vize();
+void emittedCode;
+void plugins;
+
+// These probes must be rejected by the public declaration graph. A facade
+// accidentally becoming `any` also fails through unused @ts-expect-error.
+// @ts-expect-error a configuration cannot be a number
+defineConfig(42);
+// @ts-expect-error a component filename must be a string
+compileSfc("<template />", { filename: 42 });
+// @ts-expect-error the configuration root must be a string
+loadConfig(42);
+
+export type PublicContracts = [TypedCompiler, TypedConfiguration, TypedLoader, TypedVitePlugin];

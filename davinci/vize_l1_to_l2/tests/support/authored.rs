@@ -2,7 +2,11 @@
 //! expression, diagnostic, fact, and provenance span must stay within the
 //! authored UTF-8 source it claims to describe.
 
-use vize_l0::{SourceRoot, Span};
+use oxc_ast::ast::BindingPattern;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use vize_l0::{Allocator, SourceRoot, Span, expression_guard::expression_is_safe_to_parse};
+use vize_l1::embed::prepare_attribute_value;
 use vize_l1_to_l2::Lowered;
 use vize_l1_to_l2::lower::TextPart;
 use vize_l2::expr::{ExprRef, OpaqueReason};
@@ -217,9 +221,39 @@ fn assert_scope_facts(source: &str, root: SourceRoot<'_>, facts: &ScopeFacts) {
     for binding in &facts.bindings {
         if let ScopeOrigin::Authored { span } = binding.origin {
             assert_span(source, root, span, "scope binding");
-            assert_eq!(exact_slice(source, span), binding.name.as_str());
+            if exact_slice(source, span) != binding.name.as_str() {
+                assert_original_identifier(source, span, binding.name.as_str());
+            }
         }
     }
+}
+
+fn assert_original_identifier(source: &str, span: Span, cooked: &str) {
+    let arena = Allocator::new();
+    let original = prepare_attribute_value(&arena, source, span).expect("original binding token");
+    assert!(expression_is_safe_to_parse(original.text()));
+    let parameters = Parser::new(arena.as_oxc(), original.text(), SourceType::ts())
+        .parse_v_for_parameters()
+        .expect("original complete BindingIdentifier parameter goal");
+    let [parameter] = parameters.items.as_slice() else {
+        panic!("one original BindingIdentifier declaration");
+    };
+    assert!(parameters.rest.is_none());
+    assert!(parameter.initializer.is_none());
+    let BindingPattern::BindingIdentifier(identifier) = &parameter.pattern else {
+        panic!("the whole origin is an original BindingIdentifier token");
+    };
+    let complete = oxc_span::Span::new(0, original.text().len() as u32);
+    assert_eq!(parameters.span, complete);
+    assert_eq!(parameter.span, complete);
+    assert_eq!(identifier.span, complete);
+    assert_eq!(identifier.name.as_str(), cooked);
+    assert_eq!(
+        original
+            .authored_span(Span::new(identifier.span.start, identifier.span.end))
+            .expect("complete authored identifier token"),
+        span
+    );
 }
 
 fn assert_wrapper_key(source: &str, root: SourceRoot<'_>, key: &vize_l1_to_l2::lower::WrapperKey) {
@@ -289,4 +323,59 @@ fn assert_span(source: &str, root: SourceRoot<'_>, span: Span, label: &str) {
 
 fn exact_slice(source: &str, span: Span) -> &str {
     &source[span.start as usize..span.end as usize]
+}
+
+#[test]
+fn exceptional_native_scope_origins_pass_the_complete_authored_artifact_law() {
+    let source =
+        r#"<li v-for="({ label: \u005frow, name: &#x3b1; }, \u006bey, \u0069ndex) in rows">x</li>"#;
+    let arena = Allocator::new();
+    let (tree, errors) = vize_l1::markup::parse(&arena, source);
+    assert!(errors.is_empty());
+    let lowered = vize_l1_to_l2::lower(&arena, &tree, &errors);
+    assert_authored_artifact(source, &lowered);
+    let (_, scope) = lowered
+        .scopes
+        .iter()
+        .next()
+        .expect("original iteration scope");
+    assert_eq!(
+        scope
+            .bindings
+            .iter()
+            .map(|binding| binding.name.as_str())
+            .collect::<Vec<_>>(),
+        ["_row", "α", "key", "index"]
+    );
+}
+
+#[test]
+fn different_scope_spellings_require_one_complete_original_identifier_token() {
+    use vize_l0::String;
+    use vize_l2::scope::{ScopeBinding, ScopeTag};
+
+    for (source, cooked) in [
+        (r"\u0061 + other", "a"),
+        (r"\u0061/*tail*/", "a"),
+        (r"{ name: \u0061 }", "a"),
+        (r"\u0061, other", "a"),
+        (r"\u0061 = fallback", "a"),
+        (r"\u0061: Type", "a"),
+        (r"\u0061", "wrong"),
+    ] {
+        let root = SourceRoot::new(source).unwrap();
+        let facts = ScopeFacts {
+            tag: ScopeTag::from_index(0),
+            bindings: vec![ScopeBinding {
+                name: String::from(cooked),
+                origin: ScopeOrigin::Authored {
+                    span: Span::new(0, source.len() as u32),
+                },
+            }],
+        };
+        assert!(
+            std::panic::catch_unwind(|| assert_scope_facts(source, root, &facts)).is_err(),
+            "refuse non-token origin {source:?} for cooked name {cooked:?}"
+        );
+    }
 }

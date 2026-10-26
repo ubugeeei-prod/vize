@@ -3,11 +3,7 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
-    super::{
-        context::GenerateContext,
-        destructure::{needs_parsed_reads, parse_destructure_bindings},
-        generate_block,
-    },
+    super::{context::GenerateContext, destructure::needs_parsed_reads, generate_block},
     block_shape::{fragment_rows, single_node_rows},
     insertion::emit_insertion_state,
 };
@@ -34,7 +30,6 @@ pub(super) fn generate_for(
     }
     source.push_str(")");
 
-    let value_alias = for_node.value.as_ref().map(|v| v.content);
     let key_alias = for_node.key.as_ref().map(|k| k.content);
     let index_alias = for_node.index.as_ref().map(|i| i.content);
 
@@ -54,7 +49,11 @@ pub(super) fn generate_for(
     }
 
     // Push for scope before generating body
-    ctx.push_for_scope(value_alias, key_alias, index_alias);
+    ctx.push_for_scope_retained(
+        for_node.value.as_deref(),
+        for_node.key.as_deref(),
+        for_node.index.as_deref(),
+    );
 
     let slot_root = ctx.transition_slot
         && for_node.parent.is_none()
@@ -174,21 +173,33 @@ fn generate_for_key_function(
     for_node: &ForIRNode<'_>,
 ) -> Option<String> {
     if let Some(ref key_prop) = for_node.key_prop {
-        let key_expr = resolve_key_expression(ctx, for_node, key_prop);
+        let key_expr = resolve_key_expression(ctx, key_prop);
         // Build params: (value_alias) or (value_alias, key_alias)
         let value_name = match for_node.value.as_ref().map(|v| v.content) {
             Some(pattern)
                 if pattern.trim_start().starts_with(['{', '[']) && needs_parsed_reads(pattern) =>
             {
-                ctx.resolve_pattern_parameter(pattern)
+                for_node
+                    .value
+                    .as_ref()
+                    .and_then(|node| ctx.resolve_retained_pattern_parameter(node))
+                    .unwrap_or_else(|| ctx.resolve_pattern_parameter(pattern))
             }
             Some(alias) => alias.to_compact_string(),
             None => "_item".to_compact_string(),
         };
-        let key_name = for_node.key.as_ref().map(|k| k.content);
-        let index_name = for_node.index.as_ref().map(|i| i.content);
+        let key_name = for_node
+            .key
+            .as_ref()
+            .map(|k| vize_atelier_core::steps::untyped_for_alias(k.content));
+        let index_name = for_node
+            .index
+            .as_ref()
+            .map(|i| vize_atelier_core::steps::untyped_for_alias(i.content));
 
         let mut params = value_name;
+        let untyped_len = vize_atelier_core::steps::untyped_for_alias(&params).len();
+        params.truncate(untyped_len);
         if key_name.is_some() || index_name.is_some() {
             params.push_str(", ");
             params.push_str(key_name.unwrap_or("_key"));
@@ -205,120 +216,29 @@ fn generate_for_key_function(
 }
 
 fn resolve_key_expression(
-    ctx: &GenerateContext<'_>,
-    for_node: &ForIRNode<'_>,
+    ctx: &mut GenerateContext<'_>,
     key_prop: &vize_atelier_core::SimpleExpressionNode<'_>,
 ) -> String {
-    // Node-aware: a retained key AST is consumed instead of reparsed.
-    let mut resolved = ctx.resolve_expression_node(key_prop);
-    let Some(current_scope) = ctx.for_scopes.last() else {
-        return resolved;
+    let Some(scope) = ctx.for_scopes.last_mut() else {
+        return ctx.resolve_expression_node(key_prop);
     };
-
-    if let Some(value) = for_node.value.as_ref() {
-        // The key callback destructures the raw item itself, so a parsed
-        // read goes back to the local it stands for, longest read first.
-        let mut reads = current_scope
-            .read_overrides
-            .iter()
-            .collect::<std::vec::Vec<_>>();
-        reads.sort_by_key(|binding| std::cmp::Reverse(binding.path.len()));
-        for binding in reads {
-            if resolved.contains(binding.path.as_str()) {
-                resolved = resolved
-                    .replace(binding.path.as_str(), binding.local.as_str())
-                    .into();
-            }
-        }
-        restore_current_alias_reference(
-            &mut resolved,
-            &cstr!("_for_item{}.value", current_scope.depth),
-            value.content,
-        );
+    let previous = core::mem::replace(&mut scope.callback_locals, true);
+    // Resolve the original key AST in the callback's own namespace. Generated
+    // reactive paths are never substituted back through authored string bytes.
+    let resolved = ctx.resolve_expression_node(key_prop);
+    // The immutable resolver cannot change the scope stack, including on its
+    // literal, simple-reference and retained/fallback expression fast paths.
+    if let Some(scope) = ctx.for_scopes.last_mut() {
+        scope.callback_locals = previous;
     }
-    if let Some(key) = for_node.key.as_ref() {
-        restore_current_alias_reference(
-            &mut resolved,
-            &cstr!("_for_key{}.value", current_scope.depth),
-            key.content,
-        );
-    }
-    if let Some(index) = for_node.index.as_ref() {
-        restore_current_alias_reference(
-            &mut resolved,
-            &cstr!("_for_index{}.value", current_scope.depth),
-            index.content,
-        );
-    }
-
     resolved
 }
 
-fn restore_current_alias_reference(expr: &mut String, reference: &str, alias: &str) {
-    if is_simple_local_alias(alias) && expr.contains(reference) {
-        *expr = expr.replace(reference, alias).into();
-    } else if alias.trim_start().starts_with(['{', '[', '(']) {
-        let mut bindings = parse_destructure_bindings(alias);
-        bindings.sort_by_key(|binding| std::cmp::Reverse(binding.path.len()));
-        for binding in bindings {
-            let property_reference = cstr!("{}{}", reference, binding.path);
-            if expr.contains(property_reference.as_str()) {
-                *expr = expr
-                    .replace(property_reference.as_str(), binding.local.as_str())
-                    .into();
-            }
-        }
-    }
-}
-
-fn is_simple_local_alias(alias: &str) -> bool {
-    oxc_syntax::identifier::is_identifier_name(alias)
-}
+#[cfg(test)]
+mod typed_alias_tests;
 
 #[cfg(test)]
 mod tests {
-    use super::{is_simple_local_alias, restore_current_alias_reference};
-    use vize_carton::ToCompactString;
-
-    #[test]
-    fn restores_destructured_key_alias_references() {
-        let mut expr = "_for_item0.value.name + _for_item0.value.user.id".to_compact_string();
-
-        restore_current_alias_reference(
-            &mut expr,
-            "_for_item0.value",
-            "{ name: label, user: { id: userId } }",
-        );
-
-        assert_eq!(expr, "label + userId");
-    }
-
-    #[test]
-    fn restores_unicode_key_parameters_using_javascript_identifier_rules() {
-        for alias in [
-            "kind",
-            "café",
-            "種類",
-            "行",
-            "番号",
-            "index番号",
-            "e\u{301}",
-            "a\u{200c}",
-            "a\u{200d}",
-            "𐐀",
-        ] {
-            assert!(is_simple_local_alias(alias), "{alias}");
-            for reference in ["_for_item0.value", "_for_key0.value", "_for_index0.value"] {
-                let mut expression = vize_carton::cstr!("{reference}.id + _ctx.種類別");
-                restore_current_alias_reference(&mut expression, reference, alias);
-                assert_eq!(expression, vize_carton::cstr!("{alias}.id + _ctx.種類別"));
-            }
-        }
-        for non_identifier in ["", "1行", "行-種類", "🧭", "行.id", "{ 行 }", "[行]"] {
-            assert!(!is_simple_local_alias(non_identifier), "{non_identifier}");
-        }
-    }
-
     struct KeyFunctions<'code> {
         code: &'code str,
         functions: vize_carton::SmallVec<[&'code str; 2]>,
@@ -331,7 +251,7 @@ mod tests {
                 let Some(oxc_ast::ast::Argument::ArrowFunctionExpression(key)) =
                     call.arguments.get(2)
                 else {
-                    panic!("keyed fixture must emit a key callback");
+                    panic!("keyed fixture must emit a key callback: {}", self.code);
                 };
                 self.functions.push(
                     self.code
@@ -340,6 +260,90 @@ mod tests {
                 );
             }
             oxc_ast_visit::walk::walk_call_expression(self, call);
+        }
+    }
+
+    #[test]
+    fn key_callback_ast_preserves_authored_literals_and_binding_ownership() {
+        let cases: [(&str, &[&str]); 12] = [
+            (
+                r#"<p v-for="\u005frow of items" :key="capture('_for_item0.value')">ok</p>"#,
+                &[r#"(\u005frow) => (_ctx.capture('_for_item0.value'))"#],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="capture(`_for_item0.value`)">ok</p>"#,
+                &[r#"(\u005frow) => (_ctx.capture(`_for_item0.value`))"#],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="capture(/_for_item0.value/.source)">ok</p>"#,
+                &[r#"(\u005frow) => (_ctx.capture(/_for_item0.value/.source))"#],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="capture(/* _for_item0.value */ '_for_item0.value')">ok</p>"#,
+                &[r#"(\u005frow) => (_ctx.capture(/* _for_item0.value */ '_for_item0.value'))"#],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="capture(holder._for_item0.value)">ok</p>"#,
+                &[r#"(\u005frow) => (_ctx.capture(_ctx.holder._for_item0.value))"#],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="(_row => capture(_row + '_for_item0.value'))('shadow')">ok</p>"#,
+                &[
+                    r#"(\u005frow) => ((_row => _ctx.capture(_row + '_for_item0.value'))('shadow'))"#,
+                ],
+            ),
+            (
+                r#"<p v-for="row of items" :key="capture('_for_item0.value')">ok</p>"#,
+                &[r#"(row) => (_ctx.capture('_for_item0.value'))"#],
+            ),
+            (
+                r#"<p v-for="(row, \u005fkey, \u005findex) of items" :key="_key + ':' + _index">ok</p>"#,
+                &[r#"(row, \u005fkey, \u005findex) => (_key + ':' + _index)"#],
+            ),
+            (
+                r#"<div v-for="\u005fouter of groups" :key="_outer.id"><p v-for="\u005frow of _outer.items" :key="_outer.id + _row.id">ok</p></div>"#,
+                &[
+                    r#"(\u005fouter) => (_outer.id)"#,
+                    r#"(\u005frow) => (_for_item0.value.id + _row.id)"#,
+                ],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="'_for_item0.value'">ok</p>"#,
+                &[r#"(\u005frow) => ('_for_item0.value')"#],
+            ),
+            (
+                r#"<p v-for="\u005frow of items" :key="(_for_item0 => capture(_for_item0.value))({value: 'shadow'})">ok</p>"#,
+                &[
+                    r#"(\u005frow) => ((_for_item0 => _ctx.capture(_for_item0.value))({value: 'shadow'}))"#,
+                ],
+            ),
+            (
+                r#"<div v-for="\u005fouter of items" :key="_outer.id"><Child><template #default="{ row: _row }"><p v-for="\u005finner of children" :key="_row + _inner">ok</p></template></Child></div>"#,
+                &[
+                    r#"(\u005fouter) => (_outer.id)"#,
+                    r#"(\u005finner) => (_slotProps0.row + _inner)"#,
+                ],
+            ),
+        ];
+        for (source, expected) in cases {
+            assert_key_functions(source, expected);
+        }
+        for alias in [
+            "kind",
+            "café",
+            "種類",
+            "行",
+            "番号",
+            "index番号",
+            "e\u{301}",
+            "a\u{200c}",
+            "a\u{200d}",
+            "𐐀",
+        ] {
+            let source =
+                vize_carton::cstr!("<p v-for=\"{alias} of items\" :key=\"{alias}.id\">ok</p>");
+            let expected = vize_carton::cstr!("({alias}) => ({alias}.id)");
+            assert_key_functions(&source, &[expected.as_str()]);
         }
     }
 
@@ -395,31 +399,35 @@ mod tests {
             ),
         ];
         for (source, key) in cases {
-            let allocator = vize_carton::Allocator::new();
-            let result = crate::compile_vapor(&allocator, source, Default::default());
-            assert!(
-                result.error_messages.is_empty(),
-                "{:?}",
-                result.error_messages
-            );
-            let parsed = oxc_parser::Parser::new(
-                allocator.as_oxc(),
-                &result.code,
-                oxc_span::SourceType::mjs(),
-            )
-            .parse();
-            assert!(
-                parsed.diagnostics.is_empty(),
-                "{:?}\n{}",
-                parsed.diagnostics,
-                result.code
-            );
-            let mut keys = KeyFunctions {
-                code: &result.code,
-                functions: Default::default(),
-            };
-            oxc_ast_visit::Visit::visit_program(&mut keys, &parsed.program);
-            assert_eq!(keys.functions.as_slice(), key, "{source}\n{}", result.code);
+            assert_key_functions(source, key);
         }
+    }
+
+    fn assert_key_functions(source: &str, key: &[&str]) {
+        let allocator = vize_carton::Allocator::new();
+        let result = crate::compile_vapor(&allocator, source, Default::default());
+        assert!(
+            result.error_messages.is_empty(),
+            "{:?}",
+            result.error_messages
+        );
+        let parsed = oxc_parser::Parser::new(
+            allocator.as_oxc(),
+            &result.code,
+            oxc_span::SourceType::mjs(),
+        )
+        .parse();
+        assert!(
+            parsed.diagnostics.is_empty(),
+            "{:?}\n{}",
+            parsed.diagnostics,
+            result.code
+        );
+        let mut keys = KeyFunctions {
+            code: &result.code,
+            functions: Default::default(),
+        };
+        oxc_ast_visit::Visit::visit_program(&mut keys, &parsed.program);
+        assert_eq!(keys.functions.as_slice(), key, "{source}\n{}", result.code);
     }
 }

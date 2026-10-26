@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { getNuxtBuilderKind } from "../../builder.ts";
+import { getDetectedNuxtBuilderKind, getDetectedNuxtMajor } from "../../builder.ts";
 import type { NuxtLintConfigGeneration } from "../generation.ts";
 import {
   resolveNuxtLintCheckerOptions,
@@ -14,13 +14,38 @@ import {
 } from "./webpack.ts";
 
 interface NuxtLintCheckerNuxt {
+  hook?(name: string, callback: (...args: unknown[]) => unknown): void;
   options: {
     buildDir: string;
     builder?: unknown;
+    bridge?: false | { vite?: boolean };
     dev?: boolean;
     rootDir: string;
     srcDir?: string;
   };
+}
+
+function registerNuxt2Checker(
+  nuxt: NuxtLintCheckerNuxt,
+  builder: "vite" | "webpack",
+  plugin: NuxtLintCheckerVitePlugin | NuxtLintCheckerWebpackPlugin,
+): void {
+  if (!nuxt.hook) throw new Error("Nuxt 2 checker registration requires the host hook API.");
+  // A classic Nuxt 2 module receives its instance through `this.nuxt`; it does
+  // not establish the implicit Nuxt Kit context used by modern modules.
+  if (builder === "webpack") {
+    nuxt.hook("webpack:config", (value) => {
+      for (const config of value as Array<{ name?: string; plugins?: unknown[] }>) {
+        if (config.name === "client") (config.plugins ??= []).push(plugin);
+      }
+    });
+  } else {
+    nuxt.hook("vite:extendConfig", (value, context) => {
+      if ((context as { isServer?: boolean } | undefined)?.isServer) return;
+      const config = value as { plugins?: unknown[] };
+      (config.plugins ??= []).push(plugin);
+    });
+  }
 }
 
 type Awaitable<T> = T | Promise<T>;
@@ -72,14 +97,22 @@ export async function setupNuxtLintChecker(
   if (options === false) return undefined;
   const rootDir = path.resolve(nuxt.options.rootDir);
   const config = { configFile: generation.configFile, options, rootDir };
-  const builder = getNuxtBuilderKind(nuxt.options.builder);
+  const builder = getDetectedNuxtBuilderKind(nuxt);
 
   if (builder === "vite") {
-    const register = dependencies.addVitePlugin ?? addVitePlugin;
-    await register(createNuxtLintCheckerVitePlugin(config));
+    const plugin = createNuxtLintCheckerVitePlugin(config);
+    if (!dependencies.addVitePlugin && getDetectedNuxtMajor(nuxt) === 2) {
+      registerNuxt2Checker(nuxt, builder, plugin);
+    } else {
+      await (dependencies.addVitePlugin ?? addVitePlugin)(plugin);
+    }
   } else if (builder === "webpack") {
-    const register = dependencies.addWebpackPlugin ?? addWebpackPlugin;
-    await register(createNuxtLintCheckerWebpackPlugin(config));
+    const plugin = createNuxtLintCheckerWebpackPlugin(config);
+    if (!dependencies.addWebpackPlugin && getDetectedNuxtMajor(nuxt) === 2) {
+      registerNuxt2Checker(nuxt, builder, plugin);
+    } else {
+      await (dependencies.addWebpackPlugin ?? addWebpackPlugin)(plugin);
+    }
   } else {
     const label = typeof nuxt.options.builder === "string" ? nuxt.options.builder : "unknown";
     (dependencies.warn ?? console.warn)(

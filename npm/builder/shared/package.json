@@ -1,0 +1,17 @@
+{
+  "name": "@vizejs/builder-shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./mapped-module": "./mapped-module.ts",
+    "./module-output": "./module-output.ts",
+    "./hot-reload": "./hot-reload.ts"
+  },
+  "dependencies": {
+    "diff": "8.0.4",
+    "oxc-parser": "catalog:oxc",
+    "oxc-transform": "catalog:oxc",
+    "webpack-sources": "3.5.1"
+  }
+}

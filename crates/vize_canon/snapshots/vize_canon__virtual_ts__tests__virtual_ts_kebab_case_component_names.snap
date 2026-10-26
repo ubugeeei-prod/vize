@@ -116,7 +116,7 @@ function __setup() {
   function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
   function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  const defineModel = undefined as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
+  const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
@@ -129,14 +129,14 @@ function __setup() {
     void value
   }
   
-  // @vize-map: 15471:15558 -> 0:76
+  // @vize-map: 15470:15557 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
-    const __ctx = undefined as unknown as __Ctx;
+    const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
     const $slots = __ctx.$slots;
     const $refs = __ctx.$refs;

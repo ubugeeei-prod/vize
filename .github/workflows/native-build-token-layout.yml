@@ -1,0 +1,99 @@
+name: Native release token layout
+on:
+  pull_request:
+    paths:
+      - crates/vize_vitrine/src/napi/build_token.rs
+      - crates/vize_vitrine/build.rs
+      - tools/support/github/build-napi-package.ts
+      - tools/support/github/native-build-receipt.ts
+      - tools/support/github/observe-native-build-token.ts
+      - tests/tooling/native-build-token-layout.test.ts
+      - .github/workflows/native-build-token-layout.yml
+permissions:
+  contents: read
+concurrency:
+  group: native-token-layout-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+jobs:
+  producer:
+    name: Darwin x64 producer (${{ matrix.role }})
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [before, after]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # Immutable failed0.573 candidate from run40232809237, never a moving base.
+          ref: ${{ matrix.role == 'before' && '39d358db63397bb83a4c3e03d1c707065802a9f2' || github.event.pull_request.head.sha }}
+          path: source
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Read the pinned toolchain
+        id: toolchain
+        shell: bash
+        run: |
+          node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
+          import { readFileSync } from "node:fs";
+          const channel = /^channel = "([^"]+)"$/m.exec(readFileSync("source/rust-toolchain.toml", "utf8"))?.[1];
+          if (!channel) throw new Error("Missing source Rust toolchain");
+          console.log(`channel=${channel}`);
+          JS
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: ${{ steps.toolchain.outputs.channel }}
+          targets: x86_64-apple-darwin
+      - name: Install the source package's frozen dependencies
+        working-directory: source
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Observe the canonical release producer in a new Cargo target
+        env:
+          TOKEN_ROLE: ${{ matrix.role }}
+          TOKEN_SOURCE: ${{ matrix.role == 'before' && '39d358db63397bb83a4c3e03d1c707065802a9f2' || github.event.pull_request.head.sha }}
+        run: node tools/support/github/observe-native-build-token.ts producer source "$TOKEN_ROLE" "$TOKEN_SOURCE" "$RUNNER_TEMP/native-token"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: native-token-producer-${{ matrix.role }}
+          path: ${{ runner.temp }}/native-token
+          if-no-files-found: error
+          compression-level: 0
+  consumer:
+    name: Actual Intel Node getter (${{ matrix.role }})
+    needs: producer
+    runs-on: macos-15-intel
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [before, after]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: native-token-producer-${{ matrix.role }}
+          path: ${{ runner.temp }}/native-token
+      - name: Load and authenticate the exact cross-built image
+        run: node tools/support/github/observe-native-build-token.ts consumer "$RUNNER_TEMP/native-token"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: native-token-consumer-${{ matrix.role }}
+          path: ${{ runner.temp }}/native-token/consumer.json
+          if-no-files-found: error

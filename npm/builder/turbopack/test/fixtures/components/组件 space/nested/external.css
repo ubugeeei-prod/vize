@@ -1,0 +1,4 @@
+@import "./nested-theme.css";
+.external {
+  background-image: url("./nested-dot.svg");
+}

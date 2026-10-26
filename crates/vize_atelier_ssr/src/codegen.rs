@@ -77,6 +77,7 @@ pub struct SsrCodegenContext<'a> {
     /// Whether slot outlets contribute this component's own slotted scope ID.
     pub(crate) slotted: bool,
     development: bool,
+    runtime_module_name: String,
     /// The structured emission document: generated code plus, when a Source
     /// Map v3 document is requested, the links from its bytes to the template.
     pub(crate) out: EmitDocument,
@@ -139,6 +140,7 @@ impl<'a> SsrCodegenContext<'a> {
             experimental_self_component: experimental_options.self_component,
             slotted: true,
             development: false,
+            runtime_module_name: String::from("vue"),
             source,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
@@ -153,6 +155,10 @@ impl<'a> SsrCodegenContext<'a> {
             temps: 0,
             body_start: 0,
         }
+    }
+
+    pub(crate) fn set_runtime_module_name(&mut self, runtime_module_name: &str) {
+        self.runtime_module_name = String::from(runtime_module_name);
     }
 
     pub(crate) fn apply_sfc_context(&mut self, context: SsrSfcContext) {

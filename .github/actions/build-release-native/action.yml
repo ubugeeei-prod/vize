@@ -87,6 +87,7 @@ runs:
         RELEASE_TARGET: ${{ inputs.target }}
         RELEASE_CROSS_COMPILE: ${{ inputs.cross-compile }}
         VIZE_RELEASE_VERSION: ${{ inputs.release-version }}
+        VIZE_NATIVE_BUILD_RECEIPT: .artifacts/vize-native/build-receipt.${{ inputs.target }}.json
       run: |
         args=(npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine "$RELEASE_TARGET")
         if [[ "$RELEASE_CROSS_COMPILE" == true ]]; then args+=(--cross-compile); fi
@@ -102,7 +103,9 @@ runs:
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: bindings-${{ inputs.target }}
-        path: .artifacts/vize-native/*.node
+        path: |
+          .artifacts/vize-native/*.node
+          .artifacts/vize-native/build-receipt.*.json
         if-no-files-found: error
         compression-level: 0
     - name: Build fresco-native

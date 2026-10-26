@@ -33,35 +33,68 @@ pub(super) fn generate_component_handler_scope(
     let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
     // Only reached for handlers with a target component; without one there is
     // no event contract to declare.
-    let Some(event_types) = generate_component_event_types(
-        ts,
-        mappings.diagnostics,
-        ComponentEventTypeContext {
-            summary: ctx.summary,
-            virtual_ts_options: ctx.virtual_ts_options,
-            data,
-            scope,
-            syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-            template_binding_access: ctx.template_binding_access,
-            template_ast: ctx.template_ast,
-            source_context: ComponentPropSource::new(
-                ctx.template_source,
-                ctx.template_offset,
-                &ctx.summary.scopes,
+    let generate_types =
+        |ts: &mut String, diagnostic_mappings: &mut Vec<VizeMapping>, source_context| {
+            generate_component_event_types(
+                ts,
+                diagnostic_mappings,
+                ComponentEventTypeContext {
+                    summary: ctx.summary,
+                    virtual_ts_options: ctx.virtual_ts_options,
+                    data,
+                    scope,
+                    syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+                    template_binding_access: ctx.template_binding_access,
+                    template_ast: ctx.template_ast,
+                    source_context,
+                    legacy_vue2: ctx.legacy_vue2,
+                    needs_typed_handler_assignment,
+                    fallthrough_listeners: ctx.check_options.fallthrough_attributes,
+                    explicit_generic: data.target_component.as_ref().and_then(|component| {
+                        ctx.explicit_generics.alias_at(
+                            ctx.summary,
+                            component.as_str(),
+                            scope.span.start,
+                        )
+                    }),
+                    enclosing_vif_guard,
+                    event_inference_usages: ctx.event_inference_usages,
+                    event_contracts: ctx.event_contracts,
+                    indent,
+                },
+            )
+        };
+    let source_context = ComponentPropSource::new(
+        ctx.template_source,
+        ctx.template_offset,
+        &ctx.summary.scopes,
+    )
+    .with_expected_packet(ctx.inference_prelude.is_some());
+    let event_types = if let Some(prelude) = ctx.inference_prelude {
+        let mut prelude = prelude.borrow_mut();
+        let super::super::root_owner_packets::RootOwnerBuffer {
+            text,
+            diagnostic_mappings,
+            diagnostic_ownership,
+            ..
+        } = &mut *prelude;
+        generate_types(
+            text,
+            diagnostic_mappings,
+            source_context.with_diagnostic_ownership(
+                ctx.checks
+                    .diagnostic_ownership
+                    .map(|_| &*diagnostic_ownership),
             ),
-            legacy_vue2: ctx.legacy_vue2,
-            needs_typed_handler_assignment,
-            fallthrough_listeners: ctx.check_options.fallthrough_attributes,
-            explicit_generic: data.target_component.as_ref().and_then(|component| {
-                ctx.explicit_generics
-                    .alias_at(ctx.summary, component.as_str(), scope.span.start)
-            }),
-            enclosing_vif_guard,
-            event_inference_usages: ctx.event_inference_usages,
-            event_contracts: ctx.event_contracts,
-            indent,
-        },
-    ) else {
+        )
+    } else {
+        generate_types(
+            ts,
+            mappings.diagnostics,
+            source_context.with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
+        )
+    };
+    let Some(event_types) = event_types else {
         return;
     };
     let event_type = event_types.event_type;
