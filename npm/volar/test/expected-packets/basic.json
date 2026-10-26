@@ -1,0 +1,359 @@
+[
+  {
+    "name": "basic-diagnostics",
+    "params": {
+      "file": "<workspace>/App.vue"
+    },
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: string = 'hi';\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 91,
+        "length": 5,
+        "code": 2322,
+        "category": 1,
+        "messageText": "Type 'string' is not assignable to type 'number'."
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/App.vue",
+          "text": "<script setup lang=\"ts\">\nimport { suffix } from './lib';\nconst title: string = 'hi';\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n"
+        },
+        "start": 298,
+        "length": 6,
+        "messageText": "Cannot find name 'absent'.",
+        "category": 1,
+        "code": 2304
+      }
+    ]
+  },
+  {
+    "name": "script-hover",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 63
+    },
+    "result": {
+      "kind": "const",
+      "kindModifiers": "",
+      "textSpan": {
+        "start": 63,
+        "length": 5
+      },
+      "displayParts": [
+        {
+          "text": "const",
+          "kind": "keyword"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "title",
+          "kind": "localName"
+        },
+        {
+          "text": ":",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "string",
+          "kind": "keyword"
+        }
+      ],
+      "documentation": []
+    }
+  },
+  {
+    "name": "template-hover",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 253
+    },
+    "result": {
+      "kind": "const",
+      "kindModifiers": "",
+      "textSpan": {
+        "start": 253,
+        "length": 5
+      },
+      "displayParts": [
+        {
+          "text": "const",
+          "kind": "keyword"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "title",
+          "kind": "localName"
+        },
+        {
+          "text": ":",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "string",
+          "kind": "keyword"
+        }
+      ],
+      "documentation": []
+    }
+  },
+  {
+    "name": "property-completion",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 163
+    },
+    "result": {
+      "flags": 0,
+      "isGlobalCompletion": false,
+      "isMemberCompletion": true,
+      "isNewIdentifierLocation": false,
+      "optionalReplacementSpan": {
+        "start": 163,
+        "length": 5
+      },
+      "entries": [
+        {
+          "name": "alpha",
+          "kind": "property",
+          "kindModifiers": "",
+          "sortText": "11"
+        },
+        {
+          "name": "beta",
+          "kind": "property",
+          "kindModifiers": "",
+          "sortText": "11"
+        }
+      ],
+      "defaultCommitCharacters": [".", ",", ";"]
+    }
+  },
+  {
+    "name": "import-definition",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 217
+    },
+    "result": {
+      "textSpan": {
+        "start": 217,
+        "length": 6
+      },
+      "definitions": [
+        {
+          "fileName": "<workspace>/lib.ts",
+          "textSpan": {
+            "start": 13,
+            "length": 6
+          },
+          "kind": "const",
+          "name": "suffix",
+          "containerName": "\"./lib\"",
+          "contextSpan": {
+            "start": 0,
+            "length": 26
+          },
+          "isLocal": false,
+          "isAmbient": false,
+          "unverified": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "title-references",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 63
+    },
+    "result": [
+      {
+        "definition": {
+          "containerKind": "",
+          "containerName": "",
+          "fileName": "<workspace>/App.vue",
+          "kind": "const",
+          "name": "const title: string",
+          "textSpan": {
+            "start": 63,
+            "length": 5
+          },
+          "displayParts": [
+            {
+              "text": "const",
+              "kind": "keyword"
+            },
+            {
+              "text": " ",
+              "kind": "space"
+            },
+            {
+              "text": "title",
+              "kind": "localName"
+            },
+            {
+              "text": ":",
+              "kind": "punctuation"
+            },
+            {
+              "text": " ",
+              "kind": "space"
+            },
+            {
+              "text": "string",
+              "kind": "keyword"
+            }
+          ],
+          "contextSpan": {
+            "start": 57,
+            "length": 27
+          }
+        },
+        "references": [
+          {
+            "textSpan": {
+              "start": 63,
+              "length": 5
+            },
+            "fileName": "<workspace>/App.vue",
+            "contextSpan": {
+              "start": 57,
+              "length": 27
+            },
+            "isWriteAccess": true,
+            "isDefinition": true
+          },
+          {
+            "textSpan": {
+              "start": 253,
+              "length": 5
+            },
+            "fileName": "<workspace>/App.vue",
+            "isWriteAccess": false,
+            "isDefinition": false
+          },
+          {
+            "textSpan": {
+              "start": 285,
+              "length": 5
+            },
+            "fileName": "<workspace>/App.vue",
+            "isWriteAccess": false,
+            "isDefinition": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "title-rename-info",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 63
+    },
+    "result": {
+      "canRename": true,
+      "kind": "const",
+      "displayName": "title",
+      "fullDisplayName": "title",
+      "kindModifiers": "",
+      "triggerSpan": {
+        "start": 63,
+        "length": 5
+      }
+    }
+  },
+  {
+    "name": "title-rename",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 63
+    },
+    "result": [
+      {
+        "textSpan": {
+          "start": 285,
+          "length": 5
+        },
+        "fileName": "<workspace>/App.vue"
+      },
+      {
+        "textSpan": {
+          "start": 253,
+          "length": 5
+        },
+        "fileName": "<workspace>/App.vue"
+      },
+      {
+        "textSpan": {
+          "start": 63,
+          "length": 5
+        },
+        "fileName": "<workspace>/App.vue",
+        "contextSpan": {
+          "start": 57,
+          "length": 27
+        }
+      }
+    ]
+  },
+  {
+    "name": "unchanged-repeat-hover",
+    "params": {
+      "file": "<workspace>/App.vue",
+      "position": 63
+    },
+    "result": {
+      "kind": "const",
+      "kindModifiers": "",
+      "textSpan": {
+        "start": 63,
+        "length": 5
+      },
+      "displayParts": [
+        {
+          "text": "const",
+          "kind": "keyword"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "title",
+          "kind": "localName"
+        },
+        {
+          "text": ":",
+          "kind": "punctuation"
+        },
+        {
+          "text": " ",
+          "kind": "space"
+        },
+        {
+          "text": "string",
+          "kind": "keyword"
+        }
+      ],
+      "documentation": []
+    }
+  }
+]

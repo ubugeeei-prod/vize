@@ -86,6 +86,20 @@ impl<'a> SimpleExpressionNode<'a> {
     pub fn node_type(&self) -> NodeType {
         NodeType::SimpleExpression
     }
+
+    /// The original parameter goal, only while its bytes still describe this node.
+    pub fn retained_parameters(&self) -> Option<&'a oxc_ast::ast::FormalParameters<'a>> {
+        self.js_ast
+            .filter(|ast| ast.raw == self.content)?
+            .as_slot_parameters()?
+            .ok()
+    }
+
+    /// Cooked binding names from a successful, unchanged parameter goal.
+    pub fn retained_parameter_names(&self) -> Option<&[&'a str]> {
+        self.retained_parameters()?;
+        self.identifiers.as_ref().map(|names| names.as_slice())
+    }
 }
 
 /// A template expression's JavaScript AST, parsed once per compile into the

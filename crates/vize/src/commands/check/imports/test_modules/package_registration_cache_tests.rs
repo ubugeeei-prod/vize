@@ -41,7 +41,7 @@ fn cached_package_registration_reports_nested_routes_once() {
     let mut canonical_paths = CanonicalPathCache::default();
     let entry = canonical_paths.canonicalize(&entry);
     let mut packages = PackageRouteResolver::default();
-    let mut cache = registration::VirtualRegistrationCache::default();
+    let mut cache = LocalImportSession::default();
     let mut first = registration::VirtualRegistrationDiscovery::default();
     let mut second = registration::VirtualRegistrationDiscovery::default();
 
@@ -86,5 +86,5 @@ fn cached_package_registration_reports_nested_routes_once() {
         first.package_sources, second.package_sources,
         "caller-specific package routes still receive source invalidation inputs"
     );
-    assert_eq!(cache.registration_entries(), 1);
+    assert_eq!(cache.registration_cache.registration_entries(), 1);
 }

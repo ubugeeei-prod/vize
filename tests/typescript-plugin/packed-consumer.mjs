@@ -11,10 +11,10 @@ import { createNavigationFixtures, checkNavigation } from "./authored-navigation
 
 const typescriptVersion = process.env.VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT || "6.0.3";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const output = path.resolve(
-  process.env.VIZE_TYPESCRIPT_PLUGIN_CAPTURE ||
-    path.join(os.tmpdir(), "vize-typescript-plugin-capture"),
-);
+// Scenario directories are created exclusively, so local reruns need a fresh capture.
+const output = process.env.VIZE_TYPESCRIPT_PLUGIN_CAPTURE
+  ? path.resolve(process.env.VIZE_TYPESCRIPT_PLUGIN_CAPTURE)
+  : fs.mkdtempSync(path.join(os.tmpdir(), "vize-typescript-plugin-capture-"));
 fs.mkdirSync(output, { recursive: true });
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tsserver-consumer-"));
 const digest = (data) => createHash("sha256").update(data).digest("hex");

@@ -120,7 +120,9 @@ void test("authenticated VSIX layout never executes a workspace nativePath overr
     );
     const require = createRequire(import.meta.url);
     const { loadNative } = require(path.join(plugin, "provider.cjs"));
-    assert.match(loadNative(temporary, override).error, /universal VSIX/);
+    const universal = loadNative(temporary, override);
+    assert.match(universal.error, /universal VSIX/);
+    assert.equal(universal.unavailable, true);
     assert.equal(fs.existsSync(marker), false);
     manifest.version = `${version}-mismatch`;
     fs.writeFileSync(path.join(extension, "package.json"), JSON.stringify(manifest));

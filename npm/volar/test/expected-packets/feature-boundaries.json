@@ -1,0 +1,109 @@
+[
+  {
+    "name": "javascript-check-false",
+    "params": {},
+    "result": []
+  },
+  {
+    "name": "javascript-check-true",
+    "params": {},
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/JavaScript.vue",
+          "text": "<script>const value = 1; value.missing();</script><template>{{ value }}</template>"
+        },
+        "start": 31,
+        "length": 7,
+        "code": 2339,
+        "category": 1,
+        "messageText": "Property 'missing' does not exist on type '1'."
+      }
+    ]
+  },
+  {
+    "name": "feature-boundary-diagnostics",
+    "params": {
+      "file": "<workspace>/Events.vue"
+    },
+    "result": [
+      {
+        "file": {
+          "fileName": "<workspace>/Events.vue",
+          "text": "<script setup lang=\"ts\">import Child from \"./Child.vue\";</script><template><Child :foo-bar=\"1\" @save-item=\"(value: number) => undefined\" /></template>"
+        },
+        "start": 105,
+        "length": 30,
+        "code": 2322,
+        "category": 1,
+        "messageText": {
+          "messageText": "Type '(value: number) => undefined' is not assignable to type '(value: string) => any'.",
+          "category": 1,
+          "code": 2322,
+          "next": [
+            {
+              "messageText": "Types of parameters 'value' and 'value' are incompatible.",
+              "category": 1,
+              "code": 2328,
+              "next": [
+                {
+                  "messageText": "Type 'string' is not assignable to type 'number'.",
+                  "category": 1,
+                  "code": 2322
+                }
+              ]
+            }
+          ]
+        },
+        "relatedInformation": [
+          {
+            "file": {
+              "fileName": "<workspace>/Events.vue",
+              "text": "<script setup lang=\"ts\">import Child from \"./Child.vue\";</script><template><Child :foo-bar=\"1\" @save-item=\"(value: number) => undefined\" /></template>"
+            },
+            "start": 105,
+            "length": 30,
+            "messageText": "Did you mean to call this expression?",
+            "category": 3,
+            "code": 6212
+          }
+        ]
+      },
+      {
+        "file": {
+          "fileName": "<workspace>/Events.vue",
+          "text": "<script setup lang=\"ts\">import Child from \"./Child.vue\";</script><template><Child :foo-bar=\"1\" @save-item=\"(value: number) => undefined\" /></template>"
+        },
+        "start": 83,
+        "length": 7,
+        "code": 2322,
+        "category": 1,
+        "messageText": "Type 'number' is not assignable to type 'string'.",
+        "relatedInformation": [
+          {
+            "file": {
+              "fileName": "<workspace>/Child.vue",
+              "text": "<script setup lang=\"ts\">defineProps<{ fooBar: string }>(); defineEmits<{ saveItem: [value: string] }>();</script><template />"
+            },
+            "start": 38,
+            "length": 6,
+            "messageText": "The expected type comes from property 'fooBar' which is declared here on type 'ComponentPropsForTemplate<__Child_CheckProps_0, VueTemplatePublicAttrsType & { string?: unknown; contextmenu?: unknown; onAbort?: unknown; onAnimationcancel?: unknown; onAnimationend?: unknown; ... 677 more ...; webpreferences?: unknown; } & { ...; }>'",
+            "category": 3,
+            "code": 6500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "rewritten-prop-refuses-rename",
+    "params": {
+      "file": "<workspace>/Events.vue",
+      "position": 83
+    },
+    "result": {
+      "canRename": false,
+      "localizedErrorMessage": "Failed to get rename locations"
+    }
+  }
+]

@@ -36,7 +36,7 @@ pub(super) fn emit_for(
     let index_alias = optional_ident(&for_op.binding.index)?;
     // The shipped transform processed the wrapper key and the item's own
     // expressions inside the `v-for` scope; only the source sits outside.
-    let prefix_mark = cx.enter_for_scope(for_op);
+    let prefix_mark = cx.enter_for_scope(for_op, id);
     let result = emit_for_scoped(
         cx,
         for_op,

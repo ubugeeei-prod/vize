@@ -20,6 +20,9 @@ export function startTsserver(entry, cwd, output) {
     { cwd, stdio: ["pipe", "pipe", "pipe"] },
   );
   let stderr = "";
+  let exited = false;
+  // A killed child must not replace the original failure with EPIPE.
+  child.stdin.on("error", () => {});
   const timeout = setTimeout(() => child.kill("SIGKILL"), 90_000);
   child.stderr.on("data", (chunk) => {
     stderr += chunk;
@@ -55,6 +58,7 @@ export function startTsserver(entry, cwd, output) {
   });
   const completion = new Promise((resolve) =>
     child.once("exit", (code, signal) => {
+      exited = true;
       clearTimeout(timeout);
       for (const request of pending.values()) {
         clearTimeout(request.timeout);
@@ -77,7 +81,7 @@ export function startTsserver(entry, cwd, output) {
           pending.set(packet.seq, { resolve, reject, timeout: timer });
         })
       : Promise.resolve();
-    child.stdin.write(`${JSON.stringify(packet)}\n`);
+    if (!exited) child.stdin.write(`${JSON.stringify(packet)}\n`);
     return result;
   }
   let stopped;
