@@ -2,13 +2,20 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::path::canonicalize_non_verbatim;
+fn canonical(path: &Path) -> PathBuf {
+    super::CanonicalPathCache::default().canonicalize(path)
+}
 
 fn write(root: &Path, rel: &str, content: &str) -> PathBuf {
     let path = root.join(rel);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(&path, content).unwrap();
-    canonicalize_non_verbatim(&path)
+    canonical(&path)
+}
+
+fn sorted(mut files: Vec<PathBuf>) -> Vec<PathBuf> {
+    files.sort();
+    files
 }
 
 fn collect(root: &Path, cwd: &Path, tsconfig: &Path) -> super::CollectedRoots {
@@ -29,7 +36,7 @@ fn collect(root: &Path, cwd: &Path, tsconfig: &Path) -> super::CollectedRoots {
 #[test]
 fn splitting_shell_leaves_import_closures_to_its_programs() {
     let dir = tempfile::tempdir().unwrap();
-    let root = canonicalize_non_verbatim(dir.path());
+    let root = canonical(dir.path());
     let shell = write(
         &root,
         "tsconfig.json",
@@ -57,9 +64,12 @@ fn splitting_shell_leaves_import_closures_to_its_programs() {
 
     // A scope report below the project root still counts the shell's closure.
     let nested = collect(&root, &root.join("app"), &shell);
-    assert!(nested.files.contains(&lib));
+    assert_eq!(
+        sorted(nested.files),
+        vec![app.clone(), lib.clone(), server.clone()]
+    );
 
     // One program keeps the closure it is checked with.
     let single = collect(&root, &root, &root.join("tsconfig.app.json"));
-    assert!(single.files.contains(&app) && single.files.contains(&lib));
+    assert_eq!(sorted(single.files), vec![app, lib]);
 }
