@@ -12,6 +12,7 @@ import {
   symlinkVueTypes,
   type VizeCheckResult,
 } from "../../_helpers/realworld-typecheck.ts";
+import { withoutVizeSourceContext } from "../../../tools/support/compat/fixtures/typecheck-divergence-input.mjs";
 import { testOutputRoot } from "../../tooling/support/lsp/paths.ts";
 
 // Template ref unwrapping is provenance-independent (#4146): the same authored
@@ -229,7 +230,7 @@ function normalizeVueTsc(result: CommandResult): string[] {
     .sort();
 }
 
-/** vize's JSON report, rewritten into the vue-tsc line shape. */
+/** vize's JSON report, rewritten into the vue-tsc line shape (without vize's source context). */
 function normalizeVize(result: VizeCheckResult): string[] {
   const lines: string[] = [];
   for (const file of result.report.files) {
@@ -238,7 +239,9 @@ function normalizeVize(result: VizeCheckResult): string[] {
       const match = /^(\w+):(\d+):(\d+) \[TS(\d+)] ([\s\S]*)$/.exec(diagnostic.trim());
       assert.ok(match, `unrecognized vize diagnostic: ${diagnostic}`);
       const [, severity, line, column, code, message] = match;
-      lines.push(`src/App.vue(${line},${column}): ${severity} TS${code}: ${message}`);
+      lines.push(
+        `src/App.vue(${line},${column}): ${severity} TS${code}: ${withoutVizeSourceContext(message)}`,
+      );
     }
   }
   return lines.sort();

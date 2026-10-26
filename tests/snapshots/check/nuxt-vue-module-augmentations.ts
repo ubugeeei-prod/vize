@@ -130,6 +130,11 @@ function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
 const STRICT_TEMPLATE_CONTEXT_TYPE = "__VizeStrictTemplateContext";
 const WRONG_ARGUMENT = "Argument of type 'number' is not assignable to parameter of type 'string'.";
 
+// Template diagnostics in JSON carry the authored line as `(source: …)` (#10335).
+function inTemplate(message: string, line: string): string {
+  return `${message} (source: ${line})`;
+}
+
 function missingProperty(name: string): string {
   return `Property '${name}' does not exist on type '${STRICT_TEMPLATE_CONTEXT_TYPE}'.`;
 }
@@ -155,14 +160,17 @@ describe("vue module augmentations reach the template context", () => {
     // The declared signatures are real, not widened stand-ins: a wrong-typed
     // call is the same TS2345 at the same authored column in both tools.
     assert.deepEqual(diagnosticsFor(vize, "pages/wrong-argument.vue"), [
-      `error:5:16 [TS2345] ${WRONG_ARGUMENT}`,
-      `error:6:16 [TS2345] ${WRONG_ARGUMENT}`,
+      `error:5:16 [TS2345] ${inTemplate(WRONG_ARGUMENT, "<p>{{ $shout(1) }}</p>")}`,
+      `error:6:16 [TS2345] ${inTemplate(WRONG_ARGUMENT, "<p>{{ $local(2) }}</p>")}`,
     ]);
     // Negative control: a global nothing declares still reports once per use.
     assert.deepEqual(diagnosticsFor(vize, "pages/undeclared-global.vue"), [
-      `error:4:9 [TS2339] ${missingProperty("$missing")}`,
-      `error:5:9 [TS2339] ${missingProperty("$missing")}`,
-      `error:6:14 [TS2339] ${missingProperty("$missing")}`,
+      `error:4:9 [TS2339] ${inTemplate(missingProperty("$missing"), "<p>{{ $missing('a') }}</p>")}`,
+      `error:5:9 [TS2339] ${inTemplate(missingProperty("$missing"), "<p>{{ $missing('b') }}</p>")}`,
+      `error:6:14 [TS2339] ${inTemplate(
+        missingProperty("$missing"),
+        "<p :title=\"$missing('c')\">x</p>; binding: 'title'",
+      )}`,
     ]);
     assert.equal(vize.errorCount, 5, JSON.stringify(vize.files, null, 2));
     assert.equal(vize.fileCount, 3);
