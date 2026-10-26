@@ -6,7 +6,7 @@ mod legacy_deep;
 mod nesting;
 mod slotted;
 
-use at_rules::should_recurse_at_rule;
+use at_rules::{is_scope_at_rule, should_recurse_at_rule};
 use attribute::add_scope_to_selector_end;
 
 /// Scope CSS with the Vite plugin pipeline's selector model.
