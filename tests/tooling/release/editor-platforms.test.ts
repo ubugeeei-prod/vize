@@ -7,7 +7,6 @@ import {
   editorArtifactsForResume,
   editorPlatformAssets,
   editorPlatformMatrix,
-  editorPublishMatrix,
 } from "../../../tools/support/release/editor-platforms.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
@@ -25,29 +24,26 @@ test("all eight release providers match the packager and have distinct immutable
   for (const key of ["target", "archive", "artifact"] as const)
     assert.equal(new Set(matrix.map((row) => row[key])).size, 8);
   assert.equal(editorPlatformAssets().length, 16);
-  const publish = editorPublishMatrix();
-  assert.equal(publish.length, 9);
-  assert.equal(publish[0].target, "universal");
-  assert.equal(publish[0].sourcePath, "editors/vscode/dist/vize.vsix");
-  assert.deepEqual(publish.slice(1), matrix);
+  for (const row of matrix) assert.equal(row.sourcePath, row.archive);
 });
 
-test("tag authority keeps legacy resume separate and refuses missing or foreign target cohorts", () => {
+test("resume signs only a complete platform cohort and refuses foreign artifacts", () => {
   const workflow = "jobs:\n  build-editor-platforms:\n    needs: [version, build-native]\n";
   const names = editorPlatformMatrix().map(({ artifact }) => artifact);
   assert.equal(editorArtifactsForResume("jobs:\n", ["editor-extensions"]), false);
   assert.equal(editorArtifactsForResume(workflow, ["editor-extensions", ...names]), true);
+  // A failed platform build must not stop the npm resume.
+  assert.equal(editorArtifactsForResume(workflow, []), false);
+  assert.equal(editorArtifactsForResume(workflow, names.slice(1)), false);
   for (const invalid of [
-    [],
-    names.slice(1),
     [...names, names[0]],
     [...names, "editor-extension-platform-foreign"],
   ])
     assert.throws(() => editorArtifactsForResume(workflow, invalid), /inventory/);
-  assert.throws(() => editorArtifactsForResume("jobs:\n", names), /inventory/);
+  assert.throws(() => editorArtifactsForResume("jobs:\n", names.slice(0, 1)), /inventory/);
 });
 
-test("the tag waits for all provider packages and every publisher selects its own target", () => {
+test("platform providers publish after their packages without gating the release", () => {
   const release = parse(readRepoFile(".github", "workflows", "release.yml"));
   const job = release.jobs["build-editor-platforms"];
   assert.deepEqual(job.needs, ["version", "build-native"]);
@@ -71,19 +67,31 @@ test("the tag waits for all provider packages and every publisher selects its ow
   );
   assert.equal(upload.with["if-no-files-found"], "error");
   assert.equal(upload.with.path, ".artifacts/vscode/*");
-  assert.ok(release.jobs.tag.needs.includes("build-editor-platforms"));
-  for (const key of ["publish-vscode", "publish-open-vsx"]) {
+  for (const key of ["tag", "publish-npm", "publish-vscode", "publish-open-vsx"])
+    assert.ok(!release.jobs[key].needs.includes("build-editor-platforms"), key);
+  for (const key of ["publish-vscode", "publish-open-vsx"])
+    assert.match(release.jobs[key].steps.at(-1).run, /editors\/vscode\/dist\/vize\.vsix$/);
+  for (const key of ["publish-vscode-platforms", "publish-open-vsx-platforms"]) {
     const publisher = release.jobs[key];
+    assert.deepEqual(publisher.needs, ["version", "tag", "build-editor-platforms"]);
     assert.equal(publisher.strategy["fail-fast"], false);
     assert.equal(
       publisher.strategy.matrix.settings,
-      "${{ fromJSON(needs.version.outputs.editor_publish_matrix) }}",
+      "${{ fromJSON(needs.version.outputs.editor_matrix) }}",
     );
     assert.equal(publisher.env.VIZE_EXTENSION_TARGET, "${{ matrix.settings.target }}");
     assert.equal(publisher.env.VSIX_SOURCE_PATH, "${{ matrix.settings.sourcePath }}");
     assert.match(publisher.steps.at(-1).run, /"editor-extensions\/\$VSIX_SOURCE_PATH"/);
   }
-  const github = JSON.stringify(release.jobs["github-release"]);
+  const githubRelease = release.jobs["github-release"];
+  assert.ok(githubRelease.needs.includes("build-editor-platforms"));
+  assert.match(githubRelease.if, /always\(\)/);
+  assert.doesNotMatch(githubRelease.if, /build-editor-platforms/);
+  assert.match(
+    githubRelease.env.EDITOR_PLATFORMS,
+    /needs\.build-editor-platforms\.result == 'success'/,
+  );
+  const github = JSON.stringify(githubRelease);
   assert.match(github, /editor-extension-platform-\*/);
   assert.match(github, /platform\/\*\.receipt\.json/);
   assert.match(github, /VIZE_EDITOR_PLATFORM_ARTIFACTS/);

@@ -21,19 +21,6 @@ export function editorPlatformMatrix() {
   }));
 }
 
-export function editorPublishMatrix() {
-  return [
-    {
-      rustTarget: "",
-      target: "universal",
-      archive: "vize.vsix",
-      artifact: "editor-extensions",
-      sourcePath: "editors/vscode/dist/vize.vsix",
-    },
-    ...editorPlatformMatrix(),
-  ];
-}
-
 export function editorPlatformAssets() {
   return editorPlatformMatrix().flatMap(({ archive }) => [
     `editor-extension-artifacts/platform/${archive}`,
@@ -41,15 +28,16 @@ export function editorPlatformAssets() {
   ]);
 }
 
-/** The immutable tag decides the artifact cohort; absence is not a fallback. */
+/**
+ * The immutable tag decides which platform artifacts may exist. Platform
+ * packaging never gates npm, so an incomplete cohort resumes without it.
+ */
 export function editorArtifactsForResume(workflow: string, artifactNames: string[]): boolean {
   const expected = editorPlatformMatrix().map(({ artifact }) => artifact);
   const actual = artifactNames.filter((name) => name.startsWith("editor-extension-platform-"));
-  const required = /^  build-editor-platforms:\s*$/m.test(workflow);
-  if (JSON.stringify(actual.toSorted()) !== JSON.stringify((required ? expected : []).toSorted())) {
-    throw new Error(
-      "Immutable release editor platform artifact inventory is incomplete or foreign",
-    );
+  const allowed = /^  build-editor-platforms:\s*$/m.test(workflow) ? expected : [];
+  if (new Set(actual).size !== actual.length || actual.some((name) => !allowed.includes(name))) {
+    throw new Error("Immutable release editor platform artifact inventory is foreign");
   }
-  return required;
+  return allowed.length > 0 && actual.length === allowed.length;
 }

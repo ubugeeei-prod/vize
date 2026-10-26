@@ -63,8 +63,7 @@ jobs:
       cli_matrix: ${{ steps.platforms.outputs.cli_matrix }}
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
       editor_matrix: ${{ steps.platforms.outputs.editor_matrix }}
-      editor_publish_matrix: ${{ steps.platforms.outputs.editor_publish_matrix }}
-      editor_platform_artifacts: ${{ steps.resume.outputs.editor_platform_artifacts || '1' }}
+      editor_platform_artifacts: ${{ steps.resume.outputs.editor_platform_artifacts }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -305,7 +304,7 @@ jobs:
   # Every artifact exists: only now does the version become real.
   tag:
     name: Tag the release
-    needs: [version, smoke, build-cli, build-editor-extensions, build-editor-platforms]
+    needs: [version, smoke, build-cli, build-editor-extensions]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: { contents: write }
@@ -399,16 +398,60 @@ jobs:
         run: node tools/support/release/publish_crates/main.ts
 
   publish-vscode:
+    name: Publish VS Code extension
+    needs: [version, tag]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: vscode-marketplace
+    env:
+      VSCE_DLX_BIN: npx
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: editor-extensions, path: editor-extensions }
+      - name: Publish to the VS Code Marketplace
+        run: node tools/support/release/publish_vscode_extension/main.ts editor-extensions/editors/vscode/dist/vize.vsix
+
+  publish-open-vsx:
+    name: Publish Open VSX extension
+    needs: [version, tag]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: open-vsx-registry
+    env:
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
+      PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
+      # Open VSX scans an upload before exposing it: about 2 min, but 0.484.0
+      # and 0.485.0 took over 4. Wait up to 10 min (60 x 10 s).
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "60"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: editor-extensions, path: editor-extensions }
+      - name: Publish to Open VSX
+        run: node tools/support/release/publish_open_vsx_extension/main.ts editor-extensions/editors/vscode/dist/vize.vsix
+
+  # Platform VSIXes publish only after every provider package exists. They
+  # never gate the tag, npm or the universal extension.
+  publish-vscode-platforms:
     if: needs.version.outputs.ref != ''
     name: Publish VS Code extension - ${{ matrix.settings.target }}
-    needs: [version, tag]
+    needs: [version, tag, build-editor-platforms]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: vscode-marketplace
     strategy:
       fail-fast: false
       matrix:
-        settings: ${{ fromJSON(needs.version.outputs.editor_publish_matrix) }}
+        settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
     env:
       VIZE_EXTENSION_TARGET: ${{ matrix.settings.target }}
       VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
@@ -424,17 +467,17 @@ jobs:
       - name: Publish to the VS Code Marketplace
         run: node tools/support/release/publish_vscode_extension/main.ts "editor-extensions/$VSIX_SOURCE_PATH"
 
-  publish-open-vsx:
+  publish-open-vsx-platforms:
     if: needs.version.outputs.ref != ''
     name: Publish Open VSX extension - ${{ matrix.settings.target }}
-    needs: [version, tag]
+    needs: [version, tag, build-editor-platforms]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: open-vsx-registry
     strategy:
       fail-fast: false
       matrix:
-        settings: ${{ fromJSON(needs.version.outputs.editor_publish_matrix) }}
+        settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
     env:
       VIZE_EXTENSION_TARGET: ${{ matrix.settings.target }}
       VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
@@ -456,7 +499,7 @@ jobs:
 
   github-release:
     name: Create GitHub Release
-    needs: [version, tag, publish-npm]
+    needs: [version, tag, publish-npm, build-editor-platforms]
     if: ${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -465,6 +508,8 @@ jobs:
     env:
       RELEASE_TAG: ${{ needs.version.outputs.tag }}
       RELEASE_SHA: ${{ needs.version.outputs.sha }}
+      # A failed platform build releases without its files rather than blocking.
+      EDITOR_PLATFORMS: ${{ inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts || needs.build-editor-platforms.result == 'success' && '1' || '0' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -491,13 +536,13 @@ jobs:
           run-id: ${{ inputs.npm_resume_run }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-      - if: inputs.npm_resume_run == '' && needs.version.outputs.editor_platform_artifacts == '1'
+      - if: inputs.npm_resume_run == '' && env.EDITOR_PLATFORMS == '1'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: editor-extension-platform-*
           path: editor-extension-artifacts/platform
           merge-multiple: true
-      - if: inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts == '1'
+      - if: inputs.npm_resume_run != '' && env.EDITOR_PLATFORMS == '1'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: editor-extension-platform-*
@@ -525,7 +570,7 @@ jobs:
       - name: Checksum and sign release artifacts
         env:
           COSIGN_YES: "true"
-          VIZE_EDITOR_PLATFORM_ARTIFACTS: ${{ needs.version.outputs.editor_platform_artifacts }}
+          VIZE_EDITOR_PLATFORM_ARTIFACTS: ${{ env.EDITOR_PLATFORMS }}
         run: |
           shopt -s nullglob
           for artifact in cli-artifacts/*.tar.gz cli-artifacts/*.zip editor-extension-artifacts/editors/vscode/dist/*.vsix editor-extension-artifacts/platform/*.vsix editor-extension-artifacts/platform/*.receipt.json editor-extension-artifacts/*.tar.gz; do
