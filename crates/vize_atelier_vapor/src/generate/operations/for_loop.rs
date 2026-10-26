@@ -235,54 +235,10 @@ fn resolve_key_expression(
 }
 
 #[cfg(test)]
-mod tests {
-    #[test]
-    fn typed_escaped_loop_aliases_keep_reactive_body_reads_and_javascript_keys() {
-        for source in [
-            r#"<p v-for="\u005frow: Row of items" :key="_row.id">{{ _row.id }}</p>"#,
-            r#"<p v-for="(\u005frow: Row, \u005fkey: number, \u005findex: number) of items" :key="_row.id + _key + _index">{{ _row.id }}{{ _key }}{{ _index }}</p>"#,
-            r#"<p v-for="{ id: \u005frow }: Row of items" :key="_row">{{ _row }}</p>"#,
-        ] {
-            for retained in [false, true] {
-                let allocator = vize_carton::Allocator::new();
-                let result = crate::compile_vapor(
-                    &allocator,
-                    source,
-                    crate::VaporCompilerOptions {
-                        davinci_retained_lane: retained,
-                        ..Default::default()
-                    },
-                );
-                assert!(
-                    result.error_messages.is_empty(),
-                    "{:?}",
-                    result.error_messages
-                );
-                assert!(result.code.contains("_for_item0.value"), "{}", result.code);
-                for name in ["_row", "_key", "_index"] {
-                    let proxy = vize_carton::cstr!("_ctx.{name}");
-                    assert!(
-                        !result.code.contains(proxy.as_str()),
-                        "{source}\n{}",
-                        result.code
-                    );
-                }
-                let parsed = oxc_parser::Parser::new(
-                    allocator.as_oxc(),
-                    &result.code,
-                    oxc_span::SourceType::mjs(),
-                )
-                .parse();
-                assert!(
-                    parsed.diagnostics.is_empty(),
-                    "{:?}\n{}",
-                    parsed.diagnostics,
-                    result.code
-                );
-            }
-        }
-    }
+mod typed_alias_tests;
 
+#[cfg(test)]
+mod tests {
     struct KeyFunctions<'code> {
         code: &'code str,
         functions: vize_carton::SmallVec<[&'code str; 2]>,
