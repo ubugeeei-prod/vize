@@ -85,9 +85,9 @@ const CASES: &[Case] = &[
         sites: &["1 /* TEXT */"],
     },
     Case {
-        name: "component_custom_directive_is_resolved_but_not_wrapped",
+        name: "component_custom_directive_is_wrapped_inside_cache",
         src: r#"<Foo v-once v-example="heading" />"#,
-        sites: &[],
+        sites: &["512 /* NEED_PATCH */"],
     },
     Case {
         name: "event_binding_is_omitted_from_cache_initializer",
@@ -112,7 +112,7 @@ const CASES: &[Case] = &[
     Case {
         name: "component_with_props_and_slot",
         src: r#"<Foo v-once :title="title"><span>x</span></Foo>"#,
-        sites: &[],
+        sites: &["1 /* STABLE */", "8 /* PROPS */, [\"title\"]"],
     },
     Case {
         name: "inside_v_for",

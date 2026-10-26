@@ -4,9 +4,7 @@ use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, ComponentOp, ElementOp, IfOp, Op};
 
 use super::buf::Buf;
-use super::builtin;
 use super::hoist::is_hoistable;
-use super::js::asset_ident;
 use super::vnode;
 use super::{EmitCx, EmitError};
 
@@ -69,73 +67,14 @@ pub(super) fn emit_component(
     component: &ComponentOp<'_>,
     _key: Option<&str>,
     _for_item: bool,
-    _id: Option<NodeId>,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    skip_or_hoist_component_children(cx, component);
     emit_cached(cx, |cx| {
-        cx.buf.use_create_vnode();
-        cx.buf.push(Buf::create_vnode_alias());
-        cx.buf.push("(");
-        emit_component_target(cx, component)?;
-        cx.buf.push(")");
-        Ok(())
+        let once_component = core::mem::replace(&mut cx.once_component, true);
+        let result = super::component::emit_once(cx, component, id);
+        cx.once_component = once_component;
+        result
     })
-}
-
-fn emit_component_target(
-    cx: &mut EmitCx<'_>,
-    component: &ComponentOp<'_>,
-) -> Result<(), EmitError> {
-    if builtin::emit_dynamic_tag(cx, component)? {
-    } else if let Some(helper) = builtin::helper(component.name) {
-        cx.buf.use_helper(helper);
-        cx.buf.push(helper.alias());
-    } else if super::component::binding::push_tag(cx, component.name) {
-    } else {
-        cx.buf
-            .push(asset_ident("component", component.name).as_str());
-    }
-    Ok(())
-}
-
-fn skip_or_hoist_component_children(cx: &mut EmitCx<'_>, component: &ComponentOp<'_>) {
-    for op in component.children.ops.iter() {
-        match op {
-            Op::Element(element)
-                if cx.hoist_static && super::hoist::is_hoistable(element, cx.is_ts) =>
-            {
-                let _id = cx.walk.mint();
-                cx.walk.skip(element.bindings.len());
-                let _alias = super::hoist::hoist_static_element(cx, element);
-            }
-            Op::Element(element) if has(&element.bindings) => {
-                let _id = cx.walk.mint();
-                cx.walk.skip(element.bindings.len());
-                skip_or_hoist_once_element_children(cx, element);
-            }
-            _ => super::create_slots_walk::skip_ops(cx, core::slice::from_ref(op)),
-        }
-    }
-}
-
-fn skip_or_hoist_once_element_children(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
-    for op in element.children.ops.iter() {
-        match op {
-            Op::Element(child)
-                if cx.hoist_static && super::hoist::is_hoistable(child, cx.is_ts) =>
-            {
-                let _id = cx.walk.mint();
-                cx.walk.skip(child.bindings.len());
-                let _alias = super::hoist::hoist_static_element(cx, child);
-            }
-            Op::Element(child) => {
-                let _id = cx.walk.mint();
-                cx.walk.skip(child.bindings.len());
-                skip_or_hoist_once_element_children(cx, child);
-            }
-            _ => super::create_slots_walk::skip_ops(cx, core::slice::from_ref(op)),
-        }
-    }
 }
 
 pub(super) fn emit_cached(

@@ -9,7 +9,7 @@ use super::super::{
     children::push_interpolation_value,
     context::CodegenContext,
     expression::generate_expression,
-    helpers::{escape_js_string, is_valid_js_identifier, to_valid_asset_identifier},
+    helpers::{escape_js_string, is_valid_js_identifier},
     node::generate_node,
     patch_flag::{calculate_element_patch_info, patch_flag_name},
     props::is_supported_directive,
@@ -86,14 +86,10 @@ pub fn generate_v_once_cached(ctx: &mut CodegenContext, body: impl FnOnce(&mut C
 fn generate_v_once_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Generate the element content
     if el.tag_type == ElementType::Component {
-        ctx.use_helper(RuntimeHelper::CreateVNode);
-        ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
-        ctx.push("(");
-        if !ctx.push_component_binding_tag(el.tag) {
-            ctx.use_helper(RuntimeHelper::ResolveComponent);
-            ctx.push(&to_valid_asset_identifier("component", el.tag));
-        }
-        ctx.push(")");
+        // The same vnode as without `v-once`, minus handler caching.
+        let in_v_once = core::mem::replace(&mut ctx.in_v_once, true);
+        super::inline::generate_component_vnode(ctx, el);
+        ctx.in_v_once = in_v_once;
     } else {
         ctx.use_helper(RuntimeHelper::CreateElementVNode);
         ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);

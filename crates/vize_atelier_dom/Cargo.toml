@@ -69,6 +69,11 @@ required-features = ["legacy-differential"]
 name = "v_pre_freezes_its_subtree"
 required-features = ["legacy-differential"]
 
+# Both lanes cache the full component vnode under `v-once`.
+[[test]]
+name = "component_v_once"
+required-features = ["legacy-differential"]
+
 # These read process-global walk and selector counters, so each keeps its own process under cargo test.
 [[test]]
 name = "davinci_expr_reparse_floor"

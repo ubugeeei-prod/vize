@@ -102,6 +102,7 @@ pub(super) fn emit_dom_observed<'f>(
         once_cache_index: 0,
         once_depth: 0,
         once_element_depth: 0,
+        once_component: false,
         in_v_for: false,
         conditional_v_for_item: false,
         template_for_item_single_root: false,
