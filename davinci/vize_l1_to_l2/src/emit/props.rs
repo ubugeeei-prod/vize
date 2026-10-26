@@ -102,6 +102,19 @@ pub(super) fn emit_bind_props(
     bindings: &[BindingOp<'_>],
     options: BindPropsOptions<'_>,
 ) -> Result<(), EmitError> {
+    // Only components and native elements reach here; outlets emit their own.
+    let previous = core::mem::replace(&mut cx.component_props, !options.is_plain_element);
+    let result = emit_owned_bind_props(cx, attributes, bindings, options);
+    cx.component_props = previous;
+    result
+}
+
+fn emit_owned_bind_props(
+    cx: &mut EmitCx<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    options: BindPropsOptions<'_>,
+) -> Result<(), EmitError> {
     let BindPropsOptions {
         if_key,
         skip_is,

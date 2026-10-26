@@ -127,6 +127,7 @@ fn html_anchor_bindings_keep_html_semantics_at_svg_integration_points() {
 }
 
 #[test]
+#[expect(clippy::disallowed_macros, reason = "insta formats snapshots")]
 fn spread_props_on_svg_elements_are_attributes() {
     let mut packets = Vec::new();
     for source in [

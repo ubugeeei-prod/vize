@@ -111,6 +111,7 @@ pub(super) fn emit_dom_observed<'f>(
         template_if_for_branch_root: false,
         suppress_template_for_child_key: false,
         skip_memo: false,
+        component_props: false,
         slot_param_depth: 0,
         hoist_static_vnodes: false,
         transition_slot_root: false,

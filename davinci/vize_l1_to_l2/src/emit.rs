@@ -206,6 +206,9 @@ struct EmitCx<'facts> {
     /// `v-for + v-memo` uses Vue's special `_cached` callback shape, so
     /// the item emitter must skip the ordinary `_withMemo` wrapper.
     skip_memo: bool,
+    /// The props being emitted belong to a component, which receives a
+    /// method handler uncached (vuejs/core#1541).
+    component_props: bool,
     /// Nested components inside a scoped `withCtx` treat forwarded
     /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
     slot_param_depth: u32,

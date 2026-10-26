@@ -71,6 +71,10 @@ pub struct CodegenContext {
     /// event-name casing rules (Vue preserves case via `on:` for plain
     /// elements that have uppercase letters in the raw event name).
     pub(super) props_is_plain_element: bool,
+    /// When true, the props currently being generated belong to a component.
+    /// Vue passes a method handler to a component uncached so the callee sees
+    /// the original function and its arity (vuejs/core#1541).
+    pub(super) props_is_component: bool,
     /// Namespace of the native parent currently generating children. Vue only
     /// needs block creation at SVG/MathML namespace boundaries, not for every
     /// descendant inside the same namespace.
@@ -227,6 +231,14 @@ impl CodegenContext {
     #[inline]
     pub fn cache_handlers_in_current_scope(&self) -> bool {
         self.options.cache_handlers && !self.has_slot_params()
+    }
+
+    /// Run `generate` while emitting the props of a component.
+    pub(super) fn with_component_props<R>(&mut self, generate: impl FnOnce(&mut Self) -> R) -> R {
+        let previous = std::mem::replace(&mut self.props_is_component, true);
+        let result = generate(self);
+        self.props_is_component = previous;
+        result
     }
 
     /// Get next cache index for v-once

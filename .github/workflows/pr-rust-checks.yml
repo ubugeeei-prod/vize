@@ -108,6 +108,9 @@ jobs:
       - name: Clippy affected crates
         if: ${{ matrix.lane == 'clippy' }}
         run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Clippy test targets of touched ratchet crates
+        if: ${{ matrix.lane == 'clippy' && github.event_name == 'pull_request' }}
+        run: node tools/support/compat/github/clippy-test-targets.ts touched "$RUNNER_TEMP/rust-plan.json"
       - name: Native L1 markup parity
         if: ${{ matrix.lane == 'clippy' && (contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature')) }}
         run: cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity

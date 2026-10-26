@@ -60,7 +60,7 @@ pub(super) fn object_patch<'a>(
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
-    constant_handler: &dyn Fn(&str) -> bool,
+    handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
 ) -> PatchFacts {
@@ -112,7 +112,7 @@ pub(super) fn object_patch<'a>(
                 // `is_const_handler` reads the same on the merged path: the
                 // shipped lane runs one per-prop loop whether or not the
                 // element ends up in `mergeProps`.
-                if !super::props::handler_is_constant(on, constant_handler)
+                if !handler_is_constant(on)
                     && !handler_is_cached(on)
                     && !dynamic_props.contains(&key)
                 {
