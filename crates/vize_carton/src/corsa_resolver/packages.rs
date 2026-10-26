@@ -4,8 +4,11 @@ use std::path::{Path, PathBuf};
 
 use super::{CORSA_EXECUTABLE_NAMES, Candidate, existing_executable, platform_suffix};
 
+/// A declared runtime package that is installed but incomplete or mismatched.
 #[derive(Debug)]
-pub(super) struct InvalidNativePackage;
+pub(super) struct InvalidNativePackage {
+    pub(super) package: PathBuf,
+}
 
 pub(super) fn find_node_modules_native(
     dir: &Path,
@@ -143,15 +146,18 @@ fn find_stable_typescript_native(
             continue;
         };
         if name == platform_package.as_str() {
-            let manifest = read_manifest(&package_dir).ok_or(InvalidNativePackage)?;
+            let invalid = || InvalidNativePackage {
+                package: package_dir.clone(),
+            };
+            let manifest = read_manifest(&package_dir).ok_or_else(invalid)?;
             if manifest.get("name").and_then(serde_json::Value::as_str) != Some(name)
                 || !package_major_at_least(&manifest, 7)
             {
-                return Err(InvalidNativePackage);
+                return Err(invalid());
             }
             return existing_executable(&package_dir.join("lib"), "tsc")
                 .map(Some)
-                .ok_or(InvalidNativePackage);
+                .ok_or_else(invalid);
         }
         let required = name == "typescript"
             || ["dependencies", "devDependencies", "optionalDependencies"]
@@ -212,29 +218,24 @@ fn resolve_typescript_platform_package(
     platform: &str,
     required: bool,
 ) -> Result<Option<PathBuf>, InvalidNativePackage> {
+    let invalid = || InvalidNativePackage {
+        package: package_dir.to_path_buf(),
+    };
     let Some(manifest) = read_manifest(package_dir) else {
-        return if required {
-            Err(InvalidNativePackage)
-        } else {
-            Ok(None)
-        };
+        return if required { Err(invalid()) } else { Ok(None) };
     };
     if manifest.get("name").and_then(serde_json::Value::as_str) != Some("typescript") {
-        return if required {
-            Err(InvalidNativePackage)
-        } else {
-            Ok(None)
-        };
+        return if required { Err(invalid()) } else { Ok(None) };
     }
     let version = manifest
         .get("version")
         .and_then(serde_json::Value::as_str)
-        .ok_or(InvalidNativePackage)?;
+        .ok_or_else(invalid)?;
     let major = version
         .split('.')
         .next()
         .and_then(|major| major.parse::<u64>().ok())
-        .ok_or(InvalidNativePackage)?;
+        .ok_or_else(invalid)?;
     if major < 7 {
         return Ok(None);
     }
@@ -244,21 +245,19 @@ fn resolve_typescript_platform_package(
         .and_then(serde_json::Value::as_str)
         != Some(version)
     {
-        return Err(InvalidNativePackage);
+        return Err(invalid());
     }
-    let real_package_dir = package_dir
-        .canonicalize()
-        .map_err(|_| InvalidNativePackage)?;
-    let package_root = nearest_package(&real_package_dir, platform).ok_or(InvalidNativePackage)?;
-    let installed = read_manifest(&package_root).ok_or(InvalidNativePackage)?;
+    let real_package_dir = package_dir.canonicalize().map_err(|_| invalid())?;
+    let package_root = nearest_package(&real_package_dir, platform).ok_or_else(invalid)?;
+    let installed = read_manifest(&package_root).ok_or_else(invalid)?;
     if installed.get("name").and_then(serde_json::Value::as_str) != Some(platform)
         || installed.get("version").and_then(serde_json::Value::as_str) != Some(version)
     {
-        return Err(InvalidNativePackage);
+        return Err(invalid());
     }
     existing_executable(&package_root.join("lib"), "tsc")
         .map(Some)
-        .ok_or(InvalidNativePackage)
+        .ok_or_else(invalid)
 }
 
 /// Map only a bin entry owned by the selected canonical target's package.
@@ -270,19 +269,13 @@ pub(super) fn resolve_owned_launcher(target: &Path) -> Option<PathBuf> {
     let manifest = read_manifest(package)?;
     let bin = manifest.get("bin")?;
     let owns = |value: &serde_json::Value| {
-        let Some(relative) = value.as_str() else {
-            return false;
-        };
-        let path = Path::new(relative);
-        path.components().all(|part| {
-            matches!(
-                part,
-                std::path::Component::Normal(_) | std::path::Component::CurDir
-            )
-        }) && package
-            .join(path)
-            .canonicalize()
-            .is_ok_and(|path| path == target)
+        value.as_str().is_some_and(|relative| {
+            inside_package(relative)
+                && package
+                    .join(relative)
+                    .canonicalize()
+                    .is_ok_and(|path| path == target)
+        })
     };
     if !owns(bin) && !bin.as_object().is_some_and(|bins| bins.values().any(owns)) {
         return None;
@@ -298,6 +291,72 @@ pub(super) fn resolve_owned_launcher(target: &Path) -> Option<PathBuf> {
         "tsrs" => resolve_tsrs_package(package),
         _ => None,
     }
+}
+
+/// A regular-file `.bin` shim (Windows, pnpm) names its owner only by bin
+/// name. Follow the one sibling package that declares it; an ambiguous or
+/// foreign owner keeps the shim.
+pub(super) fn resolve_bin_shim(shim: &Path) -> Option<PathBuf> {
+    let file_name = shim.file_name()?.to_str()?;
+    let name = [".cmd", ".ps1", ".exe", ".bunx"]
+        .iter()
+        .find_map(|extension| file_name.strip_suffix(extension))
+        .unwrap_or(file_name);
+    let node_modules = shim.parent()?.parent()?;
+    let mut owners = sibling_packages(node_modules)
+        .into_iter()
+        .filter_map(|package| declared_bin(&package, name));
+    let target = owners.next()?;
+    if owners.next().is_some() {
+        return None;
+    }
+    resolve_owned_launcher(&target.canonicalize().ok()?)
+}
+
+fn sibling_packages(node_modules: &Path) -> Vec<PathBuf> {
+    let mut packages = Vec::new();
+    for entry in std::fs::read_dir(node_modules)
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        let path = entry.path();
+        match entry.file_name().to_str() {
+            Some(name) if name.starts_with('.') => {}
+            Some(name) if name.starts_with('@') => packages.extend(
+                std::fs::read_dir(&path)
+                    .into_iter()
+                    .flatten()
+                    .flatten()
+                    .map(|entry| entry.path()),
+            ),
+            Some(_) => packages.push(path),
+            None => {}
+        }
+    }
+    packages
+}
+
+/// The target `package` declares for bin `name`, kept inside the package.
+fn declared_bin(package: &Path, name: &str) -> Option<PathBuf> {
+    let manifest = read_manifest(package)?;
+    let relative = match manifest.get("bin")? {
+        serde_json::Value::String(relative) => {
+            let package_name = manifest.get("name")?.as_str()?;
+            (package_name.rsplit('/').next() == Some(name)).then_some(relative.as_str())?
+        }
+        bins => bins.get(name)?.as_str()?,
+    };
+    inside_package(relative).then(|| package.join(relative))
+}
+
+fn inside_package(relative: &str) -> bool {
+    Path::new(relative).components().all(|part| {
+        matches!(
+            part,
+            std::path::Component::Normal(_) | std::path::Component::CurDir
+        )
+    })
 }
 
 fn package_major_at_least(manifest: &serde_json::Value, minimum: u64) -> bool {

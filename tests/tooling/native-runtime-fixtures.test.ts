@@ -261,6 +261,25 @@ void test("mixed batch errors retain every unrelated enum, conversion and detect
       after.replace("pub fn detect_package_manager", "pub fn changed_package_manager"),
     ),
   );
+  // Only the registered runtime tests may be added to the shared test module.
+  assert(
+    !unchangedNonRuntimeErrors(
+      before,
+      after.replace(
+        "fn invalid_declared_runtime_names_its_package_without_install_advice(",
+        "fn forged_runtime_test(",
+      ),
+    ),
+  );
+  assert(
+    !unchangedNonRuntimeErrors(
+      before,
+      after.replace(
+        "\n    #[test]\n    fn every_package_manager",
+        "\n    #[test]\n    fn extra() {}\n\n    #[test]\n    fn every_package_manager",
+      ),
+    ),
+  );
 });
 
 void test("the normal planner selects all three actual Rust fixture producer cohorts", () => {
@@ -330,6 +349,28 @@ void test("explicit fake runtime selection retains every old source and global d
     !unchangedGlobalDiagnosticMock(
       before,
       after.replace("assert_eq!(result.exit_code, 2);", "assert_eq!(result.exit_code, 0);"),
+    ),
+  );
+  // The API-unavailable fallback must keep its own stub, too.
+  const fallback = after.indexOf("fn checks_with_cli_when_project_session_api_is_unavailable() {");
+  assert(fallback > 0);
+  assert(
+    !unchangedGlobalDiagnosticMock(
+      before,
+      after.slice(0, fallback) +
+        after
+          .slice(fallback)
+          .replace(
+            "CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo))",
+            "CorsaExecutor::new(&case_dir)",
+          ),
+    ),
+  );
+  assert(
+    !unchangedGlobalDiagnosticMock(
+      before,
+      after.slice(0, fallback) +
+        after.slice(fallback).replace("assert!(result.success);", "assert!(!result.success);"),
     ),
   );
 });

@@ -46,21 +46,28 @@ function pinned(
 /** Independently retain every non-runtime byte of the mixed error module. */
 export function unchangedNonRuntimeErrors(before: string, after: string): boolean {
   const strip = (source: string) => {
-    const begin = source.indexOf(
-      "    /// Generate CLI error message with installation instructions.\n",
-    );
+    // The runtime error type itself (fields, constructors, message) may change.
+    const begin = source.indexOf("/// Error when a Corsa executable cannot be resolved.\n");
     const end = source.indexOf("\n}\n\nimpl std::fmt::Display for CorsaNotFoundError", begin);
     if (begin < 0 || end < begin) return null;
-    let retained = source.slice(0, begin) + source.slice(end);
+    // Existing test literals may only gain the invalid-runtime field.
+    let retained = (source.slice(0, begin) + source.slice(end))
+      .split("            invalid_runtime: None,\n")
+      .join("");
     const addedTest =
       "\n    #[test]\n    fn explicit_missing_runtime_reports_the_full_path_without_install_advice(";
     const testBegin = retained.indexOf(addedTest);
     if (testBegin !== -1) {
       const testEnd = retained.lastIndexOf("\n}");
       const added = retained.slice(testBegin, testEnd);
+      const names = [...added.matchAll(/\bfn (\w+)\(/g)].map((match) => match[1]);
       if (
-        (added.match(/\bfn /g) ?? []).length !== 2 ||
-        !added.includes("fn every_package_manager_keeps_the_existing_typescript_dependency(")
+        JSON.stringify(names) !==
+        JSON.stringify([
+          "explicit_missing_runtime_reports_the_full_path_without_install_advice",
+          "invalid_declared_runtime_names_its_package_without_install_advice",
+          "every_package_manager_keeps_the_existing_typescript_dependency",
+        ])
       )
         return null;
       retained = retained.slice(0, testBegin) + retained.slice(testEnd);
@@ -82,17 +89,23 @@ export function unchangedNativeRuntimeHelp(before: string, after: string): boole
 
 /** Preserve both input graphs while correcting explicit mock/opaque selection. */
 export function unchangedGlobalDiagnosticMock(before: string, after: string): boolean {
-  const marker = "fn cli_global_diagnostics_do_not_trigger_session_fallback() {";
-  const start = before.indexOf(marker);
-  if (start < 0 || before.indexOf(marker, start + 1) !== -1) return false;
-  const end = before.indexOf("\n}\n", start);
   const previous = "    let executor = CorsaExecutor::new(&case_dir).unwrap();";
   const current =
     "    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();";
-  const selected = before.indexOf(previous, start);
-  if (selected < start || end <= selected) return false;
-  const mockSelected =
-    before.slice(0, selected) + current + before.slice(selected + previous.length);
+  // Each stub-backed test selects its own stub, so an ambient runtime cannot replace it.
+  let mockSelected = before;
+  for (const marker of [
+    "fn cli_global_diagnostics_do_not_trigger_session_fallback() {",
+    "fn checks_with_cli_when_project_session_api_is_unavailable() {",
+  ]) {
+    const start = mockSelected.indexOf(marker);
+    if (start < 0 || mockSelected.indexOf(marker, start + 1) !== -1) return false;
+    const end = mockSelected.indexOf("\n}\n", start);
+    const selected = mockSelected.indexOf(previous, start);
+    if (selected < start || end <= selected) return false;
+    mockSelected =
+      mockSelected.slice(0, selected) + current + mockSelected.slice(selected + previous.length);
+  }
   const oldName = "fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary()";
   const newName = "fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview()";
   const oldPath = "assert_eq!(executor.corsa_path(), native.canonicalize().unwrap());";

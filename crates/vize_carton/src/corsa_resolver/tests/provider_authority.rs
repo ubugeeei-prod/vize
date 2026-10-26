@@ -81,6 +81,35 @@ fn opaque_explicit_wrapper_is_not_replaced_by_another_provider() {
 }
 
 #[test]
+fn explicit_shim_follows_the_one_package_declaring_its_bin() {
+    let temp = TempDir::new().unwrap();
+    let root = temp.path();
+    let expected = native(root, "7.1.0-beta");
+    write_file(&root.join("node_modules/typescript/bin/tsc"));
+    // npm on Windows and pnpm write regular-file shims, not links.
+    for shim in ["tsc", "tsc.cmd", "tsc.ps1"] {
+        let shim = root.join("node_modules/.bin").join(shim);
+        write_file(&shim);
+        assert_eq!(resolve(Some(&shim), Some(root), &[]).unwrap(), expected);
+    }
+    // A second owner of the same bin name makes the shim's provider unknown.
+    let other = root.join("node_modules/@scope/other/package.json");
+    write_file(&other);
+    fs::write(&other, r#"{"name":"@scope/other","bin":{"tsc":"tsc.js"}}"#).unwrap();
+    let shim = root.join("node_modules/.bin/tsc");
+    assert_eq!(
+        resolve(Some(&shim), Some(root), &[]).unwrap(),
+        shim.canonicalize().unwrap()
+    );
+    // A sole foreign owner is never replaced with the project runtime.
+    fs::remove_dir_all(root.join("node_modules/typescript")).unwrap();
+    assert_eq!(
+        resolve(Some(&shim), Some(root), &[]).unwrap(),
+        shim.canonicalize().unwrap()
+    );
+}
+
+#[test]
 fn undeclared_canonical_package_does_not_supply_a_runtime() {
     let temp = TempDir::new().unwrap();
     let root = temp.path();
