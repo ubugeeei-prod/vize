@@ -96,6 +96,50 @@ void test("unknown and shared dependency inputs restore the broad PR suite", () 
   }
 });
 
+void test("a retired-language file arriving or leaving anywhere selects the ledger ratchet", () => {
+  const f = fixture();
+  const ratchet = "tests/tooling/retired-tooling-languages.test.ts";
+  const add = (file: string) => {
+    mkdirSync(join(f.cwd, dirname(file)), { recursive: true });
+    f.write(file);
+  };
+  const selected = (...paths: string[]) => planToolingTests(paths, { cwd: f.cwd }).tests;
+  try {
+    add("tools/config/retired-tooling-languages.json");
+    f.write(
+      "tools/config/retired-tooling-languages.json",
+      JSON.stringify({
+        permanent: [{ language: "mjs", prefix: "tests/_fixtures/", reason: "test input" }],
+        retiring: { py: [], lean: [], mbt: [], mjs: ["tools/listed.mjs"] },
+      }),
+    );
+    f.write(ratchet, 'const ledger = "tools/config/retired-tooling-languages.json";');
+    add("tools/listed.mjs");
+    for (const file of [
+      "editors/vscode/test/router-host.mjs",
+      "tests/typescript-plugin/project-metadata.mjs",
+      "crates/vize/scripts/probe.py",
+      "davinci/proofs/Spec.lean",
+      "davinci/proofs/lean-toolchain",
+    ]) {
+      add(file);
+      assert.deepEqual(selected(file), [ratchet], file);
+    }
+    // A rename in arrives under the new name.
+    add("tools/renamed.mjs");
+    assert.deepEqual(selected("tools/renamed.ts", "tools/renamed.mjs"), [ratchet]);
+    // Exempt test inputs and listed files edited in place never select it.
+    add("tests/_fixtures/evidence/input.mjs");
+    assert.deepEqual(selected("tests/_fixtures/evidence/input.mjs", "tools/listed.mjs"), []);
+    // A port that keeps the stale entry does.
+    rmSync(join(f.cwd, "tools/listed.mjs"));
+    add("tools/listed.ts");
+    assert.deepEqual(selected("tools/listed.mjs", "tools/listed.ts"), [ratchet]);
+  } finally {
+    f.cleanup();
+  }
+});
+
 void test("merge planning restores every scenario, including directly changed deferred files", () => {
   const f = fixture();
   try {
