@@ -1,7 +1,6 @@
 name: SFC asset import bindings
 
 on:
-  workflow_dispatch: {}
   pull_request:
     paths:
       - "crates/vize_atelier_sfc/src/bundler/assets.rs"
@@ -19,6 +18,8 @@ concurrency:
 
 jobs:
   source-native:
+    # The immutable before image qualifies this repair; Check retains routine regression tests.
+    if: ${{ github.event.pull_request.number == 10711 }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -26,7 +27,7 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTC_WRAPPER: ""
       RUSTC_WORKSPACE_WRAPPER: ""
-      BASE_SHA: "fd3675d7f589f2014aa4c18d8944b7f638c25460"
+      BASE_SHA: "e466c0366d303baf725d67942a8a6a0f872c0dc0"
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -38,7 +39,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
         with:
           {
-            version: latest,
+            version: "1.1.0",
             node-version-file: package.json,
             cache: true,
             cache-save: false,
