@@ -44,6 +44,7 @@ fn managed_artifact_paths_are_lifecycle_owned_entries() {
         node_modules_vize_artifact_paths(root),
         vec![
             root.join("node_modules/.vize/check-profile"),
+            root.join("node_modules/.vize/config-cache"),
             root.join("node_modules/.vize/corsa"),
             root.join("node_modules/.vize/corsa-overlay"),
             root.join("node_modules/.vize/lsp.log"),

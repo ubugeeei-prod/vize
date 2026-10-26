@@ -1,5 +1,5 @@
 use super::CrossFileAnalyzer;
-use crate::analyzer::types::CrossFileOptions;
+use crate::analyzer::types::{CrossFileOptions, NuxtRenderDirs};
 use crate::graph::DependencyGraph;
 use crate::registry::ModuleRegistry;
 use std::path::Path;
@@ -11,6 +11,7 @@ impl CrossFileAnalyzer {
         Self {
             options,
             ssr_enabled: true,
+            nuxt_dirs: None,
             registry: ModuleRegistry::new(),
             graph: DependencyGraph::new(),
             effect_graph_summaries: Default::default(),
@@ -24,6 +25,7 @@ impl CrossFileAnalyzer {
         Self {
             options,
             ssr_enabled: true,
+            nuxt_dirs: None,
             registry: ModuleRegistry::with_project_root(root.as_ref()),
             graph: DependencyGraph::new(),
             effect_graph_summaries: Default::default(),
@@ -37,6 +39,12 @@ impl CrossFileAnalyzer {
     #[doc(hidden)]
     pub fn set_ssr_enabled(&mut self, enabled: bool) {
         self.ssr_enabled = enabled;
+    }
+
+    /// Use the host's Nuxt directories for framework render edges.
+    #[doc(hidden)]
+    pub fn set_nuxt_render_dirs(&mut self, dirs: Option<NuxtRenderDirs>) {
+        self.nuxt_dirs = dirs;
     }
 
     /// Set single-file analyzer options.

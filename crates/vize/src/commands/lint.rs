@@ -58,6 +58,7 @@ pub fn run(mut args: LintArgs) {
         project_root,
         custom_elements,
     } = config_load::load(&mut args);
+    let config_time = start.elapsed();
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
@@ -300,6 +301,7 @@ pub fn run(mut args: LintArgs) {
         profile::ProfileContext {
             args: &args,
             profile_rows,
+            config_time,
             collect_time,
             lint_time,
             cross_file_enabled,

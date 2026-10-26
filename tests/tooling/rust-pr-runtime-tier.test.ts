@@ -93,6 +93,10 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   }
   assert.ok(source.includes("real-Corsa isolation coverage cannot be skipped"));
   const canon = readRepoFile("crates/vize_canon/tests/fix_history_diagnostics.rs");
+  const runner = readRepoFile("crates/vize_canon/tests/support/fix_history_runner.rs");
+  assert.ok(canon.includes("pub(crate) mod fix_history_runner;"));
+  assert.ok(canon.includes("use support::fix_history_runner::check_pack;"));
+  assert.equal(canon.includes("fn check_pack("), false);
   assert.ok(readRepoFile("crates/vize_canon/Cargo.toml").includes('name = "vize_canon"'));
   assert.equal(new Set(canonDeferred.map(({ name }) => name)).size, canonDeferred.length);
   for (const { name, pack } of canonDeferred) {
@@ -102,7 +106,7 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
     );
     assert.equal(fixture.diagnosticContract.requiredTier, "T1");
   }
-  assert.ok(canon.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
+  assert.ok(runner.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
 
   const cohorts = workflow.jobs["pr-rust-shard"].steps;
   assert.ok(

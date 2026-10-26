@@ -33,8 +33,8 @@ await test(
     assert.equal(pack.schema, "vize.scoped-nesting.specificity");
     assert.equal(pack.reference, "@vue/compiler-sfc@3.5.35");
     assert.equal(compiler.version, "3.5.35");
-    assert.equal(pack.cases.length, 26);
-    assert.equal(new Set(pack.cases.map((item) => item.id)).size, 26);
+    assert.equal(pack.cases.length, 31);
+    assert.equal(new Set(pack.cases.map((item) => item.id)).size, 31);
     assert.ok(captures || referenceOnly, "fresh current-source capture is mandatory");
     if (captures) assert.equal(captures.length, pack.cases.length * 3);
     const browser = await chromium.launch();
@@ -160,12 +160,15 @@ await test(
         "nested-parent-list",
         "quoted-ampersand",
         "multiple-ampersands",
+        "nested-scope-start",
+        "nested-scope-ampersand",
+        "nested-scope-media",
       ])
         assert.ok(
           regressions.includes(id),
           id + ": the physical public baseline must distinguish the regression",
         );
-      assert.equal(captures ? captures.length : 0, referenceOnly ? 0 : 78);
+      assert.equal(captures ? captures.length : 0, referenceOnly ? 0 : 93);
     } finally {
       if (output) {
         fs.mkdirSync(path.dirname(output), { recursive: true });

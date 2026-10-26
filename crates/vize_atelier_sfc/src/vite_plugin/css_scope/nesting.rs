@@ -1,9 +1,10 @@
 //! Keep selector-list nesting intact: `&` inherits the maximum specificity of
 //! its entire parent list, which cannot be represented by a Cartesian product.
+//! A nested `@scope` stays inside its parent rule for the same reason.
 use super::{
     find_matching_brace, find_next_top_level_brace, find_pseudo_function_any,
-    find_rule_header_start, scope_attr, scope_selector_list, should_recurse_at_rule,
-    split_leading_trivia, split_selector_list, unwrap_deep_selectors,
+    find_rule_header_start, is_scope_at_rule, scope_attr, scope_selector_list,
+    should_recurse_at_rule, split_leading_trivia, split_selector_list, unwrap_deep_selectors,
 };
 use vize_carton::{SmallVec, String};
 
@@ -62,7 +63,10 @@ pub(super) fn requires_preservation(selector: &str, body: &str) -> bool {
             if is_style(header) {
                 requires_preservation(statement, body)
             } else {
-                should_recurse_at_rule(statement) && requires_preservation("", body)
+                // Hoisting a nested `@scope` out of its parent rule changes the
+                // scoping root, so the authored nesting context must stay.
+                is_scope_at_rule(statement)
+                    || (should_recurse_at_rule(statement) && requires_preservation("", body))
             }
         }
         Node::Declarations(_) => false,
@@ -205,6 +209,26 @@ mod tests {
             (
                 ".a,#b{:slotted(.child){color:blue}}",
                 ".a,#b{.child[data-v-x-s]{color:blue}}",
+            ),
+            (
+                ".a{@scope (.s) to (.e){.child{color:blue}}}",
+                ".a[data-v-x]{@scope (.s) to (.e){.child[data-v-x]{color:blue}}}",
+            ),
+            (
+                ".a{@scope (.s){color:red;:scope{color:blue}& .c{color:blue}}}",
+                ".a[data-v-x]{@scope (.s){color:red;[data-v-x]:scope{color:blue}& .c[data-v-x]{color:blue}}}",
+            ),
+            (
+                ".a{@media (min-width:1px){@SCOPE(.s){.child{color:blue}}}}",
+                ".a[data-v-x]{@media (min-width:1px){@SCOPE(.s){.child[data-v-x]{color:blue}}}}",
+            ),
+            (
+                ".a{.b{@scope (.s){.c{color:blue}}}}",
+                ".a{.b[data-v-x]{@scope (.s){.c[data-v-x]{color:blue}}}}",
+            ),
+            (
+                ".a{@media (min-width:1px){.child{color:blue}}}",
+                "@media (min-width:1px){.a .child[data-v-x]{color:blue}}",
             ),
         ] {
             assert_eq!(

@@ -342,7 +342,7 @@ vize clean --force
 vize clean path/to/project
 ```
 
-`vize clean` は、Vize が `.vize` と `node_modules/.vize` に書き込むキャッシュとレポートを削除します。対象はプロファイル、Musea のレポートとスナップショット、lint のセッション、設定スキーマ、LSP ログ、`vize check` が生成する TypeScript プロジェクトです。
+`vize clean` は、Vize が `.vize` と `node_modules/.vize` に書き込むキャッシュとレポートを削除します。対象はプロファイル、Musea のレポートとスナップショット、lint のセッション、設定スキーマ、キャッシュした設定の評価結果、LSP ログ、`vize check` が生成する TypeScript プロジェクトです。
 
 | オプション                          | 説明                                                   |
 | ----------------------------------- | ------------------------------------------------------ |
@@ -425,3 +425,8 @@ vize <command> --help
 
 プロジェクトを対象にするコマンド（`build`、`fmt`、`lint`、`check`、`ready`）は、特定の Vite 設定を読む
 `-c, --config <path>` と、プロジェクトの設定を読み込まない `--no-config` も受け付けます。
+
+これらのコマンドは Vite 設定を Node で評価し、結果を `node_modules/.vize/config-cache` にキャッシュします。
+キャッシュを使うのは、その評価の入力がすべて変わっていない間だけです。入力は、import したファイル、
+`node:fs` で読んだファイルとディレクトリ、解決した `node_modules` のパッケージ、読んだ環境変数、Node の
+実行ファイルです。設定がコマンドやネットワークの結果に依存する場合などは、`VIZE_CONFIG_CACHE=0` で毎回評価します。
