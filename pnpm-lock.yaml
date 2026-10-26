@@ -713,6 +713,9 @@ importers:
       oxc-transform:
         specifier: catalog:oxc
         version: 0.144.0
+      webpack-sources:
+        specifier: 3.5.1
+        version: 3.5.1
     devDependencies:
       '@jridgewell/trace-mapping':
         specifier: 0.3.31
@@ -726,6 +729,9 @@ importers:
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2
+      '@vizejs/builder-shared':
+        specifier: workspace:*
+        version: link:../shared
       css-loader:
         specifier: 7.1.2
         version: 7.1.2(@rspack/core@2.1.8(@swc/helpers@0.5.23))(webpack@5.109.2(cssnano@8.0.5(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.26))

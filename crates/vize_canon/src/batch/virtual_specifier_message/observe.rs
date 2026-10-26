@@ -1,10 +1,8 @@
-//! Optional observations of the existing authored-presence-first search.
+//! Optional candidate inventory and actual authored-presence search observations.
 
 use std::time::{Duration, Instant};
 
 use vize_carton::profiler::{Profiler, global_profiler};
-
-use super::authored_specifier;
 
 #[derive(Default)]
 struct SearchMetrics {
@@ -34,14 +32,17 @@ impl<'a> SearchObservation<'a> {
         }
     }
 
+    pub(super) fn candidate(&mut self, eligible: bool) {
+        if let Some(metrics) = &mut self.metrics {
+            metrics.quoted_candidates += 1;
+            metrics.eligible_candidates += u64::from(eligible);
+        }
+    }
+
     pub(super) fn source_contains(&mut self, source: &str, reported: &str) -> bool {
         let Some(metrics) = &mut self.metrics else {
             return source.contains(reported);
         };
-        metrics.quoted_candidates += 1;
-        // Observe pure eligibility even when authored presence will short
-        // circuit; the actual restoration algorithm keeps its original order.
-        metrics.eligible_candidates += u64::from(authored_specifier(reported).is_some());
         metrics.searches += 1;
         // Haystack input volume, not a claim about bytes read by `contains`.
         metrics.input_bytes += source.len() as u64;
@@ -101,9 +102,11 @@ mod tests {
         let profiler = Profiler::enabled();
         let source = "import './実在.vue.ts'; const label = '🙂';";
         let mut observation = SearchObservation::for_profiler(&profiler);
+        observation.candidate(true);
         assert!(observation.source_contains(source, "./実在.vue.ts"));
+        observation.candidate(true);
         assert!(!observation.source_contains(source, "./Missing.vue.ts"));
-        assert!(observation.source_contains(source, "🙂"));
+        observation.candidate(false);
         observation.finish("full message 🙂", 1);
         let mut counters = profiler.counter_snapshot();
         counters.sort_by_key(|(key, _)| *key);
@@ -116,9 +119,9 @@ mod tests {
             let expected = match suffix {
                 "calls" | "rewrites" => 1,
                 "message_input_bytes" => "full message 🙂".len() as u64,
-                "quoted_candidates" | "source_searches" => 3,
-                "eligible_candidates" => 2,
-                "source_search_input_bytes" => 3 * source.len() as u64,
+                "quoted_candidates" => 3,
+                "eligible_candidates" | "source_searches" => 2,
+                "source_search_input_bytes" => 2 * source.len() as u64,
                 "source_search_ns" => continue,
                 _ => panic!("unexpected metric {key}"),
             };
@@ -131,9 +134,32 @@ mod tests {
         let profiler = Profiler::new();
         let mut observation = SearchObservation::for_profiler(&profiler);
         assert!(observation.metrics.is_none());
+        observation.candidate(false);
         assert!(observation.source_contains("import './Panel.vue.ts';", "./Panel.vue.ts"));
         assert!(!observation.source_contains("🙂", "absent"));
         observation.finish("unchanged", 0);
         assert!(profiler.counter_snapshot().is_empty());
+    }
+
+    #[test]
+    fn ineligible_inventory_does_not_report_a_source_search() {
+        let profiler = Profiler::enabled();
+        let mut observation = SearchObservation::for_profiler(&profiler);
+        for _ in 0..3 {
+            observation.candidate(false);
+        }
+        observation.finish("Type 'number' differs from 'string' and 'undefined'.", 0);
+        let counters = profiler.counter_snapshot();
+        assert_eq!(counters.len(), 8);
+        for (key, metrics) in counters {
+            assert_eq!(metrics.samples, 1);
+            if key.ends_with(".calls") {
+                assert_eq!(metrics.total, 1);
+            } else if key.ends_with(".quoted_candidates") {
+                assert_eq!(metrics.total, 3);
+            } else if !key.ends_with(".message_input_bytes") {
+                assert_eq!(metrics.total, 0, "{key}");
+            }
+        }
     }
 }

@@ -3,9 +3,10 @@
 use super::string_tracking::{StringTrackState, count_braces_with_state};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_atelier_vapor::{
-    VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_sfc_context,
+    VaporCompilerExperimentalOptions, VaporCompilerOptions,
+    compile_vapor_with_sfc_context_and_codegen_options,
 };
-use vize_l0::dump::capture::StageCapture;
+use vize_l0::dump::capture::{NoCapture, StageCapture};
 use vize_l0::{Allocator, String, ToCompactString};
 
 use crate::{
@@ -62,7 +63,7 @@ pub(crate) fn compile_template_block_vapor(
 
     // Compile template with Vapor
     let (result, diagnostics) = if let Some(capture) = capture {
-        vize_atelier_vapor::compile_vapor_with_sfc_context_and_capture(
+        compile_vapor_with_sfc_context_and_codegen_options(
             allocator,
             &template.content,
             vapor_opts,
@@ -70,10 +71,11 @@ pub(crate) fn compile_template_block_vapor(
             custom_elements.clone(),
             experimental_options,
             scope_attr.as_deref(),
+            codegen_options,
             capture,
         )
     } else {
-        compile_vapor_with_sfc_context(
+        compile_vapor_with_sfc_context_and_codegen_options(
             allocator,
             &template.content,
             vapor_opts,
@@ -81,6 +83,8 @@ pub(crate) fn compile_template_block_vapor(
             custom_elements.clone(),
             experimental_options,
             scope_attr.as_deref(),
+            codegen_options,
+            &mut NoCapture,
         )
     };
 
@@ -96,12 +100,7 @@ pub(crate) fn compile_template_block_vapor(
     }
 
     // Process the Vapor output to extract imports and render function
-    let code = transform_vapor_template_output(
-        &result.code,
-        template,
-        bindings,
-        codegen_options.runtime_module_name.as_str(),
-    )?;
+    let code = transform_vapor_template_output(&result.code, template, bindings)?;
 
     let mut warnings = recoverable_template_warnings(&diagnostics);
     warnings.extend(result.warning_messages.iter().map(|message| SfcError {
@@ -116,21 +115,6 @@ pub(crate) fn compile_template_block_vapor(
     })
 }
 
-fn rewrite_vapor_import(line: &str, runtime_module_name: &str) -> String {
-    let (source, replacement) = if line.contains("'vue/vapor'") {
-        ("'vue/vapor'", vize_l0::cstr!("'{runtime_module_name}'"))
-    } else if line.contains("\"vue/vapor\"") {
-        ("\"vue/vapor\"", vize_l0::cstr!("\"{runtime_module_name}\""))
-    } else if line.contains("'vue'") {
-        ("'vue'", vize_l0::cstr!("'{runtime_module_name}'"))
-    } else if line.contains("\"vue\"") {
-        ("\"vue\"", vize_l0::cstr!("\"{runtime_module_name}\""))
-    } else {
-        return line.to_compact_string();
-    };
-    line.replace(source, replacement.as_str()).into()
-}
-
 fn is_render_signature(line: &str) -> bool {
     let trimmed = line.trim();
     trimmed.starts_with("export function render(")
@@ -142,7 +126,6 @@ pub(super) fn transform_vapor_template_output(
     code: &str,
     template: &SfcTemplateBlock,
     bindings: Option<&BindingMetadata>,
-    runtime_module_name: &str,
 ) -> Result<String, SfcError> {
     let mut lines = code.lines().peekable();
     let mut output = String::default();
@@ -150,7 +133,7 @@ pub(super) fn transform_vapor_template_output(
     while let Some(&line) = lines.peek() {
         let trimmed = line.trim();
         if trimmed.starts_with("import ") {
-            output.push_str(&rewrite_vapor_import(line, runtime_module_name));
+            output.push_str(line);
             output.push('\n');
             lines.next();
             continue;

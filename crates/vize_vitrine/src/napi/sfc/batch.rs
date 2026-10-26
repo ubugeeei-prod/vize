@@ -1,3 +1,4 @@
+use super::codegen_options::sfc_codegen_options;
 use glob::glob;
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
@@ -5,6 +6,7 @@ use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::time::Instant;
 use vize_l0::FxHashMap;
 
+use super::vue_version::resolve_sfc_vue_version;
 use super::{
     batch_helpers::{
         BatchCompileJob, BatchCompileKey, BatchStats, batch_compile_key, batch_options_bits,
@@ -30,12 +32,15 @@ pub fn compile_sfc_batch(
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultNapi> {
     let opts = options.unwrap_or_default();
-    BatchThreadPool::new(opts.threads)?.install(|| compile_sfc_batch_inner(pattern, opts))
+    let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;
+    BatchThreadPool::new(opts.threads)?
+        .install(|| compile_sfc_batch_inner(pattern, opts, vue_version))
 }
 
 fn compile_sfc_batch_inner(
     pattern: String,
     opts: BatchCompileOptionsNapi,
+    vue_version: vize_l0::config::VueVersion,
 ) -> Result<BatchCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
@@ -181,6 +186,7 @@ fn compile_sfc_batch_inner(
                     is_ts,
                     is_prod: shape.is_prod,
                     custom_renderer,
+                    dialect: vue_version,
                     compiler_options: {
                         let mut dom_options = experimentals.dom_options();
                         if let Some(value) = opts.template_cache_handlers {
@@ -215,7 +221,11 @@ fn compile_sfc_batch_inner(
                     compile_opts,
                     template_syntax,
                     custom_elements.clone(),
-                    vize_atelier_core::CodegenOptions::default(),
+                    sfc_codegen_options(
+                        false,
+                        opts.runtime_module_name.as_deref(),
+                        opts.runtime_global_name.as_deref(),
+                    ),
                     script_output,
                     experimentals.sfc_options(),
                 )

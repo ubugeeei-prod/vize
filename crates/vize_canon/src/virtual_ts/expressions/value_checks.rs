@@ -19,6 +19,14 @@ use vize_croquis::Croquis;
 /// generation and borrowed from there down the emit tree.
 #[derive(Clone, Copy)]
 pub(crate) struct TemplateValueChecks<'a> {
+    pub(crate) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
+    pub(crate) prop_expression_owners: Option<
+        &'a vize_carton::FxHashMap<
+            (u32, u32, u32),
+            crate::virtual_ts::diagnostic_ownership::InputOwner,
+        >,
+    >,
     pub(crate) native_props: &'a NativePropBindings,
     pub(crate) directive_values: &'a DirectiveValueBindings,
     pub(crate) component_ref_callbacks: &'a ComponentRefCallbackBindings,
@@ -30,6 +38,23 @@ pub(crate) struct TemplateValueChecks<'a> {
     /// `checkUnknownDirectives` for this file. Setup-local directives stay
     /// ordinary bindings; only a registry lookup can be `TS2339`.
     pub(crate) check_unknown_directives: bool,
+}
+
+impl<'a> TemplateValueChecks<'a> {
+    pub(crate) fn with_diagnostic_ownership(
+        mut self,
+        collector: Option<
+            &'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
+        owners: &'a vize_carton::FxHashMap<
+            (u32, u32, u32),
+            crate::virtual_ts::diagnostic_ownership::InputOwner,
+        >,
+    ) -> Self {
+        self.diagnostic_ownership = collector;
+        self.prop_expression_owners = collector.map(|_| owners);
+        self
+    }
 }
 
 /// Owning form of [`TemplateValueChecks`], collected once per file.
@@ -100,6 +125,8 @@ impl TemplateValueCheckTables {
         template_source: Option<&'a str>,
     ) -> TemplateValueChecks<'a> {
         TemplateValueChecks {
+            diagnostic_ownership: None,
+            prop_expression_owners: None,
             native_props: &self.native_props,
             directive_values: &self.directive_values,
             component_ref_callbacks: &self.component_ref_callbacks,

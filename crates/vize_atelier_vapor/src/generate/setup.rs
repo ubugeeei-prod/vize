@@ -4,7 +4,7 @@ use super::context::GenerateContext;
 use vize_carton::String;
 
 /// Generate imports based on used helpers
-pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
+pub(crate) fn generate_imports(ctx: &GenerateContext, runtime_module_name: &str) -> String {
     if ctx.used_helpers.is_empty() {
         return String::default();
     }
@@ -73,7 +73,13 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
         imports.push_str(" as _");
         imports.push_str(helper);
     }
-    imports.push_str(" } from 'vue';\n");
+    imports.push_str(" } from ");
+    if runtime_module_name == "vue" {
+        imports.push_str("'vue'");
+    } else {
+        vize_l0::js_string::push_js_string_literal(&mut imports, runtime_module_name);
+    }
+    imports.push_str(";\n");
     imports
 }
 

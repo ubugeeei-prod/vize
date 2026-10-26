@@ -83,7 +83,8 @@ pub use compile::{
     compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
     compile_vapor_with_diagnostics, compile_vapor_with_experimental_options,
     compile_vapor_with_sfc_context, compile_vapor_with_sfc_context_and_capture,
-    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_sfc_context_and_codegen_options, compile_vapor_with_template_syntax,
+    compile_vapor_with_template_syntax_and_diagnostics,
     compile_vapor_with_template_syntax_and_experimental_options,
 };
 #[expect(deprecated, reason = "re-exported until their removal")]
@@ -92,7 +93,8 @@ pub use compile::{
 };
 pub use generate::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
-    generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
+    generate_vapor_from_transformed_root, generate_vapor_with_options,
+    generate_vapor_with_options_and_experimentals,
 };
 pub use generators::{
     GenerateContext, build_text_expression, can_inline_text, can_optimize_for, can_use_ternary,

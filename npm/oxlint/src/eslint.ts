@@ -8,6 +8,11 @@ import { getRuleOptions } from "./rule-options.js";
 import { createRuleSelection } from "./rule-selection.js";
 import { getActivePreset, getVizeSettings, isTypeAwareRuleName } from "./settings.js";
 import { assertSourceText, mapSourceOffsets, mapTextEdits } from "./eslint-source.js";
+import {
+  diagnosticsForRule,
+  indexDiagnosticsByRule,
+  TYPE_AWARE_RUNTIME_RULE,
+} from "./rule-diagnostics.js";
 import type { PatinaDiagnostic, PatinaRuleOptions, PatinaSettings } from "./model.js";
 
 interface Collected {
@@ -16,6 +21,7 @@ interface Collected {
   filename: string;
   settings: PatinaSettings;
   options: Map<string, PatinaRuleOptions | undefined>;
+  reportedTypeAwareRuntimeDiagnostic: boolean;
   diagnostics?: Map<string, PatinaDiagnostic[]>;
   offsets?: Map<number, number>;
 }
@@ -36,6 +42,7 @@ function collect(context: Context, program: object, name: string): void {
       filename: context.physicalFilename,
       settings: structuredClone(getVizeSettings(context)),
       options: new Map(),
+      reportedTypeAwareRuntimeDiagnostic: false,
     };
     programs.set(program, collected);
   }
@@ -48,6 +55,7 @@ function collect(context: Context, program: object, name: string): void {
 function run(collected: Collected): void {
   assertSourceText(collected.source);
   const selection = createRuleSelection(collected.options);
+  const hasSelectedTypeAwareRule = selection.names.some(isTypeAwareRuleName);
   const settings = collected.settings;
   const result = loadBinding().lintPatinaSfc(collected.source, {
     filename: collected.filename,
@@ -55,7 +63,7 @@ function run(collected: Collected): void {
     helpLevel: settings.helpLevel,
     preset: getActivePreset(settings),
     enabledRules: selection.names,
-    typeAware: settings.typeAware === true || selection.names.some(isTypeAwareRuleName),
+    typeAware: settings.typeAware === true || hasSelectedTypeAwareRule,
     corsaPath: settings.corsaPath,
     ...selection.options,
     includeFixes: true,
@@ -63,23 +71,22 @@ function run(collected: Collected): void {
   if (result.filename !== collected.filename) {
     throw new Error("Vize returned diagnostics for another ESLint source");
   }
-  const diagnostics = new Map<string, PatinaDiagnostic[]>();
   const offsets: number[] = [];
   for (const diagnostic of result.diagnostics) {
-    if (!selection.names.includes(diagnostic.rule)) {
+    if (
+      !selection.names.includes(diagnostic.rule) &&
+      !(hasSelectedTypeAwareRule && diagnostic.rule === TYPE_AWARE_RUNTIME_RULE)
+    ) {
       throw new Error(`Vize returned an unselected ESLint rule: ${diagnostic.rule}`);
     }
     if (byName.get(diagnostic.rule)?.fixable && !Object.hasOwn(diagnostic, "fix")) {
       throw new Error("The Vize native binding does not expose ESLint text edits; update it");
     }
-    const current = diagnostics.get(diagnostic.rule) ?? [];
-    current.push(diagnostic);
-    diagnostics.set(diagnostic.rule, current);
     offsets.push(diagnostic.location.start.offset, diagnostic.location.end.offset);
     for (const edit of diagnostic.fix?.edits ?? []) offsets.push(edit.start, edit.end);
   }
   collected.offsets = mapSourceOffsets(collected.source, offsets);
-  collected.diagnostics = diagnostics;
+  collected.diagnostics = indexDiagnosticsByRule(result.diagnostics);
 }
 
 const rules = Object.fromEntries(
@@ -126,7 +133,11 @@ const rules = Object.fromEntries(
             }
             if (!collected.diagnostics) run(collected);
             const sourceCode = context.sourceCode;
-            for (const diagnostic of collected.diagnostics!.get(rule.name) ?? []) {
+            for (const diagnostic of diagnosticsForRule(
+              collected,
+              collected.diagnostics!,
+              rule.name,
+            )) {
               const start = collected.offsets!.get(diagnostic.location.start.offset)!;
               const end = collected.offsets!.get(diagnostic.location.end.offset)!;
               if (start > end) throw new Error("Vize returned a reversed diagnostic span");

@@ -118,6 +118,11 @@ name = "vize_source_map_contract"
 path = "tests/vize_source_map_contract.rs"
 required-features = ["bundler", "sourcemap"]
 
+[[test]]
+name = "vize_printer_utf16"
+path = "tests/vize_printer_utf16.rs"
+required-features = ["sourcemap"]
+
 [[bench]]
 name = "transform"
 path = "benches/transform.rs"

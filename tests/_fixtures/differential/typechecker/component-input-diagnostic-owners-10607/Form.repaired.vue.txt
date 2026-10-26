@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import GenericForm from './GenericForm.vue';
+import type { Schema } from './types';
+const schema: Schema<{ role: string; tags: string[] }> = { parse: () => ({ role: '', tags: [] }), validate: () => true };
+const submit = (_value: unknown) => {};
+const error = (_error: Error) => {};
+</script>
+<art>
+<variant name="0">
+  <GenericForm :initial-state="{ role: 'ok', tags: [] }" :schema="schema" @submit="submit" @error="error" />
+</variant>
+<variant name="1">
+  <GenericForm :initial-state="{ role: 'ok', tags: [] }" :schema="schema" @submit="submit" @error="error" />
+</variant>
+<variant name="2">
+  <GenericForm :initial-state="{ role: 'ok', tags: [] }" :schema="schema" @submit="submit" @error="error" />
+</variant>
+</art>
