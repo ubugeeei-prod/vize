@@ -1,0 +1,86 @@
+[
+  {
+    "name": "p closed by blocks, hr, lists and tables",
+    "source": "<!DOCTYPE html><html><head></head><body><p>a<div>b</div><p>c<hr><p>d<ul><li>e</ul><p>f<table></table><P>g</body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["p", 2, []], ["div", 2, []], ["p", 2, []], ["hr", 2, []], ["p", 2, []], ["ul", 2, []], ["li", 8, []], ["p", 2, []], ["table", 2, []], ["p", 2, []]],
+    "nodes": [["body", [[1, "p"], [1, "div"], [1, "p"], [1, "hr"], [1, "p"], [1, "ul"], [1, "p"], [1, "table"], [1, "p"]]], ["p", [[3, "a"]]], ["div", [[3, "b"]]], ["p", [[3, "c"]]], ["hr", []], ["p", [[3, "d"]]], ["ul", [[1, "li"]]], ["li", [[3, "e"]]], ["p", [[3, "f"]]], ["table", []], ["p", [[3, "g"]]]],
+    "implied": ["p", "p", "p", "li", "p", "p"]
+  },
+  {
+    "name": "list items close siblings through an open p",
+    "source": "<!DOCTYPE html><html><head></head><body><ul><li>a<li><p>b<li>c</ul><ol><li>d<ul><li>e</ul><li>f</ol><menu><li>g</menu></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["ul", 2, []], ["li", 3, []], ["li", 3, []], ["p", 5, []], ["li", 3, []], ["ol", 2, []], ["li", 8, []], ["ul", 9, []], ["li", 10, []], ["li", 8, []], ["menu", 2, []], ["li", 13, []]],
+    "nodes": [["body", [[1, "ul"], [1, "ol"], [1, "menu"]]], ["ul", [[1, "li"], [1, "li"], [1, "li"]]], ["li", [[3, "a"]]], ["li", [[1, "p"]]], ["p", [[3, "b"]]], ["li", [[3, "c"]]], ["ol", [[1, "li"], [1, "li"]]], ["li", [[3, "d"], [1, "ul"]]], ["ul", [[1, "li"]]], ["li", [[3, "e"]]], ["li", [[3, "f"]]], ["menu", [[1, "li"]]], ["li", [[3, "g"]]]],
+    "implied": ["li", "li", "p", "li", "li", "li", "li", "li"]
+  },
+  {
+    "name": "dt and dd close each other",
+    "source": "<!DOCTYPE html><html><head></head><body><dl><dt>a<dt>b<dd>c<dd><p>d<dt>e</dl></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["dl", 2, []], ["dt", 3, []], ["dt", 3, []], ["dd", 3, []], ["dd", 3, []], ["p", 7, []], ["dt", 3, []]],
+    "nodes": [["body", [[1, "dl"]]], ["dl", [[1, "dt"], [1, "dt"], [1, "dd"], [1, "dd"], [1, "dt"]]], ["dt", [[3, "a"]]], ["dt", [[3, "b"]]], ["dd", [[3, "c"]]], ["dd", [[1, "p"]]], ["p", [[3, "d"]]], ["dt", [[3, "e"]]]],
+    "implied": ["dt", "dt", "dd", "dd", "p", "dt"]
+  },
+  {
+    "name": "p and block ends close implied descendants",
+    "source": "<!DOCTYPE html><html><head></head><body><div><p>a</div><div><p>b</p>c</div><address><p>d</address></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["div", 2, []], ["p", 3, []], ["div", 2, []], ["p", 5, []], ["address", 2, []], ["p", 7, []]],
+    "nodes": [["body", [[1, "div"], [1, "div"], [1, "address"]]], ["div", [[1, "p"]]], ["p", [[3, "a"]]], ["div", [[1, "p"], [3, "c"]]], ["p", [[3, "b"]]], ["address", [[1, "p"]]], ["p", [[3, "d"]]]],
+    "implied": ["p", "p"]
+  },
+  {
+    "name": "ruby text closes ruby siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><ruby>a<rb>b<rt>c<rp>(<rt>d<rp>)</ruby><ruby>e<rtc>f<rt>g</rtc></ruby></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["ruby", 2, []], ["rb", 3, []], ["rt", 3, []], ["rp", 3, []], ["rt", 3, []], ["rp", 3, []], ["ruby", 2, []], ["rtc", 9, []], ["rt", 10, []]],
+    "nodes": [["body", [[1, "ruby"], [1, "ruby"]]], ["ruby", [[3, "a"], [1, "rb"], [1, "rt"], [1, "rp"], [1, "rt"], [1, "rp"]]], ["rb", [[3, "b"]]], ["rt", [[3, "c"]]], ["rp", [[3, "("]]], ["rt", [[3, "d"]]], ["rp", [[3, ")"]]], ["ruby", [[3, "e"], [1, "rtc"]]], ["rtc", [[3, "f"], [1, "rt"]]], ["rt", [[3, "g"]]]],
+    "implied": ["rb", "rt", "rp", "rt", "rp", "rt"]
+  },
+  {
+    "name": "option and optgroup outside select",
+    "source": "<!DOCTYPE html><html><head></head><body><div><optgroup label=x><option>a<option selected>b<optgroup><option>c</optgroup></div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["div", 2, []], ["optgroup", 3, [["label", "x"]]], ["option", 4, []], ["option", 4, [["selected", ""]]], ["optgroup", 4, []], ["option", 7, []]],
+    "nodes": [["body", [[1, "div"]]], ["div", [[1, "optgroup"]]], ["optgroup", [[1, "option"], [1, "option"], [1, "optgroup"]]], ["option", [[3, "a"]]], ["option", [[3, "b"]]], ["optgroup", [[1, "option"]]], ["option", [[3, "c"]]]],
+    "implied": ["optgroup", "option", "option", "option"]
+  },
+  {
+    "name": "body end leaves an implied p open",
+    "source": "<!DOCTYPE html><html><head></head><body><p>a</body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["p", 2, []]],
+    "nodes": [["body", [[1, "p"]]], ["p", [[3, "a"]]]],
+    "implied": ["p"]
+  },
+  {
+    "name": "table sections, rows and cells",
+    "source": "<!DOCTYPE html><html><head></head><body><table><caption>c<colgroup><col span=2><col><thead><tr><th>h<tbody><tr><td>a<td>b<tr><td>c<tfoot><tr><td>f</table></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["table", 2, []], ["caption", 3, []], ["colgroup", 3, []], ["col", 5, [["span", "2"]]], ["col", 5, []], ["thead", 3, []], ["tr", 8, []], ["th", 9, []], ["tbody", 3, []], ["tr", 11, []], ["td", 12, []], ["td", 12, []], ["tr", 11, []], ["td", 15, []], ["tfoot", 3, []], ["tr", 17, []], ["td", 18, []]],
+    "nodes": [["body", [[1, "table"]]], ["table", [[1, "caption"], [1, "colgroup"], [1, "thead"], [1, "tbody"], [1, "tfoot"]]], ["caption", [[3, "c"]]], ["colgroup", [[1, "col"], [1, "col"]]], ["col", []], ["col", []], ["thead", [[1, "tr"]]], ["tr", [[1, "th"]]], ["th", [[3, "h"]]], ["tbody", [[1, "tr"], [1, "tr"]]], ["tr", [[1, "td"], [1, "td"]]], ["td", [[3, "a"]]], ["td", [[3, "b"]]], ["tr", [[1, "td"]]], ["td", [[3, "c"]]], ["tfoot", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[3, "f"]]]],
+    "implied": ["caption", "colgroup", "thead", "tr", "th", "tbody", "tr", "td", "td", "tr", "td", "tfoot", "tr", "td"]
+  },
+  {
+    "name": "table whitespace stays in place",
+    "source": "<!DOCTYPE html><html><head></head><body><table>\n <tbody>\n  <tr> <td>a</td> </tr>\n </tbody>\n</table></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["table", 2, []], ["tbody", 3, []], ["tr", 4, []], ["td", 5, []]],
+    "nodes": [["body", [[1, "table"]]], ["table", [[3, "\n "], [1, "tbody"], [3, "\n"]]], ["tbody", [[3, "\n  "], [1, "tr"], [3, "\n "]]], ["tr", [[3, " "], [1, "td"], [3, " "]]], ["td", [[3, "a"]]]],
+    "implied": []
+  },
+  {
+    "name": "cell content and a nested table",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><div><p>a</div><table><tbody><tr><td>b</table>c</td></tr></tbody></table></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["table", 2, []], ["tbody", 3, []], ["tr", 4, []], ["td", 5, []], ["div", 6, []], ["p", 7, []], ["table", 6, []], ["tbody", 9, []], ["tr", 10, []], ["td", 11, []]],
+    "nodes": [["body", [[1, "table"]]], ["table", [[1, "tbody"]]], ["tbody", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[1, "div"], [1, "table"], [3, "c"]]], ["div", [[1, "p"]]], ["p", [[3, "a"]]], ["table", [[1, "tbody"]]], ["tbody", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[3, "b"]]]],
+    "implied": ["p", "tbody", "tr", "td"]
+  },
+  {
+    "name": "p closed by a table inside a div",
+    "source": "<!DOCTYPE html><html><head></head><body><div><p>a<table><tbody><tr><TD>b</table></div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["div", 2, []], ["p", 3, []], ["table", 3, []], ["tbody", 5, []], ["tr", 6, []], ["td", 7, []]],
+    "nodes": [["body", [[1, "div"]]], ["div", [[1, "p"], [1, "table"]]], ["p", [[3, "a"]]], ["table", [[1, "tbody"]]], ["tbody", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[3, "b"]]]],
+    "implied": ["p", "tbody", "tr", "td"]
+  },
+  {
+    "name": "explicit caption and colgroup ends",
+    "source": "<!DOCTYPE html><html><head></head><body><table><caption>c</caption><colgroup><col></colgroup><tbody><tr><td>x</td></tr></tbody></table></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["table", 2, []], ["caption", 3, []], ["colgroup", 3, []], ["col", 5, []], ["tbody", 3, []], ["tr", 7, []], ["td", 8, []]],
+    "nodes": [["body", [[1, "table"]]], ["table", [[1, "caption"], [1, "colgroup"], [1, "tbody"]]], ["caption", [[3, "c"]]], ["colgroup", [[1, "col"]]], ["col", []], ["tbody", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[3, "x"]]]],
+    "implied": []
+  }
+]

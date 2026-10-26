@@ -3,7 +3,7 @@
 
 use vize_l0::{Span, Vec};
 
-use super::{DocumentLexicalRefusal, DocumentTreePolicy, NativeDocument};
+use super::{DocumentLexicalRefusal, NativeDocument};
 
 mod attribute;
 mod build;
@@ -33,11 +33,20 @@ pub enum DocumentHtmlRefusal {
     Lexical(DocumentLexicalRefusal),
     ExplicitEnvelope,
     UnsupportedElement(Span),
-    UnsupportedPolicy(DocumentTreePolicy),
     VueSyntax,
     NonHtmlToken,
     InvalidFrame(Span),
+    /// An end the browser would imply with a parse error, or ignore.
     ImpliedEnd(Span),
+    /// A table part whose parent the browser would insert without a tag
+    /// (`tbody` for `tr`, `tr` for a cell, `colgroup` for `col`).
+    ImpliedStart(Span),
+    /// A tag the browser ignores, such as a table part outside a table.
+    IgnoredTag(Span),
+    /// Content the browser would move in front of its table.
+    FosterParenting(Span),
+    /// Non-whitespace text directly in a table, row group, row or column group.
+    TableText(Span),
     PendingStructure,
     AttributeCountLimit(Span),
     OpeningByteLimit(Span),
@@ -48,23 +57,29 @@ pub enum DocumentHtmlRefusal {
 /// Actual element ancestry for a strict explicit no-quirks HTML envelope.
 ///
 /// Supported envelope: exactly `<!DOCTYPE html>`, `html`, `head`, then `body`,
-/// with explicit matching ends. Head children are `base`, `link` and `meta`;
-/// body elements are `div`, `span`, `br`, `hr`, `img`, `input`, `area`, `embed`,
+/// with explicit ends. Head children are `base`, `link` and `meta`; body
+/// elements are `div`, `span`, `br`, `hr`, `img`, `input`, `area`, `embed`,
 /// `source`, `track`, `wbr`, `article`, `aside`, `footer`, `header`, `main`, `nav`
-/// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup` and
-/// `search`. HTML names
-/// match without ASCII case, and a slash never closes a nonvoid HTML element.
+/// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
+/// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
+/// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `option`/`optgroup` outside `select`,
+/// and table parts. HTML names match without ASCII case, and a slash never
+/// closes a nonvoid HTML element.
+///
+/// Implied end tags and the table insertion modes follow the HTML parser
+/// when they report no parse error, so an omitted `</p>`, `</li>` or `</td>`
+/// closes its element without a closing span. Implied starts, fostered
+/// content, ignored tags and parse-error ends refuse with typed reasons.
 /// Static attributes borrow their original callback ranges, with HTML ASCII
 /// name folding, first duplicate retention and once-decoded scalar values.
 /// Every authored start tag has at most 64 attributes (including duplicates)
 /// and 16 KiB of original opening bytes. Larger tags explicitly refuse.
 ///
-/// Implied ends, tables, foreign content, raw-text elements, formatting,
-/// templates, Vue directive/interpolation syntax and implicit envelopes refuse
-/// this provider. Direct body-subtree child nodes retain original text/comment
-/// callbacks; outer insertion-mode text is a separate typed refusal. General
-/// tree policies and petite-vue remain unfinished. This view borrows the actual
-/// original lexer owner and arena.
+/// Foreign content, raw-text elements, formatting, `select`, templates, Vue
+/// directive/interpolation syntax and implicit envelopes refuse this provider.
+/// Direct body-subtree child nodes retain original text/comment callbacks;
+/// outer insertion-mode text is a separate typed refusal. Petite-vue remains
+/// unfinished. This view borrows the actual original lexer owner and arena.
 ///
 /// ```compile_fail
 /// use vize_l1::markup::document::DocumentHtmlStructure;
@@ -83,6 +98,8 @@ pub struct DocumentHtmlStructure<'o, 'a> {
     owner: &'o NativeDocument<'a>,
     elements: Vec<'a, Element>,
     body_tail_text: Option<Span>,
+    /// The current node at `</body>`, which receives later whitespace.
+    tail_owner: Option<usize>,
 }
 
 impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
@@ -156,7 +173,7 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
         self.opening_span().slice(self.owner().source())
     }
 
-    /// Void elements have no closing tag; nonvoid admitted elements always do.
+    /// Void elements and elements closed by an implied end have no closing tag.
     #[must_use]
     pub fn closing_span(&self) -> Option<Span> {
         self.element().closing
@@ -175,12 +192,13 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
         attribute::attributes(self.tree, self.element)
     }
 
-    /// Original direct child nodes of body, div, span and admitted body voids.
+    /// Original direct child nodes of body-subtree elements.
     /// Text callbacks coalesce across references, comments retain literal
     /// reference bytes, and child elements use the existing original adjacency.
-    /// Head/html insertion modes refuse. Body text after its authored closing
-    /// tag also refuses rather than claiming that source-range custody models
-    /// the browser's outside-body insertion rules.
+    /// Head/html insertion modes refuse. Text after the authored `</body>`
+    /// also refuses on the element open there (body, or an implied-end
+    /// descendant) rather than claiming that source-range custody models the
+    /// browser's outside-body insertion rules.
     pub fn child_nodes(&self) -> Result<DocumentHtmlChildNodes<'s, 'o, 'a>, DocumentHtmlRefusal> {
         node::children(self.tree, self.element)
     }

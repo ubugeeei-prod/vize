@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, String};
 
 use super::{DocumentHtmlRefusal as Refusal, NativeDocument};
-use crate::markup::document::{DocumentLexicalRefusal, DocumentTreePolicy};
+use crate::markup::document::DocumentLexicalRefusal;
 
 const CORPUS: &str = include_str!("../../../../tests/fixtures/document/html-structure.tsv");
 
@@ -55,7 +55,6 @@ fn original_element_ancestry_matches_the_real_browser_census() {
             })
             .collect();
         assert_eq!(actual, expected, "{label}");
-        assert_eq!(owner.unfinished_tree_policies().len(), 4);
         count += 1;
     }
     assert_eq!(count, 12);
@@ -179,19 +178,7 @@ fn vue_flavored_callbacks_cannot_hide_real_html_structure() {
 }
 
 #[test]
-fn unimplemented_tree_policies_and_foreign_raw_formatting_are_explicit() {
-    for (body, policy) in [
-        ("<table></table>", DocumentTreePolicy::TableContentModel),
-        ("<p></p>", DocumentTreePolicy::ImpliedEndTags),
-    ] {
-        let source = source(body);
-        let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
-        assert_eq!(
-            owner.html_structure().unwrap_err(),
-            Refusal::UnsupportedPolicy(policy)
-        );
-    }
+fn foreign_raw_formatting_and_select_content_are_explicit() {
     for body in [
         "<svg></svg>",
         "<math></math>",
@@ -199,6 +186,7 @@ fn unimplemented_tree_policies_and_foreign_raw_formatting_are_explicit() {
         "<SCRIPT></SCRIPT>",
         "<b></b>",
         "<template></template>",
+        "<select><option></option></select>",
     ] {
         let source = source(body);
         let allocator = Allocator::default();
@@ -267,5 +255,4 @@ fn the_original_pinned_petite_vue_document_still_reports_unsupported_structure()
         owner.html_structure(),
         Err(Refusal::UnsupportedElement(_))
     ));
-    assert_eq!(owner.unfinished_tree_policies().len(), 4);
 }
