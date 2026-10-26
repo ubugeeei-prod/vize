@@ -8,6 +8,7 @@ on:
       - "crates/vize_vitrine/src/napi/sfc/types.rs"
       - "npm/native/index.d.ts"
       - "tests/native/sfc-parse-attributes-*.mjs"
+      - "tests/tooling/sfc-parse-attributes-bootstrap.test.mjs"
       - "tests/fixtures/sfc/parsed-attributes/**"
   workflow_dispatch:
 permissions: { contents: read }
@@ -15,7 +16,8 @@ concurrency:
   group: sfc-parse-attributes-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 env:
-  VIZE_SFC_ATTRS_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  VIZE_SFC_ATTRS_ACTOR_SHA: ${{ github.sha }}
+  VIZE_SFC_ATTRS_TRIGGER_HEAD: ${{ github.event.pull_request.head.sha || '' }}
   CARGO_TERM_COLOR: never
 jobs:
   source:
@@ -25,10 +27,10 @@ jobs:
       fail-fast: false
       matrix: { role: [base, head] }
     env:
-      VIZE_SFC_ATTRS_SOURCE_SHA: ${{ matrix.role == 'base' && '49a98d1e72707083354b8ff11e1cec800ded28b3' || github.event.pull_request.head.sha || github.sha }}
+      VIZE_SFC_ATTRS_SOURCE_SHA: ${{ matrix.role == 'base' && '49a98d1e72707083354b8ff11e1cec800ded28b3' || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}", persist-credentials: false }
+        with: { ref: "${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}", persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: matrix.role == 'base'
         with:
@@ -37,6 +39,10 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Verify observer bootstrap and source roles
+        run: |
+          node --test tests/tooling/sfc-parse-attributes-bootstrap.test.mjs
+          node tests/native/sfc-parse-attributes-source.mjs
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -71,7 +77,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
-          name: sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/${{ matrix.role }}/
           if-no-files-found: error
           retention-days: 14
@@ -81,26 +87,26 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}", persist-credentials: false }
+        with: { ref: "${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: false, run-install: false }
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           {
-            name: "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}-base-${{ github.run_id }}-${{ github.run_attempt }}",
+            name: "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-base-${{ github.run_id }}-${{ github.run_attempt }}",
             path: artifacts/base,
           }
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           {
-            name: "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}-head-${{ github.run_id }}-${{ github.run_attempt }}",
+            name: "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-head-${{ github.run_id }}-${{ github.run_attempt }}",
             path: artifacts/head,
           }
       - run: node tests/native/sfc-parse-attributes-compare.mjs artifacts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
-          name: sfc-parse-attributes-qualified-${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: sfc-parse-attributes-qualified-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 14

@@ -1,6 +1,6 @@
 //! Batch checker construction and explicit installed-source lifetime ownership.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
 
@@ -54,11 +54,12 @@ impl BatchTypeChecker {
         if self.scanned || self.owned_storage.is_some() {
             return Ok(());
         }
+        let project_root = self.project.project_root();
         let installed = paths.par_iter().any(|path| {
             if path.is_absolute() {
-                is_installed_source(path)
+                is_installed_source(project_root, path)
             } else {
-                is_installed_source(&self.project.project_root().join(path))
+                is_installed_source(project_root, &project_root.join(path))
             }
         });
         if !installed {
@@ -93,24 +94,56 @@ impl BatchTypeChecker {
     }
 }
 
-fn is_installed_source(path: &Path) -> bool {
-    contains_node_modules(path)
-        || contains_node_modules(&vize_carton::path::canonicalize_non_verbatim(path))
+/// Whether `path` is an installed file of this project: a `node_modules`
+/// segment lies below the project root in its logical spelling or in its
+/// canonical one.
+///
+/// Private storage exists so an owned write below the virtual root's own
+/// `node_modules/` cannot meet a package link that a previous command left in
+/// the persistent namespace (#8274). A file outside the project root never
+/// lands there: it mirrors into `__vize_external__`. A pnpm store file, or a
+/// declaration that a shared tsconfig lists from a hoisted workspace root,
+/// therefore keeps the persistent namespace, with its skipped rewrites and its
+/// incremental build info.
+fn is_installed_source(project_root: &Path, path: &Path) -> bool {
+    installed_below_root(project_root, path)
+        || installed_below_root(
+            project_root,
+            &vize_carton::path::canonicalize_non_verbatim(path),
+        )
 }
 
+/// Every `node_modules` segment is tried, so a project that itself lives
+/// below a `node_modules` directory still owns the files below its own one.
+/// The directory before a segment exists in either spelling. Canonicalizing
+/// only that much keeps a logical link root (`node_modules/selected` ->
+/// elsewhere) below its project root.
+fn installed_below_root(project_root: &Path, path: &Path) -> bool {
+    path.components()
+        .enumerate()
+        .filter(|(_, part)| is_node_modules_component(part.as_os_str()))
+        .any(|(installed_at, _)| {
+            let prefix = path.components().take(installed_at).collect::<PathBuf>();
+            vize_carton::path::canonicalize_non_verbatim(&prefix).starts_with(project_root)
+        })
+}
+
+#[cfg(test)]
 fn contains_node_modules(path: &Path) -> bool {
-    path.components().any(|part| {
-        #[cfg(windows)]
-        {
-            part.as_os_str()
-                .to_str()
-                .is_some_and(|value| value.eq_ignore_ascii_case("node_modules"))
-        }
-        #[cfg(not(windows))]
-        {
-            part.as_os_str() == "node_modules"
-        }
-    })
+    path.components()
+        .any(|part| is_node_modules_component(part.as_os_str()))
+}
+
+fn is_node_modules_component(part: &std::ffi::OsStr) -> bool {
+    #[cfg(windows)]
+    {
+        part.to_str()
+            .is_some_and(|value| value.eq_ignore_ascii_case("node_modules"))
+    }
+    #[cfg(not(windows))]
+    {
+        part == "node_modules"
+    }
 }
 
 #[cfg(test)]
@@ -332,6 +365,67 @@ mod tests {
         owner.scan_paths(&[installed]).unwrap();
         assert!(owner.owned_storage.is_none());
         assert_eq!(owner.project.virtual_root(), namespace);
+    }
+
+    /// A pnpm store and a hoisted workspace root keep installed files outside
+    /// the project root. They mirror into `__vize_external__`, never below the
+    /// virtual root's `node_modules`, so they select no private storage.
+    #[test]
+    fn installed_files_outside_the_project_root_keep_the_persistent_namespace() {
+        let root = tempfile::tempdir().unwrap();
+        let store = tempfile::tempdir().unwrap();
+        let ordinary = source(root.path(), "src/index.ts");
+        let declaration = store.path().join("node_modules/vue/jsx.d.ts");
+        std::fs::create_dir_all(declaration.parent().unwrap()).unwrap();
+        std::fs::write(&declaration, "export {};\n").unwrap();
+        let installed = source(store.path(), "node_modules/selected/index.ts");
+        let mut owner = checker(root.path());
+        let expected = crate::batch::project_virtual_root(root.path());
+        owner
+            .scan_paths(&[ordinary, declaration, installed])
+            .unwrap();
+        assert!(owner.owned_storage.is_none());
+        assert_eq!(owner.project.virtual_root(), expected);
+    }
+
+    #[test]
+    fn only_installed_segments_below_the_project_root_select_private_storage() {
+        let root = Path::new("/workspace/apps/web");
+        for installed in [
+            "/workspace/apps/web/node_modules/selected/index.ts",
+            "/workspace/apps/web/packages/ui/node_modules/selected/index.d.ts",
+        ] {
+            assert!(
+                super::is_installed_source(root, Path::new(installed)),
+                "{installed}"
+            );
+        }
+        for external in [
+            "/workspace/node_modules/.pnpm/vue@3.5.0/node_modules/vue/jsx.d.ts",
+            "/workspace/packages/tsconfig/node_modules/vue/jsx.d.ts",
+            "/workspace/apps/web/src/node_modules.ts",
+            "/workspace/apps/web-node_modules/src/index.ts",
+        ] {
+            assert!(
+                !super::is_installed_source(root, Path::new(external)),
+                "{external}"
+            );
+        }
+        // A project below a `node_modules` directory still owns its own one.
+        let nested_root = Path::new("/workspace/node_modules/my-app");
+        assert!(super::is_installed_source(
+            nested_root,
+            Path::new("/workspace/node_modules/my-app/node_modules/vue/index.d.ts"),
+        ));
+        for external in [
+            "/workspace/node_modules/other/index.ts",
+            "/workspace/node_modules/.pnpm/vue@3.5.0/node_modules/vue/index.d.ts",
+        ] {
+            assert!(
+                !super::is_installed_source(nested_root, Path::new(external)),
+                "{external}"
+            );
+        }
     }
 
     #[cfg(unix)]

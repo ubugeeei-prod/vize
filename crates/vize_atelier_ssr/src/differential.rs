@@ -58,6 +58,7 @@ pub fn compare_ssr_lanes(
             &SsrL4Request {
                 options,
                 experimental,
+                runtime_module_name: "vue",
                 template_syntax: TemplateSyntaxMode::Standard,
                 has_custom_elements: false,
                 context: crate::SsrSfcContext::new(true),

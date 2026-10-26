@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+  "sourceRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "missing-target",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Host.vue",
+          "source": "Host.vue.txt"
+        },
+        {
+          "file": "node_modules/@scope/dynamic/package.json",
+          "source": "package.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Host.vue",
+          "line": 2,
+          "column": 20,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module '@scope/dynamic' or its corresponding type declarations."
+        }
+      ]
+    }
+  ]
+}

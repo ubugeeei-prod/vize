@@ -851,6 +851,28 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
     );
 }
 
+#[test]
+fn missing_exported_package_target_preserves_ts2307() {
+    check_pack(
+        "package-target-deletion-refresh",
+        "missing_exported_package_target_preserves_ts2307",
+        "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+        None,
+        &["missing-target"],
+    );
+}
+
+#[test]
+fn rewritten_import_literals_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "import-literal-geometry-10762",
+        "rewritten_import_literals_preserve_complete_batch_diagnostics",
+        "51d3bebcc8988ba6bf42bb5f6b7fdc102de47ee3",
+        Some(10762),
+        &["original-alias-graph", "after-import-type-error"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -878,6 +900,8 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "import-literal-geometry-10762" => "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+            "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
             "template-context-undefined-10667"
             | "contextual-prop-anchors-10661"
             | "typed-import-meta"
@@ -1092,8 +1116,13 @@ fn check_pack(
             }
         }
         let options = BatchTypeCheckerOptions {
-            tsconfig_path: (name == "workspace-alias-cache-10063")
-                .then(|| project_root.join("tsconfig.a.json")),
+            tsconfig_path: match name {
+                "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
+                "import-literal-geometry-10762" => {
+                    Some(project_root.join("packages/web/tsconfig.app.json"))
+                }
+                _ => None,
+            },
             ..Default::default()
         };
         let mut checker =

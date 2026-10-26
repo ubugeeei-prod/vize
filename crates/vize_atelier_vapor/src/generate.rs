@@ -21,11 +21,11 @@ use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNod
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, ensure_sufficient_stack};
 
 use context::GenerateContext;
-pub(crate) use entry::generate_vapor_with_spans;
 pub use entry::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
     generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
 };
+pub(crate) use entry::{generate_vapor_with_spans, generate_vapor_with_spans_and_runtime};
 use operations::generate_operation;
 use root_component::collect_single_root_returns;
 pub(crate) use setup::escape_js_string_literal;

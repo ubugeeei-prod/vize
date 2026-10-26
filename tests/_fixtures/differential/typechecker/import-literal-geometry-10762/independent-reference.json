@@ -1,0 +1,37 @@
+{
+  "schema": "vize.import-literal-geometry-independent-typescript-reference",
+  "version": 1,
+  "compiler": {
+    "version": "5.9.3",
+    "moduleSha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675"
+  },
+  "note": "Independent handwritten script extraction. This proves authored type semantics, not generated literal/navigation geometry. Raw Vize map source witness is mandatory separately.",
+  "root": ".",
+  "outputs": [
+    {
+      "name": "App.vue",
+      "authoredSha256": "591ecac8c496406def7e5c3c9f0820b7e4256479633dcc79e46d05e38d818957",
+      "referenceScript": "                        import { greet } from '#lib/greet'; const message: string = greet('vize')",
+      "diagnostics": []
+    },
+    {
+      "name": "App.invalid.vue",
+      "authoredSha256": "13d6f44a61c654e652f082a60a12a8bcf740001fb5e06042dd4457fa4b7d5047",
+      "referenceScript": "                        import { greet } from '#lib/greet'; const message: string = greet('vize'); const sentinel: number = message;",
+      "diagnostics": [
+        {
+          "code": 2322,
+          "category": 1,
+          "file": "src/App.ts",
+          "start": 105,
+          "length": 8,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "position": {
+            "line": 0,
+            "character": 105
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -62,6 +62,37 @@ pub fn compile_vapor_with_sfc_context_and_capture<'a, C: CaptureSink>(
     )
 }
 
+/// Compile with the SFC's typed generated-helper runtime. Authored imports and
+/// server-renderer ownership are separate from these compiler-generated imports.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC context, codegen options and capture"
+)]
+pub fn compile_vapor_with_sfc_context_and_codegen_options<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
+    codegen_options: &vize_atelier_core::CodegenOptions,
+    capture: &mut C,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    super::inner::compile_vapor_inner_scoped_captured_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        scope_id,
+        codegen_options.runtime_module_name.as_str(),
+        capture,
+    )
+}
+
 /// Compile a Vue template to Vapor mode
 pub fn compile_vapor<'a>(
     allocator: &'a Allocator,
