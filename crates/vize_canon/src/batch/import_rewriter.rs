@@ -41,6 +41,9 @@ pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 
+#[cfg(test)]
+mod literal_geometry_tests;
+
 pub struct ImportRewriter;
 
 impl ImportRewriter {
@@ -269,31 +272,26 @@ impl ImportRewriter {
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
         for (start, end, path, mode) in occurrences {
             if let Some(rewrite) = rewrite_specifier(path, *mode) {
+                if source.get(*start as usize..*end as usize) == Some(rewrite.as_str()) {
+                    continue;
+                }
                 rewrites.push((*start, *end, rewrite));
             }
         }
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
         let mut output = source.to_compact_string();
-        let mut adjustments = Vec::new();
+        let mut source_map = ImportSourceMap::for_rewrites(rewrites.len());
 
         for (start, end, new_path) in rewrites {
-            let original_len = (end - start) as i32;
-            let new_len = new_path.len() as i32;
-
             output.replace_range(start as usize..end as usize, new_path.as_str());
-
-            adjustments.push(OffsetAdjustment {
-                original_offset: start,
-                adjustment: new_len - original_len,
-            });
+            source_map.record_replacement(start, end, new_path.len() as u32);
         }
-
-        adjustments.reverse();
+        source_map.finish_descending_replacements();
 
         RewriteResult {
             code: output,
-            source_map: ImportSourceMap::new(adjustments),
+            source_map,
         }
     }
 

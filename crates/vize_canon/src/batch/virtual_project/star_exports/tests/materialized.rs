@@ -59,7 +59,7 @@ fn materialized_lifecycle_restores_complete_maps_and_prunes_removed_target() {
         &project,
         "index.ts",
         "export { type Authored } from './Panel.vue.ts';\n",
-        "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 16 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 24 }] }",
+        "ImportSourceMap { adjustments: [], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 24 }, ReplacementRange { original_start: 15, original_end: 26, virtual_start: 31, virtual_end: 45 }] }",
     );
     let named = assert_materialized(&project);
     assert_ne!(named["files"], initial["files"]);

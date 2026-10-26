@@ -15,10 +15,17 @@ on:
       - crates/vize_canon/src/corsa_bridge/**
       - crates/vize_canon/src/lsp_client/**
       - crates/vize_canon/src/corsa_server/**
+      - crates/vize_maestro/tests/davinci_ts40_projection*
+      - crates/vize_maestro/tests/davinci_ts40_projection_support/**
+      - crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*
   workflow_dispatch:
     inputs:
       historical:
         description: Repeat the immutable before/after runtime-policy attribution
+        type: boolean
+        default: false
+      import_geometry:
+        description: Execute the focused actual-source import geometry laws only
         type: boolean
         default: false
 permissions: { contents: read }
@@ -30,6 +37,7 @@ env:
   CARGO_BUILD_JOBS: 12
 jobs:
   attribution:
+    if: ${{ !inputs.import_geometry }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     steps:
@@ -73,5 +81,75 @@ jobs:
         with:
           name: corsa-package-refresh-${{ github.sha }}
           path: ${{ runner.temp }}/corsa-package-refresh
+          if-no-files-found: error
+          retention-days: 14
+  import-literal-geometry:
+    if: ${{ github.event_name == 'pull_request' || inputs.import_geometry }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with: { version: latest, node-version-file: package.json, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: 1.99.1
+          components: clippy,rust-src,rustfmt
+          targets: wasm32-unknown-unknown,wasm32-wasip2
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Execute all import rewriter laws and retain source measurements
+        env:
+          VIZE_IMPORT_GEOMETRY_CAPTURE: ${{ runner.temp }}/import-literal-geometry
+        run: vp node tools/support/compat/github/corsa-package-refresh/import-geometry.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: import-literal-geometry-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/import-literal-geometry
+          if-no-files-found: error
+          retention-days: 14
+  projection-import-geometry:
+    if: ${{ github.event_name == 'pull_request' || inputs.import_geometry }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix: { feature: [default, legacy] }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Check the complete editor projection and offset probes
+        env:
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/projection-import-geometry/packets
+          FEATURE: ${{ matrix.feature }}
+          INSTA_UPDATE: new
+        run: |
+          mkdir -p "$RUNNER_TEMP/projection-import-geometry"
+          git rev-parse HEAD > "$RUNNER_TEMP/projection-import-geometry/source.sha"
+          args=()
+          if [[ "$FEATURE" == legacy ]]; then args+=(--features legacy); fi
+          set -o pipefail
+          cargo test --locked --profile ci -p vize_maestro "${args[@]}" --test davinci_ts40_projection -- --nocapture 2>&1 | tee "$RUNNER_TEMP/projection-import-geometry/execution.log"
+      - name: Retain pending snapshots for manual review
+        if: always()
+        run: |
+          directory="$RUNNER_TEMP/projection-import-geometry/pending-snapshots"
+          mkdir -p "$directory"
+          find crates/vize_maestro/tests/snapshots -name '*.snap.new' -exec cp {} "$directory/" \;
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: projection-import-geometry-${{ matrix.feature }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/projection-import-geometry
           if-no-files-found: error
           retention-days: 14
