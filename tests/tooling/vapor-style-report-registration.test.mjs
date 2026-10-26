@@ -34,7 +34,9 @@ const beforeSources = new Map(
 const sourcePaths = authority.sourceFiles.map((source) => source.path);
 // This complete ordinary case exists only in the in-memory gate control. The
 // production manifest receives no SSR case or whole-product native credit.
-const ordinary = structuredClone(manifest.cases[0]);
+const ordinary = structuredClone(
+  manifest.cases.find((row) => row.id === "compiler/sfc/ssr-slot-scope"),
+);
 const originalRoot = ordinary.inputs.root;
 ordinary.id = "compiler/sfc/unit-only-ssr-control";
 ordinary.inputs.root = "unit-only-ssr-control";
