@@ -26,6 +26,10 @@ import { writeOwnedNuxtConfig } from "./owned-config.ts";
 
 const GENERATED_CONFIG_NAME = ".oxlint.vize.json";
 
+/** Shown when lint is skipped because the optional plugin peer is absent. */
+export const MISSING_LINT_PLUGIN_WARNING =
+  "@vizejs/nuxt: lint skipped; oxlint-plugin-vize is not installed. Run `vp install -D oxlint-plugin-vize` to enable it.";
+
 /** Root config names supported by oxlint's config discovery. */
 export const ROOT_OXLINT_CONFIG_NAMES = [
   ".oxlintrc.json",
@@ -57,7 +61,10 @@ export interface NuxtLintGenerationDependencies {
   /** Phase #3614 supplies fresh addon items through this seam. */
   resolveAddons?: () => Awaitable<readonly NuxtLintConfigItem[]>;
   hasTypeScript?: (rootDir: string) => boolean;
-  resolvePluginSpecifier?: (configDir: string) => string;
+  /** Returns `undefined` when the optional `oxlint-plugin-vize` peer is not installed. */
+  resolvePluginSpecifier?: (configDir: string) => string | undefined;
+  /** Warn when the plugin is missing even if no generated config exists yet. */
+  reportMissingPlugin?: boolean;
   /** Shared project rules. Tests inject this so generation never loads the native preset binding. */
   resolveProjectLintRules?: (rootDir: string) => Awaitable<ProjectLintRules | undefined>;
   warn?: (message: string) => void;
@@ -128,9 +135,25 @@ function relativeSpecifier(from: string, target: string): string {
     : `./${normalized}`;
 }
 
-function resolveVizePluginSpecifier(configDir: string): string {
-  const entry = fileURLToPath(import.meta.resolve("oxlint-plugin-vize"));
+function resolveVizePluginSpecifier(configDir: string): string | undefined {
+  let entry: string;
+  try {
+    entry = fileURLToPath(import.meta.resolve("oxlint-plugin-vize"));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND") return undefined;
+    throw error;
+  }
   return relativeSpecifier(configDir, entry);
+}
+
+async function exists(file: string): Promise<boolean> {
+  try {
+    await lstat(file);
+    return true;
+  } catch (error) {
+    if (isNotFound(error)) return false;
+    throw error;
+  }
 }
 
 async function findRootLintConfig(rootDir: string): Promise<string | undefined> {
@@ -234,7 +257,16 @@ export async function setupNuxtLintConfigGeneration(
   const configFile = path.resolve(nuxtRoot, configuredFile ?? GENERATED_CONFIG_NAME);
   const ownsReservedConfig = configFile === path.join(nuxtRoot, GENERATED_CONFIG_NAME);
   const hasTypeScriptProbe = dependencies.hasTypeScript ?? hasTypeScript;
-  const resolvePluginSpecifier = dependencies.resolvePluginSpecifier ?? resolveVizePluginSpecifier;
+  const pluginSpecifier = (dependencies.resolvePluginSpecifier ?? resolveVizePluginSpecifier)(
+    path.dirname(configFile),
+  );
+  if (pluginSpecifier === undefined) {
+    // A config generated before the plugin was removed is now stale, so say why.
+    if (dependencies.reportMissingPlugin || (await exists(configFile))) {
+      (dependencies.warn ?? console.warn)(MISSING_LINT_PLUGIN_WARNING);
+    }
+    return undefined;
+  }
   const resolveAddons =
     dependencies.resolveAddons ??
     ("callHook" in nuxt
@@ -287,7 +319,7 @@ export async function setupNuxtLintConfigGeneration(
     const nextPlan = [...projectItems, ...plan, ...addons];
     const artifact = renderNuxtOxlintConfig(
       nextPlan,
-      resolvePluginSpecifier(path.dirname(configFile)),
+      pluginSpecifier,
       {
         rootDir: planRoot,
         configDir: path.dirname(configFile),

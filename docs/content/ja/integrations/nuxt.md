@@ -134,6 +134,14 @@ export default defineNuxtConfig({
 
 `lint` が有効な場合、モジュールはプロジェクトのルートに `.oxlint.vize.json` を書き出します。これは `@nuxt/eslint` が生成する設定の Oxlint 版で、Nuxt のバージョンとディレクトリ構成に合わせたルールが入ります。このファイルは `.gitignore` に追加してください。
 
+lint の生成と `checker` には `oxlint-plugin-vize` が必要で、ルールの実行には `oxlint` を使います。どちらも任意の peer dependency なので、自分でインストールしてください。
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+プラグインがない場合、モジュールは lint を飛ばし、それ以外の機能はそのまま動きます。`lint` や `checker` を自分で設定したとき、または以前の `.oxlint.vize.json` が残っているときは、インストールコマンドを示す警告を 1 行だけ出します。
+
 プロジェクトに Oxlint や Vite の設定ファイルがまだない場合は、生成したファイルを読み込む `oxlint.config.mts` もあわせて作成します。既存の設定ファイルを書き換えることはありません。その場合は、自分の設定から `.oxlint.vize.json` を読み込んでください。
 
 | オプション   | 既定値                | 説明                                                                                        |

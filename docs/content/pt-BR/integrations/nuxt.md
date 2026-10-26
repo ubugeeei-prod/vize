@@ -134,6 +134,14 @@ O [guia do plugin Vite](../guide/vite-plugin.md#compiler-options) descreve cada 
 
 Com `lint` ativado, o módulo grava `.oxlint.vize.json` na raiz do projeto. É o equivalente para o Oxlint da configuração gerada pelo `@nuxt/eslint`: blocos de regras de acordo com a sua versão do Nuxt e seus diretórios. Adicione esse arquivo ao `.gitignore`.
 
+A geração do lint e o `checker` precisam do `oxlint-plugin-vize`, e o `oxlint` executa as regras. Os dois são dependências peer opcionais, então instale-os você mesmo:
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+Sem o plugin, o módulo pula o lint e o resto continua funcionando. Ele mostra um único aviso com o comando de instalação quando você define `lint` ou `checker`, ou quando um `.oxlint.vize.json` antigo ainda existe.
+
 Se o projeto ainda não tem configuração do Oxlint nem do Vite, o módulo também cria um `oxlint.config.mts` que carrega o arquivo gerado. Uma configuração existente nunca é reescrita; carregue `.oxlint.vize.json` nela você mesmo.
 
 | Opção        | Padrão                | O que faz                                                                                          |

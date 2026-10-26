@@ -189,6 +189,7 @@ export interface VizeNuxtOptions {
 
   /**
    * Generate the Nuxt-aware oxlint config consumed by Vize's linting engine.
+   * Needs the optional `oxlint-plugin-vize` peer; lint is skipped without it.
    * @default true
    */
   lint?: boolean | VizeNuxtLintOptions;
@@ -248,6 +249,17 @@ export const DEFAULT_NUXT_UNOCSS_OPTIONS: ResolvedVizeNuxtUnoCssOptions = {
 export const DEFAULT_NUXT_DEV_OPTIONS: Required<VizeNuxtDevOptions> = {
   stylesheetLinks: true,
 };
+
+/** Whether user config asks for lint, as opposed to inheriting the module default. */
+export function isNuxtLintRequested(
+  ...configured: Array<Partial<VizeNuxtOptions> | undefined>
+): boolean {
+  return configured.some(
+    (options) =>
+      (options?.lint !== undefined && options.lint !== false) ||
+      (options?.checker !== undefined && options.checker !== false),
+  );
+}
 
 export function resolveNuxtBridgeOptions(
   bridge: VizeNuxtOptions["bridge"],

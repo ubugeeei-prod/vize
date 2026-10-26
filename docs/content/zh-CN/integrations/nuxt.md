@@ -134,6 +134,14 @@ export default defineNuxtConfig({
 
 启用 `lint` 后，模块会在项目根目录写出 `.oxlint.vize.json`。它相当于 `@nuxt/eslint` 所生成配置的 Oxlint 版本：其中的规则块与你的 Nuxt 版本和目录结构相匹配。请把该文件加入 `.gitignore`。
 
+lint 生成和 `checker` 需要 `oxlint-plugin-vize`，运行规则则需要 `oxlint`。两者都是可选的 peer 依赖，请自行安装：
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+没有安装该插件时，模块会跳过 lint，其余功能照常工作。当你自行设置了 `lint` 或 `checker`，或者旧的 `.oxlint.vize.json` 仍然存在时，模块会输出一条附带安装命令的警告。
+
 如果项目还没有 Oxlint 或 Vite 配置，模块还会创建一个加载生成文件的 `oxlint.config.mts`。已有的配置不会被改写；请在其中自行加载 `.oxlint.vize.json`。
 
 | 选项         | 默认值                | 作用                                                     |
