@@ -88,8 +88,8 @@ root-comment fallback. Preserve every reference-authority byte, all original300
 history cases and strict historical/current mismatch separation.
 
 Move only the complete unchanged 75-line declaration custody law from
-`differential-formatter-current-reference.test.mjs` into the existing child-only
-`differential-formatter-declaration-snapshot.test.mjs`, retaining the same eight
+`differential-formatter-current-reference.test.ts` into the existing child-only
+`differential-formatter-declaration-snapshot.test.ts`, retaining the same eight
 history-manifest loader scope. The whole law SHA256 remains
 `b0ed4ffdde134f7dadabaa7f08dd0454394299f4f44045882d317469d6a105b9`;
 existing hugged and named-snapshot controls remain complete, with unchanged350

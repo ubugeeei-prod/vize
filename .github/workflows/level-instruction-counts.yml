@@ -50,7 +50,7 @@ jobs:
           key: instruction-counts-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
-        run: node --test tests/tooling/level-instruction-counts.test.mjs tests/tooling/formatter-instruction-counts.test.mjs
+        run: node --test tests/tooling/level-instruction-counts.test.mjs tests/tooling/formatter-instruction-counts.test.ts
       - name: Test default harness and client request windows
         if: env.MEASURE == 'true'
         run: |
