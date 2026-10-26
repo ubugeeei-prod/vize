@@ -45,10 +45,13 @@ async function missing(published: string, latest: string): Promise<string[]> {
   }
 }
 
-test("verification outside the release accepts a later release's latest tag", async () => {
+test("verification accepts a later release's latest tag", async () => {
   assert.deepEqual(await missing("0.580.0", "0.580.0"), []);
-  // The next release can publish while this one still waits for propagation.
+  // The next release can publish while this one still waits for propagation,
+  // and an npm resume of an older version publishes under its backfill tag
+  // while `latest` stays on the newer release, exactly as publish-npm checks.
   assert.deepEqual(await missing("0.580.0", "0.581.0"), []);
+  assert.deepEqual(await missing("0.580.0", "0.582.0"), []);
 });
 
 test("verification still requires the exact version and a current latest tag", async () => {
