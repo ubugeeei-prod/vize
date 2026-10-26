@@ -164,7 +164,7 @@ impl FmtPattern {
     }
 }
 
-fn normalize_fmt_pattern(pattern: &str) -> vize_l0::String {
+pub(super) fn normalize_fmt_pattern(pattern: &str) -> vize_l0::String {
     let mut normalized: vize_l0::String = pattern.replace('\\', "/").into();
     while let Some(stripped) = normalized.strip_prefix("./") {
         normalized = stripped.into();

@@ -63,6 +63,8 @@ pub(super) struct LineJoiner<'s> {
     /// Last ordinary opening tag, borrowed from the existing tag parser.
     opening: Option<(usize, usize, usize)>,
     wrapped_text_close: Option<usize>,
+    /// Inline node start whose authored blank line the Prettier preset keeps.
+    kept_blank_line: Option<usize>,
 }
 
 impl<'s> LineJoiner<'s> {
@@ -74,6 +76,7 @@ impl<'s> LineJoiner<'s> {
             previous_end: None,
             opening: None,
             wrapped_text_close: None,
+            kept_blank_line: None,
         }
     }
 
@@ -105,10 +108,13 @@ impl<'s> LineJoiner<'s> {
                 if line_breaks == 0 {
                     return ChunkJoin::Continue(true);
                 }
-                // Collapse authored empty lines to one between markup chunks.
+                // Collapse authored empty lines to one between markup chunks
+                // and between inline nodes the Prettier preset keeps apart.
                 // Text and directive expression newlines must never become
                 // template layout.
-                blank_line = self.source.get(start) == Some(&b'<') && line_breaks >= 2;
+                blank_line = (self.source.get(start) == Some(&b'<')
+                    || self.kept_blank_line == Some(start))
+                    && line_breaks >= 2;
             }
         }
         if self.current.is_none() || self.current != previous {
@@ -169,6 +175,10 @@ impl<'s> LineJoiner<'s> {
     /// Record the source end of the chunk just emitted.
     pub(super) fn finish(&mut self, end: usize) {
         self.previous_end = Some(end);
+    }
+
+    pub(super) fn keep_blank_line(&mut self, start: usize) {
+        self.kept_blank_line = Some(start);
     }
 
     pub(super) fn wrapped_text(&mut self, closing_start: usize) {

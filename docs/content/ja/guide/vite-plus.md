@@ -139,7 +139,7 @@ Vize のネイティブ linter は Oxlint と一緒に動作します。`oxlint-
 Vue ルールの重複はデフォルトで調整され、明示的な `lint.rules` や overrides が優先されます。
 
 Vize は Vue ファイル、Oxfmt はその他のファイルをフォーマットします。
-`fmt.ignorePatterns` は両方に適用されます。
+`fmt.ignorePatterns` は両方に適用されます。ただし、すべての Vue ファイルを除外するエントリ（`**/*.vue` や `*.vue`）は、統合がデフォルトで追加するものと同じく Oxfmt から `.vue` を外すだけで、`vize fmt` は引き続きフォーマットします。
 `vue.linter.enabled: false` でネイティブ lint を無効にできます。
 `lint.vue: false`・`fmt.vue: false` を使う場合は、対応する共有ネイティブ設定がツールを明示的に有効化しないようにします。
 `vue.compiler` を省略して `compiler: false` を指定すると、既存の Vue コンパイラプラグインを保持します。

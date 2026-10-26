@@ -2346,6 +2346,49 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/next-tick-vapor-gating-10784",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "next-tick-vapor-gating-10784",
+        "files": [
+          {
+            "path": "VdomBump.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "612ae2705e94be3a0004a91bf6a768a4999dfe82b8d6cf578ea966d1b7e10d93"
+          },
+          {
+            "path": "VaporBump.vue.txt",
+            "role": "negative-control",
+            "sha256": "78b8eee75b498697a1823c28a1bbec3cf68a070dd0ecb58d4393c0e65598a251"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "d0ec1a551cefd52e94764cb881cc95d6a3ebaba2d12928d149b52ce7e95fbc45"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

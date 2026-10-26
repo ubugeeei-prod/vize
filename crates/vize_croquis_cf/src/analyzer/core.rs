@@ -5,10 +5,11 @@ mod constructors;
 mod deps;
 mod diagnostics;
 mod files;
+mod nuxt_render;
 mod run;
 mod single_file;
 
-use super::types::CrossFileOptions;
+use super::types::{CrossFileOptions, NuxtRenderDirs};
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::FxHashMap;
@@ -20,6 +21,8 @@ pub struct CrossFileAnalyzer {
     options: CrossFileOptions,
     /// Host project capability, separate from enabling the boundary rule group.
     ssr_enabled: bool,
+    /// Nuxt directories from the host config; `None` infers them beside `app.vue`.
+    nuxt_dirs: Option<NuxtRenderDirs>,
     /// Module registry.
     registry: ModuleRegistry,
     /// Dependency graph.

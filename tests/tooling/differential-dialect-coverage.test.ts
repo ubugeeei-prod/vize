@@ -88,18 +88,18 @@ void test("every product manifest contributes to the case-level dialect denomina
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 29,
+    plannedCases: 30,
     verifiedCases: 4,
-    provisionalCases: 23,
-    unknownReadinessCases: 25,
+    provisionalCases: 24,
+    unknownReadinessCases: 26,
     verified: {
       "vue0-template": 2,
       "vue-quirks": 2,
     },
     provisional: {
-      "html-template": 23,
+      "html-template": 24,
       ts: 5,
-      "vue3-sfc": 23,
+      "vue3-sfc": 24,
     },
   });
 });
@@ -163,20 +163,20 @@ void test("missing case coverage becomes explicit unknown without changing manif
 
 void test("linter and LSP coverage record every pinned authored source dialect", () => {
   assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
-    plannedCases: 97,
+    plannedCases: 98,
     verifiedCases: 0,
-    provisionalCases: 97,
-    unknownReadinessCases: 97,
+    provisionalCases: 98,
+    unknownReadinessCases: 98,
     verified: {},
     provisional: {
-      "html-template": 55,
-      js: 9,
+      "html-template": 56,
+      js: 10,
       jsx: 2,
       "pug-template": 4,
-      ts: 39,
+      ts: 40,
       tsx: 2,
       "vue2-sfc": 2,
-      "vue3-sfc": 77,
+      "vue3-sfc": 78,
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
@@ -213,19 +213,19 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 159,
+    plannedCases: 161,
     verifiedCases: 0,
-    provisionalCases: 158,
-    unknownReadinessCases: 159,
+    provisionalCases: 160,
+    unknownReadinessCases: 161,
     verified: {},
     provisional: {
-      "html-template": 152,
+      "html-template": 154,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 157,
+      ts: 159,
       tsx: 4,
-      "vue3-sfc": 156,
+      "vue3-sfc": 158,
     },
   });
   assert.deepEqual(

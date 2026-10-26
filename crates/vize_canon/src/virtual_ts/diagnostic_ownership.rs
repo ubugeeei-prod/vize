@@ -79,6 +79,7 @@ struct Projection {
     authored: Range<usize>,
     inference: bool,
     suppress: bool,
+    inert: bool,
     valid: bool,
 }
 
@@ -100,6 +101,28 @@ impl DiagnosticOwnership {
         inference: bool,
     ) {
         self.record_projection(owner, generated, authored, inference, true);
+    }
+
+    /// An unmapped inference copy needs no primary: the native checker drops
+    /// its diagnostics, which the host would otherwise report at generated
+    /// offsets past the end of the SFC.
+    pub(crate) fn record_inert(
+        &mut self,
+        owner: InputOwner,
+        generated: Range<usize>,
+        authored: Range<usize>,
+    ) {
+        if !generated.is_empty() && !authored.is_empty() {
+            self.rows.push(Projection {
+                owner,
+                generated,
+                authored,
+                inference: true,
+                suppress: true,
+                inert: true,
+                valid: true,
+            });
+        }
     }
 
     pub(crate) fn record_bare_navigation(
@@ -139,6 +162,7 @@ impl DiagnosticOwnership {
                 authored,
                 inference,
                 suppress,
+                inert: false,
                 valid: true,
             });
         }
@@ -174,7 +198,8 @@ impl DiagnosticOwnership {
     pub(crate) fn into_echoes(self) -> Vec<DiagnosticEcho> {
         let proven = |row: &Projection| {
             row.valid
-                && (!row.suppress
+                && (row.inert
+                    || !row.suppress
                     || !self
                         .unproven
                         .contains(&row.owner.with_role(InputRole::Value)))
@@ -220,7 +245,7 @@ impl DiagnosticOwnership {
             let overlaps_primary = primaries
                 .get(cursor)
                 .is_some_and(|primary| primary.start < row.generated.end);
-            if owners.contains(&row.owner) && !overlaps_primary {
+            if (row.inert || owners.contains(&row.owner)) && !overlaps_primary {
                 echoes.push(DiagnosticEcho {
                     generated: row.generated,
                     authored: row.authored,
