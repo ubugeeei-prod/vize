@@ -15,11 +15,29 @@ pub(super) use fingerprint::ContextFingerprint;
 
 const CONTEXT_CACHE_CAPACITY: usize = 8;
 
+/// References project the whole workspace while hover projects the host
+/// alone. Both revisions of one host stay cached so alternating requests do
+/// not rebuild either projection.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub(super) struct RevisionKey {
+    pub(super) source_path: PathBuf,
+    pub(super) workspace: bool,
+}
+
+impl RevisionKey {
+    pub(super) fn new(source_path: PathBuf, fingerprint: &ContextFingerprint) -> Self {
+        Self {
+            source_path,
+            workspace: fingerprint.workspace(),
+        }
+    }
+}
+
 #[derive(Default)]
 pub(in crate::corsa_bridge) struct SessionCache {
-    slots: FxHashMap<PathBuf, CachedContext>,
+    slots: FxHashMap<RevisionKey, CachedContext>,
     project_snapshots: FxHashMap<PathBuf, crate::batch::virtual_project::MaterializedFileSnapshot>,
-    project_members: FxHashMap<PathBuf, FxHashMap<PathBuf, ProjectMember>>,
+    project_members: FxHashMap<PathBuf, FxHashMap<RevisionKey, ProjectMember>>,
     project_overlay_identities: FxHashMap<PathBuf, u64>,
     project_catalogs: FxHashMap<PathBuf, crate::corsa_bridge::CorsaSourceCatalog>,
     clock: u64,
@@ -112,8 +130,10 @@ impl SessionCache {
         // Standalone callers retain live filesystem validation. An LSP session
         // with a registered watcher invalidates slots at the notification
         // boundary and pays no lstat/read cost on unchanged warm requests.
-        let mut observed = crate::package_route::stamp::InputStampCache::default();
-        let valid = self.slots.get(source_path).is_some_and(|cached| {
+        // One validation reads each input once across the slot and members.
+        let key = RevisionKey::new(source_path.to_path_buf(), fingerprint);
+        let mut observed = crate::package_route::stamp::InputStampValidation::default();
+        let valid = self.slots.get(&key).is_some_and(|cached| {
             cached.fingerprint == *fingerprint
                 && (self.trust_watched_disk_inputs
                     || (cached.fingerprint.stamps_still_valid(&mut observed)
@@ -127,11 +147,11 @@ impl SessionCache {
                         })))
         });
         if !valid {
-            self.slots.remove(source_path);
+            self.slots.remove(&key);
             return None;
         }
         self.clock = self.clock.wrapping_add(1);
-        let cached = self.slots.get_mut(source_path)?;
+        let cached = self.slots.get_mut(&key)?;
         cached.last_used = self.clock;
         Some(Arc::clone(&cached.context))
     }
@@ -142,7 +162,8 @@ impl SessionCache {
         fingerprint: ContextFingerprint,
         context: Arc<AliasContext>,
     ) {
-        if self.slots.len() >= CONTEXT_CACHE_CAPACITY && !self.slots.contains_key(&source_path) {
+        let key = RevisionKey::new(source_path, &fingerprint);
+        if self.slots.len() >= CONTEXT_CACHE_CAPACITY && !self.slots.contains_key(&key) {
             let lru = self
                 .slots
                 .iter()
@@ -156,7 +177,7 @@ impl SessionCache {
         }
         self.clock = self.clock.wrapping_add(1);
         self.slots.insert(
-            source_path,
+            key,
             CachedContext {
                 fingerprint,
                 context,
@@ -166,20 +187,24 @@ impl SessionCache {
         let active_sources = self
             .slots
             .keys()
-            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .map(|key| vize_carton::path::canonicalize_non_verbatim(&key.source_path))
             .collect::<vize_carton::FxHashSet<_>>();
         self.project_members.retain(|_, members| {
-            members.keys().any(|path| {
-                active_sources.contains(&vize_carton::path::canonicalize_non_verbatim(path))
+            members.keys().any(|key| {
+                active_sources.contains(&vize_carton::path::canonicalize_non_verbatim(
+                    &key.source_path,
+                ))
             })
         });
         self.prune_project_state();
     }
 
+    /// The other revision of the current host stays in the union, so its
+    /// cached context keeps every materialized file it queries.
     pub(super) fn project_union_snapshot(
         &mut self,
         virtual_root: &Path,
-        current_source: &Path,
+        current: &RevisionKey,
         overlay_identity: u64,
     ) -> ProjectUnion {
         if let Some(members) = self.project_members.get_mut(virtual_root) {
@@ -193,8 +218,8 @@ impl SessionCache {
         }
         let mut union = ProjectUnion::default();
         if let Some(members) = self.project_members.get(virtual_root) {
-            for (source_path, member) in members {
-                if source_path == current_source {
+            for (key, member) in members {
+                if key == current {
                     continue;
                 }
                 union.files.extend(member.expected_files.iter().cloned());
@@ -221,30 +246,35 @@ impl SessionCache {
     pub(super) fn record_project_member(
         &mut self,
         virtual_root: PathBuf,
-        source_path: PathBuf,
+        key: RevisionKey,
         member: ProjectMember,
     ) {
         for members in self.project_members.values_mut() {
-            members.remove(&source_path);
+            members.remove(&key);
         }
         self.project_overlay_identities
             .insert(virtual_root.clone(), member.overlay_identity);
         self.project_members
             .entry(virtual_root)
             .or_default()
-            .insert(source_path, member);
+            .insert(key, member);
         self.prune_project_state();
     }
 
     pub(super) fn forget_sources(&mut self, source_paths: &[PathBuf]) {
-        for source_path in source_paths {
-            let canonical = vize_carton::path::canonicalize_non_verbatim(source_path);
-            self.slots.remove(source_path);
-            self.slots.remove(&canonical);
-            for members in self.project_members.values_mut() {
-                members.remove(source_path);
-                members.remove(&canonical);
-            }
+        let forgotten = source_paths
+            .iter()
+            .flat_map(|path| {
+                [
+                    path.clone(),
+                    vize_carton::path::canonicalize_non_verbatim(path),
+                ]
+            })
+            .collect::<vize_carton::FxHashSet<_>>();
+        self.slots
+            .retain(|key, _| !forgotten.contains(&key.source_path));
+        for members in self.project_members.values_mut() {
+            members.retain(|key, _| !forgotten.contains(&key.source_path));
         }
         self.project_overlay_identities.clear();
         self.project_members
@@ -297,6 +327,9 @@ mod tests;
 
 #[cfg(test)]
 mod scaling_tests;
+
+#[cfg(test)]
+mod revision_tests;
 
 #[cfg(test)]
 mod catalog_tests;

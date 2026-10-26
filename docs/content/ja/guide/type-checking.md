@@ -172,6 +172,9 @@ export default defineConfig({
 
 ## グローバルな型と自動インポート
 
+Vue Router の実験的な resolver やパース済みのルートパラメーターは、
+[実験的な Router の型](./experimental-router-types.md)のプロジェクト単位の設定を参照してください。
+
 Vize が参照できるのは、TypeScript プロジェクトから見える型だけです。`declare module "vue"` で追加した
 グローバルや、`auto-imports.d.ts`、`components.d.ts` などの生成ファイルは、チェックする
 `tsconfig.json` の `include` に含めてください。

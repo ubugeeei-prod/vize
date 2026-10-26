@@ -10,9 +10,10 @@ name: Release
 # failed build burns no version: the next run retries the same number. Every
 # registry then publishes in parallel. npm publishes and verifies every native
 # platform package before exposing @vizejs/native or vize, so an install can
-# never resolve a wrapper while its binding is still propagating. Registry
-# visibility is checked again after publishing. Re-running failed jobs is safe:
-# every publisher skips versions that exist.
+# never resolve a wrapper while its binding is still propagating.
+# release-verify.yml checks registry visibility again after publishing, outside
+# this run. Re-running failed jobs is safe: every publisher skips versions that
+# exist.
 # release-cadence.yml dispatches this workflow automatically. It is always a
 # workflow_dispatch run because crates.io trusted publishing refuses
 # workflow_run and schedule triggers.
@@ -30,7 +31,7 @@ on:
         default: ""
         type: string
       npm_resume_run:
-        description: Failed Release run whose immutable artifacts should resume npm publication
+        description: Release run whose immutable artifacts should resume npm publication
         required: false
         default: ""
         type: string
@@ -262,6 +263,10 @@ jobs:
           key: release-tools
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
+      # The extension installs outside the root workspace; the universal VSIX
+      # recipe installs its packager first, exactly as Build editor extensions does.
+      - name: Install VS Code extension dependencies
+        run: vp run --workspace-root package:vscode-extension
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: bindings-${{ matrix.settings.rustTarget }}
@@ -608,81 +613,26 @@ jobs:
             vize-${{ needs.version.outputs.tag }}-*.pem
             vize-${{ needs.version.outputs.tag }}-*.cosign.bundle
 
-  # After publishing, never blocking it: verify every package together and
-  # install the CLI from npm, then JSR (its facade resolves the npm packages).
-  # JSR runs as its own workflow: its server-side processing takes 10-60 min,
-  # and inside this run it kept the cadence from starting the next release.
-  verify-npm:
-    name: Verify npm packages
+  # Post-publish checks and JSR run in release-verify.yml, so this run, and
+  # with it the cadence, ends once every registry has the version.
+  dispatch-verify:
+    name: Dispatch the release verification
     needs: [version, publish-npm]
     if: ${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Wait for npm and smoke the published CLI
-        env:
-          RELEASE_VERSION: ${{ needs.version.outputs.version }}
-          RELEASE_PACKAGES: ${{ needs.publish-npm.outputs.packages }}
-        run: |
-          read -ra packages <<< "$RELEASE_PACKAGES"
-          node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
-
-  # Gates nothing: fresh, migrated and monorepo projects configured only by
-  # vite.config.ts and tsconfig.json, using the packages just verified.
-  verify-config:
-    name: Verify config-free projects
-    needs: [version, verify-npm]
-    if: ${{ always() && needs.version.result == 'success' && needs.verify-npm.result == 'success' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Set up fresh, migrated and monorepo projects without vize.config.*
-        env:
-          RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: node tools/support/release/verify_published/config_free.ts "$RELEASE_VERSION"
-
-  # Gates nothing: Musea VRT from the published plugin in Chromium on Linux.
-  verify-musea-vrt:
-    name: Verify Musea VRT
-    needs: [version, verify-npm]
-    if: ${{ always() && needs.version.result == 'success' && needs.verify-npm.result == 'success' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      # playwright install --with-deps uses apt.
-      - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Capture, match, diff and update a Musea baseline
-        env:
-          RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: node tools/support/release/verify_published/musea_vrt.ts "$RELEASE_VERSION"
-
-  publish-jsr:
-    name: Dispatch the JSR publication
-    needs: [version, verify-npm]
-    if: ${{ always() && needs.version.result == 'success' && needs.verify-npm.result == 'success' }}
-    runs-on: ubuntu-24.04
     timeout-minutes: 5
-    # JSR only accepts OIDC publishes whose actor is a scope member, never
-    # github-actions[bot], so dispatch as the maintainer.
+    # release-verify.yml dispatches JSR, which only accepts OIDC publishes
+    # whose actor is a scope member, never github-actions[bot].
     environment: release-operator
     steps:
-      - name: Dispatch release-jsr.yml
+      - name: Dispatch release-verify.yml
         env:
           GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
-          JSR_VERSION: ${{ needs.version.outputs.tag }}
-          JSR_SOURCE: ${{ needs.version.outputs.sha }}
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          RELEASE_SHA: ${{ needs.version.outputs.sha }}
+          RELEASE_PACKAGES: ${{ needs.publish-npm.outputs.packages }}
         run: |
-          gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
-            -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"
+          gh workflow run release-verify.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f version="$RELEASE_VERSION" -f tag="$RELEASE_TAG" -f sha="$RELEASE_SHA" \
+            -f packages="$RELEASE_PACKAGES"

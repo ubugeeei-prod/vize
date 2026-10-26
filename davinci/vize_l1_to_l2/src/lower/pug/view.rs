@@ -132,7 +132,7 @@ mod tests {
 
     #[test]
     fn refused_pug_has_no_view() {
-        let host = "- var x = 1";
+        let host = "include partial.pug";
         let refused = PugBlockView::new(host, 0..host.len()).expect_err("refused");
         assert!(refused.has_errors());
     }

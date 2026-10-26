@@ -5604,10 +5604,11 @@ vp run lint
 
 O listener do componente personalizado usa `@myEvent` em vez de um nome de evento separado por hífen.
 
-```vue annotate="remove:2,3"
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent @myEvent="handler" />
 <MyComponent v-on:myEvent="handler" />
+<my-component @update:modelValue="handler" />
 </template>
 ```
 
@@ -5627,7 +5628,7 @@ O listener do componente personalizado usa `@myEvent` em vez de um nome de event
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [Todas as regras](all.md)
 
 ### `vue/v-on-handler-style`
 

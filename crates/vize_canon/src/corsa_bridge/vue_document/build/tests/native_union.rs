@@ -227,7 +227,7 @@ fn native_union_keeps_effective_tsconfig_namespaces_and_retired_sessions_separat
 }
 
 #[test]
-fn requested_membership_captures_only_the_successfully_materialized_native_revision() {
+fn host_and_requested_revisions_share_one_materialized_native_union() {
     let root = tempfile::tempdir().unwrap();
     let host = root.path().join("Host.vue");
     let child = root.path().join("Child.vue");
@@ -248,7 +248,8 @@ fn requested_membership_captures_only_the_successfully_materialized_native_revis
     let mut ordinary_expected = ordinary_packet.clone();
     ordinary_expected.sort_unstable_by(|left, right| left.0.cmp(&right.0));
     assert_eq!(ordinary_expected.len(), 2);
-    assert_eq!(native_documents(&ordinary), ordinary_expected);
+    // The host keeps its live workspace revision materialized beside it.
+    assert_eq!(native_documents(&ordinary), navigation_native);
     for (uri, code) in &ordinary_expected {
         let path = crate::file_uri::file_uri_to_path(uri).unwrap();
         assert_eq!(std::fs::read_to_string(path).unwrap(), code.as_str());
@@ -260,7 +261,7 @@ fn requested_membership_captures_only_the_successfully_materialized_native_revis
         let path = crate::file_uri::file_uri_to_path(&uri).unwrap();
         assert_eq!(std::fs::read_to_string(path).unwrap(), code.as_str());
     }
-    assert_eq!(native_documents(&ordinary), ordinary_expected);
+    assert_eq!(native_documents(&ordinary), navigation_native);
     assert_eq!(native_documents(&navigation), navigation_native);
     assert_eq!(ordinary.documents, ordinary_packet);
     assert_eq!(navigation.documents, navigation_packet);

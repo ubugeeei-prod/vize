@@ -54,7 +54,7 @@ impl Shape {
         match self {
             Self::DomInline | Self::DomModule => "l2.dom.",
             Self::Ssr => "l4.ssr.",
-            Self::Vapor => "davinci.s3_vapor.",
+            Self::Vapor => "l3.vapor.",
         }
     }
 

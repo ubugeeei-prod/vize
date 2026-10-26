@@ -170,7 +170,13 @@ impl<'a> Visit<'a> for Names {
     fn visit_ts_type(&mut self, _ty: &TSType<'a>) {}
 }
 
-pub(super) fn avoid_authored_names(descriptor: &SfcDescriptor<'_>, urls: &mut [TemplateAssetUrl]) {
+/// `template_children` is the collector's parse of the template block.
+pub(super) fn avoid_authored_names<'a>(
+    descriptor: &SfcDescriptor<'_>,
+    allocator: &'a Allocator,
+    template_children: &[TemplateChildNode<'a>],
+    urls: &mut [TemplateAssetUrl],
+) {
     let template = descriptor
         .template
         .as_ref()
@@ -185,17 +191,13 @@ pub(super) fn avoid_authored_names(descriptor: &SfcDescriptor<'_>, urls: &mut [T
         return;
     }
     global_profiler().record_counter("sfc.asset_names.namespace", 1);
-    let allocator = Allocator::default();
     let mut names = Names::default();
     for block in scripts.into_iter().flatten() {
-        names.script(&allocator, &block.content, block.lang.as_deref());
+        names.script(allocator, &block.content, block.lang.as_deref());
     }
-    if let Some(source) = template
-        && (may_reference_import_name(source) || source.contains('&'))
-    {
-        global_profiler().record_counter("sfc.asset_names.template_parse", 1);
-        let (root, _) = vize_armature::Parser::new(&allocator, source).parse();
-        names.template(&allocator, &root.children);
+    if template.is_some_and(|source| may_reference_import_name(source) || source.contains('&')) {
+        global_profiler().record_counter("sfc.asset_names.template_walk", 1);
+        names.template(allocator, template_children);
     }
     names.indices.sort_unstable();
     names.indices.dedup();

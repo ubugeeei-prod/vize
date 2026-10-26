@@ -20,6 +20,9 @@ use super::{
     js_cache::{CacheSlot, CachedEvaluation, RecordedInputs},
 };
 
+/// Shared with the native projection, which reads its schema literal.
+pub(super) const VITE_RUNTIME: &str = include_str!("vite-runtime.mjs");
+
 /// Evaluate a JS-like config file through Node and deserialize the result.
 pub(super) fn parse_js_config_observed(
     path: &Path,
@@ -106,8 +109,37 @@ fn evaluate_js_config_with_dependencies(
         observe(std::slice::from_ref(&config_path));
     }
     observed.push(config_path.clone());
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(evaluation) =
+        super::js_literal::evaluate(&config_path, explicit_vite_config, before_read)
+    {
+        *complete = evaluation.complete;
+        observed.extend(evaluation.watch_dependencies.iter().cloned());
+        observed.extend(evaluation.dependencies.iter().map(PathBuf::from));
+        return Ok(EvaluatedConfig::new(config_path, evaluation)?);
+    }
+    let evaluation = evaluate_with_node(
+        &config_path,
+        observed,
+        complete,
+        before_read,
+        compile_cache,
+        explicit_vite_config,
+    )?;
+    Ok(EvaluatedConfig::new(config_path, evaluation)?)
+}
+
+/// The Node child, run when the config is not a statically readable literal.
+pub(super) fn evaluate_with_node(
+    config_path: &Path,
+    observed: &mut Vec<PathBuf>,
+    complete: &mut bool,
+    before_read: &mut BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
+    explicit_vite_config: bool,
+) -> Result<CachedEvaluation, Box<dyn std::error::Error>> {
     let script = [
-        include_str!("vite-runtime.mjs"),
+        VITE_RUNTIME,
         include_str!("module-runtime.mjs"),
         include_str!("config-inputs.mjs"),
         r#"
@@ -175,20 +207,20 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
     // Editor sessions observe every read and own their reloads; only plain
     // evaluations without tracing reuse a stored result.
     let mut cache = (before_read.is_none() && compile_cache.is_none() && !trace)
-        .then(|| CacheSlot::new(&config_path, explicit_vite_config, &script))
+        .then(|| CacheSlot::new(config_path, explicit_vite_config, &script))
         .flatten();
     if let Some(cached) = cache.as_mut().and_then(CacheSlot::load) {
         *complete = cached.complete;
         observed.extend(cached.watch_dependencies.iter().cloned());
         observed.extend(cached.dependencies.iter().map(PathBuf::from));
-        return Ok(EvaluatedConfig::new(config_path, cached)?);
+        return Ok(cached);
     }
     let mut command = Command::new("node");
     command
         .arg("--input-type=module")
         .arg("-e")
         .arg(script)
-        .arg(&config_path)
+        .arg(config_path)
         .current_dir(config_path.parent().unwrap_or_else(|| Path::new(".")));
     if let Some(directory) = compile_cache {
         command.arg(directory);
@@ -287,7 +319,7 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
             .unwrap_or_default();
         return Err(Box::new(IoError::new(
             ErrorKind::InvalidData,
-            super::failure_identity::NodeEvaluationFailure::new(&config_path, output, artifacts),
+            super::failure_identity::NodeEvaluationFailure::new(config_path, output, artifacts),
         )));
     }
 
@@ -308,5 +340,5 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
     if let (Some(cache), Some(inputs)) = (cache, inputs) {
         cache.store(evaluation_started, &evaluation, inputs);
     }
-    Ok(EvaluatedConfig::new(config_path, evaluation)?)
+    Ok(evaluation)
 }

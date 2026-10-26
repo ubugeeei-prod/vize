@@ -30,6 +30,8 @@ const INTERACTIVE_GRACE: Duration = Duration::from_secs(1);
 /// A short quiet period keeps an edit burst from queueing one whole native
 /// diagnostics pass per document version. Interactive requests observe the
 /// new buffer immediately and can claim Corsa while the user is still typing.
+/// An edit skips it when nothing is queued for its document and the last pass
+/// finished within it: that pass cannot hold Corsa longer than waiting would.
 const EDIT_DIAGNOSTIC_DEBOUNCE: Duration = Duration::from_millis(150);
 const MAX_PENDING_DOCUMENTS: usize = 64;
 
@@ -56,12 +58,25 @@ enum DiagnosticsJobCause {
 struct PendingInitialDiagnostics {
     jobs: FxHashMap<Url, InitialDiagnosticsJob>,
     next_sequence: u64,
+    /// Lane occupancy of the last native pass; unknown until one finishes.
+    last_pass: Option<Duration>,
 }
 
 impl PendingInitialDiagnostics {
     fn complete(&mut self, uri: &Url, version: i32) {
         if self.jobs.get(uri).is_some_and(|job| job.version <= version) {
             self.jobs.remove(uri);
+        }
+    }
+
+    fn edit_not_before(&self, uri: &Url, now: Instant) -> Instant {
+        let cheap = self
+            .last_pass
+            .is_some_and(|pass| pass < EDIT_DIAGNOSTIC_DEBOUNCE);
+        if cheap && !self.jobs.contains_key(uri) {
+            now
+        } else {
+            now + EDIT_DIAGNOSTIC_DEBOUNCE
         }
     }
 
@@ -259,7 +274,6 @@ impl InitialDiagnosticsScheduler {
         &self,
         uri: Url,
         version: i32,
-        delay: Duration,
         cause: DiagnosticsJobCause,
         sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
         continuation: Option<super::state::InitialConfigurationContinuation>,
@@ -267,14 +281,15 @@ impl InitialDiagnosticsScheduler {
         let Some(sender) = &self.sender else {
             return false;
         };
-        self.pending.lock().insert_with_continuation(
-            uri,
-            version,
-            Instant::now() + delay,
-            cause,
-            sync,
-            continuation,
-        );
+        {
+            let mut pending = self.pending.lock();
+            let now = Instant::now();
+            let not_before = match cause {
+                DiagnosticsJobCause::Open => now + INTERACTIVE_GRACE,
+                DiagnosticsJobCause::Edit => pending.edit_not_before(&uri, now),
+            };
+            pending.insert_with_continuation(uri, version, not_before, cause, sync, continuation);
+        }
         if let Some(sync_sender) = &self.sync_sender {
             let _ = sync_sender.try_send(());
         }
@@ -392,6 +407,7 @@ fn run_worker(
                 uri,
                 job.version
             );
+            let started = Instant::now();
             crate::runtime::block_on(async {
                 let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
                     "initial_type_configuration_admission",
@@ -430,6 +446,7 @@ fn run_worker(
                 // Opening an unsaved dependency changes its importers too.
                 refresh_initial_importers(&project, &uri, job.version).await;
             });
+            pending.lock().last_pass = Some(started.elapsed());
         }
     }
 }
@@ -448,7 +465,6 @@ impl MaestroServer {
             scheduler.schedule(
                 uri.clone(),
                 version,
-                INTERACTIVE_GRACE,
                 DiagnosticsJobCause::Open,
                 None,
                 self.state.initial_configuration_continuation(&uri, version),
@@ -463,14 +479,7 @@ impl MaestroServer {
         sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
     ) -> bool {
         self.initial_diagnostics.as_ref().is_some_and(|scheduler| {
-            scheduler.schedule(
-                uri.clone(),
-                version,
-                EDIT_DIAGNOSTIC_DEBOUNCE,
-                DiagnosticsJobCause::Edit,
-                sync,
-                None,
-            )
+            scheduler.schedule(uri.clone(), version, DiagnosticsJobCause::Edit, sync, None)
         })
     }
 }

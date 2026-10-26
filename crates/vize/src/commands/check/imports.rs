@@ -241,6 +241,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     None if is_vue_runtime_support_specifier(&specifier) => None,
                     None => {
                         let context_key = (
+                            alias_scope.resolution(),
                             dir.to_path_buf(),
                             file.extension().map(std::ffi::OsString::from),
                             occurrence.mode,

@@ -88,10 +88,14 @@ test("npm package support table matches package metadata", () => {
     [
       "@vizejs/data",
       "@vizejs/devtools",
+      "@vizejs/parcel-transformer",
       "@vizejs/router",
       "@vizejs/state",
+      "@vizejs/turbopack-plugin",
       "@vizejs/typescript-vue-plugin",
       "@vizejs/volar-plugin",
+      "eslint-plugin-vize",
+      "prettier-plugin-vize",
     ],
   );
 

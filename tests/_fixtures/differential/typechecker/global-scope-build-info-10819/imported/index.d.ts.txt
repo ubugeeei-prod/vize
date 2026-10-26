@@ -1,0 +1,2 @@
+export {};
+declare global { type ScopedGlobal = string; }

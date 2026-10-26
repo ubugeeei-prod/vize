@@ -70,6 +70,17 @@
         "severity": 1
       },
       {
+        "column": 11,
+        "endColumn": 51,
+        "endLine": 41,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name.",
+        "line": 41,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'open-change'",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1
+      },
+      {
         "column": 13,
         "endColumn": 15,
         "endLine": 65,
@@ -147,7 +158,7 @@
         "severity": 1
       }
     ],
-    "warningCount": 13
+    "warningCount": 14
   },
   {
     "errorCount": 0,

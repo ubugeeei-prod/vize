@@ -5846,6 +5846,7 @@ vue/v-on-event-hyphenation · lint 规则
 错误示例:
   <MyComponent @myEvent="handler" />
   <MyComponent v-on:myEvent="handler" />
+  <my-component @update:modelValue="handler" />
 
 正确示例:
   <MyComponent @my-event="handler" />

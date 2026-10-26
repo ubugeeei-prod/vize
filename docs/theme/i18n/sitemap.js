@@ -33,6 +33,8 @@
     // Reached from their parent page: Experimentals links to both of these in
     // every locale, so listing them again would only lengthen the sidebar.
     /^\/guide\/experimentals-(?:reference|vue-rfcs)$/,
+    // Linked from Type Checking in the two locales with an authored recipe.
+    /^\/guide\/experimental-router-types$/,
   ];
 
   // petite-vue has authored pages in English and Japanese only.

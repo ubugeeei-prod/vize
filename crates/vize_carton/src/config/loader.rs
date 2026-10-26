@@ -21,6 +21,10 @@ mod experimental_tests;
 mod extends_tests;
 mod js;
 mod js_cache;
+#[cfg(not(target_arch = "wasm32"))]
+mod js_literal;
+#[cfg(test)]
+mod js_literal_tests;
 mod js_observation;
 mod jsx;
 mod language_server;
@@ -36,6 +40,8 @@ mod project_settings_tests;
 #[cfg(test)]
 mod tests;
 mod vapor;
+#[cfg(not(target_arch = "wasm32"))]
+mod vite_projection;
 
 use std::path::{Path, PathBuf};
 

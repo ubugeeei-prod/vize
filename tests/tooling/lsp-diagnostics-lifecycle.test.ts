@@ -8,9 +8,15 @@ import {
   hasDiagnosticSource,
   isDiagnosticsForUri,
 } from "./support/lsp/assertions.ts";
-import { testOutputRoot } from "./support/lsp/paths.ts";
+import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
+import { workspace } from "./support/upstream/vue-language-tools.ts";
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 test("vize lsp incremental range didChange publishes diagnostics carrying the new version", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-lifecycle-incremental");
@@ -426,5 +432,68 @@ test("vize lsp preserves whole CRLF UTF-16 publications through range removal an
       (params) => isDiagnosticsForUri(params, uri) && params.version === packet.version,
     );
     assert.deepEqual(actual, packet);
+  }
+});
+
+test("a reopened repaired buffer publishes the repair, not the shared snapshot's error", async (t) => {
+  const runtime = requireTypecheckDependency(
+    t,
+    resolveTypecheckRuntime(root),
+    "TypeScript 7 runtime for repaired reopen diagnostics",
+    "TypeScript 7 runtime not found; skipping repaired reopen diagnostics",
+  );
+  if (!runtime) return;
+  const directory = workspace("lsp-repaired-reopen-");
+  const valid =
+    '<script setup lang="ts">\nimport { twice } from "./support";\nconst value: number = 2;\ntwice(value);\n</script>\n';
+  const uri = pathToFileURL(path.join(directory, "src/App.vue")).href;
+  const session = new LspSession();
+  try {
+    fs.mkdirSync(path.join(directory, "src"));
+    fs.writeFileSync(path.join(directory, "src/App.vue"), valid);
+    fs.writeFileSync(
+      path.join(directory, "src/support.ts"),
+      "export const twice = (n: number) => n * 2;\n",
+    );
+    fs.writeFileSync(
+      path.join(directory, "tsconfig.json"),
+      JSON.stringify({ compilerOptions: { strict: true, noEmit: true }, include: ["src"] }),
+    );
+    writeVueConfigFixture(directory, {
+      lsp: { lint: false, typecheck: true },
+      typeChecker: { corsaPath: runtime },
+    });
+    await session.initialize(directory, { editor: true, lint: false, typecheck: true });
+    for (const [version, text, expected] of [
+      [1, valid, []],
+      [2, valid.replace("= 2;", '= "wrong";'), [2322]],
+      [3, valid, []],
+      // The shared API snapshot taken before the repair's didChange kept the
+      // error; reopening the unchanged buffer must not read it (#10730).
+      [4, valid, []],
+    ] as const) {
+      if (version === 4) session.notify("textDocument/didClose", { textDocument: { uri } });
+      if (version === 1 || version === 4)
+        session.notify("textDocument/didOpen", {
+          textDocument: { uri, languageId: "vue", version, text },
+        });
+      else
+        session.notify("textDocument/didChange", {
+          textDocument: { uri, version },
+          contentChanges: [{ text }],
+        });
+      const published = (await session.waitForNotification(
+        "textDocument/publishDiagnostics",
+        (params) => isDiagnosticsForUri(params, uri) && params.version === version,
+        60_000,
+      )) as PublishDiagnosticsParams;
+      assert.deepEqual(
+        published.diagnostics.map((diagnostic) => Number(diagnostic.code)),
+        expected,
+      );
+    }
+  } finally {
+    await session.shutdown();
+    fs.rmSync(directory, { recursive: true, force: true });
   }
 });

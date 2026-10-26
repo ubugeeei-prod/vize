@@ -6,8 +6,8 @@ use std::{
 };
 
 use super::{
-    CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
-    collect_roots, exit_after_execution_error, explicit_input_root,
+    CanonicalPathCache, CheckArgs, CheckerSettings, LocalImportSession, TsconfigInputCache,
+    build_virtual_ts_options, collect_roots, exit_after_execution_error, explicit_input_root,
     external_input_tsconfig_boundary, finish_executions, prepare_candidate, report_no_inputs,
     resolve_from_config_dir, resolve_invocation_program, split_program_candidates,
     template_syntax_mode, validate_corsa_server_count, warn_for_disabled_legacy,
@@ -147,6 +147,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let validate_inputs = !args.patterns.is_empty() && invocation_tsconfig_path.is_some();
     let mut only_excluded_explicit_inputs = !candidates.is_empty();
+    // Referenced programs of one shell reach mostly the same packages.
+    let mut import_session = LocalImportSession::default();
     // Preparation shares the path and package caches, so it stays serial. Each
     // native check owns its checker and overlaps the next preparation; programs
     // sharing a mirror take turns, since its materialize lock wait times out.
@@ -166,6 +168,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
                 &mut tsconfig_input_cache,
                 &mut canonical_paths,
                 &mut package_route_resolver,
+                &mut import_session,
             )
             .map(|prepared| {
                 only_excluded_explicit_inputs &= prepared.excluded_explicit_inputs;

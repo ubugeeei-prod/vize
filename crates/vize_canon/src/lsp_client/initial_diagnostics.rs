@@ -53,6 +53,7 @@ impl CorsaProjectClient {
             return Ok(None);
         }
         let document_uri = self.session_document_uri(uri);
+        self.refresh_acknowledged_editor_snapshot(&document_uri)?;
         let session = self.project_session()?;
         let read = InitialDiagnosticsRead {
             client: session.client().clone(),

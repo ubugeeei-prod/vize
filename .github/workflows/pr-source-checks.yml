@@ -57,6 +57,10 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
         run: node tools/support/compat/github/report-legacy-fix-fixtures.ts "$BASE_SHA" "$GITHUB_SHA"
+      - name: Hold the Clippy test-target ratchet
+        if: ${{ github.event_name == 'pull_request' }}
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node tools/support/compat/github/clippy-test-targets.ts hold "$BASE_SHA"
       - name: Plan canonical corpus inputs
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }

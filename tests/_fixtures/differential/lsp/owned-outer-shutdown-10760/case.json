@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/owned-outer-shutdown-10760",
+  "provenance": {
+    "fixCommit": "459994a03348aee136c7582a62ecaa94d276c525",
+    "issue": 10760,
+    "inputOrigin": "Authored typed project from the #10760 qualification campaign: two typed hovers on an initialized compiler owner, then outer shutdown",
+    "contractOrigin": "Whole authored typed hover packets; the runner also requires a null shutdown reply and exit status 0"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "2018eaf2ec82680c0915259929668b9ed10ef99e63b41ca3e88bc804410d5cd4"
+    },
+    {
+      "source": "support.ts.txt",
+      "runtimePath": "src/support.ts",
+      "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "c3e09cb9baa6c0a23baf156c4b07f0e611dd86ec4720e5b33688877cc601e8be"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "1bade57e87822239cd015f10ef6b4da08349ceac7e9873928807cef741e676f9"
+    }
+  ],
+  "entry": "src/App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "1b4919bc758ca4f554edf5b578b7fa7facbd90931af57aa8cf88eced17039bce"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "typecheck": true,
+    "lint": false,
+    "ecosystem": false
+  },
+  "scope": "Two whole typed hovers on an initialized compiler owner followed by outer shutdown; no native whole-product LSP credit"
+}

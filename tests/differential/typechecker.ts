@@ -259,7 +259,9 @@ export function loadTypecheckerManifest(manifestPath: string) {
     packs.set(fixture.pack, pack);
     return { ...fixture, diagnostics: original.diagnostics };
   });
+  // Both registries follow the sorted manifest packs, so new packs insert apart.
   assert.deepEqual([...packs.keys()], Object.keys(TYPECHECKER_TESTS));
+  assert.deepEqual(Object.keys(sourceRevisions), Object.keys(TYPECHECKER_TESTS));
   for (const [name, pack] of packs) {
     assert.deepEqual(
       cases.filter((fixture) => fixture.pack === name).map((fixture) => fixture.case),

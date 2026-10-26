@@ -8,7 +8,9 @@ use vize_canon::{
 };
 use vize_l0::{FxHashMap, String};
 
-type ResolutionContextKey = (PathBuf, Option<OsString>, PackageResolutionMode);
+/// `(resolution scope, importer directory, importer extension, mode)`: programs
+/// whose module options agree share contexts.
+type ResolutionContextKey = (u64, PathBuf, Option<OsString>, PackageResolutionMode);
 pub(super) type ResolutionContextCache =
     FxHashMap<ResolutionContextKey, (PackageResolutionContext, Vec<PathBuf>)>;
 

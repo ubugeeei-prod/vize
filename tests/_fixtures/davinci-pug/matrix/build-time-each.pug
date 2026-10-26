@@ -1,0 +1,15 @@
+- var links = [{ href: '/a', text: 'A' }, { href: '/b', text: 'B <b>' }]
+ul.nav
+  each link, index in links
+    li(class=['item', index === 0 && 'first'] data-index=index)
+      a(href=link.href)= link.text
+  each value, key in { one: 1, two: 2 }
+    li(key=key)= key + ':' + value
+  for item in []
+    li never
+  else
+    li.empty(v-if="!items.length") empty
+  each letter of 'ab'
+    i= letter
+  each [name, size] of [['s', 1], ['m', 2]]
+    option(value=name selected=size > 1)= name

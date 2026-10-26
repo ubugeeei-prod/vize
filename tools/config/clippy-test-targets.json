@@ -1,0 +1,21 @@
+{
+  "$comment": "Crates whose test, bench and example targets stay clean under `cargo clippy --all-targets -- -D warnings`. PR CI lints the listed crates a PR touches; `node tools/support/compat/github/clippy-test-targets.ts all` lints all of them. The list only grows: add a crate in the change that makes it clean.",
+  "crates": [
+    "davinci_harness",
+    "vize_atelier_vapor",
+    "vize_benchmarks",
+    "vize_carton",
+    "vize_croquis",
+    "vize_croquis_cf",
+    "vize_curator",
+    "vize_doctor",
+    "vize_fresco",
+    "vize_incremental",
+    "vize_l0_derive",
+    "vize_maestro",
+    "vize_marquette",
+    "vize_musea",
+    "vize_oxc_formatter",
+    "vize_relief"
+  ]
+}

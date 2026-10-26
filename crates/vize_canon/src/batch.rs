@@ -55,11 +55,11 @@ pub use virtual_project::{
     VirtualFile, VirtualProject, VueDocumentVirtualTs, VueDocumentVirtualTsOptions,
     external_mirror_original_path, generate_jsx_document_virtual_ts,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
-    generate_vue_document_virtual_ts, generate_vue_document_virtual_ts_with_options,
-    is_vue_runtime_support_specifier, legacy_project_virtual_roots, project_virtual_access_path,
-    project_virtual_lock_paths, project_virtual_root, scan_package_route_reachability,
-    snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
-    snapshot_tsconfig_vue_target,
+    generate_vue_content_mapper_transform_with_project_options, generate_vue_document_virtual_ts,
+    generate_vue_document_virtual_ts_with_options, is_vue_runtime_support_specifier,
+    legacy_project_virtual_roots, project_virtual_access_path, project_virtual_lock_paths,
+    project_virtual_root, scan_package_route_reachability, snapshot_tsconfig_compiler_options,
+    snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
 };
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
 

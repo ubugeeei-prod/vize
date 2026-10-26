@@ -132,8 +132,8 @@ void test("whole script packets refuse foreign fields, lost suppression, missing
 
 void test("all previous full51 authored cohorts remain byte-identical", () => {
   for (const [name, expected] of [
-    ["cases", "6d208d7fbee622d41364ba0364a1d6190f22d39c9dcec956681d618ec7cb903a"],
-    ["semantic-routing", "0391fe3875f7b6fea962b8fc5b16a23ad553b526d9192eb9f4a4f31b25f5543c"],
+    ["cases", "0d713120393e5986343859fb69f9ad28f56c10ca755b5ee6b0e0389215160d58"],
+    ["semantic-routing", "e6b45cfc595c0c96bd991b0a2ea4a209ac126722e92dc97f640725d8a237b4f7"],
     ["deprecated-modifiers", "59c8598deac387c37d9589e1c6ba262047e862326dcc494af3d24c442066e859"],
     ["valid-v-on-modifiers", "d11401747a9efcccee2f4d6490da0d2fe86c269efba0d006f76a01f8c9b09550"],
   ]) {

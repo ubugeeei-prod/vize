@@ -146,6 +146,7 @@ fn prepare_candidate(
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     package_route_resolver: &mut vize_canon::PackageRouteResolver,
+    import_session: &mut LocalImportSession,
 ) -> Result<ProgramPreparation, vize_l0::String> {
     let initial_root = candidate
         .tsconfig_path
@@ -170,7 +171,7 @@ fn prepare_candidate(
     let mut authored_imports = Vec::new();
     let mut explicit_program_declarations = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
-    let mut import_session = LocalImportSession::new(package_route_resolver);
+    import_session.begin_program(package_route_resolver);
     // Validate only the paths requested by the user. Their relative imports
     // may legitimately leave this root and still belong to the TS program.
     validate_inputs_in_root(explicit_input_root, &candidate.inputs, validate_inputs)?;
@@ -185,7 +186,7 @@ fn prepare_candidate(
             },
             canonical_paths,
             package_route_resolver,
-            &mut import_session,
+            import_session,
         );
         import_time += import_start.elapsed();
         authored_imports = discovered.authored;
@@ -208,7 +209,7 @@ fn prepare_candidate(
             },
             canonical_paths,
             package_route_resolver,
-            &mut import_session,
+            import_session,
         );
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
@@ -276,7 +277,7 @@ fn prepare_candidate(
             cache,
             canonical_paths,
             package_route_resolver,
-            &mut import_session,
+            import_session,
         );
         import_time += import_start.elapsed();
         package_routes.extend(registered.package_routes);

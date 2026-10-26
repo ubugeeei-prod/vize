@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_types,
+    reason = "serde fixture fields use std strings"
+)]
+
 use serde::Deserialize;
 use vize_carton::Allocator;
 use vize_croquis::sfc::__internal::{

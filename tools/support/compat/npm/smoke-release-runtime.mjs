@@ -94,7 +94,7 @@ export function assertInstalledMapperContract(installDir) {
     {
       dynamicConfig: true,
       exec: ["node", "./bin/vize", "content-mapper"],
-      compilerOptions: ["checkJs", "noUnusedLocals"],
+      compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
     },
     `${path.join(packageRoot, "package.json")} must expose the production typescript.contentMapper contract`,
   );

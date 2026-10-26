@@ -26,7 +26,7 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
           contentMapper: {
             dynamicConfig: true,
             exec: ["node", "./bin/vize", "content-mapper"],
-            compilerOptions: ["checkJs", "noUnusedLocals"],
+            compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
           },
         },
       }),
@@ -52,7 +52,7 @@ test("Rust release smoke pins the production Content Mapper contract", () => {
     "        != Some(&json!({",
     '            "dynamicConfig": true,',
     '            "exec": ["node", "./bin/vize", "content-mapper"],',
-    '            "compilerOptions": ["checkJs", "noUnusedLocals"],',
+    '            "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],',
     "        }))",
   ].join("\n");
 
@@ -105,6 +105,19 @@ test("installed Content Mapper contract rejects a dropped compilerOptions declar
     delete manifest.typescript.contentMapper.compilerOptions;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
+    assert.throws(
+      () => assertInstalledMapperContract(installDir),
+      /must expose the production typescript\.contentMapper contract/,
+    );
+  });
+});
+
+test("installed Content Mapper contract rejects a missing router root cache dependency", () => {
+  withInstalledMapper((installDir, packageRoot) => {
+    const manifestPath = path.join(packageRoot, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.typescript.contentMapper.compilerOptions = ["checkJs", "noUnusedLocals"];
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
     assert.throws(
       () => assertInstalledMapperContract(installDir),
       /must expose the production typescript\.contentMapper contract/,

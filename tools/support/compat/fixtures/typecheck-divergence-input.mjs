@@ -14,6 +14,15 @@ export function invalid(message) {
   throw new Error(`Invalid typecheck divergence input: ${message}`);
 }
 
+/**
+ * Vize JSON ends a template diagnostic with its authored line as
+ * ` (source: …)` (#10335). vue-tsc prints no such context, so it is not part of
+ * the compared message.
+ */
+export function withoutVizeSourceContext(message) {
+  return message.replace(/ \(source: [^\n]*\)$/u, "");
+}
+
 export function collectVizeDiagnostics(report, cwd) {
   if (report == null || typeof report !== "object" || !Array.isArray(report.files)) {
     invalid("Vize report must contain files");
@@ -30,7 +39,8 @@ export function collectVizeDiagnostics(report, cwd) {
       }
       const match = /^(error|warning|hint):(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$/.exec(diagnostic);
       if (match == null) invalid(`unparseable Vize diagnostic ${normalizedFile}`);
-      diagnostics.push(record(normalizedFile, match[1], match[2], match[3], match[4], match[5]));
+      const message = withoutVizeSourceContext(match[5]);
+      diagnostics.push(record(normalizedFile, match[1], match[2], match[3], match[4], message));
     }
   }
   return partitionVueDiagnostics(diagnostics);

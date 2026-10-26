@@ -172,6 +172,9 @@ section works with the plain Vite plugin; see the
 
 ## Global types and auto-imports
 
+For Vue Router's experimental resolver and parsed route parameters, see
+[Experimental Router Types](./experimental-router-types.md) for the project-local opt-in.
+
 Vize only sees what your TypeScript project sees. Globals added through `declare module "vue"`,
 and generated files such as `auto-imports.d.ts` or `components.d.ts`, must be matched by the
 `include` globs of the `tsconfig.json` you check:

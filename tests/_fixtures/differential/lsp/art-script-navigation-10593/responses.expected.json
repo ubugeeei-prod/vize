@@ -1,0 +1,184 @@
+[
+  {
+    "params": {
+      "position": {
+        "line": 3,
+        "character": 35
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/route.d.ts",
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 25
+          },
+          "end": {
+            "line": 1,
+            "character": 29
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 34
+          },
+          "end": {
+            "line": 3,
+            "character": 38
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 5,
+            "character": 65
+          },
+          "end": {
+            "line": 5,
+            "character": 69
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 3,
+        "character": 35
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 34
+          },
+          "end": {
+            "line": 3,
+            "character": 38
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 5,
+            "character": 65
+          },
+          "end": {
+            "line": 5,
+            "character": 69
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 5,
+        "character": 66
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/route.d.ts",
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 25
+          },
+          "end": {
+            "line": 1,
+            "character": 29
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 34
+          },
+          "end": {
+            "line": 3,
+            "character": 38
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 5,
+            "character": 65
+          },
+          "end": {
+            "line": 5,
+            "character": 69
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 5,
+        "character": 66
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 34
+          },
+          "end": {
+            "line": 3,
+            "character": 38
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/src/pages/%5Bid=int%5D.art.vue",
+        "range": {
+          "start": {
+            "line": 5,
+            "character": 65
+          },
+          "end": {
+            "line": 5,
+            "character": 69
+          }
+        }
+      }
+    ]
+  }
+]

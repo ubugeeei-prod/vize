@@ -1,10 +1,6 @@
 //! Observe the real generation path and parser/allocation costs on one thread.
 
-#![expect(
-    clippy::expect_used,
-    clippy::unwrap_used,
-    reason = "qualification asserts by panicking"
-)]
+#![expect(clippy::unwrap_used, reason = "qualification asserts by panicking")]
 
 use serde_json::{Value, json};
 use std::{alloc::System, hint::black_box, path::Path};

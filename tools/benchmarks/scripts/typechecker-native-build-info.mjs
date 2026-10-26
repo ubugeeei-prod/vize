@@ -13,9 +13,10 @@ import { basename, dirname, isAbsolute, join, parse, relative, resolve, sep } fr
 import { fileURLToPath } from "node:url";
 import { resolveVuePackageDir } from "./check-gate-env.mjs";
 
+// The typed-router helper suffix never applies: these corpora do not opt in.
 export const BUILD_INFO_SOURCE = {
   path: "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/config_anchor.rs",
-  sha256: "47b951bf910b004a543bc2322307fe091efdd9dd6825cce9a2ba534628324b72",
+  sha256: "16b39b134030293284f0230a1267f0228033dc673c43d63836c66638b209b683",
 };
 const CORPORA = new Set(["shared-barrel500", "shared-leaf501-default", "generated500"]);
 const NAMESPACE = ["compiler-sfc", "compiler-vapor"];

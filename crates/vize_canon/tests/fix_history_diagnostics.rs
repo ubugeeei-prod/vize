@@ -848,6 +848,17 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
 }
 
 #[test]
+fn global_scope_build_info_keeps_complete_diagnostics() {
+    check_pack(
+        "global-scope-build-info-10819",
+        "global_scope_build_info_keeps_complete_diagnostics",
+        "61d756842bb44a72c84982f01dc40d3423c96503",
+        Some(10819),
+        &["imported-global-declaration", "edited-global-declaration"],
+    );
+}
+
+#[test]
 fn missing_exported_package_target_preserves_ts2307() {
     check_pack(
         "package-target-deletion-refresh",
@@ -984,6 +995,17 @@ fn native_completion_project_keeps_clean_diagnostics() {
 }
 
 #[test]
+fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
+    check_pack(
+        "reopen-repaired-diagnostics-10730",
+        "repaired_dependency_buffer_keeps_its_own_diagnostics",
+        "9403195279c75693aea30f097bf996cb83dd9729",
+        Some(10730),
+        &["error", "repaired"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",
@@ -1002,6 +1024,17 @@ fn literal_reference_paths_preserve_complete_authored_diagnostics() {
         "0a7f029e3be412a89232bd82127d3ac9bb058514",
         Some(10551),
         &["valid-external-reference", "invalid-external-reference"],
+    );
+}
+
+#[test]
+fn content_mapper_experimental_router_context_preserves_published_page_types() {
+    check_pack(
+        "content-mapper-experimental-router-10526",
+        "content_mapper_experimental_router_context_preserves_published_page_types",
+        "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+        Some(10526),
+        &["published-page-valid", "published-page-invalid-number"],
     );
 }
 
