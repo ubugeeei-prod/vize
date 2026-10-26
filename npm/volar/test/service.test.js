@@ -430,7 +430,7 @@ void test("authored source files share work per snapshot without sharing file id
       assert(diagnostics.some((d) => d.code === 2322 && d.file.fileName === file));
       assert.deepEqual(f.languageService.toLineColumnOffset(file, 0), { line: 0, character: 0 });
     }
-    assert.deepEqual(parsed.sort(), [f.path("A.vue"), f.path("B.vue")].sort());
+    assert.deepEqual(parsed, [f.path("A.vue"), f.path("B.vue")]);
     const updated = source.replace('"bad"', '"still bad"');
     snapshots.set("A.vue", ts.ScriptSnapshot.fromString(updated));
     f.update("A.vue", updated);
