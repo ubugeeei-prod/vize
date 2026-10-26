@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10520,
+  "regressionCommit": "a29d9c0b1961ada51037db402c3b74436a56d623",
+  "sourceRevision": "a29d9c0b1961ada51037db402c3b74436a56d623",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-define-page-unknown-path",
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "source": "Page.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "source": "typed-router.d.ts.txt"
+        },
+        {
+          "file": "provider.json",
+          "source": "provider.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "line": 5,
+          "column": 21,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and 'missing' does not exist in type '{ id?: \"date\" | DefinePagePathParamOptions | keyof ParamParsers_Native | undefined; }'."
+        }
+      ]
+    }
+  ]
+}

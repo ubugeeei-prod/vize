@@ -38,6 +38,84 @@ fn only_explicit_known_plugin_enables_typed_pages() {
 }
 
 #[test]
+fn admitted_snapshot_uses_the_same_typed_router_opt_in_and_keeps_its_revision() {
+    for (config, enabled) in [
+        ("{}", false),
+        (
+            r#"{"vueCompilerOptions":{"plugins":["other-plugin"]}}"#,
+            false,
+        ),
+        (
+            r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+            true,
+        ),
+        (
+            r#"{"compilerOptions":{"rootDir":"src"},"vueCompilerOptions":{"plugins":[{"name":"vue-router/volar/sfc-typed-router","options":{"rootDir":"pages"}}]}}"#,
+            true,
+        ),
+        (
+            r#"{"vueCompilerOptions":{"plugins":[{"name":"vue-router/volar/sfc-typed-router","options":{"rootDir":7}}]}}"#,
+            false,
+        ),
+        (
+            r#"{"compilerOptions":{"rootDir":7},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+            false,
+        ),
+    ] {
+        let (root, project) = fixture_project(config);
+        let config_path = root.path().join("tsconfig.json");
+        let admitted =
+            crate::CompilerConfigurationSnapshot::capture(root.path(), Some(&config_path)).unwrap();
+        assert_eq!(project.typed_router.root.is_some(), enabled, "{config}");
+        assert_eq!(admitted.typed_router_enabled(), enabled, "{config}");
+        assert_eq!(
+            admitted.typed_router_root(),
+            project.typed_router.root.as_deref()
+        );
+        // Hint requests read the admitted value even if the live file becomes
+        // malformed or disappears. Only a newly admitted owner can replace it.
+        fs::write(&config_path, "{").unwrap();
+        for _ in 0..8 {
+            assert_eq!(admitted.typed_router_enabled(), enabled);
+        }
+        fs::remove_file(&config_path).unwrap();
+        assert_eq!(admitted.typed_router_enabled(), enabled);
+    }
+}
+
+#[test]
+fn inferred_snapshot_has_no_router_opt_in_or_root() {
+    let root = tempfile::tempdir().unwrap();
+    let inferred = crate::CompilerConfigurationSnapshot::capture(root.path(), None).unwrap();
+    assert!(!inferred.typed_router_enabled());
+    assert_eq!(inferred.typed_router_root(), None);
+}
+
+#[test]
+fn snapshot_follows_inherited_replacement_and_does_not_mutate_previous_authority() {
+    let (root, _) = fixture_project(r#"{"extends":"./base.json"}"#);
+    fs::write(
+        root.path().join("base.json"),
+        r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+    )
+    .unwrap();
+    let config = root.path().join("tsconfig.json");
+    let enabled =
+        crate::CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
+    assert!(enabled.typed_router_enabled());
+    fs::write(
+        &config,
+        r#"{"extends":"./base.json","vueCompilerOptions":{"plugins":[]}}"#,
+    )
+    .unwrap();
+    let disabled =
+        crate::CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
+    assert!(!disabled.typed_router_enabled());
+    assert!(enabled.typed_router_enabled());
+    assert!(!enabled.same_authority(&disabled));
+}
+
+#[test]
 fn plugin_root_overrides_effective_compiler_root() {
     let (_root, project) = fixture_project(
         r#"{"compilerOptions":{"rootDir":"src"},"vueCompilerOptions":{"plugins":[{"name":"vue-router/volar/sfc-typed-router","options":{"rootDir":"pages"}}]}}"#,

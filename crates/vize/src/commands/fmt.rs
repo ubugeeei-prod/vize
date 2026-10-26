@@ -247,6 +247,7 @@ pub fn run(args: FmtArgs) {
             std::process::exit(2);
         })
     };
+    let config_time = start.elapsed();
     let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
     let config_dir = snapshot
         .project_root
@@ -401,6 +402,12 @@ pub fn run(args: FmtArgs) {
         let file_rows: Vec<_> = profiles.iter().map(|profile| profile.row.clone()).collect();
 
         let phases = [
+            ProfilePhase {
+                name: "load config",
+                duration: config_time,
+                kind: ProfilePhaseKind::Wall,
+                note: "configuration discovery and evaluation",
+            },
             ProfilePhase {
                 name: "collect files",
                 duration: collect_time,

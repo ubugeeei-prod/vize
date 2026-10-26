@@ -17,6 +17,7 @@ use super::{
 
 mod child_width;
 mod closing_width;
+mod inline_breaks;
 mod interpolation;
 mod opening_attributes;
 mod preserved_text;
@@ -26,6 +27,7 @@ mod text;
 mod text_wrap;
 mod whitespace_significant;
 
+use inline_breaks::InlineNode;
 #[cfg(test)]
 pub(crate) use interpolation::format_interpolations;
 use interpolation::parse_interpolation_range;
@@ -85,6 +87,7 @@ impl<'a> TemplateFormatter<'a> {
         let mut pos = 0;
         let mut depth: usize = 0;
         let mut text = TextRun::new();
+        let mut inline = InlineNode::None;
         // Lines a line-scoped lint suppression covers must not be split. (#3343)
         let mut joiner = LineJoiner::new(source);
 
@@ -117,6 +120,7 @@ impl<'a> TemplateFormatter<'a> {
             {
                 self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                 let expr = input.get(expr_start..expr_end).unwrap_or_default();
+                inline = InlineNode::None;
                 let depth = joiner.interpolation_depth(pos, end_pos, depth);
                 self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
@@ -129,6 +133,7 @@ impl<'a> TemplateFormatter<'a> {
             if pos + 3 < len && sub_slice(source, pos..pos + 4) == b"<!--" {
                 self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                 let comment_start = pos;
+                inline = InlineNode::None;
                 let join = joiner.open(comment_start);
                 if let Some(end_offset) = find_bytes(sub_slice(source, pos..), b"-->") {
                     let comment_end = pos + end_offset + 3;
@@ -157,6 +162,7 @@ impl<'a> TemplateFormatter<'a> {
                     self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
                     depth = depth.saturating_sub(1);
+                    inline = InlineNode::None;
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(b"</");
                     output.extend_from_slice(tag_name.as_bytes());
@@ -183,6 +189,7 @@ impl<'a> TemplateFormatter<'a> {
                     self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
                     let mut sorted_attrs = attrs;
+                    inline = InlineNode::None;
                     if self.options.sort_attributes {
                         sort_attributes(&mut sorted_attrs, self.options);
                     }
@@ -273,6 +280,9 @@ impl<'a> TemplateFormatter<'a> {
                 }
                 // Keep a non-tag `<` as text and advance past it.
                 text.push_byte(pos, b'<');
+                if CANONICAL {
+                    inline = inline.track(source, pos, pos + 1);
+                }
                 pos += 1;
                 continue;
             }
@@ -317,6 +327,9 @@ impl<'a> TemplateFormatter<'a> {
 
                 if content_end > content_start {
                     text.push_source(source, content_start, content_end);
+                    if CANONICAL {
+                        inline = inline.track(source, content_start, content_end);
+                    }
                 }
             }
 
@@ -325,9 +338,18 @@ impl<'a> TemplateFormatter<'a> {
                 && (byte_at(source, pos) == b'\n' || (HAS_CR && byte_at(source, pos) == b'\r'))
             {
                 // Suppression pragmas own physical lines; ordinary condensed
-                // text instead forms one canonical run across authored wraps.
-                if !CANONICAL || joiner.has_locked_lines() {
+                // text instead forms one canonical run across authored wraps,
+                // except where Prettier keeps an inline node on its own line.
+                let kept = if CANONICAL && !text.is_empty() {
+                    inline.kept_line_break(source, pos)
+                } else {
+                    None
+                };
+                if !CANONICAL || joiner.has_locked_lines() || kept.is_some() {
                     self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
+                }
+                if let Some((next, true)) = kept {
+                    joiner.keep_blank_line(next);
                 }
                 pos += 1;
             }
