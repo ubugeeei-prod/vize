@@ -86,6 +86,11 @@ pub(super) fn classify_default_run_scope(
 ///
 /// `tsconfig_path` is `None` only when no config was adopted, which means no
 /// walk-up happened and there is nothing to judge.
+/// Whether a default-run scope report depends on the collected files.
+pub(super) fn default_run_scope_counts_files(cwd: &Path, project_root: &Path) -> bool {
+    is_strict_ancestor(project_root, cwd)
+}
+
 pub(super) fn exit_if_default_run_leaves_cwd(
     files: &[PathBuf],
     cwd: &Path,

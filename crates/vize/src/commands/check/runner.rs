@@ -43,7 +43,7 @@ use crate::commands::check::imports::LocalImportSession;
 use collect::collect_check_files_with_ignores;
 use default_imports::{
     DefaultRunFileContext, ExplicitAmbientImportContext, LocalImportContext, canonical_file_set,
-    collect_default_run_files, register_ambient_declaration_files,
+    collect_default_roots, register_ambient_declaration_files,
     register_explicit_ambient_imports_with_session, register_transitive_local_imports_with_session,
 };
 #[cfg(test)]
@@ -96,18 +96,14 @@ fn collect_roots(
         include_jsx: jsx_typecheck,
     };
     if args.patterns.is_empty() {
-        let collected = collect_default_run_files(
-            DefaultRunFileContext {
-                project_root: invocation_project_root,
-                cwd,
-                tsconfig_path: invocation_tsconfig_path,
-                import_options,
-                check_ignore_set,
-            },
-            cache,
-            canonical_paths,
-            package_routes,
-        );
+        let context = DefaultRunFileContext {
+            project_root: invocation_project_root,
+            cwd,
+            tsconfig_path: invocation_tsconfig_path,
+            import_options,
+            check_ignore_set,
+        };
+        let collected = collect_default_roots(context, cache, canonical_paths, package_routes);
         exit_if_default_run_leaves_cwd(
             &collected.files,
             cwd,
