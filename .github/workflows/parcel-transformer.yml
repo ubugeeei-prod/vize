@@ -5,6 +5,10 @@ on:
     paths:
       - npm/builder/parcel/**
       - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
       - tools/support/compat/parcel/**
       - .github/workflows/parcel-transformer.yml
   workflow_dispatch:
