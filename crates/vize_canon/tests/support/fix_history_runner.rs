@@ -104,6 +104,7 @@ pub(crate) fn check_pack(
             | "quoted-generic-parameters-10540"
             | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
+            | "undeclared-instance-globals-10617"
             | "experimental-router-import-10520"
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"

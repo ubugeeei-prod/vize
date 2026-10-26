@@ -101,6 +101,7 @@ export const TYPECHECKER_TESTS = {
   "template-definite-assignment": "deferred_template_reads_preserve_script_diagnostics",
   "template-suppression-original": "template_suppression_preserves_complete_original_diagnostics",
   "typed-import-meta": "typed_import_meta_preserves_exact_authored_diagnostics",
+  "undeclared-instance-globals-10617": "undeclared_instance_globals_report_at_every_read",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
   "v-for-component-source-original":
@@ -192,6 +193,7 @@ export const sourceRevisions = {
   "template-definite-assignment": originalFixtureRevision,
   "template-suppression-original": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
   "typed-import-meta": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
+  "undeclared-instance-globals-10617": "42ca747027a86da7f94b473cff737cb330134d8c",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "unicode-reserved-props": originalFixtureRevision,
   "v-for-component-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
