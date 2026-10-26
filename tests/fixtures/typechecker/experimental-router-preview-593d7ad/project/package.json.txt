@@ -1,0 +1,13 @@
+{
+  "name": "vize-real-router-preview-593d7ad",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vue": "3.5.35",
+    "vue-router": "file:.provider/vue-router-5.4.0.tgz",
+    "typescript": "5.9.3",
+    "vue-tsc": "3.3.13",
+    "vize": "0.562.0"
+  }
+}

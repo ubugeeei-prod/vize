@@ -28,6 +28,7 @@ mod input_scope;
 mod invocation;
 mod nuxt_tsconfig;
 mod output;
+mod overlap;
 mod program_inputs;
 mod programs;
 mod resolve;
@@ -50,7 +51,7 @@ use default_imports::{
 use diagnostics::is_suppressed_false_positive;
 pub(crate) use direct::run_direct;
 use execution::{
-    CheckerSettings, ProgramExecution, ProgramExecutionInput, ProgramPreparation, execute_program,
+    CheckerSettings, ProgramExecution, ProgramExecutionInput, ProgramPreparation, prepare_program,
 };
 use global_components::{
     GlobalComponentStubOptions, build_virtual_ts_options, collect_project_global_component_stubs,
@@ -132,7 +133,7 @@ fn collect_roots(
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
-fn prepare_and_execute(
+fn prepare_candidate(
     args: &CheckArgs,
     mut candidate: ProgramCandidate,
     cwd: &Path,
@@ -312,7 +313,7 @@ fn prepare_and_execute(
     sort_package_route_bindings(&mut package_routes);
     let discover_global_component_declarations =
         !args.patterns.is_empty() && program_tsconfig_path.is_none();
-    let mut execution = execute_program(
+    let mut execution = prepare_program(
         ProgramExecutionInput {
             files: &candidate.files,
             reported_files: candidate.reported,

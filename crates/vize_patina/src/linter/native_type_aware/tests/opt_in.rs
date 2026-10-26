@@ -1,4 +1,6 @@
-use super::super::{RULE_NO_UNSAFE_TEMPLATE_BINDING, has_active_type_aware_rules};
+use super::super::{
+    RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING, has_active_type_aware_rules,
+};
 use crate::{LintPreset, Linter};
 
 #[test]
@@ -51,4 +53,82 @@ const payload: any = { title: "Untyped" };
             .iter()
             .any(|diagnostic| diagnostic.rule_name == "type/corsa-runtime")
     );
+}
+
+const FLOATING: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/linter/explicit-type-rule-preset-10717/FloatingPromise.vue.txt"
+);
+const REPAIRED: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/linter/explicit-type-rule-preset-10717/VoidRepair.vue.txt"
+);
+const AWAITED: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/linter/explicit-type-rule-preset-10717/AwaitedCall.vue.txt"
+);
+
+/// A named type rule runs the same under any preset (#10717).
+fn explicit(preset: LintPreset, source: &str, corsa_path: Option<&str>) -> crate::LintResult {
+    let linter = Linter::with_preset(preset)
+        .with_type_aware_lint(true)
+        .with_corsa_path(corsa_path.map(Into::into))
+        .with_enabled_rules(Some(vec![RULE_NO_FLOATING_PROMISES.into()]));
+    linter.lint_sfc(source, "Component.vue")
+}
+
+fn packet(result: &crate::LintResult) -> std::string::String {
+    format!("{result:?}")
+}
+
+#[test]
+fn explicit_enabled_type_rule_registers_outside_its_preset() {
+    let linter = Linter::with_preset(LintPreset::HappyPath)
+        .with_enabled_rules(Some(vec![RULE_NO_FLOATING_PROMISES.into()]));
+    assert!(linter.registry.has_rule(RULE_NO_FLOATING_PROMISES));
+    assert!(has_active_type_aware_rules(&linter));
+}
+
+#[test]
+fn explicit_type_rule_reports_a_missing_provider_under_every_preset() {
+    let missing = std::env::temp_dir().join("vize-missing-corsa-10717");
+    let missing = missing.to_str().unwrap();
+    let opinionated = explicit(LintPreset::Opinionated, FLOATING, Some(missing));
+    assert!(
+        opinionated
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "type/corsa-runtime"),
+        "{opinionated:?}"
+    );
+    for preset in [
+        LintPreset::HappyPath,
+        LintPreset::Essential,
+        LintPreset::Nuxt,
+    ] {
+        let result = explicit(preset, FLOATING, Some(missing));
+        assert_eq!(packet(&result), packet(&opinionated), "{preset:?}");
+    }
+}
+
+#[test]
+fn explicit_type_rule_output_matches_under_every_preset() {
+    if !super::corsa_available() {
+        return;
+    }
+    for (source, findings) in [(FLOATING, 1), (REPAIRED, 0), (AWAITED, 0)] {
+        let opinionated = explicit(LintPreset::Opinionated, source, None);
+        assert_eq!(opinionated.diagnostics.len(), findings, "{opinionated:?}");
+        assert!(
+            opinionated
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name == RULE_NO_FLOATING_PROMISES)
+        );
+        for preset in [
+            LintPreset::HappyPath,
+            LintPreset::Essential,
+            LintPreset::Nuxt,
+        ] {
+            let result = explicit(preset, source, None);
+            assert_eq!(packet(&result), packet(&opinionated), "{preset:?}");
+        }
+    }
 }

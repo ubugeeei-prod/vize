@@ -91,6 +91,7 @@ test("npm package support table matches package metadata", () => {
       "@vizejs/router",
       "@vizejs/state",
       "@vizejs/typescript-vue-plugin",
+      "@vizejs/volar-plugin",
     ],
   );
 

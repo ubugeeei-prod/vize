@@ -10,7 +10,7 @@ use vize_l0::hash::hash_bytes;
 
 use crate::commands::build::{BuildArgs, ScriptExtension};
 use crate::commands::davinci_ice;
-use crate::lint_plan::matcher::LintPlanScope;
+use crate::lint_plan::matcher::{LintPlanScope, absolute_path};
 
 pub(super) struct BuildConfigSettings {
     pub(super) project_root: Option<PathBuf>,
@@ -119,6 +119,8 @@ pub(super) struct CompileFileSettings {
     /// Project-preprocessed `<style lang="scss|…">` blocks (#8905).
     pub(super) preprocessed_styles: super::preprocess::PreprocessedStyles,
     compiler_scopes: Vec<CompilerScope>,
+    /// Scopes match absolute paths; inputs are usually cwd-relative.
+    cwd: PathBuf,
     template_syntax_from_cli: bool,
     vapor_from_cli: bool,
     custom_elements_from_cli: bool,
@@ -241,6 +243,7 @@ impl CompileFileSettings {
             },
             preprocessed_styles: super::preprocess::PreprocessedStyles::default(),
             compiler_scopes,
+            cwd,
             template_syntax_from_cli: args.template_syntax.is_some(),
             vapor_from_cli: args.vapor,
             custom_elements_from_cli: !args.custom_elements.is_empty(),
@@ -256,8 +259,12 @@ impl CompileFileSettings {
             vapor: self.vapor,
             custom_elements: &self.custom_elements,
         };
+        if self.compiler_scopes.is_empty() {
+            return resolved;
+        }
+        let path = absolute_path(path, &self.cwd);
         for scope in &self.compiler_scopes {
-            if !scope.matcher.matches(path) {
+            if !scope.matcher.matches(&path) {
                 continue;
             }
             if !self.template_syntax_from_cli

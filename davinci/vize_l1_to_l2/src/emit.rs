@@ -91,7 +91,7 @@ mod outlet;
 mod outlet_props;
 mod patch;
 mod prefix;
-pub use for_bindings::exceptional_for_binding_names;
+pub use for_bindings::{exceptional_for_binding_names, rewrite_for_alias_expressions};
 mod props;
 mod props_bind;
 mod props_class;

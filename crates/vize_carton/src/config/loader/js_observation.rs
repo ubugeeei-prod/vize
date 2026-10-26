@@ -215,7 +215,7 @@ mod tests {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("policy.mjs");
         let encoded = serde_json::to_string(&[&path]).unwrap();
-        let script = format!(
+        let script = crate::cstr!(
             r#"
 const frame = Buffer.from({encoded:?});
 process.stderr.write('e'.repeat(100000));
@@ -259,7 +259,7 @@ process.stdin.once('data', ack => {{
             let mut command = Command::new("node");
             command
                 .arg("-e")
-                .arg(format!("process.stderr.write(\"malformed-specificreason\\n\"); process.stdout.write({frame:?});"))
+                .arg(crate::cstr!("process.stderr.write(\"malformed-specificreason\\n\"); process.stdout.write({frame:?});"))
                 .arg("--")
                 .arg("config-fixture");
             let mut observed: Vec<PathBuf> = Vec::new();
@@ -310,7 +310,7 @@ process.stdin.once('data', ack => {{
         };
         assert_eq!(
             crate::cstr!("{error}"),
-            format!(
+            crate::cstr!(
                 "node failed to load config: specificreason 日本語 ({status}; observation transport: failed to fill whole buffer)"
             )
         );
@@ -375,7 +375,7 @@ process.stdin.once('data', ack => {{
         );
         assert_eq!(
             crate::cstr!("{error}"),
-            format!(
+            crate::cstr!(
                 "node failed to load config: {} ({}; observation transport: failed to fill whole buffer)",
                 stderr.strip_suffix('\n').unwrap(),
                 baseline.status
@@ -391,7 +391,7 @@ process.stdin.once('data', ack => {{
         let mut command = Command::new("node");
         command
             .arg("-e")
-            .arg(format!(
+            .arg(crate::cstr!(
                 r#"
 const fs = require('node:fs');
 const paths = {encoded};
@@ -418,7 +418,7 @@ setInterval(() => {{}}, 1000);
             .unwrap();
         let status = Command::new("node")
             .arg("-e")
-            .arg(format!(
+            .arg(crate::cstr!(
                 r#"
 try {{ process.kill({pid}, 0); process.exit(1); }}
 catch (error) {{ process.exit(error.code === 'ESRCH' ? 0 : 2); }}

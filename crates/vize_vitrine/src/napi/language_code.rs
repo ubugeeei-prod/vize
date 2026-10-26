@@ -14,11 +14,12 @@ use vize_canon::{
     generate_vue_content_mapper_transform_with_options,
 };
 
-/// Explicit host-selected options. Source text always comes from the caller.
+// Source text always comes from the caller.
+/// Explicit options for the shared Canon language projection.
 #[napi(object)]
 pub struct VueLanguageCodeOptions {
     pub filename: String,
-    /// An explicit tsconfig; omitted means no configuration file reads.
+    /// Explicit host-selected tsconfig; omitted performs no config file reads.
     pub config_file_name: Option<String>,
     pub options_api: Option<bool>,
     #[napi(js_name = "checkJavaScript")]
@@ -26,8 +27,10 @@ pub struct VueLanguageCodeOptions {
     pub preserve_unused_diagnostics: Option<bool>,
 }
 
-/// Serialize the existing UTF-8 Content Mapper protocol, without another emitter.
-#[napi(js_name = "generateVueLanguageCode")]
+// Serializes the existing protocol without another emitter. tsserver hosts
+// this binding, so a panic must reach JavaScript as an error.
+/// Canon's existing Content Mapper protocol JSON, with UTF-8 offsets.
+#[napi(js_name = "generateVueLanguageCode", catch_unwind)]
 pub fn generate_vue_language_code(
     source: String,
     options: VueLanguageCodeOptions,

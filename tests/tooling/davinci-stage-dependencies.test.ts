@@ -54,12 +54,9 @@ const publishedDavinciStages = new Set([
   "vize_l2_to_l3",
 ]);
 
-test("project runtime discovery has no ambient executable lookup dependency", () => {
-  assert.deepEqual(
-    workspacePackage(metadata, "vize_carton").dependencies.filter((dep) => dep.name === "which"),
-    [],
-    "project dependency discovery must not regain ambient host executable lookup",
-  );
+test("host executable lookup does not enter normal or build level dependencies", () => {
+  const host = dependency(metadata, "vize_carton", "which", null);
+  assert.equal(host.target, 'cfg(not(target_arch = "wasm32"))');
   for (const pkg of metadata.packages) {
     if (!/^vize_l\d+(?:_to_l\d+|_derive)?$/u.test(pkg.name)) continue;
     assert.ok(

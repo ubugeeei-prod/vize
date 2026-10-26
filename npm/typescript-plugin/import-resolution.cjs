@@ -1,282 +1,158 @@
 "use strict";
 
 const path = require("node:path");
-const { resolveExistingModuleSpecifier } = require("./module-resolution.cjs");
+const { isRelativeSpecifier } = require("./module-resolution.cjs");
+const { authoredSpan, generatedPositions } = require("./language-service.cjs");
+const { isSfc } = require("./virtual-modules.cjs");
 
-const vueExtension = ".vue";
-
-function resolveVueImportDefinition(ts, support, fileName, position) {
-  if (typeof fileName !== "string") {
-    return undefined;
-  }
-
-  const sourceText = support.readFile(fileName);
-  if (typeof sourceText !== "string") {
-    return undefined;
-  }
-
-  const directImport = findVueImportAtPosition(ts, sourceText, position);
-  const directVuePath = directImport
-    ? resolveExistingVueSpecifier(fileName, directImport.specifier, support.fileExists)
-    : undefined;
-  const vueImport = directVuePath
-    ? { ...directImport, vuePath: directVuePath }
-    : findVueReExportImportAtPosition(ts, support, fileName, sourceText, position);
-  if (!vueImport?.vuePath) {
-    return undefined;
-  }
-
-  return {
-    definition: {
-      fileName: vueImport.vuePath,
-      kind: ts.ScriptElementKind.scriptElement,
-      name: path.basename(vueImport.vuePath),
-      textSpan: { start: 0, length: 0 },
-    },
-    localName: vueImport.localName,
-    textSpan: vueImport.textSpan,
-  };
-}
-
-function findVueImportAtPosition(ts, sourceText, position) {
-  const sourceFile = ts.createSourceFile(
-    "vize-vue-import.ts",
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-  const imports = [];
-
-  visit(sourceFile, (node) => {
-    if (!ts.isImportDeclaration(node) || !isStringLiteralLike(ts, node.moduleSpecifier)) {
-      return;
-    }
-
-    const specifier = node.moduleSpecifier.text;
-    if (!isRelativeVueSpecifier(specifier)) {
-      return;
-    }
-
-    const localNames = new Set();
-    const importClause = node.importClause;
-    if (importClause?.name) {
-      localNames.add(importClause.name.text);
-    }
-    const namedBindings = importClause?.namedBindings;
-    if (namedBindings && ts.isNamespaceImport(namedBindings)) {
-      localNames.add(namedBindings.name.text);
-    } else if (namedBindings && ts.isNamedImports(namedBindings)) {
-      for (const element of namedBindings.elements) {
-        localNames.add(element.name.text);
-      }
-    }
-
-    imports.push({
-      localNames,
-      specifier,
-      specifierSpan: {
-        length: specifier.length,
-        start: node.moduleSpecifier.getStart(sourceFile) + 1,
-      },
-    });
-  });
-
-  for (const vueImport of imports) {
-    if (containsPosition(vueImport.specifierSpan, position)) {
+// TypeScript owns both the current source tree and lexical symbol identity.
+// A same-spelled parameter/property is never an imported component binding.
+function resolveVueImportDefinition(ts, support, fileName, position, service) {
+  const program = service.getProgram?.();
+  const sourceFile = program?.getSourceFile(fileName);
+  if (!sourceFile) return undefined;
+  const checker = program.getTypeChecker();
+  const feature = support.virtual?.engine?.LanguageFeature?.Definition;
+  for (const offset of generatedPositions(support.virtual, fileName, position, feature)) {
+    const token = tokenAt(sourceFile, offset);
+    if (!token) continue;
+    const symbol = ts.isIdentifier(token)
+      ? token.parent && ts.isShorthandPropertyAssignment(token.parent)
+        ? checker.getShorthandAssignmentValueSymbol(token.parent)
+        : checker.getSymbolAtLocation(token)
+      : undefined;
+    for (const statement of sourceFile.statements) {
+      if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
+        continue;
+      const specifier = statement.moduleSpecifier;
+      const bindings = importBindings(ts, statement);
+      const selected =
+        symbol && bindings.find((binding) => checker.getSymbolAtLocation(binding.node) === symbol);
+      const onSpecifier = token === specifier;
+      if (!selected && !onSpecifier) continue;
+      const binding = selected || bindings[0];
+      const vuePath = componentModule(
+        ts,
+        support,
+        program,
+        checker,
+        sourceFile.fileName,
+        specifier.text,
+        binding?.importedName,
+        new Set(),
+      );
+      if (!vuePath) continue;
+      const generated = onSpecifier
+        ? { start: specifier.getStart(sourceFile) + 1, length: specifier.getWidth(sourceFile) - 2 }
+        : { start: token.getStart(sourceFile), length: token.getWidth(sourceFile) };
+      const textSpan = authoredSpan(support.virtual, fileName, generated, feature);
+      if (!textSpan) continue;
       return {
-        localName: [...vueImport.localNames][0],
-        specifier: vueImport.specifier,
-        textSpan: vueImport.specifierSpan,
+        definition: {
+          fileName: vuePath,
+          kind: ts.ScriptElementKind.scriptElement,
+          name: path.basename(vuePath),
+          textSpan: { start: 0, length: 0 },
+        },
+        localName: selected?.node.text || binding?.node.text,
+        textSpan,
       };
     }
   }
-
-  const identifier = identifierAtPosition(ts, sourceFile, position);
-  if (!identifier) {
-    return undefined;
-  }
-
-  const identifierText = identifier.text;
-  const vueImport = imports.find((entry) => entry.localNames.has(identifierText));
-  if (!vueImport) {
-    return undefined;
-  }
-
-  return {
-    localName: identifierText,
-    specifier: vueImport.specifier,
-    textSpan: {
-      length: identifier.getEnd() - identifier.getStart(sourceFile),
-      start: identifier.getStart(sourceFile),
-    },
-  };
+  return undefined;
 }
 
-function findVueReExportImportAtPosition(ts, support, fileName, sourceText, position) {
-  const importBinding = findNamedImportBindingAtPosition(
-    ts,
-    sourceText,
-    position,
-    (specifier) => !isRelativeVueSpecifier(specifier),
-  );
-  if (!importBinding) {
-    return undefined;
-  }
-  const vuePath = resolveVueReExport(
-    ts,
-    support,
-    fileName,
-    importBinding.specifier,
-    importBinding.importedName,
-  );
-  return vuePath ? { ...importBinding, vuePath } : undefined;
-}
-
-function findNamedImportBindingAtPosition(ts, sourceText, position, acceptsSpecifier) {
-  const sourceFile = ts.createSourceFile(
-    "vize-vue-import.ts",
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-  const imports = [];
-
-  visit(sourceFile, (node) => {
-    if (!ts.isImportDeclaration(node) || !isStringLiteralLike(ts, node.moduleSpecifier)) {
-      return;
-    }
-    const specifier = node.moduleSpecifier.text;
-    if (!acceptsSpecifier(specifier)) {
-      return;
-    }
-    const importClause = node.importClause;
-    const namedBindings = importClause?.namedBindings;
-    if (namedBindings && ts.isNamedImports(namedBindings)) {
-      for (const element of namedBindings.elements) {
-        const localName = element.name.text;
-        imports.push({
-          importedName: element.propertyName?.text || localName,
-          localName,
-          specifier,
-          textSpan: {
-            length: element.name.getEnd() - element.name.getStart(sourceFile),
-            start: element.name.getStart(sourceFile),
-          },
+function importBindings(ts, statement) {
+  const clause = statement.importClause;
+  if (!clause) return [];
+  const bindings = clause.name ? [{ node: clause.name, importedName: "default" }] : [];
+  if (clause.namedBindings) {
+    if (ts.isNamespaceImport(clause.namedBindings))
+      bindings.push({ node: clause.namedBindings.name });
+    else
+      for (const element of clause.namedBindings.elements)
+        bindings.push({
+          node: element.name,
+          importedName: element.propertyName?.text || element.name.text,
         });
-      }
-    }
-  });
-
-  const direct = imports.find((entry) => containsPosition(entry.textSpan, position));
-  if (direct) {
-    return direct;
   }
-  const identifier = identifierAtPosition(ts, sourceFile, position);
-  return identifier ? imports.find((entry) => entry.localName === identifier.text) : undefined;
+  return bindings;
 }
 
-function resolveVueReExport(
+function componentModule(
   ts,
   support,
+  program,
+  checker,
   containingFile,
   specifier,
-  exportedName,
-  seen = new Set(),
+  importedName,
+  seen,
 ) {
-  const barrelPath = resolveExistingModuleSpecifier(
-    containingFile,
-    specifier,
-    support.fileExists,
-    support.readFile,
-  );
-  if (!barrelPath || seen.has(barrelPath)) {
-    return undefined;
-  }
-  seen.add(barrelPath);
-  const sourceText = support.readFile(barrelPath);
-  if (typeof sourceText !== "string") {
-    return undefined;
-  }
-  const sourceFile = ts.createSourceFile(
-    barrelPath,
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-  let result;
-  visit(sourceFile, (node) => {
-    if (result || !ts.isExportDeclaration(node) || !isStringLiteralLike(ts, node.moduleSpecifier)) {
-      return;
-    }
-    const exportClause = node.exportClause;
-    if (!exportClause || !ts.isNamedExports(exportClause)) {
-      return;
-    }
-    for (const element of exportClause.elements) {
-      if (element.name.text !== exportedName) {
-        continue;
-      }
-      const targetName = element.propertyName?.text || element.name.text;
-      const targetSpecifier = node.moduleSpecifier.text;
-      result = isRelativeVueSpecifier(targetSpecifier)
-        ? resolveExistingVueSpecifier(barrelPath, targetSpecifier, support.fileExists)
-        : resolveVueReExport(ts, support, barrelPath, targetSpecifier, targetName, seen);
-      return;
-    }
-  });
-  return result;
-}
-
-function identifierAtPosition(ts, sourceFile, position) {
-  let result;
-  visit(sourceFile, (node) => {
+  const resolved = support.virtual?.resolve(specifier, containingFile);
+  const fileName = resolved?.originalPath || resolved?.resolvedFileName;
+  // Respect TypeScript's actual declaration/module choice, including .d.vue.ts.
+  if (isSfc(fileName))
+    return importedName === undefined || importedName === "default" ? fileName : undefined;
+  if (!fileName || seen.has(fileName) || !importedName) return undefined;
+  seen.add(fileName);
+  const sourceFile =
+    program.getSourceFile(fileName) || program.getSourceFile(resolved.resolvedFileName);
+  const moduleSymbol = sourceFile && checker.getSymbolAtLocation(sourceFile);
+  const exported =
+    moduleSymbol &&
+    checker.getExportsOfModule(moduleSymbol).find((symbol) => symbol.name === importedName);
+  if (!exported) return undefined;
+  for (const declaration of exported.declarations || []) {
+    if (!ts.isExportSpecifier(declaration)) continue;
+    const statement = declaration.parent.parent;
     if (
-      result ||
-      !ts.isIdentifier(node) ||
-      position < node.getStart(sourceFile) ||
-      position > node.getEnd()
-    ) {
-      return;
-    }
-    result = node;
-  });
-  return result;
-}
-
-function visit(node, callback) {
-  callback(node);
-  node.forEachChild((child) => visit(child, callback));
-}
-
-function isStringLiteralLike(ts, node) {
-  return ts.isStringLiteral(node) || node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral;
-}
-
-function containsPosition(span, position) {
-  return position >= span.start && position <= span.start + span.length;
-}
-
-function resolveExistingVueSpecifier(containingFile, specifier, fileExists) {
-  if (!isRelativeVueSpecifier(specifier) || typeof containingFile !== "string") {
-    return undefined;
+      !ts.isExportDeclaration(statement) ||
+      !statement.moduleSpecifier ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    )
+      continue;
+    const target = componentModule(
+      ts,
+      support,
+      program,
+      checker,
+      fileName,
+      statement.moduleSpecifier.text,
+      declaration.propertyName?.text || declaration.name.text,
+      seen,
+    );
+    if (target) return target;
   }
+  return undefined;
+}
 
+function tokenAt(sourceFile, position) {
+  let current = sourceFile;
+  for (;;) {
+    let child;
+    current.forEachChild((node) => {
+      if (position >= node.getStart(sourceFile) && position <= node.getEnd()) {
+        child = node;
+        return true;
+      }
+    });
+    if (!child) return current;
+    current = child;
+  }
+}
+
+// Kept for the existing explicit-path utility contract. Navigation above uses
+// the host's real TypeScript resolver and current Program instead.
+function resolveExistingVueSpecifier(containingFile, specifier, fileExists) {
+  if (
+    typeof containingFile !== "string" ||
+    typeof specifier !== "string" ||
+    !specifier.endsWith(".vue") ||
+    !isRelativeSpecifier(specifier)
+  )
+    return undefined;
   const vuePath = path.resolve(path.dirname(containingFile), specifier);
   return fileExists(vuePath) ? vuePath : undefined;
 }
-
-function isRelativeVueSpecifier(specifier) {
-  return (
-    typeof specifier === "string" &&
-    specifier.endsWith(vueExtension) &&
-    (specifier.startsWith("./") || specifier.startsWith("../"))
-  );
-}
-
-module.exports = {
-  resolveExistingVueSpecifier,
-  resolveVueImportDefinition,
-};
+module.exports = { resolveExistingVueSpecifier, resolveVueImportDefinition };

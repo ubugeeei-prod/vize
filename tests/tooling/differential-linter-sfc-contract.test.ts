@@ -50,7 +50,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
   // their original bytes pinned, including formatting, without counting it.
   assert.equal(
     sha256(`${manifestText.slice(0, runtimeBoundary)}\n}\n`),
-    "6c585281c0d52975674e4fc585d24d4bd748555048ce846f2d62e63088a56346",
+    "c243890d0c9cb14d7f0e2551165be95a813de4d17ae6ef3f28784b2f4c8f2f09",
   );
   assert.equal(
     sha256(

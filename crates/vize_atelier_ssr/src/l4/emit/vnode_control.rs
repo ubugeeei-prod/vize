@@ -135,13 +135,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let value = alias_source(&binding.value)?;
         let key = binding.key.as_ref().map(alias_source).transpose()?;
         let index = binding.index.as_ref().map(alias_source).transpose()?;
-        let aliases: std::vec::Vec<&str> =
-            [Some(value), key, index].into_iter().flatten().collect();
-
         let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
+        let aliases = self.for_alias_texts([Some(value), key, index]);
         let body = self.vnode_for_body(fact, &for_op.region.ops);
         self.scoped_params.pop();
         self.exprs.leave(mark);
+        let aliases = aliases?;
         let (body, keyed) = body?;
         self.close(
             Kind::CloseFor,
@@ -152,7 +151,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         } else {
             "256 /* UNKEYED_FRAGMENT */"
         };
-        let aliases = aliases.join(", ");
+        let aliases = aliases
+            .iter()
+            .flatten()
+            .map(String::as_str)
+            .collect::<std::vec::Vec<_>>()
+            .join(", ");
         Ok(cstr!(
             "(_openBlock(true), _createBlock(_Fragment, null, _renderList({source}, ({aliases}) => {{ return {body} }}), {flag}))"
         ))

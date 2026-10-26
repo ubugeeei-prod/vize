@@ -62,7 +62,8 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
   );
   const hostVizeSettings = recordValue(resolvedHostLint?.settings?.vize);
   const lintConfig = nativeLint;
-  const compiler = vueCompiler(compilerOption ?? integration.plugin ?? {}, vue);
+  const pluginOptions = compilerOption ?? integration.plugin ?? {};
+  const compiler = vueCompiler(pluginOptions, vue);
   const options: VizePlusOptions = {
     ...integration,
     check:
@@ -122,7 +123,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     lint: resolvedHostLint,
     fmt: fmt ? oxfmt : undefined,
   };
-  return { vp, metadata, compiler };
+  return { vp, metadata, compiler, plugin: vitePluginOptions(pluginOptions, compiler) };
 }
 
 /** Compose the plain Vite+ lint policy with the Vue flat-config layer. */
@@ -166,6 +167,24 @@ function recordValue(value: unknown): Record<string, unknown> {
 }
 
 /** Keep plugin-only fields while native canonical leaves choose their own values. */
+/**
+ * The Vite plugin reads `vue.compiler` from `metadata.config`, where
+ * `vue.entries[].compiler` scopes apply per file. Repeating those settings as
+ * explicit plugin options would override every scope (#10781). Only the dialect
+ * stays explicit: legacy compiler selection reads it before the config loads.
+ */
+function vitePluginOptions(
+  options: VizeCompilerOptions | false,
+  compiler: VizeCompilerOptions | false,
+): VizeCompilerOptions | false {
+  if (options === false || compiler === false || compiler === options) return compiler;
+  return {
+    ...options,
+    compatibility: compiler.compatibility,
+    ...(compiler.vueVersion === undefined ? {} : { vueVersion: compiler.vueVersion }),
+  };
+}
+
 function vueCompiler(
   legacy: VizeCompilerOptions | false,
   vue: VueConfigObject["vue"],

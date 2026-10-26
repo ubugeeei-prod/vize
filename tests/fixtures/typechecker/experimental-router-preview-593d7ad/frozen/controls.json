@@ -1,0 +1,102 @@
+[
+  {
+    "id": "lf/enabled/valid",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": false
+  },
+  {
+    "id": "lf/enabled/wrong-id",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: string = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": true
+  },
+  {
+    "id": "lf/enabled/wrong-date",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: string | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": true
+  },
+  {
+    "id": "lf/enabled/missing-component-prop",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile> & { requiredExtra: string }>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": true
+  },
+  {
+    "id": "lf/enabled/repaired",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": false
+  },
+  {
+    "id": "lf/disabled/valid",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": false
+  },
+  {
+    "id": "lf/disabled/wrong-id",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: string = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": true
+  },
+  {
+    "id": "lf/disabled/wrong-date",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: string | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": true
+  },
+  {
+    "id": "lf/disabled/missing-component-prop",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile> & { requiredExtra: string }>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": true
+  },
+  {
+    "id": "lf/disabled/repaired",
+    "source": "<script setup lang=\"ts\">\n// 手動の実ヘルパー 🍣\nimport { definePage } from 'vue-router/experimental'\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\ntype PageFile = 'src/pages/products/[id=int].vue'\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\n  params: {\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\n    hash: { heading: {} },\n  },\n  props: true,\n})\nconst id: number = props.id\nconst page: number = props.page\nconst tags: string[] | undefined = props.tags\nconst at: Date | undefined = props.at\nconst heading: string | undefined = props.heading\n</script>\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\n",
+    "invalid": false
+  },
+  {
+    "id": "crlf/enabled/valid",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": false
+  },
+  {
+    "id": "crlf/enabled/wrong-id",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: string = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": true
+  },
+  {
+    "id": "crlf/enabled/wrong-date",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: string | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": true
+  },
+  {
+    "id": "crlf/enabled/missing-component-prop",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile> & { requiredExtra: string }>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": true
+  },
+  {
+    "id": "crlf/enabled/repaired",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": false
+  },
+  {
+    "id": "crlf/disabled/valid",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": false
+  },
+  {
+    "id": "crlf/disabled/wrong-id",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: string = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": true
+  },
+  {
+    "id": "crlf/disabled/wrong-date",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: string | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": true
+  },
+  {
+    "id": "crlf/disabled/missing-component-prop",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile> & { requiredExtra: string }>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": true
+  },
+  {
+    "id": "crlf/disabled/repaired",
+    "source": "<script setup lang=\"ts\">\r\n// 手動の実ヘルパー 🍣\r\nimport { definePage } from 'vue-router/experimental'\r\nimport type { _RoutePropsForFilePath } from 'vue-router/experimental'\r\ntype PageFile = 'src/pages/products/[id=int].vue'\r\nconst props = defineProps<_RoutePropsForFilePath<PageFile>>()\r\ndefinePage<PageFile, typeof import('./[id=int].vue').default>({\r\n  params: {\r\n    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },\r\n    hash: { heading: {} },\r\n  },\r\n  props: true,\r\n})\r\nconst id: number = props.id\r\nconst page: number = props.page\r\nconst tags: string[] | undefined = props.tags\r\nconst at: Date | undefined = props.at\r\nconst heading: string | undefined = props.heading\r\n</script>\r\n<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>\r\n",
+    "invalid": false
+  }
+]
