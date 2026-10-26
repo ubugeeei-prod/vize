@@ -1,0 +1,6 @@
+<script setup lang="ts">
+async function loadSecond(): Promise<number> {
+  return 2
+}
+void loadSecond()
+</script>
