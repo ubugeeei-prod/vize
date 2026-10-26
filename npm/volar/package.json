@@ -49,7 +49,7 @@
   },
   "metadata": {
     "vize": {
-      "stability": "alpha-supported",
+      "stability": "experimental",
       "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
     }
   }
