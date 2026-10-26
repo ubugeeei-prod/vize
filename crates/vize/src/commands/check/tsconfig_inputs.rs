@@ -34,6 +34,8 @@ mod hidden_include_tests;
 #[cfg(test)]
 mod ignore_file_tests;
 #[cfg(test)]
+mod literal_bracket_tests;
+#[cfg(test)]
 mod nuxt_manifest_tests;
 #[cfg(test)]
 mod ownership_shared_tests;
@@ -189,7 +191,7 @@ fn collect_default_check_files_for_tsconfig(
 
     let default_includes;
     let includes: &[GlobSpec] = if !spec.has_includes && !spec.has_files && files.is_empty() {
-        default_includes = GlobSpec::new(&default_base_dir, "**/*")
+        default_includes = GlobSpec::include(&default_base_dir, "**/*")
             .into_iter()
             .collect::<Vec<_>>();
         &default_includes

@@ -77,7 +77,6 @@ corsa = { workspace = true, optional = true }
 corsa_lsp = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
 sha2.workspace = true
-glob.workspace = true
 tempfile = { workspace = true, optional = true }
 
 [target.'cfg(unix)'.dependencies]
@@ -94,6 +93,7 @@ davinci_test_support = { workspace = true, features = [
   "reference-path",
 ] }
 criterion.workspace = true
+glob.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 vize_armature.workspace = true
