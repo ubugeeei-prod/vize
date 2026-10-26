@@ -53,6 +53,8 @@ pub mod css_classes;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
+#[cfg(feature = "native")]
+pub use file_uri::decode_uri_path;
 pub mod intelligence;
 mod options_api_setup_spread;
 pub mod package_route;
@@ -138,7 +140,7 @@ pub use corsa_bridge::{
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
     LspSignatureInformation, NativeVueCheck, NativeVueError, OriginalProgramCheck,
-    OriginalProgramError, VIRTUAL_URI_SCHEME,
+    OriginalProgramError, VIRTUAL_URI_SCHEME, is_editor_mirror_path,
 };
 
 // Re-export batch type checker
