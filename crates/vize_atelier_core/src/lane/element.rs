@@ -136,9 +136,6 @@ fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
-    if ctx.options.vapor && !ctx.options.ssr && el.tag_type == ElementType::Element {
-        vapor_static_style::fold(ctx, el);
-    }
     let runtime_only =
         (ctx.options.vapor && !ctx.options.ssr && el.tag_type == ElementType::Element)
             .then(|| vapor_runtime_props::RuntimeOnlyContext::new(el));
@@ -171,10 +168,15 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         }
     }
 
-    // Process directive expressions with _ctx prefix if needed
-    if ctx.options.prefix_identifiers || ctx.options.is_ts {
-        process_directive_expressions(ctx, el);
+    // Process directive expressions with _ctx prefix if needed. That pass
+    // drops the retained AST, so it folds literal styles itself; otherwise
+    // the loop below finds the candidate.
+    let prefixed = ctx.options.prefix_identifiers || ctx.options.is_ts;
+    if prefixed {
+        process_directive_expressions(ctx, el, runtime_only.is_some());
     }
+    let fold_style = runtime_only.is_some() && !prefixed;
+    let mut style = None;
 
     // Collect indices of v-model directives to process (skip in vapor mode)
     let mut model_indices: std::vec::Vec<usize> = std::vec::Vec::new();
@@ -194,6 +196,16 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 "model" if !ctx.options.vapor => {
                     model_indices.push(i);
                 }
+                "bind" => {
+                    if fold_style
+                        && style.is_none()
+                        && let Some(css) = vapor_static_style::literal_css(dir)
+                    {
+                        style = Some((i, css));
+                    }
+                }
+                // Built-ins skip the directive-set lookup below.
+                "on" => {}
                 "slot" => {
                     ctx.helper(RuntimeHelper::RenderSlot);
                 }
@@ -209,6 +221,9 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 _ => {}
             }
         }
+    }
+    if let Some((index, css)) = style {
+        vapor_static_style::fold_at(ctx, el, index, &css);
     }
 
     // Collect all v-model data first, then modify props
