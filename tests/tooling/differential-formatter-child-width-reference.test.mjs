@@ -154,7 +154,12 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
   const livePath = path.join(scratch, cliPath);
   const liveBytes = fs.readFileSync(livePath);
   const appended = JSON.parse(liveBytes);
-  appended.cases.push({ ...appended.cases[0], id: "formatter/sfc/new-issue-input" });
+  const added = { ...appended.cases[0], id: "formatter/sfc/new-issue-input" };
+  appended.cases.splice(
+    appended.cases.findIndex((row) => row.id > added.id),
+    0,
+    added,
+  );
   fs.writeFileSync(livePath, `${JSON.stringify(appended, null, 2)}\n`);
   soleChildVueAuthority(scratch);
   for (const mutate of [

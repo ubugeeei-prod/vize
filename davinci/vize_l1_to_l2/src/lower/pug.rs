@@ -18,22 +18,35 @@
 //! span to the authored pug through [`PugSourceMap::to_pug`], and
 //! [`PugLowered::diagnostics`] is already in pug coordinates.
 //!
+//! # Build-time code
+//!
+//! pug runs its template function once, with no component data, so code
+//! built from literals and the template's own bindings has one value.
+//! Conditionals, iteration, `- var` declarations, `=` code, `#{…}`
+//! interpolation and attribute values are evaluated to that value
+//! (`eval`, `control`).
+//!
 //! # Refusal
 //!
-//! Vue's documented pug support is a static preprocessor pass. What needs
-//! a JavaScript engine or other files at build time — mixins, includes,
-//! `extends`/`block`, conditionals, iteration, `case`, filters, `-` code,
-//! `#{…}` interpolation, non-constant attribute values and `=` code,
-//! `&attributes`, `doctype` — is refused with an error diagnostic at the
-//! construct; nothing is emitted for it.
+//! What needs a JavaScript engine or other files at build time — names the
+//! template does not define, calls, mixins, includes, `extends`/`block`,
+//! `case`, `while`, filters, `&attributes`, `doctype` — is refused with an
+//! error diagnostic at the construct; nothing is emitted for it.
 
 mod attrs;
+mod check;
+mod control;
 mod emit;
+mod eval;
+mod heads;
 mod literal;
 mod map;
+mod ops;
 #[cfg(test)]
 mod oversize_tests;
 mod refusal;
+mod scope;
+mod value;
 mod view;
 
 use alloc::vec::Vec as StdVec;

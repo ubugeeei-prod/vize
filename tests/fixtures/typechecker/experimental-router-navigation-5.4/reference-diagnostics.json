@@ -1,0 +1,210 @@
+[
+  {
+    "id": "required-path",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(13,7): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "required-query",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(14,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "default-query",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(15,7): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "array-query",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(16,7): error TS2322: Type 'string[] | undefined' is not assignable to type 'number[] | undefined'.\n  Type 'string[]' is not assignable to type 'number[]'.\n    Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "custom-date-query",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(17,7): error TS2322: Type 'Date | undefined' is not assignable to type 'string | undefined'.\n  Type 'Date' is not assignable to type 'string'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "hash",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(18,7): error TS2322: Type 'string | undefined' is not assignable to type 'number | undefined'.\n  Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "optional-path",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/optional/[[id=int]].vue(4,7): error TS2322: Type 'number | null' is not assignable to type 'string'.\n  Type 'null' is not assignable to type 'string'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "repeated-path",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/repeat/[ids=int]+.vue(4,7): error TS2322: Type 'number[]' is not assignable to type 'string'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "optional-repeated-path",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/optional-repeat/[[ids=int]]+.vue(4,7): error TS2322: Type 'number[]' is not assignable to type 'string'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "navigation-push",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(19,18): error TS2345: Argument of type '{ name: \"/products/[id=int]\"; params: { id: string; q: string; }; }' is not assignable to parameter of type '_LiteralUnion<\"/\" | \"/optional/:id?\" | \"/optional-repeat/:ids*\" | \"/products/:id\" | \"/repeat/:ids+\", string> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/repeat/[ids=int]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/repeat/[ids=int]+\">'.\n  The types of 'params['id']' are incompatible between these types.\n    Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "navigation-replace",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(20,21): error TS2345: Argument of type '{ name: \"/products/[id=int]\"; params: { id: string; q: string; }; }' is not assignable to parameter of type '_LiteralUnion<\"/\" | \"/optional/:id?\" | \"/optional-repeat/:ids*\" | \"/products/:id\" | \"/repeat/:ids+\", string> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/repeat/[ids=int]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/repeat/[ids=int]+\">'.\n  The types of 'params['id']' are incompatible between these types.\n    Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "navigation-resolve",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(21,25): error TS2769: No overload matches this call.\n  Overload 1 of 2, '(to: RouteLocationAsRelativeTyped<RouteNamedMap, \"/products/[id=int]\">, currentLocation?: RouteLocationNormalizedLoadedTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | ... 4 more ... | undefined): RouteLocationResolvedTyped<...>', gave the following error.\n    Type 'string' is not assignable to type 'number'.\n  Overload 2 of 2, '(to: _LiteralUnion<\"/\" | \"/optional/:id?\" | \"/optional-repeat/:ids*\" | \"/products/:id\" | \"/repeat/:ids+\", string> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | ... 8 more ... | RouteLocationAsPathTyped<...>, currentLocation?: RouteLocationNormalizedLoadedTyped<...> | ... 4 more ... | undefined): RouteLocationResolvedTyped<...> | ... 3 more ... | RouteLocationResolvedTyped<...>', gave the following error.\n    Argument of type '{ name: \"/products/[id=int]\"; params: { id: string; q: string; }; }' is not assignable to parameter of type '_LiteralUnion<\"/\" | \"/optional/:id?\" | \"/optional-repeat/:ids*\" | \"/products/:id\" | \"/repeat/:ids+\", string> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/repeat/[ids=int]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/repeat/[ids=int]+\">'.\n      The types of 'params['id']' are incompatible between these types.\n        Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  },
+  {
+    "id": "router-link-target",
+    "sfc": {
+      "args": [
+        "node_modules/vue-tsc/bin/vue-tsc.js",
+        "--noEmit",
+        "--pretty",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "status": 2,
+      "stdout": "src/pages/products/[id=int].vue(24,16): error TS2322: Type '{ name: \"/products/[id=int]\"; params: { id: string; q: string; }; }' is not assignable to type '_LiteralUnion<\"/\" | \"/optional/:id?\" | \"/optional-repeat/:ids*\" | \"/products/:id\" | \"/repeat/:ids+\", string> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsRelativeTyped<RouteNamedMap, \"/repeat/[ids=int]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional/[[id=int]]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/optional-repeat/[[ids=int]]+\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/products/[id=int]\"> | RouteLocationAsPathTyped<RouteNamedMap, \"/repeat/[ids=int]+\">'.\n  The types of 'params['id']' are incompatible between these types.\n    Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    }
+  }
+]

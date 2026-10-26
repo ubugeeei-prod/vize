@@ -5607,10 +5607,11 @@ vp run lint
 
 カスタムコンポーネントのリスナーがハイフン区切りではなく `@myEvent` です。
 
-```vue annotate="remove:2,3"
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent @myEvent="handler" />
 <MyComponent v-on:myEvent="handler" />
+<my-component @update:modelValue="handler" />
 </template>
 ```
 
@@ -5630,7 +5631,7 @@ vp run lint
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [全ルール](all.md)
 
 ### `vue/v-on-handler-style`
 

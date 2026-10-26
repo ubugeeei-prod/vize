@@ -114,7 +114,7 @@ impl SessionCache {
         if prebuilt.source_path != source_path || prebuilt.fingerprint != *fingerprint {
             return false;
         }
-        let mut observed = crate::package_route::stamp::InputStampCache::default();
+        let mut observed = crate::package_route::stamp::InputStampValidation::default();
         if !prebuilt.fingerprint.stamps_still_valid(&mut observed) {
             return false;
         }

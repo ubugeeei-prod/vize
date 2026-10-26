@@ -58,10 +58,12 @@ void test("closed sixteen-case CLI union preserves original thirteen and incomin
   }
   // The shared manifest grows as fixtures are added and later cases change;
   // only the original thirteen cases and the envelope are preserved.
+  const originalIds = new Set(JSON.parse(original.toString()).cases.map((item) => item.id));
+  const later = (copy) => copy.cases.filter((item) => !originalIds.has(item.id));
   for (const mutate of [
     (copy) => copy.cases.push(copy.cases.at(-1)),
-    (copy) => (copy.cases[13].inputs.files[0].sha256 = "0".repeat(64)),
-    (copy) => (copy.cases[14].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
+    (copy) => (later(copy)[0].inputs.files[0].sha256 = "0".repeat(64)),
+    (copy) => (later(copy)[1].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
   ]) {
     const copy = JSON.parse(current.toString());
     mutate(copy);

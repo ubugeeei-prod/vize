@@ -152,7 +152,7 @@ const MALFORMED: &[(&str, &str, &[PugErrorCode], PugHoleCounts)] = {
 #[test]
 fn ts19_pug_fixture_matrix_round_trips_without_errors() {
     let sources = fixture_sources();
-    assert_eq!(sources.len(), 40, "26 matrix + 14 refused fixtures, pinned");
+    assert_eq!(sources.len(), 43, "29 matrix + 14 refused fixtures, pinned");
     for (name, source) in &sources {
         let allocator = Allocator::new();
         let (tree, errors) = parse_pug(&allocator, source);

@@ -4455,12 +4455,16 @@ dependencies = [
  "globset",
  "insta",
  "once_cell",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_span",
  "rustc-hash",
  "serde",
  "serde_json",
  "sha2",
  "tempfile",
  "vize_l0",
+ "vize_oxc_parser",
  "which",
 ]
 

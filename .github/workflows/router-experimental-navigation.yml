@@ -1,0 +1,95 @@
+name: Published router navigation matrix
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/router-experimental-navigation.yml
+      - tests/fixtures/typechecker/experimental-router-navigation-5.4/**
+      - tests/tooling/router-experimental-navigation-matrix.test.ts
+      - tests/tooling/support/router-experimental-navigation-matrix.ts
+  workflow_dispatch:
+    inputs:
+      expected-source-sha:
+        description: Exact reviewed source commit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: router-navigation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  published-navigation:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Require exact source identity
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || inputs.expected-source-sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          git diff --exit-code HEAD
+          mkdir -p "$RUNNER_TEMP/router-navigation"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/router-navigation/source-identity.txt"
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: router-navigation
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Setup Vite Plus
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install frozen source dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install independently pinned published checker host
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-navigation-checker"
+          cp tests/fixtures/typechecker/experimental-router-navigation-5.4/checker-host-package.json.txt "$RUNNER_TEMP/router-navigation-checker/package.json"
+          cp tests/fixtures/typechecker/experimental-router-navigation-5.4/checker-host-package-lock.json.txt "$RUNNER_TEMP/router-navigation-checker/package-lock.json"
+          npm ci --prefix "$RUNNER_TEMP/router-navigation-checker" --ignore-scripts --no-audit --no-fund --prefer-offline --registry=https://registry.npmjs.org
+          sha256sum "$RUNNER_TEMP/router-navigation-checker/package-lock.json" "$RUNNER_TEMP/router-navigation-checker/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$RUNNER_TEMP/router-navigation/checker-identity.sha256"
+      - name: Install the immutable released Vize oracle
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-navigation-public"
+          cp tests/fixtures/typechecker/experimental-router-navigation-5.4/public-oracle-package.json.txt "$RUNNER_TEMP/router-navigation-public/package.json"
+          cp tests/fixtures/typechecker/experimental-router-navigation-5.4/public-oracle-package-lock.json.txt "$RUNNER_TEMP/router-navigation-public/package-lock.json"
+          npm ci --prefix "$RUNNER_TEMP/router-navigation-public" --ignore-scripts --no-audit --no-fund --prefer-offline --registry=https://registry.npmjs.org
+          sha256sum "$RUNNER_TEMP/router-navigation-public/package-lock.json" "$RUNNER_TEMP/router-navigation-public/node_modules/vize/package.json" > "$RUNNER_TEMP/router-navigation/public-oracle-identity.sha256"
+      - name: Build exact source CLI
+        run: |
+          cargo build --profile ci -p vize
+          vp node tests/differential/build-receipt.ts
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/router-navigation/source-build.json"
+          sha256sum target/ci/vize > "$RUNNER_TEMP/router-navigation/source-cli.sha256"
+      - name: Capture complete source and independent reference matrix
+        env:
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_TEST_ROUTER_MATRIX_REQUIRED: "1"
+          VIZE_TEST_ROUTER_MATRIX_CHECKER: ${{ runner.temp }}/router-navigation-checker/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_TEST_ROUTER_MATRIX_PUBLIC_CLI: ${{ runner.temp }}/router-navigation-public/node_modules/vize/bin/vize
+          VIZE_TEST_ROUTER_MATRIX_OUTPUT: ${{ runner.temp }}/router-navigation/matrix
+        run: vp node --test --test-concurrency=1 tests/tooling/router-experimental-navigation-matrix.test.ts
+      - name: Retain complete packets, declarations, generated code and format discoveries
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: router-navigation-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/router-navigation/
+          if-no-files-found: error

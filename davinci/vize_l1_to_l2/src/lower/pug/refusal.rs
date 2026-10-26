@@ -27,13 +27,43 @@ pub(super) fn message(refusal: PugRefusal) -> String {
     cstr!("pug `{keyword}` is not supported in Vue templates: {reason}")
 }
 
-pub(super) const UNBUFFERED_CODE: &str = "pug unbuffered code (`- …`) is not supported in Vue templates: it runs JavaScript at build time";
+/// Buffered code or `#{…}` interpolation without a build-time value.
+pub(super) fn code(reason: &str) -> String {
+    cstr!(
+        "pug code cannot be evaluated at build time: {reason} (use `{{{{ … }}}}` for component \
+         state)"
+    )
+}
 
-pub(super) const CODE_INTERPOLATION: &str =
-    "pug `#{…}` / `!{…}` interpolation is not supported in Vue templates: use `{{ … }}`";
+/// Unbuffered code (`- …`) pug cannot run without an engine.
+pub(super) fn statement(reason: &str) -> String {
+    cstr!("pug unbuffered code (`- …`) cannot run at build time: {reason}")
+}
 
-pub(super) const EXECUTABLE_CODE: &str = "pug buffered code must be a constant literal in Vue \
-                                          templates; use `{{ … }}` for expressions";
+pub(super) fn attribute(key: &str, reason: &str) -> String {
+    cstr!(
+        "pug attribute `{key}` cannot be evaluated at build time: {reason} (use `:{key}` for \
+         bindings)"
+    )
+}
+
+pub(super) fn condition(keyword: &str, reason: &str) -> String {
+    cstr!(
+        "pug `{keyword}` cannot be evaluated at build time: {reason} (use `v-if` for component \
+         state)"
+    )
+}
+
+pub(super) fn each(reason: &str) -> String {
+    cstr!("pug `each` cannot run at build time: {reason} (use `v-for` for component state)")
+}
+
+pub(super) const EACH_BLOCK: &str = "pug `each` and its `else` need an indented block";
+
+pub(super) const EACH_SAME_NAMES: &str = "pug `each` cannot use one name for the value and the key";
+
+pub(super) const CODE_BLOCK: &str = "pug unbuffered code with a block runs JavaScript control flow \
+                                     at build time; use pug `if` / `each` or `v-if` / `v-for`";
 
 pub(super) const AND_ATTRIBUTES: &str =
     "pug `&attributes` is not supported in Vue templates: use `v-bind`";

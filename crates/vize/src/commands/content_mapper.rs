@@ -12,7 +12,7 @@ use std::path::Path;
 use clap::Args;
 use serde::Deserialize;
 use serde_json::{Value, json};
-use vize_canon::generate_vue_content_mapper_transform_with_options;
+use vize_canon::generate_vue_content_mapper_transform_with_project_options;
 use vize_l0::{String as CompactString, cstr};
 
 mod project;
@@ -157,10 +157,11 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                     write_error(writer, id, -32602, &message)?;
                     continue;
                 };
-                match generate_vue_content_mapper_transform_with_options(
+                match generate_vue_content_mapper_transform_with_project_options(
                     Path::new(params.file_name.as_str()),
                     params.content.as_str(),
                     settings.transform_options,
+                    settings.typed_router_root.as_deref(),
                 ) {
                     Ok(result) => write_result(writer, id, result)?,
                     Err(error) => {
@@ -294,3 +295,6 @@ mod shared_helper_tests;
 
 #[cfg(test)]
 mod frame_tests;
+
+#[cfg(test)]
+mod typed_router_tests;

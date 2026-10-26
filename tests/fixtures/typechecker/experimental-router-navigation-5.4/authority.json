@@ -1,0 +1,179 @@
+{
+  "schema": "vize.router-published-navigation-matrix",
+  "version": 1,
+  "issue": 10577,
+  "sourceBase": "d8197f11097321ea3638e2f8149beaf925b407ee",
+  "provider": {
+    "name": "vue-router",
+    "version": "5.4.0",
+    "integrity": "sha512-pFvcYcxinDHjZUlf7AzFBrT8r8Xqvv4uMHoJnjc+EqPawXQvHTkF8S4tfSmQLpriVHUGfkaKlI7Et0KRjTMTdw=="
+  },
+  "checkerHost": {
+    "name": "typescript",
+    "version": "7.1.0-dev.20261017.1",
+    "lock": "checker-host-package-lock.json.txt"
+  },
+  "inputs": [
+    {
+      "path": "checker-host-package-lock.json.txt",
+      "bytes": 5049,
+      "sha256": "8190afe04c7becd38aafbbe8fbbbac8829006f3d45889bf2e283a64ce8fc6ea5"
+    },
+    {
+      "path": "checker-host-package.json.txt",
+      "bytes": 155,
+      "sha256": "50e1f525364da280107c106fc6708026e622961d214699b77f043a350115a923"
+    },
+    {
+      "path": "generated-modules.json",
+      "bytes": 6788,
+      "sha256": "6e53d2932d986bbfb0928af625c4af7a51adeb32e51c1568b745f57b2a4bf601"
+    },
+    {
+      "path": "project/src/pages/optional/[[id=int]].vue.txt",
+      "bytes": 187,
+      "sha256": "536ebf18017a96bfdfd582184b8c367eb49311cc35e85f295ada32f41807fa58"
+    },
+    {
+      "path": "project/src/pages/optional-repeat/[[ids=int]]+.vue.txt",
+      "bytes": 183,
+      "sha256": "d7ca05087a67a537a0dac196929cd30e972641f302df6bbf531bbed3beb9cf05"
+    },
+    {
+      "path": "project/src/pages/products/[id=int].vue.txt",
+      "bytes": 1263,
+      "sha256": "29e83bbd2c464a4e6a175e9f5668c1dd98e85240bd3753333d2dbafdf13b89e5"
+    },
+    {
+      "path": "project/src/pages/repeat/[ids=int]+.vue.txt",
+      "bytes": 183,
+      "sha256": "d7ca05087a67a537a0dac196929cd30e972641f302df6bbf531bbed3beb9cf05"
+    },
+    {
+      "path": "project/tsconfig.json.txt",
+      "bytes": 341,
+      "sha256": "940386e519ab15de2807a00612feebfdab4b9159c10f380615dadc7a354e6265"
+    },
+    {
+      "path": "provider-package-lock.json.txt",
+      "bytes": 35014,
+      "sha256": "156c500f099725c70b1432e1a9964b0867ce4e4e8c8728240a934a4a50c3f127"
+    },
+    {
+      "path": "provider.json",
+      "bytes": 3079,
+      "sha256": "e6712b311544c2de98ae3af225b15de3cc41c0269ddefa826f07ea9a33753e77"
+    },
+    {
+      "path": "public-oracle-package-lock.json.txt",
+      "bytes": 21061,
+      "sha256": "90d6fce7f4ca7ea26bdbe12c3760ce20bac8170c05330f7088d3ce7cd7e3c6e1"
+    },
+    {
+      "path": "public-oracle-package.json.txt",
+      "bytes": 141,
+      "sha256": "a442e6863739189d4b91ada6bdfea7ece723ff435da6ee5a907f3724974101d7"
+    },
+    {
+      "path": "reference-diagnostics.json",
+      "bytes": 10186,
+      "sha256": "7f42332064f347872876187c46f2924fe7c6f3448230bf5c93aa3360d2244033"
+    },
+    {
+      "path": "typed-router.d.ts.txt",
+      "bytes": 3825,
+      "sha256": "b38fc5f244236dceb298b1518c33a62c293ac0fd52841b3841f36ce2bfe56c46"
+    }
+  ],
+  "publicOracle": {
+    "name": "vize",
+    "version": "0.562.0",
+    "integrity": "sha512-yMbgpshr4M+7blGdarh9mHTpi1lcb5kbkyFIhe5s2Q9whmogyibi2IyOr+a6vCNvpSTE0ImgqnIrVX+aYR0LaA==",
+    "lock": "public-oracle-package-lock.json.txt"
+  },
+  "generatedOutputs": [
+    {
+      "path": "routes.generated.ts",
+      "bytes": 2706,
+      "sha256": "016f9de64ad0d4310fc301a2482e2b8e1126aa96bf43dc44b9f97d9a6dda4c59",
+      "storage": "generated-modules.json",
+      "relocations": [
+        {
+          "start": 88,
+          "end": 176,
+          "relative": "src/pages/index.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 411,
+          "end": 513,
+          "relative": "src/pages/optional/[[id=int]].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 791,
+          "end": 902,
+          "relative": "src/pages/optional-repeat/[[ids=int]]+.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1153,
+          "end": 1253,
+          "relative": "src/pages/products/[id=int].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1502,
+          "end": 1602,
+          "relative": "src/pages/repeat/[ids=int]+.vue",
+          "role": "dynamic-page-import"
+        }
+      ]
+    },
+    {
+      "path": "resolver.generated.ts",
+      "bytes": 3791,
+      "sha256": "2803a229229e8f89eed21d3df870af2081a052c9099765c649218e3fb9e043d4",
+      "storage": "generated-modules.json",
+      "relocations": [
+        {
+          "start": 275,
+          "end": 362,
+          "relative": "src/params/date.ts",
+          "role": "static-parser-import"
+        },
+        {
+          "start": 592,
+          "end": 680,
+          "relative": "src/pages/index.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1024,
+          "end": 1126,
+          "relative": "src/pages/optional/[[id=int]].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 1490,
+          "end": 1601,
+          "relative": "src/pages/optional-repeat/[[ids=int]]+.vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 2254,
+          "end": 2354,
+          "relative": "src/pages/products/[id=int].vue",
+          "role": "dynamic-page-import"
+        },
+        {
+          "start": 2662,
+          "end": 2762,
+          "relative": "src/pages/repeat/[ids=int]+.vue",
+          "role": "dynamic-page-import"
+        }
+      ]
+    }
+  ],
+  "scannerCaptureRoot": "/private/tmp/vize-router-matrix-reference/router-experimental-WG7ryK"
+}

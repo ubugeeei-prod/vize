@@ -86,7 +86,7 @@ fn compile(source: &str, options: SfcCompileOptions) -> Result<String, String> {
 #[test]
 fn pug_compiles_exactly_like_its_pug_rendered_html_in_every_lane() {
     let matrix = fixtures("matrix");
-    assert_eq!(matrix.len(), 26);
+    assert_eq!(matrix.len(), 29);
     let mut compared = 0;
     for (name, path) in &matrix {
         let pug = std::fs::read_to_string(path).expect("pug");
@@ -106,7 +106,7 @@ fn pug_compiles_exactly_like_its_pug_rendered_html_in_every_lane() {
             }
         }
     }
-    assert_eq!(compared, 26 * 2 * 3);
+    assert_eq!(compared, 29 * 2 * 3);
 }
 
 #[test]

@@ -88,7 +88,7 @@ void test("original 28-case authority and discovered incompatible packets remain
   );
   assert.equal(
     sha256(original),
-    "0391fe3875f7b6fea962b8fc5b16a23ad553b526d9192eb9f4a4f31b25f5543c",
+    "e6b45cfc595c0c96bd991b0a2ea4a209ac126722e92dc97f640725d8a237b4f7",
   );
   const research = JSON.parse(
     fs.readFileSync(

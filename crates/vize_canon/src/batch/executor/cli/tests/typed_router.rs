@@ -88,3 +88,27 @@ fn generated_global_visibility_also_joins_independent_components_without_leaves(
     assert!(!disabled.has_typed_router_imports());
     assert_eq!(partition_virtual_files(&disabled, 2).shards.len(), 2);
 }
+
+// Corsa keeps unchanged files' diagnostics when an added import brings in
+// `declare global`, so toggling the helper import must not reuse build info.
+#[test]
+fn route_helper_imports_select_their_own_build_info() {
+    let route = "const route = useRoute(); void route;";
+    let (root, enabled) = project(true, route, false);
+    let config = enabled.generated_tsconfig_path();
+    let with_helper = enabled.cli_build_info_path(&config);
+    fs::write(
+        root.path().join("tsconfig.json"),
+        r#"{"vueCompilerOptions":{"plugins":[]}}"#,
+    )
+    .unwrap();
+    let mut disabled = VirtualProject::new(root.path()).unwrap();
+    disabled.set_tsconfig_path(Some(root.path().join("tsconfig.json")));
+    let page = root.path().join("Page0.vue");
+    disabled.register_paths(&[page]).unwrap();
+    disabled.materialize().unwrap();
+    assert!(!disabled.has_typed_router_imports());
+    let without_helper = disabled.cli_build_info_path(&disabled.generated_tsconfig_path());
+    assert_eq!(with_helper.parent(), without_helper.parent());
+    assert_ne!(with_helper, without_helper);
+}

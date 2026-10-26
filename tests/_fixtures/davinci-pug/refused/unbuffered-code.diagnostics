@@ -1,1 +1,1 @@
-0..19 Semantic "- const title = 'x'" — pug unbuffered code (`- …`) is not supported in Vue templates: it runs JavaScript at build time
+0..15 Semantic "- items.push(1)" — pug unbuffered code (`- …`) cannot run at build time: only variable declarations (`var`, `let`, `const`) can run

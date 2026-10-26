@@ -164,13 +164,13 @@ impl MaestroServer {
         &self.state.documents
     }
 
-    fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+    async fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
         #[cfg(feature = "native")]
         if let Some(watchers) = &self.configuration_watchers {
             watchers.shutdown();
         }
         #[cfg(feature = "native")]
-        self.state.retire_project_contexts();
+        let compilers = self.state.shutdown_project_contexts().await;
         #[cfg(feature = "retained-program")]
         if let Some(navigation) = &self.navigation {
             navigation.retire();
@@ -179,6 +179,11 @@ impl MaestroServer {
         {
             self.state
                 .retire_module_links(ModuleLinkRetirement::Shutdown);
+        }
+        #[cfg(feature = "native")]
+        if let Err(error) = compilers {
+            tracing::warn!("compiler shutdown failed: {error}");
+            return Err(tower_lsp::jsonrpc::Error::internal_error());
         }
         Ok(())
     }

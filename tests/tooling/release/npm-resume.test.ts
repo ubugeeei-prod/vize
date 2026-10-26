@@ -5,6 +5,7 @@ import {
   backfillTag,
   compareStableVersions,
   higherStableVersions,
+  releaseRunSource,
   validateResumePolicy,
   type ResumePolicyInput,
 } from "../../../tools/support/release/npm_resume/policy.ts";
@@ -19,6 +20,7 @@ const valid = (): ResumePolicyInput => ({
     status: "completed",
     conclusion: "failure",
     headSha: "a".repeat(40),
+    sourceSha: null,
   },
   tagParent: "a".repeat(40),
   artifactNames: ["npm-packages", "npm-package-wasm", "bindings-test"],
@@ -55,4 +57,20 @@ test("npm resume accepts only a failed release run with its complete immutable a
     "missing release artifact: bindings-test",
     "newer releases are incomplete: @vizejs/native-win32-arm64-msvc@0.506.0",
   ]);
+});
+
+test("npm resume matches the tag against the dispatched source, not the moved main head", () => {
+  const source = "c".repeat(40);
+  assert.equal(releaseRunSource(`Release next minor @ ${source}`), source);
+  assert.equal(releaseRunSource("Release 0.578.0"), null);
+  assert.equal(releaseRunSource(`Release npm resume 0.578.0 from run 1 @ ${source}x`), null);
+
+  const cadence = valid();
+  cadence.run.headSha = "d".repeat(40);
+  cadence.run.sourceSha = source;
+  cadence.tagParent = source;
+  assert.deepEqual(validateResumePolicy(cadence), []);
+
+  cadence.tagParent = cadence.run.headSha;
+  assert.deepEqual(validateResumePolicy(cadence), ["tag does not belong to the selected run"]);
 });

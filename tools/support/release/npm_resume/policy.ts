@@ -6,6 +6,13 @@ export interface ReleaseRunFacts {
   status: string;
   conclusion: string | null;
   headSha: string;
+  /** `inputs.source` of the run, read back from its run-name; null when it released its own head. */
+  sourceSha: string | null;
+}
+
+/** The main commit a release run built, from release.yml's `run-name: ... @ <source>` suffix. */
+export function releaseRunSource(displayTitle: string): string | null {
+  return /\s@\s([0-9a-f]{40})$/.exec(displayTitle)?.[1] ?? null;
 }
 
 export interface ResumePolicyInput {
@@ -55,7 +62,10 @@ export function validateResumePolicy(input: ResumePolicyInput): string[] {
   if (input.run.status !== "completed") errors.push("run is not complete");
   if (!["failure", "cancelled"].includes(input.run.conclusion ?? ""))
     errors.push("only failed or cancelled runs can be resumed");
-  if (input.run.headSha !== input.tagParent) errors.push("tag does not belong to the selected run");
+  // The cadence dispatches on main with an older green `source`, so head_sha is
+  // only the release source when no source was given.
+  if ((input.run.sourceSha ?? input.run.headSha) !== input.tagParent)
+    errors.push("tag does not belong to the selected run");
   const artifacts = new Set(input.artifactNames);
   for (const required of input.requiredArtifacts) {
     if (!artifacts.has(required)) errors.push(`missing release artifact: ${required}`);

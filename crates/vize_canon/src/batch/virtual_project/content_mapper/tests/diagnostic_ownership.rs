@@ -19,6 +19,7 @@ fn packet(path: &str, source: &str, collect: bool) -> Value {
             Path::new(path),
             source,
             ContentMapperTransformOptions::default(),
+            None,
             collect.then(Default::default),
         )
         .expect("complete transform"),

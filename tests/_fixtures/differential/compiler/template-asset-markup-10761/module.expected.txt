@@ -1,0 +1,14 @@
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<!--[--><textarea>&lt;img src=&quot;./missing-raw.png&quot;&gt;</textarea><div title="<img src=&quot;./quoted.png&quot;>">ok</div>`)
+  if (true) {
+    _push(`<img src="./real.png">`)
+  } else {
+    _push(`<!---->`)
+  }
+  _push(`<!--]-->`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

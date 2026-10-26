@@ -106,12 +106,14 @@ pub(crate) fn check_pack(
             | "unicode-prop-bindings-10573"
             | "experimental-router-import-10520"
             | "literal-reference-paths-10551"
+            | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607"
             | "content-mapper-merged-class-10788"
             | "content-mapper-slot-host-callbacks-10774"
-            | "native-completion-order-10747" => regression,
+            | "native-completion-order-10747"
+            | "global-scope-build-info-10819" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -169,14 +171,18 @@ pub(crate) fn check_pack(
     let mut capture = observation::Capture::from_environment();
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
+        let uses_router_provider = matches!(
+            name,
+            "experimental-router-import-10520" | "content-mapper-experimental-router-10526"
+        );
         let project_root = if name == "literal-reference-paths-10551" {
             super::fix_history_reference_paths::project_root(project.path())
-        } else if name == "experimental-router-import-10520" {
+        } else if uses_router_provider {
             super::fix_history_router_provider::prepare(&root, project.path(), &fixtures)
         } else {
             std::fs::canonicalize(project.path()).expect("project identity must resolve")
         };
-        if pack.project_options.is_none() && name != "experimental-router-import-10520" {
+        if pack.project_options.is_none() && !uses_router_provider {
             std::fs::create_dir(project_root.join("node_modules"))
                 .expect("node_modules must be created");
             link_vue(&vue, &project_root.join("node_modules/vue"));

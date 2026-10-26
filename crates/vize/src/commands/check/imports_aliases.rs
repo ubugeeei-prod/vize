@@ -45,6 +45,22 @@ impl PathAliasResolver {
         hasher.finish()
     }
 
+    /// Identifies the package resolution contexts these options derive.
+    /// Unlike [`Self::fingerprint`], `paths` and `baseUrl` stay out, and
+    /// equivalent `module` spellings agree.
+    pub(super) fn resolution_fingerprint(aliases: Option<&Self>) -> u64 {
+        let unset = Self::default();
+        let aliases = aliases.unwrap_or(&unset);
+        let mut hasher = std::hash::DefaultHasher::new();
+        vize_canon::PackageResolutionContext::settings_identity(
+            aliases.module_resolution.as_deref(),
+            aliases.module.as_deref(),
+            aliases.custom_conditions.iter().cloned(),
+        )
+        .hash(&mut hasher);
+        hasher.finish()
+    }
+
     pub(super) fn resolve(
         &self,
         specifier: &str,

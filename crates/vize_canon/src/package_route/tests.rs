@@ -272,3 +272,38 @@ fn missing_explicit_vue_target_is_retained_for_create_invalidation() {
     );
     assert!(route.invalidation_paths().contains(&route.manifest_path));
 }
+
+#[test]
+fn equivalent_module_options_share_one_context_identity() {
+    use super::{PackageResolutionContext, PackageResolutionMode};
+    let identity = |resolution, module| {
+        PackageResolutionContext::settings_identity(resolution, module, ["node"])
+    };
+    // Nuxt's app (`module: preserve`) and server (`ESNext` + `Bundler`).
+    assert_eq!(
+        identity(None, Some("preserve")),
+        identity(Some("Bundler"), Some("ESNext"))
+    );
+    assert_ne!(
+        identity(None, Some("NodeNext")),
+        identity(Some("Bundler"), None)
+    );
+    assert_ne!(
+        identity(None, Some("CommonJS")),
+        identity(None, Some("ESNext"))
+    );
+    let importer = Path::new("/w/src/entry.ts");
+    for (resolution, module) in [(None, Some("preserve")), (Some("Bundler"), Some("ESNext"))] {
+        assert_eq!(
+            PackageResolutionContext::for_importer(
+                importer,
+                PackageResolutionMode::Contextual,
+                resolution,
+                module,
+                ["node"],
+                None,
+            ),
+            PackageResolutionContext::new(Some("bundler"), PackageResolutionMode::Import, ["node"]),
+        );
+    }
+}

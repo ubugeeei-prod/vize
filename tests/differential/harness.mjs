@@ -150,6 +150,20 @@ export function readPinnedArtifact(root, file) {
   return bytes;
 }
 
+// Live product manifests keep cases sorted so concurrent registrations land on
+// different lines and merge cleanly. Typechecker cases keep their immutable
+// pack's order, so they sort by pack instead.
+export function assertSortedCases(cases) {
+  const key = (fixture) => fixture.pack ?? fixture.id;
+  for (let index = 1; index < cases.length; index++) {
+    assert(
+      key(cases[index - 1]) <= key(cases[index]),
+      `cases must stay sorted by ${cases[index].pack === undefined ? "id" : "pack"}: ` +
+        `${cases[index].id} belongs before ${cases[index - 1].id}`,
+    );
+  }
+}
+
 // Product adapters validate their own options, artifacts, observations and comparator.
 // This shared envelope fixes planned case identity before either lane can run.
 export function loadProductManifest(manifestPath, product) {

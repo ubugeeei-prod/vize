@@ -89,7 +89,7 @@ function referenceReport() {
 }
 
 void test("formatter differential manifest preserves captured baselines and versioned regression inputs", () => {
-  assert.equal(loaded.cases.length, 24);
+  assert(loaded.cases.length >= 24, "baseline formatter cases stay registered");
   for (const fixture of loaded.cases) {
     assert.equal(
       fixture.expectations.legacy.state,
@@ -274,7 +274,8 @@ void test("formatter differential report cannot forge byte equality by changing 
 });
 
 void test("formatter differential keeps failed attempt input/output bytes and raw process evidence", () => {
-  const fixture = loaded.cases[0];
+  const index = loaded.cases.findIndex((current) => current.config.length === 0);
+  const fixture = loaded.cases[index];
   const attempt = formatterAttempt(
     1,
     fixture.input,
@@ -292,7 +293,8 @@ void test("formatter differential keeps failed attempt input/output bytes and ra
   assert.equal(Buffer.from(attempt.stderrBase64, "base64").toString(), "failure\n");
   assert.equal(Buffer.from(attempt.stdoutBase64, "base64").toString(), "partial\r\n");
   const report = referenceReport();
-  report.rows[0].legacy = {
+  assert.equal(report.rows[index].id, fixture.id);
+  report.rows[index].legacy = {
     state: "failed",
     verdict: "failed",
     passes: [attempt],

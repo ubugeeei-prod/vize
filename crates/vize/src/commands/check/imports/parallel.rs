@@ -30,7 +30,7 @@ struct BareImport {
 }
 
 struct ContextJob {
-    key: (PathBuf, Option<OsString>, PackageResolutionMode),
+    key: (u64, PathBuf, Option<OsString>, PackageResolutionMode),
     file: PathBuf,
     mode: PackageResolutionMode,
 }
@@ -101,8 +101,8 @@ pub(super) fn prepare_pending(
         .filter(|import| !alias_hit(alias_targets, &import.specifier))
         .filter(|import| !vize_canon::batch::is_vue_runtime_support_specifier(&import.specifier))
         .collect::<Vec<_>>();
-    resolve_context_misses(&package_imports, session, packages, aliases);
-    resolve_package_misses(&package_imports, session, packages, options);
+    resolve_context_misses(&package_imports, session, packages, aliases, scope);
+    resolve_package_misses(&package_imports, session, packages, options, scope);
 }
 
 /// The files the serial walk reaches from `wave` through edges it resolves
@@ -151,6 +151,7 @@ fn next_wave(
                 continue;
             }
             let Some((context, _)) = session.resolution_contexts.get(&(
+                scope.resolution(),
                 dir.to_path_buf(),
                 extension.clone(),
                 occurrence.mode,
@@ -223,10 +224,11 @@ fn prefetch_specifiers(paths: &[PathBuf], session: &mut LocalImportSession) {
         })
         .cloned()
         .collect::<Vec<_>>();
-    if pending.is_empty() {
+    let unread = session.registration_cache.adopt_parsed(pending);
+    if unread.is_empty() {
         return;
     }
-    let loaded = pending
+    let loaded = unread
         .into_par_iter()
         .map(|path| (path.clone(), scan_module_specifiers(&path)))
         .collect::<Vec<_>>();
@@ -323,11 +325,17 @@ fn resolve_context_misses(
     session: &mut LocalImportSession,
     packages: &PackageRouteResolver,
     aliases: Option<&PathAliasResolver>,
+    scope: AliasScope,
 ) {
     let mut seen = FxHashSet::default();
     let mut jobs = Vec::new();
     for import in imports {
-        let key = (import.dir.clone(), import.extension.clone(), import.mode);
+        let key = (
+            scope.resolution(),
+            import.dir.clone(),
+            import.extension.clone(),
+            import.mode,
+        );
         if session.resolution_contexts.contains_key(&key) || !seen.insert(key.clone()) {
             continue;
         }
@@ -361,12 +369,14 @@ fn resolve_package_misses(
     session: &mut LocalImportSession,
     packages: &PackageRouteResolver,
     options: ImportFileOptions,
+    scope: AliasScope,
 ) {
     let source_options = PackageSourceOptions::new(options.include_js, options.include_jsx);
     let mut seen = FxHashSet::default();
     let mut jobs = Vec::new();
     for import in imports {
         let Some((context, _)) = session.resolution_contexts.get(&(
+            scope.resolution(),
             import.dir.clone(),
             import.extension.clone(),
             import.mode,

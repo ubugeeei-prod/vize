@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const value: ScopedGlobal = "x";
+void value;
+</script>
+
+<template><div /></template>

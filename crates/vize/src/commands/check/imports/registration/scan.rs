@@ -58,20 +58,19 @@ pub(super) fn source_needs_virtual_registration(
                 })
                 .cloned()
                 .collect::<Vec<_>>();
-            let loaded = pending
-                .into_par_iter()
-                .map(|path| {
-                    let occurrences = std::fs::read_to_string(&path).ok().map(|source| {
-                        extract_module_specifier_occurrences(&source).into_boxed_slice()
-                    });
-                    (path, occurrences)
-                })
-                .collect::<Vec<_>>();
-            let pending = loaded
-                .iter()
-                .map(|(path, _)| path.clone())
-                .collect::<Vec<_>>();
-            session.registration_cache.module_specifiers.extend(loaded);
+            let unread = session.registration_cache.adopt_parsed(pending.clone());
+            if !unread.is_empty() {
+                let loaded = unread
+                    .into_par_iter()
+                    .map(|path| {
+                        let occurrences = std::fs::read_to_string(&path).ok().map(|source| {
+                            extract_module_specifier_occurrences(&source).into_boxed_slice()
+                        });
+                        (path, occurrences)
+                    })
+                    .collect::<Vec<_>>();
+                session.registration_cache.module_specifiers.extend(loaded);
+            }
             // Their package imports resolve off this thread, like a frontier's.
             super::super::parallel::prepare_pending(
                 &pending,
@@ -131,6 +130,7 @@ pub(super) fn source_needs_virtual_registration(
                     // The frontier that read this file usually resolved these
                     // already; a miss takes the serial path like before.
                     let context_key = (
+                        alias_scope.resolution(),
                         dir.to_path_buf(),
                         file.extension().map(std::ffi::OsString::from),
                         occurrence.mode,
@@ -204,9 +204,13 @@ pub(super) fn source_needs_virtual_registration(
                         {
                             Some(cached) => cached.clone(),
                             None => {
+                                let sources = session
+                                    .registration_cache
+                                    .reachability_sources(alias_scope.edges());
+                                sources.set_alias_scope(alias_scope.token());
                                 let scanned = scan_route_reachability(
                                     &route,
-                                    &mut session.registration_cache.reachability_sources,
+                                    sources,
                                     canonical_paths,
                                     options,
                                     aliases,
