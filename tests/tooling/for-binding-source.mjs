@@ -372,7 +372,6 @@ for (const packet of records.filter((row) => row.backend !== "ssr")) {
           fixture.expected.map((value) => ({ text: value, title: value })),
           `${packet.id}:${packet.backend}:update`,
         );
-      packet.warnings = warnings;
     } finally {
       packet.warnings = warnings;
       app.unmount();

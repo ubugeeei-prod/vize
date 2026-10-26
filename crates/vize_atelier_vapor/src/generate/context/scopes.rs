@@ -191,9 +191,9 @@ impl GenerateContext<'_> {
         index: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
     ) {
         self.push_for_scope_inner(
-            value.map(|node| node.content),
-            key.map(|node| node.content),
-            index.map(|node| node.content),
+            value.map(|node| vize_atelier_core::steps::untyped_for_alias(node.content)),
+            key.map(|node| vize_atelier_core::steps::untyped_for_alias(node.content)),
+            index.map(|node| vize_atelier_core::steps::untyped_for_alias(node.content)),
             [value, key, index],
         );
     }

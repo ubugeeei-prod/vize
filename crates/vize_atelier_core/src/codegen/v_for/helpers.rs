@@ -13,14 +13,7 @@ use vize_l0::{SmallVec, String, ToCompactString};
 pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<String>) {
     let content = match expr {
         ExpressionNode::Simple(exp) => {
-            if let Some(names) = &exp.identifiers
-                && exp.js_ast.is_some_and(|ast| {
-                    ast.raw == exp.content
-                        && ast
-                            .as_slot_parameters()
-                            .is_some_and(|parameters| parameters.is_ok())
-                })
-            {
+            if let Some(names) = exp.retained_parameter_names() {
                 params.extend(names.iter().map(|name| String::from(*name)));
                 return;
             }

@@ -101,14 +101,7 @@ fn extract_expression<'a>(
         ExpressionNode::Simple(simple) => {
             let mut node =
                 SimpleExpressionNode::new(simple.content, simple.is_static, simple.loc.clone());
-            if let Some(names) = &simple.identifiers
-                && simple.js_ast.is_some_and(|ast| {
-                    ast.raw == simple.content
-                        && ast
-                            .as_slot_parameters()
-                            .is_some_and(|parameters| parameters.is_ok())
-                })
-            {
+            if let Some(names) = simple.retained_parameter_names() {
                 let mut retained = vize_carton::Vec::new_in(&allocator);
                 for name in names {
                     retained.push(*name);

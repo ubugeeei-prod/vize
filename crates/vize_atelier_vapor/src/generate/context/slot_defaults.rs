@@ -39,10 +39,7 @@ impl GenerateContext<'_> {
         node: &vize_atelier_core::SimpleExpressionNode<'_>,
         root: &str,
     ) {
-        let Some(retained) = node.js_ast.filter(|retained| retained.raw == node.content) else {
-            return;
-        };
-        let Some(Ok(parameters)) = retained.as_slot_parameters() else {
+        let Some(parameters) = node.retained_parameters() else {
             return;
         };
         vize_carton::profiler::global_profiler()
@@ -94,10 +91,7 @@ impl GenerateContext<'_> {
         &mut self,
         node: &vize_atelier_core::SimpleExpressionNode<'_>,
     ) -> Option<String> {
-        let retained = node
-            .js_ast
-            .filter(|retained| retained.raw == node.content)?;
-        let parameters = retained.as_slot_parameters()?.ok()?;
+        let parameters = node.retained_parameters()?;
         let parameter = parameters.items.first()?;
         Some(self.resolve_parameter_goal(&parameter.pattern, node.content, 0, node.content))
     }

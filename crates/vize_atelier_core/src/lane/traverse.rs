@@ -440,16 +440,7 @@ mod tests {
 
 fn alias_names<'n, 'a>(expression: &'n ExpressionNode<'a>) -> Option<&'n [&'a str]> {
     match expression {
-        ExpressionNode::Simple(node)
-            if node.js_ast.is_some_and(|ast| {
-                ast.raw == node.content
-                    && ast
-                        .as_slot_parameters()
-                        .is_some_and(|parameters| parameters.is_ok())
-            }) =>
-        {
-            node.identifiers.as_ref().map(|names| names.as_slice())
-        }
+        ExpressionNode::Simple(node) => node.retained_parameter_names(),
         _ => None,
     }
 }
