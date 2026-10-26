@@ -10,6 +10,7 @@ use std::path::Path;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
     PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
+    batch::{TsconfigOwnershipCache, TsconfigSourceKind},
 };
 
 pub(crate) fn check_pack(
@@ -116,7 +117,8 @@ pub(crate) fn check_pack(
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
             | "reopen-repaired-diagnostics-10730"
-            | "editor-alias-import-extension-10753" => regression,
+            | "editor-alias-import-extension-10753"
+            | "tsconfig-literal-brackets-10819" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -285,6 +287,22 @@ pub(crate) fn check_pack(
                 "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))
+                }
+                // `vize check` and the editor check a page with its owning
+                // referenced project.
+                "tsconfig-literal-brackets-10819" => {
+                    let page = case
+                        .inputs
+                        .iter()
+                        .find(|input| input.file.ends_with(".vue"))
+                        .expect("the case must name its page");
+                    Some(
+                        TsconfigOwnershipCache::default().effective_config_for_source(
+                            &project_root.join("tsconfig.json"),
+                            &project_root.join(safe_relative(&page.file)),
+                            TsconfigSourceKind::Typed,
+                        ),
+                    )
                 }
                 _ => None,
             },

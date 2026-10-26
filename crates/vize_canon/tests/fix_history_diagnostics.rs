@@ -859,6 +859,17 @@ fn global_scope_build_info_keeps_complete_diagnostics() {
 }
 
 #[test]
+fn literal_bracket_pages_keep_their_project_options() {
+    check_pack(
+        "tsconfig-literal-brackets-10819",
+        "literal_bracket_pages_keep_their_project_options",
+        "26b8fa31c7933d800c8bf4c2f37057864caaae9d",
+        Some(10819),
+        &["literal-page-include", "bracket-directory-exclude"],
+    );
+}
+
+#[test]
 fn missing_exported_package_target_preserves_ts2307() {
     check_pack(
         "package-target-deletion-refresh",
