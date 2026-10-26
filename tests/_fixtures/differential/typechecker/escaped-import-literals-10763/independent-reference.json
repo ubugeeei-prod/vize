@@ -1,0 +1,37 @@
+{
+  "schema": "vize.import-literal-geometry-independent-typescript-reference",
+  "version": 1,
+  "compiler": {
+    "version": "5.9.3",
+    "moduleSha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675"
+  },
+  "note": "Independent handwritten script extraction. This proves authored type semantics, not generated literal/navigation geometry. Raw Vize map source witness is mandatory separately.",
+  "root": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-import-geometry-reference-AI6xDH",
+  "outputs": [
+    {
+      "name": "App.vue",
+      "authoredSha256": "0b12fcd133cc545f3fa2b3502f7067b81813e1d597f15407e08290414bc39cf4",
+      "referenceScript": "                        \r\nimport { greet } from '#lib/greet';\r\nconst message = greet('vize');\r\n",
+      "diagnostics": []
+    },
+    {
+      "name": "App.invalid.vue",
+      "authoredSha256": "464423219ab43a695eeb8d4674ffdbc7c36a23a856242ee53df67aab439e6b29",
+      "referenceScript": "                        \r\nimport { greet } from '#lib/greet';\r\nconst message = greet('vize');\r\nconst invalid: number = message;\r\n",
+      "diagnostics": [
+        {
+          "code": 2322,
+          "category": 1,
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-import-geometry-reference-AI6xDH/src/App.ts",
+          "start": 101,
+          "length": 7,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "position": {
+            "line": 3,
+            "character": 6
+          }
+        }
+      ]
+    }
+  ]
+}

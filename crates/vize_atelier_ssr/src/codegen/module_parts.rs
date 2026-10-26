@@ -53,7 +53,12 @@ impl SsrCodegenContext<'_> {
             let mut core_helpers: Vec<_> = self.core_helpers.iter().copied().collect();
             core_helpers.sort();
             push_helper_imports(&mut preamble, &core_helpers);
-            preamble.push_str(" } from \"vue\"\n");
+            preamble.push_str(" } from ");
+            vize_l0::js_string::push_js_string_literal(
+                &mut preamble,
+                self.runtime_module_name.as_str(),
+            );
+            preamble.push('\n');
         }
 
         preamble

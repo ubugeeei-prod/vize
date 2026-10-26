@@ -1,0 +1,28 @@
+{
+  "schema": "vize.volar.complete-api-packet-expectations",
+  "version": 1,
+  "observed": {
+    "source": "4741e29289c557517e4c1462c6e22583577db013",
+    "actionsRun": 40214105702,
+    "packets": 37,
+    "packetFileSha256": "9fea80e312888322ce6656882f9c5b3af41b9b7d241684b86934f886747cfb19",
+    "inputsSha256": "cac85378de7b61957ac2d0935599def5c3dacadcf2777f75aba734096a0d026d",
+    "providerReceiptSha256": "a41eba90d95db2a60dec49ff57f6f31104d8362c4deca60411929991afac6ab4"
+  },
+  "independentControl": {
+    "name": "unicode-authored-line-column",
+    "expected": {
+      "line": 2,
+      "character": 6
+    },
+    "basis": "Literal source line const 数: number = ... after CRLF; TypeScript coordinates are zero-based UTF-16."
+  },
+  "normalization": "Replace the one complete fixture workspace root with <workspace> in strings. Preserve all JSONable result fields and ordered arrays; represent diagnostic SourceFile objects by exact authored fileName and text, not cyclic compiler AST internals. No coordinate or message normalization.",
+  "expectedPackets": 38,
+  "expectedFileSha256": "64d303cf7846abe6f78e4bb798f816a44a3010fa24e62f595bab871cb62c78b3",
+  "expectedPacketDataSha256": "cc4105b72d75ee50cf42b7612551c0f7843539df51ae26b7cf7d3568dbb4dccf",
+  "storage": {
+    "files": ["basic.json", "updates-and-language.json", "art.json", "feature-boundaries.json"],
+    "rule": "Concatenate complete JSON arrays in this order. Packet fields, values and array order match the original expectedFileSha256; only file layout and JSON whitespace changed."
+  }
+}

@@ -9,6 +9,7 @@ use vize_carton::config::VueVersion;
 mod auto_import_shadowing;
 mod component_navigation;
 mod component_spread_prop_order;
+mod context_undefined;
 mod define_props_scope;
 mod generic_module_type_exports;
 mod keyed_template_diagnostics;
@@ -75,7 +76,7 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
         "_c",
     ] {
         assert!(
-            v2.contains(&format!("const {member} = undefined as any;")),
+            v2.contains(&format!("const {member} = (void 0) as any;")),
             "Vue 2 context should declare `{member}`"
         );
         assert!(
@@ -85,7 +86,7 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
     }
     // Vue 2.7 shares the same template-instance shape.
     let v2_7 = template_context(&VirtualTsOptions::default(), VueVersion::V2_7);
-    assert!(v2_7.contains("const $listeners = undefined as any;"));
+    assert!(v2_7.contains("const $listeners = (void 0) as any;"));
 
     // Vue 3 must NOT contain any of these (byte-identical to before).
     let v3 = template_context(&VirtualTsOptions::default(), VueVersion::V3);

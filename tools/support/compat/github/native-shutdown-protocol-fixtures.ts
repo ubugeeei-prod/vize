@@ -37,6 +37,20 @@ const pairSelectors = [
   ...selectors.slice(1),
 ];
 
+const betaPairFixture = "native-beta-provider-pairs-10741/provider-pairs.json";
+const betaPairDigest = "4692d73a7d971f633ae66bc1b037330a1c8b86a66630ac42ed7376a0b41e7bf0";
+const betaPairSelectors = [
+  {
+    selector: `${selectorRoot}tests::beta_pairs::exact_beta_images_require_the_complete_original_initialize`,
+    source: `${root}/tests/beta_pairs.rs`,
+  },
+  {
+    selector: `${selectorRoot}tests::beta_provider::exact_beta_editor_owner_keeps_whole_diagnostics_and_clean_eof_shutdown`,
+    source: `${root}/tests/beta_provider.rs`,
+  },
+  ...selectors.slice(1),
+];
+
 export function nativeShutdownProtocolSource(path: string): boolean {
   if (path === `${root}.rs` || path === `${root}/peer.ts.txt`) return true;
   if (!path.startsWith(`${root}/`)) return false;
@@ -79,10 +93,12 @@ export function newNativeShutdownProtocolCases(
     ids.add(row.id);
     if (oldIds.has(row.id)) return [];
     const pairs = row.id === "typechecker/protocol/native-provider-pairs-10599";
+    const beta = row.id === "typechecker/protocol/native-beta-provider-pairs-10741";
     require(pairs ||
+      beta ||
       row.id === "typechecker/protocol/native-shutdown-completion-10524", "unregistered ID");
-    const registeredFixture = pairs ? pairFixture : fixture;
-    const registeredSelectors = pairs ? pairSelectors : selectors;
+    const registeredFixture = beta ? betaPairFixture : pairs ? pairFixture : fixture;
+    const registeredSelectors = beta ? betaPairSelectors : pairs ? pairSelectors : selectors;
     require(row.state === "active", "new case must be active");
     require(row.adapter === "native-shutdown-wire-v1", "unregistered adapter");
     require(JSON.stringify(row.targets) === '["native-shutdown"]', "unregistered target");
@@ -96,7 +112,11 @@ export function newNativeShutdownProtocolCases(
     );
     const envelopes: unknown = JSON.parse(bytes.toString("utf8"));
     require(Array.isArray(envelopes) && envelopes.length > 0, "empty or invalid envelope pack");
-    if (pairs) {
+    if (beta) {
+      require(createHash("sha256").update(bytes).digest("hex") ===
+        betaPairDigest, "changed sealed whole beta envelopes");
+      require(envelopes.length === 17, "all beta pair and cross-pair controls required");
+    } else if (pairs) {
       validateProviderPairs(envelopes);
     } else {
       const kinds = new Set<string>();
@@ -132,6 +152,15 @@ export function newNativeShutdownProtocolCases(
         /#\[cfg\(unix\)\]\s+mod native_provider;/.test(
           source,
         ), "missing ordinary native provider test module");
+    }
+    if (beta) {
+      const owner = readFile("head", `${root}.rs`)?.toString("utf8");
+      const tests = readFile("head", `${root}/tests.rs`)?.toString("utf8");
+      require(owner !== undefined &&
+        /\bmod beta_contract;/.test(owner), "missing ordinary beta contract module");
+      require(tests !== undefined &&
+        /\bmod beta_pairs;/.test(tests) &&
+        /#\[cfg\(unix\)\]\s+mod beta_provider;/.test(tests), "missing ordinary beta test modules");
     }
     require(Array.isArray(row.tests) &&
       row.tests.length === registeredSelectors.length, "all registered selectors required");

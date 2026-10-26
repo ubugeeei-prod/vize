@@ -1,0 +1,13 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<!--[-->`)
+  _ssrRenderList(_ctx.items, (\u005frow) => {
+    _push(`<p>${_ssrInterpolate(_row)}</p>`)
+  })
+  _push(`<!--]-->`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

@@ -13,15 +13,21 @@ use std::{
     path::Path,
 };
 
+mod beta_contract;
 mod completion;
 mod mapper_contract;
 
+const BETA_LINUX_X64: &str = "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70";
+const BETA_DARWIN_ARM64: &str = "29f5eb8daa5c8cf6ef1c0cb79fbcf47c0cfdf26edabdf148bb779d0b2d56cebc";
 const LINUX_X64: &str = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
 const MAPPER_LINUX_X64: &str = "77dd575e73107c00cc95cbccc3764ab7210089b5634f75e219b61632bd5d230b";
 const DARWIN_ARM64: &str = "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2";
 
 pub(super) fn eof_capability(executable: &Path, initialized: &Value) -> bool {
-    if *initialized != known_contract() && *initialized != mapper_contract::initialize() {
+    if *initialized != known_contract()
+        && *initialized != mapper_contract::initialize()
+        && *initialized != beta_contract::initialize()
+    {
         return false;
     }
     let Ok(digest) = File::open(executable).and_then(image_digest) else {
@@ -74,6 +80,7 @@ fn known_provider_pair(digest: &str, initialized: &Value) -> bool {
     match digest {
         LINUX_X64 | DARWIN_ARM64 => *initialized == known_contract(),
         MAPPER_LINUX_X64 => *initialized == mapper_contract::initialize(),
+        BETA_LINUX_X64 | BETA_DARWIN_ARM64 => *initialized == beta_contract::initialize(),
         _ => false,
     }
 }

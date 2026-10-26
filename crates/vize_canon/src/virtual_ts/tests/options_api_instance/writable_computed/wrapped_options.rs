@@ -59,12 +59,12 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const absent: __VizeOptionsBinding<typeof __default__, \"absent\"> = undefined as any;",
-            "  var arrow: __VizeOptionsBinding<typeof __default__, \"arrow\"> = undefined as any;",
-            "  const fooBar: __VizeOptionsBinding<typeof __default__, \"fooBar\"> = undefined as any;",
-            "  const literal: __VizeOptionsBinding<typeof __default__, \"literal\"> = undefined as any;",
-            "  const plain: __VizeOptionsBinding<typeof __default__, \"plain\"> = undefined as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;",
+            "  const absent: __VizeOptionsBinding<typeof __default__, \"absent\"> = (void 0) as any;",
+            "  var arrow: __VizeOptionsBinding<typeof __default__, \"arrow\"> = (void 0) as any;",
+            "  const fooBar: __VizeOptionsBinding<typeof __default__, \"fooBar\"> = (void 0) as any;",
+            "  const literal: __VizeOptionsBinding<typeof __default__, \"literal\"> = (void 0) as any;",
+            "  const plain: __VizeOptionsBinding<typeof __default__, \"plain\"> = (void 0) as any;",
+            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
         ]
     );
 }

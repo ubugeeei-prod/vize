@@ -21,6 +21,12 @@ use super::structural::{
 };
 use super::vfor::{split_aliases, split_for};
 
+mod bindings;
+use bindings::AliasGoal;
+
+#[cfg(test)]
+mod tests;
+
 /// One `ui.for`'s consumed scope view, positions in grammar order.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ForParts {
@@ -39,7 +45,7 @@ pub struct ForParts {
 pub enum ForName {
     /// The position's one enumerated simple-identifier name.
     Named(String),
-    /// The position is authored but enumerates no name yet: a
+    /// The position is authored but is not a simple identifier: a
     /// destructuring pattern, a foreign dialect, or the classified escape.
     Pending,
     /// The position was not authored.
@@ -127,7 +133,17 @@ pub(crate) fn lower_for<'a>(
                 tag,
                 bindings: StdVec::new(),
             };
-            let parts = derive_for_parts(tag, &binding, &scope, cx.foreign_dialect);
+            let parts = derive_for_parts(
+                tag,
+                &binding,
+                &scope,
+                cx.foreign_dialect,
+                &[
+                    AliasGoal::Ordinary,
+                    AliasGoal::Ordinary,
+                    AliasGoal::Ordinary,
+                ],
+            );
             cx.attach_scope(node, scope);
             cx.attach_for_parts(node, parts, 0, text_span);
             binding
@@ -142,12 +158,15 @@ pub(crate) fn lower_for<'a>(
             };
             let key = alias_position(cx, aliases.get(1));
             let index = alias_position(cx, aliases.get(2));
+            let positions = [Some(&value), key.as_ref(), index.as_ref()];
+            let goals = positions.map(|expr| AliasGoal::parse(cx, expr));
 
             let mut bindings = StdVec::new();
-            for expr in [Some(&value), key.as_ref(), index.as_ref()]
-                .into_iter()
-                .flatten()
-            {
+            for (expr, goal) in positions.into_iter().zip(&goals) {
+                let Some(expr) = expr else { continue };
+                if goal.append_bindings(&mut bindings) {
+                    continue;
+                }
                 if let Some(name) = super::foreign::simple_identifier(expr, cx.foreign_dialect) {
                     bindings.push(ScopeBinding {
                         name: String::from(name),
@@ -169,7 +188,7 @@ pub(crate) fn lower_for<'a>(
                 index,
             };
             let scope = ScopeFacts { tag, bindings };
-            let parts = derive_for_parts(tag, &binding, &scope, cx.foreign_dialect);
+            let parts = derive_for_parts(tag, &binding, &scope, cx.foreign_dialect, &goals);
             let binding_count = scope.bindings.len();
             cx.attach_scope(node, scope);
             cx.attach_for_parts(node, parts, binding_count, text_span);
@@ -239,6 +258,7 @@ fn derive_for_parts(
     binding: &ForBinding<'_>,
     recorded: &ScopeFacts,
     dialect: Option<super::foreign::ForeignDialect<'_>>,
+    goals: &[AliasGoal<'_>; 3],
 ) -> ForParts {
     debug_assert!(
         recorded.tag == tag,
@@ -249,29 +269,37 @@ fn derive_for_parts(
         &binding.source,
         ExprRef::Opaque(opaque) if matches!(opaque.reason, OpaqueReason::ForValue)
     );
+    let [value_goal, key_goal, index_goal] = goals;
     let value = if undecomposable {
         ForName::Pending
     } else {
-        position(Some(&binding.value), dialect)
+        position(Some(&binding.value), dialect, value_goal)
     };
-    let key = position(binding.key.as_ref(), dialect);
-    let index = position(binding.index.as_ref(), dialect);
+    let key = position(binding.key.as_ref(), dialect, key_goal);
+    let index = position(binding.index.as_ref(), dialect, index_goal);
     #[cfg(debug_assertions)]
     {
-        let expected: StdVec<ScopeBinding> = [
+        let mut expected = StdVec::new();
+        for ((name, expr), goal) in [
             (&value, Some(&binding.value)),
             (&key, binding.key.as_ref()),
             (&index, binding.index.as_ref()),
         ]
         .into_iter()
-        .filter_map(|(name, expr)| match (name, expr) {
-            (ForName::Named(name), Some(expr)) => Some(ScopeBinding {
-                name: name.clone(),
-                origin: ScopeOrigin::Authored { span: expr.span() },
-            }),
-            _ => None,
-        })
-        .collect();
+        .zip(goals)
+        {
+            // Exceptional declarations are re-derived from the very same
+            // original parameter AST, including names inside real patterns.
+            if goal.append_bindings(&mut expected) {
+                continue;
+            }
+            if let (ForName::Named(name), Some(expr)) = (name, expr) {
+                expected.push(ScopeBinding {
+                    name: name.clone(),
+                    origin: ScopeOrigin::Authored { span: expr.span() },
+                });
+            }
+        }
         debug_assert!(
             recorded.bindings == expected,
             "hygiene law broken: ui.for recorded bindings {:?} but its binding surface derives {:?}",
@@ -291,10 +319,14 @@ fn derive_for_parts(
 fn position(
     expr: Option<&ExprRef<'_>>,
     dialect: Option<super::foreign::ForeignDialect<'_>>,
+    goal: &AliasGoal<'_>,
 ) -> ForName {
     let Some(expr) = expr else {
         return ForName::Absent;
     };
+    if let Some(position) = goal.position() {
+        return position;
+    }
     if let Some(name) = super::foreign::simple_identifier(expr, dialect) {
         return ForName::Named(String::from(name));
     }

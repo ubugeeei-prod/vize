@@ -1,0 +1,276 @@
+name: Component input diagnostic ownership
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize_canon/src/virtual_ts/diagnostic_ownership/**"
+      - "crates/vize_canon/src/virtual_ts/diagnostic_ownership.rs"
+      - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets*"
+      - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets/**"
+      - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
+      - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
+      - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
+      - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
+      - ".github/workflows/component-input-diagnostic-ownership.yml"
+
+permissions: { contents: read }
+concurrency:
+  group: component-input-diagnostic-ownership-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  published-sdk-packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: microsoft/TypeScript
+          ref: d6c4afddb2c55f4a9dea7b59293a99a8fdea1799
+          path: typescript-content-mapper
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: typescript-content-mapper/tsc/go.mod
+          cache-dependency-path: typescript-content-mapper/tsc/go.sum
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          {
+            key: component-input-ownership,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+          }
+      - name: Build the exact source CLI
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          cargo build --locked --profile ci -p vize --bin vize
+      - name: Install exact published SDK and baseline packages
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/component-input-consumer"
+          cd "$RUNNER_TEMP/component-input-consumer"
+          npm init -y
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact vize@0.566.0 typescript@7.1.0-dev.20261024.1 vue@3.5.42
+          mkdir -p "$RUNNER_TEMP/component-input-beta"
+          cd "$RUNNER_TEMP/component-input-beta"
+          npm init -y
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact typescript@7.1.0-beta
+          npm view typescript@7.1.0-beta gitHead dist.integrity --json > provider-metadata.json
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const metadata = JSON.parse(readFileSync('provider-metadata.json', 'utf8'));
+          assert.equal(metadata.gitHead, '3e9236361fa97a9e6c685f4833ac457ae2d8c50a');
+          assert.match(metadata['dist.integrity'], /^sha512-/u);
+          JS
+      - name: Build and retain the exact source SDK
+        working-directory: typescript-content-mapper/tsc
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == d6c4afddb2c55f4a9dea7b59293a99a8fdea1799 ]]
+          mkdir -p "$RUNNER_TEMP/component-input-d6c4"
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/component-input-d6c4/tsgo" ./cmd/tsc
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/component-input-d6c4/"
+          git rev-parse HEAD > "$RUNNER_TEMP/component-input-d6c4/source.txt"
+          sha256sum "$RUNNER_TEMP/component-input-d6c4/tsgo" > "$RUNNER_TEMP/component-input-d6c4/binary.sha256"
+      - name: Compare all complete packets on all three physical SDKs
+        run: |
+          set -uo pipefail
+          failed=0
+          for sdk in actual-20261024 beta-3e923 d6c4; do
+            extra=()
+            if [[ "$sdk" == beta-3e923 ]]; then
+              native="$RUNNER_TEMP/component-input-beta/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+              extra=(--mapper-host "$native" --mapper-version 'Version 7.1.0-beta')
+            elif [[ "$sdk" == d6c4 ]]; then
+              native="$RUNNER_TEMP/component-input-d6c4/tsgo"
+              extra=(--mapper-host "$native" --mapper-version "$("$native" --version)")
+            fi
+            node tools/support/compat/content-mapper/diagnostic-ownership.ts \
+              --consumer "$RUNNER_TEMP/component-input-consumer" \
+              --candidate-cli "$GITHUB_WORKSPACE/target/ci/vize" \
+              --source-sha "$SOURCE_SHA" \
+              --output "$RUNNER_TEMP/component-input-ownership/$sdk" "${extra[@]}" || failed=1
+          done
+          exit "$failed"
+      - name: Retain all 144 unchanged generic repair observations
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/component-input-d6c4/tsgo
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/component-input-consumer/node_modules/vue
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/component-input-ownership/generic-regression"
+          mkdir -p "$capture"
+          cargo test --locked --profile ci -p vize --test integration --no-run --message-format=json > "$capture/build.jsonl" 2> "$capture/build.log"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          import path from 'node:path';
+          const capture = `${process.env.RUNNER_TEMP}/component-input-ownership/generic-regression`;
+          const messages = readFileSync(`${capture}/build.jsonl`, 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line));
+          assert.equal(messages.at(-1).reason, 'build-finished');
+          assert.equal(messages.at(-1).success, true);
+          const targets = messages.filter(message => message.reason === 'compiler-artifact' && message.target.name === 'integration' && message.target.kind.join() === 'test' && message.executable);
+          assert.equal(targets.length, 1);
+          const binary = realpathSync(targets[0].executable);
+          const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          const binarySha256 = hash(binary);
+          const run = (name, args) => {
+            const result = spawnSync(binary, args, {encoding: 'utf8', maxBuffer: 16 * 1024 * 1024});
+            writeFileSync(`${capture}/${name}.stdout.raw`, result.stdout ?? '');
+            writeFileSync(`${capture}/${name}.stderr.raw`, result.stderr ?? '');
+            writeFileSync(`${capture}/${name}.process.json`, JSON.stringify({source: process.env.SOURCE_SHA, executable: binary, executableSha256: binarySha256, argv: args, cwd: process.cwd(), pid: result.pid, status: result.status, signal: result.signal, error: result.error ? {name: result.error.name, message: result.error.message, stack: result.error.stack, code: result.error.code} : null}, null, 2) + '\n');
+            assert.equal(result.error, undefined);
+            assert.equal(result.signal, null);
+            assert.equal(result.status, 0);
+            assert.equal(hash(binary), binarySha256);
+            return result;
+          };
+          const filter = 'content_mapper_tsgo_cli::quoted_generic_parameters::';
+          const listed = run('inventory', [filter, '--list', '--format', 'terse']);
+          const actual = listed.stdout.split('\n').filter(line => line.endsWith(': test')).map(line => line.slice(0, -6)).sort();
+          const expected = [
+            `${filter}quoted_generic_parameters_keep_complete_cli_and_official_host_packets_through_repairs`,
+            `${filter}syntax::malformed_generic_attributes_keep_provider_syntax_codes_and_authored_ranges_through_repairs`,
+            `${filter}body_error::independent_authored_body_errors_survive_generic_repairs`,
+          ].sort();
+          assert.deepEqual(actual, expected, 'the complete original three-test authority must execute');
+          writeFileSync(`${capture}/inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, binary, binarySha256, actual}, null, 2) + '\n');
+          const executed = run('execution', [filter, '--test-threads=1', '--nocapture']);
+          assert.match(executed.stdout, /test result: ok\. 3 passed; 0 failed; 0 ignored;/u);
+          // Read only this directly observed libtest PID's output. Cached or
+          // concurrent producers cannot enter the fresh execution inventory.
+          const root = path.join('target/vize-tests/content-mapper-quoted-generic-parameters', String(executed.pid));
+          const schemas = new Map([
+            ['vize.quoted-generic-parameters-host-observation', 32],
+            ['vize.quoted-generic-syntax-host-observation', 48],
+            ['vize.generic-body-error-host-observation', 64],
+          ]);
+          const packets = [];
+          const walk = directory => {
+            for (const item of readdirSync(directory, {withFileTypes: true})) {
+              const file = path.join(directory, item.name);
+              if (item.isDirectory()) walk(file);
+              else if (item.isFile() && file.endsWith('.json')) {
+                const bytes = readFileSync(file), packet = JSON.parse(bytes);
+                if (schemas.has(packet?.schema)) packets.push({file, schema: packet.schema, sha256: createHash('sha256').update(bytes).digest('hex')});
+              }
+            }
+          };
+          walk(root);
+          for (const [schema, count] of schemas) assert.equal(packets.filter(packet => packet.schema === schema).length, count, schema);
+          assert.equal(packets.length, 144);
+          writeFileSync(`${capture}/whole-packet-inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, executedPid: executed.pid, binarySha256, completePackets: packets.length, packets}, null, 2) + '\n');
+          JS
+      # The bounded CFA discovery batch is preserved under #10738/#10739.
+      # Its manual harness remains available; it is not an acceptance gate.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: component-input-ownership-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/component-input-ownership
+            target/vize-tests/content-mapper-quoted-generic-parameters
+            ${{ runner.temp }}/component-input-consumer/package.json
+            ${{ runner.temp }}/component-input-consumer/package-lock.json
+            ${{ runner.temp }}/component-input-beta/package.json
+            ${{ runner.temp }}/component-input-beta/package-lock.json
+            ${{ runner.temp }}/component-input-beta/provider-metadata.json
+            ${{ runner.temp }}/component-input-d6c4/source.txt
+            ${{ runner.temp }}/component-input-d6c4/binary.sha256
+            !${{ runner.temp }}/component-input-ownership/**/node_modules/**
+          if-no-files-found: error
+          retention-days: 7
+
+  unchanged-projection-packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: "${{ github.event.pull_request.head.sha }}",
+            fetch-depth: 0,
+            persist-credentials: false,
+          }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Capture exact base and head through the identical observation harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          capture="$RUNNER_TEMP/component-input-parity"
+          baseline="$RUNNER_TEMP/component-input-base"
+          mkdir -p "$capture"
+          base_revision="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          git worktree add --detach "$baseline" "$base_revision"
+          echo "$base_revision" > "$capture/base-revision.txt"
+          observer=crates/vize_canon/tests/constructor_emission_projection.rs
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/vize_canon/src
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-base-target"
+          (cd "$baseline" && VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
+          VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
+      - name: Compare complete generated bytes, projection mappings and semantic links
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const directory = `${process.env.RUNNER_TEMP}/component-input-parity`;
+          const baseBytes = readFileSync(`${directory}/base.json`);
+          const headBytes = readFileSync(`${directory}/head.json`);
+          const base = JSON.parse(baseBytes), head = JSON.parse(headBytes);
+          assert.equal(base.length, 228);
+          assert.equal(head.length, 228);
+          assert.deepEqual(head, base, 'complete checker/mapper projection packets must be unchanged');
+          const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+          const observer = readFileSync('crates/vize_canon/tests/constructor_emission_projection.rs');
+          const receipt = { pullRequestBase: process.env.BASE_SHA, base: readFileSync(`${directory}/base-revision.txt`, 'utf8').trim(), head: process.env.HEAD_SHA, observerSha256: hash(observer), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), completePackets: head.length, scope: 'Exact source projection parity; not native type-engine or publication acceptance' };
+          writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
+          console.log(JSON.stringify(receipt));
+          JS
+      - name: Observe actual mapper generation and gated parser allocations
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
+          export VIZE_INPUT_OWNERSHIP_PROFILE_CAPTURE="$RUNNER_TEMP/component-input-parity/generation-profile.json"
+          cargo test --locked --profile ci -p vize_benchmarks --test component_input_ownership_profile actual_mapper_generation_reports_gated_parse_and_allocation_costs -- --exact --nocapture > "$RUNNER_TEMP/component-input-parity/generation-profile.log" 2>&1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: component-input-parity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/component-input-parity
+          if-no-files-found: error
+          retention-days: 7

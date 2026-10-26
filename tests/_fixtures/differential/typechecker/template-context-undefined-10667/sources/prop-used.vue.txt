@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ undefined: string }>();
+</script>
+<template><p>{{ undefined }}</p></template>

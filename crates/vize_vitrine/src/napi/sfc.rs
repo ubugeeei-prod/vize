@@ -24,6 +24,7 @@ mod batch;
 mod batch_helpers;
 mod batch_results;
 mod bundler;
+mod codegen_options;
 mod compile;
 mod css;
 mod experimentals;
@@ -32,6 +33,7 @@ mod page_meta_tests;
 mod parse;
 mod thread_pool;
 mod types;
+mod vue_version;
 
 pub use analysis::*;
 pub use batch::*;

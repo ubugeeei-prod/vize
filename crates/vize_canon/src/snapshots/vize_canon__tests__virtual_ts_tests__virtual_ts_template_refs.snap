@@ -122,7 +122,7 @@ function __setup() {
   function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
   function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  const defineModel = undefined as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
+  const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   const useTemplateRef = (undefined as unknown as __VizeUseTemplateRef); void ((_key: string) => useTemplateRef(_key));
@@ -135,14 +135,14 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
 void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 16186:16333 -> 0:135
+  // @vize-map: 16185:16332 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
-    const __ctx = undefined as unknown as __Ctx;
+    const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
     const $slots = __ctx.$slots;
     const $refs = __ctx.$refs;

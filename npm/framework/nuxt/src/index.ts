@@ -1,5 +1,4 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
-import { injectNuxtI18nHelpers } from "./i18n";
 import { setupNuxtLintChecker } from "./lint/checker/setup";
 import { setupLintInspector, setupNuxtLintConfigGeneration } from "./lint/generation";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
@@ -453,6 +452,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
         // Parse the virtual module so string literals, comments, and Vue template
         // globals do not look like setup-scope runtime helper calls.
         if (bridgeOptions.i18n && bridgeFastPath.hasI18nBridgeInput(result)) {
+          const { injectNuxtI18nHelpers } = await import("./i18n");
           const nextResult = injectNuxtI18nHelpers(result, id);
           if (nextResult !== result) {
             result = nextResult;
