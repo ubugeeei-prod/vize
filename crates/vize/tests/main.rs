@@ -3,6 +3,7 @@
 mod build_cli;
 mod build_custom_elements_cli;
 mod build_declaration_emit_cli;
+mod build_entry_compiler_cli;
 mod build_inputs_cli;
 mod build_output_paths_cli;
 mod build_profile_cli;
