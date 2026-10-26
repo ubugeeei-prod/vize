@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { sourceProvenance, validateProductSource } from "./sfc-parse-attributes-source.mjs";
 
 const sourceRoot = path.resolve(process.argv[2]);
 const role = process.argv[3];
@@ -15,6 +16,13 @@ const source = execFileSync("git", ["-C", sourceRoot, "rev-parse", "HEAD"], {
   encoding: "utf8",
 }).trim();
 assert.equal(source, process.env.VIZE_SFC_ATTRS_SOURCE_SHA);
+const observerActor = execFileSync(
+  "git",
+  ["-C", fileURLToPath(new URL("../../", import.meta.url)), "rev-parse", "HEAD"],
+  { encoding: "utf8" },
+).trim();
+const provenance = sourceProvenance(observerActor);
+validateProductSource(source, role, observerActor);
 const nativeRoot = path.join(sourceRoot, "npm/native");
 const require = createRequire(path.join(nativeRoot, "package.json"));
 const binding = require("./index.js");
@@ -36,6 +44,7 @@ const receipt = {
   schema: "vize.sfc-parse-attributes-source.v1",
   role,
   source,
+  provenance,
   triggerSha: process.env.GITHUB_SHA,
   runId: process.env.GITHUB_RUN_ID,
   runAttempt: process.env.GITHUB_RUN_ATTEMPT,

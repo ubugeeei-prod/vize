@@ -85,7 +85,13 @@ test("npm package support table matches package metadata", () => {
       .filter((row) => row.tier === "Experimental (workspace only)")
       .map((row) => row.packageName)
       .toSorted(),
-    ["@vizejs/data", "@vizejs/devtools", "@vizejs/router", "@vizejs/state"],
+    [
+      "@vizejs/data",
+      "@vizejs/devtools",
+      "@vizejs/router",
+      "@vizejs/state",
+      "@vizejs/typescript-vue-plugin",
+    ],
   );
 
   const tierLabels = new Map([

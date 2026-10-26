@@ -46,6 +46,9 @@ where
 
 /// Build parameter string for for callback
 fn build_params(value: &str, key: Option<&str>, index: Option<&str>) -> String {
+    let value = vize_atelier_core::steps::untyped_for_alias(value);
+    let key = key.map(vize_atelier_core::steps::untyped_for_alias);
+    let index = index.map(vize_atelier_core::steps::untyped_for_alias);
     match (key, index) {
         (Some(k), Some(i)) => cstr!("{value}, {k}, {i}"),
         (Some(k), None) => cstr!("{value}, {k}"),

@@ -29,6 +29,8 @@ use vize_l0::{SmallVec, String};
 use super::super::options::{BindingKind, BindingTable, ReactiveRead};
 use super::globals::is_scope_chain_global;
 
+mod for_bindings;
+
 #[derive(Default)]
 pub(in crate::emit) struct PrefixScope<'b> {
     transform: StdVec<String>,
@@ -262,18 +264,22 @@ impl<'b> PrefixScope<'b> {
             if alias.is_empty() {
                 continue;
             }
-            // The shipped scope chain registers each binding of a
-            // destructured value pattern before process_expression runs.
-            // Slot text only strips `_ctx.` at codegen, so a prop with the
-            // same name must be shadowed here rather than prefixed first.
-            if index == 0 && alias.trim_start().starts_with(['{', '[']) {
-                self.transform
-                    .extend(super::params::extract_slot_prop_names(alias));
-            } else {
-                self.transform.push(String::from(alias));
-            }
-            super::params::extract_destructure_params(alias.trim(), &mut self.slot_params);
+            self.push_for_alias(index, alias);
         }
+    }
+
+    fn push_for_alias(&mut self, index: usize, alias: &str) {
+        // The shipped scope chain registers each binding of a
+        // destructured value pattern before process_expression runs.
+        // Slot text only strips `_ctx.` at codegen, so a prop with the
+        // same name must be shadowed here rather than prefixed first.
+        if index == 0 && alias.trim_start().starts_with(['{', '[']) {
+            self.transform
+                .extend(super::params::extract_slot_prop_names(alias));
+        } else {
+            self.transform.push(String::from(alias));
+        }
+        super::params::extract_destructure_params(alias.trim(), &mut self.slot_params);
     }
 
     /// `enter_v_slot_scope_if_needed` + the codegen slot params.

@@ -1,0 +1,132 @@
+name: Decoded loop bindings
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - "davinci/vize_l1_to_l2/src/lower/forop*"
+      - "davinci/vize_l1_to_l2/src/lower/forop/**"
+      - "davinci/vize_l1_to_l2/src/emit/**"
+      - "crates/vize_atelier_ssr/src/l4/**"
+      - "crates/vize_atelier_vapor/src/lower/control.rs"
+      - "crates/vize_atelier_core/src/steps/v_for*"
+      - "crates/vize_atelier_core/src/steps/v_for/**"
+      - "crates/vize_atelier_core/src/lane/context.rs"
+      - "crates/vize_atelier_core/src/lane/traverse.rs"
+      - "crates/vize_atelier_core/src/codegen/v_for/**"
+      - "crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs"
+      - "crates/vize_atelier_vapor/src/steps/v_for.rs"
+      - "crates/vize_atelier_vapor/src/generate/context/**"
+      - "crates/vize_atelier_vapor/src/generate/operations/for_loop.rs"
+      - "crates/vize_atelier_vapor/src/generate/operations/match_scope.rs"
+      - "crates/vize_atelier_vapor/src/generate/operations/structural_slots.rs"
+      - "crates/vize_relief/src/relief/expressions.rs"
+      - "davinci/vize_l2/src/scope.rs"
+      - "davinci/vize_l1_to_l2/src/lib.rs"
+      - "davinci/vize_l1_to_l2/tests/support/**"
+      - "crates/vize_atelier_sfc/examples/for_binding_profile.rs"
+      - "tests/tooling/for-key-literal-source.mjs"
+      - "tests/tooling/for-binding-source.mjs"
+      - "tests/tooling/for-binding-verify.mjs"
+      - ".github/workflows/for-bindings.yml"
+
+permissions: { contents: read }
+concurrency:
+  group: for-bindings-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-native:
+    # The immutable before image qualifies this repair; Check retains routine regression tests.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.number == 10726 }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTC_WRAPPER: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
+      BASE_SHA: "adb42824eebe8e77e2cc8ef9d45753f6e69dcd04"
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          {
+            version: "1.1.0",
+            node-version-file: package.json,
+            cache: true,
+            cache-save: false,
+            run-install: false,
+          }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: for-bindings-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Build immutable before and head producers in separate source targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git merge-base "$BASE_SHA" "$HEAD_SHA")" == "$BASE_SHA" ]]
+          capture="$RUNNER_TEMP/for-bindings"
+          baseline="$RUNNER_TEMP/for-bindings-base"
+          mkdir -p "$capture"
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          observer=crates/vize_atelier_sfc/examples/for_binding_profile.rs
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/vize_atelier_sfc/src Cargo.lock
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- crates/vize_atelier_sfc/src
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock pnpm-lock.yaml
+          rustc -Vv > "$capture/rustc.txt"
+          node --version > "$capture/node.txt"
+          sha256sum Cargo.lock pnpm-lock.yaml "$observer" tests/tooling/for-binding-source.mjs tests/tooling/for-key-literal-source.mjs tests/tooling/for-binding-verify.mjs > "$capture/inputs.sha256"
+          for epoch in head base; do
+            if [[ "$epoch" == base ]]; then source="$baseline"; sha="$BASE_SHA"; else source="$GITHUB_WORKSPACE"; sha="$HEAD_SHA"; fi
+            target="$RUNNER_TEMP/for-bindings-targets/$sha"
+            token="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(16).toString("hex"))')"
+            printf '%s\n' "$sha $target $token" >> "$capture/source-target-token.txt"
+            (cd "$source" && CARGO_TARGET_DIR="$target" VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked -p vize_vitrine --features napi,legacy --profile ci --message-format=json-render-diagnostics) > "$capture/$epoch-native-build.jsonl" 2> "$capture/$epoch-native-build.stderr"
+            cp "$target/ci/libvize_vitrine.so" "$capture/$epoch.node"
+            (cd "$source" && CARGO_TARGET_DIR="$target" cargo build --locked -p vize_atelier_sfc --example for_binding_profile --profile ci-opt --message-format=json-render-diagnostics) > "$capture/$epoch-observer-build.jsonl" 2> "$capture/$epoch-observer-build.stderr"
+            cp "$target/ci-opt/examples/for_binding_profile" "$capture/$epoch-observer"
+            SOURCE_SHA="$sha" "$capture/$epoch-observer" > "$capture/$epoch-profile.json" 2> "$capture/$epoch-profile.stderr"
+            SOURCE_SHA="$sha" node tests/tooling/for-binding-source.mjs "$epoch" "$capture/$epoch.node" "$capture" > "$capture/$epoch-native.stdout" 2> "$capture/$epoch-native.stderr"
+          done
+          CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_core --lib v_for --profile ci -- --nocapture > "$capture/unit.stdout" 2> "$capture/unit.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_l1_to_l2 --lib lower::forop --profile ci -- --nocapture > "$capture/native-for-unit.stdout" 2> "$capture/native-for-unit.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_vapor --lib generate::operations::for_loop --profile ci -- --nocapture > "$capture/for-key-unit.stdout" 2> "$capture/for-key-unit.stderr"
+          for log in unit native-for-unit for-key-unit; do
+            grep -Eq 'test result: ok\. [1-9][0-9]* passed; 0 failed; 0 ignored;' "$capture/$log.stdout"
+          done
+          sha256sum "$capture/"*.node "$capture/"*-observer > "$capture/executables.sha256"
+      - name: Verify authored callback literals and current versus enclosing bindings
+        run: node tests/tooling/for-key-literal-source.mjs "$RUNNER_TEMP/for-bindings" "$RUNNER_TEMP/for-bindings/key-literals"
+      - name: Verify full unchanged packets, actual collision repair and source custody
+        shell: bash
+        run: |
+          node tests/tooling/for-binding-verify.mjs "$RUNNER_TEMP/for-bindings"
+      - name: Preserve complete source evidence, images, packets and unnormalized logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: for-bindings-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.HEAD_SHA }}
+          path: |
+            ${{ runner.temp }}/for-bindings/**
+            !${{ runner.temp }}/for-bindings/node_modules/**
+          if-no-files-found: error
+          retention-days: 14

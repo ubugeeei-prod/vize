@@ -4,6 +4,7 @@ use vize_l0::{FxHashMap, FxHashSet};
 
 use super::super::imports_aliases::PathAliasResolver;
 use super::super::path_cache::CanonicalPathCache;
+use super::session::LocalImportSession;
 use super::{
     ImportFileOptions, extract_module_specifier_occurrences, is_declaration_file,
     is_relative_specifier, resolve_import_base, resolve_import_base_with_inputs,
@@ -111,15 +112,20 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
     packages: Option<&mut vize_canon::PackageRouteResolver>,
-    cache: &mut VirtualRegistrationCache,
+    session: &mut LocalImportSession,
     discovery: &mut VirtualRegistrationDiscovery,
 ) -> bool {
     let pure_alias = packages.is_none();
-    if pure_alias && cache.negative_alias_sources.contains(path) {
+    if pure_alias
+        && session
+            .registration_cache
+            .negative_alias_sources
+            .contains(path)
+    {
         return false;
     }
     let cache_key = (path.to_path_buf(), packages.is_some());
-    if let Some(cached) = cache.registrations.get_mut(&cache_key) {
+    if let Some(cached) = session.registration_cache.registrations.get_mut(&cache_key) {
         // Route bindings are collection-global facts; sources are caller-local
         // invalidation inputs for the outer route that reached this memo.
         if !cached.package_routes_reported {
@@ -145,17 +151,18 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         options,
         aliases,
         packages,
-        cache,
+        session,
         &mut discovered,
     );
     #[cfg(test)]
     {
-        cache.source_reads += frontier.source_reads;
+        session.registration_cache.source_reads += frontier.source_reads;
     }
     // A completely scanned Vue-free closure proves every member negative.
     // Package walks retain their full caller-specific invalidation inputs.
     if pure_alias && !needs_registration {
-        cache
+        session
+            .registration_cache
             .negative_alias_sources
             .extend(frontier.visited.iter().cloned());
     }
@@ -173,7 +180,7 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     discovery
         .package_sources
         .extend(resolved_discovery.package_sources.iter().cloned());
-    cache.registrations.insert(
+    session.registration_cache.registrations.insert(
         cache_key,
         CachedVirtualRegistration {
             needs_registration,

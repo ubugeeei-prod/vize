@@ -273,7 +273,10 @@ fn import_source_map_facts(
     rewritten_bytes: usize,
 ) -> ImportSourceMapFacts {
     let debug = cstr!("{map:?}");
-    let rewrite_count = debug.match_indices("OffsetAdjustment").count();
+    // Normal rewrites use literal ranges; the public legacy constructor uses
+    // adjustments. Both carriers must keep this fixture non-vacuous.
+    let rewrite_count = debug.match_indices("OffsetAdjustment").count()
+        + debug.match_indices("ReplacementRange").count();
     let mut probes = String::with_capacity((pre_rewrite_bytes + rewritten_bytes) * 12);
     for original in 0..=pre_rewrite_bytes as u32 {
         append!(probes, "o{original}>{};", map.get_virtual_offset(original));

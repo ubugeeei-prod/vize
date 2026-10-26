@@ -763,3 +763,21 @@ void test("one project fingerprints its native closure once per epoch and dispos
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+void test("suggestion packets never repeat the syntax and semantic checks", () => {
+  const file = "/src/Suggest.vue";
+  const projection = { text: "xy", mappings: [[0, 2, 8, 2, 0, 0xfffff]], diagnostics: [] };
+  const suggestion = { start: 0, length: 2, code: 6133, category: 2, messageText: "unused" };
+  const unexpected = () => assert.fail("suggestions must not recompute errors");
+  const service = createMappedLanguageService(
+    ts,
+    {
+      getSyntacticDiagnostics: unexpected,
+      getSemanticDiagnostics: unexpected,
+      getSuggestionDiagnostics: () => [suggestion],
+    },
+    { engine: helper, get: () => ({ source: "<script>xy</script>", projection }) },
+  );
+  const [mapped] = service.getSuggestionDiagnostics(file);
+  assert.deepEqual([mapped.code, mapped.start, mapped.length], [6133, 8, 2]);
+});
