@@ -343,14 +343,14 @@ test(
         assert.equal(disabled.text.split(`useRoute${routeType}()`).length - 1, 0);
         assertRouteMappings(source, enabled);
         assertRouteMappings(source, disabled);
-        const check = (name: string, configName: string, extra: string[] = []) =>
+        const check = (name: string, configName: string, extra: string[] = []): Packet =>
           run(
             `${label}-${name}`,
             host,
             ["--runExternalCode", "--noEmit", "-p", configName, "--pretty", "false", ...extra],
             project.root,
           );
-        const reference = (name: string) =>
+        const reference = (name: string): Packet =>
           run(
             `${label}-reference-${name}`,
             process.execPath,
