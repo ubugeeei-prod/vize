@@ -98,7 +98,7 @@ impl<'a> SimpleExpressionNode<'a> {
     /// Cooked binding names from a successful, unchanged parameter goal.
     pub fn retained_parameter_names(&self) -> Option<&[&'a str]> {
         self.retained_parameters()?;
-        self.identifiers.as_deref()
+        self.identifiers.as_ref().map(|names| names.as_slice())
     }
 }
 
