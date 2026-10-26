@@ -10,6 +10,27 @@ use super::ReferencesService;
 use crate::ide::{IdeContext, corsa_support};
 
 mod local_binding;
+#[cfg(test)]
+mod private_tests;
+
+/// A proven private setup symbol has no workspace reference identity. Reuse
+/// lexical symbols and generator links instead of starting native name search.
+pub(super) fn setup_local_references(
+    ctx: &IdeContext<'_>,
+    include_declaration: bool,
+) -> Option<Vec<Location>> {
+    if corsa_support::is_component_attribute_query(ctx)
+        || ctx.uri.path().ends_with(".art.vue")
+        || !is_script_setup_local_binding(ctx)
+    {
+        return None;
+    }
+    let descriptor = ctx.descriptor()?;
+    if descriptor.script.is_some() || descriptor.template.is_none() {
+        return None;
+    }
+    ReferencesService::references(ctx, include_declaration)
+}
 
 /// Keep independent setup locals on the inexpensive existing surface. A
 /// shorthand object binding also names its source property, so its native
@@ -34,13 +55,26 @@ fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
         &script_setup.content,
         SourceType::from_path("script.ts").unwrap_or_default(),
     );
-    if parsed.panicked || local_binding::property_linked(&parsed.program, &word) {
+    if parsed.panicked
+        || !parsed.diagnostics.is_empty()
+        || local_binding::property_linked(&parsed.program, &word)
+    {
         return false;
     }
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
     analyzer.analyze_script_setup_program(&parsed.program, &script_setup.content, None);
+    let croquis = analyzer.finish();
+    if croquis.macros.define_expose().is_some()
+        || croquis
+            .macros
+            .models()
+            .iter()
+            .any(|model| model.local_name == word.as_str())
+    {
+        return false;
+    }
     matches!(
-        analyzer.finish().get_binding_type(&word),
+        croquis.get_binding_type(&word),
         Some(
             BindingType::SetupLet
                 | BindingType::SetupMaybeRef

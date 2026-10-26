@@ -49,6 +49,11 @@ pub(super) async fn references(
     }
     #[cfg(feature = "native")]
     {
+        if let Some(locations) =
+            ReferencesService::setup_local_references(&ctx, include_declaration)
+        {
+            return Ok(Some(locations));
+        }
         Ok(ReferencesService::references_with_corsa(
             &ctx,
             include_declaration,

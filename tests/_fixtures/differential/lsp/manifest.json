@@ -2512,6 +2512,92 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/private-setup-references-10785-lf",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "private-setup-references-10785-lf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "a7608121624f02d2faab612134bd45077cc6e9ed422b5d11e7315a352e0106d3"
+          }
+        ]
+      },
+      "case": {
+        "path": "private-setup-references-10785-lf/case.json",
+        "sha256": "887a24cd61ab5fb8aa1ee2ec62d6afcd2b815096b70aead756282d85436a431f"
+      },
+      "requestCount": 6,
+      "initializationOptions": {
+        "editor": true,
+        "references": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/private-setup-references-10785-crlf",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "private-setup-references-10785-crlf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "837ec287f930c9f9286cd818c682d92298dcea5d6f992c25fd4bce97c8d2ea87"
+          }
+        ]
+      },
+      "case": {
+        "path": "private-setup-references-10785-crlf/case.json",
+        "sha256": "de8bf17560c24a27eaebadd237444f41da8103426fd73b75a61a9f4314b7809e"
+      },
+      "requestCount": 6,
+      "initializationOptions": {
+        "editor": true,
+        "references": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

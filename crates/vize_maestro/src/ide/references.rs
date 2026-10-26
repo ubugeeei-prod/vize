@@ -52,6 +52,15 @@ impl ReferencesService {
         structural::references(ctx, include_declaration)
     }
 
+    /// Answer private setup bindings before obtaining or initializing a checker.
+    #[cfg(feature = "native")]
+    pub(crate) fn setup_local_references(
+        ctx: &IdeContext<'_>,
+        include_declaration: bool,
+    ) -> Option<Vec<Location>> {
+        canonical::setup_local_references(ctx, include_declaration)
+    }
+
     /// Find all references using Corsa when available, with synchronous fallback.
     #[cfg(feature = "native")]
     pub async fn references_with_corsa(
@@ -59,6 +68,9 @@ impl ReferencesService {
         include_declaration: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
+        if let Some(locations) = Self::setup_local_references(ctx, include_declaration) {
+            return Some(locations);
+        }
         // The ordinary canonical SFC does not contain custom art templates.
         // Resolve the selected variant before another template can answer.
         if let Some(BlockType::Art(ArtCursorPosition::VariantTemplate(ref info))) = ctx.block_type
