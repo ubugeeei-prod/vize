@@ -9,7 +9,8 @@ assert.equal(process.env.GITHUB_ACTIONS, "true");
 const capture = process.env.VIZE_IMPORT_GEOMETRY_CAPTURE;
 assert(capture);
 fs.mkdirSync(capture, { recursive: true });
-const hash = (file: fs.PathLike) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+const hash = (file: fs.PathLike) =>
+  createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
 const save = (name: string, data: unknown) =>
   fs.writeFileSync(path.join(capture, name), JSON.stringify(data, null, 2) + "\n");

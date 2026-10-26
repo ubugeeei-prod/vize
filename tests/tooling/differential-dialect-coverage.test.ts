@@ -16,7 +16,16 @@ import {
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const products = ["compiler", "formatter", "linter", "lsp", "typechecker"];
 
-function load(product) {
+type Coverage = {
+  state: string;
+  registryRef: null;
+  evidence: Array<{ kind: string; dialects: string[]; selector: string; extra?: boolean }>;
+  extra?: boolean;
+};
+
+type Fixture = { id: string; dialectCoverage: Coverage };
+
+function load(product: string): { cases: Fixture[] } {
   return loadProductManifest(
     path.join(root, `tests/_fixtures/differential/${product}/manifest.json`),
     product,
@@ -67,8 +76,8 @@ void test("every product manifest contributes to the case-level dialect denomina
       new Set(custody[product].map((fixture) => fixture.id)).size,
       custody[product].length,
     );
-    for (const measurement of ["provisional", "verified"]) {
-      const dialects = {};
+    for (const measurement of ["provisional", "verified"] as const) {
+      const dialects: Record<string, number> = {};
       for (const fixture of custody[product].filter((row) => row.measurement === measurement)) {
         for (const dialect of fixture.dialects) dialects[dialect] = (dialects[dialect] ?? 0) + 1;
       }
@@ -96,7 +105,7 @@ void test("compiler promotes rare inventory rows through actual adapter coordina
 });
 
 void test("coverage schema rejects malformed and noncanonical verified claims", () => {
-  const valid = {
+  const valid: Coverage = {
     state: "source-inspected",
     registryRef: null,
     evidence: [
@@ -108,7 +117,7 @@ void test("coverage schema rejects malformed and noncanonical verified claims", 
     ],
   };
   assert.deepEqual(normalizeDialectCoverage(valid, "fixture"), valid);
-  for (const [change, error] of [
+  const malformed: Array<[(value: Coverage) => unknown, RegExp]> = [
     [(value) => (value.state = "complete"), /invalid coverage state/],
     [(value) => (value.evidence = []), /needs evidence/],
     [(value) => value.evidence[0].dialects.push("vue3-sfc"), /duplicate dialect/],
@@ -122,7 +131,8 @@ void test("coverage schema rejects malformed and noncanonical verified claims", 
       },
       /verified dialect must be canonical/,
     ],
-  ]) {
+  ];
+  for (const [change, error] of malformed) {
     const value = structuredClone(valid);
     change(value);
     assert.throws(() => normalizeDialectCoverage(value, "fixture"), error);
