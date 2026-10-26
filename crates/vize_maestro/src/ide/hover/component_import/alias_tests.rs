@@ -98,12 +98,10 @@ fn alias_and_async_component_constants_show_the_import_contract() {
             Some(format!("```typescript\nconst {name}{CONTRACT}")),
             "{script}"
         );
-        let tag = HoverService::hover(&fixture.ctx("<LazyChild")).and_then(markdown);
-        assert!(
-            tag.as_deref()
-                .is_some_and(|tag| tag.contains("const LazyChild: VueComponent &")
-                    && tag.contains("props: { title: string };")),
-            "{script}: {tag:?}"
+        assert_eq!(
+            HoverService::hover(&fixture.ctx("<LazyChild")).and_then(markdown),
+            Some(format!("```typescript\nconst LazyChild{CONTRACT}")),
+            "{script}"
         );
         assert_eq!(
             component_contract_inline(&fixture.ctx("LazyChild"), name).as_deref(),
