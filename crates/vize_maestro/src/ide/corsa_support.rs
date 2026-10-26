@@ -7,6 +7,8 @@
 )]
 
 use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
+mod art_script;
+pub(crate) use art_script::open_art_script_query;
 #[cfg(test)]
 mod art_variant_fallback_tests;
 mod canonical;
@@ -189,7 +191,9 @@ fn accessible_external_uri(ctx: &IdeContext<'_>, raw_uri: &str) -> Option<Url> {
         return Some(uri);
     }
 
-    uri.to_file_path().ok()?.is_file().then_some(uri)
+    // A private session mirror also exists on disk, but only for the checker.
+    let path = uri.to_file_path().ok()?;
+    (path.is_file() && !vize_canon::is_editor_mirror_path(&path)).then_some(uri)
 }
 
 /// Translate a Corsa prepare-rename payload into SFC coordinates.
