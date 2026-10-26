@@ -8,7 +8,9 @@ mod wrapped;
 #[cfg(test)]
 mod tests;
 
-pub(super) use cache::needs_handler_cache as caches_handler;
+pub(super) use cache::{
+    bypasses_component_cache, caches_owned_handler, needs_handler_cache as caches_handler,
+};
 use vize_l0::{SmallVec, String, camelize, capitalize};
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{DynamicName, OnOp};

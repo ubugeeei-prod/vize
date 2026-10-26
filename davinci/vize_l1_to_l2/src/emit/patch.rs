@@ -59,7 +59,7 @@ impl super::EmitCx<'_> {
                         || self.scope.is_slot_param(name)
                         || self.scope.binds_in_pattern(name))
             },
-            &|on| super::on::caches_handler(self, on),
+            &|on| super::on::caches_owned_handler(self, on, is_component),
             self.caches_handlers(),
         );
         self.patch_facts.materialize(owner, facts)

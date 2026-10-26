@@ -289,13 +289,24 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
         // always breaks onto its own line.
         Piece::On(event) => on::caches_handler(cx, event)
             || on::forces_inline_on(event)
-            || matches!(event.expression(), Some(ExprRef::Js(js)) if on::is_inline_handler_source(
-                super::prefix::node_content(cx.source, js.source, js.span).text.as_str()
+            || matches!(event.expression(), Some(ExprRef::Js(js)) if is_inline_value(
+                cx,
+                &ExprRef::Js(js),
+                super::prefix::node_content(cx.source, js.source, js.span).text.as_str(),
             ))
             || matches!(event.expression(), Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement),
         Piece::ModelUpdate { .. } => true,
         _ => false,
     })
+}
+
+/// Vue keeps an authored identifier a simple expression even when it reads
+/// `_unref(fn)`; any other method reference passed uncached is compound.
+fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str) -> bool {
+    if cx.component_props && on::bypasses_component_cache(cx, expr) {
+        return !super::prefix::is_simple_identifier(content);
+    }
+    on::is_inline_handler_source(content)
 }
 
 pub(super) fn pieces_have_vue_text(pieces: &[Piece<'_>]) -> bool {

@@ -7,6 +7,15 @@ use super::super::{EmitCx, options::BindingKind};
 /// is in play, the directive has an expression, and that expression is
 /// not a bare `SetupConst` reference.
 pub(in crate::emit) fn needs_handler_cache(cx: &EmitCx<'_>, on: &OnOp<'_>) -> bool {
+    caches_owned_handler(cx, on, cx.component_props)
+}
+
+/// [`needs_handler_cache`] for an owner known to be a component or not.
+pub(in crate::emit) fn caches_owned_handler(
+    cx: &EmitCx<'_>,
+    on: &OnOp<'_>,
+    is_component: bool,
+) -> bool {
     let Some(handler) = on.expression() else {
         return false;
     };
@@ -14,6 +23,15 @@ pub(in crate::emit) fn needs_handler_cache(cx: &EmitCx<'_>, on: &OnOp<'_>) -> bo
         return false;
     }
     !is_setup_const_handler(cx, &handler)
+        && !(is_component && bypasses_component_cache(cx, &handler))
+}
+
+/// A component receives a method reference as the authored function, so a
+/// cached wrapper cannot hide its arity. Options API refs keep their
+/// live-lookup wrapper.
+pub(in crate::emit) fn bypasses_component_cache(cx: &EmitCx<'_>, expr: &ExprRef<'_>) -> bool {
+    super::wrapped::options_api_handler_name(cx, expr).is_none()
+        && super::super::prefix::handler_is_reference(cx.source, expr)
 }
 
 /// `is_setup_const_handler`: the processed handler text is a simple
