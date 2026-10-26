@@ -37,6 +37,29 @@ pub(super) struct NativeDiagnostic {
     _reports_unnecessary: bool,
     #[serde(default, rename = "reportsDeprecated")]
     _reports_deprecated: bool,
+    // TypeScript 7.1 also sends line/character positions and source lines.
+    // Ranges still come from `pos`/`end` and the same snapshot text.
+    #[serde(default, rename = "startPosition")]
+    _start_position: Option<serde::de::IgnoredAny>,
+    #[serde(default, rename = "endPosition")]
+    _end_position: Option<serde::de::IgnoredAny>,
+    #[serde(default, rename = "sourceLines")]
+    _source_lines: Option<serde::de::IgnoredAny>,
+}
+
+/// Decode one requested kind. TypeScript 7.1 also returns other files'
+/// suggestions for a per-file request; this pull keeps the requested file's.
+pub(super) fn decode_kind(
+    method: &str,
+    response: serde_json::Value,
+    file: &str,
+) -> Result<Vec<NativeDiagnostic>, String> {
+    let mut rows = serde_json::from_value::<Vec<NativeDiagnostic>>(response)
+        .map_err(|error| cstr!("Malformed {method} response: {error}"))?;
+    if method == "getSuggestionDiagnostics" {
+        rows.retain(|row| row.belongs_to(file));
+    }
+    Ok(rows)
 }
 
 impl NativeDiagnostic {
@@ -256,6 +279,39 @@ mod tests {
                 "range":{"start":{"line":0,"character":2},"end":{"line":0,"character":3}}},
                 "message":"related authored"}]})
         );
+    }
+
+    #[test]
+    fn only_suggestions_drop_rows_of_other_files() {
+        let mut foreign = wire(6385, 2);
+        foreign["fileName"] = json!("/workspace/lib.d.ts");
+        let rows = json!([wire(6133, 1), foreign]);
+        let codes = |method| {
+            super::decode_kind(method, rows.clone(), "/workspace/a.ts")
+                .unwrap()
+                .iter()
+                .map(|row| row.code)
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(codes("getSuggestionDiagnostics"), [6133]);
+        // Other kinds keep the foreign row, so the read refuses the packet.
+        assert_eq!(codes("getSemanticDiagnostics"), [6133, 6385]);
+    }
+
+    #[test]
+    fn typescript_7_1_positions_and_source_lines_keep_the_same_packet() {
+        let source = SnapshotText::new("1234567").unwrap();
+        let mut value = wire(2322, 1);
+        value["startPosition"] = json!({"line":0,"character":5});
+        value["endPosition"] = json!({"line":0,"character":7});
+        value["sourceLines"] = json!([{"line":0,"text":"1234567"}]);
+        let convert = |value| {
+            serde_json::from_value::<NativeDiagnostic>(value)
+                .unwrap()
+                .into_lsp("/workspace/a.ts", |_| Ok(&source))
+                .unwrap()
+        };
+        assert_eq!(convert(value), convert(wire(2322, 1)));
     }
 
     #[test]

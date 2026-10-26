@@ -168,9 +168,10 @@ export function parseStraceCapture(
       } else rows.push(syscallRow(tid, at, at, call));
     }
     if (pending) {
-      assert.equal(
+      // A second thread can enter exit_group while the group is already exiting.
+      assert.match(
         pending.call.trim(),
-        "???(",
+        /^(?:\?\?\?\(|exit_group\(\d+)$/u,
         "nonterminal unfinished syscalls remain unqualified",
       );
       unfinished.push(pending);
@@ -252,6 +253,13 @@ export function parseStraceCapture(
       exitCode = /^exit_group\((\d+)\)/u.exec(exit.call);
     assert.ok(exitCode);
     const code = Number(exitCode[1]);
+    const exitEntry = /^exit_group\((\d+)$/u.exec(unknown.call.trim());
+    if (exitEntry)
+      assert.equal(
+        Number(exitEntry[1]),
+        code,
+        "an unfinished exit entry repeats the group exit code",
+      );
     assert.ok(
       BigInt(exit.interval.endNanoseconds) < clock(unknown.at).nanoseconds,
       "unknown interval must be strictly after the same-group explicit exit_group",
@@ -284,7 +292,9 @@ export function parseStraceCapture(
     (owner.terminalUnknownSyscalls ??= []).push({
       ...unknown,
       process,
-      classification: "UNKNOWN_UNCAPTURED_TERMINAL_SYSCALL",
+      classification: exitEntry
+        ? "UNKNOWN_UNCAPTURED_NONRETURNING_EXIT_ENTRY"
+        : "UNKNOWN_UNCAPTURED_TERMINAL_SYSCALL",
       exitGroup: exit,
       sameCodeThreadTerminals: [...members],
       syscallBytesCaptured: false,

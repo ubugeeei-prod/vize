@@ -18,7 +18,7 @@ use lsp_types::Diagnostic;
 use serde_json::{Value, json};
 use vize_l0::{FxHashMap, String, cstr};
 
-use super::diagnostic_response::{NativeDiagnostic, SnapshotText, missing_method};
+use super::diagnostic_response::{NativeDiagnostic, SnapshotText, decode_kind, missing_method};
 use crate::{
     corsa_bridge::native_operation,
     file_uri::{file_uri_to_path, path_to_typescript_name},
@@ -52,11 +52,7 @@ pub(in crate::lsp_client) fn read(
             // Native NewDiagnosticResponses(nil) serializes a successful null.
             // It is empty for THIS kind only; every remaining kind must succeed.
             if !response.is_null() {
-                rows.extend(
-                    serde_json::from_value::<Vec<NativeDiagnostic>>(response).map_err(|error| {
-                        Failure::Failed(cstr!("Malformed {method} response: {error}"))
-                    })?,
-                );
+                rows.extend(decode_kind(method, response, &file).map_err(Failure::Failed)?);
             }
         }
         if rows.iter().any(|row| !row.belongs_to(&file)) {

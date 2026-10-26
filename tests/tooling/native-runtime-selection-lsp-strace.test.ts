@@ -289,3 +289,32 @@ void test("only proved same-group terminal interruption can retain an unknown sy
   ])
     assert.throws(() => parseStraceCapture(malformed));
 });
+
+void test("an unfinished exit entry after the same-code group exit is retained without coverage credit", () => {
+  const traces = (entry = "2.200000 exit_group(0 <unfinished ...>", later = "") => [
+    {
+      tid: 100,
+      text: `${exec}\n1.100000 clone(child_stack=NULL, flags=CLONE_VM|CLONE_THREAD) = 101 <0.000001>\n2.100000 exit_group(0) = ?\n2.300000 +++ exited with 0 +++\n`,
+    },
+    { tid: 101, text: `${entry}\n${later}2.310000 +++ exited with 0 +++\n` },
+  ];
+  const capture = parseStraceCapture(traces());
+  assert.equal(capture.syscallsComplete, false);
+  assert.equal(capture.terminalUnknownSyscalls.length, 1);
+  assert.equal(
+    capture.terminalUnknownSyscalls[0].classification,
+    "UNKNOWN_UNCAPTURED_NONRETURNING_EXIT_ENTRY",
+  );
+  assert.equal(capture.terminalUnknownSyscalls[0].syscallBytesCaptured, false);
+  for (const malformed of [
+    traces("2.000000 exit_group(0 <unfinished ...>"),
+    traces("2.200000 exit_group(1 <unfinished ...>"),
+    traces("2.200000 exit_group(0, 1 <unfinished ...>"),
+    traces("2.200000 read(0, <unfinished ...>"),
+    traces(
+      "2.200000 exit_group(0 <unfinished ...>",
+      `2.250000 read(0, ${hex("a")}, 1) = 1 <0.000001>\n`,
+    ),
+  ])
+    assert.throws(() => parseStraceCapture(malformed));
+});
