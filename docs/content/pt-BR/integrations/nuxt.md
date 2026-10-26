@@ -128,6 +128,8 @@ export default defineNuxtConfig({
 
 O [guia do plugin Vite](../guide/vite-plugin.md#compiler-options) descreve cada opção do compilador. Com `compiler: false`, o Nuxt mantém o compilador padrão e você usa apenas o lint ou o Musea.
 
+`vue.compilerOptions.whitespace` e `vue.compilerOptions.comments` do Nuxt chegam ao Vize como padrões; `vue.compiler` no `vite.config.*` e `vize.compiler` os substituem. Qualquer outra chave de `vue.compilerOptions` mantém o compilador Vue do Nuxt e exibe um aviso.
+
 <span id="lint"></span>
 
 ### Lint

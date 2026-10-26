@@ -124,6 +124,8 @@ export default defineNuxtConfig({
 
 The [Vite plugin guide](../guide/vite-plugin.md#compiler-options) describes each compiler option. Set `compiler: false` to keep Nuxt's default compiler and use only lint or Musea.
 
+Nuxt's `vue.compilerOptions.whitespace` and `vue.compilerOptions.comments` reach Vize as defaults; `vue.compiler` in `vite.config.*` and `vize.compiler` override them. Any other `vue.compilerOptions` key keeps Nuxt's Vue compiler and prints a warning.
+
 ### Lint
 
 With `lint` enabled, the module writes `.oxlint.vize.json` to the project root. It is the Oxlint counterpart of the configuration that `@nuxt/eslint` generates: rule blocks that match your Nuxt version and directories. Add the file to `.gitignore`.

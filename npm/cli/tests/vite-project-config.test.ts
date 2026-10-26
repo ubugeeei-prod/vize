@@ -234,3 +234,10 @@ test("retired files and namespaces fail before evaluating callbacks while tsconf
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("shared compiler comments are a documented native option", async () => {
+  assert.deepEqual(await resolveViteConfigExport({ vue: { compiler: { comments: false } } }), {
+    typeChecker: { jsxTypecheck: true },
+    compiler: { comments: false },
+  });
+});

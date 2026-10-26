@@ -128,6 +128,8 @@ export default defineNuxtConfig({
 
 [Vite 插件指南](../guide/vite-plugin.md#compiler-options)介绍了每个编译器选项。设置 `compiler: false` 时，Nuxt 保留默认编译器，你只使用 lint 或 Musea。
 
+Nuxt 的 `vue.compilerOptions.whitespace` 和 `vue.compilerOptions.comments` 会作为 Vize 的默认值传入，`vite.config.*` 中的 `vue.compiler` 和 `vize.compiler` 可以覆盖它们。设置其他 `vue.compilerOptions` 键时，模块会输出警告并继续使用 Nuxt 的 Vue 编译器。
+
 <span id="lint"></span>
 
 ### Lint

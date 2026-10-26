@@ -128,6 +128,8 @@ export default defineNuxtConfig({
 
 各コンパイラオプションの意味は [Vite プラグインのガイド](../guide/vite-plugin.md#compiler-options)にまとめています。`compiler: false` を指定すると、コンパイルは Nuxt 標準のコンパイラに任せたまま、lint や Musea だけを使えます。
 
+Nuxt の `vue.compilerOptions.whitespace` と `vue.compilerOptions.comments` は Vize の既定値として渡り、`vite.config.*` の `vue.compiler` や `vize.compiler` で上書きできます。それ以外の `vue.compilerOptions` を指定すると、警告を出して Nuxt の Vue コンパイラを使い続けます。
+
 <span id="lint"></span>
 
 ### lint

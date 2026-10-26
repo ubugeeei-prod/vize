@@ -30,6 +30,7 @@ title: コンパイラ設定リファレンス
 | `prefixIdentifiers` | `boolean`                                                           | テンプレート内の識別子に `_ctx` を付ける                                         |
 | `hoistStatic`       | `boolean`                                                           | 静的ノードのホイスティングを制御する                                             |
 | `cacheHandlers`     | `boolean`                                                           | イベントハンドラーのキャッシュを制御する                                         |
+| `comments`          | `boolean`                                                           | テンプレートのコメントを残す。未指定なら開発時のみ残す                           |
 | `isTs`              | `boolean`                                                           | スクリプトブロックを TypeScript として解析する                                   |
 | `runtimeModuleName` | `string`                                                            | ランタイムのインポート元モジュールを上書きする                                   |
 | `runtimeGlobalName` | `string`                                                            | 関数形式または IIFE 形式の出力で使うランタイムのグローバル名を上書きする         |
