@@ -42,8 +42,26 @@ test("npm resume compares only stable releases and derives a non-latest backfill
   assert.equal(backfillTag("0.505.0"), "backfill-0-505-0");
 });
 
-test("npm resume accepts only a failed release run with its complete immutable artifact set", () => {
+test("npm resume accepts only a finished release run with its complete immutable artifact set", () => {
   assert.deepEqual(validateResumePolicy(valid()), []);
+  // Verification runs after the Release run, so a successful run may still lack a package.
+  for (const conclusion of ["success", "cancelled", "timed_out"]) {
+    const finished = valid();
+    finished.run.conclusion = conclusion;
+    assert.deepEqual(validateResumePolicy(finished), [], conclusion);
+  }
+  for (const conclusion of [null, "skipped", "startup_failure"]) {
+    const unfinished = valid();
+    unfinished.run.status = conclusion === null ? "in_progress" : "completed";
+    unfinished.run.conclusion = conclusion;
+    assert.deepEqual(
+      validateResumePolicy(unfinished),
+      conclusion === null
+        ? ["run is not complete", "only finished release runs can be resumed"]
+        : ["only finished release runs can be resumed"],
+      String(conclusion),
+    );
+  }
 
   const wrong = valid();
   wrong.run.workflowPath = ".github/workflows/check.yml";

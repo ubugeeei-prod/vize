@@ -31,7 +31,7 @@ on:
         default: ""
         type: string
       npm_resume_run:
-        description: Failed Release run whose immutable artifacts should resume npm publication
+        description: Release run whose immutable artifacts should resume npm publication
         required: false
         default: ""
         type: string

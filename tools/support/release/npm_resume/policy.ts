@@ -60,8 +60,10 @@ export function validateResumePolicy(input: ResumePolicyInput): string[] {
   if (input.run.event !== "workflow_dispatch") errors.push("run was not manually dispatched");
   if (input.run.branch !== "main") errors.push("run was not dispatched on main");
   if (input.run.status !== "completed") errors.push("run is not complete");
-  if (!["failure", "cancelled"].includes(input.run.conclusion ?? ""))
-    errors.push("only failed or cancelled runs can be resumed");
+  // A successful run can still lack a package: npm visibility is verified
+  // afterwards by release-verify.yml, outside the Release run.
+  if (!["success", "failure", "cancelled", "timed_out"].includes(input.run.conclusion ?? ""))
+    errors.push("only finished release runs can be resumed");
   // The cadence dispatches on main with an older green `source`, so head_sha is
   // only the release source when no source was given.
   if ((input.run.sourceSha ?? input.run.headSha) !== input.tagParent)
