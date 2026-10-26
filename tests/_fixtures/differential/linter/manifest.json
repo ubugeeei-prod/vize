@@ -2541,6 +2541,43 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/v-on-hyphenation-suggestion-10822",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "v-on-hyphenation-suggestion-10822",
+        "files": [
+          {
+            "path": "LocaleMenu.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a"
+          },
+          {
+            "path": "eslint-plugin-vue.json",
+            "role": "eslint-plugin-vue-oracle",
+            "sha256": "c5c63e106b4d044432a777a6538b8c96dcad0974e8db22aca988f697aa3e2708"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

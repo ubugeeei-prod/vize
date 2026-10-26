@@ -170,6 +170,7 @@
     "tooling/patina-no-reserved-component-names-oracle.test.ts",
     "tooling/patina-no-unused-vars-oracle.test.ts",
     "tooling/patina-require-v-for-key-oracle.test.ts",
+    "tooling/patina-v-on-hyphenation-oracle.test.ts",
     "tooling/pattern-runtime-reference.test.ts",
     "tooling/pattern-selection-reference.test.ts",
     "tooling/pattern-sfc-reference.test.ts",
