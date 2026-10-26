@@ -80,6 +80,9 @@ fn map_hint(
     if !InlayHintService::position_in_range(hint.position, requested) {
         return None;
     }
+    if super::component::is_generated(&hint.label) {
+        return super::component::authored_contract(ctx, hint);
+    }
     if let Some(edits) = &mut hint.text_edits {
         for edit in edits {
             edit.range = map_canonical_exact_edit_range(ctx, document, edit.range)?;
@@ -166,6 +169,37 @@ mod tests {
         expected["textEdits"][0]["range"] = authored.clone();
         expected["label"][1]["location"] = json!({"uri":uri,"range":authored});
         assert_eq!(serde_json::to_value(mapped).unwrap(), expected);
+    }
+
+    #[test]
+    fn generated_component_types_show_the_authored_contract_or_nothing() {
+        let directory = crate::test_support::tempdir().unwrap();
+        std::fs::write(
+            directory.path().join("MyChild.vue"),
+            "<script setup lang=\"ts\">\ndefineProps<{ title: string }>();\n</script>\n",
+        )
+        .unwrap();
+        let source = "<script setup lang=\"ts\">\nimport MyChild from './MyChild.vue';\nconst Same = MyChild;\nconst other = pick();\n</script>\n";
+        let uri = Url::from_file_path(directory.path().join("App.vue")).unwrap();
+        let state = ServerState::new();
+        let ctx = IdeContext::testing(&state, &uri, 0, source.into());
+        let doc = document(&uri, source);
+        let generated = "{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props } & __VizeComponentConstructor";
+        let hint = |name: &str| {
+            let end = source.find(name).unwrap() + name.len();
+            serde_json::from_value(json!({
+                "position":point(&doc,end),"label":[{"value":": "},{"value":generated}],"kind":1,
+                "textEdits":[{"range":{"start":point(&doc,end),"end":point(&doc,end)},"newText":generated}]
+            }))
+            .unwrap()
+        };
+        let requested = Range::new(Position::new(0, 0), Position::new(10, 0));
+        let mapped = map_hint(&ctx, &doc, requested, hint("Same")).unwrap();
+        assert_eq!(
+            serde_json::to_value(mapped).unwrap(),
+            json!({"position":{"line":2,"character":10},"label":": VueComponent & { props: { title: string } }","kind":1})
+        );
+        assert!(map_hint(&ctx, &doc, requested, hint("other")).is_none());
     }
 
     #[test]
