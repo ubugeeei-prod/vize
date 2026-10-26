@@ -67,6 +67,9 @@ class CompilerConfig {
   /// Cache v-on handlers.
   cacheHandlers: Boolean = true
 
+  /// Keep template comments. Unset follows Vue: kept in development, dropped in production.
+  comments: Boolean? = null
+
   /// Enable TypeScript parsing in <script> blocks.
   isTs: Boolean = true
 

@@ -24,6 +24,7 @@ title: 编译器配置参考
 | `prefixIdentifiers` | `boolean`                            | 模板标识符前缀为`_ctx`                  |
 | `hoistStatic`       | `boolean`                            | 控制静态节点起重                        |
 | `cacheHandlers`     | `boolean`                            | 控制事件处理缓存                        |
+| `comments`          | `boolean`                            | 保留模板注释；未设置时仅在开发时保留    |
 | `isTs`              | `boolean`                            | 解析脚本块作为TypeScript                |
 | `runtimeModuleName` | `string`                             | 覆盖运行时导入模块                      |
 | `runtimeGlobalName` | `string`                             | 覆盖函数/IIFE风格输出的全局运行时       |

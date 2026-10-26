@@ -2,22 +2,43 @@
 
 const path = require("node:path");
 const { vueComponentDisplayParts } = require("./component-contracts.cjs");
-const {
-  resolveExistingVueSpecifier,
-  resolveVueImportDefinition,
-} = require("./import-resolution.cjs");
+const { resolveVueImportDefinition } = require("./import-resolution.cjs");
+const { createMappedLanguageService } = require("./language-service.cjs");
 const { installVueVirtualModules } = require("./virtual-modules.cjs");
+const externalFiles = new WeakMap();
+const inactiveProjects = new WeakSet();
 
 function init({ typescript: ts }) {
   return {
+    getExternalFiles(project, updateLevel = 0) {
+      if (inactiveProjects.has(project)) return [];
+      const configFile = project.getCompilerOptions?.().configFilePath;
+      if (typeof configFile !== "string") return [];
+      // ProgramUpdateLevel.Update keeps the root names and options unchanged.
+      const cached = externalFiles.get(project);
+      if (updateLevel === 0 && cached?.configFile === configFile) return cached.files;
+      const files = discoverSfcFiles(ts, configFile);
+      externalFiles.set(project, { configFile, files });
+      return files;
+    },
     create(info) {
-      if (!info?.languageService) {
+      if (info?.config?.enabled === false || !info?.languageService) {
         return info?.languageService;
       }
       try {
         const support = createVueImportSupport(ts, info);
+        // Without an installed provider (the universal VSIX), leave tsserver untouched.
+        if (support?.virtual?.engine?.unavailable) {
+          if (info.project) inactiveProjects.add(info.project);
+          logPluginError(info, "native provider", support.virtual.engine.error);
+          return info.languageService;
+        }
         return support
-          ? createLanguageServiceProxy(ts, info.languageService, support)
+          ? createLanguageServiceProxy(
+              ts,
+              createMappedLanguageService(ts, info.languageService, support.virtual),
+              support,
+            )
           : info.languageService;
       } catch (error) {
         logPluginError(info, "create", error);
@@ -25,6 +46,30 @@ function init({ typescript: ts }) {
       }
     },
   };
+}
+
+function discoverSfcFiles(ts, configFile) {
+  const config = ts.readConfigFile(configFile, ts.sys.readFile);
+  if (config.error) return [];
+  const parsed = ts.parseJsonConfigFileContent(
+    config.config,
+    ts.sys,
+    path.dirname(configFile),
+    undefined,
+    configFile,
+    undefined,
+    [".vue", ".art"].map((extension) => ({
+      extension,
+      isMixedContent: true,
+      scriptKind: ts.ScriptKind.Deferred,
+    })),
+  );
+  // Parsed options include plugin entries inherited through `extends`.
+  const plugin = parsed.options.plugins?.find(
+    (entry) => entry.name === "@vizejs/typescript-vue-plugin",
+  );
+  if (plugin?.enabled === false) return [];
+  return parsed.fileNames.filter((file) => /\.(?:vue|art)$/i.test(file));
 }
 
 function createVueImportSupport(ts, info) {
@@ -41,9 +86,10 @@ function createVueImportSupport(ts, info) {
     return undefined;
   }
 
-  installVueVirtualModules(ts, info);
+  const virtual = installVueVirtualModules(ts, info);
 
   return {
+    virtual,
     fileExists: originalFileExists,
     readFile: originalReadFile,
   };
@@ -55,12 +101,6 @@ function createLanguageServiceProxy(ts, languageService, support) {
     const value = languageService[key];
     proxy[key] = typeof value === "function" ? value.bind(languageService) : value;
   }
-
-  proxy.getSemanticDiagnostics = (fileName) =>
-    filterVueImportDiagnostics(ts, languageService.getSemanticDiagnostics(fileName), {
-      fileExists: support.fileExists,
-      fileName,
-    });
 
   proxy.getDefinitionAtPosition = (fileName, position) => {
     const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
@@ -102,7 +142,7 @@ function createLanguageServiceProxy(ts, languageService, support) {
       kind: ts.ScriptElementKind.alias,
       kindModifiers: "",
       textSpan: vueDefinition.textSpan,
-      ...(quickInfo || {}),
+      ...quickInfo,
       ...(displayParts ? { displayParts } : {}),
       documentation: [
         ...(quickInfo?.documentation || []),
@@ -126,23 +166,6 @@ function logPluginError(info, phase, error) {
   } catch {
     // Logging must never be the reason the TypeScript server exits.
   }
-}
-
-function filterVueImportDiagnostics(ts, diagnostics, { fileExists, fileName }) {
-  return diagnostics.filter((diagnostic) => {
-    if (diagnostic.code !== 2307) {
-      return true;
-    }
-
-    const specifier = diagnosticVueSpecifier(ts, diagnostic);
-    const containingFile = diagnostic.file?.fileName || fileName;
-    return !resolveExistingVueSpecifier(containingFile, specifier, fileExists);
-  });
-}
-
-function diagnosticVueSpecifier(ts, diagnostic) {
-  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-  return message.match(/Cannot find module ['"]([^'"]+\.vue)['"]/)?.[1];
 }
 
 function bind(fn, thisArg) {

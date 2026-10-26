@@ -18,6 +18,7 @@ import type { TestContext } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
+  MISSING_LINT_PLUGIN_WARNING,
   ROOT_OXLINT_CONFIG_NAMES,
   setupNuxtLintConfigGeneration,
   writeFileIfChanged,
@@ -225,6 +226,35 @@ void test("default plugin resolution remains relative to the generated artifact"
   );
 
   assert.equal(resolvedEntry, fileURLToPath(import.meta.resolve("oxlint-plugin-vize")));
+});
+
+void test("a missing plugin skips generation and warns only for requested or stale lint", async (t) => {
+  const root = await temporaryRoot(t, "vize-nuxt-lint-missing-");
+  const { hooks, nuxt } = createNuxt(root);
+  const generated = path.join(root, ".oxlint.vize.json");
+  const warnings: string[] = [];
+  const setup = (reportMissingPlugin: boolean) =>
+    setupNuxtLintConfigGeneration(true, nuxt, {
+      hasTypeScript: () => false,
+      reportMissingPlugin,
+      resolvePluginSpecifier: () => undefined,
+      warn: (message) => warnings.push(message),
+    });
+
+  assert.equal(await setup(false), undefined);
+  assert.deepEqual(warnings, []);
+  assert.equal(hooks.size, 0);
+  assert.equal(await absent(generated), true);
+  assert.equal(await absent(path.join(root, "oxlint.config.mts")), true);
+
+  assert.equal(await setup(true), undefined);
+  assert.deepEqual(warnings, [MISSING_LINT_PLUGIN_WARNING]);
+  assert.match(MISSING_LINT_PLUGIN_WARNING, /vp install -D oxlint-plugin-vize/);
+
+  await writeFile(generated, "{}\n");
+  assert.equal(await setup(false), undefined);
+  assert.deepEqual(warnings, [MISSING_LINT_PLUGIN_WARNING, MISSING_LINT_PLUGIN_WARNING]);
+  assert.equal(await readFile(generated, "utf8"), "{}\n");
 });
 
 void test("write-if-changed refuses to follow a generated-file symlink", async (t) => {

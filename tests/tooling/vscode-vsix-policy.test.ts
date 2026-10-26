@@ -43,10 +43,10 @@ test("VSIX package policy keeps the production CJS host entrypoint shippable", (
 });
 
 test("VSIX TypeScript plugin staging follows the runtime require closure", () => {
-  const pluginDir = "editors/vscode/typescript-vue-plugin";
+  const pluginDir = "npm/typescript-plugin";
   const sync = readText("tools/commands/editors/vscode/sync-typescript-plugin.rs");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
-  const runtimeFiles = new Set(["package.json"]);
+  const runtimeFiles = new Set(["package.json", "README.md", "index.d.cts"]);
   const pending = ["index.cjs"];
 
   while (pending.length > 0) {
@@ -64,9 +64,12 @@ test("VSIX TypeScript plugin staging follows the runtime require closure", () =>
   }
 
   assert.deepEqual([...runtimeFiles].sort(), [
+    "README.md",
     "component-contracts.cjs",
     "import-resolution.cjs",
     "index.cjs",
+    "index.d.cts",
+    "language-service.cjs",
     "module-resolution.cjs",
     "package.json",
     "virtual-modules.cjs",

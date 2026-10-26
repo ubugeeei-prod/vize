@@ -61,11 +61,11 @@
     "@vizejs/nuxt-lint-config": "workspace:*",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",
-    "oxlint-plugin-vize": "workspace:*",
     "vize": "workspace:*"
   },
   "devDependencies": {
     "jiti-nuxt2": "npm:jiti@1.21.7",
+    "oxlint-plugin-vize": "workspace:*",
     "typescript": "catalog:typescript",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.3.0",
     "vite-plus": "1.3.0",
@@ -75,10 +75,14 @@
   "peerDependencies": {
     "nuxt": "^2.16.0 || ^3.0.0 || ^4.0.0",
     "oxlint": "^1.64.0",
+    "oxlint-plugin-vize": ">=0.474.0",
     "vite": "^7.3.0 || ^8.0.0"
   },
   "peerDependenciesMeta": {
     "oxlint": {
+      "optional": true
+    },
+    "oxlint-plugin-vize": {
       "optional": true
     }
   },

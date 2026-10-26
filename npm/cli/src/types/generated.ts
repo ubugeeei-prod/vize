@@ -120,6 +120,10 @@ export interface CompilerConfig {
    */
   cacheHandlers?: boolean;
   /**
+   * Keep template comments. Unset follows Vue: kept in development, dropped in production
+   */
+  comments?: boolean;
+  /**
    * Enable TypeScript parsing in <script> blocks
    */
   isTs?: boolean;

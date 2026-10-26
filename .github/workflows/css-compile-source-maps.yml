@@ -12,6 +12,11 @@ on:
       - "vendor/lightningcss/tests/vize_printer_utf16.rs"
       - "tests/fixtures/css/compile-source-maps/**"
       - "tests/native/css-compile-source-maps.mjs"
+      - "tests/native/css-v-bind-source-maps.mjs"
+      - "crates/vize_croquis/src/sfc.rs"
+      - "crates/vize_croquis/src/sfc/css_transform.rs"
+      - "crates/vize_croquis/tests/css_v_bind_origins.rs"
+      - "crates/vize_atelier_sfc/tests/css_v_bind_source_maps.rs"
   workflow_dispatch:
     inputs:
       measurements:
@@ -58,12 +63,13 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
           cargo test --locked --profile ci -p vize_lightningcss --test vize_printer_utf16 --test vize_source_map_contract
-          cargo test --locked --profile ci -p vize_atelier_sfc --test css_source_maps --test css_engine_panic_boundary --test css_nesting_guard
+          cargo test --locked --profile ci -p vize_atelier_sfc --test css_source_maps --test css_v_bind_source_maps --test css_engine_panic_boundary --test css_nesting_guard
+          cargo test --locked --profile ci -p vize_croquis --test css_v_bind_origins
           cargo test --locked --profile ci -p vize_atelier_sfc --lib css::
       - name: Build the exact source native API
         run: vp run --filter './npm/native' build:ci
       - name: Retain every real off/on native result before whole comparisons
-        run: node --test tests/native/css-compile-source-maps.mjs
+        run: node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs
       - name: Retain original public capture and source protocol authority
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -207,4 +207,7 @@ mod oxc;
 mod tests;
 
 mod retained;
-pub use retained::{VForBindingParameters, retain_v_for_binding_parameters};
+pub use retained::{
+    VForBindingParameters, retain_v_for_binding_parameters,
+    retain_v_for_binding_parameters_with_source,
+};

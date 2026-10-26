@@ -72,12 +72,14 @@ const byName = new Map([...manifests].map(([directory, manifest]) => [manifest.n
 const workspaceDependencies = (pkg: PackagePath) => {
   const manifest = manifests.get(pkg);
   assert.ok(manifest, `${pkg} is a workspace package`);
-  return Object.entries({
-    ...manifest.dependencies,
-    ...manifest.devDependencies,
-    ...manifest.peerDependencies,
-    ...manifest.optionalDependencies,
-  })
+  // Read each field separately: a published peer range must not mask a workspace dev link.
+  return [
+    manifest.dependencies,
+    manifest.devDependencies,
+    manifest.peerDependencies,
+    manifest.optionalDependencies,
+  ]
+    .flatMap((field) => Object.entries(field ?? {}))
     .filter(([, version]) => version.startsWith("workspace:"))
     .map(([name]) => byName.get(name))
     .filter((directory): directory is PackagePath => directory !== undefined);

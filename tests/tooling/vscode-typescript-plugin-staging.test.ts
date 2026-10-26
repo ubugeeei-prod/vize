@@ -16,9 +16,12 @@ const syncCommand = path.join(
   "sync-typescript-plugin.rs",
 );
 const pluginFiles = [
+  "README.md",
   "component-contracts.cjs",
   "import-resolution.cjs",
   "index.cjs",
+  "index.d.cts",
+  "language-service.cjs",
   "module-resolution.cjs",
   "package.json",
   "virtual-modules.cjs",
@@ -26,7 +29,7 @@ const pluginFiles = [
 
 test("TypeScript Vue plugin staging refuses partial source packages without touching target", () => {
   const fixture = createFixture();
-  const source = path.join(fixture.root, "editors/vscode/typescript-vue-plugin");
+  const source = path.join(fixture.root, "npm/typescript-plugin");
   const target = path.join(
     fixture.root,
     "editors/vscode/node_modules/@vizejs/typescript-vue-plugin",
@@ -55,7 +58,7 @@ test("TypeScript Vue plugin staging refuses partial source packages without touc
 
 test("TypeScript Vue plugin staging atomically replaces the target package", () => {
   const fixture = createFixture();
-  const source = path.join(fixture.root, "editors/vscode/typescript-vue-plugin");
+  const source = path.join(fixture.root, "npm/typescript-plugin");
   const target = path.join(
     fixture.root,
     "editors/vscode/node_modules/@vizejs/typescript-vue-plugin",

@@ -1,0 +1,47 @@
+{
+  "beforeRevision": "3a3c8460f966fddbd8e1be4c083d460b24202f90",
+  "fixRevision": "91c25c1b4a2ea842705e4db321b6e92d2b70ba42",
+  "sourceFiles": [
+    {
+      "path": "crates/vize_atelier_sfc/src/css.rs",
+      "beforeSha256": "e3f3c72ca5e8aa7e969dbe51d06c170538e15397c949059ffa752f138481b915",
+      "afterSha256": "6f830803f672e1fa711900dc96aaa46fe05dad2607960c25ac09bdd518a8b0da"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser.rs",
+      "beforeSha256": "b9acfb0caa822fe41136c338317097ea7057545d739a896a2d1a76469b8e341e",
+      "afterSha256": "89740d4562979b2041a1b86ae1c8b4cd1ccf3f3479fc9059f750e9f8b42dc426"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs",
+      "beforeSha256": "2f575ffd29fef628f1e7671e77b5158df322b710b2b6567ce7745b55f24c9f70",
+      "afterSha256": "c033ba38dc3e522ee06af0e94f41a5e64322559fb0d85ab4f7e2ac7645470833"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/source_map.rs",
+      "beforeSha256": "9407caab92d93bcb935133cf723ba3fd05520f11dec6c732535449b6abb28077",
+      "afterSha256": "809eab1b5ca408338c95e011d63d4143f46b82d705a59834c1c1c0a93a3995ef"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/source_map/positions.rs",
+      "beforeSha256": null,
+      "afterSha256": "206ffa267db59b55f51ebe7fc9d237df7e1cd5e5c3ff11cbfe74a9ab05db1beb"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/source_map/tests.rs",
+      "beforeSha256": null,
+      "afterSha256": "31079b26fc37ce54261d3957ed6da36116f6b085a0cb10f08b241f268c6e6e37"
+    },
+    {
+      "path": "crates/vize_croquis/src/sfc.rs",
+      "beforeSha256": "f350944cc67366b7a7280dff46aad7bc687283986e34b6eb2bc788116a82f89f",
+      "afterSha256": "4b409f7ec3202de3831ad6ddac62cbe6ac12a5018ce68791d2b87fc8373d29cf"
+    },
+    {
+      "path": "crates/vize_croquis/src/sfc/css_transform.rs",
+      "beforeSha256": "e033d049b42e80e557e58104446d6e3e9f2f2e798278445f05c6fafba15fcf1c",
+      "afterSha256": "7e1c0fcd3307fb59e6dbfcd1196cd10f10b36cad19b09379e738b394a57d0122"
+    }
+  ],
+  "scope": "source-inspected direct API; generic CLI unsupported; no whole-product native credit"
+}
