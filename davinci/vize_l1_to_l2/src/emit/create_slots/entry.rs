@@ -132,7 +132,7 @@ pub(super) fn emit_for_entry(
     let value = vfor::value_alias(&for_op.binding.value)?;
     let key = vfor::optional_ident(&for_op.binding.key)?;
     let index = vfor::optional_ident(&for_op.binding.index)?;
-    let _id = cx.walk.mint();
+    let id = cx.walk.mint();
     cx.buf.use_render_list();
     cx.buf.push(Buf::render_list_alias());
     cx.buf.push("(");
@@ -151,7 +151,7 @@ pub(super) fn emit_for_entry(
     cx.buf.indent();
     cx.buf.newline();
     cx.buf.push("return ");
-    let prefix_mark = cx.enter_for_scope(for_op);
+    let prefix_mark = cx.enter_for_scope(for_op, id);
     skip_ops(cx, site.before);
     let body = emit_slot_object(cx, site.element, site.content, None);
     skip_ops(cx, site.after);

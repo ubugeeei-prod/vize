@@ -2,14 +2,12 @@
 //! control flow, with the legacy lane's fragment-marker rules.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_l0::FxHashSet;
 use vize_l1_to_l2::TransformContent;
 use vize_l2::expr::ExprRef;
 use vize_l2::op as l2;
 
 use super::spans::{expression_span, quoted_value};
 use super::{Emitter, Flags, Result};
-use crate::codegen::helpers::extract_destructure_params;
 use crate::l4::LegacyReason;
 use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
@@ -109,6 +107,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         for_op: &'r l2::ForOp<'a>,
         disable_nested_fragments: bool,
     ) -> Result<()> {
+        let fact = self.segment(self.pos)?.fact;
         self.pos += 1;
         let binding = &for_op.binding;
         let source = self.expr(&binding.source, TransformContent::Decoded)?;
@@ -135,12 +134,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(") => {\n");
         self.ctx.indent_level += 1;
 
-        let mark = self.exprs.enter_for([Some(value), key, index]);
-        let mut params = FxHashSet::default();
-        for alias in [Some(value), key, index].into_iter().flatten() {
-            extract_destructure_params(alias.trim(), &mut params);
-        }
-        self.scoped_params.push(params);
+        let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
         let body = self.scan_region(self.pos).and_then(|shape| {
             self.children(Flags {
                 as_fragment: !disable_nested_fragments

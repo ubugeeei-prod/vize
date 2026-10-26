@@ -17,12 +17,11 @@ const EMPTY: &str =
 const BARREL: &str = "export * from './Panel.vue';\n";
 const BASELINE: &str = "export * from './Panel.vue.ts';\n";
 const ERASED: &str = "export {} from './Panel.vue.ts';\n";
-const BASE_MAP: &str =
-    "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 15, adjustment: 3 }] }";
-const EMPTY_MAP: &str = "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 1 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 9 }] }";
+const BASE_MAP: &str = "ImportSourceMap { adjustments: [], replacement_ranges: [ReplacementRange { original_start: 15, original_end: 26, virtual_start: 15, virtual_end: 29 }] }";
+const EMPTY_MAP: &str = "ImportSourceMap { adjustments: [], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 9 }, ReplacementRange { original_start: 15, original_end: 26, virtual_start: 16, virtual_end: 30 }] }";
 
-const NAMED_VALUE_MAP: &str = "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 8 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 16 }] }";
-const NAMED_TYPE_MAP: &str = "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 14 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 22 }] }";
+const NAMED_VALUE_MAP: &str = "ImportSourceMap { adjustments: [], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 16 }, ReplacementRange { original_start: 15, original_end: 26, virtual_start: 23, virtual_end: 37 }] }";
+const NAMED_TYPE_MAP: &str = "ImportSourceMap { adjustments: [], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 22 }, ReplacementRange { original_start: 15, original_end: 26, virtual_start: 29, virtual_end: 43 }] }";
 
 fn project(root: &Path) -> VirtualProject {
     let mut project = VirtualProject::new(root).unwrap();
@@ -80,6 +79,49 @@ fn assert_barrel(project: &VirtualProject, name: &str, code: &str, map: &str) {
         BARREL
     );
     assert!(file.source_map.sfc_map.is_none());
+    // Derive every coordinate from the independently authored whole bodies,
+    // never from the observed map or a refreshed diagnostic packet.
+    let star = BARREL.find('*').unwrap() as u32;
+    let star_end = code.find(" from ").unwrap() as u32;
+    let star_delta = star_end - star - 1;
+    let original_literal = BARREL.find("./Panel.vue").unwrap() as u32;
+    let original_end = original_literal + "./Panel.vue".len() as u32;
+    assert_eq!(code.matches("./Panel.vue.ts").count(), 1);
+    let literal = code.find("./Panel.vue.ts").unwrap() as u32;
+    let literal_end = literal + "./Panel.vue.ts".len() as u32;
+    assert_eq!(literal, original_literal + star_delta);
+    for offset in 0..=BARREL.len() as u32 {
+        let expected = if offset <= star {
+            offset
+        } else if offset < original_literal {
+            offset + star_delta
+        } else if offset < original_end {
+            literal
+        } else {
+            offset + star_delta + 3
+        };
+        assert_eq!(
+            file.source_map.import_map.get_virtual_offset(offset),
+            expected
+        );
+    }
+    for offset in 0..=code.len() as u32 {
+        let expected = if offset < star {
+            offset
+        } else if offset < star_end {
+            star
+        } else if offset < literal {
+            offset - star_delta
+        } else if offset < literal_end {
+            original_literal
+        } else {
+            offset - star_delta - 3
+        };
+        assert_eq!(
+            file.source_map.import_map.get_original_offset(offset),
+            expected
+        );
+    }
 }
 
 #[test]
@@ -347,8 +389,11 @@ fn project_config_routes_and_explicit_modes_do_not_grant_alias_credit() {
         );
         denied["files"][0]["map"] =
             serde_json::json!(before["files"][0]["map"].as_str().unwrap().replace(
-                "original_offset: 15, adjustment: 3",
-                "original_offset: 15, adjustment: 0"
+                "ReplacementRange { original_start: 15, original_end: 26, virtual_start: 15, virtual_end: 29 }, ",
+                ""
+            ).replace(
+                "original_start: 75, original_end: 82, virtual_start: 78, virtual_end: 92",
+                "original_start: 75, original_end: 82, virtual_start: 75, virtual_end: 89"
             ));
         assert_eq!(owner_packet(&project, "routes.ts"), denied);
         for mode in ["import", "require"] {

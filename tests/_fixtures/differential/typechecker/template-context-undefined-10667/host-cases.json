@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "historicalIssue": 10667,
+  "cases": [
+    {
+      "id": "prop-used",
+      "file": "src/Route.vue",
+      "source": "sources/prop-used.vue.txt",
+      "sha256": "6a67ce805c62e2af0b6f68bd98165e6d040debc32bee8bca9ba6e41909cff13b",
+      "expected": "clean"
+    },
+    {
+      "id": "prop-unused",
+      "file": "src/Route.vue",
+      "source": "sources/prop-unused.vue.txt",
+      "sha256": "9a708187ea32d3acd2ecabd885f49dc5c09d2e29929950d1e098e9d5e4af046c",
+      "expected": "clean"
+    },
+    {
+      "id": "prop-emits",
+      "file": "src/Route.vue",
+      "source": "sources/prop-emits.vue.txt",
+      "sha256": "b2778d68a46351c4951e58d601769a995aa6732054bde8db1d7d10ec2c8d1753",
+      "expected": "clean"
+    },
+    {
+      "id": "const-shadow",
+      "file": "src/Route.vue",
+      "source": "sources/const-shadow.vue.txt",
+      "sha256": "9d971fa03345b3b55c605c6be46ab34106fb5da3aa9aaa8b479ce0b31cc453be",
+      "expected": "clean"
+    },
+    {
+      "id": "var-shadow",
+      "file": "src/Route.vue",
+      "source": "sources/var-shadow.vue.txt",
+      "sha256": "690481910a2ebabeb0c3dbef4638deb816bdf2aae6d5fd4f5c99c5b44438d570",
+      "expected": "clean"
+    },
+    {
+      "id": "import-shadow",
+      "file": "src/Route.vue",
+      "source": "sources/import-shadow.vue.txt",
+      "sha256": "6355cbeba72160952ec44f16ffd8619f7975aa04caa81af48c2a529754709b2c",
+      "expected": "clean"
+    },
+    {
+      "id": "destructured-shadow",
+      "file": "src/Route.vue",
+      "source": "sources/destructured-shadow.vue.txt",
+      "sha256": "e17b05c0c05966932f816fc993f397f6f145e9719f1a1ae0c13a35d81de0c88d",
+      "expected": "clean"
+    },
+    {
+      "id": "escaped-shadow",
+      "file": "src/Route.vue",
+      "source": "sources/escaped-shadow.vue.txt",
+      "sha256": "a242db7ec010abd68a8a3dd9a5066c15759c944458a164c34bfdd2e8d68bcf50",
+      "expected": "clean"
+    },
+    {
+      "id": "global-absence",
+      "file": "src/Route.vue",
+      "source": "sources/global-absence.vue.txt",
+      "sha256": "b0f2302c8cd6d5cb2c8b8e534d8bf0909f0e40ac056839842d87a3a0e4b6e375",
+      "expected": "clean"
+    },
+    {
+      "id": "options-api",
+      "file": "src/Route.vue",
+      "source": "sources/options-api.vue.txt",
+      "sha256": "917f34de006dd0fd59ee11ff3d4bca9ccbaedff1e6dde733e33fa469042ff9c8",
+      "expected": "clean"
+    },
+    {
+      "id": "javascript",
+      "file": "src/Route.vue",
+      "source": "sources/javascript.vue.txt",
+      "sha256": "f9603805bc3055b7c09f9bf0f4c009f9cf9efc711b85766ed0db684cc56ee504",
+      "expected": "clean"
+    },
+    {
+      "id": "art-variant",
+      "file": "src/Route.art.vue",
+      "source": "sources/art-variant.art.vue.txt",
+      "sha256": "4f743c4892750f6ad37e3c6e80883f28d3e226a626a7f7a30ba2a1d6e58ea022",
+      "expected": "clean"
+    },
+    {
+      "id": "authored-tdz",
+      "file": "src/Route.vue",
+      "source": "sources/authored-tdz.vue.txt",
+      "sha256": "363b14044681b0894b67162fffcd75d035f250ae3ff43d00409bc4d2f15a1f2a",
+      "expected": "tdz"
+    },
+    {
+      "id": "authored-type",
+      "file": "src/Route.vue",
+      "source": "sources/authored-type.vue.txt",
+      "sha256": "e0d7a71303a344355c640bb05231a1d8bc9de688476a54eeefe5d6a90d415179",
+      "expected": "type"
+    },
+    {
+      "id": "prop-member",
+      "file": "src/Route.vue",
+      "source": "sources/prop-member.vue.txt",
+      "sha256": "2f1e4d657e15ae6addb8c8dbf522e3febb852cb0c632c0a039431fb6e5b94c19",
+      "expected": "member"
+    }
+  ]
+}

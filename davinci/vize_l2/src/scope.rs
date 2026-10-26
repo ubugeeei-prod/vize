@@ -32,16 +32,20 @@
 //! `'static` - they survive `Allocator::reset` the way diagnostics do
 //! (P1-11), which is what keeps the LSP live on a broken SFC.
 //!
-//! # What P2-8 does and does not enumerate
+//! # Binding enumeration
 //!
-//! The Vue lowering records a binding entry only for a position whose
-//! expression is a **simple identifier**. Names bound inside destructuring
-//! patterns (`(({ a, b })) in xs`) are deliberately not enumerated here:
-//! identifier extraction has exactly one home, the
-//! `ExprDialect::enumerate_bindings` seam ([#4365]), and a second ad-hoc
-//! scanner in this module would recreate the split P1-8 deleted. A position
-//! without an entry still has its scope tag - the *scope* is a fact even where
-//! the *names* wait.
+//! Ordinary ASCII Vue positions keep the original simple-identifier path:
+//! destructuring patterns contribute no names. Exceptional `v-for` aliases
+//! containing escapes or non-ASCII text instead use their original, complete
+//! parameter goal. Its actual binding patterns enumerate cooked declaration
+//! names, with each authored origin covering the full original identifier
+//! token, including its escape or entity spelling. Refused goals contribute
+//! no partial or inferred names.
+//!
+//! This table only stores the lowering's facts; it never scans or decodes
+//! names. Other dialects keep the `ExprDialect::enumerate_bindings` seam
+//! ([#4365]). A position without an entry still has its scope tag - the
+//! *scope* is a fact even where the *names* wait.
 //!
 //! [#4365]: https://github.com/ubugeeei-prod/vize/issues/4365
 
@@ -111,10 +115,11 @@ pub struct ScopeFacts {
     /// The op's introduction-site tag.
     pub tag: ScopeTag,
     /// The bindings it introduces, in position order (for `ui.for`:
-    /// value, key, index). Positions holding patterns contribute no entry
-    /// (see the module docs for the [#4365] boundary).
-    ///
-    /// [#4365]: https://github.com/ubugeeei-prod/vize/issues/4365
+    /// value, key, index). Ordinary ASCII positions retain their original
+    /// simple-identifier-only enumeration. Exceptional native `v-for` goals
+    /// contribute their real pattern declarations in binding order, using
+    /// cooked names and complete authored identifier-token origins. Refused
+    /// goals contribute no entries. See the module's enumeration contract.
     pub bindings: Vec<ScopeBinding>,
 }
 

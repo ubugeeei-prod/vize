@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ undefined: string }>();
+defineEmits<{ change: [value: string] }>();
+</script>
+<template><p>{{ undefined }}</p></template>

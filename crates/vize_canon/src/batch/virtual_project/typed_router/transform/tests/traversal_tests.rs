@@ -10,6 +10,7 @@ fn language(script: &str, source_type: SourceType) -> (VirtualTsOutput, bool) {
         0..script.len(),
         source_type,
         FILE,
+        None,
     );
     (result, imported)
 }

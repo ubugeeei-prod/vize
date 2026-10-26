@@ -4,9 +4,13 @@ use serde_json::{Value, json};
 
 use super::types::SfcParseOptionsNapi;
 
+mod attributes;
+mod parsed_types;
+pub use parsed_types::*;
+
 /// Parse the original SFC, including content/tag geometry in UTF-8 bytes.
 /// Invalid SFC syntax throws `InvalidSfc` with the unchanged parser reason.
-#[napi(js_name = "parseSfc")]
+#[napi(js_name = "parseSfc", ts_return_type = "SfcParseResultNapi")]
 pub fn parse_sfc(
     source: String,
     options: Option<SfcParseOptionsNapi>,
@@ -14,6 +18,7 @@ pub fn parse_sfc(
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc as sfc_parse};
 
     let opts = options.unwrap_or_default();
+    let include_attrs = opts.include_attrs.unwrap_or(false);
     let parse_opts = SfcParseOptions {
         filename: opts
             .filename
@@ -23,49 +28,55 @@ pub fn parse_sfc(
     };
 
     match sfc_parse(&source, parse_opts) {
-        Ok(descriptor) => Ok(json!({
-            "filename": descriptor.filename.as_ref(),
-            "source": descriptor.source.as_ref(),
-            "template": descriptor.template.as_ref().map(|template| {
-                json!({
-                    "content": template.content.as_ref(),
-                    "loc": block_location(&template.loc),
-                    "lang": template.lang.as_deref(),
-                })
-            }).unwrap_or(Value::Null),
-            "script": descriptor.script.as_ref().map(|script| {
-                json!({
-                    "content": script.content.as_ref(),
-                    "loc": block_location(&script.loc),
-                    "lang": script.lang.as_deref(),
-                    "setup": script.setup,
-                })
-            }).unwrap_or(Value::Null),
-            "scriptSetup": descriptor.script_setup.as_ref().map(|script_setup| {
-                json!({
-                    "content": script_setup.content.as_ref(),
-                    "loc": block_location(&script_setup.loc),
-                    "lang": script_setup.lang.as_deref(),
-                    "setup": script_setup.setup,
-                })
-            }).unwrap_or(Value::Null),
-            "styles": descriptor.styles.iter().map(|style| {
-                json!({
-                    "content": style.content.as_ref(),
-                    "loc": block_location(&style.loc),
-                    "lang": style.lang.as_deref(),
-                    "scoped": style.scoped,
-                    "module": style.module.as_deref(),
-                })
-            }).collect::<Vec<_>>(),
-            "customBlocks": descriptor.custom_blocks.iter().map(|block| {
-                json!({
-                    "type": block.block_type.as_ref(),
-                    "content": block.content.as_ref(),
-                    "loc": block_location(&block.loc),
-                })
-            }).collect::<Vec<_>>(),
-        })),
+        Ok(descriptor) => {
+            let mut result = json!({
+                "filename": descriptor.filename.as_ref(),
+                "source": descriptor.source.as_ref(),
+                "template": descriptor.template.as_ref().map(|template| {
+                    json!({
+                        "content": template.content.as_ref(),
+                        "loc": block_location(&template.loc),
+                        "lang": template.lang.as_deref(),
+                    })
+                }).unwrap_or(Value::Null),
+                "script": descriptor.script.as_ref().map(|script| {
+                    json!({
+                        "content": script.content.as_ref(),
+                        "loc": block_location(&script.loc),
+                        "lang": script.lang.as_deref(),
+                        "setup": script.setup,
+                    })
+                }).unwrap_or(Value::Null),
+                "scriptSetup": descriptor.script_setup.as_ref().map(|script_setup| {
+                    json!({
+                        "content": script_setup.content.as_ref(),
+                        "loc": block_location(&script_setup.loc),
+                        "lang": script_setup.lang.as_deref(),
+                        "setup": script_setup.setup,
+                    })
+                }).unwrap_or(Value::Null),
+                "styles": descriptor.styles.iter().map(|style| {
+                    json!({
+                        "content": style.content.as_ref(),
+                        "loc": block_location(&style.loc),
+                        "lang": style.lang.as_deref(),
+                        "scoped": style.scoped,
+                        "module": style.module.as_deref(),
+                    })
+                }).collect::<Vec<_>>(),
+                "customBlocks": descriptor.custom_blocks.iter().map(|block| {
+                    json!({
+                        "type": block.block_type.as_ref(),
+                        "content": block.content.as_ref(),
+                        "loc": block_location(&block.loc),
+                    })
+                }).collect::<Vec<_>>(),
+            });
+            if include_attrs {
+                attributes::include(&mut result, &descriptor, &source)?;
+            }
+            Ok(result)
+        }
         Err(e) => Err(Error::new("InvalidSfc", e.message.to_string())),
     }
 }

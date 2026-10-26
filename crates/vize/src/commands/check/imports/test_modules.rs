@@ -104,7 +104,7 @@ mod alias_scaling_tests {
         )
         .unwrap();
         let mut paths = CanonicalPathCache::default();
-        let mut cache = registration::VirtualRegistrationCache::default();
+        let mut cache = LocalImportSession::default();
         let mut discovery = registration::VirtualRegistrationDiscovery::default();
         assert!(
             !registration::non_relative_import_needs_virtual_registration(
@@ -128,9 +128,9 @@ mod alias_scaling_tests {
                 &mut discovery
             )
         );
-        assert_eq!(cache.source_reads(), 2);
+        assert_eq!(cache.registration_cache.source_reads(), 2);
         std::fs::write(&leaf, "export { default } from './Child.vue';").unwrap();
-        let mut next = registration::VirtualRegistrationCache::default();
+        let mut next = LocalImportSession::default();
         assert!(
             registration::non_relative_import_needs_virtual_registration(
                 &leaf,
@@ -162,7 +162,7 @@ mod alias_scaling_tests {
         )
         .unwrap();
         let mut paths = CanonicalPathCache::default();
-        let mut cache = registration::VirtualRegistrationCache::default();
+        let mut cache = LocalImportSession::default();
         assert!(
             !registration::non_relative_import_needs_virtual_registration(
                 &leaf,
@@ -192,7 +192,7 @@ mod alias_scaling_tests {
             [paths.canonicalize(&positive), paths.canonicalize(&leaf)]
         );
         assert_eq!(
-            cache.source_reads(),
+            cache.registration_cache.source_reads(),
             3,
             "package walks still collect transitive invalidation inputs"
         );

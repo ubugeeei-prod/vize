@@ -4,6 +4,7 @@ use crate::virtual_ts::{
     VizeSemanticLink, VizeSemanticLinkKind, VizeSubSpan,
 };
 mod experimental_imports;
+mod ownership_tests;
 mod traversal_tests;
 const FILE: &str = "\"/src/pages/[id].vue\"";
 const ROUTE: &str =
@@ -31,7 +32,15 @@ fn rewrite(result: &mut VirtualTsOutput, script: &str, js: bool) -> bool {
     } else {
         SourceType::ts()
     };
-    apply(result, script, |at| at, 0..script.len(), language, FILE)
+    apply(
+        result,
+        script,
+        |at| at,
+        0..script.len(),
+        language,
+        FILE,
+        None,
+    )
 }
 
 fn unchanged(script: &str, javascript: bool) {
@@ -202,7 +211,8 @@ fn physical_setup_gates_split_blocks_with_out_of_line_generated_order() {
         },
         200..200 + setup.len(),
         SourceType::ts(),
-        FILE
+        FILE,
+        None,
     ));
     assert!(result.code.ends_with(plain));
     assert!(
@@ -239,7 +249,8 @@ fn authored_base_and_semantic_link_endpoints_keep_their_original_tokens() {
         |at| at + 50,
         50..50 + script.len(),
         SourceType::ts(),
-        FILE
+        FILE,
+        None,
     ));
     let actual = &result.mapping.semantic_links()[0];
     assert_eq!(actual.source_range, link.source_range);
@@ -317,7 +328,8 @@ fn mismatching_generated_bytes_and_discontinuous_physical_sites_are_unchanged() 
             |at| if discontinuous && at >= 8 { at + 1 } else { at },
             0..script.len() + 1,
             SourceType::ts(),
-            FILE
+            FILE,
+            None,
         ));
         assert_eq!(result.code, original_code);
         assert_eq!(result.mapping, original_mapping);
@@ -336,7 +348,8 @@ fn empty_setup_invalid_literal_and_repeat_application_do_not_mutate() {
             |at| at,
             setup,
             SourceType::ts(),
-            literal
+            literal,
+            None,
         ));
         assert_eq!(result.code, script);
         assert_eq!(result.mapping, original_mapping);

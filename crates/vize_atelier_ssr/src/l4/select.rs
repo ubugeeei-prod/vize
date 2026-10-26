@@ -18,6 +18,9 @@ use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 pub(super) struct L2Artifact<'s, 'a> {
     pub(super) source: &'a str,
     pub(super) root: &'s Region<'a>,
+    /// A caller-built root's actual producer location inside the complete
+    /// source. Template parser callers keep their established section origin.
+    pub(super) root_origin: Option<vize_l0::Span>,
     pub(super) facts: PlanFacts<'s, 'a>,
     pub(super) diagnostics: u64,
 }
@@ -25,12 +28,17 @@ pub(super) struct L2Artifact<'s, 'a> {
 /// Lower `artifact` to L3, verify it, build the string plan from the shared
 /// partition facts, and emit from it when `admit` hands back the expression
 /// rewriter (its `Err` names the legacy reason instead).
+#[expect(
+    clippy::too_many_arguments,
+    reason = "L2 analysis, independent SFC runtime metadata and capture"
+)]
 pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
     context: crate::SsrSfcContext,
+    runtime_module_name: &str,
     capture: &mut C,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
@@ -96,8 +104,8 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         experimental.clone(),
     );
     ctx.apply_sfc_context(context);
-    // The L2 program covers the whole template source, which starts at 0.
-    ctx.begin_render(0);
+    ctx.set_runtime_module_name(runtime_module_name);
+    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
@@ -114,6 +122,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
     context: crate::SsrSfcContext,
+    runtime_module_name: &str,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
     if let Some(facts) = &artifact.facts.frozen_slots
@@ -169,8 +178,8 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         experimental.clone(),
     );
     ctx.apply_sfc_context(context);
-    // The L2 program covers the whole template source, which starts at 0.
-    ctx.begin_render(0);
+    ctx.set_runtime_module_name(runtime_module_name);
+    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),

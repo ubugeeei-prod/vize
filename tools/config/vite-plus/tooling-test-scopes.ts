@@ -1,6 +1,21 @@
 // Runtime scenarios are retained in the full T1 suite. This is an explicit
 // inventory of real tsgo/LSP scenarios and source-built corpus execution,
 // not a filename-prefix exclusion. Pure helper gates remain in T0.
+// These tests spawn the compiler: their project files and literal import
+// dependencies are inputs even when the test never imports them itself.
+export const toolingTypecheckProjects = [
+  {
+    test: "tests/tooling/typescript-ci-gates.test.ts",
+    project: "tools/tsconfig.json",
+    solution: false,
+  },
+  {
+    test: "tests/tooling/typescript-tooling-project.test.ts",
+    project: "tsconfig.json",
+    solution: true,
+  },
+] as const;
+
 export const mergeOnlyToolingTests = [
   "tests/tooling/lint-ssr-script-setup.test.ts",
   "tests/tooling/canon-external-contracts.test.ts",
@@ -126,6 +141,13 @@ export const toolingTestScopes = [
     tests: [
       "tests/tooling/router-experimental-check.test.ts",
       "tests/tooling/router-experimental-provider.test.ts",
+    ],
+  },
+  {
+    input: "toolingTypeScriptProjects",
+    tests: [
+      "tests/tooling/typescript-tooling-project.test.ts",
+      "tests/tooling/typescript-ci-gates.test.ts",
     ],
   },
   {

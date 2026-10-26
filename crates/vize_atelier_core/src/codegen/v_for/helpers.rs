@@ -12,7 +12,13 @@ use vize_l0::{SmallVec, String, ToCompactString};
 /// and array destructuring ("[first, second]").
 pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<String>) {
     let content = match expr {
-        ExpressionNode::Simple(exp) => exp.content,
+        ExpressionNode::Simple(exp) => {
+            if let Some(names) = exp.retained_parameter_names() {
+                params.extend(names.iter().map(|name| String::from(*name)));
+                return;
+            }
+            exp.content
+        }
         _ => return,
     };
     extract_destructure_params(content.trim(), params);
@@ -246,8 +252,32 @@ pub(crate) fn should_skip_prop(p: &PropNode<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_destructure_params, is_numeric_content, split_top_level};
-    use vize_l0::String;
+    use super::{
+        extract_destructure_params, extract_for_params, is_numeric_content, split_top_level,
+    };
+    use vize_l0::{Allocator, String};
+
+    #[test]
+    fn changed_alias_content_cannot_reuse_its_old_retained_names() {
+        let allocator = Allocator::default();
+        let parsed = crate::steps::parse_for_expression(
+            &allocator,
+            r"\u005frow of rows",
+            &crate::SourceLocation::STUB,
+        )
+        .unwrap();
+        let mut alias = parsed.value.unwrap();
+        let mut names = Vec::new();
+        extract_for_params(&alias, &mut names);
+        assert_eq!(names, ["_row"]);
+        let crate::ExpressionNode::Simple(node) = &mut alias else {
+            unreachable!()
+        };
+        node.content = "replacement";
+        names.clear();
+        extract_for_params(&alias, &mut names);
+        assert_eq!(names, ["replacement"]);
+    }
 
     /// Test numeric source detection for v-for range expressions.
     #[test]

@@ -31,6 +31,17 @@ Failed type-argument and arrow probes share the existing table with disjoint
 one-word keys, avoiding another table initialization/drop for ordinary parses.
 The type-argument key retains all grammar-context bits.
 
+Expression type-argument probes also lazily retain the last raw `>` offset in
+the immutable parser source. An opener with no later `>` cannot close a valid
+type-argument list, so it returns before checkpointing or recursive parsing.
+This bounds impossible trailing probes in the Vize
+[#10401](https://github.com/ubugeeei-prod/vize/issues/10401) slow unit without
+changing the shared expression guard or refusing any valid generic syntax.
+The source fact survives rewinds and is reset by each parser constructor.
+Raw `>` bytes inside strings, comments, templates or JSX only retain the old
+parser path. Private state tests assert that an impossible probe does no work;
+the exact artifact is retained in the expression fuzz regression corpus.
+
 Vize publishes this unofficial fork as `vize_oxc_parser`, synchronized with the
 Vize workspace version. Its Rust library remains `oxc_parser`, and consumers
 use a direct `path` plus exact `version` dependency with the `package` alias.

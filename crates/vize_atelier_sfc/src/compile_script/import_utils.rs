@@ -13,12 +13,27 @@ use vize_carton::ToCompactString;
 /// Returns true when an import block already declares a local binding from a
 /// specific module.
 pub fn import_block_has_local_from(imports: &str, module_source: &str, local_name: &str) -> bool {
+    import_block_matches(imports, module_source, Some(local_name))
+}
+
+/// Decode an authored import source through the existing parser when its
+/// noncanonical escape spelling cannot match a generated literal directly.
+pub(crate) fn import_block_has_source(imports: &str, module_source: &str) -> bool {
+    import_block_matches(imports, module_source, None)
+}
+
+fn import_block_matches(imports: &str, module_source: &str, local_name: Option<&str>) -> bool {
     let allocator = Allocator::default();
     let source_type = SourceType::ts();
     let parser = Parser::new(&allocator, imports, source_type);
     let result = parser.parse();
 
-    if !result.diagnostics.is_empty() {
+    if !result.diagnostics.is_empty()
+        // Standalone's line replacement owns one complete import statement.
+        // Keep an authored line containing further statements intact, with its
+        // existing external-import warning, rather than dropping those owners.
+        || (local_name.is_none() && result.program.body.len() != 1)
+    {
         return false;
     }
 
@@ -29,6 +44,9 @@ pub fn import_block_has_local_from(imports: &str, module_source: &str, local_nam
         if decl.source.value.as_str() != module_source {
             return false;
         }
+        let Some(local_name) = local_name else {
+            return true;
+        };
         decl.specifiers.as_ref().is_some_and(|specifiers| {
             specifiers.iter().any(|spec| match spec {
                 ImportDeclarationSpecifier::ImportSpecifier(s) => s.local.name == local_name,
