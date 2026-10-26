@@ -128,6 +128,30 @@ test("the recorded command is the one CI measures with", () => {
   }
 });
 
+test("the measured server links like the shipped x86_64 Linux CLI", () => {
+  // Wild ignores `--icf=all`, so a Wild-linked server would measure 4.8 MiB more than ships.
+  const workflow = parse(
+    readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
+  ) as any;
+  const wild = (steps: Array<{ uses?: string; if?: string }>) =>
+    steps.filter((step) => step.uses?.startsWith("wild-linker/action@"));
+  for (const job of ["resource", "production-lsp-resource"]) {
+    assert.deepEqual(wild(workflow.jobs[job].steps), [], job);
+  }
+  const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
+  assert.deepEqual(
+    wild(cli.runs.steps).map((step) => step.if),
+    [
+      "runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'",
+    ],
+  );
+  const build = readRepoFile("crates", "vize", "build.rs");
+  assert.deepEqual(
+    [...build.matchAll(/cargo:rustc-link-arg-bins=([^"]+)"/gu)].map(([, flag]) => flag),
+    ["-Wl,--icf=all", "-Wl,-z,pack-relative-relocs"],
+  );
+});
+
 test("the committed budgets validate", () => {
   const result = runTool(["--validate"]);
   assert.equal(result.status, 0, result.output);
