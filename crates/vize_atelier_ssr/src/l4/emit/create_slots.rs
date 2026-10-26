@@ -151,9 +151,20 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let key = binding.key.as_ref().map(alias).transpose()?;
         let index = binding.index.as_ref().map(alias).transpose()?;
         let aliases = [Some(value), key, index];
-        let list = aliases.into_iter().flatten().collect::<std::vec::Vec<_>>();
         let fact = self.segment(at)?.fact;
         let mark = self.enter_for_bindings(for_op, aliases, fact);
+        let texts = match self.for_alias_texts(aliases) {
+            Ok(texts) => texts,
+            Err(error) => {
+                self.leave_loop(mark);
+                return Err(error);
+            }
+        };
+        let list = texts
+            .iter()
+            .flatten()
+            .map(String::as_str)
+            .collect::<std::vec::Vec<_>>();
         Ok((source, list.join(", ").to_compact_string(), mark))
     }
 
