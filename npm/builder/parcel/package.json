@@ -52,7 +52,8 @@
     "@parcel/source-map": "2.1.1",
     "@vizejs/native": "workspace:*",
     "diff": "8.0.4",
-    "magic-string": "0.30.21"
+    "magic-string": "0.30.21",
+    "oxc-parser": "catalog:oxc"
   },
   "devDependencies": {
     "@parcel/config-default": "2.16.4",
