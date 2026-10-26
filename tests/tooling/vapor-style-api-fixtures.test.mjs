@@ -13,8 +13,10 @@ const manifest = JSON.parse(
 );
 const row = manifest.vaporStyleApiCases;
 const authority = JSON.parse(readFileSync(root + "authority.json", "utf8"));
+// The refined producer closure; `authority.json` keeps the original campaign.
+const admission = JSON.parse(readFileSync(root + "admission-source-pairs.json", "utf8"));
 const files = new Map();
-for (const source of authority.sourceFiles) {
+for (const source of admission.sourceFiles) {
   const old = spawnSync("git", ["show", `${authority.beforeRevision}:${source.path}`], {
     maxBuffer: 8 * 1024 * 1024,
   });
@@ -30,9 +32,9 @@ await test("actual finite Vapor CSR source witness grants exactly the real sourc
   assert.deepEqual(result.ids, [VAPOR_STYLE_API_CASE_ID]);
   assert.deepEqual(
     [...result.sources],
-    authority.sourceFiles.map((source) => source.path),
+    admission.sourceFiles.map((source) => source.path),
   );
-  assert.equal(result.sources.size, 14);
+  assert.equal(result.sources.size, 20);
 });
 
 await test("missing registration cannot be appeased by a generic SSR filler", () => {
@@ -41,7 +43,7 @@ await test("missing registration cannot be appeased by a generic SSR filler", ()
 });
 
 await test("every actual producer byte and its absence observation is pinned", () => {
-  for (const source of authority.sourceFiles) {
+  for (const source of admission.sourceFiles) {
     for (const side of ["base", "head"]) {
       const changed = (which, path) =>
         which === side && path === source.path

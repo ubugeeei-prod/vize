@@ -8,12 +8,32 @@ const approvedSources = [
   {
     path: "crates/vize_atelier_core/src/lane/element.rs",
     beforeSha256: "614da41dc6908c8a8dcb989daaa930d1daca88dd05fce48cdf3156b319df514e",
-    afterSha256: "d98ca26debc28aceedefc8263ab94d7175ff87ae8d20b7c5c2290e616f87aef9",
+    afterSha256: "02c9cbe1e110563d6cf86bd1761094fdfe3b5f5572469354e99726154bdf874a",
+  },
+  {
+    path: "crates/vize_atelier_core/src/lane/element/directive_expressions.rs",
+    beforeSha256: "be0d85e8e8468b438aeb7e26d6ed0c9510dd4eec98b7033fdeb836ca08f81704",
+    afterSha256: "9a49b8604d4e5b5e30a363035863cd8acb0c751334a0b489d98961b4fd84a045",
+  },
+  {
+    path: "crates/vize_atelier_core/src/lane/element/directive_expressions/ssr_keys.rs",
+    beforeSha256: "6372842077bada399375a9c8862e28ed35250b544ecbe3dd5f6ef8fac6b3399f",
+    afterSha256: "6abf37e704fe52ba7498ee08a1d81dcc5228da5291365b7aafa5aa510d5831f6",
+  },
+  {
+    path: "crates/vize_atelier_core/src/lane/element/directive_expressions/tests.rs",
+    beforeSha256: "0feb5f4535a2e46595a49acf534f03437daf67db8a914fe670febfd4b8d01939",
+    afterSha256: "8711cfd45b7a9d8cad91a4627a06639effa5ddb1ee28cdbb4ac597e8020c6af7",
+  },
+  {
+    path: "crates/vize_atelier_core/src/lane/element/tests.rs",
+    beforeSha256: "a8931514fe8d5f03eb6c1f64b12625c4eacda13d305968eca42aa0f22aa81b50",
+    afterSha256: "def579c7aa2e4d420c979bd235d28e674f023a113fe4db34a0ca32275e15598e",
   },
   {
     path: "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
     beforeSha256: null,
-    afterSha256: "646962e6669edff43d3f30e2f290b7644bed190472a1898bf74f9e05e452a757",
+    afterSha256: "0c7fcb4b338f6ae821cc55fdd4ed4a075a1e407742c2b1090bbd42499262be0e",
   },
   {
     path: "crates/vize_atelier_core/src/lib.rs",
@@ -61,6 +81,16 @@ const approvedSources = [
     afterSha256: "b8069a9df5326dad0c13027679618151d73f68ac48567a4ac97707355e351b07",
   },
   {
+    path: "crates/vize_atelier_vapor/src/lower/element/template.rs",
+    beforeSha256: "b87d0b198c77e96246573ee20388d047f126be4cf05c1b8ada2355bd63118ac8",
+    afterSha256: "3ae079172829feeb555ec8db43aeb4a09f57935d652440e4988992314fdfa482",
+  },
+  {
+    path: "crates/vize_atelier_vapor/src/lower/element/template/attributes.rs",
+    beforeSha256: "d9696144a81b6fdfc745b8d251be9bff2d599ebf0c9085ea850802aad5ed7b1a",
+    afterSha256: "bf8e5965e2b65b9fd35e53d66b7c67e34f7e4da5fab57760ba3d43ef3e83b288",
+  },
+  {
     path: "crates/vize_relief/src/inline_style.rs",
     beforeSha256: "17db6757ce83bf81a80ed5d6bee44f2cbbd0e130a64d71c16b2f01da25b33bf7",
     afterSha256: "577c49701667a5d010966e34cfcb7bba61cd489653a025256d702769fc326efb",
@@ -83,7 +113,7 @@ const approvedInputs = [
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-    sha256: "9fcc48195adf45e190ba88fbfb878a89e8e3861980cfcb642947bbf388cbb88a",
+    sha256: "12725a1c38d5050762348679167dde5ff4c71a1e510cdde966510f86c6126765",
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",

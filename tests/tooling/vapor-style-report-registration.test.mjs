@@ -19,8 +19,18 @@ const authority = JSON.parse(
     "utf8",
   ),
 );
+// The refined producer closure; `authority.json` keeps the original campaign.
+const admission = JSON.parse(
+  fs.readFileSync(
+    path.join(
+      root,
+      "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
+    ),
+    "utf8",
+  ),
+);
 const beforeSources = new Map(
-  authority.sourceFiles.map(({ path: file }) => {
+  admission.sourceFiles.map(({ path: file }) => {
     let bytes = null;
     try {
       bytes = execFileSync("git", ["show", `${authority.beforeRevision}:${file}`], {
@@ -31,7 +41,7 @@ const beforeSources = new Map(
     return [file, bytes];
   }),
 );
-const sourcePaths = authority.sourceFiles.map((source) => source.path);
+const sourcePaths = admission.sourceFiles.map((source) => source.path);
 // This complete ordinary case exists only in the in-memory gate control. The
 // production manifest receives no SSR case or whole-product native credit.
 const ordinary = structuredClone(
