@@ -53,5 +53,6 @@ pub(super) fn compile_empty_component(context: EmptyComponentContext<'_>) -> Sfc
         warnings,
         bindings: None,
         macro_artifacts,
+        dependencies: Vec::new(),
     }
 }

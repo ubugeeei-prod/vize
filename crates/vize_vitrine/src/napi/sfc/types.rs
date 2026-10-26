@@ -159,6 +159,8 @@ pub struct SfcCompileResultNapi {
     pub custom_blocks: Vec<CustomBlockNapi>,
     pub macro_artifacts: Vec<MacroArtifactNapi>,
     pub module_shape: Option<ModuleShapeNapi>,
+    /// Files the compile read besides the SFC (pug `include`s).
+    pub dependencies: Vec<String>,
 }
 
 #[napi(object)]
@@ -261,6 +263,8 @@ pub struct BatchFileResultNapi {
     pub custom_blocks: Vec<CustomBlockNapi>,
     pub macro_artifacts: Vec<MacroArtifactNapi>,
     pub module_shape: Option<ModuleShapeNapi>,
+    /// Files the compile read besides the SFC (pug `include`s).
+    pub dependencies: Vec<String>,
 }
 
 #[napi(object)]
@@ -269,6 +273,13 @@ pub struct BatchCompileResultWithFilesNapi {
     pub success_count: u32,
     pub failed_count: u32,
     pub time_ms: f64,
+}
+
+pub(super) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Vec<String> {
+    dependencies
+        .iter()
+        .map(|path| path.as_ref().to_owned())
+        .collect()
 }
 
 pub(super) fn macro_artifacts_to_napi(

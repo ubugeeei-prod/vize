@@ -381,6 +381,7 @@ fn compile_sfc_inner(
             warnings,
             bindings: None,
             macro_artifacts,
+            dependencies: Vec::new(),
         });
     }
 
@@ -776,5 +777,6 @@ fn compile_sfc_inner(
         warnings,
         bindings: script_result.bindings,
         macro_artifacts,
+        dependencies: Vec::new(),
     })
 }

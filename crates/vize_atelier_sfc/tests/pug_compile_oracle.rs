@@ -146,7 +146,12 @@ fn refused_pug_fails_the_compile_with_its_first_diagnostic() {
         let first =
             std::fs::read_to_string(path.with_extension("diagnostics")).expect("diagnostics");
         let first = first.lines().next().expect("a diagnostic");
-        let message = first.split_once(" — ").expect("message").1;
+        // The compile reads includes (the lowering alone refuses them), so
+        // a missing file fails as pug fails.
+        let message = match name.as_str() {
+            "include" => "pug cannot include `partials/header.pug`: the file does not exist",
+            _ => first.split_once(" — ").expect("message").1,
+        };
         let sfc = ["<template lang=\"pug\">", &pug, "</template>\n"].concat();
         for (lane, options) in lanes() {
             let error = compile(&sfc, options).expect_err("refused pug must not compile");
@@ -166,5 +171,52 @@ fn refused_jade_fails_like_refused_pug() {
             compile(&pug, options),
             "{lane}"
         );
+    }
+}
+
+#[test]
+fn pug_includes_resolve_against_the_sfc_and_compile_like_their_html() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/davinci-pug/includes")
+        .canonicalize()
+        .expect("include fixtures");
+    let pug = std::fs::read_to_string(root.join("layout.pug")).expect("pug");
+    let html = std::fs::read_to_string(root.join("layout.html")).expect("html");
+    let filename = root.join("Layout.vue").to_string_lossy().into_owned();
+    let parse = SfcParseOptions {
+        filename: filename.as_str().into(),
+        ..SfcParseOptions::default()
+    };
+    let pug_sfc = ["<template lang=\"pug\">", &pug, "</template>\n"].concat();
+    let html_sfc = ["<template>", &html, "</template>\n"].concat();
+    for (lane, options) in lanes() {
+        let from_pug = parse_sfc(&pug_sfc, parse.clone()).unwrap();
+        let from_html = parse_sfc(&html_sfc, parse.clone()).unwrap();
+        let from_pug = compile_sfc(&from_pug, options.clone()).unwrap();
+        let from_html = compile_sfc(&from_html, options).unwrap();
+        assert_eq!(from_pug.code, from_html.code, "{lane}");
+        let read: Vec<_> = from_pug
+            .dependencies
+            .iter()
+            .map(|file| {
+                std::path::Path::new(file.as_str())
+                    .strip_prefix(&root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned()
+            })
+            .collect();
+        assert_eq!(
+            read,
+            [
+                "partials/header.pug",
+                "partials/nested/logo.pug",
+                "partials/card.pug",
+                "partials/list.pug",
+                "partials/note.txt",
+            ],
+            "{lane}: includes are dependencies"
+        );
+        assert!(from_html.dependencies.is_empty());
     }
 }
