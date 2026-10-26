@@ -179,7 +179,7 @@ test("the workflow publishes only the prepared body for the release tag commit",
     new URL("../../../.github/workflows/release.yml", import.meta.url),
     "utf8",
   );
-  const job = workflow.split("  github-release:")[1].split("  verify-npm:")[0];
+  const job = workflow.split("  github-release:")[1].split("  dispatch-verify:")[0];
   assert.ok(
     job.includes(
       'node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"',

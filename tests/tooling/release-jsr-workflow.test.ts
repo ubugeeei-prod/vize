@@ -62,8 +62,8 @@ await test("only an enabled channel publishes to JSR and runs the consumers", ()
   assert.equal(jsr.jobs.consumer?.if, enabled);
 });
 
-await test("the release dispatches the JSR workflow once the npm packages it re-exports are visible", () => {
-  const release = workflow("release.yml").jobs["publish-jsr"];
+await test("release verification dispatches the JSR workflow once the npm packages it re-exports are visible", () => {
+  const release = workflow("release-verify.yml").jobs["publish-jsr"];
   const dispatch = (release?.steps ?? []).map((step) => step.run ?? "").join("\n");
   assert.match(dispatch, /gh workflow run release-jsr\.yml/);
   assert.match(dispatch, /-f source_sha=/);
