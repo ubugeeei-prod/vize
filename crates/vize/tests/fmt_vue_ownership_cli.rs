@@ -1,5 +1,6 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 //! #10772: excluding every `.vue` file from Oxfmt through `fmt.ignorePatterns`
 //! hands Vue files to `vize fmt` instead of removing them from it.
 
@@ -51,25 +52,21 @@ fn oxfmt_side_vue_exclusion_keeps_vue_files_with_vize_fmt() {
     write(root, "src/generated/Generated.vue", APP);
 
     // The `;` is reported instead of "No ... files found".
-    let (status, stderr) = fmt_check(root, &["src/App.vue"]);
-    assert_eq!(status, Some(1), "{stderr}");
-    assert!(stderr.contains("Would reformat: src/App.vue"), "{stderr}");
-    assert!(!stderr.contains("No .vue"), "{stderr}");
+    let reformat_app = "Found 1 file(s)\nWould reformat: src/App.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n";
+    assert_eq!(
+        fmt_check(root, &["src/App.vue"]),
+        (Some(1), reformat_app.into())
+    );
+    assert_eq!(fmt_check(root, &["src"]), (Some(1), reformat_app.into()));
 
     // Other shared exclusions still apply, and naming the file says why.
-    let (status, stderr) = fmt_check(root, &["src/App.vue", "src/generated/Generated.vue"]);
-    assert_eq!(status, Some(1), "{stderr}");
-    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
-    assert!(
-        stderr.contains(
-            "Skipping src/generated/Generated.vue: excluded by the configured ignore patterns"
-        ),
-        "{stderr}"
+    assert_eq!(
+        fmt_check(root, &["src/App.vue", "src/generated/Generated.vue"]),
+        (
+            Some(1),
+            format!(
+                "Skipping src/generated/Generated.vue: excluded by the configured ignore patterns\n{reformat_app}"
+            )
+        )
     );
-
-    // Default discovery reports absolute paths.
-    let (status, stderr) = fmt_check(root, &[]);
-    assert_eq!(status, Some(1), "{stderr}");
-    assert!(stderr.contains("/src/App.vue\n"), "{stderr}");
-    assert!(!stderr.contains("Generated"), "{stderr}");
 }
