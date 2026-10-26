@@ -87,19 +87,7 @@ import NoticeButton from "../../features/NoticeButton.vue";
 "#,
     );
 
-    let sources = discover_sources(root, &[".".into()]).unwrap();
-    let report = analyze_application(&root.canonicalize().unwrap(), &sources, false).unwrap();
-    let codes = report
-        .findings()
-        .iter()
-        .map(|finding| finding.code.as_str())
-        .collect::<Vec<_>>();
-    assert!(
-        !codes
-            .iter()
-            .any(|code| code.contains("UNMATCHED_INJECT") || code.contains("UNUSED_PROVIDE")),
-        "{codes:?}"
-    );
+    assert_eq!(doctor_codes(root), Vec::<String>::new());
 }
 
 /// #10608: `defineModel` props, imported alias prop types and fallthrough attrs are legal usage.
@@ -164,13 +152,7 @@ const keyword = ref("");
 "#,
     );
 
-    let codes = doctor_codes(root);
-    assert!(
-        !codes
-            .iter()
-            .any(|code| code.contains("UNDECLARED_PROP") || code.contains("PROP_TYPE_MISMATCH")),
-        "{codes:?}"
-    );
+    assert_eq!(doctor_codes(root), Vec::<String>::new());
 }
 
 /// #10608: an `$env` block that cannot enable SSR keeps a client-only app client-only.
@@ -220,7 +202,7 @@ import Mover from "../features/Mover.vue";
         "src/app.vue",
         "<template>\n  <NuxtPage />\n</template>\n",
     );
-    for (override_block, expected) in [
+    for (override_block, server_rendered) in [
         ("$development: {}", false),
         ("$development: { devtools: { enabled: false } }", false),
         ("$production: { ssr: false }", false),
@@ -233,11 +215,11 @@ import Mover from "../features/Mover.vue";
                 r#"export default defineNuxtConfig({{ ssr: false, srcDir: "src", {override_block} }});"#
             ),
         );
-        let codes = doctor_codes(root);
+        let ssr = String::from("VIZE_DOCTOR_CF_BROWSER_API_SSR");
         assert_eq!(
-            codes.iter().any(|code| code.contains("BROWSER_API_SSR")),
-            expected,
-            "{override_block}: {codes:?}"
+            doctor_codes(root),
+            vec![ssr; if server_rendered { 2 } else { 0 }],
+            "{override_block}"
         );
     }
 }
