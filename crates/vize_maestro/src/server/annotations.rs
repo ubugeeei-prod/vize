@@ -24,6 +24,11 @@ use document_color::DocumentColorService;
 use super::ServerState;
 use crate::ide::CodeLensService;
 
+/// Existing catalogue hover wins; this only supplies concrete color literals.
+pub(super) fn color_hover(ctx: &crate::ide::IdeContext<'_>) -> Option<tower_lsp::lsp_types::Hover> {
+    document_color::hover::hover(ctx)
+}
+
 pub(super) fn code_lens(state: &ServerState, params: &CodeLensParams) -> Option<Vec<CodeLens>> {
     let uri = &params.text_document.uri;
     let content = state.documents.text(uri)?;

@@ -117,7 +117,7 @@ function __setup() {
   function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
   function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  const defineModel = undefined as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
+  const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
@@ -128,7 +128,7 @@ function __setup() {
   const status = ref('loading')
   const message = ref('')
   
-  // @vize-map: 15497:15558 -> 0:80
+  // @vize-map: 15496:15557 -> 0:80
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -139,12 +139,12 @@ function __setup() {
     type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
     type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
     type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;
-    var message: __U<__R_message> = undefined as any;
-    var status: __U<__R_status> = undefined as any;
+    var message: __U<__R_message> = (void 0) as any;
+    var status: __U<__R_status> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
-    const __ctx = undefined as unknown as __Ctx;
+    const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
     const $slots = __ctx.$slots;
     const $refs = __ctx.$refs;

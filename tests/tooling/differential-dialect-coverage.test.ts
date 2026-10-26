@@ -16,7 +16,16 @@ import {
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const products = ["compiler", "formatter", "linter", "lsp", "typechecker"];
 
-function load(product) {
+type Coverage = {
+  state: string;
+  registryRef: null;
+  evidence: Array<{ kind: string; dialects: string[]; selector: string; extra?: boolean }>;
+  extra?: boolean;
+};
+
+type Fixture = { id: string; dialectCoverage: Coverage };
+
+function load(product: string): { cases: Fixture[] } {
   return loadProductManifest(
     path.join(root, `tests/_fixtures/differential/${product}/manifest.json`),
     product,
@@ -67,8 +76,8 @@ void test("every product manifest contributes to the case-level dialect denomina
       new Set(custody[product].map((fixture) => fixture.id)).size,
       custody[product].length,
     );
-    for (const measurement of ["provisional", "verified"]) {
-      const dialects = {};
+    for (const measurement of ["provisional", "verified"] as const) {
+      const dialects: Record<string, number> = {};
       for (const fixture of custody[product].filter((row) => row.measurement === measurement)) {
         for (const dialect of fixture.dialects) dialects[dialect] = (dialects[dialect] ?? 0) + 1;
       }
@@ -79,24 +88,24 @@ void test("every product manifest contributes to the case-level dialect denomina
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 26,
+    plannedCases: 28,
     verifiedCases: 4,
-    provisionalCases: 20,
-    unknownReadinessCases: 22,
+    provisionalCases: 22,
+    unknownReadinessCases: 24,
     verified: {
       "vue0-template": 2,
       "vue-quirks": 2,
     },
     provisional: {
-      "html-template": 20,
+      "html-template": 22,
       ts: 5,
-      "vue3-sfc": 20,
+      "vue3-sfc": 22,
     },
   });
 });
 
 void test("coverage schema rejects malformed and noncanonical verified claims", () => {
-  const valid = {
+  const valid: Coverage = {
     state: "source-inspected",
     registryRef: null,
     evidence: [
@@ -108,7 +117,7 @@ void test("coverage schema rejects malformed and noncanonical verified claims", 
     ],
   };
   assert.deepEqual(normalizeDialectCoverage(valid, "fixture"), valid);
-  for (const [change, error] of [
+  const malformed: Array<[(value: Coverage) => unknown, RegExp]> = [
     [(value) => (value.state = "complete"), /invalid coverage state/],
     [(value) => (value.evidence = []), /needs evidence/],
     [(value) => value.evidence[0].dialects.push("vue3-sfc"), /duplicate dialect/],
@@ -122,7 +131,8 @@ void test("coverage schema rejects malformed and noncanonical verified claims", 
       },
       /verified dialect must be canonical/,
     ],
-  ]) {
+  ];
+  for (const [change, error] of malformed) {
     const value = structuredClone(valid);
     change(value);
     assert.throws(() => normalizeDialectCoverage(value, "fixture"), error);
@@ -170,19 +180,19 @@ void test("linter and LSP coverage record every pinned authored source dialect",
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
-    plannedCases: 60,
+    plannedCases: 62,
     verifiedCases: 0,
-    provisionalCases: 60,
-    unknownReadinessCases: 60,
+    provisionalCases: 62,
+    unknownReadinessCases: 62,
     verified: {},
     provisional: {
-      "html-template": 51,
+      "html-template": 53,
       js: 9,
       jsx: 4,
       "pug-template": 4,
       ts: 44,
       tsx: 4,
-      "vue3-sfc": 59,
+      "vue3-sfc": 61,
     },
   });
 });
@@ -203,19 +213,19 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 146,
+    plannedCases: 159,
     verifiedCases: 0,
-    provisionalCases: 145,
-    unknownReadinessCases: 146,
+    provisionalCases: 158,
+    unknownReadinessCases: 159,
     verified: {},
     provisional: {
-      "html-template": 140,
+      "html-template": 152,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 144,
+      ts: 157,
       tsx: 4,
-      "vue3-sfc": 143,
+      "vue3-sfc": 156,
     },
   });
   assert.deepEqual(

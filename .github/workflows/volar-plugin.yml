@@ -1,0 +1,84 @@
+name: Volar Plugin
+
+on:
+  pull_request:
+    paths:
+      - "npm/volar/**"
+      - "npm/native/**"
+      - "crates/**"
+      - "davinci/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - "tests/tooling/native-declarations.test.ts"
+      - "tests/tooling/benchmark-musea-*.test.ts"
+      - "tools/benchmarks/scripts/musea-artifacts.mjs"
+      - "tools/support/release/smoke_release_install/**"
+      - ".github/workflows/volar-plugin.yml"
+  workflow_dispatch: {}
+
+permissions: { contents: read }
+concurrency:
+  group: volar-plugin-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  native-volar-service:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      VIZE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.VIZE_SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install exact official Volar and TypeScript service providers
+        working-directory: ${{ runner.temp }}
+        run: |
+          echo "VIZE_VOLAR_EVIDENCE_DIR=$RUNNER_TEMP/volar-plugin-evidence" >> "$GITHUB_ENV"
+          echo "VIZE_VOLAR_DEPENDENCY_LOCK=$RUNNER_TEMP/volar-plugin-deps/package-lock.json" >> "$GITHUB_ENV"
+          npm install --prefix "$RUNNER_TEMP/volar-plugin-deps" --ignore-scripts --no-audit --no-fund @volar/language-core@2.4.30 @volar/typescript@2.4.30 typescript@6.0.3 vue@3.5.42
+          mkdir -p "$RUNNER_TEMP/volar-plugin-deps/node_modules/@vizejs"
+          ln -s "$GITHUB_WORKSPACE/npm/native" "$RUNNER_TEMP/volar-plugin-deps/node_modules/@vizejs/native"
+          ln -s "$RUNNER_TEMP/volar-plugin-deps/node_modules" "$GITHUB_WORKSPACE/npm/volar/node_modules"
+      - name: Build the actual reviewed native source
+        run: |
+          test "$(git rev-parse HEAD)" = "$VIZE_SOURCE_SHA"
+          token="$(openssl rand -hex 16)"
+          VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --profile ci -p vize_vitrine --features napi
+          cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
+          echo "VIZE_VOLAR_EXPECTED_NATIVE_TOKEN=$token" >> "$GITHUB_ENV"
+          echo "NAPI_RS_NATIVE_LIBRARY_PATH=$GITHUB_WORKSPACE/npm/native/vize-vitrine.linux-x64-gnu.node" >> "$GITHUB_ENV"
+      - name: Retain immutable source and actual loaded native identity
+        run: node npm/volar/test/source-receipt.js
+      - name: Check portable native projection boundaries
+        run: node --test npm/native/test/language-projection.test.cjs
+      - name: Exercise actual Volar context and TypeScript language service
+        run: node --test npm/volar/test/service.test.js
+      - name: Check public package declarations
+        run: node "$RUNNER_TEMP/volar-plugin-deps/node_modules/typescript/bin/tsc" --ignoreConfig --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ESNext npm/volar/src/index.d.ts
+      - name: Exercise fresh packed consumers without source loader overrides
+        run: node npm/volar/test/packed-consumer.js
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: volar-plugin-${{ env.VIZE_SOURCE_SHA }}
+          path: ${{ runner.temp }}/volar-plugin-evidence
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true

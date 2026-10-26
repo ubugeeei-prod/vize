@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child3 from "./Child3.vue";
+const items: string[] = [];
+</script>
+
+<template>
+  <Child3 :count="items.length">
+    <template #header><span>x</span></template>
+  </Child3>
+</template>

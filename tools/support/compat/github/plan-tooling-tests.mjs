@@ -1,10 +1,19 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, matchesGlob, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cacheInputs } from "../../../config/vite-plus/task-inputs.ts";
 import {
   mergeOnlyToolingTests,
   toolingTestScopes,
+  toolingTypecheckProjects,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
 import { changedPaths } from "./plan-source-checks.ts";
 import {
@@ -28,27 +37,152 @@ export { toolingTestFiles };
 
 // Add every literal local import, including transitive helpers, to the input
 // set. Unresolved imports restore broad inputs rather than making a skip safe.
-export function localImportInputs(file, cwd = root, visited = new Set()) {
+export function localImportInputs(file, cwd = root, visited = new Set(), typed = false) {
   if (visited.has(file)) return { files: [], complete: true };
   visited.add(file);
   const files = [file];
   let complete = true;
   const source = readFileSync(join(cwd, file), "utf8");
-  const imports = /\b(?:from\s*|import\s*(?:\(\s*)?)["']([^"']+)["']/g;
+  const imports = typed
+    ? /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["']([^"']+)["']/g
+    : /\b(?:from\s*|import\s*(?:\(\s*)?)["']([^"']+)["']/g;
   for (const [, specifier] of source.matchAll(imports)) {
     if (!specifier.startsWith(".")) continue;
-    const dependency = relative(cwd, resolve(cwd, dirname(file), specifier));
-    if (dependency.startsWith("..") || !existsSync(join(cwd, dependency))) {
+    const literal = relative(cwd, resolve(cwd, dirname(file), specifier));
+    if (literal.startsWith("..")) {
       complete = false;
       continue;
     }
-    const child = localImportInputs(dependency, cwd, visited);
+    const candidates = typed ? typeImportCandidates(literal) : [literal];
+    const dependency = candidates.find(
+      (candidate) =>
+        existsSync(join(cwd, candidate)) && (!typed || statSync(join(cwd, candidate)).isFile()),
+    );
+    if (typed) files.push(...candidates);
+    if (literal.startsWith("..") || !dependency) {
+      complete = false;
+      continue;
+    }
+    if (typed && !/\.(?:[cm]?[jt]sx?|json)$/u.test(dependency)) continue;
+    const child = localImportInputs(dependency, cwd, visited, typed);
     files.push(...child.files);
     complete &&= child.complete;
   }
   // Nonliteral imports cannot establish a complete dependency closure.
   if (/\bimport\s*\(\s*[^"'\s]/.test(source)) complete = false;
   return { files, complete };
+}
+
+// Follow the same literal closure, including TS source behind emitted .js
+// specifiers. Retain missing candidates so new/deleted dependencies select it.
+function typeImportCandidates(file) {
+  const replacements = {
+    ".js": [".ts", ".tsx", ".d.ts"],
+    ".mjs": [".mts", ".d.mts"],
+    ".cjs": [".cts", ".d.cts"],
+  };
+  const extension = /\.[^/.]+$/u.exec(file)?.[0];
+  if (extension)
+    return [
+      ...(replacements[extension] ?? []).map((suffix) => file.slice(0, -extension.length) + suffix),
+      file,
+    ];
+  return [
+    file,
+    ...[".ts", ".tsx", ".d.ts", ".js", ".mjs", ".cts", ".json"].flatMap((suffix) => [
+      file + suffix,
+      `${file}/index${suffix}`,
+    ]),
+  ];
+}
+
+export function typeProjectInputs(project, cwd = root, solution = false) {
+  const configurations = new Set();
+  const active = new Set();
+  const cached = new Map();
+  const scoped = (...segments) => {
+    const file = relative(cwd, resolve(cwd, ...segments));
+    if (file.startsWith("..")) throw new Error("type project escapes checkout");
+    return file;
+  };
+  const read = (file) => {
+    if (active.has(file)) throw new Error(`cyclic type project: ${file}`);
+    if (cached.has(file)) return cached.get(file);
+    active.add(file);
+    configurations.add(file);
+    const config = JSON.parse(readFileSync(join(cwd, file), "utf8"));
+    let inherited = {};
+    if (config.extends) {
+      const parents = Array.isArray(config.extends) ? config.extends : [config.extends];
+      for (const parent of parents) {
+        if (typeof parent !== "string" || !parent.startsWith("."))
+          throw new Error("unresolved type project extends");
+        const target = scoped(dirname(file), parent);
+        inherited = { ...inherited, ...read(target.endsWith(".json") ? target : `${target}.json`) };
+      }
+    }
+    for (const key of ["include", "exclude", "files"]) {
+      if (config[key] === undefined) continue;
+      if (!Array.isArray(config[key]) || config[key].some((value) => typeof value !== "string"))
+        throw new Error(`invalid ${key}`);
+      inherited[key] = config[key].map((value) => scoped(dirname(file), value));
+    }
+    active.delete(file);
+    cached.set(file, inherited);
+    return inherited;
+  };
+  try {
+    if (solution) {
+      const config = JSON.parse(readFileSync(join(cwd, project), "utf8"));
+      if (!Array.isArray(config.references) || !config.references.length)
+        throw new Error("missing solution references");
+      const projects = config.references.map(({ path }) => {
+        if (typeof path !== "string") throw new Error("invalid solution reference");
+        const target = scoped(dirname(project), path);
+        return typeProjectInputs(
+          target.endsWith(".json") ? target : `${target}/tsconfig.json`,
+          cwd,
+        );
+      });
+      return (file) => file === project || projects.some((matches) => matches(file));
+    }
+    const config = read(project);
+    const includes = config.include ?? (config.files ? [] : [`${dirname(project)}/**/*`]);
+    const excludes = config.exclude ?? ["**/node_modules/**"];
+    const roots = new Set(config.files ?? []);
+    const eligible = (file) =>
+      /\.(?:[cm]?[jt]sx?|json)$/u.test(file) &&
+      matchesAny(file, includes) &&
+      !matchesAny(file, excludes);
+    const scanned = new Set();
+    const walk = (file) => {
+      if (scanned.has(file) || !existsSync(join(cwd, file))) return;
+      scanned.add(file);
+      const entries = readdirSync(join(cwd, file), { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.name === "node_modules" || entry.name === ".git") continue;
+        const child = `${file}/${entry.name}`;
+        if (entry.isDirectory() && !matchesAny(child, excludes)) walk(child);
+        else if (entry.isFile() && eligible(child)) roots.add(child);
+      }
+    };
+    for (const pattern of includes) {
+      const prefix = pattern.split(/[?*[{]/u)[0];
+      if (prefix.endsWith("/")) walk(prefix.slice(0, -1));
+      else if (existsSync(join(cwd, prefix)) && eligible(prefix)) roots.add(prefix);
+    }
+    const files = new Set([...configurations, ...roots]);
+    const visited = new Set();
+    for (const file of roots) {
+      if (!existsSync(join(cwd, file))) continue;
+      for (const dependency of localImportInputs(file, cwd, visited, true).files)
+        files.add(dependency);
+    }
+    return (file) => files.has(file) || eligible(file);
+  } catch {
+    // A broken/unavailable project cannot justify skipping its real compiler.
+    return () => true;
+  }
 }
 
 // Prose never runs as code; it is selected only by name like any other path.
@@ -121,16 +255,25 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     }
     return referenceCache.get(member);
   };
+  const typeProjects = new Map(
+    toolingTypecheckProjects
+      .filter(({ test }) => !unknown && !global && candidates.includes(test))
+      .map(({ test, project, solution }) => [test, typeProjectInputs(project, cwd, solution)]),
+  );
   const tests = files.filter((file) => {
     if (tier === "merge") return true;
     if (mergeOnly.has(file)) return false;
     if (unknown || global || paths.includes(file)) return true;
+    if (typeProjects.has(file) && paths.some(typeProjects.get(file))) return true;
     const imports = closures.get(file);
     if (paths.some((path) => imports.files.includes(path))) return true;
     // A declared scope is curated: its inputs decide, and an incomplete closure
     // keeps that scope's broad inputs.
     const scope = toolingTestScopes.find((entry) => matchesAny(file, entry.tests));
-    const inputs = scope && (imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling);
+    const inputs =
+      scope &&
+      (!typeProjects.has(file) || !imports.complete) &&
+      (imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling);
     if (inputs && paths.some((path) => matchesAny(path, inputs))) return true;
     // Otherwise a test depends on its import closure and on every repository
     // path its sources name: a file, a directory above it or a glob over it.

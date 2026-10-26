@@ -94,7 +94,7 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
             let start = ts.len() + 3 + declaration.len();
             append!(
                 ts,
-                "  {declaration} {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n"
+                "  {declaration} {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = (void 0) as any;\n"
             );
             start
         };

@@ -1,0 +1,9 @@
+{
+  "schema": "vize.differential.build",
+  "version": 1,
+  "recipe": "cargo build --profile ci -p vize",
+  "sourceRevision": "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc",
+  "binaryPath": "target/ci/vize",
+  "binarySha256": "9b0c1457048b89ab34c48f605c132cda08e5bf8fd11be07b5f68071e61f86aaa",
+  "cliVersion": "vize 0.474.0-dev"
+}

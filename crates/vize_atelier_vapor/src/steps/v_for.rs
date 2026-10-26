@@ -99,8 +99,16 @@ fn extract_expression<'a>(
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match exp {
         ExpressionNode::Simple(simple) => {
-            let node =
+            let mut node =
                 SimpleExpressionNode::new(simple.content, simple.is_static, simple.loc.clone());
+            if let Some(names) = simple.retained_parameter_names() {
+                let mut retained = vize_carton::Vec::new_in(&allocator);
+                for name in names {
+                    retained.push(*name);
+                }
+                node.identifiers = Some(retained);
+                node.js_ast = simple.js_ast;
+            }
             Box::new_in(node, &allocator)
         }
         ExpressionNode::Compound(compound) => {

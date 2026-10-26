@@ -8,7 +8,7 @@ use vize_carton::{String, ToCompactString, profile};
 
 use crate::compile_script::artifacts::erase_artifact_macro_statements_traced;
 use crate::compile_script::lazy_hydration::{
-    LazyHydrationTransform, transform_lazy_hydration_macros,
+    LazyHydrationTransform, transform_lazy_hydration_macros_with_runtime,
 };
 use crate::compile_script::typescript::{
     transform_typescript_to_js, transform_typescript_to_js_traced,
@@ -23,8 +23,9 @@ pub(super) fn prepared_script(
     block: &SfcScriptBlock<'_>,
     trace: bool,
     nuxt_page_meta: bool,
+    runtime_module_name: &str,
 ) -> (Option<LazyHydrationTransform>, String, Option<Runs>) {
-    let lazy = transform_lazy_hydration_macros(&block.content);
+    let lazy = transform_lazy_hydration_macros_with_runtime(&block.content, runtime_module_name);
     let source = lazy.as_ref().map_or_else(
         || block.content.to_compact_string(),
         |lazy| lazy.code.clone(),

@@ -148,7 +148,7 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
     );
     for name in ["modalWindowState", "shallowModalWindowState"] {
         assert!(
-            virtual_ts.contains(&format!("var {name}: __U<__R_{name}> = undefined as any;")),
+            virtual_ts.contains(&format!("var {name}: __U<__R_{name}> = (void 0) as any;")),
             "template should shadow `{name}` with an unwrapped widened alias:\n{virtual_ts}"
         );
     }

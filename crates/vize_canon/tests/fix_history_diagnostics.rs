@@ -848,6 +848,42 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
 }
 
 #[test]
+fn missing_exported_package_target_preserves_ts2307() {
+    check_pack(
+        "package-target-deletion-refresh",
+        "missing_exported_package_target_preserves_ts2307",
+        "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+        None,
+        &["missing-target"],
+    );
+}
+
+#[test]
+fn rewritten_import_literals_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "import-literal-geometry-10762",
+        "rewritten_import_literals_preserve_complete_batch_diagnostics",
+        "51d3bebcc8988ba6bf42bb5f6b7fdc102de47ee3",
+        Some(10762),
+        &["original-alias-graph", "after-import-type-error"],
+    );
+}
+
+#[test]
+fn escaped_module_paths_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "escaped-import-literals-10763",
+        "escaped_module_paths_preserve_complete_authored_diagnostics",
+        "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+        Some(10763),
+        &[
+            "original-quoted-alias-graph",
+            "quoted-alias-with-authored-type-error",
+        ],
+    );
+}
+
+#[test]
 fn long_prop_keys_preserve_static_and_async_listener_diagnostics() {
     check_pack(
         "long-prop-kebab-case-10423",
@@ -944,5 +980,35 @@ fn content_mapper_experimental_router_context_preserves_published_page_types() {
         "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
         Some(10526),
         &["published-page-valid", "published-page-invalid-number"],
+    );
+}
+
+#[test]
+fn component_input_copies_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "component-input-diagnostic-owners-10607",
+        "component_input_copies_preserve_complete_authored_diagnostics",
+        "bd905e766c37ad5bacabaacbec02c90def36726e",
+        Some(10607),
+        &[
+            "art-generic-form-invalid",
+            "art-generic-form-repaired",
+            "slot-prop-without-children-invalid",
+            "slot-prop-named-child-invalid",
+            "slot-prop-two-named-children-invalid",
+            "slot-prop-named-child-repaired",
+            "two-files-same-offset-invalid",
+        ],
+    );
+}
+
+#[test]
+fn undefined_context_keeps_complete_authored_diagnostics() {
+    check_pack(
+        "template-context-undefined-10667",
+        "undefined_context_keeps_complete_authored_diagnostics",
+        "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+        Some(10667),
+        &["prop-used"],
     );
 }

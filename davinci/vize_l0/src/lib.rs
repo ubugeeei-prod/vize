@@ -60,6 +60,7 @@ pub mod flags;
 pub mod general;
 pub mod hash;
 pub mod interner;
+pub mod js_string;
 pub mod line_index;
 pub mod pool;
 pub mod profiler;

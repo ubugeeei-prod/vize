@@ -41,7 +41,7 @@ pub(super) fn resolve_sources(
         );
     }
     consulted.push(canonical_path(base, canonical_paths));
-    if base.is_file() && accepted_source(base, options) {
+    if canonical_paths.is_file(base) && accepted_source(base, options) {
         resolved.push(ResolvedPackageSource {
             source_path: canonical_path(base, canonical_paths),
             native_probe_path: canonical_path(
@@ -143,7 +143,7 @@ fn record_if_file(
 ) {
     let path = canonical_path(path, canonical_paths);
     consulted.push(path.clone());
-    if path.is_file() {
+    if canonical_paths.is_file(&path) {
         resolved.push(ResolvedPackageSource {
             source_path: path,
             native_probe_path: canonical_path(native_probe, canonical_paths),
@@ -160,7 +160,7 @@ fn record_workspace_fallback_if_file(
 ) {
     let path = canonical_path(path, canonical_paths);
     consulted.push(path.clone());
-    if path.is_file() {
+    if canonical_paths.is_file(&path) {
         let native_probe = workspace_source_fallback_probe(target, &path);
         resolved.push(ResolvedPackageSource {
             source_path: path,

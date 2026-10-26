@@ -181,8 +181,12 @@ fn compile_sfc_inner(
 
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
     if !has_script_setup && let Some(script) = descriptor.script.as_ref() {
-        let (lazy_hydration_transform, script_content, script_runs) =
-            module_trace::prepared_script(script, codegen_options.source_map, nuxt_page_meta);
+        let (lazy_hydration_transform, script_content, script_runs) = module_trace::prepared_script(
+            script,
+            codegen_options.source_map,
+            nuxt_page_meta,
+            codegen_options.runtime_module_name.as_str(),
+        );
 
         // Check if source script is TypeScript
         let source_is_ts = is_ts_lang(script.lang.as_deref());
@@ -403,7 +407,12 @@ fn compile_sfc_inner(
     let (normal_script_content, normal_runs) =
         normal_script::extract_for_setup(descriptor, is_ts, codegen_options.source_map);
     let (lazy_hydration_transform, script_setup_content, mut setup_runs) =
-        module_trace::prepared_script(script_setup, codegen_options.source_map, nuxt_page_meta);
+        module_trace::prepared_script(
+            script_setup,
+            codegen_options.source_map,
+            nuxt_page_meta,
+            codegen_options.runtime_module_name.as_str(),
+        );
 
     // Parse the script setup once. Croquis binding analysis, the macro
     // context analysis, and (unless v-model demotion rewrites the content
@@ -741,6 +750,9 @@ fn compile_sfc_inner(
             &scope_id,
             filename,
             options.template.is_prod,
+            &crate::compile_script::runtime_imports::RuntimeModule::new(
+                codegen_options.runtime_module_name.as_str()
+            ),
             setup_trace.as_mut(),
         )
     )?;

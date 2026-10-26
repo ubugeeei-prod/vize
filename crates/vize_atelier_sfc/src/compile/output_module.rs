@@ -23,9 +23,26 @@ fn rewrite_runtime_import_line(
     let rest = trimmed.strip_prefix("import {")?;
     let (specifiers, rest) = rest.split_once("} from ")?;
     let source = rest.trim().trim_end_matches(';');
-    let expected_double = cstr!("\"{runtime_module_name}\"");
+    let mut expected_double = String::default();
+    vize_l0::js_string::push_js_string_literal(&mut expected_double, runtime_module_name);
     let expected_single = cstr!("'{runtime_module_name}'");
-    if source != expected_double && source != expected_single {
+    // A raw single-quote wrapper is canonical only without characters whose
+    // authored spelling must be escaped. Otherwise the string value can name
+    // a different module (literal backslash+n versus an actual newline).
+    let matches_single = source == expected_single
+        && !runtime_module_name
+            .chars()
+            .any(|character| matches!(character, '\\' | '\'' | '\r' | '\n'));
+    // Generated canonical spellings need no parser after literal comparison.
+    // An authored equivalent may use single-quote or Unicode escapes instead.
+    if source != expected_double
+        && !matches_single
+        && (!source.contains('\\')
+            || !crate::compile_script::import_utils::import_block_has_source(
+                trimmed,
+                runtime_module_name,
+            ))
+    {
         return None;
     }
 

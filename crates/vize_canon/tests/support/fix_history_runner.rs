@@ -39,7 +39,12 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "contextual-prop-anchors-10661"
+            "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
+                "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
+            }
+            "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
+            "template-context-undefined-10667"
+            | "contextual-prop-anchors-10661"
             | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
@@ -103,7 +108,8 @@ pub(crate) fn check_pack(
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
-            | "empty-generic-public-contract-10540" => regression,
+            | "empty-generic-public-contract-10540"
+            | "component-input-diagnostic-owners-10607" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -268,8 +274,13 @@ pub(crate) fn check_pack(
             } else {
                 Default::default()
             },
-            tsconfig_path: (name == "workspace-alias-cache-10063")
-                .then(|| project_root.join("tsconfig.a.json")),
+            tsconfig_path: match name {
+                "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
+                "import-literal-geometry-10762" => {
+                    Some(project_root.join("packages/web/tsconfig.app.json"))
+                }
+                _ => None,
+            },
         };
         let mut checker =
             BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
