@@ -11,6 +11,17 @@ use scanner::find_next_v_bind;
 
 use vize_carton::{Allocator, String, ToCompactString, Vec as ArenaVec};
 
+/// One replacement actually emitted by the shared v-bind transform.
+/// Both ranges count UTF-8 bytes. Replacement bytes have no copied origin.
+#[doc(hidden)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CssVBindEdit {
+    /// Replaced bytes of the original CSS function call.
+    pub source: std::ops::Range<usize>,
+    /// Newly emitted bytes without a verbatim authored origin.
+    pub generated: std::ops::Range<usize>,
+}
+
 /// Extract v-bind() expressions and transform them to CSS variables
 #[doc(hidden)]
 pub fn extract_and_transform_v_bind<'a>(bump: &'a Allocator, css: &str) -> (&'a str, Vec<String>) {
@@ -34,6 +45,20 @@ pub fn extract_and_transform_v_bind_with_context<'a>(
     css: &str,
     scope_id: Option<&str>,
     production_filename: Option<&str>,
+) -> (&'a str, Vec<String>) {
+    // The no-op recorder is monomorphized away; existing callers allocate no
+    // provenance collection and use the same scanner and byte emitter.
+    extract_and_transform_v_bind_with_edits(bump, css, scope_id, production_filename, |_| {})
+}
+
+/// Record replacements at their actual writes, without another CSS scan.
+#[doc(hidden)]
+pub fn extract_and_transform_v_bind_with_edits<'a>(
+    bump: &'a Allocator,
+    css: &str,
+    scope_id: Option<&str>,
+    production_filename: Option<&str>,
+    mut record: impl FnMut(CssVBindEdit),
 ) -> (&'a str, Vec<String>) {
     let css_bytes = css.as_bytes();
     let mut vars = Vec::new();
@@ -63,6 +88,7 @@ pub fn extract_and_transform_v_bind_with_context<'a>(
                 vars.push(expr_str.to_compact_string());
 
                 // Generate CSS custom property reference.
+                let generated_start = result.len();
                 result.extend_from_slice(b"var(--");
                 if let Some(filename) = production_filename {
                     result
@@ -75,6 +101,10 @@ pub fn extract_and_transform_v_bind_with_context<'a>(
                 result.push(b')');
 
                 pos = start + end + 1;
+                record(CssVBindEdit {
+                    source: actual_pos..pos,
+                    generated: generated_start..result.len(),
+                });
             } else {
                 result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
                 break;

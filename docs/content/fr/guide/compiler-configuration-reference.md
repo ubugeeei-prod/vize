@@ -24,6 +24,7 @@ Ces options se placent sous `vue.compiler` dans `vite.config.*`, ou dans l’obj
 | `prefixIdentifiers` | `boolean`                             | Identifiants de modèles préfixes avec `_ctx`                                                                |
 | `hoistStatic`       | `boolean`                             | Contrôle du levage statique du nœud                                                                         |
 | `cacheHandlers`     | `boolean`                             | Mise en cache du gestionnaire d’événements de contrôle                                                      |
+| `comments`          | `boolean`                             | Conserve les commentaires du template ; sans valeur, en développement seulement                             |
 | `isTs`              | `boolean`                             | Analyser les blocs de script sous forme de TypeScript                                                       |
 | `runtimeModuleName` | `string`                              | Module d’importation à l’exécution de surcharge                                                             |
 | `runtimeGlobalName` | `string`                              | Surpasser globalement l’exécution pour la sortie fonction/IIFE                                              |

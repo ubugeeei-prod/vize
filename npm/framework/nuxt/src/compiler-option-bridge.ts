@@ -14,7 +14,8 @@ export function unsupportedNuxtVueCompilerOptions(
     .filter(
       ([key, value]) =>
         value !== undefined &&
-        (key !== "whitespace" || (value !== "condense" && value !== "preserve")),
+        (key !== "whitespace" || (value !== "condense" && value !== "preserve")) &&
+        (key !== "comments" || typeof value !== "boolean"),
     )
     .map(([key]) => key);
 }
@@ -26,11 +27,13 @@ export function splitNuxtCompilerDefaults(
   vueCompilerOptions: Record<string, unknown> | undefined,
 ): {
   options: VizeNuxtCompilerOptions;
-  defaults: Pick<VizeNuxtCompilerOptions, "whitespace">;
+  defaults: Pick<VizeNuxtCompilerOptions, "whitespace"> & { comments?: boolean };
 } {
+  const comments = vueCompilerOptions?.comments;
+  const defaults = typeof comments === "boolean" ? { comments } : {};
   const whitespace = vueCompilerOptions?.whitespace;
   if (whitespace !== "condense" && whitespace !== "preserve") {
-    return { options: resolved, defaults: {} };
+    return { options: resolved, defaults };
   }
   return {
     options: {
@@ -38,7 +41,7 @@ export function splitNuxtCompilerDefaults(
       whitespace:
         typeof compiler === "object" && compiler != null ? compiler.whitespace : undefined,
     },
-    defaults: { whitespace },
+    defaults: { ...defaults, whitespace },
   };
 }
 

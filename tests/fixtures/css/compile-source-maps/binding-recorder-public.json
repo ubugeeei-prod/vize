@@ -1,0 +1,683 @@
+{
+  "schema": "vize.css.binding-recorder.public-oracle",
+  "version": 1,
+  "packages": [
+    {
+      "name": "@vizejs/native",
+      "version": "0.571.0",
+      "tarball": "https://registry.npmjs.org/@vizejs/native/-/native-0.571.0.tgz",
+      "integrity": "sha512-XFdgq0UOPozFdIwxXl4SmzJ/xW56Owo2hbp2kgMXg9XnnPyl0sZkynsO8jaOmAY8JZClQp69H9+3n4+pCvIaRQ==",
+      "archiveSha256": "9c28110bb6c60580dc0be2d8ec74520bf29419e11038133af595391cf0185917",
+      "retainedFile": "package/index.js",
+      "fileSha256": "39efc6c3a18d4ef39232d0fcc713c11114a29bef8c8942cdb8492ae9d939ebec"
+    },
+    {
+      "name": "@vizejs/native-darwin-arm64",
+      "version": "0.571.0",
+      "tarball": "https://registry.npmjs.org/@vizejs/native-darwin-arm64/-/native-darwin-arm64-0.571.0.tgz",
+      "integrity": "sha512-o6n7fLmFqt3d1/RE2zCuvfZBqflMecV5Q0JA4cMQRii9Ysdfazr9UqBU/d++Bp4mFsD8hsHy/RcnWEAayMgEqQ==",
+      "archiveSha256": "3ea9ab11d4bdf850f80507ebd14b987d470197a8d739e4e26b4d2d7ffc1386ee",
+      "retainedFile": "package/vize-vitrine.darwin-arm64.node",
+      "fileSha256": "7817eb27dfa1708a59e19eebf8052eb42dc840313289d4719572ab032d1cd24d"
+    }
+  ],
+  "buildToken": "4a833c6793600c1f36aada2e025c9e84",
+  "captures": [
+    {
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(theme)"],
+      "vars": ["theme"],
+      "replacements": ["var(--069375c9-theme)"],
+      "expectedTransformed": ".a{color:var(--069375c9-theme)}.b{color:blue}",
+      "publicCall": {
+        "method": "compileCss",
+        "args": [".a{color:v-bind(theme)}.b{color:blue}", {}],
+        "result": {
+          "code": ".a {\n  color: var(--069375c9-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
+          "cssVars": ["theme"],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(theme)"],
+      "vars": ["theme"],
+      "replacements": ["var(--v6d863afa)"],
+      "expectedTransformed": ".a{color:var(--v6d863afa)}.b{color:blue}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(theme)}.b{color:blue}", "", "/src/组件雪😀.vue"],
+        "result": ".a{color:var(--v6d863afa)}.b{color:blue}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(theme)"],
+      "vars": ["theme"],
+      "replacements": ["var(--test-theme)"],
+      "expectedTransformed": ".a{color:var(--test-theme)}.b{color:blue}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(theme)}.b{color:blue}", "data-v-test"],
+        "result": ".a{color:var(--test-theme)}.b{color:blue}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(theme)"],
+      "vars": ["theme"],
+      "replacements": ["var(--v6d863afa)"],
+      "expectedTransformed": ".a{color:var(--v6d863afa)}.b{color:blue}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(theme)}.b{color:blue}", "data-v-test", "/src/组件雪😀.vue"],
+        "result": ".a{color:var(--v6d863afa)}.b{color:blue}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(theme)"],
+      "vars": ["theme"],
+      "replacements": ["var(--雪😀-theme)"],
+      "expectedTransformed": ".a{color:var(--雪😀-theme)}.b{color:blue}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(theme)}.b{color:blue}", "data-v-雪😀"],
+        "result": ".a{color:var(--雪😀-theme)}.b{color:blue}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(theme)"],
+      "vars": ["theme"],
+      "replacements": ["var(--v6d863afa)"],
+      "expectedTransformed": ".a{color:var(--v6d863afa)}.b{color:blue}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(theme)}.b{color:blue}", "data-v-雪😀", "/src/组件雪😀.vue"],
+        "result": ".a{color:var(--v6d863afa)}.b{color:blue}"
+      }
+    },
+    {
+      "source": "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": ["v-bind('主题😀')", "v-bind(nested(')'))"],
+      "vars": ["主题😀", "nested(')')"],
+      "replacements": ["var(--v52db44d6)", "var(--v0dde251f)"],
+      "expectedTransformed": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v52db44d6)}.b{opacity:var(--v0dde251f)}",
+      "publicCall": {
+        "method": "compileCss",
+        "args": [
+          "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+          {}
+        ],
+        "result": {
+          "code": ".a {\n  content: \"v-bind(no)\";\n  color: var(--v52db44d6);\n}\n\n.b {\n  opacity: var(--v0dde251f);\n}\n",
+          "cssVars": ["主题😀", "nested(')')"],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind('主题😀')", "v-bind(nested(')'))"],
+      "vars": ["主题😀", "nested(')')"],
+      "replacements": ["var(--v844216e2)", "var(--v6e3df974)"],
+      "expectedTransformed": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v844216e2)}.b{opacity:var(--v6e3df974)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+          "",
+          "/src/组件雪😀.vue"
+        ],
+        "result": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v844216e2)}.b{opacity:var(--v6e3df974)}"
+      }
+    },
+    {
+      "source": "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind('主题😀')", "v-bind(nested(')'))"],
+      "vars": ["主题😀", "nested(')')"],
+      "replacements": ["var(--v39138568)", "var(--v7b6d0766)"],
+      "expectedTransformed": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v39138568)}.b{opacity:var(--v7b6d0766)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+          "data-v-test"
+        ],
+        "result": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v39138568)}.b{opacity:var(--v7b6d0766)}"
+      }
+    },
+    {
+      "source": "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind('主题😀')", "v-bind(nested(')'))"],
+      "vars": ["主题😀", "nested(')')"],
+      "replacements": ["var(--v844216e2)", "var(--v6e3df974)"],
+      "expectedTransformed": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v844216e2)}.b{opacity:var(--v6e3df974)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+          "data-v-test",
+          "/src/组件雪😀.vue"
+        ],
+        "result": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v844216e2)}.b{opacity:var(--v6e3df974)}"
+      }
+    },
+    {
+      "source": "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind('主题😀')", "v-bind(nested(')'))"],
+      "vars": ["主题😀", "nested(')')"],
+      "replacements": ["var(--v9cac8b12)", "var(--v496f485e)"],
+      "expectedTransformed": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v9cac8b12)}.b{opacity:var(--v496f485e)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+          "data-v-雪😀"
+        ],
+        "result": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v9cac8b12)}.b{opacity:var(--v496f485e)}"
+      }
+    },
+    {
+      "source": "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind('主题😀')", "v-bind(nested(')'))"],
+      "vars": ["主题😀", "nested(')')"],
+      "replacements": ["var(--v844216e2)", "var(--v6e3df974)"],
+      "expectedTransformed": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v844216e2)}.b{opacity:var(--v6e3df974)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          "/* v-bind(no) */.a{content:'v-bind(no)';color:v-bind('主题😀')}.b{opacity:v-bind(nested(')'))}",
+          "data-v-雪😀",
+          "/src/组件雪😀.vue"
+        ],
+        "result": "/* v-bind(no) */.a{content:'v-bind(no)';color:var(--v844216e2)}.b{opacity:var(--v6e3df974)}"
+      }
+    },
+    {
+      "source": " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(\r\n '雪😀'\r\n)", "v-bind(next)"],
+      "vars": ["雪😀", "next"],
+      "replacements": ["var(--v1c8afa17)", "var(--00338af3-next)"],
+      "expectedTransformed": " .a{color:var(--v1c8afa17)}\r\n.b{opacity:var(--00338af3-next)}",
+      "publicCall": {
+        "method": "compileCss",
+        "args": [" .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}", {}],
+        "result": {
+          "code": ".a {\n  color: var(--v1c8afa17);\n}\n\n.b {\n  opacity: var(--00338af3-next);\n}\n",
+          "cssVars": ["雪😀", "next"],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(\r\n '雪😀'\r\n)", "v-bind(next)"],
+      "vars": ["雪😀", "next"],
+      "replacements": ["var(--v86342184)", "var(--cfaa48bc)"],
+      "expectedTransformed": " .a{color:var(--v86342184)}\r\n.b{opacity:var(--cfaa48bc)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+          "",
+          "/src/组件雪😀.vue"
+        ],
+        "result": " .a{color:var(--v86342184)}\r\n.b{opacity:var(--cfaa48bc)}"
+      }
+    },
+    {
+      "source": " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(\r\n '雪😀'\r\n)", "v-bind(next)"],
+      "vars": ["雪😀", "next"],
+      "replacements": ["var(--v7e414176)", "var(--test-next)"],
+      "expectedTransformed": " .a{color:var(--v7e414176)}\r\n.b{opacity:var(--test-next)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [" .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}", "data-v-test"],
+        "result": " .a{color:var(--v7e414176)}\r\n.b{opacity:var(--test-next)}"
+      }
+    },
+    {
+      "source": " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(\r\n '雪😀'\r\n)", "v-bind(next)"],
+      "vars": ["雪😀", "next"],
+      "replacements": ["var(--v86342184)", "var(--cfaa48bc)"],
+      "expectedTransformed": " .a{color:var(--v86342184)}\r\n.b{opacity:var(--cfaa48bc)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+          "data-v-test",
+          "/src/组件雪😀.vue"
+        ],
+        "result": " .a{color:var(--v86342184)}\r\n.b{opacity:var(--cfaa48bc)}"
+      }
+    },
+    {
+      "source": " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(\r\n '雪😀'\r\n)", "v-bind(next)"],
+      "vars": ["雪😀", "next"],
+      "replacements": ["var(--d9926754)", "var(--雪😀-next)"],
+      "expectedTransformed": " .a{color:var(--d9926754)}\r\n.b{opacity:var(--雪😀-next)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [" .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}", "data-v-雪😀"],
+        "result": " .a{color:var(--d9926754)}\r\n.b{opacity:var(--雪😀-next)}"
+      }
+    },
+    {
+      "source": " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(\r\n '雪😀'\r\n)", "v-bind(next)"],
+      "vars": ["雪😀", "next"],
+      "replacements": ["var(--v86342184)", "var(--cfaa48bc)"],
+      "expectedTransformed": " .a{color:var(--v86342184)}\r\n.b{opacity:var(--cfaa48bc)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [
+          " .a{color:v-bind(\r\n '雪😀'\r\n)}\r\n.b{opacity:v-bind(next)}",
+          "data-v-雪😀",
+          "/src/组件雪😀.vue"
+        ],
+        "result": " .a{color:var(--v86342184)}\r\n.b{opacity:var(--cfaa48bc)}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(foo)v-bind(bar)}",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(foo)", "v-bind(bar)"],
+      "vars": ["foo", "bar"],
+      "replacements": ["var(--00018cc6-foo)", "var(--00017c13-bar)"],
+      "expectedTransformed": ".a{color:var(--00018cc6-foo)var(--00017c13-bar)}",
+      "publicCall": {
+        "method": "compileCss",
+        "args": [".a{color:v-bind(foo)v-bind(bar)}", {}],
+        "result": {
+          "code": ".a {\n  color: var(--00018cc6-foo)var(--00017c13-bar);\n}\n",
+          "cssVars": ["foo", "bar"],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": ".a{color:v-bind(foo)v-bind(bar)}",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(foo)", "v-bind(bar)"],
+      "vars": ["foo", "bar"],
+      "replacements": ["var(--v8ad42b92)", "var(--v8ad44cf8)"],
+      "expectedTransformed": ".a{color:var(--v8ad42b92)var(--v8ad44cf8)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(foo)v-bind(bar)}", "", "/src/组件雪😀.vue"],
+        "result": ".a{color:var(--v8ad42b92)var(--v8ad44cf8)}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(foo)v-bind(bar)}",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(foo)", "v-bind(bar)"],
+      "vars": ["foo", "bar"],
+      "replacements": ["var(--test-foo)", "var(--test-bar)"],
+      "expectedTransformed": ".a{color:var(--test-foo)var(--test-bar)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(foo)v-bind(bar)}", "data-v-test"],
+        "result": ".a{color:var(--test-foo)var(--test-bar)}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(foo)v-bind(bar)}",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(foo)", "v-bind(bar)"],
+      "vars": ["foo", "bar"],
+      "replacements": ["var(--v8ad42b92)", "var(--v8ad44cf8)"],
+      "expectedTransformed": ".a{color:var(--v8ad42b92)var(--v8ad44cf8)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(foo)v-bind(bar)}", "data-v-test", "/src/组件雪😀.vue"],
+        "result": ".a{color:var(--v8ad42b92)var(--v8ad44cf8)}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(foo)v-bind(bar)}",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": ["v-bind(foo)", "v-bind(bar)"],
+      "vars": ["foo", "bar"],
+      "replacements": ["var(--雪😀-foo)", "var(--雪😀-bar)"],
+      "expectedTransformed": ".a{color:var(--雪😀-foo)var(--雪😀-bar)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(foo)v-bind(bar)}", "data-v-雪😀"],
+        "result": ".a{color:var(--雪😀-foo)var(--雪😀-bar)}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind(foo)v-bind(bar)}",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": ["v-bind(foo)", "v-bind(bar)"],
+      "vars": ["foo", "bar"],
+      "replacements": ["var(--v8ad42b92)", "var(--v8ad44cf8)"],
+      "expectedTransformed": ".a{color:var(--v8ad42b92)var(--v8ad44cf8)}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind(foo)v-bind(bar)}", "data-v-雪😀", "/src/组件雪😀.vue"],
+        "result": ".a{color:var(--v8ad42b92)var(--v8ad44cf8)}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind('oops'}",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{color:v-bind('oops'}",
+      "publicCall": {
+        "method": "compileCss",
+        "args": [".a{color:v-bind('oops'}", {}],
+        "result": {
+          "code": ".a{color:v-bind('oops'}",
+          "cssVars": [],
+          "errors": ["CSS parse error: Unexpected token CloseCurlyBracket at style.css:0:23"],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": ".a{color:v-bind('oops'}",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{color:v-bind('oops'}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind('oops'}", "", "/src/组件雪😀.vue"],
+        "result": ".a{color:v-bind('oops'}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind('oops'}",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{color:v-bind('oops'}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind('oops'}", "data-v-test"],
+        "result": ".a{color:v-bind('oops'}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind('oops'}",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{color:v-bind('oops'}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind('oops'}", "data-v-test", "/src/组件雪😀.vue"],
+        "result": ".a{color:v-bind('oops'}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind('oops'}",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{color:v-bind('oops'}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind('oops'}", "data-v-雪😀"],
+        "result": ".a{color:v-bind('oops'}"
+      }
+    },
+    {
+      "source": ".a{color:v-bind('oops'}",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{color:v-bind('oops'}",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{color:v-bind('oops'}", "data-v-雪😀", "/src/组件雪😀.vue"],
+        "result": ".a{color:v-bind('oops'}"
+      }
+    },
+    {
+      "source": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "publicCall": {
+        "method": "compileCss",
+        "args": [".a{content:'v-bind(no)'}/* v-bind(no) */", {}],
+        "result": {
+          "code": ".a {\n  content: \"v-bind(no)\";\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{content:'v-bind(no)'}/* v-bind(no) */", "", "/src/组件雪😀.vue"],
+        "result": ".a{content:'v-bind(no)'}/* v-bind(no) */"
+      }
+    },
+    {
+      "source": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{content:'v-bind(no)'}/* v-bind(no) */", "data-v-test"],
+        "result": ".a{content:'v-bind(no)'}/* v-bind(no) */"
+      }
+    },
+    {
+      "source": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{content:'v-bind(no)'}/* v-bind(no) */", "data-v-test", "/src/组件雪😀.vue"],
+        "result": ".a{content:'v-bind(no)'}/* v-bind(no) */"
+      }
+    },
+    {
+      "source": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{content:'v-bind(no)'}/* v-bind(no) */", "data-v-雪😀"],
+        "result": ".a{content:'v-bind(no)'}/* v-bind(no) */"
+      }
+    },
+    {
+      "source": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": ".a{content:'v-bind(no)'}/* v-bind(no) */",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": [".a{content:'v-bind(no)'}/* v-bind(no) */", "data-v-雪😀", "/src/组件雪😀.vue"],
+        "result": ".a{content:'v-bind(no)'}/* v-bind(no) */"
+      }
+    },
+    {
+      "source": "",
+      "scope": null,
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": "",
+      "publicCall": {
+        "method": "compileCss",
+        "args": ["", {}],
+        "result": {
+          "code": "\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "source": "",
+      "scope": null,
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": "",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": ["", "", "/src/组件雪😀.vue"],
+        "result": ""
+      }
+    },
+    {
+      "source": "",
+      "scope": "data-v-test",
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": "",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": ["", "data-v-test"],
+        "result": ""
+      }
+    },
+    {
+      "source": "",
+      "scope": "data-v-test",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": "",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": ["", "data-v-test", "/src/组件雪😀.vue"],
+        "result": ""
+      }
+    },
+    {
+      "source": "",
+      "scope": "data-v-雪😀",
+      "productionFilename": null,
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": "",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": ["", "data-v-雪😀"],
+        "result": ""
+      }
+    },
+    {
+      "source": "",
+      "scope": "data-v-雪😀",
+      "productionFilename": "/src/组件雪😀.vue",
+      "sourceCalls": [],
+      "vars": [],
+      "replacements": [],
+      "expectedTransformed": "",
+      "publicCall": {
+        "method": "transformViteCssVarsForPipeline",
+        "args": ["", "data-v-雪😀", "/src/组件雪😀.vue"],
+        "result": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+<!-- 日本 🧭 -->
+<script setup lang="ts">
+const item = 1;
+const route = 2;
+const itemId = 3;
+function shadow(item: number, route: number, itemId: number) { return item + route + itemId; }
+</script>
+<template><p>🧭{{ item }} {{ route }} {{ itemId }}</p></template>
+<style>.a{color:v-bind(item)}.b{color:v-bind(route)}.c{color:v-bind(itemId)}</style>
