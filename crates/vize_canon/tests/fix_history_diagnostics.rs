@@ -820,6 +820,24 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
 }
 
 #[test]
+fn generic_slot_outlets_check_against_the_setup_parameters() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "generic-slot-outlet-10883",
+        "generic_slot_outlets_check_against_the_setup_parameters",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10883),
+        &[
+            "defaulted-parameter",
+            "constrained-parameter",
+            "wrong-payload",
+        ],
+    );
+}
+
+#[test]
 fn slot_host_guards_preserve_authored_impossible_comparisons() {
     if native_fixture_runtime_disabled() {
         return;

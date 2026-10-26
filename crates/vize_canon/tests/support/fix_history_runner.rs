@@ -109,6 +109,7 @@ pub(crate) fn check_pack(
             | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
             | "callback-render-position-10738"
+            | "generic-slot-outlet-10883"
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607"
             | "content-mapper-merged-class-10788"

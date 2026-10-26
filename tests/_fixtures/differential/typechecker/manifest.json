@@ -4018,6 +4018,159 @@
       }
     },
     {
+      "id": "typechecker/generic-slot-outlet-10883/defaulted-parameter",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "generic-slot-outlet-10883",
+      "case": "defaulted-parameter",
+      "test": "generic_slot_outlets_check_against_the_setup_parameters",
+      "regressionCommit": "42ca747027a86da7f94b473cff737cb330134d8c",
+      "sourceRevision": "42ca747027a86da7f94b473cff737cb330134d8c",
+      "packReference": {
+        "path": "generic-slot-outlet-10883/cases.json",
+        "sha256": "0058b36031f04e2ea4df4363a2f753b7928433c2121db2d285ee39f6fbe20ca0"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "generic-slot-outlet-10883/tsconfig.json.txt",
+          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f"
+        },
+        {
+          "file": "src/CheckboxRoot.vue",
+          "path": "generic-slot-outlet-10883/src/CheckboxRoot.vue.txt",
+          "sha256": "370a99bfd94a5116b4e223b2d889112f172fdc0e861462a30b2ecdd1bd33e987"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/generic-slot-outlet-10883/constrained-parameter",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "generic-slot-outlet-10883",
+      "case": "constrained-parameter",
+      "test": "generic_slot_outlets_check_against_the_setup_parameters",
+      "regressionCommit": "42ca747027a86da7f94b473cff737cb330134d8c",
+      "sourceRevision": "42ca747027a86da7f94b473cff737cb330134d8c",
+      "packReference": {
+        "path": "generic-slot-outlet-10883/cases.json",
+        "sha256": "0058b36031f04e2ea4df4363a2f753b7928433c2121db2d285ee39f6fbe20ca0"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "generic-slot-outlet-10883/tsconfig.json.txt",
+          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f"
+        },
+        {
+          "file": "src/PinInputRoot.vue",
+          "path": "generic-slot-outlet-10883/src/PinInputRoot.vue.txt",
+          "sha256": "959f959a321b412f68ef83a1a008e4889e334dcdd6281d717b0e3f531411d61a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/generic-slot-outlet-10883/wrong-payload",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "generic-slot-outlet-10883",
+      "case": "wrong-payload",
+      "test": "generic_slot_outlets_check_against_the_setup_parameters",
+      "regressionCommit": "42ca747027a86da7f94b473cff737cb330134d8c",
+      "sourceRevision": "42ca747027a86da7f94b473cff737cb330134d8c",
+      "packReference": {
+        "path": "generic-slot-outlet-10883/cases.json",
+        "sha256": "0058b36031f04e2ea4df4363a2f753b7928433c2121db2d285ee39f6fbe20ca0"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "generic-slot-outlet-10883/tsconfig.json.txt",
+          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f"
+        },
+        {
+          "file": "src/CheckboxRoot.vue",
+          "path": "generic-slot-outlet-10883/src/CheckboxRoot.wrong.vue.txt",
+          "sha256": "875e5c94b764dfbd3f9f2324bbf0c1de151f956dfff3588865aa974399fb57fb"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/CheckboxRoot.vue",
+          "line": 13,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type '\"indeterminate\" | T'."
+        }
+      ]
+    },
+    {
       "id": "typechecker/global-scope-build-info-10819/imported-global-declaration",
       "state": "active",
       "targets": [
