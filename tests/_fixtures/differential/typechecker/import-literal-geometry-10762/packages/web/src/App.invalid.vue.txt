@@ -1,0 +1,1 @@
+<script setup lang="ts">import { greet } from '#lib/greet'; const message: string = greet('vize'); const sentinel: number = message;</script><template>{{ message }}</template>

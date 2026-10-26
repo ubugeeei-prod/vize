@@ -19,9 +19,16 @@ export function jsInstallFilters(group: string): string[] {
   const root = JSON.parse(readFileSync("package.json", "utf8"));
   if (typeof root.name !== "string") throw new Error("missing root package name");
   // The UI production-Vue suite resolves its locked runtime from this example.
-  const fixtures = group === "ui" ? ["./npm/builder/vite/example..."] : [];
+  const fixtures = group === "ui" ? ["{./npm/builder/vite/example}..."] : [];
+  // pnpm requires braces to traverse a directory selector's dependency graph.
+  // `./directory...` matches the directory without installing its workspace dependencies.
   return [
-    ...new Set([root.name, "./npm/native...", ...packages.map((pkg) => `${pkg}...`), ...fixtures]),
+    ...new Set([
+      root.name,
+      "{./npm/native}...",
+      ...packages.map((pkg) => `{${pkg}}...`),
+      ...fixtures,
+    ]),
   ];
 }
 

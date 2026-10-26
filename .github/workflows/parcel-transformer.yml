@@ -1,0 +1,93 @@
+name: Parcel transformer
+
+on:
+  pull_request:
+    paths:
+      - npm/builder/parcel/**
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - tools/support/compat/parcel/**
+      - .github/workflows/parcel-transformer.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: parcel-transformer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  VIZE_NATIVE_CI_FORMATTER_HISTORY: "1"
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  packed-host:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install locked workspace providers
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Authenticate committed source and observe the actual absent Cargo target
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=normal)"
+          node tools/support/compat/parcel/native-target.mjs before "$GITHUB_WORKSPACE"
+          node npm/native/scripts/build-ci.mjs --request-ci-capture
+      - name: Build the actual native source
+        run: vp run --filter './npm/native' build:ci
+      - name: Bind target absence to the actual compiler artifact
+        run: node tools/support/compat/parcel/native-target.mjs after "$GITHUB_WORKSPACE"
+      - name: Build the published adapter shape
+        working-directory: npm/builder/parcel
+        run: vp pack
+      - name: Validate geometry and configuration
+        run: node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs tools/support/compat/parcel/native-target.test.mjs
+      - name: Install the fixture browser
+        working-directory: npm/builder/parcel
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Qualify packed packages in a fresh Parcel consumer
+        run: |
+          test ! -e "$RUNNER_TEMP/parcel-cpu"
+          mkdir "$RUNNER_TEMP/parcel-cpu"
+          VIZE_PARCEL_PROFILE_DIR="$RUNNER_TEMP/parcel-cpu" vp run --no-cache --filter './npm/builder/parcel' test:host -- "$RUNNER_TEMP/parcel-proof"
+      - name: Preserve source samples and seal the complete evidence
+        if: ${{ always() && !cancelled() }}
+        run: |
+          if test -d "$RUNNER_TEMP/parcel-cpu"; then
+            node tools/support/compat/parcel/profile.mjs "$RUNNER_TEMP/parcel-proof" "$RUNNER_TEMP/parcel-cpu"
+          fi
+      - name: Preserve complete source and host evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: parcel-transformer-${{ env.SOURCE_SHA }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/parcel-proof/
+            !${{ runner.temp }}/parcel-proof/**/node_modules/**
+            ${{ runner.temp }}/parcel-cpu/
+            npm/native/.artifacts/native/formatter-history/

@@ -7332,6 +7332,141 @@
           "message": "Cannot find module '@scope/dynamic' or its corresponding type declarations."
         }
       ]
+    },
+    {
+      "id": "typechecker/import-literal-geometry-10762/original-alias-graph",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "import-literal-geometry-10762",
+      "case": "original-alias-graph",
+      "test": "rewritten_import_literals_preserve_complete_batch_diagnostics",
+      "regressionCommit": "51d3bebcc8988ba6bf42bb5f6b7fdc102de47ee3",
+      "sourceRevision": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+      "packReference": {
+        "path": "import-literal-geometry-10762/cases.json",
+        "sha256": "d6a01395db206af978677173176cbff81c01b8913613eba3ea361f82943a6e2a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "import-literal-geometry-10762/tsconfig.json.txt",
+          "sha256": "2b0f184cf9950cace9f942bc6b3583ed6ee22f78f169c4895558c46d389c5187"
+        },
+        {
+          "file": "packages/web/tsconfig.json",
+          "path": "import-literal-geometry-10762/packages/web/tsconfig.json.txt",
+          "sha256": "61ec802f9f05beff8a27d645fd7417a88fe4caf46853238010baf503b076e37e"
+        },
+        {
+          "file": "packages/web/tsconfig.app.json",
+          "path": "import-literal-geometry-10762/packages/web/tsconfig.app.json.txt",
+          "sha256": "8710f8a61cc96c8144f93bf046417c254e07465f530e17c2f974306f673200c3"
+        },
+        {
+          "file": "packages/web/src/App.vue",
+          "path": "import-literal-geometry-10762/packages/web/src/App.vue.txt",
+          "sha256": "591ecac8c496406def7e5c3c9f0820b7e4256479633dcc79e46d05e38d818957"
+        },
+        {
+          "file": "packages/web/src/lib/greet/index.ts",
+          "path": "import-literal-geometry-10762/packages/web/src/lib/greet/index.ts.txt",
+          "sha256": "1912420b756d7bf8d814e0eb6d97c606de6ce520ebe9404c5f5e4764ab3f5eb8"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/import-literal-geometry-10762/after-import-type-error",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "import-literal-geometry-10762",
+      "case": "after-import-type-error",
+      "test": "rewritten_import_literals_preserve_complete_batch_diagnostics",
+      "regressionCommit": "51d3bebcc8988ba6bf42bb5f6b7fdc102de47ee3",
+      "sourceRevision": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+      "packReference": {
+        "path": "import-literal-geometry-10762/cases.json",
+        "sha256": "d6a01395db206af978677173176cbff81c01b8913613eba3ea361f82943a6e2a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "import-literal-geometry-10762/tsconfig.json.txt",
+          "sha256": "2b0f184cf9950cace9f942bc6b3583ed6ee22f78f169c4895558c46d389c5187"
+        },
+        {
+          "file": "packages/web/tsconfig.json",
+          "path": "import-literal-geometry-10762/packages/web/tsconfig.json.txt",
+          "sha256": "61ec802f9f05beff8a27d645fd7417a88fe4caf46853238010baf503b076e37e"
+        },
+        {
+          "file": "packages/web/tsconfig.app.json",
+          "path": "import-literal-geometry-10762/packages/web/tsconfig.app.json.txt",
+          "sha256": "8710f8a61cc96c8144f93bf046417c254e07465f530e17c2f974306f673200c3"
+        },
+        {
+          "file": "packages/web/src/App.vue",
+          "path": "import-literal-geometry-10762/packages/web/src/App.invalid.vue.txt",
+          "sha256": "13d6f44a61c654e652f082a60a12a8bcf740001fb5e06042dd4457fa4b7d5047"
+        },
+        {
+          "file": "packages/web/src/lib/greet/index.ts",
+          "path": "import-literal-geometry-10762/packages/web/src/lib/greet/index.ts.txt",
+          "sha256": "1912420b756d7bf8d814e0eb6d97c606de6ce520ebe9404c5f5e4764ab3f5eb8"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "packages/web/src/App.vue",
+          "line": 1,
+          "column": 106,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
     }
   ],
   "protocolCases": [
