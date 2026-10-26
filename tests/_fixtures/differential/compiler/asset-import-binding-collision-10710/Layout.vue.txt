@@ -1,0 +1,5 @@
+<script>
+const _imports_0 = 'authored'
+export default { value: _imports_0 }
+</script>
+<template><img src="./a.svg"></template>

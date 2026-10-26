@@ -31,7 +31,7 @@ pub use slots::{
 };
 pub use v_for::{
     VForBindingParameters, VForScopeAliases, parse_v_for_expression, parse_v_for_scope_expression,
-    retain_v_for_binding_parameters,
+    retain_v_for_binding_parameters, retain_v_for_binding_parameters_with_source,
 };
 pub use v_scope::extract_v_scope_bindings;
 

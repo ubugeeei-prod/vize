@@ -1,0 +1,62 @@
+{
+  "identity": {
+    "side": "head",
+    "source": "3a3c8460f966fddbd8e1be4c083d460b24202f90",
+    "token": "692c0d492de2d9c6736e365c5e2314e0",
+    "target": "/home/runner/_work/_temp/css-source-map-targets-Qbf2QI/head-3a3c8460f966fddbd8e1be4c083d460b24202f90",
+    "targetInitiallyEmpty": true,
+    "command": [
+      "vp",
+      "exec",
+      "napi",
+      "build",
+      "--platform",
+      "--profile",
+      "ci-opt",
+      "--manifest-path",
+      "../../crates/vize_vitrine/Cargo.toml",
+      "-p",
+      "vize_vitrine",
+      "--features",
+      "napi,legacy",
+      "--output-dir",
+      "/home/runner/_work/vize/vize/artifacts/css-source-map-profile/head-image",
+      "--no-js",
+      "--",
+      "--locked",
+      "--config",
+      "profile.ci-opt.inherits=\"release\"",
+      "--config",
+      "profile.ci-opt.lto=\"thin\"",
+      "--config",
+      "profile.ci-opt.codegen-units=16"
+    ],
+    "sourceTrees": {
+      "crates": "0c40482a5af5888415710f2c37b73c9fdf45c668",
+      "davinci": "e756b1f0ac6df20cf68289299309b3f48dad3045",
+      "vendor": "b2865cc5a1e059af85d807359defa2749e9b2946",
+      "npm/native": "788647ae02c54a530683c4cf399bb23682648706"
+    },
+    "cargoLockSha256": "e099f229ea33519514c4addb860406744b7d2f01eb03d3eea769d15b88f52acd",
+    "binary": "/home/runner/_work/vize/vize/artifacts/css-source-map-profile/head-image/vize-vitrine.linux-x64-gnu.node",
+    "binarySha256": "143afa198462e88b50e9ba9201207b406e015df7bce0f995b4e6795239a63707",
+    "declaration": {
+      "file": "/home/runner/_work/vize/vize/artifacts/css-source-map-profile/head-image/index.d.ts",
+      "sha256": "f80ce8c76c48e61cad4571d1f0dfc581455b34ed74c1d6a9f30bc5e4f9f993fd"
+    }
+  },
+  "call": {
+    "source": ".a{color:v-bind(theme)}.b{color:blue}",
+    "options": {
+      "scopeId": "data-v-123abc",
+      "minify": false,
+      "sourceMap": true
+    },
+    "result": {
+      "code": ".a {\n  color: var(--123abc-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
+      "cssVars": ["theme"],
+      "errors": [],
+      "warnings": []
+    }
+  }
+}

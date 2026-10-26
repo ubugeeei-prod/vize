@@ -37,3 +37,11 @@ await test("CSS source campaign rejects swapped source/role, retained targets, f
   ])
     assert.throws(() => validateIdentity(changed, source, "base", token, hash));
 });
+
+await test("binding campaign requires exactly unchanged complete Cargo.lock and refuses unknown baselines", () => {
+  const revision = "3a3c8460f966fddbd8e1be4c083d460b24202f90",
+    lock = "exact package identities\n";
+  validateCargoDelta(lock, lock, revision);
+  assert.throws(() => validateCargoDelta(lock, lock + "foreign", revision));
+  assert.throws(() => validateCargoDelta(lock, lock, "f".repeat(40)));
+});

@@ -1199,6 +1199,59 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/asset-import-binding-collision-10710",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "asset-import-binding-collision-10710",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "7998b880526f430c3bed37dde989637352aa169369c51354e8c5df4b1bbe69ba",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "asset-import-binding-collision-10710/module.expected.txt",
+        "sha256": "9bc21691bd1caa9d0a8612945e5b0c8d5361995c44da2022b9bb4c9d473124f2",
+        "source": "crates/vize_atelier_sfc/src/bundler/tests/asset_names.rs:reserves_module_bindings_in_each_real_script_grammar; SSR source coverage only, collector/assembly semantics separately in tests/tooling/asset-import-binding-source.mjs"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [
@@ -1316,6 +1369,53 @@
       "witness": {
         "runner": "tests/native/css-compile-source-maps.mjs",
         "requestCount": 84
+      }
+    },
+    {
+      "id": "compiler/css/v-bind-source-map-10712",
+      "state": "active",
+      "adapter": "compile-css-binding-map-10712",
+      "targets": ["css"],
+      "inputs": {
+        "root": "v-bind-source-map-10712",
+        "files": [
+          {
+            "path": "input.css",
+            "role": "source",
+            "sha256": "d4bcb58e9c3f773f3dbefa3e86efcd749d70ae7f32e5b6853fcfdc181e3a4aa8"
+          },
+          {
+            "path": "options.json",
+            "role": "options",
+            "sha256": "97e265c0c18813d9ce25f5fe22e63ee87dcf58e0927b72fb0300fec7ac550bd0"
+          },
+          {
+            "path": "source-before.json",
+            "role": "source-before",
+            "sha256": "c322fc9fbbc2464e90910bec90df1e5850a76b357af1299cf3ecf698be1c4f7e"
+          },
+          {
+            "path": "source-after.json",
+            "role": "source-after",
+            "sha256": "befe177d471e97820205deef5a0de882f209f7fa1ed80c4cc194e19330d4fc00"
+          },
+          {
+            "path": "authority.json",
+            "role": "authority",
+            "sha256": "5be6dcfb3dbb49ecb3f04a9a48c1f4798b58fe2cdbcbf037fdf644021c626561"
+          },
+          {
+            "path": "source-before-observation.json",
+            "role": "source-before-observation",
+            "sha256": "34b3db351b75e8e73d835e83e86aa29ad533d6691db94fdb75b718b453c335f0"
+          }
+        ]
+      },
+      "genericCli": "unsupported-css-api",
+      "nativeCompatibility": "unsupported",
+      "witness": {
+        "runner": "tests/native/css-v-bind-source-maps.mjs",
+        "requestCount": 40
       }
     }
   ]

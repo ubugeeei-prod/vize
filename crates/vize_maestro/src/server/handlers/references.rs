@@ -49,7 +49,12 @@ pub(super) async fn references(
     }
     #[cfg(feature = "native")]
     {
-        Ok(ReferencesService::references_with_corsa(
+        if let Some(locations) =
+            ReferencesService::setup_local_references(&ctx, include_declaration)
+        {
+            return Ok(Some(locations));
+        }
+        Ok(ReferencesService::project_references_with_corsa(
             &ctx,
             include_declaration,
             server.state.get_corsa_bridge().await,

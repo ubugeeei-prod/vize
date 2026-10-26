@@ -8,6 +8,7 @@ import { appendFileSync } from "node:fs";
 import { changedPaths } from "./plan-source-checks.ts";
 import { newLanguageProjectCases } from "./language-project-fixtures.ts";
 import {
+  compilerCssApiSources,
   newCompilerCssApiCases,
   onlyCompilerCssChanges,
 } from "../../../../tests/differential/compiler-css-api.ts";
@@ -16,6 +17,7 @@ import {
   newNativeShutdownProtocolCases,
 } from "./native-shutdown-protocol-fixtures.ts";
 
+import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
@@ -76,6 +78,10 @@ const COMPILER_FACETS = ["code", "css", "errors", "warnings", "macro_artifacts"]
 export function legacyProducts(paths: readonly string[]): Product[] {
   const products = new Set<Product>();
   for (const path of paths) {
+    if (knownCompilerCssSource(path)) {
+      products.add("compiler");
+      continue;
+    }
     if (!/^crates\/[^/]+\/src\//.test(path)) continue;
     if (path.startsWith("crates/vize_glyph/")) products.add("formatter");
     else if (path.startsWith("crates/vize_patina/")) products.add("linter");
@@ -242,7 +248,10 @@ function checkProduct(
       product === "compiler"
         ? newCompilerCssApiCases(before?.cssApiCases, manifest.cssApiCases, readFile)
         : [];
-    const cssOnly = product === "compiler" && cssApi.length > 0 && onlyCompilerCssChanges(paths);
+    const cssOnly =
+      product === "compiler" &&
+      cssApi.length > 0 &&
+      onlyCompilerCssChanges(paths, compilerCssApiSources(cssApi));
     const registered =
       (cssOnly || !batchRequired || cases.length > 0) &&
       (!protocolRequired || protocols.length > 0);
