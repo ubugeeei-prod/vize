@@ -6,6 +6,7 @@ import { editorArtifactsForResume } from "../editor-platforms.ts";
 import {
   backfillTag,
   higherStableVersions,
+  releaseRunSource,
   validateResumePolicy,
   type ReleaseRunFacts,
 } from "./policy.ts";
@@ -16,6 +17,7 @@ interface GitHubRun {
   conclusion?: unknown;
   head_sha?: unknown;
   head_branch?: unknown;
+  display_title?: unknown;
   path?: unknown;
   repository?: { full_name?: unknown };
 }
@@ -170,6 +172,8 @@ async function npmResume(version: string, runId: string): Promise<number> {
     status: typeof runData.status === "string" ? runData.status : "",
     conclusion: typeof runData.conclusion === "string" ? runData.conclusion : null,
     headSha: typeof runData.head_sha === "string" ? runData.head_sha : "",
+    sourceSha:
+      typeof runData.display_title === "string" ? releaseRunSource(runData.display_title) : null,
   };
   const artifactNames = (artifactData.artifacts ?? [])
     .filter((artifact) => artifact.expired === false && typeof artifact.name === "string")
