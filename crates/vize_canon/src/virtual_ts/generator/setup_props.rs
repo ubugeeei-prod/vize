@@ -3,13 +3,13 @@ mod exports;
 use vize_carton::{CompactString, FxHashSet, String, append, cstr, profile};
 use vize_croquis::Croquis;
 
-use super::generics::generic_fallback_args;
 use super::setup_scope::define_props_type_requires_setup_scope;
+use crate::virtual_ts::generic_parameters::GenericParameters;
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use crate::virtual_ts::props::{
     OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission, TemplatePropsScope,
-    add_generic_defaults, append_default_props, emitted_model_prop_names, extract_generic_names,
-    generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
+    append_default_props, emitted_model_prop_names, generate_props_type, generate_props_variables,
+    generate_setup_scoped_props_artifact,
 };
 
 pub(super) use crate::virtual_ts::props::prop_source;
@@ -77,7 +77,7 @@ pub(super) fn emit_template_context(
 pub(super) fn generate_setup_props(
     ts: &mut String,
     source: PropsSource<'_>,
-    generic_param: Option<&str>,
+    generic_param: Option<&GenericParameters>,
     options_api_props: Option<&OptionsApiPropsSource>,
     type_only_imported_names: &FxHashSet<CompactString>,
     props_is_public_export: bool,
@@ -88,6 +88,7 @@ pub(super) fn generate_setup_props(
         options_api_props,
         type_only_imported_names,
         props_is_public_export,
+        generic_param,
     );
     let generated_start = ts.len();
     profile!("canon.virtual_ts.generate_props_type", {
@@ -119,6 +120,7 @@ pub(super) struct SetupPropsPlan {
     module_scope_declares_props: bool,
     uses_resolved_props: bool,
     has_inferred_model_defaults: bool,
+    generic_fallback: String,
 }
 
 impl SetupPropsPlan {
@@ -127,6 +129,7 @@ impl SetupPropsPlan {
         options_api_props: Option<&OptionsApiPropsSource>,
         type_only_imported_names: &FxHashSet<CompactString>,
         props_is_public_export: bool,
+        generic_parameters: Option<&GenericParameters>,
     ) -> Self {
         // A `Props` declaration only lands at module scope when it is hoisted
         // (emitted directly at module level) or when it is a value-dependent
@@ -152,6 +155,9 @@ impl SetupPropsPlan {
             || imported_props_would_collide;
         let defer = define_props_type_requires_setup_scope(summary);
         Self {
+            generic_fallback: generic_parameters
+                .map(|plan| plan.fallback.clone())
+                .unwrap_or_default(),
             has_inferred_model_defaults: crate::virtual_ts::model_types::has_inferred_defaults(
                 summary,
             ),
@@ -181,7 +187,7 @@ impl SetupPropsPlan {
         &self,
         ts: &mut String,
         summary: &Croquis,
-        generic_param: Option<&str>,
+        generic_param: Option<&GenericParameters>,
         options_api_props: Option<&OptionsApiPropsSource>,
         type_only_imported_names: &FxHashSet<CompactString>,
     ) {
@@ -232,9 +238,9 @@ impl SetupPropsPlan {
         }
     }
 
-    pub(super) fn generic_fallback_component_props_type_ref(&self, generic_decl: &str) -> String {
+    pub(super) fn generic_fallback_component_props_type_ref(&self) -> String {
         let props_type_ref = self.component_props_type_ref();
-        let args = generic_fallback_args(generic_decl);
+        let args = &self.generic_fallback;
         if args.is_empty() {
             props_type_ref.into()
         } else {
@@ -252,7 +258,7 @@ impl SetupPropsPlan {
         }
         Some(
             generic_component_params
-                .map(|(decl, _)| self.generic_fallback_component_props_type_ref(decl.as_str()))
+                .map(|_| self.generic_fallback_component_props_type_ref())
                 .unwrap_or_else(|| self.component_props_type_ref().into()),
         )
     }
@@ -266,7 +272,7 @@ impl SetupPropsPlan {
         jsx_slots: bool,
     ) {
         let props_type_ref = generic_decl
-            .map(|decl| self.generic_fallback_component_props_type_ref(decl))
+            .map(|_| self.generic_fallback_component_props_type_ref())
             .unwrap_or_else(|| self.component_props_type_ref().into());
         let mut public_props_type_ref = if legacy_input_aliases {
             cstr!("__VizeComponentProps<{props_type_ref}>")
@@ -291,11 +297,20 @@ impl SetupPropsPlan {
         append!(ts, "  readonly __vizeRawProps?: {props_type_ref};\n");
     }
 
-    pub(super) fn emit_artifact(&self, ts: &mut String, source: PropsSource<'_>) {
-        crate::virtual_ts::props::TemplatePropsModel::emit_defaults_capture(ts, source.summary);
+    pub(super) fn emit_artifact(
+        &self,
+        ts: &mut String,
+        source: PropsSource<'_>,
+        generic_parameters: Option<&GenericParameters>,
+    ) {
+        crate::virtual_ts::props::TemplatePropsModel::emit_defaults_capture(
+            ts,
+            source.summary,
+            generic_parameters,
+        );
         if self.defer {
             let generated_start = ts.len();
-            generate_setup_scoped_props_artifact(ts, source.summary);
+            generate_setup_scoped_props_artifact(ts, source.summary, generic_parameters);
             MacroTypeMappings::new(source.mappings, source.script, source.offset).map_model_props(
                 ts,
                 generated_start,
@@ -344,13 +359,17 @@ impl SetupPropsPlan {
 
     pub(super) fn generic_component_params(
         &self,
-        generic_param: Option<&str>,
+        generic_param: Option<&GenericParameters>,
+        authored_generic: Option<&str>,
     ) -> Option<(String, String)> {
-        generic_param.map(|generic| {
-            (
-                add_generic_defaults(generic),
-                extract_generic_names(generic),
-            )
-        })
+        generic_param
+            .map(|generic| (generic.declaration.clone(), generic.names.clone()))
+            .or_else(|| {
+                // A bare or empty attribute still selects Vue's functional
+                // component contract. It declares no parameters to parse.
+                authored_generic
+                    .filter(|raw| raw.trim().is_empty())
+                    .map(|_| (String::default(), String::default()))
+            })
     }
 }

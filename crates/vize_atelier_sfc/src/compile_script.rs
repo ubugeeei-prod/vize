@@ -11,6 +11,7 @@ pub(crate) mod lazy_hydration;
 pub mod macros;
 pub mod props;
 pub(crate) mod runtime_bindings;
+pub(crate) mod runtime_imports;
 pub mod statement_sections;
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]

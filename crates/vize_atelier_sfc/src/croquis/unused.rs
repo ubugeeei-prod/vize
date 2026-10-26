@@ -5,6 +5,9 @@ use vize_croquis::Croquis;
 use vize_croquis::binding_occurrences::BindingOccurrences;
 use vize_croquis::drawer::{extract_identifier_refs_with_witness, extract_identifiers_checked};
 
+#[cfg(test)]
+mod sibling_scripts;
+
 pub(super) fn apply_style_reads(
     croquis: &mut Croquis,
     descriptor: &SfcDescriptor<'_>,
@@ -12,16 +15,22 @@ pub(super) fn apply_style_reads(
     mut occurrences: Option<&mut BindingOccurrences>,
 ) -> bool {
     let mut packet_valid = true;
-    if descriptor.script_setup.as_ref().is_some_and(|block| {
-        block.src.is_some()
-            || block
-                .lang
-                .as_deref()
-                .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
-    }) || descriptor.template.as_ref().is_some_and(|block| {
-        block.src.is_some()
-            || (!derived && block.lang.as_deref().is_some_and(|lang| lang != "html"))
-    }) || descriptor.styles.iter().any(|style| style.src.is_some())
+    if descriptor
+        .script
+        .iter()
+        .chain(descriptor.script_setup.iter())
+        .any(|block| {
+            block.src.is_some()
+                || block
+                    .lang
+                    .as_deref()
+                    .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+        })
+        || descriptor.template.as_ref().is_some_and(|block| {
+            block.src.is_some()
+                || (!derived && block.lang.as_deref().is_some_and(|lang| lang != "html"))
+        })
+        || descriptor.styles.iter().any(|style| style.src.is_some())
     {
         // External or unsupported blocks can contain reads we cannot see.
         croquis.unused_bindings.clear();

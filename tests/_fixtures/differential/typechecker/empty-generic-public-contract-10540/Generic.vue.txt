@@ -1,0 +1,1 @@
+<!-- @inferComponentDollarEl true --><script setup lang="ts" generic>defineExpose({ run() {} });</script><template><svg><a /></svg></template>

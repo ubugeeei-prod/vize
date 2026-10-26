@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 1,
+      "character": 30
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**CSS color**\n\n_Concrete authored color_\n\n**Example**\n\n```css\n.example {\n  color: #336699;\n  color: rgb(51, 102, 153);\n  color: hsl(210 50% 40%);\n}\n```\n\n**Docs**\n\n[MDN CSS colors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_colors)"
+      },
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 28
+        },
+        "end": {
+          "line": 1,
+          "character": 35
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 1,
+      "character": 51
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**CSS color**\n\n_Concrete authored color_\n\n**Example**\n\n```css\n.example {\n  color: #336699;\n  color: rgb(51, 102, 153);\n  color: hsl(210 50% 40%);\n}\n```\n\n**Docs**\n\n[MDN CSS colors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_colors)"
+      },
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 49
+        },
+        "end": {
+          "line": 1,
+          "character": 64
+        }
+      }
+    }
+  }
+]

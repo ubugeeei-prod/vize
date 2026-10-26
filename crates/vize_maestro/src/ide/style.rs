@@ -17,7 +17,7 @@ pub(crate) use completion::complete;
 pub(crate) use completion::vue_completions;
 pub(crate) use hover::hover;
 #[cfg(feature = "native")]
-pub(crate) use resolve::resolve;
+pub(crate) use resolve::{resolve, resolve_catalog};
 
 use super::IdeContext;
 use tower_lsp::lsp_types::{Position, Range};
@@ -71,4 +71,8 @@ fn starts_with(name: &str, prefix: &str) -> bool {
     name.as_bytes()
         .get(..prefix.len())
         .is_some_and(|start| start.eq_ignore_ascii_case(prefix.as_bytes()))
+}
+
+pub(crate) fn known_property(name: &str) -> bool {
+    data::property(name).is_some()
 }

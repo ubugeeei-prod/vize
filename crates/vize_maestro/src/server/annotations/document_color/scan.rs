@@ -9,15 +9,19 @@
 //!
 //! CSS comments are skipped so the picker never rewrites inactive text.
 
+mod declarations;
 mod hsl;
 mod lex;
 mod rgb;
+mod selection;
 
 use self::lex::{
     decode_identifier, identifier_end, is_declaration_name, is_identifier_boundary,
     is_identifier_byte, pair_at, skip_comment, skip_function, skip_string, skipped_function_end,
 };
 use super::named;
+pub(super) use declarations::CssMode;
+pub(super) use selection::color_at;
 
 #[cfg(test)]
 std::thread_local! {
@@ -42,40 +46,36 @@ pub(crate) struct ColorLiteral {
     pub(crate) alpha: f32,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum CssMode {
-    Stylesheet,
-    DeclarationList,
-    Preprocessor,
-    IndentedDeclarations,
-}
-
-impl CssMode {
-    fn accepts_root_declarations(self) -> bool {
-        self != Self::Stylesheet
-    }
-
-    fn accepts_variable_names(self) -> bool {
-        matches!(self, Self::Preprocessor | Self::IndentedDeclarations)
-    }
-
-    fn has_line_comments(self) -> bool {
-        matches!(self, Self::Preprocessor | Self::IndentedDeclarations)
-    }
-}
-
 pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) -> Vec<ColorLiteral> {
+    scan(content, region, mode, Vec::new())
+}
+
+/// Both consumers use the same declaration admission, numeric parser and
+/// tentative-selector rollback. A selected query retains only its candidate.
+trait Collection {
+    fn checkpoint(&self) -> usize;
+    fn truncate(&mut self, checkpoint: usize);
+    fn push(&mut self, literal: ColorLiteral);
+    fn finished(&self, cursor: usize, committed: bool) -> bool;
+    fn finish(&mut self, _cursor: usize) {}
+}
+
+fn scan<C: Collection>(content: &str, region: (usize, usize), mode: CssMode, mut found: C) -> C {
     let (region_start, region_end) = region;
     let bytes = content.as_bytes();
-    let mut found = Vec::new();
     let mut cursor = region_start;
     let mut block_depth = 0usize;
     let mut parenthesis_depth = 0usize;
     let mut in_value = false;
     let mut statement_start = region_start;
     let mut tentative_value = None;
+    let mut conditions = declarations::Conditions::default();
+    let mut line_header_pending = true;
 
     while cursor < region_end {
+        if found.finished(cursor, tentative_value.is_none()) {
+            break;
+        }
         #[cfg(test)]
         SCAN_STEPS.set(SCAN_STEPS.get() + 1);
         let Some(&byte) = bytes.get(cursor) else {
@@ -98,15 +98,33 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
             cursor = skip_string(bytes, cursor, region_end);
             continue;
         }
-        if mode == CssMode::IndentedDeclarations
-            && parenthesis_depth == 0
-            && matches!(byte, b'\r' | b'\n')
-        {
+        if mode.indented() && parenthesis_depth == 0 && matches!(byte, b'\r' | b'\n') {
             tentative_value = None;
             in_value = false;
             cursor += 1;
             statement_start = cursor;
+            conditions.reset();
+            line_header_pending = true;
             continue;
+        }
+
+        if mode.accepts_variable_names()
+            && (pair_at(bytes, cursor, b"#{") || pair_at(bytes, cursor, b"@{"))
+        {
+            cursor = lex::skip_interpolation(bytes, cursor + 1, region_end);
+            continue;
+        }
+        if mode == CssMode::StylusDeclarations && line_header_pending && !byte.is_ascii_whitespace()
+        {
+            line_header_pending = false;
+            if let Some(end) =
+                declarations::stylus_value(content, statement_start, cursor, region_end)
+            {
+                tentative_value.get_or_insert(found.checkpoint());
+                in_value = true;
+                cursor = end;
+                continue;
+            }
         }
 
         match byte {
@@ -119,6 +137,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 in_value = false;
                 cursor += 1;
                 statement_start = cursor;
+                conditions.reset();
                 continue;
             }
             b'}' => {
@@ -128,6 +147,11 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 in_value = false;
                 cursor += 1;
                 statement_start = cursor;
+                conditions.reset();
+                continue;
+            }
+            b':' if !in_value && conditions.colon(bytes, cursor, parenthesis_depth) => {
+                cursor += 1;
                 continue;
             }
             b':' if !in_value
@@ -141,7 +165,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 ) =>
             {
                 if mode != CssMode::DeclarationList {
-                    tentative_value.get_or_insert(found.len());
+                    tentative_value.get_or_insert(found.checkpoint());
                 }
                 in_value = true;
                 cursor += 1;
@@ -152,10 +176,25 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 in_value = false;
                 cursor += 1;
                 statement_start = cursor;
+                conditions.reset();
                 continue;
             }
-            b'(' => parenthesis_depth += 1,
-            b')' => parenthesis_depth = parenthesis_depth.saturating_sub(1),
+            b'(' => {
+                conditions.open(
+                    content,
+                    statement_start,
+                    cursor,
+                    parenthesis_depth,
+                    in_value,
+                    mode,
+                );
+                parenthesis_depth += 1;
+            }
+            b')' => {
+                parenthesis_depth = parenthesis_depth.saturating_sub(1);
+                conditions.close(parenthesis_depth);
+            }
+            b',' => conditions.comma(cursor, parenthesis_depth),
             _ => {}
         }
 
@@ -188,7 +227,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                     }
                     None
                 }
-            } else if in_value {
+            } else if in_value || conditions.in_value() {
                 named_color_literal(content, cursor, end)
             } else {
                 None
@@ -200,12 +239,15 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
         match literal {
             Some(literal) => {
                 cursor = literal.end;
-                found.push(literal);
+                if in_value || conditions.in_value() {
+                    found.push(literal);
+                }
             }
             None => cursor = identifier_token_end.unwrap_or(cursor + 1),
         }
     }
 
+    found.finish(cursor);
     found
 }
 

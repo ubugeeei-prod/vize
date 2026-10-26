@@ -94,6 +94,11 @@ fn run_cli_for_config(
         lexical_dollar_receipt::completed(receipt, &output);
         output
     })?;
+    let profiler = vize_carton::profiler::global_profiler();
+    if profiler.is_enabled() {
+        profiler.record_counter_enabled("canon.corsa.cli.stdout.bytes", output.stdout.len() as u64);
+        profiler.record_counter_enabled("canon.corsa.cli.stderr.bytes", output.stderr.len() as u64);
+    }
     // Native CLI stops before semantic checking when the program has a parser
     // error. Classify the actual reported file bodies before mapping can hide
     // their diagnostics, then require the same-config session to complete the

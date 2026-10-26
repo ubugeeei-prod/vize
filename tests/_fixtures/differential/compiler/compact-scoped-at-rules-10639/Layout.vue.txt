@@ -1,0 +1,1 @@
+<template><div class="a"/></template><style scoped>.a{@media(min-width:1px){&:hover{color:blue}}}</style>

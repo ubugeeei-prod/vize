@@ -89,7 +89,8 @@ pub(super) fn format_directive_value(
     // the parser the equivalent LF spelling so its wrap decision is stable.
     let normalized;
     let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
-        normalized = value.replace('\r', "\n");
+        // A CRLF is one terminator, including inside template text.
+        normalized = value.replace("\r\n", "\n").replace('\r', "\n");
         normalized.as_str()
     } else {
         value
@@ -197,7 +198,7 @@ pub(super) fn reanchor_continuation_lines(
     // A lone CR ends a line like LF; the lines are rebuilt with LF below.
     let normalized;
     let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
-        normalized = value.replace('\r', "\n");
+        normalized = value.replace("\r\n", "\n").replace('\r', "\n");
         normalized.as_str()
     } else {
         value

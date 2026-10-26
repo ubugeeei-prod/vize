@@ -1,6 +1,8 @@
 use super::DefineMacrosOrder;
 use crate::rules::script::ScriptLinter;
 
+mod groups;
+
 fn lint(source: &str) -> Vec<String> {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(DefineMacrosOrder));

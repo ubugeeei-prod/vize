@@ -19,6 +19,7 @@
     reason = "lsp_types fields store std String"
 )]
 
+pub(super) mod hover;
 mod named;
 mod scan;
 
@@ -143,7 +144,8 @@ fn css_regions(content: &str, descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) 
         .map(|block| CssRegion {
             range: (block.loc.start, block.loc.end),
             mode: match block.lang.as_deref() {
-                Some("sass" | "stylus" | "styl") => scan::CssMode::IndentedDeclarations,
+                Some("sass") => scan::CssMode::IndentedDeclarations,
+                Some("stylus" | "styl") => scan::CssMode::StylusDeclarations,
                 Some("css") | None => scan::CssMode::Stylesheet,
                 Some(_) => scan::CssMode::Preprocessor,
             },

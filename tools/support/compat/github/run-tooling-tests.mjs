@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { toolingTestFiles } from "./plan-tooling-tests.mjs";
 import { TOOLING_TIMINGS_LOG_MARKER, selectToolingShard } from "./tooling-test-shards.ts";
+import { prepareCssCustodyHistory } from "./prepare-css-custody-history.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -38,6 +39,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   }
   const args = toolingTestCommand(plan, toolingTestFiles(), process.env.VIZE_TOOLING_TEST_SHARD);
   if (args.length > 2) {
+    const history = prepareCssCustodyHistory(root, args.slice(2));
+    if (history.revisions.length) {
+      process.stdout.write(`CSS custody history: ${JSON.stringify(history)}\n`);
+    }
     // Selection defers known scenarios. An unclassified new requirement must
     // still fail closed; disabling the requirement would hide missing coverage.
     const env = { ...process.env, VIZE_TEST_REQUIRE_TSGO: "1" };

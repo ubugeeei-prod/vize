@@ -1,0 +1,14 @@
+{
+  "expected": {
+    "id": "rgba-baseline",
+    "needle": "rgba(51, 102, 153, 0.5)",
+    "offset": 12,
+    "baselineNull": true
+  },
+  "position": {
+    "line": 5,
+    "character": 28
+  },
+  "hovers": [],
+  "raw": null
+}

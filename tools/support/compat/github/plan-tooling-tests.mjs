@@ -270,7 +270,10 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     // A declared scope is curated: its inputs decide, and an incomplete closure
     // keeps that scope's broad inputs.
     const scope = toolingTestScopes.find((entry) => matchesAny(file, entry.tests));
-    const inputs = scope && (imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling);
+    const inputs =
+      scope &&
+      (!typeProjects.has(file) || !imports.complete) &&
+      (imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling);
     if (inputs && paths.some((path) => matchesAny(path, inputs))) return true;
     // Otherwise a test depends on its import closure and on every repository
     // path its sources name: a file, a directory above it or a glob over it.

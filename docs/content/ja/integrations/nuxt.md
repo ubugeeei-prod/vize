@@ -281,7 +281,17 @@ Nuxt アプリの中では、モジュールはこれらのモックをグロー
 
 ## Nuxt 2 と Vue 2
 
-モジュールは Nuxt 2、3、4 に対応しています。Vize のコンパイラは Vue 3 向けのコードを出力するため、Nuxt 2 では `.vue` のコンパイルを既存のコンパイラ（`@vitejs/plugin-vue2`、`vue-loader`、または Nuxt 自身）に任せ、lint と Musea だけを提供します。さらに古い Vue のプロジェクトでも、`vueVersion: 0.11`、`vueVersion: 1`、`vueVersion: "legacy"` を指定すれば同じように動作します。
+Nuxt 2 でも同じ `@vizejs/nuxt` パッケージを使用します。CommonJS entry が Nuxt 2 の module loader に対応し、Vue 2 を自動検出します。コンパイル・SSR・style・HMR は既存の Vue 2 compiler と Nuxt が担当します。Vize の native runtime compiler が出力するのは Vue 3 のコードで、Vue 2 compiler を置き換えません。
+
+Nuxt 2 の検証は Nuxt 2.17.3、Vue/compiler/renderer 2.7.16、vue-loader 15、webpack 4 を固定し、本番 SSR、hydration 後の操作と画面遷移、状態を維持した dev HMR、scoped Sass、assets、`~`/`@` alias を実行します。生成した lint 設定と source typechecker についても、正当な Vue 2/Nuxt template と不正入力を確認します。OpenSSL 互換フラグは検証用 webpack 4 の子プロセスだけに適用します。
+
+Nuxt 2 では lint 設定の生成を利用できます。明示的に有効化する `checker` は dev server と並行して動き、builder 名を持たない通常の Nuxt 2 では webpack を使用します。Musea は Nuxt 2 では無効です。
+
+Nuxt Bridge も Vue 2 を使用するため、既存の `@vitejs/plugin-vue2` を維持してください。Vite 構成は `bridge.vite: true` と `bridge.nitro: true` の両方が必要です（[公式ガイド](https://nuxt.com/docs/4.x/bridge/vite)）。module を import できるだけでは、その builder の runtime 対応を検証したことにはなりません。
+
+Bridge の source 検証は Nuxt 2.18.1、Bridge 3.6.1、Vue 2.7.16 を固定し、同じアプリを webpack と Vite で実行します。Vite は module を外した対照実験も実行します。Vite 7.1.12 の fixture には、Vue 2 の runtime platform hook を保持する `nitro.rollupConfig.treeshake: false` と、client/SSR の asset URL を揃える `vite.build.rollupOptions.output.assetFileNames: "_nuxt/[name].[hash].[ext]"` を明示しています。この固定環境の runtime 検証には、これらの host 設定も含まれます。
+
+パッケージの Vite peer 範囲は `^7.3.0 || ^8.0.0` のままです。source を直接接続した Vite 7.1 の検証は、Vite 7.1 に公開パッケージを新規インストールした際の互換性を保証するものではありません。
 
 バージョンは自動的に検出されます。ラッパーによって Nuxt Kit からバージョンが見えない場合は、明示的に指定してください。
 
@@ -296,6 +306,27 @@ export default defineNuxtConfig({
   },
 });
 ```
+
+### Nuxt 2 からの移行
+
+Nuxt 2 / Vue 2.7 のアプリケーションを Nuxt 3 または 4 へ移す際に、Vue 2 のテキストの空白規則を
+維持するには `vize.compiler.whitespace: "vue2-preserve"` を指定します。
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: { whitespace: "vue2-preserve" },
+  },
+});
+```
+
+連続したテキストと補間の前後の空白は記述どおり保持し、要素間の空白だけの部分はスペース1つに
+まとめ、子リストの先頭・末尾にある空白だけの部分は削除します。`"vue2-line-breaks"` は一部の
+改行だけを残す限定的なモードで、Vue 2 の preserve 全体を再現するものではありません。
+4つのモードと、コメント・名前付きスロット・整形済みテキストの扱いは
+[コンパイラ設定リファレンス](../guide/compiler-configuration-reference.md#空白)を参照してください。
+Nuxt 2 のまま動かすプロジェクトでは、上記のとおり既存のコンパイラが使われます。
 
 ## Vite プラグインを直接使う
 

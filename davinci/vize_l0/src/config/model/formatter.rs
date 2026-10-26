@@ -204,6 +204,7 @@ pub struct FormatterProfile {
 pub(crate) struct RawFormatterConfig {
     pub(crate) config: FormatterConfig,
     pub(crate) sort_imports: Option<super::sort_imports::SortImportsSetting>,
+    pub(crate) ignore_patterns: Vec<String>,
     pub(crate) profile: FormatterProfile,
 }
 
@@ -214,6 +215,7 @@ struct RawFormatterKeys {
     #[serde(flatten)]
     config: FormatterConfig,
     sort_imports: Option<super::sort_imports::SortImportsSetting>,
+    ignore_patterns: Vec<String>,
     preset: Option<FormatterPreset>,
     normalize_css_quotes: Option<bool>,
     normalize_inline_styles: Option<bool>,
@@ -255,6 +257,7 @@ impl<'de> Deserialize<'de> for RawFormatterConfig {
         Ok(Self {
             config: keys.config,
             sort_imports: keys.sort_imports,
+            ignore_patterns: keys.ignore_patterns,
             profile: FormatterProfile {
                 preset,
                 options: if sorting_only {

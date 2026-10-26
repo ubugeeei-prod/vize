@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ café: string; caf_: number }>()
+</script>
+<template>
+  <div>{{ caf_ }}</div> <div>{{ café }}</div>
+</template>

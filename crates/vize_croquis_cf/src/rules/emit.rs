@@ -96,7 +96,7 @@ pub fn analyze_emits(
                 });
 
                 // Warn about unused emits
-                if !is_called {
+                if !is_called && !child_info.model_emits.contains(emit) {
                     diagnostics.push(
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::UnusedEmit {
@@ -176,6 +176,8 @@ pub fn analyze_emits(
 struct ComponentEmitInfo {
     /// Emits declared in defineEmits.
     declared_emits: FxHashSet<CompactString>,
+    /// Model update events are called by the generated useModel binding.
+    model_emits: FxHashSet<CompactString>,
     /// Emits actually called (emit('name')).
     called_emits: FxHashSet<CompactString>,
     /// Offset of each emit call.
@@ -191,6 +193,12 @@ fn extract_emit_info(analysis: &vize_croquis::Croquis) -> ComponentEmitInfo {
     // Get declared emits from macros (precise: from defineEmits parsing)
     for emit in analysis.macros.emits() {
         info.declared_emits.insert(emit.name.clone());
+    }
+
+    for model in analysis.macros.models() {
+        let event = cstr!("update:{}", model.name);
+        info.declared_emits.insert(event.clone());
+        info.model_emits.insert(event);
     }
 
     // Get actual emit calls (precise: from AST analysis of emit() calls)

@@ -165,10 +165,16 @@ fn component(
     detail: &'static str,
 ) {
     names.insert(name.into(), (CompletionItemKind::CLASS, detail));
-    names.insert(
-        hyphenate(name).to_ascii_lowercase().as_str().into(),
-        (CompletionItemKind::CLASS, detail),
-    );
+    names.insert(component_alias(name), (CompletionItemKind::CLASS, detail));
+}
+
+fn component_alias(name: &str) -> vize_l0::String {
+    hyphenate(name).to_ascii_lowercase().as_str().into()
+}
+
+#[cfg(any(test, feature = "native"))]
+pub(super) fn component_matches_prefix(name: &str, prefix: &str) -> bool {
+    name.starts_with(prefix) || component_alias(name).starts_with(prefix)
 }
 
 #[cfg(feature = "native")]
@@ -185,6 +191,6 @@ pub(in crate::ide::completion) async fn complete_with_globals(
         return complete_analyzed(ctx, tag, &globals, None, &BTreeMap::new());
     };
     let analysis = super::tag_types::script_analysis(ctx, croquis)?;
-    let types = super::tag_types::classify(ctx, &analysis, bridge?).await;
+    let types = super::tag_types::classify(ctx, &analysis, bridge?, tag.prefix).await;
     complete_analyzed(ctx, tag, &globals, Some(&analysis.croquis), &types)
 }

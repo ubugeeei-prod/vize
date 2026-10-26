@@ -34,18 +34,16 @@ const oracleName = oracleNames.get(domVersion);
 assert.ok(oracleName, `No complete fragment oracle for DOM harness ${domVersion}`);
 const outputPath = new URL(oracleName, fixture);
 const window = new Window();
-for (const name of [
-  "window",
-  "document",
-  "Node",
-  "Element",
-  "HTMLElement",
-  "SVGElement",
-  "Text",
-  "Comment",
-])
-  (globalThis as Record<string, unknown>)[name] =
-    name === "window" ? window : (window as unknown as Record<string, unknown>)[name];
+Object.assign(globalThis, {
+  window,
+  document: window.document,
+  Node: window.Node,
+  Element: window.Element,
+  HTMLElement: window.HTMLElement,
+  SVGElement: window.SVGElement,
+  Text: window.Text,
+  Comment: window.Comment,
+});
 const runtimeEntry = pathToFileURL(
   testsRequire.resolve("@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js"),
 );
@@ -68,16 +66,22 @@ type Vnode = {
   props: Record<string, string> | null;
   children: Vnode[] | string | null;
 };
-function observe(node: Node): Dom {
+type ObservableNode = { readonly nodeType: number; readonly textContent: string | null };
+function observe(node: ObservableNode): Dom {
   if (node.nodeType === 3) return { kind: "text", value: node.textContent ?? "" };
   assert.equal(node.nodeType, 1, "every mounted node must be explicitly represented");
-  const element = node as Element;
+  assert.ok(node instanceof window.Element, "mounted element belongs to the original DOM window");
+  const element = node;
   assert.ok(element.namespaceURI);
   return {
     kind: "element",
     tag: element.localName,
     namespace: element.namespaceURI,
-    attributes: [...element.attributes].map((a) => [a.name, a.value]),
+    attributes: [...element.attributes].map((attribute) => {
+      const { name, value } = attribute;
+      assert.ok(typeof name === "string" && typeof value === "string");
+      return [name, value];
+    }),
     children: [...element.childNodes].map(observe),
   };
 }
@@ -100,14 +104,14 @@ function view(node: Vnode | string, anchors: boolean): Dom[] {
       ? [{ kind: "text", value: "" }, ...children(), { kind: "text", value: "" }]
       : children();
   if (node.type === Vue.Text) {
-    assert.equal(typeof node.children, "string");
-    return [{ kind: "text", value: node.children as string }];
+    assert.ok(typeof node.children === "string");
+    return [{ kind: "text", value: node.children }];
   }
-  assert.equal(typeof node.type, "string");
+  assert.ok(typeof node.type === "string");
   return [
     {
       kind: "element",
-      tag: node.type as string,
+      tag: node.type,
       namespace: "http://www.w3.org/1999/xhtml",
       attributes: Object.entries(node.props ?? {}),
       children: children(),

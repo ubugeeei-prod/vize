@@ -1,0 +1,4 @@
+<script setup lang="ts" generic="const T extends 'a,b'">
+defineProps<{ value: T }>()
+</script>
+<template><div /></template>

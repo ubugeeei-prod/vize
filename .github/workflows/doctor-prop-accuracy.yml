@@ -1,0 +1,111 @@
+name: Doctor prop accuracy
+run-name: Doctor prop contracts @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/doctor-prop-accuracy.yml
+      - crates/vize_croquis_cf/src/rules/props_validation.rs
+      - crates/vize_croquis_cf/src/rules/props_validation/**
+      - crates/vize_croquis_cf/src/rules/emit.rs
+      - crates/vize_croquis_cf/src/rules/fallthrough/usage.rs
+      - crates/vize/tests/doctor_prop_accuracy_cli.rs
+permissions:
+  contents: read
+concurrency:
+  group: doctor-prop-accuracy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  complete-cli-packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [baseline, source]
+    env:
+      ROLE: ${{ matrix.role }}
+      BASELINE_SHA: bd905e766c37ad5bacabaacbec02c90def36726e
+      EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - name: Prepare isolated source and initially absent Cargo target
+        shell: bash
+        run: |
+          source_sha="$EXPECTED_SOURCE_SHA"
+          source_root="$GITHUB_WORKSPACE"
+          if [[ "$ROLE" == baseline ]]; then
+            source_sha="$BASELINE_SHA"
+            source_root="$RUNNER_TEMP/doctor-baseline-source"
+            git worktree add --detach "$source_root" "$source_sha"
+            cp crates/vize/tests/doctor_prop_accuracy_cli.rs "$source_root/crates/vize/tests/"
+            echo 'mod doctor_prop_accuracy_cli;' >> "$source_root/crates/vize/tests/main.rs"
+          fi
+          target_root="$RUNNER_TEMP/doctor-props-$source_sha-$ROLE-target"
+          test ! -e "$target_root"
+          echo "SOURCE_SHA=$source_sha" >> "$GITHUB_ENV"
+          echo "SOURCE_ROOT=$source_root" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$target_root" >> "$GITHUB_ENV"
+          echo "VIZE_PROP_ACCURACY_ARTIFACTS=$RUNNER_TEMP/doctor-prop-packets" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/doctor-prop-packets"
+          printf '%s\n' "$source_sha" > "$RUNNER_TEMP/doctor-prop-packets/source-sha.txt"
+          git -C "$source_root" status --porcelain > "$RUNNER_TEMP/doctor-prop-packets/source-status.txt"
+      - name: Observe exact baseline reproduction and complete JSON
+        if: ${{ matrix.role == 'baseline' }}
+        shell: bash
+        run: |
+          cd "$SOURCE_ROOT"
+          status=0
+          /usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_prop_accuracy_cli::model_alias_and_native_fallthrough_props_preserve_the_complete_healthy_packet -- --nocapture > "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout" 2> "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stderr" || status=$?
+          cat "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout"
+          test "$status" -ne 0
+          python3 - <<'PY'
+          import json, os, pathlib
+          packet = json.loads((pathlib.Path(os.environ['VIZE_PROP_ACCURACY_ARTIFACTS']) / 'models-alias-fallthrough.json').read_text())
+          codes = {finding['code'] for finding in packet['findings']}
+          assert 'VIZE_DOCTOR_CF_PROP_TYPE_MISMATCH' in codes, packet
+          assert 'VIZE_DOCTOR_CF_UNDECLARED_PROP' in codes, packet
+          assert packet['summary']['hasBlockingErrors'], packet
+          PY
+      - name: Verify source rule and complete CLI contracts
+        if: ${{ matrix.role == 'source' }}
+        shell: bash
+        run: |
+          cd "$SOURCE_ROOT"
+          cargo test --locked --profile ci -p vize_croquis_cf --lib
+          cargo test --locked --profile ci -p vize --lib commands::doctor::tests::
+          /usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_ -- --nocapture > "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout" 2> "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stderr"
+          cat "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout"
+          cargo clippy --locked --profile ci -p vize_croquis_cf --lib -- -D warnings
+      - name: Preserve binary identity
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          if [[ -f "$CARGO_TARGET_DIR/ci/vize" ]]; then
+            sha256sum "$CARGO_TARGET_DIR/ci/vize" > "$VIZE_PROP_ACCURACY_ARTIFACTS/binary-sha256.txt"
+            "$CARGO_TARGET_DIR/ci/vize" --version > "$VIZE_PROP_ACCURACY_ARTIFACTS/binary-version.txt"
+          fi
+      - name: Preserve every complete report and measurement
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: doctor-prop-accuracy-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/doctor-prop-packets
+          if-no-files-found: error
+          retention-days: 14

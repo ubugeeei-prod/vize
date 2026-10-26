@@ -1,7 +1,8 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 
-use super::{append_model_props_type_literal, extract_generic_names};
+use super::append_model_props_type_literal;
+use crate::virtual_ts::generic_parameters::GenericParameters;
 
 /// Props type emission mode for `defineProps<T>()`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -16,7 +17,11 @@ pub(crate) enum PropsTypeEmission {
 
 /// Emit the setup-local props type artifact used when the `defineProps<T>()`
 /// type argument can only resolve inside `__setup()`.
-pub(crate) fn generate_setup_scoped_props_artifact(ts: &mut String, summary: &Croquis) {
+pub(crate) fn generate_setup_scoped_props_artifact(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_parameters: Option<&GenericParameters>,
+) {
     let Some(type_args) = summary
         .macros
         .define_props()
@@ -35,14 +40,14 @@ pub(crate) fn generate_setup_scoped_props_artifact(ts: &mut String, summary: &Cr
         append!(*ts, "  type __VizeSetupProps = {inner_type};\n");
     } else {
         append!(*ts, "  type __VizeSetupProps = {inner_type} & ");
-        append_model_props_type_literal(ts, summary, models);
+        append_model_props_type_literal(ts, summary, models, generic_parameters);
         ts.push_str(";\n");
     }
     ts.push_str("  const __vize_setup_props = undefined as unknown as __VizeSetupProps;\n");
 }
 
 pub(super) fn props_type_ref(
-    generic_param: Option<&str>,
+    generic_param: Option<&GenericParameters>,
     props_type_ref_override: Option<&str>,
 ) -> String {
     props_type_ref_override
@@ -50,7 +55,7 @@ pub(super) fn props_type_ref(
         .unwrap_or_else(|| {
             generic_param
                 .map(|g| {
-                    let names = extract_generic_names(g);
+                    let names = &g.names;
                     cstr!("Props<{names}>")
                 })
                 .unwrap_or_else(|| "Props".into())
@@ -58,13 +63,13 @@ pub(super) fn props_type_ref(
 }
 
 pub(super) fn unused_generic_comment(
-    generic_param: Option<&str>,
+    generic_param: Option<&GenericParameters>,
     props_source: &str,
 ) -> &'static str {
     let Some(generic) = generic_param else {
         return "";
     };
-    let names = extract_generic_names(generic);
+    let names = &generic.names;
     let type_references = crate::virtual_ts::type_dependencies::free_names(props_source);
     let uses_every_generic = type_references.is_some_and(|type_references| {
         names
@@ -86,7 +91,10 @@ pub(super) fn unused_generic_comment(
 
 #[cfg(test)]
 mod tests {
-    use super::unused_generic_comment;
+    fn unused_generic_comment(generic: Option<&str>, props: &str) -> &'static str {
+        let plan = generic.map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
+        super::unused_generic_comment(plan.as_ref(), props)
+    }
 
     #[test]
     fn suppresses_only_props_aliases_that_omit_sfc_generics() {

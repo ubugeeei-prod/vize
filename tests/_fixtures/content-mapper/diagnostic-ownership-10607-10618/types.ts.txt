@@ -1,0 +1,2 @@
+export interface Schema<T> { parse: (value: unknown) => T; validate: (value: T) => boolean }
+export type FormSlots<T> = { default(props: { state: T }): unknown };

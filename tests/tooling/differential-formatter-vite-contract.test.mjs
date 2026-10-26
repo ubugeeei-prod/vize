@@ -199,7 +199,7 @@ void test("active history inputs migrate namespaces while archived inheritance r
   assert.equal(expected.__vizeProjectRoot, "/authored/project");
   assert.equal(expected.entries[0].__vizeProjectRoot, "/authored/project");
   assert.deepEqual(expected.typeChecker, { jsxTypecheck: true, strict: true });
-  assert.deepEqual(expected.formatter, { singleQuote: true, tabWidth: 4 });
+  assert.deepEqual(expected.formatter, { printWidth: 90, singleQuote: true, tabWidth: 4 });
 });
 
 void test("all migrated public snapshots keep the independently authored Vite and task oracles", async () => {

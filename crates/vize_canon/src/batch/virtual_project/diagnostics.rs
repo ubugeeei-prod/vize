@@ -91,7 +91,7 @@ fn default_diagnostic_offset(descriptor: &SfcDescriptor) -> (u32, SfcBlockType) 
 }
 
 pub(super) fn invalid_sfc_fallback_virtual_ts() -> CompactString {
-    "declare const __vize_component: any;\nexport default __vize_component;\n".into()
+    crate::virtual_ts::ERROR_COMPONENT_STUB.into()
 }
 
 /// A retained TypeScript block has exactly one syntax diagnostic owner: the

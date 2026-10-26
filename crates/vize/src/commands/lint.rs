@@ -25,7 +25,7 @@ use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{
     LintIgnoreSet, collect_default_lint_files, collect_lint_inputs, resolve_lint_config_path,
 };
-use entry_rules::{LinterRuleResolver, TypeAwareProjectPaths};
+use entry_rules::{LintProjectContext, LinterRuleResolver};
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
 use routes::apply_cross_file_lint;
@@ -127,9 +127,10 @@ pub fn run(mut args: LintArgs) {
         help_level,
         &args,
         linter_features,
-        TypeAwareProjectPaths {
+        LintProjectContext {
             corsa: configured_corsa_path,
             tsconfig: configured_type_aware_tsconfig,
+            ssr_enabled: super::project_ssr::ssr_enabled(config_dir),
         },
         &custom_elements,
     );

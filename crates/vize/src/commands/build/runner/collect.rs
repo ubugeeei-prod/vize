@@ -6,6 +6,7 @@ use std::{
 };
 
 use ignore::WalkBuilder;
+use vize_l0::profiler::global_profiler;
 
 use self::glob::{BuildGlob, GLOB_METACHARACTERS};
 
@@ -103,6 +104,9 @@ pub(super) fn collect_files<'a>(
     files.dedup();
     roots.sort();
     roots.dedup();
+    let profiler = global_profiler();
+    profiler.record_counter("cli.build.collect.input_patterns", patterns.len() as u64);
+    profiler.record_counter("cli.build.collect.matched_files", files.len() as u64);
     Ok(CollectedFiles { files, roots })
 }
 
@@ -146,7 +150,9 @@ fn collect_walked_files(root: &Path, pattern: Option<&BuildGlob>, files: &mut Ve
         walker.max_depth(Some(max_depth));
     }
 
+    let mut visited = 0;
     for entry in walker.build().flatten() {
+        visited += 1;
         let path = entry.path();
 
         if path.is_file()
@@ -156,6 +162,9 @@ fn collect_walked_files(root: &Path, pattern: Option<&BuildGlob>, files: &mut Ve
             files.push(path.to_path_buf());
         }
     }
+    let profiler = global_profiler();
+    profiler.record_counter("cli.build.collect.walk_roots", 1);
+    profiler.record_counter("cli.build.collect.walk_entries", visited);
 }
 
 #[inline]

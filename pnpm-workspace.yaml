@@ -95,12 +95,19 @@ overrides:
   "zod@>=4.0.0 <4.6.6": "4.6.6"
 
 catalogs:
+  # Plugin consumer host; the frozen differential Babel oracle stays separate.
+  babel-plugin-host:
+    "@babel/core": "8.0.9"
+    "@types/convert-source-map": "2.0.3"
+
   # Real @vue/babel-plugin-jsx toolchain, used only as the differential oracle
   # for JSX/TSX babel-compatibility tests (crates/vize_atelier_jsx/tests/babel_compat).
   # Bump deliberately: a version change re-records the committed ground truth.
   babel-jsx-oracle:
     "@babel/core": "7.29.0"
     "@babel/plugin-syntax-typescript": "7.28.6"
+    # Declaration-only prerequisite for the strict mounted/source oracle tests.
+    "@types/babel__core": "7.20.5"
     "@vue/babel-plugin-jsx": "2.0.1"
 
   # Real vue-jsx-vapor compiler/runtime used only by the mounted JSX semantic
@@ -262,8 +269,13 @@ peerDependencyRules:
 
 allowBuilds:
   "@parcel/watcher": false
+  # Parcel's pinned native providers ship platform optional packages. Keep
+  # installation from compiling addons or fetching SWC's unpinned WASM fallback.
+  "@swc/core@1.16.20": false
   core-js: false
   esbuild: true
+  "lmdb@2.8.5": false
+  "msgpackr-extract@3.0.4": false
   puppeteer: false
   unrs-resolver: false
   vue-demi: false

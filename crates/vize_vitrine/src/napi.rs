@@ -25,6 +25,10 @@ mod inspector;
 #[cfg(feature = "napi")]
 mod jsx;
 #[cfg(feature = "napi")]
+mod language_code;
+#[cfg(feature = "napi")]
+pub use language_code::*;
+#[cfg(feature = "napi")]
 mod lint;
 mod lint_fix;
 #[cfg(feature = "napi")]

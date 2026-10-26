@@ -23,6 +23,8 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "language-projection.js",
+    "language-projection.d.ts",
     "native-binding.js",
     "native-binding-identity.js",
     "native-targets.js"

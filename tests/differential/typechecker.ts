@@ -92,6 +92,20 @@ export const TYPECHECKER_TESTS = {
   "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+  "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+  "component-input-diagnostic-owners-10607":
+    "component_input_copies_preserve_complete_authored_diagnostics",
+  "quoted-generic-parameters-10540":
+    "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+  "narrowed-slot-host-guard-10660": "slot_host_guards_preserve_authored_impossible_comparisons",
+  "empty-generic-public-contract-10540":
+    "empty_generic_markers_preserve_functional_public_contracts",
+  "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
+  "planned-generic-syntax-route-10598":
+    "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
+  "template-context-undefined-10667": "undefined_context_keeps_complete_authored_diagnostics",
+  "package-target-deletion-refresh": "missing_exported_package_target_preserves_ts2307",
+  "import-literal-geometry-10762": "rewritten_import_literals_preserve_complete_batch_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -160,6 +174,16 @@ const sourceRevisions = {
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
+  "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "component-input-diagnostic-owners-10607": "bd905e766c37ad5bacabaacbec02c90def36726e",
+  "quoted-generic-parameters-10540": "711b56b2499b9136d8965a59c65713a2b78540f4",
+  "narrowed-slot-host-guard-10660": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "empty-generic-public-contract-10540": "4fdc457df6498c4636efb35dd76af61394ad7006",
+  "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
+  "template-context-undefined-10667": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+  "package-target-deletion-refresh": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "import-literal-geometry-10762": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

@@ -6,6 +6,9 @@ module vize.FormatterConfig
 import "SortImportsConfig.pkl"
 
 class FormatterConfig {
+  /// Formatter-only exclusions, relative to the project root; ordered negations are supported.
+  ignorePatterns: Listing<String>? = null
+
   /// Named set of defaults: "vize", "prettier", "compact", or "documentation". Options set here still win.
   preset: ("vize"|"prettier"|"compact"|"documentation")? = null
 

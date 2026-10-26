@@ -1,16 +1,21 @@
 //! Input options and generated output shared by canonical Vue projections.
 
-use super::super::setup_props::RuntimePropResolveCache;
+use super::super::{DiagnosticRoute, setup_props::RuntimePropResolveCache};
 use crate::{batch::Diagnostic, virtual_ts::VirtualTsCheckOptions};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{String as CompactString, config::VueVersion};
 
 pub(in crate::batch::virtual_project) struct GeneratedVueFile {
+    pub(in crate::batch::virtual_project) diagnostic_route: DiagnosticRoute,
     pub(in crate::batch::virtual_project) code: CompactString,
     pub(in crate::batch::virtual_project) mappings: Vec<crate::virtual_ts::VizeMapping>,
     /// Row-aligned producer feature ownership. Style diagnostics may append
     /// ordinary rows after this prefix; JSX shifts coordinates without reordering.
     pub(in crate::batch::virtual_project) mapping_meta: Vec<crate::virtual_ts::ProjectionMeta>,
+    /// Prepared before mapping the reporting signature; reused by the mapper
+    /// so generated diagnostic ownership never needs a second parse or scan.
+    pub(in crate::batch::virtual_project) generic_copies:
+        Option<super::generic_attribute::GenericCopies>,
     pub(in crate::batch::virtual_project) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(in crate::batch::virtual_project) prop_default_key_links:
         Vec<crate::virtual_ts::VizeSemanticLink>,
@@ -24,6 +29,8 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
 
 #[derive(Clone, Copy)]
 pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
+    pub(in crate::batch::virtual_project) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(in crate::batch::virtual_project) check_options: VirtualTsCheckOptions,
     pub(in crate::batch::virtual_project) typed_router_root: Option<&'a std::path::Path>,
     pub(in crate::batch::virtual_project) preserve_unused_diagnostics: bool,

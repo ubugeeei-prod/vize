@@ -17,6 +17,9 @@ on:
       - "tests/tooling/github-workflows-release-build.test.ts"
       - "tests/tooling/release-jsr-workflow.test.ts"
       - "tests/tooling/publish-npm-package*.test.ts"
+      - "tests/tooling/publish-editor*.test.ts"
+      - "tests/tooling/publish-open-vsx-extension.test.ts"
+      - "tests/tooling/publish-vscode-extension*.test.ts"
       - "tests/tooling/support/fake-npm-registry.ts"
       - "tests/tooling/support/fake-command.ts"
   workflow_dispatch:
@@ -52,3 +55,5 @@ jobs:
           tests/tooling/davinci-plugin-sdk-release.test.ts
       - name: Concurrent npm publication
         run: node --test tests/tooling/publish-npm-package*.test.ts
+      - name: Target-aware editor publication
+        run: node --test tests/tooling/publish-editor*.test.ts tests/tooling/publish-open-vsx-extension.test.ts tests/tooling/publish-vscode-extension*.test.ts

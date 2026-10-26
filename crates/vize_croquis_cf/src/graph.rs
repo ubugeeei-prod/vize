@@ -11,6 +11,7 @@
 //! - Early termination in path finding algorithms
 
 mod cycles;
+mod order;
 mod visited;
 
 use super::registry::FileId;

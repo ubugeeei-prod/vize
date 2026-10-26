@@ -15,6 +15,7 @@ mod component_tag;
 mod defaults_key_links_tests;
 #[cfg(test)]
 mod define_emits_usage_tests;
+pub(crate) mod diagnostic_ownership;
 #[cfg(test)]
 mod dynamic_component_names_tests;
 #[cfg(test)]
@@ -24,6 +25,9 @@ pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 #[cfg(feature = "native")]
 pub(crate) use expressions::key_sub_spans;
 mod generator;
+#[cfg(feature = "native")]
+pub(crate) use generator::generic_recovery;
+pub(crate) mod generic_parameters;
 mod helpers;
 mod import_meta;
 pub mod incremental;
@@ -72,6 +76,8 @@ pub use generator::{
 };
 pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
 pub(crate) use helpers::CONTENT_MAPPER_HELPERS_MODULE;
+#[cfg(feature = "native")]
+pub(crate) use helpers::ERROR_COMPONENT_STUB;
 pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
     VUE_TYPE_HELPERS,
