@@ -279,6 +279,13 @@ export async function setupNuxtLintConfigGeneration(
         rules: entry.rules,
       });
     }
+    for (const [index, override] of (projectRules.oxlintOverrides ?? []).entries()) {
+      projectItems.push({
+        name: `project/oxlint-override-${String(index + 1)}`,
+        files: override.files,
+        nativeRules: override.rules,
+      });
+    }
     for (const warning of projectRules.warnings ?? []) {
       if (emittedWarnings.has(warning)) continue;
       emittedWarnings.add(warning);
