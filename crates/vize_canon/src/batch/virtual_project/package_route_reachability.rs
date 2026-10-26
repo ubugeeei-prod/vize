@@ -174,7 +174,7 @@ fn package_route_reaches_vue_with_budget(
 fn scan_package_route_reachability_with_budget<ResolveLocal, ResolvePackage>(
     route: &crate::PackageRoute,
     sources: &mut ReachabilitySources,
-    resolve_local: ResolveLocal,
+    mut resolve_local: ResolveLocal,
     resolve_package: ResolvePackage,
     budget: ReachabilityBudget,
 ) -> PackageRouteReachability
@@ -188,11 +188,19 @@ where
 {
     // Importers in different package scopes key different lookups, but they
     // usually resolve the same route, and a scan reads nothing else.
-    if let Some(scanned) = sources.scanned(route, budget) {
+    if let Some(scanned) = sources.scanned(route, budget, &mut resolve_local) {
         return scanned;
     }
-    let scanned = scan_route(route, sources, resolve_local, resolve_package, budget);
-    sources.remember_scan(route, budget, scanned.clone());
+    let mut probes = Vec::new();
+    let scanned = scan_route(
+        route,
+        sources,
+        resolve_local,
+        resolve_package,
+        budget,
+        &mut probes,
+    );
+    sources.remember_scan(route, budget, probes, scanned.clone());
     scanned
 }
 
@@ -202,6 +210,7 @@ fn scan_route<ResolveLocal, ResolvePackage>(
     mut resolve_local: ResolveLocal,
     mut resolve_package: ResolvePackage,
     budget: ReachabilityBudget,
+    probes: &mut Vec<sources::AliasProbe>,
 ) -> PackageRouteReachability
 where
     ResolveLocal: FnMut(&Path, &str) -> (Option<PathBuf>, Vec<PathBuf>),
@@ -302,6 +311,7 @@ where
                 dependency.as_ref()
             } else {
                 alias = resolve_local(&path, specifier);
+                probes.push(sources::AliasProbe::new(&path, specifier, &alias));
                 for input in &alias.1 {
                     record_input(&mut inputs, input);
                 }
@@ -471,5 +481,7 @@ fn finish(
     }
 }
 
+#[cfg(test)]
+mod alias_scope_tests;
 #[cfg(test)]
 mod tests;
