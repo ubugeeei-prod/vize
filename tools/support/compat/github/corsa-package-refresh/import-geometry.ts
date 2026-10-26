@@ -1,6 +1,6 @@
 // Execute the actual source libtest and preserve its full output before asserting.
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -9,11 +9,12 @@ assert.equal(process.env.GITHUB_ACTIONS, "true");
 const capture = process.env.VIZE_IMPORT_GEOMETRY_CAPTURE;
 assert(capture);
 fs.mkdirSync(capture, { recursive: true });
-const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
-const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-const save = (name, data) =>
+const hash = (file: fs.PathLike) =>
+  createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
+const save = (name: string, data: unknown) =>
   fs.writeFileSync(path.join(capture, name), JSON.stringify(data, null, 2) + "\n");
-const state = (result) => ({
+const state = (result: SpawnSyncReturns<string>) => ({
   status: result.status,
   signal: result.signal,
   error: result.error?.message ?? null,
@@ -24,9 +25,11 @@ const sources = [
   "crates/vize_canon/src/batch/import_rewriter.rs",
   "crates/vize_canon/src/batch/import_rewriter/source_map.rs",
   "crates/vize_canon/src/batch/import_rewriter/literal_geometry_tests.rs",
+  "crates/vize_canon/src/batch/import_rewriter/literal_rewrite.rs",
+  "crates/vize_canon/src/batch/import_rewriter/literal_rewrite/tests.rs",
 ];
 assert.equal(git("diff", "--name-only"), "");
-const receipt = {
+const receipt: Record<string, unknown> = {
   schema: "vize.import-literal-geometry-source",
   version: 1,
   source: git("rev-parse", "HEAD"),
@@ -89,6 +92,13 @@ const required = [
   "literal_geometry_tests::tsx_module_geometry_does_not_rewrite_attribute_or_text_literals",
   "literal_geometry_tests::lsp_utf16_positions_cross_the_actual_rewritten_byte_map",
   "source_map::storage_tests::normal_rewrites_use_one_presized_metadata_buffer_without_reallocation",
+  "literal_rewrite::tests::both_original_quotes_preserve_the_exact_decoded_project_path",
+  "literal_rewrite::tests::backslashes_and_each_control_character_use_the_existing_ts_encoder",
+  "literal_rewrite::tests::safe_paths_preserve_the_original_quote_and_other_quote_content",
+  "literal_rewrite::tests::source_kinds_share_the_same_encoder_and_mapping_boundary",
+  "literal_rewrite::tests::repeated_safe_and_encoded_literals_keep_later_coordinates_exact",
+  "literal_rewrite::tests::literal_encoding_does_not_add_a_syntax_parse_or_retain_a_second_entry",
+  "literal_rewrite::tests::unproven_original_delimiters_cannot_apply_a_replacement",
 ].map((name) => `batch::import_rewriter::${name}`);
 const testArgs = ["batch::import_rewriter", "--nocapture", "--test-threads=1"];
 const result = spawnSync(binary, testArgs, {
@@ -102,6 +112,7 @@ assert.equal(result.status, 0, result.stdout + result.stderr);
 for (const name of required) assert(result.stdout.includes(`test ${name} ... ok`), name);
 assert.match(result.stdout, /test result: ok\. \d+ passed; 0 failed; 0 ignored;/);
 assert.match(result.stderr, /literal_mapping_syntax .*parses: 1.*resolver_calls=4/);
+assert.match(result.stderr, /literal_encoding_syntax .*parses: 1.*resolver_calls=2/);
 assert.match(
   result.stderr,
   /literal_mapping_storage rows=256 owned_buffers=1 capacity=256 bytes=4096/,

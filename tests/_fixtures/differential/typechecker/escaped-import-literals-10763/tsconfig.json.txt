@@ -1,0 +1,1 @@
+{"compilerOptions":{"module":"preserve","moduleResolution":"bundler","noEmit":true,"paths":{"#lib/*":["./src/日本語🍣 quoted'\"directory/lib/*"]},"strict":true},"include":["src/**/*"]}

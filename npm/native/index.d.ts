@@ -1520,11 +1520,25 @@ export declare function transformViteCssVarsForPipeline(
   productionFilename?: string | undefined | null,
 ): string;
 
+/** Explicit options for the shared Canon language projection. */
+export interface VueLanguageCodeOptions {
+  filename: string;
+  /** Explicit host-selected tsconfig; omitted performs no config file reads. */
+  configFileName?: string;
+  optionsApi?: boolean;
+  checkJavaScript?: boolean;
+  preserveUnusedDiagnostics?: boolean;
+}
+
+/** Canon's existing Content Mapper protocol JSON, with UTF-8 offsets. */
+export declare function generateVueLanguageCode(
+  source: string,
+  options: VueLanguageCodeOptions,
+): string;
+
 /**
- * Perform type checking on a Vue SFC
- *
- * This performs AST-based type analysis without requiring a TypeScript compiler.
- * For full type checking, use the CLI with Corsa integration.
+ * Perform type checking on a Vue SFC.
+ * This performs AST-based analysis. For full checking, use the CLI with Corsa.
  */
 export declare function typeCheck(
   source: string,

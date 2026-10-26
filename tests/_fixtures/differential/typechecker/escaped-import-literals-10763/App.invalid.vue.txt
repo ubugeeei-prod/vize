@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { greet } from '#lib/greet';
+const message = greet('vize');
+const invalid: number = message;
+</script>
+<template>{{ message }}</template>

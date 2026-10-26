@@ -11,7 +11,7 @@ on:
       - tests/differential/typechecker.ts
       - tests/tooling/typechecker-differential.test.ts
       - tests/tooling/typechecker-workspace.test.ts
-      - tests/tooling/differential-dialect-coverage.test.mjs
+      - tests/tooling/differential-dialect-coverage.test.ts
       - crates/vize_canon/src/corsa_bridge/**
       - crates/vize_canon/src/lsp_client/**
       - crates/vize_canon/src/corsa_server/**
@@ -104,7 +104,7 @@ jobs:
       - name: Execute all import rewriter laws and retain source measurements
         env:
           VIZE_IMPORT_GEOMETRY_CAPTURE: ${{ runner.temp }}/import-literal-geometry
-        run: vp node tools/support/compat/github/corsa-package-refresh/import-geometry.mjs
+        run: vp node tools/support/compat/github/corsa-package-refresh/import-geometry.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

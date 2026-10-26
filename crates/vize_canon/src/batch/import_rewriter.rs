@@ -41,6 +41,8 @@ pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 
+mod literal_rewrite;
+
 #[cfg(test)]
 mod literal_geometry_tests;
 
@@ -284,8 +286,11 @@ impl ImportRewriter {
         let mut source_map = ImportSourceMap::for_rewrites(rewrites.len());
 
         for (start, end, new_path) in rewrites {
-            output.replace_range(start as usize..end as usize, new_path.as_str());
-            source_map.record_replacement(start, end, new_path.len() as u32);
+            if let Some(length) =
+                literal_rewrite::replace(&mut output, source, start, end, &new_path)
+            {
+                source_map.record_replacement(start, end, length);
+            }
         }
         source_map.finish_descending_replacements();
 

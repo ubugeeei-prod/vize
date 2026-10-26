@@ -25,7 +25,8 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   VIZE_NATIVE_CI_FORMATTER_HISTORY: "1"
-  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  SOURCE_SHA: ${{ github.sha }}
+  TRIGGER_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   packed-host:
