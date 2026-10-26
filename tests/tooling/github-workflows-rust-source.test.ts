@@ -242,6 +242,12 @@ function requireSplitRustRecipes(
       job.steps[contracts].run =
         "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
       job.steps.splice(contracts + 1, 1);
+      // PRs also lint the test targets of touched crates on the Clippy ratchet.
+      const ratchet = job.steps.findIndex(
+        (step) => step.name === "Clippy test targets of touched ratchet crates",
+      );
+      assert.notEqual(ratchet, -1);
+      job.steps.splice(ratchet, 1);
     }
     assert.equal(digest(job), expected, id);
   }

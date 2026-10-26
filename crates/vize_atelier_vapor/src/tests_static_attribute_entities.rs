@@ -1,11 +1,5 @@
 //! Legacy Vapor HTML attribute serialization regressions from #7502.
 
-#![expect(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    reason = "test fixtures use assertions, std strings and format"
-)]
-
 use super::compile_vapor;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;

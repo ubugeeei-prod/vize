@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .iter()
                 .map(|&(id, source, prefix)| {
                     json!({
-                        "id": format!("compiler/vapor/{id}"), "source": source,
+                        "id": vize_carton::cstr!("compiler/vapor/{id}"), "source": source,
                         "entrypoint": "compile_vapor", "options": fixtures::option_payload(prefix),
                         "result": fixtures::observe(source, prefix),
                     })

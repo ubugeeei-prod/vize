@@ -295,6 +295,13 @@ void test("full-only extraction preserves all seventeen complete original job ob
     },
     run: 'node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT"',
   });
+  // The portability lane also lints every crate on the test-target Clippy ratchet.
+  const clippy = original["rust-clippy-portability"].steps.find(
+    (step: { name?: string }) => step.name === "Clippy",
+  );
+  const ratchet = " && node tools/support/compat/github/clippy-test-targets.ts all";
+  assert.equal(clippy.run.slice(-ratchet.length), ratchet);
+  clippy.run = clippy.run.slice(0, -ratchet.length);
   // #7083 extends the authored allocation gate with its helper-rich witness.
   // The complete 17 job objects otherwise stay in authored order.
   assert.equal(Object.keys(original).length, 17);
