@@ -7,6 +7,7 @@ on:
       - tests/tooling/corsa-package-refresh-bootstrap.test.mjs
       - crates/vize_canon/src/batch/**
       - crates/vize_canon/tests/fix_history_diagnostics.rs
+      - crates/vize_canon/tests/support/fix_history_*.rs
       - tests/_fixtures/differential/typechecker/**
       - tests/differential/typechecker.ts
       - tests/tooling/typechecker-differential.test.ts
