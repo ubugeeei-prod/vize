@@ -851,6 +851,42 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
     );
 }
 
+#[test]
+fn missing_exported_package_target_preserves_ts2307() {
+    check_pack(
+        "package-target-deletion-refresh",
+        "missing_exported_package_target_preserves_ts2307",
+        "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+        None,
+        &["missing-target"],
+    );
+}
+
+#[test]
+fn rewritten_import_literals_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "import-literal-geometry-10762",
+        "rewritten_import_literals_preserve_complete_batch_diagnostics",
+        "51d3bebcc8988ba6bf42bb5f6b7fdc102de47ee3",
+        Some(10762),
+        &["original-alias-graph", "after-import-type-error"],
+    );
+}
+
+#[test]
+fn escaped_module_paths_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "escaped-import-literals-10763",
+        "escaped_module_paths_preserve_complete_authored_diagnostics",
+        "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+        Some(10763),
+        &[
+            "original-quoted-alias-graph",
+            "quoted-alias-with-authored-type-error",
+        ],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -878,6 +914,10 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
+                "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
+            }
+            "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
             "template-context-undefined-10667"
             | "contextual-prop-anchors-10661"
             | "typed-import-meta"
@@ -940,7 +980,8 @@ fn check_pack(
             | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
             | "narrowed-slot-host-guard-10660"
-            | "empty-generic-public-contract-10540" => regression,
+            | "empty-generic-public-contract-10540"
+            | "component-input-diagnostic-owners-10607" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -1091,8 +1132,13 @@ fn check_pack(
             }
         }
         let options = BatchTypeCheckerOptions {
-            tsconfig_path: (name == "workspace-alias-cache-10063")
-                .then(|| project_root.join("tsconfig.a.json")),
+            tsconfig_path: match name {
+                "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
+                "import-literal-geometry-10762" => {
+                    Some(project_root.join("packages/web/tsconfig.app.json"))
+                }
+                _ => None,
+            },
             ..Default::default()
         };
         let mut checker =
@@ -1301,6 +1347,25 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
             "keyed-unicode",
             "reserved-hyphen-ascii",
             "unicode-continue",
+        ],
+    );
+}
+
+#[test]
+fn component_input_copies_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "component-input-diagnostic-owners-10607",
+        "component_input_copies_preserve_complete_authored_diagnostics",
+        "bd905e766c37ad5bacabaacbec02c90def36726e",
+        Some(10607),
+        &[
+            "art-generic-form-invalid",
+            "art-generic-form-repaired",
+            "slot-prop-without-children-invalid",
+            "slot-prop-named-child-invalid",
+            "slot-prop-two-named-children-invalid",
+            "slot-prop-named-child-repaired",
+            "two-files-same-offset-invalid",
         ],
     );
 }

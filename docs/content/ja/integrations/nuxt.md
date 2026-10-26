@@ -289,6 +289,10 @@ Nuxt 2 では lint 設定の生成を利用できます。明示的に有効化�
 
 Nuxt Bridge も Vue 2 を使用するため、既存の `@vitejs/plugin-vue2` を維持してください。Vite 構成は `bridge.vite: true` と `bridge.nitro: true` の両方が必要です（[公式ガイド](https://nuxt.com/docs/4.x/bridge/vite)）。module を import できるだけでは、その builder の runtime 対応を検証したことにはなりません。
 
+Bridge の source 検証は Nuxt 2.18.1、Bridge 3.6.1、Vue 2.7.16 を固定し、同じアプリを webpack と Vite で実行します。Vite は module を外した対照実験も実行します。Vite 7.1.12 の fixture には、Vue 2 の runtime platform hook を保持する `nitro.rollupConfig.treeshake: false` と、client/SSR の asset URL を揃える `vite.build.rollupOptions.output.assetFileNames: "_nuxt/[name].[hash].[ext]"` を明示しています。この固定環境の runtime 検証には、これらの host 設定も含まれます。
+
+パッケージの Vite peer 範囲は `^7.3.0 || ^8.0.0` のままです。source を直接接続した Vite 7.1 の検証は、Vite 7.1 に公開パッケージを新規インストールした際の互換性を保証するものではありません。
+
 バージョンは自動的に検出されます。ラッパーによって Nuxt Kit からバージョンが見えない場合は、明示的に指定してください。
 
 ```ts

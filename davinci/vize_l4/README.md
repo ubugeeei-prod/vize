@@ -32,6 +32,18 @@ typed refusal until the real same-file Vue access provider exists. Complete
 template modules are assembled with `module::assemble_template`; authored maps
 retain the whole file and original retained expression coordinates.
 
+`targets::vue2::emit` is a separate, bounded instance-render backend over
+shared L2/L3 decisions from the genuine Vue 2 retained owner. It accepts a
+single native HTML root, static attributes and fully resolved interpolations.
+The caller supplies checked binding identities and access roles. Generated
+receiver and function declarations avoid actual used Local/Global semantic
+names; context properties, authored property keys and string contents do not
+reserve lexical names. Public `render` / `staticRenderFns` exports stay stable.
+The runtime fixtures use Vue 2.6.14 and 2.7.16, including complete VNodes and
+SSR through their actual VNode renderer. This target does not enable whole-SFC
+or Nuxt adoption, ordinary-script binding extraction, events, models,
+directives, components, slots, style assembly or static subtree caching.
+
 `targets::ts::project_program` borrows one completed File with one genuine
 whole-source JS/TS Module unit and no template operations. It copies that
 Program through the existing writer, keeps its original checker language and

@@ -50,6 +50,9 @@ function writeCompleteBuild(directory: string): void {
   );
   fs.writeFileSync(path.join(nativeDir, "native-binding.js"), "module.exports = {};\n");
   fs.writeFileSync(path.join(nativeDir, "native-binding-identity.js"), "module.exports = {};\n");
+  fs.writeFileSync(path.join(nativeDir, "index.d.ts"), "export {};\n");
+  fs.writeFileSync(path.join(nativeDir, "language-projection.js"), "module.exports = {};\n");
+  fs.writeFileSync(path.join(nativeDir, "language-projection.d.ts"), "export {};\n");
   fs.writeFileSync(
     path.join(nativeDir, "native-targets.js"),
     'module.exports = { nativeTargets: () => ["fixture"] };\n',
@@ -354,8 +357,35 @@ test("the Musea snapshot copies every runtime file @vizejs/native publishes", ()
   // native-targets.js began requiring native-binding-identity.js (#8704) and
   // the scheduled benchmark failed until the snapshot copied it too.
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "npm/native/package.json"), "utf8"));
-  const published = (manifest.files as string[]).filter((file) => file.endsWith(".js"));
+  const published = (manifest.files as string[]).filter(
+    (file) => file.endsWith(".js") || file.endsWith(".d.ts"),
+  );
   for (const file of published) {
     assert.ok(NATIVE_RUNTIME_FILES.includes(file), `${file} is published but not snapshotted`);
   }
+});
+
+test("the portable helper snapshot refuses runtime-source and measured-type mutation", () => {
+  withTempRoot((directory) => {
+    writeCompleteBuild(directory);
+    const runtime = resolveMuseaArtifacts(directory);
+    const helper = runtime["nativeLoader:language-projection.js"];
+    const types = runtime["nativeLoader:language-projection.d.ts"];
+    assert(helper && types, "the canonical helper pair belongs to the snapshot");
+    fs.writeFileSync(helper.source, "module.exports = { changed: true };\n");
+    assert.throws(
+      () => assertMuseaArtifactsUnchanged(runtime),
+      /nativeLoader:language-projection\.js source changed during the run/,
+    );
+    writeCompleteBuild(directory);
+    const measured = resolveMuseaArtifacts(directory);
+    fs.writeFileSync(
+      measured["nativeLoader:language-projection.d.ts"].measuredPath,
+      "export type Changed = true;\n",
+    );
+    assert.throws(
+      () => assertMuseaArtifactsUnchanged(measured),
+      /nativeLoader:language-projection\.d\.ts measured copy changed during the run/,
+    );
+  });
 });

@@ -37,12 +37,16 @@ const baseline = "3a3c8460f966fddbd8e1be4c083d460b24202f90",
   fixed = "91c25c1b4a2ea842705e4db321b6e92d2b70ba42";
 const before = JSON.parse(from(baseline, manifestPath)),
   current = JSON.parse(read(manifestPath));
+// Later ordinary compiler cases are not part of this CSS-only registration.
+const cssOnly = Buffer.from(JSON.stringify({ ...current, cases: before.cases }));
 const side = (side, file) =>
   side === "base"
     ? from(baseline, file)
-    : cssBindingProducerPaths.includes(file)
-      ? from(fixed, file)
-      : read(file);
+    : file === manifestPath
+      ? cssOnly
+      : cssBindingProducerPaths.includes(file)
+        ? from(fixed, file)
+        : read(file);
 
 await test("binding registration preserves every previous compiler row and pins its real source-before packet without changing source roles", () => {
   const oldCss = before.cssApiCases,

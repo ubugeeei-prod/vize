@@ -60,30 +60,41 @@ type CrateVersionQuery = (crateName: string, version: string) => Promise<CrateVe
 
 export interface PriorReleaseCompleteness {
   version: string | null;
+  /** Targets that block the next version. */
   incomplete: string[];
+  /** crates.io targets that are still missing; reported, never blocking. */
+  lagging: string[];
 }
 
 /**
- * Every tagged release must reach both package registries before another
- * version can be cut. Checking the publisher's canonical crate list keeps the
- * preflight aligned with the actual release surface.
+ * Every tagged release must reach npm before another version can be cut, so
+ * no install skips a version. crates.io only gets reported: its index can
+ * stall for hours (it did on 2026-10-26), and holding npm releases behind it
+ * breaks release-per-fix while leaving no npm user on a newer engine.
  */
-export async function incompletePriorReleaseTargets(
+export function incompletePriorReleaseTargets(
   version: string,
   npmPublished: readonly string[],
+): string[] {
+  return npmPublished.includes(version) ? [] : [`npm:vize@${version}`];
+}
+
+/** Crates from the publisher's canonical list that crates.io lacks at `version`. */
+export async function laggingPriorReleaseCrates(
+  version: string,
   query: CrateVersionQuery = queryCrateVersion,
 ): Promise<string[]> {
-  const incomplete = npmPublished.includes(version) ? [] : [`npm:vize@${version}`];
+  const lagging: string[] = [];
   for (let index = 0; index < publishedCrates.length; index += 4) {
     const batch = publishedCrates.slice(index, index + 4);
     const states = await Promise.all(batch.map((crate) => query(crate, version)));
     states.forEach((state, offset) => {
       if (state.kind !== "published") {
-        incomplete.push(`crates:${batch[offset]}@${version}`);
+        lagging.push(`crates:${batch[offset]}@${version}`);
       }
     });
   }
-  return incomplete;
+  return lagging;
 }
 
 /** Public-registry state for the newest release tag. */
@@ -93,11 +104,17 @@ export async function priorReleaseCompleteness(
   query: CrateVersionQuery = queryCrateVersion,
 ): Promise<PriorReleaseCompleteness> {
   const version = highestReleaseVersion(tags);
+  if (version === null) return { version, incomplete: [], lagging: [] };
   return {
     version,
-    incomplete:
-      version === null ? [] : await incompletePriorReleaseTargets(version, npmPublished, query),
+    incomplete: incompletePriorReleaseTargets(version, npmPublished),
+    lagging: await laggingPriorReleaseCrates(version, query),
   };
+}
+
+function reportLagging({ version, lagging }: PriorReleaseCompleteness): void {
+  if (lagging.length === 0) return;
+  writeStderr(`v${version} is still missing on crates.io: ${lagging.join(", ")}\n`);
 }
 
 /** A cadence skip when the registry preflight cannot prove the prior release complete. */
@@ -116,7 +133,9 @@ async function priorReleaseIsComplete(
   tags: readonly string[],
   npmPublished: readonly string[],
 ): Promise<boolean> {
-  const { version, incomplete } = await priorReleaseCompleteness(tags, npmPublished);
+  const completeness = await priorReleaseCompleteness(tags, npmPublished);
+  reportLagging(completeness);
+  const { version, incomplete } = completeness;
   if (incomplete.length === 0) return true;
   writeStderr(
     `Refusing to cut a new version before v${version} is complete: ${incomplete.join(", ")}\n`,
@@ -203,9 +222,9 @@ async function cadence(): Promise<number> {
   if (tags === null || npmPublished === null) {
     return finishCadence(cadenceRegistryDecision(null)!, null);
   }
-  const registryDecision = cadenceRegistryDecision(
-    await priorReleaseCompleteness(tags, npmPublished),
-  );
+  const completeness = await priorReleaseCompleteness(tags, npmPublished);
+  reportLagging(completeness);
+  const registryDecision = cadenceRegistryDecision(completeness);
   if (registryDecision !== null) return finishCadence(registryDecision, null);
   const highest = highestReleaseVersion(tags);
   const input = await readCadenceInput(highest === null ? null : `v${highest}`);

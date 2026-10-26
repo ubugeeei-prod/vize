@@ -132,6 +132,56 @@ pub(super) fn remove_path(path: &Path) -> io::Result<()> {
     }
 }
 
+/// Retire one previously owned cache file without following a new package
+/// link into an external dependency store. Directories can now own live
+/// descendants and must be preserved as well.
+pub(super) fn retire_owned_file(root: &Path, path: &Path) -> io::Result<()> {
+    let relative = path.strip_prefix(root).map_err(|_| {
+        io::Error::new(
+            ErrorKind::InvalidInput,
+            "retired file is outside its cache root",
+        )
+    })?;
+    let mut components = relative.components().peekable();
+    if components.peek().is_none() {
+        return Err(io::Error::new(
+            ErrorKind::InvalidInput,
+            "cannot retire the cache root",
+        ));
+    }
+    let mut current = root.to_path_buf();
+    for root_or_component in std::iter::once(None).chain(components.map(Some)) {
+        if let Some(component) = root_or_component {
+            if !matches!(component, std::path::Component::Normal(_)) {
+                return Err(io::Error::new(
+                    ErrorKind::InvalidInput,
+                    "invalid retired cache path",
+                ));
+            }
+            current.push(component);
+        }
+        let metadata = match fs::symlink_metadata(&current) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == ErrorKind::NotFound => return Ok(()),
+            Err(error) => return Err(error),
+        };
+        if metadata.file_type().is_symlink() || (cfg!(windows) && fs::read_link(&current).is_ok()) {
+            return Ok(());
+        }
+        if current == path {
+            return if metadata.is_file() {
+                remove_path(path)
+            } else {
+                Ok(())
+            };
+        }
+        if !metadata.is_dir() {
+            return Ok(());
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn prune_unexpected_entries(
     root: &Path,
     expected_files: &FxHashSet<PathBuf>,
@@ -210,7 +260,54 @@ fn prune_dir(
 
 #[cfg(test)]
 mod tests {
-    use super::remove_path;
+    use super::{remove_path, retire_owned_file};
+
+    #[test]
+    fn snapshot_retirement_removes_only_its_owned_leaf_and_is_idempotent() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("node_modules/@scope/pkg");
+        std::fs::create_dir_all(&directory).unwrap();
+        let retired = directory.join("Retired.d.vue.ts");
+        let retained = directory.join("retained.d.ts");
+        std::fs::write(&retired, "export {};\n").unwrap();
+        std::fs::write(&retained, "real dependency bytes\n").unwrap();
+        retire_owned_file(root.path(), &retired).unwrap();
+        retire_owned_file(root.path(), &retired).unwrap();
+        assert!(!retired.exists());
+        assert_eq!(
+            std::fs::read_to_string(&retained).unwrap(),
+            "real dependency bytes\n"
+        );
+        assert!(retire_owned_file(root.path(), root.path()).is_err());
+        assert!(retire_owned_file(root.path(), &root.path().join("../outside.ts")).is_err());
+    }
+
+    #[test]
+    fn snapshot_retirement_preserves_external_store_links_and_new_directory_owners() {
+        let root = tempfile::tempdir().unwrap();
+        let cache = root.path().join("cache");
+        let store = root.path().join("store");
+        std::fs::create_dir_all(&cache).unwrap();
+        std::fs::create_dir_all(&store).unwrap();
+        let file = store.join("Retired.d.vue.ts");
+        std::fs::write(&file, "external store bytes\n").unwrap();
+        let link = cache.join("package");
+        crate::batch::runtime_deps::symlink_package_dir(&store, &link).unwrap();
+        retire_owned_file(&cache, &link.join("Retired.d.vue.ts")).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(&file).unwrap(),
+            "external store bytes\n"
+        );
+        assert!(std::fs::read_link(&link).is_ok());
+        let replacement = cache.join("old-file.ts");
+        std::fs::create_dir_all(&replacement).unwrap();
+        std::fs::write(replacement.join("live.ts"), "new live owner\n").unwrap();
+        retire_owned_file(&cache, &replacement).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(replacement.join("live.ts")).unwrap(),
+            "new live owner\n"
+        );
+    }
 
     #[test]
     fn removing_a_directory_link_preserves_its_target() {

@@ -26,9 +26,12 @@ import { fileSha256 } from "./benchmark-binary.mjs";
 
 const LEGACY_PIN_DIRECTORY = ".musea-benchmark-runtime";
 const SNAPSHOT_CACHE = join("node_modules", ".cache", "vize-musea-benchmark");
-// Every runtime file @vizejs/native publishes; the loader requires them all.
+// The published runtime/declaration closure, copied from its canonical package.
 export const NATIVE_RUNTIME_FILES = [
   "index.js",
+  "index.d.ts",
+  "language-projection.js",
+  "language-projection.d.ts",
   "native-binding.js",
   "native-binding-identity.js",
   "native-targets.js",
