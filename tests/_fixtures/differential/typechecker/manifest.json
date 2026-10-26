@@ -6594,6 +6594,121 @@
       }
     },
     {
+      "id": "typechecker/reopen-repaired-diagnostics-10730/error",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "reopen-repaired-diagnostics-10730",
+      "case": "error",
+      "test": "repaired_dependency_buffer_keeps_its_own_diagnostics",
+      "regressionCommit": "9403195279c75693aea30f097bf996cb83dd9729",
+      "sourceRevision": "9403195279c75693aea30f097bf996cb83dd9729",
+      "packReference": {
+        "path": "reopen-repaired-diagnostics-10730/cases.json",
+        "sha256": "4fb0bb552a03b902a02201f4aa3ed08c6560fcde2454b15b59f37b1c9256ffc9"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "reopen-repaired-diagnostics-10730/tsconfig.json.txt",
+          "sha256": "1d506eaac058d5f877a223ad48acec7320ab38f769213b088df4f1a798bf2ae4"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "reopen-repaired-diagnostics-10730/error/src/App.vue.txt",
+          "sha256": "e4628e2546ccd7163304d9fd6b54e492ae60318d56fedf07960b4cc1b74e0115"
+        },
+        {
+          "file": "src/support.ts",
+          "path": "reopen-repaired-diagnostics-10730/src/support.ts.txt",
+          "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "typechecker/reopen-repaired-diagnostics-10730/repaired",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "reopen-repaired-diagnostics-10730",
+      "case": "repaired",
+      "test": "repaired_dependency_buffer_keeps_its_own_diagnostics",
+      "regressionCommit": "9403195279c75693aea30f097bf996cb83dd9729",
+      "sourceRevision": "9403195279c75693aea30f097bf996cb83dd9729",
+      "packReference": {
+        "path": "reopen-repaired-diagnostics-10730/cases.json",
+        "sha256": "4fb0bb552a03b902a02201f4aa3ed08c6560fcde2454b15b59f37b1c9256ffc9"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "reopen-repaired-diagnostics-10730/tsconfig.json.txt",
+          "sha256": "1d506eaac058d5f877a223ad48acec7320ab38f769213b088df4f1a798bf2ae4"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "reopen-repaired-diagnostics-10730/repaired/src/App.vue.txt",
+          "sha256": "2018eaf2ec82680c0915259929668b9ed10ef99e63b41ca3e88bc804410d5cd4"
+        },
+        {
+          "file": "src/support.ts",
+          "path": "reopen-repaired-diagnostics-10730/src/support.ts.txt",
+          "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
       "id": "typechecker/required-props-edges/complete-attribute-boundaries",
       "state": "active",
       "targets": ["batch"],

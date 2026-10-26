@@ -995,6 +995,17 @@ fn native_completion_project_keeps_clean_diagnostics() {
 }
 
 #[test]
+fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
+    check_pack(
+        "reopen-repaired-diagnostics-10730",
+        "repaired_dependency_buffer_keeps_its_own_diagnostics",
+        "9403195279c75693aea30f097bf996cb83dd9729",
+        Some(10730),
+        &["error", "repaired"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",
