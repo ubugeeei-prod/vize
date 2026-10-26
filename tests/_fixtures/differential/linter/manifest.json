@@ -2466,6 +2466,49 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/attribute-hyphenation-range",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "attribute-hyphenation-range",
+        "files": [
+          {
+            "path": "RegisteredCamel.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db"
+          },
+          {
+            "path": "RegisteredHyphen.vue.txt",
+            "role": "negative-control",
+            "sha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "6e771883a6bbe05fcf95499d6c86c15604fe4c763be2051dd028bcb56afcac5b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
