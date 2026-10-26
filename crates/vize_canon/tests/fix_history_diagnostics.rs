@@ -1006,6 +1006,17 @@ fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
 }
 
 #[test]
+fn editor_alias_import_extension_styles_keep_native_diagnostics() {
+    check_pack(
+        "editor-alias-import-extension-10753",
+        "editor_alias_import_extension_styles_keep_native_diagnostics",
+        "377e5df97c4effa786a6426a62f61296ce16c750",
+        Some(10753),
+        &["authored-extension-styles"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

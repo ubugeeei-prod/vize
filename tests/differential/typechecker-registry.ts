@@ -52,6 +52,8 @@ export const TYPECHECKER_TESTS = {
     "dynamic_component_union_listener_preserves_clean_diagnostics",
   "dynamic-directive-expression-mapping-10182":
     "dynamic_directive_expressions_preserve_typed_slot_payloads",
+  "editor-alias-import-extension-10753":
+    "editor_alias_import_extension_styles_keep_native_diagnostics",
   "empty-generic-public-contract-10540":
     "empty_generic_markers_preserve_functional_public_contracts",
   "escaped-import-literals-10763": "escaped_module_paths_preserve_complete_authored_diagnostics",
@@ -148,6 +150,7 @@ export const sourceRevisions = {
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "dynamic-component-union-listener-10026": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+  "editor-alias-import-extension-10753": "377e5df97c4effa786a6426a62f61296ce16c750",
   "empty-generic-public-contract-10540": "4fdc457df6498c4636efb35dd76af61394ad7006",
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
