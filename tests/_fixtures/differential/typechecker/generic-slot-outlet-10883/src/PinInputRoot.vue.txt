@@ -1,0 +1,16 @@
+<script setup lang="ts" generic="Type extends 'text' | 'number'">
+import type { Ref } from 'vue'
+import { ref } from 'vue'
+
+type PinInputValue<Kind> = [Kind] extends ['number'] ? number[] : string[]
+
+defineSlots<{
+  default?: (props: { modelValue: typeof modelValue.value }) => any
+}>()
+
+const modelValue = ref([]) as Ref<PinInputValue<Type>>
+</script>
+
+<template>
+  <div><slot :model-value="modelValue" /></div>
+</template>

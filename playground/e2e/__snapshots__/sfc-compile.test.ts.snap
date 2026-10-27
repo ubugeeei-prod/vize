@@ -17,7 +17,8 @@ const visible = true;
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       Primitive,
       visible
@@ -46,7 +47,8 @@ const visible = true;
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       Primitive,
       visible
@@ -74,7 +76,8 @@ import { Form, Input } from "ant-design-vue";
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       Input,
       Form
@@ -104,7 +107,8 @@ import { Form, Input } from "ant-design-vue";
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       Input,
       Form
@@ -135,7 +139,8 @@ import DashTest from "./dash-test.vue";
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = { DashTest };
     Object.defineProperty(__returned__, "__isScriptSetup", {
       enumerable: false,
@@ -155,7 +160,8 @@ import DashTest from "./dash-test.vue";
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = { DashTest };
     Object.defineProperty(__returned__, "__isScriptSetup", {
       enumerable: false,
@@ -176,7 +182,8 @@ import { Primitive } from "@tresjs/core";
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = { Primitive };
     Object.defineProperty(__returned__, "__isScriptSetup", {
       enumerable: false,
@@ -202,7 +209,8 @@ import { ref, shallowRef } from "vue";
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const editorRef = ref(null);
     const instance = shallowRef(null);
     const __returned__ = {
@@ -236,7 +244,8 @@ interface User {
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+  __expose();
 
 const user: User = { name: 'test', age: 25 }
 
@@ -262,7 +271,8 @@ const status: Status = 'active'
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+  __expose();
 
 const __returned__ = { status }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
@@ -287,7 +297,8 @@ import { reactive, ref } from "vue";
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const count = ref(0);
     const items = ref([]);
     const state = reactive({ name: "test" });
@@ -323,7 +334,8 @@ const name = "test";
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       name,
       count

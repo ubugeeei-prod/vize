@@ -250,6 +250,33 @@ function itemScope(value: T) { return { value }; }
 }
 
 #[test]
+fn generic_setup_value_in_slot_type_checks_outlets_against_the_setup_parameters() {
+    let source = r#"<script setup lang="ts" generic="T = boolean">
+import type { Ref } from 'vue'
+import { ref } from 'vue'
+defineSlots<{ default?: (props: { modelValue: typeof modelValue.value }) => any }>()
+const modelValue = ref() as Ref<T | 'indeterminate'>
+</script>
+<template><slot :model-value="modelValue" /></template>"#;
+    let virtual_ts = generate_virtual_ts_from_sfc(source);
+
+    assert_eq!(
+        virtual_ts
+            .matches("__vizeSlotOutlet((undefined as unknown as __VizeSlots<T>)[\"default\"])")
+            .count(),
+        1,
+        "the outlet must read the slots of this setup's T, not its default:\n{virtual_ts}"
+    );
+    assert_eq!(
+        virtual_ts
+            .matches("__vizeSlotOutlet((undefined as unknown as __VizeSlots)[")
+            .count(),
+        0,
+        "the bare alias collapses T to boolean:\n{virtual_ts}"
+    );
+}
+
+#[test]
 fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
     for (emits, model, expected) in [
         ("{ change: [value: Alias] }", "", "type Alias = Value\n"),

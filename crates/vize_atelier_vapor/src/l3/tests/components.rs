@@ -43,6 +43,9 @@ fn component_outlet_and_fragment_shapes_are_admitted() {
     for source in [
         "<MyComp />",
         r#"<my-comp title="t" :count="n + 1" @change="save" @update-value="v = $event" />"#,
+        r#"<MyComp @change.once="save" />"#,
+        r#"<MyComp @keydown.enter.prevent="save" @keydown.esc.stop="cancel" />"#,
+        r#"<MyComp @[event].once.prevent="save" />"#,
         r#"<div><MyComp :x="1">text {{ y }}<b v-if="ok">{{ z }}</b></MyComp><i>{{ k }}</i></div>"#,
         r#"<MyComp class="a" :class="cls" style="color: red" :style="s" />"#,
         "<slot />",
@@ -79,7 +82,6 @@ fn unsupported_component_shapes_select_exact_legacy_reasons() {
         (r#"<component is="view" />"#, Component),
         (r#"<component />"#, Component),
         (r#"<div :is="view"></div>"#, Binding),
-        (r#"<MyComp @change.once="save" />"#, Component),
         (r#"<MyComp :key="id" />"#, Component),
         (r#"<MyComp key="k" />"#, Component),
         (r#"<MyComp ref="c" />"#, Component),

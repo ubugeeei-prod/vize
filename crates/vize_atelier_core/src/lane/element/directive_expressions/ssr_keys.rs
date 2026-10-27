@@ -55,7 +55,7 @@ fn nonidentifier_arguments_use_existing_context_setup_global_and_scope_rules() {
             if local {
                 context.enter_v_for_scope(Some("row"), None, None, "rows");
             }
-            process_directive_expressions(&mut context, el);
+            process_directive_expressions(&mut context, el, false);
             assert!(context.errors.is_empty(), "{:?}", context.errors);
             let PropNode::Directive(dir) = &el.props[0] else {
                 panic!("original directive")
@@ -109,7 +109,7 @@ fn setup_key_expressions_keep_binding_kinds_helpers_and_authored_spans() {
                         ..Default::default()
                     },
                 );
-                process_directive_expressions(&mut context, el);
+                process_directive_expressions(&mut context, el, false);
                 assert!(context.errors.is_empty(), "{:?}", context.errors);
                 let PropNode::Directive(dir) = &el.props[0] else {
                     panic!("same directive")
@@ -252,7 +252,7 @@ fn literal_and_bare_ssr_keys_and_default_dom_vapor_carriers_keep_original_conten
                         ..Default::default()
                     },
                 );
-                process_directive_expressions(&mut context, el);
+                process_directive_expressions(&mut context, el, false);
                 assert!(context.errors.is_empty(), "{:?}", context.errors);
                 let mut after = Vec::new();
                 collect_keys(&root.children, &mut after);

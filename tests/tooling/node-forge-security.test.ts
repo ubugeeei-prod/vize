@@ -148,6 +148,19 @@ function report() {
   };
 }
 
+test("publication of the upstream fix retains the exact backport attestation boundary", () => {
+  const original = report();
+  const withPatchedVersion = (patched_versions: unknown) => ({
+    ...original,
+    advisories: {
+      "1130000": { ...original.advisories["1130000"], patched_versions },
+    },
+  });
+  assertRemediatedReport(withPatchedVersion(">=1.4.1"));
+  for (const range of [">=1.4.0", ">=1.4.2", "*", "", undefined, 1])
+    assert.throws(() => assertRemediatedReport(withPatchedVersion(range)));
+});
+
 test("only the one exact version-based advisory permits source attestation", () => {
   assertRemediatedReport(report());
   for (const mutate of [

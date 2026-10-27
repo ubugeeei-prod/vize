@@ -176,7 +176,10 @@ impl<'a> Emitter<'a, '_> {
                     }
                     key
                 } else {
-                    vize_atelier_core::steps::create_on_name(prop.key)
+                    vize_atelier_core::steps::create_on_name(
+                        prop.handler_modifiers
+                            .map_or(prop.key, |modifiers| modifiers.event_name(prop.key)),
+                    )
                 };
                 let mut node = SimpleExpressionNode::new(
                     self.allocator.alloc_str(&key),
@@ -192,7 +195,9 @@ impl<'a> Emitter<'a, '_> {
             if let Some(value) = prop.value {
                 values.push(self.expression(value, !prop.dynamic));
             }
-            out.push(IRProp::new(key, values, component).with_value_kind(prop.value_kind));
+            let mut prop_ir = IRProp::new(key, values, component).with_value_kind(prop.value_kind);
+            prop_ir.handler_modifiers = prop.handler_modifiers;
+            out.push(prop_ir);
         }
         out
     }

@@ -2,9 +2,11 @@
 //! `pug-runtime@3.0.1` applies when it renders them.
 //!
 //! Only what the evaluator can build without an engine exists here:
-//! primitives, array literals and plain object literals. Objects keep
-//! their keys in insertion order; the evaluator refuses integer-like keys,
-//! so that order is also `for…in` order.
+//! primitives, array literals, plain object literals, and a mixin call's
+//! `block` function. Objects keep their keys in insertion order; the
+//! evaluator refuses integer-like keys, so that order is also `for…in`
+//! order. A function's text is the code pug generates for it, so nothing
+//! may print one: [`Value::has_function`] guards every conversion.
 
 use alloc::vec::Vec as StdVec;
 
@@ -20,6 +22,8 @@ pub(super) enum Value {
     Str(String),
     Array(StdVec<Value>),
     Object(StdVec<(String, Value)>),
+    /// A mixin call's `block`: the index of its closure.
+    Function(usize),
 }
 
 impl Value {
@@ -34,7 +38,17 @@ impl Value {
             Self::Bool(value) => *value,
             Self::Number(value) => *value != 0.0 && !value.is_nan(),
             Self::Str(text) => !text.is_empty(),
-            Self::Array(_) | Self::Object(_) => true,
+            Self::Array(_) | Self::Object(_) | Self::Function(_) => true,
+        }
+    }
+
+    /// Whether printing this value would print a function's source.
+    pub(super) fn has_function(&self) -> bool {
+        match self {
+            Self::Function(_) => true,
+            Self::Array(items) => items.iter().any(Self::has_function),
+            Self::Object(entries) => entries.iter().any(|(_, item)| item.has_function()),
+            _ => false,
         }
     }
 
@@ -49,6 +63,7 @@ impl Value {
             Self::Number(_) => "number",
             Self::Str(_) => "string",
             Self::Null | Self::Array(_) | Self::Object(_) => "object",
+            Self::Function(_) => "function",
         }
     }
 
@@ -74,6 +89,8 @@ impl Value {
                 out
             }
             Self::Object(_) => String::from("[object Object]"),
+            // Unreachable: callers refuse `has_function` values first.
+            Self::Function(_) => String::default(),
         }
     }
 
@@ -86,6 +103,7 @@ impl Value {
             Self::Number(value) => *value,
             Self::Str(text) => string_to_number(text),
             Self::Array(_) | Self::Object(_) => string_to_number(&self.to_js_string()),
+            Self::Function(_) => f64::NAN,
         }
     }
 
@@ -100,6 +118,9 @@ impl Value {
     /// `===` for primitives; `None` when identity would decide.
     pub(super) fn strict_equals(&self, other: &Self) -> Option<bool> {
         match (self, other) {
+            // Each call makes its own `block` function.
+            (Self::Function(left), Self::Function(right)) => Some(left == right),
+            (Self::Function(_), _) | (_, Self::Function(_)) => Some(false),
             (Self::Array(_) | Self::Object(_), _) | (_, Self::Array(_) | Self::Object(_)) => None,
             (Self::Number(left), Self::Number(right)) => Some(left == right),
             (left, right) => Some(left == right),
@@ -114,7 +135,7 @@ impl Value {
 
     fn write_json(&self, out: &mut String) -> bool {
         match self {
-            Self::Undefined => return false,
+            Self::Undefined | Self::Function(_) => return false,
             Self::Null => out.push_str("null"),
             Self::Bool(_) => out.push_str(&self.to_js_string()),
             Self::Number(value) if value.is_finite() => out.push_str(&number_string(*value)),
@@ -136,7 +157,7 @@ impl Value {
                 out.push('{');
                 let mut first = true;
                 for (key, item) in entries {
-                    if matches!(item, Self::Undefined) {
+                    if matches!(item, Self::Undefined | Self::Function(_)) {
                         continue;
                     }
                     if !first {

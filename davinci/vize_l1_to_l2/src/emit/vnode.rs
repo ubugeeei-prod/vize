@@ -190,7 +190,6 @@ pub(super) fn emit_call(
     if matches!(prop_hoist, PropHoistPosition::Root) && cx.hoist_static && cx.scope.inline() {
         super::props_object::check_hoist_gap(&element.attributes, &element.bindings)?;
     }
-    let once_layout = once || super::once::has(&element.bindings);
     let alias = if block {
         Buf::create_element_block_alias()
     } else {
@@ -254,20 +253,16 @@ pub(super) fn emit_call(
     if for_item {
         flag &= !512;
     }
-    if once {
-        flag &= 2 | 4;
-    }
     if memo_block {
         flag = 0;
     }
     // A hoisted props object only makes the props static. Dynamic text still
     // needs TEXT so Vue's block patcher revisits the element (#10168).
     let emit_flag = flag != 0;
-    let omit_empty_once_patch_child = once && !has_children && flag & !(2 | 4) == 0;
     let empty_runtime_for = for_item
         && (directive::has_runtime(&element.bindings)
             || has_cloak(&element.bindings)
-            || once_layout)
+            || super::once::has(&element.bindings))
         && !has_binds
         && element.attributes.is_empty()
         && if_key.is_none();
@@ -286,14 +281,12 @@ pub(super) fn emit_call(
                 skip_is: false,
                 for_item,
                 is_plain_element: true,
-                once_layout,
-                once_cache_initializer: once,
                 force_multiline: false,
             },
         )?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
-        super::props_static::emit_inline(cx, element.attributes.iter(), once_layout);
+        super::props_static::emit_inline(cx, element.attributes.iter(), false);
     } else if let Some(scope_id) = cx.scope_id_here().filter(|_| cx.in_v_for) {
         cx.buf.push(", ");
         let props = super::hoist::compact_props_object(element.attributes.iter(), Some(scope_id));
@@ -306,36 +299,34 @@ pub(super) fn emit_call(
     if has_children {
         cx.buf.push(", ");
         let template_if_branch_root = cx.template_if_branch_root;
-        cx.with_once_element(|cx| {
-            namespace::with_child(cx, element, |cx| {
-                let previous_template_if_branch_root = cx.template_if_branch_root;
-                let previous_suppress_template_for_child_key = cx.suppress_template_for_child_key;
-                if template_if_branch_root {
-                    cx.template_if_branch_root = false;
-                }
-                if previous_suppress_template_for_child_key {
-                    cx.suppress_template_for_child_key = false;
-                }
-                let result = emit_children(
-                    cx,
-                    &element.children,
-                    force_array_children,
-                    hoist_static_children,
-                    cache_static_children,
-                );
-                cx.template_if_branch_root = previous_template_if_branch_root;
-                cx.suppress_template_for_child_key = previous_suppress_template_for_child_key;
-                result
-            })
+        namespace::with_child(cx, element, |cx| {
+            let previous_template_if_branch_root = cx.template_if_branch_root;
+            let previous_suppress_template_for_child_key = cx.suppress_template_for_child_key;
+            if template_if_branch_root {
+                cx.template_if_branch_root = false;
+            }
+            if previous_suppress_template_for_child_key {
+                cx.suppress_template_for_child_key = false;
+            }
+            let result = emit_children(
+                cx,
+                &element.children,
+                force_array_children,
+                hoist_static_children,
+                cache_static_children,
+            );
+            cx.template_if_branch_root = previous_template_if_branch_root;
+            cx.suppress_template_for_child_key = previous_suppress_template_for_child_key;
+            result
         })?;
-    } else if emit_flag && !omit_empty_once_patch_child {
+    } else if emit_flag {
         cx.buf.push(", null");
     }
     if emit_flag {
         emit_patch_flag(cx, flag);
     }
     let suppress_memo_for_item_dynamic_props = memo_block && cx.skip_memo && for_item;
-    if !once && !suppress_memo_for_item_dynamic_props {
+    if !suppress_memo_for_item_dynamic_props {
         emit_dynamic_props(cx, &patch.dynamic_props);
     }
     cx.buf.push(")");

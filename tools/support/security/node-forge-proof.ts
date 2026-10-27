@@ -124,7 +124,9 @@ export function assertRemediatedReport(value: unknown): void {
   assert.equal(advisory.severity, "high");
   assert.equal(advisory.url, "https://github.com/advisories/" + advisoryId);
   assert.equal(advisory.vulnerable_versions, "<=1.4.0");
-  assert.equal(advisory.patched_versions, null);
+  // npm may advertise the upstream repair before every advisory mirror updates.
+  // The attested 1.4.0 backport is still bound to its exact source and exploit laws.
+  assert.ok(advisory.patched_versions === null || advisory.patched_versions === ">=1.4.1");
   assert.ok(Array.isArray(advisory.findings) && advisory.findings.length > 0);
   for (const findingValue of advisory.findings) {
     const finding = record(findingValue);

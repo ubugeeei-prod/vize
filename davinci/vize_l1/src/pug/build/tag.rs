@@ -1,5 +1,5 @@
 //! `pug-parser`'s `tag()`: head parts, the same-line content switch, and
-//! the indented (or text-only) block.
+//! the indented (or text-only) block — for tags and mixin calls alike.
 
 use vize_l0::Vec;
 
@@ -7,13 +7,31 @@ use super::Builder;
 use crate::pug::error::PugErrorCode;
 use crate::pug::lex::Tk;
 use crate::pug::tree::{
-    PugAttr, PugAttrGroup, PugAttrItem, PugBlock, PugInline, PugNode, PugTag, PugTagPart, PugText,
-    PugTextPiece,
+    PugAttr, PugAttrGroup, PugAttrItem, PugBlock, PugCall, PugInline, PugNode, PugTag, PugTagPart,
+    PugText, PugTextPiece,
 };
 
 impl<'a> Builder<'a, '_> {
     pub(super) fn parse_tag(&mut self) -> PugNode<'a> {
         let name = self.peek_is(Tk::Tag).then(|| self.take());
+        let tag = self.tag(name, true);
+        PugNode::Tag(self.boxed(tag))
+    }
+
+    /// `parseCall`: the head, its arguments, then a tag's tail, where pug
+    /// does not allow `/`.
+    pub(super) fn parse_call(&mut self) -> PugNode<'a> {
+        let head = self.take();
+        let args = self.peek_is(Tk::CallArgs).then(|| self.take());
+        let tag = self.tag(None, false);
+        PugNode::Call(self.boxed(PugCall { head, args, tag }))
+    }
+
+    fn tag(
+        &mut self,
+        name: Option<crate::markup::surface::Token<'a>>,
+        self_closing_allowed: bool,
+    ) -> PugTag<'a> {
         let mut parts = Vec::new_in(&self.allocator);
         loop {
             let part = match self.peek() {
@@ -29,7 +47,7 @@ impl<'a> Builder<'a, '_> {
             parts.push(part);
         }
         let dot = self.peek_is(Tk::Dot).then(|| self.take());
-        let inline = self.inline();
+        let inline = self.inline(self_closing_allowed);
         while self.peek_is(Tk::Newline) {
             self.skip();
         }
@@ -47,17 +65,17 @@ impl<'a> Builder<'a, '_> {
         } else {
             PugBlock::Nodes(self.nodes())
         };
-        PugNode::Tag(self.boxed(PugTag {
+        PugTag {
             name,
             parts,
             dot,
             inline,
             block,
-        }))
+        }
     }
 
     /// `(text | code | ':' expr | '/')?` — pug's switch after the head.
-    fn inline(&mut self) -> PugInline<'a> {
+    fn inline(&mut self, self_closing_allowed: bool) -> PugInline<'a> {
         match self.peek() {
             Tk::Pipe | Tk::Text | Tk::CodeInterp => PugInline::Text(self.text_run(false)),
             Tk::CodeFlag => PugInline::Code({
@@ -72,7 +90,7 @@ impl<'a> Builder<'a, '_> {
                     node: self.boxed(node),
                 }
             }
-            Tk::Slash => PugInline::SelfClosing(self.take()),
+            Tk::Slash if self_closing_allowed => PugInline::SelfClosing(self.take()),
             Tk::Newline
             | Tk::Indent
             | Tk::Outdent

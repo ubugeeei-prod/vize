@@ -1,0 +1,105 @@
+{
+  "scope": "refined post-review producer closure; historical888 captures retain their own original source authority",
+  "sourceFiles": [
+    {
+      "path": "crates/vize_atelier_core/src/lane/element.rs",
+      "beforeSha256": "614da41dc6908c8a8dcb989daaa930d1daca88dd05fce48cdf3156b319df514e",
+      "afterSha256": "02c9cbe1e110563d6cf86bd1761094fdfe3b5f5572469354e99726154bdf874a"
+    },
+    {
+      "path": "crates/vize_atelier_core/src/lane/element/directive_expressions.rs",
+      "beforeSha256": "be0d85e8e8468b438aeb7e26d6ed0c9510dd4eec98b7033fdeb836ca08f81704",
+      "afterSha256": "9a49b8604d4e5b5e30a363035863cd8acb0c751334a0b489d98961b4fd84a045"
+    },
+    {
+      "path": "crates/vize_atelier_core/src/lane/element/directive_expressions/ssr_keys.rs",
+      "beforeSha256": "6372842077bada399375a9c8862e28ed35250b544ecbe3dd5f6ef8fac6b3399f",
+      "afterSha256": "6abf37e704fe52ba7498ee08a1d81dcc5228da5291365b7aafa5aa510d5831f6"
+    },
+    {
+      "path": "crates/vize_atelier_core/src/lane/element/directive_expressions/tests.rs",
+      "beforeSha256": "0feb5f4535a2e46595a49acf534f03437daf67db8a914fe670febfd4b8d01939",
+      "afterSha256": "8711cfd45b7a9d8cad91a4627a06639effa5ddb1ee28cdbb4ac597e8020c6af7"
+    },
+    {
+      "path": "crates/vize_atelier_core/src/lane/element/tests.rs",
+      "beforeSha256": "a8931514fe8d5f03eb6c1f64b12625c4eacda13d305968eca42aa0f22aa81b50",
+      "afterSha256": "def579c7aa2e4d420c979bd235d28e674f023a113fe4db34a0ca32275e15598e"
+    },
+    {
+      "path": "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
+      "beforeSha256": null,
+      "afterSha256": "0c7fcb4b338f6ae821cc55fdd4ed4a075a1e407742c2b1090bbd42499262be0e"
+    },
+    {
+      "path": "crates/vize_atelier_core/src/lib.rs",
+      "beforeSha256": "8a295308f7f422e6c7c7b95e71543faaa0c1acd31d0cc2114710cafd162c9d33",
+      "afterSha256": "807fb9af9bc8b02ccd5cbeca049367501f293c957716cc256dccaa7a3720a92c"
+    },
+    {
+      "path": "crates/vize_atelier_jsx/src/compile.rs",
+      "beforeSha256": "31bade7b621bfe6c5ed5b5553d4d3b7a3c6ce42d7e63f5e33349177784b72651",
+      "afterSha256": "a8da2febd1a236316e3d206a12c81d0e318b51053ecde31d3f89693ea673bb03"
+    },
+    {
+      "path": "crates/vize_atelier_jsx/src/lower.rs",
+      "beforeSha256": "9af1f9f9dedd946348ca142eeac46b2e4a4ccb1ea24a35d6dc2e88ae171c79c3",
+      "afterSha256": "b9720550ae1dbdb8705436d44e4579f4882ac453616da7e09caa3f5892dbb087"
+    },
+    {
+      "path": "crates/vize_atelier_jsx/src/lower/attr.rs",
+      "beforeSha256": "e36da4de9d3339d2e698167bc3e728b45180c5eba732f07693bc3f9cfb7aafa2",
+      "afterSha256": "446edfb793140220681335fdf8b73574f1bc95746518594d48738cf9ceed54ec"
+    },
+    {
+      "path": "crates/vize_atelier_jsx/src/lower/attr/static_style.rs",
+      "beforeSha256": null,
+      "afterSha256": "9468e859a7f19aa4fa6cc8b2f3fef1b5231b43d3e591571a931fb625dfc03c53"
+    },
+    {
+      "path": "crates/vize_atelier_jsx/src/vapor.rs",
+      "beforeSha256": "c9777eb8e5fadff520ac988af24f3f7d2982c64701a133b68896e2ecb4436371",
+      "afterSha256": "44307ba62db9b8640ddbf251822a95fb9e9170acc6dcd97e40c15aaf08902736"
+    },
+    {
+      "path": "crates/vize_atelier_vapor/src/l3/native/emit.rs",
+      "beforeSha256": "605b868befbffa307e0b639470c386a1558ccf7ee431f0454391ce7fc6683262",
+      "afterSha256": "7a298ea85bb68cb0055258e37952170b4581d2a221c094c18bf011002164c84d"
+    },
+    {
+      "path": "crates/vize_atelier_vapor/src/l3/native/emit/element.rs",
+      "beforeSha256": "57356e6432c70c8bc8c4e599c3ff03b4477440fb82f73b86193b6e2386f55686",
+      "afterSha256": "cd18eb9b12c3952d112b77e2e9c130f6024823ae354086735b95b2bb997d8c91"
+    },
+    {
+      "path": "crates/vize_atelier_vapor/src/l3/native/emit/static_style.rs",
+      "beforeSha256": null,
+      "afterSha256": "b8069a9df5326dad0c13027679618151d73f68ac48567a4ac97707355e351b07"
+    },
+    {
+      "path": "crates/vize_atelier_vapor/src/lower/element/template.rs",
+      "beforeSha256": "b87d0b198c77e96246573ee20388d047f126be4cf05c1b8ada2355bd63118ac8",
+      "afterSha256": "3ae079172829feeb555ec8db43aeb4a09f57935d652440e4988992314fdfa482"
+    },
+    {
+      "path": "crates/vize_atelier_vapor/src/lower/element/template/attributes.rs",
+      "beforeSha256": "d9696144a81b6fdfc745b8d251be9bff2d599ebf0c9085ea850802aad5ed7b1a",
+      "afterSha256": "bf8e5965e2b65b9fd35e53d66b7c67e34f7e4da5fab57760ba3d43ef3e83b288"
+    },
+    {
+      "path": "crates/vize_relief/src/inline_style.rs",
+      "beforeSha256": "17db6757ce83bf81a80ed5d6bee44f2cbbd0e130a64d71c16b2f01da25b33bf7",
+      "afterSha256": "577c49701667a5d010966e34cfcb7bba61cd489653a025256d702769fc326efb"
+    },
+    {
+      "path": "crates/vize_relief/src/inline_style/literal.rs",
+      "beforeSha256": null,
+      "afterSha256": "b69e196eeaca998c69037dbb101ee0c95dc7c5f5d2b74a2b6a5b8a4bf2eda0e6"
+    },
+    {
+      "path": "crates/vize_relief/src/lib.rs",
+      "beforeSha256": "9e8927ac250185e6ec3e992fa102e09dc6aaab5e691c586dc0fcb8d73b172610",
+      "afterSha256": "67277b24381b9b8887b89db35ad20c3ff6bc817f1c1fa44a4d505a2d26c7bf94"
+    }
+  ]
+}

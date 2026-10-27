@@ -96,7 +96,7 @@ for (const scenario of scenarios) {
               "--fail",
               "--silent",
               "--show-error",
-              "https://open-vsx.org/api/ubugeeei/vize/0.57.0",
+              "https://open-vsx.org/api/ubugeeei/vize/universal/0.57.0",
             ]);
           } else {
             assert.equal(call.at(-1), marketplaceQueryUrl);

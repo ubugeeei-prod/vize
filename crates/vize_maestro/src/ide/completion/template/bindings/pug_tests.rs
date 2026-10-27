@@ -14,7 +14,7 @@ fn unmapped_and_refused_pug_preserve_script_bindings_without_admitting_locals() 
                     true,
                 ),
                 (
-                    "mixin refused(localOnly)\n  p {{ outer }}",
+                    "mixin refused(localOnly)\n  p {{ outer }}\n+refused(outer)",
                     "outer }}",
                     false,
                 ),

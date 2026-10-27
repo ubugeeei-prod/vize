@@ -66,6 +66,7 @@ impl CodegenContext {
             parent_ns: Namespace::Html,
             static_cache: false,
             in_cached_static: false,
+            in_v_once: false,
             v_if_branch_counter: 0,
             source: String::default(),
         }
