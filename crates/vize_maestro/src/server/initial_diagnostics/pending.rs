@@ -1,9 +1,9 @@
 //! One coalesced pending descriptor per currently open document.
 
 use super::EDIT_DIAGNOSTIC_DEBOUNCE;
+use super::queue::JobQueue;
 use std::time::{Duration, Instant};
 use tower_lsp::lsp_types::Url;
-use vize_l0::FxHashMap;
 
 #[derive(Clone)]
 pub(super) struct InitialDiagnosticsJob {
@@ -26,7 +26,7 @@ pub(super) enum DiagnosticsJobCause {
 
 #[derive(Default)]
 pub(super) struct PendingInitialDiagnostics {
-    pub(super) jobs: FxHashMap<Url, InitialDiagnosticsJob>,
+    pub(super) jobs: JobQueue,
     pub(super) next_sequence: u64,
     /// Lane occupancy of the last native pass; unknown until one finishes.
     pub(super) last_pass: Option<Duration>,
@@ -104,55 +104,18 @@ impl PendingInitialDiagnostics {
     }
 
     pub(super) fn take_sync(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| job.sync_pending)
-            .min_by_key(|(_, job)| job.sequence)
-            .map(|(uri, _)| uri.clone())?;
-        let job = self.jobs.get_mut(&uri)?;
-        job.sync_pending = false;
-        job.sync_running = true;
-        Some((uri, job.clone()))
+        self.jobs.take_sync()
     }
-
     pub(super) fn complete_sync(&mut self, uri: &Url, sequence: u64) {
-        if let Some(job) = self
-            .jobs
-            .get_mut(uri)
-            .filter(|job| job.sequence == sequence)
-        {
-            job.sync_running = false;
-        }
+        self.jobs.complete_sync(uri, sequence);
     }
-
     pub(super) fn take_preparation(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.preparation_pending)
-            .min_by_key(|(_, job)| job.sequence)
-            .map(|(uri, _)| uri.clone())?;
-        let job = self.jobs.get_mut(&uri)?;
-        job.preparation_pending = false;
-        Some((uri, job.clone()))
+        self.jobs.take_preparation()
     }
-
     pub(super) fn next_not_before(&self) -> Option<Instant> {
-        self.jobs
-            .values()
-            .filter(|job| !job.sync_pending && !job.sync_running)
-            .map(|job| job.not_before)
-            .min()
+        self.jobs.next_not_before()
     }
-
     pub(super) fn take_ready(&mut self, now: Instant) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.not_before <= now)
-            .min_by_key(|(_, job)| job.not_before)
-            .map(|(uri, _)| uri.clone())?;
-        self.jobs.remove(&uri).map(|job| (uri, job))
+        self.jobs.take_ready(now)
     }
 }

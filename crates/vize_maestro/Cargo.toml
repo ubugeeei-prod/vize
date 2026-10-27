@@ -25,6 +25,8 @@ experimental-source-navigation = ["experimental-source-project", "retained-progr
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the
 # default Vue 3 build; turns on the type-checker-side legacy feature too.
 legacy = ["vize_canon/legacy"]
+# Opt-in source counters for the bounded snapshot carrier.
+micro-profiling = ["vize_l0/micro-profiling"]
 
 [dependencies]
 vize_carton = { workspace = true, features = ["lint-glob"] }
