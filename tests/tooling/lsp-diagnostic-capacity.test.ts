@@ -230,6 +230,7 @@ test(
         pipes: nativePipeEvidence(gate.lives),
       });
       const last = probes[probes.length - 1];
+      assert.ok(last);
       const colours = await session.request(
         "textDocument/documentColor",
         { textDocument: { uri: last.uri } },

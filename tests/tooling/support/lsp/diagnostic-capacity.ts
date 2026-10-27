@@ -50,7 +50,7 @@ export function capacitySource(index: number, uri: string): CapacityProbe {
     valid,
     token,
     line: rows.length - 1,
-    character: rows[rows.length - 1].length,
+    character: (rows[rows.length - 1] ?? "").length,
   };
 }
 

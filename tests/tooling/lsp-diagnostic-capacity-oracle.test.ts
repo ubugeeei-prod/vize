@@ -20,31 +20,35 @@ test("bulk diagnostic coverage preserves multiplicity and requires exact native 
       },
     ],
   };
+  const diagnostic = good.diagnostics[0];
+  assert.ok(diagnostic);
   for (const packet of [
     { ...good, version: 0 },
     { ...good, diagnostics: [] },
-    { ...good, diagnostics: [{ ...good.diagnostics[0], source: "vize/lint" }] },
-    { ...good, diagnostics: [{ ...good.diagnostics[0], message: "wrong token" }] },
+    { ...good, diagnostics: [{ ...diagnostic, source: "vize/lint" }] },
+    { ...good, diagnostics: [{ ...diagnostic, message: "wrong token" }] },
     {
       ...good,
       diagnostics: [
         {
-          ...good.diagnostics[0],
+          ...diagnostic,
           range: {
-            ...good.diagnostics[0].range,
+            ...diagnostic.range,
             start: { line: probe.line, character: probe.character + 1 },
           },
         },
       ],
     },
-    { ...good, diagnostics: [good.diagnostics[0], good.diagnostics[0]] },
+    { ...good, diagnostics: [diagnostic, diagnostic] },
   ])
     coverage.record(packet, 1);
   assert.throws(() => coverage.assertComplete(1, false));
   coverage.record(good, 2);
   coverage.record(good, 3);
   coverage.assertComplete(1, false);
-  assert.equal(coverage.rows(1, false)[0].matchingPackets, 2);
+  const row = coverage.rows(1, false)[0];
+  assert.ok(row);
+  assert.equal(row.matchingPackets, 2);
   assert.equal(coverage.packets.length, 8);
   assert.ok(probe.invalid.includes("\r\n"));
   assert.equal(probe.character, "/*🌱日本語*/ value0002.".length);
