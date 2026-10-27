@@ -226,6 +226,39 @@ fn ambiguous_mode_roots_use_the_original_exact_first_choice() {
         "ambiguous occurrences must return the original binding's path"
     );
     assert_complete(&project, &importer);
+
+    // Path equality normalizes trailing '/.', but display() preserves it.
+    // A shard key must keep the original complete returned spelling.
+    let lexical_variant = first.join(".");
+    assert_eq!(first, lexical_variant);
+    assert_ne!(first.as_os_str(), lexical_variant.as_os_str());
+    project.replace_package_route_bindings([
+        binding(
+            &importer,
+            "@scope/workspace",
+            PackageResolutionMode::Import,
+            Some(&first),
+            true,
+        ),
+        binding(
+            &importer,
+            "@scope/workspace",
+            PackageResolutionMode::Require,
+            Some(&lexical_variant),
+            true,
+        ),
+    ]);
+    let actual = project
+        .workspace_package_route_identity(&importer, "@scope/workspace")
+        .unwrap();
+    let previous = project
+        .workspace_package_route_identity_scan(&importer, "@scope/workspace")
+        .unwrap();
+    assert_eq!(actual.as_os_str(), previous.as_os_str());
+    assert!(
+        std::ptr::eq(actual, previous),
+        "component-equal but byte-different identities must fall back"
+    );
 }
 
 #[test]

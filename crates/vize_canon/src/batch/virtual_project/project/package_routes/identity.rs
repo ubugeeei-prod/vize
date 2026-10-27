@@ -29,7 +29,9 @@ impl VirtualProject {
                 continue;
             };
             let candidate = route.package_root.as_path();
-            if identity.is_some_and(|current| current != candidate) {
+            if identity.is_some_and(|current| current.as_os_str() != candidate.as_os_str()) {
+                // The caller formats this path, so even component-equivalent raw
+                // spellings must retain the original exact choice.
                 // Import and require occurrences can select different routes.
                 // Preserve the previous exact whole-map choice for that ambiguity.
                 return self.workspace_package_route_identity_scan(importer, specifier);
