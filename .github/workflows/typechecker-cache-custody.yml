@@ -6,6 +6,10 @@ on:
         description: Run public/source2500-SFC coverage and five fresh shipping-profile samples
         type: boolean
         default: false
+      coverage_only:
+        description: Run full untimed cache and accuracy gates on official Ubuntu without latency samples
+        type: boolean
+        default: false
       source_mode:
         description: Immutable normalfb550 checkpoint or one fresh normal source build
         type: choice
@@ -26,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
-    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.full && 'blacksmith-8vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.full && !inputs.coverage_only && 'blacksmith-8vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 60
     env:
       GOMAXPROCS: "8"
@@ -88,7 +92,7 @@ jobs:
           set -euo pipefail
           node tools/benchmarks/scripts/typechecker-cache-source.ts --source-root "$GITHUB_WORKSPACE" --target-dir "$RUNNER_TEMP/cache-source-target" --receipt "$RUNNER_TEMP/cache-evidence/source-build.json"
       - name: Full all-SFC coverage before absolute timing
-        env: { SOURCE_MODE: "${{ inputs.source_mode }}" }
+        env: { SOURCE_MODE: "${{ inputs.source_mode }}", COVERAGE_ONLY: "${{ inputs.coverage_only }}" }
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
         shell: bash
         run: |
@@ -105,7 +109,7 @@ jobs:
             cache_valid=true
             if ! node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --out "$RUNNER_TEMP/cache-evidence/$role/audit"; then failures=$((failures+1)); cache_valid=false; fi
             if ! node tools/benchmarks/scripts/typechecker-source-coverage.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --sfcs 2500 --out "$RUNNER_TEMP/cache-evidence/$role/coverage"; then failures=$((failures+1)); continue; fi
-            if [[ "$cache_valid" != true ]]; then continue; fi
+            if [[ "$cache_valid" != true || "$COVERAGE_ONLY" == true ]]; then continue; fi
             if ! node tools/benchmarks/scripts/typechecker-cache-latency.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --role "$role" --out "$RUNNER_TEMP/cache-evidence/$role" --custody "$RUNNER_TEMP/cache-evidence/$role/audit/custody.json" --coverage "$RUNNER_TEMP/cache-evidence/$role/coverage/acceptance.json"; then failures=$((failures+1)); fi
           done
           test "$failures" -eq 0
