@@ -191,8 +191,11 @@ mod tests {
                             .is_some_and(|ch| ch.is_ascii_alphabetic() || ch == '_' || ch == '$')
                             && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
                     });
-                    let expected =
-                        valid.then(|| trimmed.split('.').next().expect("first valid segment"));
+                    let expected = if valid {
+                        trimmed.split('.').next()
+                    } else {
+                        None
+                    };
                     assert_eq!(path_root(&text), expected, "{text:?}");
                 }
             }
