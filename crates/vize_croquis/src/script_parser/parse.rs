@@ -123,7 +123,9 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     let mut result = ScriptParseResult {
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::script_setup(),
-        nuxt_static_render_script: Some(render_admitted),
+        // The builtin-specialized variable fast path does not run the common
+        // statement fold, so it cannot establish this closed render proof.
+        nuxt_static_render_script: Some(render_admitted && !BUILTIN_TYPES),
         skip_diagnostics,
         ..Default::default()
     };

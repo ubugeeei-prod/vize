@@ -136,3 +136,23 @@ mod caller_owned_tests {
         assert_ne!(drawer.finish().nuxt_static_render_script, Some(true));
     }
 }
+
+#[cfg(test)]
+mod specialized_dispatch_tests {
+    #[test]
+    fn builtin_variable_fast_path_never_asserts_common_statement_fold_coverage() {
+        for source in [
+            "",
+            "const router = useRouter()",
+            "const definePageMeta = installRuntime; definePageMeta({})",
+        ] {
+            let mut drawer = crate::Drawer::with_options(crate::DrawerOptions::full());
+            drawer.draw_script_setup_with_builtin_types(source);
+            assert_ne!(
+                drawer.finish().nuxt_static_render_script,
+                Some(true),
+                "{source}"
+            );
+        }
+    }
+}
