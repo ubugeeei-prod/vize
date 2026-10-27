@@ -39,7 +39,7 @@ jobs:
           set -e
           cat "$RUNNER_TEMP/optional-inject-native/before-native.log"
           [[ "$status" == "101" ]]
-          node -e 'const a=require("node:assert/strict"),fs=require("node:fs");const s=fs.readFileSync(process.argv[1],"utf8");a.match(s,/^running 1 test$/m);a.match(s,/^test analyzer::tests_provide_inject::defaulted::spread_defaults_keep_unproven_findings \.\.\. FAILED$/m);a.match(s,/^test result: FAILED\. 0 passed; 1 failed; 0 ignored; 0 measured; 279 filtered out; finished in [0-9.]+s$/m);a.match(s,/assertion .*failed: none: const state = inject\('state', \.\.\.\[\]\)/);' "$RUNNER_TEMP/optional-inject-native/before-native.log"
+          node -e 'const a=require("node:assert/strict"),fs=require("node:fs");const s=fs.readFileSync(process.argv[1],"utf8");a.match(s,/^running 1 test$/m);a.match(s,/^test analyzer::tests_provide_inject::defaulted::spread_defaults_keep_unproven_findings \.\.\. FAILED$/m);a.match(s,/^test result: FAILED\. 0 passed; 1 failed; 0 ignored; 0 measured; 279 filtered out; finished in [0-9.]+s$/m);a.match(s,/assertion .*failed: none: const state = inject\(\x27state\x27, \.\.\.\[\]\)/);' "$RUNNER_TEMP/optional-inject-native/before-native.log"
       - name: Select the actual candidate and require every Croquis and cross-file native control
         env:
           EXPECTED_CANDIDATE_SOURCE: 93721b68f3403ab19416c7a528fcb360639b993f
