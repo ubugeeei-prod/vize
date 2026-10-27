@@ -125,7 +125,8 @@ impl InteractiveSupportsFocus {
             if matches!(
                 child.kind(),
                 MarkupElementKind::Component | MarkupElementKind::Slot
-            ) || markup_helpers::has_static_hidden(&child)
+            ) || child.is_unqualified_tag_exact("slot")
+                || markup_helpers::has_static_hidden(&child)
                 || markup_helpers::has_static_inert(&child)
             {
                 return;
