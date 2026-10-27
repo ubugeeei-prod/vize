@@ -33,6 +33,9 @@ Wall measurements include the tool subprocess; corpus generation is outside
 that interval. Resource maximum RSS is the operating system's process maximum,
 not a simultaneous sum across the process tree. Allocation counts are not
 measured by this runner. A single point is not a median or a speedup claim.
+Receipt schema 2 hashes the selected executable and its entrypoint separately.
+For vue-tsc it also records the actually resolved JavaScript TypeScript compiler;
+native checker/image fields are explicitly comparison-provider observations.
 
 ```sh
 node tools/benchmarks/scripts/type-admission-scale-suite.ts \

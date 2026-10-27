@@ -143,6 +143,25 @@ export function captureAdmissionScale(options: Capture) {
     ]),
   );
   const nativeBinding = scaleNativeIdentity(provider, options.mapperSource);
+  const entrypoint = tool === "vue-tsc" ? argv[0] : tool === "mapper" ? checker : cli;
+  const vueRequire =
+    tool === "vue-tsc" ? createRequire(require.resolve("vue-tsc/package.json")) : null;
+  const vueCompiler = vueRequire?.resolve("typescript/lib/tsc.js");
+  const javascriptCompiler =
+    vueRequire && vueCompiler
+      ? {
+          version: JSON.parse(
+            fs.readFileSync(vueRequire.resolve("typescript/package.json"), "utf8"),
+          ).version,
+          files: [
+            vueCompiler,
+            path.join(path.dirname(vueCompiler), "_tsc.js"),
+            vueRequire.resolve("typescript"),
+          ]
+            .filter((file) => fs.existsSync(file))
+            .map((file) => ({ path: file, sha256: sha(fs.readFileSync(file)) })),
+        }
+      : null;
   let accuracy: { passed: boolean; diagnostics?: unknown; error?: string };
   try {
     assert.equal(run.error, undefined);
@@ -165,7 +184,7 @@ export function captureAdmissionScale(options: Capture) {
     accuracy = { passed: false, error: error instanceof Error ? error.stack : String(error) };
   }
   const receipt = {
-    schema: 1,
+    schema: 2,
     tool,
     options: options.scale,
     corpusSha256: sha(fs.readFileSync(path.join(project, "corpus.json"))),
@@ -181,10 +200,16 @@ export function captureAdmissionScale(options: Capture) {
         : tool === "mapper"
           ? (options.mapperSource ?? `installed-native-${versions["@vizejs/native"]}`)
           : `installed-${tool}`,
-    binarySha256: sha(fs.readFileSync(tool === "cli" ? cli : checker)),
+    binarySha256: sha(fs.readFileSync(command)),
+    entrypoint: { path: entrypoint, sha256: sha(fs.readFileSync(entrypoint)) },
+    javascriptCompiler,
     checkerSha256: sha(fs.readFileSync(checker)),
+    checkerRole:
+      tool === "vue-tsc" ? "comparison-provider-not-executed" : "selected-native-backend",
     sourceBuild,
     nativeBinding,
+    nativeBindingRole:
+      tool === "vue-tsc" ? "comparison-provider-observer-only" : "selected-provider",
     status: run.status,
     signal: run.signal,
     error: run.error?.message ?? null,
