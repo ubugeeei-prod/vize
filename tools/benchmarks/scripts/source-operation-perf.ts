@@ -122,11 +122,14 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
   const dataBytes = existsSync(rawPath) ? statSync(rawPath).size : 0;
   const evidencePresent =
     mode === "stat" ? missingEvents.length === 0 : dataBytes > 0 && (sampleCount ?? 0) > 0;
+  const capabilityFailure = fatalPerfCapability(stderr) && !evidencePresent;
   const collection =
-    result.error || result.signal || result.status === 124 || result.status === 137
+    result.error ||
+    result.signal ||
+    [124, 125, 126, 127, 137].includes(result.status ?? -1) ||
+    (!evidencePresent && result.status !== 0 && !capabilityFailure)
       ? "failed"
-      : (fatalPerfCapability(stderr) && !evidencePresent) ||
-          (mode === "stat" && (missingEvents.length > 0 || !sanity.plausible))
+      : capabilityFailure || (mode === "stat" && (missingEvents.length > 0 || !sanity.plausible))
         ? "unavailable"
         : mode === "record" && (!dataBytes || !sampleCount)
           ? "unavailable"
@@ -159,7 +162,8 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
     );
     writeFileSync(join(out, "source-report.txt"), rendered.stdout ?? "");
     writeFileSync(join(out, "source-report.stderr.txt"), rendered.stderr ?? "");
-    const sourceRows = [...(rendered.stdout ?? "").matchAll(/\.(?:rs|go|c|cpp|cc|h):\d+/gu)].length;
+    const sourceRows = [...(rendered.stdout ?? "").matchAll(/\.(?:rs|go|c|cpp|cc|h):[1-9]\d*/gu)]
+      .length;
     report = {
       status: rendered.status,
       signal: rendered.signal,

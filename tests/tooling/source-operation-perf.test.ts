@@ -199,7 +199,7 @@ if(a[0]==='--version'){console.log('fixture-perf');process.exit(0);}
 if(process.env.PERF_CONFIG!=='/dev/null')throw Error('ambient perf config must not be inherited');
 if(a[0]==='report'){
  if(process.env.SLOW_REPORT){setTimeout(()=>{},10000);}
- else {console.log('100.0% fixture_function fixture.rs:42'); if(process.env.BAD_REPORT)console.error('addr2line fixture: could not read first record');}
+ else {console.log('100.0% fixture_function fixture.rs:'+(process.env.ZERO_LINE?'0':'42')); if(process.env.BAD_REPORT)console.error('addr2line fixture: could not read first record');}
 }else{
  if(!a.includes('--no-buildid')||!a.includes('--no-buildid-cache'))throw Error('record post-pass must be disabled');
  fs.writeFileSync(a[a.indexOf('--output')+1],'retained trace');
@@ -228,6 +228,13 @@ if(a[0]==='report'){
     assert.equal(bad.collection, "collected");
     assert.equal(bad.report?.status, 0);
     assert.equal(bad.qualified, false, "exit zero cannot hide a broken addr2line protocol");
+    const zeroLine = captureSourceOperationPerf({
+      ...request,
+      outputDir: join(root, "zero-line"),
+      command: { ...request.command, env: { ZERO_LINE: "1" } },
+    });
+    assert.equal(zeroLine.report?.sourceRows, 0);
+    assert.equal(zeroLine.qualified, false, "line zero is not a resolved source location");
     const slow = captureSourceOperationPerf({
       ...request,
       outputDir: join(root, "slow"),
@@ -237,6 +244,39 @@ if(a[0]==='report'){
     assert.equal(slow.collection, "collected");
     assert.equal(slow.qualified, false);
     assert.equal(readFileSync(join(root, "slow", "perf.data"), "utf8"), "retained trace");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a missing perf executable or invalid perf invocation is an infrastructure failure", () => {
+  const root = mkdtempSync(join(tmpdir(), "source-perf-command-failure-"));
+  try {
+    const command = { executable: process.execPath, args: [], cwd: root, env: {} };
+    const absent = captureSourceOperationPerf({
+      mode: "stat",
+      perfExecutable: join(root, "absent"),
+      outputDir: join(root, "absent-output"),
+      command,
+      identity: {},
+    });
+    assert.equal(absent.collection, "failed");
+    assert.equal(absent.qualified, false);
+    const bad = join(root, "invalid-perf.cjs");
+    writeFileSync(
+      bad,
+      `#!${process.execPath}\nif(process.argv.includes('--version')){console.log('fixture-perf');}else{console.error('usage: perf stat invalid option');process.exit(129);}\n`,
+      { mode: 0o755 },
+    );
+    const invalid = captureSourceOperationPerf({
+      mode: "stat",
+      perfExecutable: bad,
+      outputDir: join(root, "invalid-output"),
+      command,
+      identity: {},
+    });
+    assert.equal(invalid.collection, "failed");
+    assert.equal(invalid.qualified, false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
