@@ -58,8 +58,8 @@ impl BatchTypeChecker {
             owner.config.as_deref(),
         );
         let lease = prepare_persistent_batch_root(&owner.root)?;
-        self.project.scope_persistent_batch_namespace(root);
-        self.persistent_storage_owner_lease = Some(lease);
+        let context_lease = self.project.scope_persistent_batch_namespace(root)?;
+        self.persistent_storage_owner_lease = Some((lease, context_lease));
         Ok(true)
     }
 }

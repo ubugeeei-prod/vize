@@ -56,7 +56,9 @@ fn owned_write_ancestors_detach_stale_install_links_without_touching_targets() {
     std::os::unix::fs::symlink(&installed, namespace.join("node_modules/package")).unwrap();
     let owned = namespace.join("node_modules/package/index.ts");
     let mut project = VirtualProject::new(&root).unwrap();
-    project.scope_persistent_batch_namespace(namespace.clone());
+    let _context_lease = project
+        .scope_persistent_batch_namespace(namespace.clone())
+        .unwrap();
     project
         .prepare_owned_batch_writes(&FxHashSet::from_iter([owned.clone()]))
         .unwrap();
@@ -83,7 +85,9 @@ fn private_write_authority_rejects_parent_components_and_outside_files() {
     let temp = tempfile::tempdir().unwrap();
     let namespace = temp.path().join("private");
     let mut project = VirtualProject::new(temp.path()).unwrap();
-    project.scope_persistent_batch_namespace(namespace.clone());
+    let _context_lease = project
+        .scope_persistent_batch_namespace(namespace.clone())
+        .unwrap();
     for file in [
         namespace.join("../outside.ts"),
         temp.path().join("outside.ts"),
@@ -112,7 +116,7 @@ fn native_build_info_outputs_do_not_write_through_existing_hardlinks() {
     let output = outputs.join("project.tsbuildinfo");
     std::fs::hard_link(&original, &output).unwrap();
     let mut project = VirtualProject::new(temp.path()).unwrap();
-    project.scope_persistent_batch_namespace(namespace);
+    let _context_lease = project.scope_persistent_batch_namespace(namespace).unwrap();
     project
         .prepare_owned_batch_writes(&FxHashSet::default())
         .unwrap();

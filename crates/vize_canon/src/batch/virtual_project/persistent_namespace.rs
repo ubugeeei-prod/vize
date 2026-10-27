@@ -86,12 +86,20 @@ pub(in crate::batch) fn prepare_persistent_batch_root(owner: &Path) -> io::Resul
 }
 
 impl VirtualProject {
-    pub(crate) fn scope_persistent_batch_namespace(&mut self, root: PathBuf) {
+    /// The batch checker, rather than this project, holds the returned context
+    /// lease until its native executor has dropped.
+    pub(crate) fn scope_persistent_batch_namespace(
+        &mut self,
+        root: PathBuf,
+    ) -> io::Result<fs::File> {
         debug_assert!(self.virtual_files.is_empty());
         debug_assert!(self.package_shadow_files.is_empty());
+        let lease = super::cache_gc::acquire_usage_lock(&root)
+            .ok_or_else(|| io::Error::other("Cannot lock the private batch context"))?;
         self.virtual_root = root;
         self.private_batch_namespace = true;
-        self._cache_usage_lock = super::cache_gc::acquire_usage_lock(&self.virtual_root);
+        self._cache_usage_lock = None;
+        Ok(lease)
     }
 
     /// The caller holds MaterializeLock through publication and the native

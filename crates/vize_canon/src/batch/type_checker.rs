@@ -80,8 +80,8 @@ pub struct BatchTypeChecker {
     // Dropped after the executor, so live sessions cannot outlast their files.
     owned_storage: Option<installed_storage::InstalledStorage>,
     persistent_storage_owner: Option<installed_sources::PersistentStorageOwner>,
-    // Keep the owner lease alive after the executor and all context files.
-    persistent_storage_owner_lease: Option<std::fs::File>,
+    // Owner and context leases both outlive the executor.
+    persistent_storage_owner_lease: Option<(std::fs::File, std::fs::File)>,
 }
 
 impl BatchTypeChecker {
