@@ -32,6 +32,8 @@ pub struct CompilerConfigurationSnapshot {
     vue_target: Result<Option<vize_carton::config::VueVersion>, vize_carton::String>,
     solution_shell: bool,
     typed_router_root: Option<PathBuf>,
+    /// The resolved router declarations admit the route-props projection.
+    typed_router_route_props: bool,
     observations: ConfigurationObservations,
 }
 
@@ -68,6 +70,7 @@ impl CompilerConfigurationSnapshot {
             vue_target,
             solution_shell,
             typed_router_root,
+            typed_router_route_props,
             observations: _,
         } = self;
         let Self {
@@ -80,6 +83,7 @@ impl CompilerConfigurationSnapshot {
             vue_target: other_target,
             solution_shell: other_shell,
             typed_router_root: other_typed_router,
+            typed_router_route_props: other_route_props,
             observations: _,
         } = other;
         (
@@ -92,6 +96,7 @@ impl CompilerConfigurationSnapshot {
             vue_target,
             solution_shell,
             typed_router_root,
+            typed_router_route_props,
         ) == (
             other_root,
             other_path,
@@ -102,6 +107,7 @@ impl CompilerConfigurationSnapshot {
             other_target,
             other_shell,
             other_typed_router,
+            other_route_props,
         )
     }
 
@@ -196,6 +202,13 @@ impl CompilerConfigurationSnapshot {
                 Some(&vue_options),
                 &flattened.options,
             );
+            // Provider reads join the same observations, so package edits re-admit.
+            let typed_router_route_props = typed_router_root.is_some()
+                && super::super::typed_router::provider::admits_route_props(
+                    tsconfig_path.and_then(Path::parent).unwrap_or(project_root),
+                    &flattened.options,
+                    &inputs,
+                );
             let vue_target = tsconfig_path
                 .map_or(Ok(None), |path| {
                     super::vue_compiler_options::vue_target_from_options(
@@ -235,6 +248,7 @@ impl CompilerConfigurationSnapshot {
                 vue_target,
                 solution_shell,
                 typed_router_root,
+                typed_router_route_props,
                 observations: inputs.observations(),
             })
         })();
@@ -275,6 +289,11 @@ impl CompilerConfigurationSnapshot {
     /// The root admitted by the known typed-page plugin and compiler options.
     pub fn typed_router_root(&self) -> Option<&Path> {
         self.typed_router_root.as_deref()
+    }
+
+    /// Whether the admitted router declarations accept the route-props projection.
+    pub fn typed_router_route_props(&self) -> bool {
+        self.typed_router_route_props
     }
 
     /// Whether the captured selected config is a project-reference shell.

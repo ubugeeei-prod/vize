@@ -1,0 +1,21 @@
+diff --git a/crates/vize_canon/tests/davinci_projection_differential/main.rs b/crates/vize_canon/tests/davinci_projection_differential/main.rs
+index 0de92971d..2cb3483aa 100644
+--- a/crates/vize_canon/tests/davinci_projection_differential/main.rs
++++ b/crates/vize_canon/tests/davinci_projection_differential/main.rs
+@@ -152,6 +152,16 @@ fn check_diagnostics_land_inside_the_projection() {
+                     added += 1;
+                     additions.push(diagnostic);
+                 } else {
++                    eprintln!(
++                        "projection baseline comparison={}",
++                        serde_json::json!({
++                            "path": path.strip_prefix(&root).expect("fixture relative path"),
++                            "diagnostic": diagnostic,
++                            "templateBase": base,
++                            "authoredSpan": [span.start, span.end],
++                            "authoredText": body.get(span.clone()).expect("checked template span"),
++                        })
++                    );
+                     compared += 1;
+                 }
+             } else if divergences.len() < 12 {

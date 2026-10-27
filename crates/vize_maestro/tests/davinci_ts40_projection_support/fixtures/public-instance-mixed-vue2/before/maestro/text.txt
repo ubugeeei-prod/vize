@@ -1,0 +1,2 @@
+tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue.__template.ts|Template|18417|e7e7e2773168d55f248ce369f8b611fa18ddfa49049fe7cc5e6883d91158829b
+tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue.__script.ts|Script|149|1d6f5501e353a66566d7f5d4aee8f1c5ff5c81687497305993cd9a8f214951e8

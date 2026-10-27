@@ -17,6 +17,7 @@ const PROJECTS_DIR: &str = "projects";
 /// namespace, so the known-vector test below must change in the same review.
 const PROJECT_KEY_SCHEMA: &[u8] = b"vize-canon-project-key:v1\0";
 const PROJECT_CONTEXT_KEY_SCHEMA: &[u8] = b"vize-canon-project-context-key:v1\0";
+const INSTALLED_STORAGE_KEY_SCHEMA: &[u8] = b"vize-batch-installed-storage:v1\0";
 
 /// Return the stable, project-owned namespace for Canon's mutable artifacts.
 ///
@@ -164,6 +165,34 @@ pub(super) fn encode_digest(digest: impl AsRef<[u8]>) -> vize_carton::String {
         }
     }
     encoded
+}
+
+impl super::VirtualProject {
+    /// Where CLI runs keep their `--incremental` state once this project is
+    /// scoped to the batch namespace below `storage_root`.
+    pub(crate) fn batch_build_info_dir(&self, storage_root: &Path) -> PathBuf {
+        project_virtual_root_with_identity(storage_root, &self.project_root, 0)
+            .join(super::CLI_BUILD_INFO_DIR)
+    }
+
+    /// Names one program's stable installed-source storage: its project root
+    /// and governing config. A 64-digit key, so project cache maintenance
+    /// evicts it like any other idle project entry.
+    pub(crate) fn installed_storage_key(&self) -> vize_carton::String {
+        let mut digest = Sha256::new();
+        digest.update(INSTALLED_STORAGE_KEY_SCHEMA);
+        update_path_digest(
+            &mut digest,
+            &vize_carton::path::canonicalize_non_verbatim(&self.project_root),
+        );
+        if let Some(tsconfig) = self.resolved_tsconfig_path() {
+            update_path_digest(
+                &mut digest,
+                &vize_carton::path::canonicalize_non_verbatim(&tsconfig),
+            );
+        }
+        encode_digest(digest.finalize())
+    }
 }
 
 #[cfg(unix)]

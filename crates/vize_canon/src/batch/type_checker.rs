@@ -13,6 +13,7 @@ mod diagnostic_paths;
 mod generic_private_names;
 mod incremental;
 mod installed_sources;
+mod installed_storage;
 mod metrics;
 mod paths;
 mod registered;
@@ -77,7 +78,7 @@ pub struct BatchTypeChecker {
     /// Source membership carried across incremental checks.
     incremental_paths: IncrementalPaths,
     // Dropped after the executor, so live sessions cannot outlast their files.
-    owned_storage: Option<tempfile::TempDir>,
+    owned_storage: Option<installed_storage::InstalledStorage>,
 }
 
 impl BatchTypeChecker {
