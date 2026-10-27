@@ -18,11 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
-      - name: Build one fresh source test image and run 17 exact origin laws
+      - name: Build one fresh image, run 17 origin laws and two native API carriers
         shell: bash
         run: |
           set -euo pipefail
@@ -106,6 +108,39 @@ jobs:
               row = {"name":name,"command":command,"status":result.returncode,"qualified":qualified}
               rows.append(row)
               print(json.dumps(row), flush=True)
+          native_name = "binding_origins::native_api_probe::standalone_native_api_retains_one_project_symbol_owner"
+          assert native_name in registered, "the real source image must contain the mandatory native carrier"
+          native_rows = []
+          for version in ["7.0.2", "7.1.0-beta"]:
+              provider = out / "providers" / version
+              provider.mkdir(parents=True)
+              (provider / "package.json").write_text(json.dumps({"name":"vize-origin-api-provider","version":"1.0.0","private":True,"dependencies":{"typescript":version,"vue":"3.5.42"}}))
+              install = subprocess.run(["npm","install","--ignore-scripts","--no-audit","--no-fund","--registry=https://registry.npmjs.org"], cwd=provider, env=env, capture_output=True, text=True, timeout=300)
+              (out / f"{version}.npm.stdout.txt").write_text(install.stdout)
+              (out / f"{version}.npm.stderr.txt").write_text(install.stderr)
+              assert install.returncode == 0, "inspect retained exact public provider install"
+              lock = (provider / "package-lock.json").read_bytes()
+              (out / f"{version}.package-lock.json.txt").write_bytes(lock)
+              backend_package = provider / "node_modules/@typescript/typescript-linux-x64"
+              backend = (backend_package / "lib/tsc").resolve()
+              metadata = json.loads((backend_package / "package.json").read_text())
+              assert metadata["name"] == "@typescript/typescript-linux-x64"
+              assert metadata["version"] == version
+              assert json.loads((provider / "node_modules/typescript/package.json").read_text())["version"] == version
+              assert json.loads((provider / "node_modules/vue/package.json").read_text())["version"] == "3.5.42"
+              capture = out / f"native-{version}"
+              role_env = dict(env, VIZE_ORIGIN_API_PROVIDER=str(provider), VIZE_ORIGIN_API_BACKEND=str(backend), VIZE_ORIGIN_API_CAPTURE=str(capture), VIZE_ORIGIN_API_VERSION=version)
+              command = [str(binary),"--exact",native_name,"--ignored","--nocapture","--test-threads","1"]
+              result = subprocess.run(command, cwd=root, env=role_env, capture_output=True, text=True, timeout=180)
+              (out / f"{version}.native.stdout.txt").write_text(result.stdout)
+              (out / f"{version}.native.stderr.txt").write_text(result.stderr)
+              qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
+              row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
+              native_rows.append(row)
+              print(json.dumps(row), flush=True)
+              for line in result.stdout.splitlines():
+                  if line.startswith("NATIVE_ORIGIN_API_RECEIPT "):
+                      print(line, flush=True)
           assert git("rev-parse", "HEAD") == source
           assert git("status", "--porcelain", "--untracked-files=no") == ""
           assert digest(binary) == image_sha
@@ -122,8 +157,8 @@ jobs:
               "compilerEnvironment":{k:v for k,v in env.items() if k in ["RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","RUSTC","RUSTC_WRAPPER","RUSTC_WORKSPACE_WRAPPER","CARGO_BUILD_TARGET","CARGO_INCREMENTAL","CARGO_BUILD_JOBS"] or k.startswith("CARGO_PROFILE_CI_")},
               "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
               "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").glob("*.rs"))},
-              "tests":rows,
-              "passed":len(rows)==17 and all(row["qualified"] for row in rows),
+              "tests":rows,"nativeCarrierRoles":native_rows,
+              "passed":len(rows)==17 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
           }
           (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")
           assert receipt["passed"], "all 17 exact source laws must each pass once, with zero ignored"
@@ -134,7 +169,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/binding-origin-admission"
-          tar --exclude=cargo-target -czf "$RUNNER_TEMP/binding-origin-admission.tgz" -C "$RUNNER_TEMP" binding-origin-admission
+          tar --exclude=cargo-target --exclude=providers -czf "$RUNNER_TEMP/binding-origin-admission.tgz" -C "$RUNNER_TEMP" binding-origin-admission
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

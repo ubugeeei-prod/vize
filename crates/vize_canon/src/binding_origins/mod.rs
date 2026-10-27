@@ -181,3 +181,6 @@ impl OriginSnapshot {
         self.reference
     }
 }
+
+#[cfg(all(test, feature = "native", target_os = "linux"))]
+mod native_api_probe;
