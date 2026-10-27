@@ -9176,7 +9176,7 @@
         {
           "selector": "checkInheritedConfiguration",
           "source": "editors/vscode/test/suite/typescript-provider-host.cjs",
-          "sha256": "90a16b15677f53b78de761d4bd69cddc0c77c7d99ff0052db0bf3ca1bb22bfa3"
+          "sha256": "f3b0e86688733e8867f1ed67ef8e33dfe467ad4d3cc695c091da2768bf9de3ec"
         },
         {
           "selector": "runPackagedExtensionHost",
