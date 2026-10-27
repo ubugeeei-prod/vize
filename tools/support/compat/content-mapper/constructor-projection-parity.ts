@@ -280,6 +280,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   assert.ok(directory && baseRoot && headRoot && process.argv.length === 5);
   const baseBytes = readFileSync(path.join(directory, "base.json"));
   const headBytes = readFileSync(path.join(directory, "head.json"));
+  const legacyBaseBytes = readFileSync(path.join(directory, "base-legacy.json"));
+  const legacyHeadBytes = readFileSync(path.join(directory, "head-legacy.json"));
+  assert.deepEqual(
+    legacyHeadBytes,
+    legacyBaseBytes,
+    "every existing attribute-only packet must remain byte exact",
+  );
+  assert.equal(JSON.parse(legacyBaseBytes.toString()).length, 228);
   const proof = comparePackets(
     JSON.parse(baseBytes.toString()),
     JSON.parse(headBytes.toString()),
@@ -297,6 +305,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     comparatorSha256: digest(readFileSync(fileURLToPath(import.meta.url))),
     basePacketSha256: digest(baseBytes),
     headPacketSha256: digest(headBytes),
+    legacyCompletePackets: 228,
+    legacyBasePacketSha256: digest(legacyBaseBytes),
+    legacyHeadPacketSha256: digest(legacyHeadBytes),
     ...proof,
     scope:
       "Complete source packets under exact helper relocation; not native type-engine or publication acceptance",

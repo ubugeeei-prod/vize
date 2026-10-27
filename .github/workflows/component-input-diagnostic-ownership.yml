@@ -301,9 +301,12 @@ jobs:
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/vize_canon/src
           export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-base-target"
-          (cd "$baseline" && VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
+          (cd "$baseline" && VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base-legacy.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base-legacy.log" 2>&1
+          (cd "$baseline" && VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
           export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
-          VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
+          VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head-legacy.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head-legacy.log" 2>&1
+          VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
+          cmp "$capture/base-legacy.json" "$capture/head-legacy.json"
       - name: Prove complete packets under the exact canonical helper relocation
         shell: bash
         run: |

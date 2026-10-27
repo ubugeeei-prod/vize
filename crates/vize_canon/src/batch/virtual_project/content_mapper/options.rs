@@ -26,7 +26,7 @@ impl Default for ContentMapperTransformOptions {
             preserve_unused_diagnostics: false,
             check_javascript: false,
             external_component_attrs_module: false,
-            external_component_type_helpers: true,
+            external_component_type_helpers: false,
             check_unknown_components: false,
             check_unknown_props: true,
             check_unknown_fallthrough_props: false,
