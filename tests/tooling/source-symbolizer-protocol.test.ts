@@ -81,23 +81,6 @@ void test("bounded packets require every unique authored error before every repa
   assert.throws(() => verifyStagePacket(packet, project, names, false));
 });
 
-void test(
-  "Linux adapter changes only a standalone comma and passes decoder output unchanged",
-  { skip: process.platform !== "linux" },
-  async () => {
-    const { numericSentinelScript } =
-      await import("../../tools/benchmarks/scripts/source-symbolizer-render.ts");
-    const { spawnSync } = await import("node:child_process");
-    const input = ",\n0x1234\nabcd\nprefix,suffix\n, \n,\n";
-    const result = spawnSync("/bin/sh", ["-c", numericSentinelScript("/bin/cat")], {
-      input,
-      encoding: "utf8",
-    });
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stdout, "0\n0x1234\nabcd\nprefix,suffix\n, \n0\n");
-  },
-);
-
 void test("source links bind the compiled SHA and reject outside or unresolved paths", async () => {
   const { frozenSourceLocations } =
     await import("../../tools/benchmarks/scripts/source-symbolizer-protocol.ts");

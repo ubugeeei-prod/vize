@@ -81,37 +81,6 @@ export function boundedCommand(
   writeFileSync(join(out, "invocation.json"), JSON.stringify(receipt, null, 2) + "\n");
   return { ...receipt, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
 }
-export function numericSentinelScript(decoder: string) {
-  const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
-  return "#!/bin/sh\nset -e\n/usr/bin/sed -u 's/^,$/0/' | " + quote(decoder) + ' "$@"\n';
-}
-export function numericSentinelAdapter(out: string, decoder: string) {
-  assert.ok(existsSync(decoder));
-  mkdirSync(out, { recursive: true });
-  const path = join(out, "llvm-numeric-sentinel");
-  assert.ok(!existsSync(path));
-  // Only perf's otherwise-invalid comma request changes. LLVM then prints the
-  // numeric-zero GNU sentinel; function and source output pass through unchanged.
-  const script = numericSentinelScript(decoder);
-  writeFileSync(path, script, { mode: 0o755 });
-  writeFileSync(
-    join(out, "adapter.json"),
-    JSON.stringify(
-      {
-        decoder,
-        decoderSha256: digest(decoder),
-        wrapper: path,
-        wrapperSha256: digest(path),
-        inputChange: "a line containing exactly comma becomes numeric zero",
-        sourceOutputChange: "none",
-        script,
-      },
-      null,
-      2,
-    ) + "\n",
-  );
-  return path;
-}
 export function probeDecoders(
   binary: string,
   out: string,

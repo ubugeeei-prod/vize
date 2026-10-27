@@ -10,7 +10,6 @@ import { frozenSourceLocations } from "./source-symbolizer-protocol.ts";
 import {
   boundedCommand,
   digest,
-  numericSentinelAdapter,
   probeDecoders,
   renderSourceCpu,
 } from "./source-symbolizer-render.ts";
@@ -26,14 +25,7 @@ export function runCarrierSmoke(options: { perf: string; out: string; decoders: 
     out: join(options.out, "hardware-admission"),
     rounds: 1,
   });
-  const llvm = options.decoders.find(
-    (decoder) => decoder.includes("llvm-addr2line") && existsSync(decoder),
-  );
-  const adapter = llvm ? numericSentinelAdapter(join(options.out, "adapter"), llvm) : null;
-  const probes = probeDecoders(binary, join(options.out, "protocol-probes"), [
-    ...(adapter ? [adapter] : []),
-    ...options.decoders,
-  ]);
+  const probes = probeDecoders(binary, join(options.out, "protocol-probes"), options.decoders);
   writeFileSync(join(options.out, "probes.json"), JSON.stringify(probes, null, 2) + "\n");
   const selected = probes.find((probe) => probe.qualified)?.decoder;
   assert.ok(selected, "no decoder passed the exact sentinel plus original Rust source witness");
@@ -167,6 +159,7 @@ export function replayNormal(options: {
   const normalProbes = probeDecoders(binary, join(options.out, "normal-query"), [options.decoder], {
     symbol: "generate_vue_virtual_ts",
     source: ".rs:",
+    timeoutMs: 10_000,
   });
   writeFileSync(
     join(options.out, "normal-probes.json"),
