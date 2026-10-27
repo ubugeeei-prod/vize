@@ -12,6 +12,7 @@ import { validateNativeCapacitySourceSession } from "../differential/lsp-native-
 import {
   NATIVE_CAPACITY_ID,
   NATIVE_CAPACITY_PLAN,
+  NATIVE_CAPACITY_UNSUPPORTED_REASON,
 } from "../differential/lsp-native-capacity-contract.ts";
 import type { FixtureData } from "../differential/lsp-types.ts";
 
@@ -35,7 +36,12 @@ test("capacity registration retains whole source/wire custody and claims zero ge
   assert.deepEqual(fixture.requests, []);
   assert.equal(fixture.files.length, 15);
   assert.deepEqual(plan, NATIVE_CAPACITY_PLAN);
-  assert.equal(sourceSessionUnsupportedLegacy(fixture.data.sourceSession).state, "unsupported");
+  assert.deepEqual(sourceSessionUnsupportedLegacy(fixture.data.sourceSession), {
+    state: "unsupported",
+    verdict: "unsupported-transition",
+    comparator: "source-inspected-session",
+    reason: NATIVE_CAPACITY_UNSUPPORTED_REASON,
+  });
   assert.equal(sourceSessionUnsupportedLegacy().reason, SOURCE_SESSION_UNSUPPORTED_REASON);
   assert.equal(loaded.cases.filter((row) => row.id === NATIVE_CAPACITY_ID).length, 1);
   const ids = loaded.manifest.cases.map((row) => row.id);
