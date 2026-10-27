@@ -14,6 +14,7 @@ fn without_owned_input_echoes(source: &str) -> super::ContentMapperTransform {
         source,
         super::ContentMapperTransformOptions::default(),
         None,
+        None,
     )
     .unwrap()
 }

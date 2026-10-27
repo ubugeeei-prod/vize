@@ -22,6 +22,7 @@ pub mod lint;
 pub mod lsp;
 pub mod musea;
 pub mod profile_export;
+mod project_nuxt;
 mod project_ssr;
 #[cfg(feature = "glyph")]
 pub mod ready;

@@ -1,11 +1,10 @@
 //! Single-pass prop metadata collection for code generation.
 
-use crate::options::BindingType;
 use crate::{DirectiveNode, ExpressionNode, PropNode};
 
 use super::super::context::CodegenContext;
 use super::directives::is_supported_directive;
-use super::events::get_von_event_key;
+use super::events::{get_von_event_key, is_component_method_handler, needs_von_handler_cache};
 use vize_l0::{FxHashMap, String};
 
 #[derive(Default)]
@@ -295,10 +294,7 @@ fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
         .exp
         .as_ref()
         .filter(|expression| !crate::steps::expression::is_empty_dynamic_expression(expression));
-    if ctx.cache_handlers_in_current_scope()
-        && expression.is_some()
-        && !is_setup_const_handler(ctx, dir)
-    {
+    if expression.is_some() && needs_von_handler_cache(ctx, dir) {
         return true;
     }
 
@@ -311,6 +307,11 @@ fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
 
     expression.is_some_and(|exp| {
         if let ExpressionNode::Simple(simple) = exp {
+            // Vue keeps an authored identifier a simple expression even when
+            // it reads `_unref(fn)`; any other reference becomes compound.
+            if is_component_method_handler(ctx, dir) {
+                return !crate::steps::is_simple_identifier(simple.loc.span.slice(&ctx.source));
+            }
             let content = simple.content;
             content.contains('(')
                 || content.contains('+')
@@ -320,24 +321,5 @@ fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
         } else {
             false
         }
-    })
-}
-
-fn is_setup_const_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
-    dir.exp.as_ref().is_some_and(|exp| {
-        if let ExpressionNode::Simple(simple) = exp
-            && !simple.is_static
-        {
-            let content = simple.content.trim();
-            if crate::steps::is_simple_identifier(content) {
-                return ctx
-                    .options
-                    .binding_metadata
-                    .as_ref()
-                    .and_then(|metadata| metadata.bindings.get(content))
-                    .is_some_and(|binding| *binding == BindingType::SetupConst);
-            }
-        }
-        false
     })
 }

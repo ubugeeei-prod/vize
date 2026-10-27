@@ -1,0 +1,15 @@
+<script lang="ts">
+import type { PopoverContentEmits } from './popover';
+
+export interface DatePickerContentEmits extends PopoverContentEmits {}
+</script>
+
+<script setup lang="ts">
+const emits = defineEmits<DatePickerContentEmits>();
+</script>
+
+<template>
+  <div @focus="(event) => emits('openAutoFocus', event)">
+    <slot />
+  </div>
+</template>

@@ -1,0 +1,1 @@
+export default {"vue":{"languageServer":{"editor":true,"typecheck":true,"lint":false,"ecosystem":false}}};

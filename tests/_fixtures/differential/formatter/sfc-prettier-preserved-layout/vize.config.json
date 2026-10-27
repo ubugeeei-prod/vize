@@ -1,0 +1,11 @@
+{
+  "vue": {
+    "version": "3"
+  },
+  "formatter": {
+    "preset": "prettier",
+    "printWidth": 120,
+    "trailingComma": "none",
+    "arrowParens": "avoid"
+  }
+}

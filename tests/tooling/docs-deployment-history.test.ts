@@ -124,10 +124,25 @@ test("an older pending unknown environment and new unknown writers cannot disapp
   );
 });
 
-test("missing current authenticated metadata never falls back to the older legacy floor", async () => {
-  const { api, receipt, values } = history();
+test("deleted historical artifacts retain the authenticated anchor without selecting an older legacy floor", async () => {
+  const { api, publisher, receipt, values, requests } = history();
   values.delete("/actions/artifacts/" + receipt.pagesArtifact.id);
-  await assert.rejects(() => publicationState(api, repositoryId, 0), /Only exact primary identity/);
+  const result = await publicationState(api, repositoryId, 0);
+  assert.equal(result.floor?.receipt.publisher.runId, publisher.id);
+  assert.equal(result.floor?.sourceSha, sourceSha);
+  assert(requests.every((path) => !path.includes("38013719817")));
+});
+
+test("missing historical writer or source-run metadata cannot use artifact retention recovery", async () => {
+  for (const identity of ["publisher", "source"]) {
+    const { api, publisher, receipt, values } = history();
+    const runId = identity === "publisher" ? publisher.id : receipt.build.runId;
+    values.delete("/actions/runs/" + runId + "/attempts/1");
+    await assert.rejects(
+      () => publicationState(api, repositoryId, 0),
+      /Only exact primary identity/,
+    );
+  }
 });
 
 test("pending guarded publishers proceed while pending unguarded publishers refuse before publication", async () => {

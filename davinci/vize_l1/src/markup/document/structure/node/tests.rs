@@ -1,8 +1,7 @@
 use alloc::vec::Vec;
-use vize_l0::{Allocator, SourceRoot, String};
+use vize_l0::{Allocator, SourceRoot, Span, String};
 
 use super::{DocumentHtmlElement, DocumentHtmlNode, NativeDocument, Refusal};
-use crate::markup::document::DocumentTreePolicy;
 
 mod custody;
 
@@ -105,17 +104,14 @@ fn unsupported_comment_frames_vue_and_general_tree_policies_keep_typed_refusals(
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(owner.html_structure().unwrap_err(), Refusal::VueSyntax);
     }
-    for (body, policy) in [
-        ("<p>x</p>", DocumentTreePolicy::ImpliedEndTags),
-        ("<table></table>", DocumentTreePolicy::TableContentModel),
+    for (body, refusal) in [
+        ("<p>x</div>", Refusal::ImpliedEnd(Span::new(46, 49))),
+        ("<table>x</table>", Refusal::TableText(Span::new(47, 48))),
     ] {
         let source = envelope(body);
         let arena = Allocator::default();
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
-        assert_eq!(
-            owner.html_structure().unwrap_err(),
-            Refusal::UnsupportedPolicy(policy)
-        );
+        assert_eq!(owner.html_structure().unwrap_err(), refusal, "{body}");
     }
 }
 

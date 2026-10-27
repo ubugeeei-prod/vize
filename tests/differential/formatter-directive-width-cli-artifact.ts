@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { assertSortedCases } from "./harness.mjs";
 import { sha256 } from "./manifest.mjs";
 
 // Preserve the audit's original thirteen CLI obligations. The three later
@@ -57,7 +58,9 @@ export function preservedDirectiveWidthCliManifest(
       "formatter/sfc/typed-arrow-last-argument",
     ],
   );
-  assert.deepEqual(currentCases.slice(0, AUTHORITY.originalCases), originalCases);
+  assertSortedCases(currentCases);
+  const currentById = new Map(currentCases.map((item: any) => [item.id, item]));
+  for (const item of originalCases) assert.deepEqual(currentById.get(item.id), item);
   assert(
     currentCases.some((item: any) => item.id === AUTHORITY.addedCase),
     "directive width CLI case removed",

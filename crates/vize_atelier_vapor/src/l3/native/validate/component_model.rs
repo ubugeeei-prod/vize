@@ -40,6 +40,7 @@ pub(super) fn expand<'a>(
         value_kind: crate::ir::PropValueKind::Expression,
         dynamic: true,
         handler: false,
+        handler_modifiers: None,
         position,
     });
     props.push(Prop {
@@ -49,6 +50,7 @@ pub(super) fn expand<'a>(
         value_kind: crate::ir::PropValueKind::ModelUpdate,
         dynamic: true,
         handler: true,
+        handler_modifiers: None,
         position,
     });
     if let Some(name) = modifiers {
@@ -69,6 +71,7 @@ pub(super) fn expand<'a>(
             value_kind: crate::ir::PropValueKind::ModelModifiers,
             dynamic: true,
             handler: false,
+            handler_modifiers: None,
             position,
         });
     }

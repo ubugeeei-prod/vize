@@ -14,15 +14,17 @@ use vize_croquis::croquis::PassedProp;
 
 use super::NAMED_PROP_DIAGNOSTIC_MARKER;
 
-pub(super) struct PropDiagnosticRows {
+pub(super) struct PropDiagnosticRows<'p> {
     pub(super) name: std::ops::Range<usize>,
     pub(super) value: std::ops::Range<usize>,
     pub(super) ignored_primary: bool,
     pub(super) merged: bool,
+    /// Dynamic values repeated inside a merged `class`/`style` entry.
+    pub(super) merged_values: Vec<(&'p PassedProp, std::ops::Range<usize>)>,
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
-pub(super) fn append_prop_entry(
+pub(super) fn append_prop_entry<'p>(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
@@ -30,11 +32,11 @@ pub(super) fn append_prop_entry(
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
     merge_class_bindings: bool,
-    class_bindings: &[(&PassedProp, String)],
+    class_bindings: &[(&'p PassedProp, String)],
     emitted_merged_class: &mut bool,
     before_following_spread: bool,
     authored_named_keys: &mut FxHashSet<String>,
-) -> Option<PropDiagnosticRows> {
+) -> Option<PropDiagnosticRows<'p>> {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
     let merge_named_bindings =
@@ -114,14 +116,23 @@ pub(super) fn append_prop_entry(
     };
     ts.push_str(",\n");
 
+    let merged_values: Vec<_> = class_bindings
+        .iter()
+        .zip(&merged_value_ranges)
+        .filter(|((binding, _), _)| binding.is_dynamic)
+        .map(|((binding, _), generated)| {
+            (
+                *binding,
+                value_span.start + generated.start..value_span.start + generated.end,
+            )
+        })
+        .collect();
     let sub_spans = match merge_named_bindings {
-        true => class_bindings
+        true => merged_values
             .iter()
-            .zip(&merged_value_ranges)
-            .filter(|((binding, _), _)| binding.is_dynamic)
-            .filter_map(|((binding, _), generated)| {
+            .filter_map(|(binding, gen_range)| {
                 Some(VizeSubSpan {
-                    gen_range: value_span.start + generated.start..value_span.start + generated.end,
+                    gen_range: gen_range.clone(),
                     src_range: prop_value_source_range(source_context, binding)?,
                 })
             })
@@ -183,6 +194,7 @@ pub(super) fn append_prop_entry(
         value: if inline_callback { 0..0 } else { value_span },
         ignored_primary: before_following_spread && !repeated_named_key,
         merged: merge_named_bindings,
+        merged_values,
     })
 }
 

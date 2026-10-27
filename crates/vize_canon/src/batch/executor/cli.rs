@@ -13,6 +13,7 @@ use vize_carton::{String, cstr};
 mod checkers;
 mod diagnostic_paths;
 mod file_diagnostics;
+mod global_scope;
 mod import_resolution;
 #[cfg(test)]
 mod lexical_dollar_receipt;
@@ -30,6 +31,7 @@ pub(super) use checkers::checker_count;
 use checkers::rejects_checkers_flag;
 use diagnostic_paths::CliPathResolver;
 use file_diagnostics::{Decoded, parse_cli_diagnostic_line};
+use global_scope::RecordedBuildInfo;
 
 #[cfg(test)]
 use output::parse_cli_diagnostics;
@@ -71,29 +73,19 @@ fn run_cli_for_config(
     checkers: usize,
     owns: &dyn Fn(&Path) -> bool,
 ) -> CliCheckResult {
-    let output = profile!("canon.corsa.cli.command", {
-        let mut command = Command::new(corsa_path);
-        command.current_dir(project.virtual_root());
-        // The checker count decides the diagnostic set, so it is always pinned
-        // explicitly (see `checker_count`) rather than left to Corsa's default.
-        command.arg("--checkers").arg(cstr!("{checkers}").as_str());
-        // Reuse the previous run's diagnostics for files nothing changed.
-        command
-            .arg("--incremental")
-            .arg("--tsBuildInfoFile")
-            .arg(project.cli_build_info_path(config_path));
-        command
-            .arg("--pretty")
-            .arg("false")
-            .arg("--project")
-            .arg(config_path);
-        #[cfg(test)]
-        let receipt = lexical_dollar_receipt::requested(&command, project, config_path);
-        let output = command.output();
-        #[cfg(test)]
-        lexical_dollar_receipt::completed(receipt, &output);
-        output
-    })?;
+    let build_info = project.cli_build_info_path(config_path);
+    let recorded = RecordedBuildInfo::read(&build_info);
+    let mut output = run_cli_command(corsa_path, project, config_path, &build_info, checkers)?;
+    if recorded.is_some_and(|recorded| {
+        profile!(
+            "canon.corsa.cli.build_info_global_scope",
+            recorded.global_scope_changed(&build_info)
+        )
+    }) {
+        // Corsa reused diagnostics computed without the new globals.
+        std::fs::remove_file(&build_info)?;
+        output = run_cli_command(corsa_path, project, config_path, &build_info, checkers)?;
+    }
     let profiler = vize_carton::profiler::global_profiler();
     if profiler.is_enabled() {
         profiler.record_counter_enabled("canon.corsa.cli.stdout.bytes", output.stdout.len() as u64);
@@ -162,6 +154,38 @@ fn run_cli_for_config(
         },
         success,
         diagnostics,
+    })
+}
+
+fn run_cli_command(
+    corsa_path: &Path,
+    project: &VirtualProject,
+    config_path: &Path,
+    build_info: &Path,
+    checkers: usize,
+) -> std::io::Result<Output> {
+    profile!("canon.corsa.cli.command", {
+        let mut command = Command::new(corsa_path);
+        command.current_dir(project.virtual_root());
+        // The checker count decides the diagnostic set, so it is always pinned
+        // explicitly (see `checker_count`) rather than left to Corsa's default.
+        command.arg("--checkers").arg(cstr!("{checkers}").as_str());
+        // Reuse the previous run's diagnostics for files nothing changed.
+        command
+            .arg("--incremental")
+            .arg("--tsBuildInfoFile")
+            .arg(build_info);
+        command
+            .arg("--pretty")
+            .arg("false")
+            .arg("--project")
+            .arg(config_path);
+        #[cfg(test)]
+        let receipt = lexical_dollar_receipt::requested(&command, project, config_path);
+        let output = command.output();
+        #[cfg(test)]
+        lexical_dollar_receipt::completed(receipt, &output);
+        output
     })
 }
 

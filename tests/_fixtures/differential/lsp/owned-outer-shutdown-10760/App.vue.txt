@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { twice } from "./support";
+const value: number = 2;
+const doubled = twice(value);
+</script>
+<template><p>{{ value }} {{ doubled }}</p></template>

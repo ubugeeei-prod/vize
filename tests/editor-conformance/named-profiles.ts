@@ -213,7 +213,6 @@ const disabledCapabilities = [
   "declarationProvider",
   "callHierarchyProvider",
   "monikerProvider",
-  "experimental",
 ];
 const positives = [
   "completionProvider",
@@ -277,6 +276,12 @@ for (const name of names) {
     if (name === "off" || name === "lint") {
       for (const key of disabledCapabilities)
         assert.ok(capabilities[key] == null || capabilities[key] === false, `${name}: ${key}`);
+      // No experimental provider: only the JSX routing hint, which says JSX stays unchecked.
+      assert.deepEqual(
+        capabilities.experimental,
+        { vize: { jsxTypecheck: false } },
+        `${name}: experimental`,
+      );
       const workspaceCapability = capabilities.workspace;
       assert.ok(
         workspaceCapability &&

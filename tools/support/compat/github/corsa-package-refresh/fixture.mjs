@@ -18,7 +18,7 @@ validateSourceProvenance(
   source,
 );
 assert.equal(hash(lifecycle.executable), lifecycle.sha256);
-const file = "crates/vize_canon/tests/fix_history_diagnostics.rs";
+const file = "crates/vize_canon/tests/support/fix_history_runner.rs";
 const original = fs.readFileSync(file, "utf8");
 const needle = "        let actual: Vec<Diagnostic> = result";
 assert.equal(original.split(needle).length, 2);

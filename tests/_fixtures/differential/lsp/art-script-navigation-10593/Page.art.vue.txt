@@ -1,0 +1,6 @@
+<script setup lang="ts">
+// 雪😀
+const route = useRoute('/art')
+const page: number = route.params.page
+</script>
+<art title="Router"><variant name="Default"><div>{{ route.params.page.toFixed() }}</div></variant></art>

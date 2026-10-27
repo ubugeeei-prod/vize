@@ -1,0 +1,1512 @@
+[
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "font",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": true,
+    "id": "font",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false,
+    "referenceSource": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style=\"font-weight:700;\" id=\"own\">{label}</button>;\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "font",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "font",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": true,
+    "id": "font",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true,
+    "referenceSource": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style=\"font-weight:700;\" id=\"own\">{label}</button>;\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "duplicates",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red',fontWeight:'700',color:'blue'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": true,
+    "id": "duplicates",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red',fontWeight:'700',color:'blue'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false,
+    "referenceSource": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{label}</button>;\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "duplicates",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red',fontWeight:'700',color:'blue'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "duplicates",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red',fontWeight:'700',color:'blue'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": true,
+    "id": "duplicates",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red',fontWeight:'700',color:'blue'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true,
+    "referenceSource": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style=\"color:blue;font-weight:700;\" id=\"own\">{label}</button>;\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\n",
+    "referenceSource": "<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": true,
+    "id": "custom",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{'--Brand':'blue',fontWeight:'700'}\" id=\"own\">{{label}}</button>\r\n",
+    "referenceSource": "<!-- 日本語 😀 -->\r\n<button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": true,
+    "id": "custom",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{'--Brand':'blue',fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false,
+    "referenceSource": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{label}</button>;\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "custom",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{'--Brand':'blue',fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "custom",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{'--Brand':'blue',fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": true,
+    "id": "custom",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{'--Brand':'blue',fontWeight:'700'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true,
+    "referenceSource": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style=\"--Brand:blue;font-weight:700;\" id=\"own\">{label}</button>;\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "call",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:read()}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "call",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:read()}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "call",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:read()}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "call",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:read()}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "call",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:read()}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "reference",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:shade}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "reference",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:shade}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "reference",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:shade}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "reference",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:shade}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "reference",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:shade}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "spread",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{...other,color:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "spread",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{...other,color:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "spread",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{...other,color:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "spread",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{...other,color:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "spread",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{...other,color:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "computed",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{['color']:'red'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "computed",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{['color']:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "computed",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{['color']:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "computed",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{['color']:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "computed",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{['color']:'red'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "getter",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{get color(){return read()}}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "getter",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{get color(){return read()}}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "getter",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{get color(){return read()}}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "getter",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{get color(){return read()}}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "getter",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{get color(){return read()}}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "numeric",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{fontWeight:700}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "numeric",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:700}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "numeric",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:700}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "numeric",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:700}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "numeric",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{fontWeight:700}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "empty-value",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:''}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty-value",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:''}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty-value",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:''}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty-value",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:''}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "empty-value",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:''}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": false,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": true,
+    "retained": false,
+    "source": "<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": false,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": true,
+    "retained": true,
+    "source": "<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": false,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": true,
+    "retained": false,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": false,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "template",
+    "fold": false,
+    "id": "declaration",
+    "mapped": true,
+    "retained": true,
+    "source": "<!-- 日本語 😀 -->\r\n<button type=\"button\" :style=\"{color:'red;display:none'}\" id=\"own\">{{label}}</button>\r\n"
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "declaration",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red;display:none'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "declaration",
+    "mode": "Vdom",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red;display:none'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "declaration",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red;display:none'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": true,
+    "standalone": false
+  },
+  {
+    "family": "jsx",
+    "fold": false,
+    "id": "declaration",
+    "mode": "Vapor",
+    "source": "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{color:'red;display:none'}} id=\"own\">{label}</button>;\r\n",
+    "ssr": false,
+    "standalone": true
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-before",
+    "mapped": false,
+    "retained": false,
+    "source": "<button style=\"color:red\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-before",
+    "mapped": true,
+    "retained": false,
+    "source": "<button style=\"color:red\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-before",
+    "mapped": false,
+    "retained": true,
+    "source": "<button style=\"color:red\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-before",
+    "mapped": true,
+    "retained": true,
+    "source": "<button style=\"color:red\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-after",
+    "mapped": false,
+    "retained": false,
+    "source": "<button :style=\"{fontWeight:'700'}\" style=\"color:red\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-after",
+    "mapped": true,
+    "retained": false,
+    "source": "<button :style=\"{fontWeight:'700'}\" style=\"color:red\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-after",
+    "mapped": false,
+    "retained": true,
+    "source": "<button :style=\"{fontWeight:'700'}\" style=\"color:red\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "static-after",
+    "mapped": true,
+    "retained": true,
+    "source": "<button :style=\"{fontWeight:'700'}\" style=\"color:red\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-before",
+    "mapped": false,
+    "retained": false,
+    "source": "<button v-bind=\"attrs\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-before",
+    "mapped": true,
+    "retained": false,
+    "source": "<button v-bind=\"attrs\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-before",
+    "mapped": false,
+    "retained": true,
+    "source": "<button v-bind=\"attrs\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-before",
+    "mapped": true,
+    "retained": true,
+    "source": "<button v-bind=\"attrs\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-after",
+    "mapped": false,
+    "retained": false,
+    "source": "<button :style=\"{fontWeight:'700'}\" v-bind=\"attrs\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-after",
+    "mapped": true,
+    "retained": false,
+    "source": "<button :style=\"{fontWeight:'700'}\" v-bind=\"attrs\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-after",
+    "mapped": false,
+    "retained": true,
+    "source": "<button :style=\"{fontWeight:'700'}\" v-bind=\"attrs\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "spread-after",
+    "mapped": true,
+    "retained": true,
+    "source": "<button :style=\"{fontWeight:'700'}\" v-bind=\"attrs\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "computed-name",
+    "mapped": false,
+    "retained": false,
+    "source": "<button :[key]=\"value\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "computed-name",
+    "mapped": true,
+    "retained": false,
+    "source": "<button :[key]=\"value\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "computed-name",
+    "mapped": false,
+    "retained": true,
+    "source": "<button :[key]=\"value\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "computed-name",
+    "mapped": true,
+    "retained": true,
+    "source": "<button :[key]=\"value\" :style=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "prop-modifier",
+    "mapped": false,
+    "retained": false,
+    "source": "<button :style.prop=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "prop-modifier",
+    "mapped": true,
+    "retained": false,
+    "source": "<button :style.prop=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "prop-modifier",
+    "mapped": false,
+    "retained": true,
+    "source": "<button :style.prop=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "prop-modifier",
+    "mapped": true,
+    "retained": true,
+    "source": "<button :style.prop=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "attr-modifier",
+    "mapped": false,
+    "retained": false,
+    "source": "<button :style.attr=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "attr-modifier",
+    "mapped": true,
+    "retained": false,
+    "source": "<button :style.attr=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "attr-modifier",
+    "mapped": false,
+    "retained": true,
+    "source": "<button :style.attr=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "template-merge",
+    "fold": false,
+    "id": "attr-modifier",
+    "mapped": true,
+    "retained": true,
+    "source": "<button :style.attr=\"{fontWeight:'700'}\">{{label}}</button>"
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "spread-before",
+    "source": "const App = () => <button {...attrs} style={{fontWeight:'700'}}>{label}</button>;",
+    "standalone": false
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "spread-before",
+    "source": "const App = () => <button {...attrs} style={{fontWeight:'700'}}>{label}</button>;",
+    "standalone": true
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "spread-after",
+    "source": "const App = () => <button style={{fontWeight:'700'}} {...attrs}>{label}</button>;",
+    "standalone": false
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "spread-after",
+    "source": "const App = () => <button style={{fontWeight:'700'}} {...attrs}>{label}</button>;",
+    "standalone": true
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "duplicate-style",
+    "source": "const App = () => <button style=\"color:red\" style={{fontWeight:'700'}}>{label}</button>;",
+    "standalone": false
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "duplicate-style",
+    "source": "const App = () => <button style=\"color:red\" style={{fontWeight:'700'}}>{label}</button>;",
+    "standalone": true
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "component-prop",
+    "source": "const App = () => <Child style={{fontWeight:'700'}}>{label}</Child>;",
+    "standalone": false
+  },
+  {
+    "family": "jsx-merge",
+    "fold": false,
+    "id": "component-prop",
+    "source": "const App = () => <Child style={{fontWeight:'700'}}>{label}</Child>;",
+    "standalone": true
+  }
+]

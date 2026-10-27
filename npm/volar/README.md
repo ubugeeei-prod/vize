@@ -4,6 +4,9 @@ Use Vize's native Vue projection with Volar's language context and the ordinary
 TypeScript language service. Installation is explicit; this package does not
 replace a workspace's editor server automatically.
 
+Not yet published to npm: it is an experimental workspace package until it joins
+the release.
+
 ```sh
 npm install --save-dev @vizejs/volar-plugin typescript vue
 ```

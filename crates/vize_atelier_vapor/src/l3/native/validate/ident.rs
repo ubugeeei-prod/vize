@@ -32,10 +32,13 @@ pub(super) fn identifier_segment(part: &[u8]) -> bool {
 pub(super) fn path_root(text: &str) -> Option<&str> {
     let text = trimmed(text);
     let bytes = text.as_bytes();
-    if !bytes.split(|b| *b == b'.').all(identifier_segment) {
+    let mut parts = bytes.split(|b| *b == b'.');
+    let root = parts.next()?;
+    if !identifier_segment(root) || !parts.all(identifier_segment) {
         return None;
     }
-    Some(text.split_once('.').map_or(text, |(root, _)| root))
+    // The first validated segment is already known; avoid finding its dot again.
+    text.get(..root.len())
 }
 
 /// oxc's `RESERVED_KEYWORDS`, spelled out so admission avoids its SipHash
@@ -170,6 +173,32 @@ mod tests {
             "ol", "li", "template", "p", "a", "form", "h1", "h2", "h3", "h4", "h5", "h6",
         ] {
             assert_eq!(admitted_void(tag), vize_carton::is_void_tag(tag), "{tag}");
+        }
+    }
+
+    #[test]
+    fn dotted_roots_match_the_character_grammar_including_trimmed_unicode_space() {
+        let fragments = ["", "a", "1", "_", "$", ".", "é", "\u{a0}", "-"];
+        for a in fragments {
+            for b in fragments {
+                for c in fragments {
+                    let text = [a, b, c].concat();
+                    let trimmed = text.trim();
+                    let valid = trimmed.split('.').all(|part| {
+                        let mut chars = part.chars();
+                        chars
+                            .next()
+                            .is_some_and(|ch| ch.is_ascii_alphabetic() || ch == '_' || ch == '$')
+                            && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+                    });
+                    let expected = if valid {
+                        trimmed.split('.').next()
+                    } else {
+                        None
+                    };
+                    assert_eq!(path_root(&text), expected, "{text:?}");
+                }
+            }
         }
     }
 }

@@ -399,3 +399,30 @@ void test("evaluated fluent output retains its raw Vue source without another ca
   assert.ok(!("vue" in output));
   assert.equal(calls, 1);
 });
+
+void test("native compiler settings stay with the shared config so entry scopes apply per file", () => {
+  const vue = {
+    compiler: { whitespace: "vue2-preserve" as const, compatibility: { hostCompiler: false } },
+    entries: [{ files: ["src/ds/**/*.vue"], compiler: { whitespace: "condense" as const } }],
+  };
+  const template = { compilerOptions: { comments: false } };
+  for (const [source, plugin] of [
+    [{ vue }, { compatibility: { hostCompiler: false } }],
+    [
+      { compiler: { template }, vue },
+      { template, compatibility: { hostCompiler: false } },
+    ],
+    [
+      { compiler: { template }, vue: { ...vue, version: "2.7" as const } },
+      { template, compatibility: { hostCompiler: false, vueVersion: "2.7" }, vueVersion: "2.7" },
+    ],
+  ] as const) {
+    const result = normalizeConfig(source, {});
+    assert.deepEqual(result.plugin, plugin);
+    // Packing has no per-file scopes and keeps the merged root settings.
+    assert.equal(result.compiler !== false && result.compiler.whitespace, "vue2-preserve");
+  }
+  const unchanged = { template };
+  assert.equal(normalizeConfig({ compiler: unchanged }, {}).plugin, unchanged);
+  assert.equal(normalizeConfig({ compiler: false, vue }, {}).plugin, false);
+});

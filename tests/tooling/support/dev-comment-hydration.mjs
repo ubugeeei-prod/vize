@@ -1,6 +1,7 @@
 // #8652: complete native development SFC modules, SSR HTML and hydrated photo/text pairs.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { historicalSetupCode } from "./script-setup-default-expose.ts";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Window } from "happy-dom";
@@ -76,7 +77,9 @@ for (const [index, fixture] of cases.entries()) {
   const html = await server.renderToString(app(ssr));
   assert.equal(fixture.comment, expectedSsr[index].comment);
   assert.equal(
-    createHash("sha256").update(fixture.ssr.code).digest("hex"),
+    createHash("sha256")
+      .update(historicalSetupCode(fixture.ssr.code, fixture.source))
+      .digest("hex"),
     expectedSsr[index].ssrCodeSha256,
     "existing SSR module bytes",
   );

@@ -325,7 +325,8 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
   const downloaded = path.join(f.repoRoot, ".artifacts/rust-full-workspace");
   fs.cpSync(f.resultDir, downloaded, { recursive: true });
   const result = aggregateTypecheckerWorkspace({ ...f, resultDir: downloaded });
-  assert.equal(result.report.summary.legacyMatches, 154);
+  assert(result.report.summary.plannedCases >= 164);
+  assert.equal(result.report.summary.legacyMatches, result.report.summary.plannedCases);
   assert.equal(result.acceptance.total.nativeHandled, 0);
   assert.equal(result.acceptance.total.nativeEquivalent, 0);
   assert(
@@ -356,7 +357,7 @@ void test("pre-run attestation refuses stale capture state, changed provenance, 
       f.source.tree = "0".repeat(40);
     },
     (f: Fixture) => {
-      f.source.rustc = "rustc 1.98.0 controlled";
+      f.source.rustc = "rustc 1.99.0 controlled";
     },
     (f: Fixture) => {
       f.source.runtime.RUST_TEST_THREADS = "1";

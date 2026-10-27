@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
+  "include": ["src"]
+}

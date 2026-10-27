@@ -421,7 +421,7 @@ fn resolver_metrics_expose_the_exact_last_budgeted_work() {
     assert_eq!(metrics.last_reachability_packages, 1);
 }
 
-fn generous_budget() -> ReachabilityBudget {
+pub(super) fn generous_budget() -> ReachabilityBudget {
     ReachabilityBudget {
         max_packages: 32,
         max_files: 32,
@@ -433,13 +433,13 @@ fn generous_budget() -> ReachabilityBudget {
     }
 }
 
-struct Fixture {
+pub(super) struct Fixture {
     _root: tempfile::TempDir,
-    package_root: PathBuf,
+    pub(super) package_root: PathBuf,
 }
 
 impl Fixture {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let root = tempfile::tempdir().unwrap();
         let package_root = root.path().join("package");
         std::fs::create_dir_all(&package_root).unwrap();
@@ -454,7 +454,7 @@ impl Fixture {
         }
     }
 
-    fn write(&self, relative: &str, content: &str) {
+    pub(super) fn write(&self, relative: &str, content: &str) {
         let path = self.package_root.join(relative);
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).unwrap();
@@ -488,7 +488,7 @@ impl Fixture {
     }
 }
 
-fn route(package_root: &Path, entry: &Path) -> crate::PackageRoute {
+pub(super) fn route(package_root: &Path, entry: &Path) -> crate::PackageRoute {
     route_with_entries(package_root, &[entry.to_path_buf()])
 }
 

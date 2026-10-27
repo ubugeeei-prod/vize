@@ -104,6 +104,14 @@ test("portable projection types preserve payloads and reject invalid geometry an
       `
 import { LanguageFeature, toUtf16LanguageProjection, applyDiagnosticDirectives, mapLanguageDiagnosticRange,
   type LanguageProjection } from ${JSON.stringify(path.join(nativeDir, "language-projection.js"))};
+import { getVueLanguageProjectMetadata, type VueLanguageProjectMetadata } from ${JSON.stringify(path.join(nativeDir, "index.js"))};
+const project: VueLanguageProjectMetadata = getVueLanguageProjectMetadata("");
+const identity: string = project.configIdentity;
+const watches: string[] = project.watchedFiles;
+// @ts-expect-error The metadata API accepts an explicit config path, not an options object.
+getVueLanguageProjectMetadata({ configFileName: "tsconfig.json" });
+// @ts-expect-error Metadata paths are strings, not transform options.
+const badWatches: boolean[] = project.watchedFiles;
 const projection = toUtf16LanguageProjection("", "{}");
 const result = applyDiagnosticDirectives(projection, [{start: 0, payload: "preserved"}]);
 const payload: string = result.diagnostics[0]!.payload;

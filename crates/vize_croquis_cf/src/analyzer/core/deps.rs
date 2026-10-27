@@ -9,55 +9,6 @@ use vize_carton::FxHashSet;
 mod source_update_tests;
 
 impl CrossFileAnalyzer {
-    /// Nuxt renders files in `pages/` through `app.vue` and its default layout.
-    /// These components have no static import edge, so the runtime ancestry
-    /// must be recorded after all SFCs have been registered.
-    pub(super) fn add_nuxt_render_edges(&mut self) {
-        let profiler = vize_l0::profiler::global_profiler();
-        let _phase = profiler.global_span("croquis_cf.dependencies.nuxt_render");
-        profiler.record_counter("croquis_cf.dependencies.nuxt_render.calls", 1);
-        let mut edges = Vec::new();
-        for app in self.registry.vue_components() {
-            if app.path.file_name().and_then(|name| name.to_str()) != Some("app.vue") {
-                continue;
-            }
-            let component_names = vize_croquis::facts::used_component_name_list(&app.analysis);
-            let has_nuxt_page = component_names
-                .iter()
-                .any(|name| matches!(name.as_str(), "NuxtPage" | "nuxt-page"));
-            if !has_nuxt_page {
-                continue;
-            }
-            let has_nuxt_layout = component_names
-                .iter()
-                .any(|name| matches!(name.as_str(), "NuxtLayout" | "nuxt-layout"));
-            let Some(root) = app.path.parent() else {
-                continue;
-            };
-            let pages_dir = root.join("pages");
-            let layout = has_nuxt_layout
-                .then(|| self.registry.get_by_path(root.join("layouts/default.vue")))
-                .flatten()
-                .map(|entry| entry.id);
-            if let Some(layout) = layout {
-                edges.push((app.id, layout));
-            }
-            for page in self.registry.vue_components() {
-                if page.path.starts_with(&pages_dir) {
-                    edges.push((layout.unwrap_or(app.id), page.id));
-                }
-            }
-        }
-        profiler.record_counter(
-            "croquis_cf.dependencies.nuxt_render.edge_attempts",
-            edges.len() as u64,
-        );
-        for (parent, child) in edges {
-            self.graph
-                .add_edge(parent, child, DependencyEdge::ComponentUsage);
-        }
-    }
-
     pub(super) fn update_dependency_edges(&mut self, file_id: FileId) {
         let profiler = vize_l0::profiler::global_profiler();
         let _phase = profiler.global_span("croquis_cf.dependencies.update");

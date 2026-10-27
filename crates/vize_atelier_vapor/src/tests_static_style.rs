@@ -1,10 +1,6 @@
 //! Reporter #7600: retained Vapor style bindings keep their static value.
 
-#![expect(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    reason = "regression assertions use std strings and format"
-)]
+#![expect(clippy::disallowed_macros, reason = "regression assertions use format")]
 
 use super::{VaporCompilerOptions, compile_vapor, ir::OperationNode, transform_to_ir};
 use vize_atelier_core::{TransformOptions, WhitespaceStrategy, lane::transform, parser::parse};

@@ -274,11 +274,11 @@ mod tests {
     #[cfg(feature = "native")]
     #[test]
     fn refused_pug_keeps_authored_errors_and_masks_only_its_template_body() {
-        let source = "<template lang=\"pug\">\nmixin m\n  p x\n+m\n</template>\n";
+        let source = "<template lang=\"pug\">\nmixin m\n  p x\n+m(x)\n</template>\n";
         let sfc = AuthoredSfc::new(source);
         assert_eq!(
             sfc.analyzed(),
-            "<template lang=\"pug\">\n       \n     \n  \n</template>\n"
+            "<template lang=\"pug\">\n       \n     \n     \n</template>\n"
         );
         assert_eq!(sfc.analyzed().len(), source.len());
         assert!(sfc.preprocessing_errors().next().is_some());

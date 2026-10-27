@@ -91,7 +91,7 @@ mod outlet;
 mod outlet_props;
 mod patch;
 mod prefix;
-pub use for_bindings::exceptional_for_binding_names;
+pub use for_bindings::{exceptional_for_binding_names, rewrite_for_alias_expressions};
 mod props;
 mod props_bind;
 mod props_class;
@@ -179,8 +179,6 @@ struct EmitCx<'facts> {
     once_cache_index: u32,
     /// Static children nested inside `v-once` follow shipped one-shot hoists.
     once_depth: u32,
-    /// Element child-list depth inside the current `v-once` owner.
-    once_element_depth: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
     /// Emission is inside a `v-for` render-list item that was lowered from
@@ -206,6 +204,9 @@ struct EmitCx<'facts> {
     /// `v-for + v-memo` uses Vue's special `_cached` callback shape, so
     /// the item emitter must skip the ordinary `_withMemo` wrapper.
     skip_memo: bool,
+    /// The props being emitted belong to a component, which receives a
+    /// method handler uncached (vuejs/core#1541).
+    component_props: bool,
     /// Nested components inside a scoped `withCtx` treat forwarded
     /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
     slot_param_depth: u32,

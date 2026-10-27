@@ -93,7 +93,7 @@ const disabledFlag: boolean = true;
     },
     diagnostics: {
       "App.vue": [
-        "error:6:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'.",
+        "error:6:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"disabledFlag\">go</button>; binding: 'disabled')",
       ],
     },
     vueTscOutput:
@@ -116,7 +116,7 @@ const clickHandler = () => {};
     },
     diagnostics: {
       "App.vue": [
-        "error:6:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.",
+        "error:6:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'. (source: <button type=\"button\" @click=\"clickHandler\">go</button>; binding: @click)",
       ],
     },
     vueTscOutput:
@@ -149,7 +149,7 @@ defineProps<{
     },
     diagnostics: {
       "App.vue": [
-        'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.',
+        'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'. (source: <Child variant="danger" />; binding: variant)',
       ],
       "Child.vue": [],
     },
@@ -216,10 +216,10 @@ defineProps<{
     // divergence), while names no element declares stay strict findings.
     diagnostics: {
       "App.vue": [
-        `error:9:26 [TS2353] Object literal may only specify known properties, and '"notDeclared"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'.`,
-        `error:11:24 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'.`,
-        `error:12:19 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'.`,
-        `error:13:37 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeSetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; ... 680 more ...; zoomAndPan?: unknown; } & { ...; }'.`,
+        'error:9:26 [TS2353] Object literal may only specify known properties, and \'"notDeclared"\' does not exist in type \'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>\'. (source: <PlainChild known="ok" not-declared="bad" />; binding: not-declared)',
+        'error:11:24 [TS2353] Object literal may only specify known properties, and \'"ghost"\' does not exist in type \'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>\'. (source: <DefaultInheritChild ghost="bad" />; binding: ghost)',
+        'error:12:19 [TS2353] Object literal may only specify known properties, and \'"ghost"\' does not exist in type \'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>\'. (source: <NoInheritChild ghost="bad" />; binding: ghost)',
+        'error:13:37 [TS2353] Object literal may only specify known properties, and \'"ghost"\' does not exist in type \'__VizeSetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; ... 680 more ...; zoomAndPan?: unknown; } & { ...; }\'. (source: <GenericNoInheritChild value="ok" ghost="bad" />; binding: ghost)',
       ],
       "DefaultInheritChild.vue": [],
       "GenericNoInheritChild.vue": [],

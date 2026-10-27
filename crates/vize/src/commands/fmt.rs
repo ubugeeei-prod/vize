@@ -247,6 +247,7 @@ pub fn run(args: FmtArgs) {
             std::process::exit(2);
         })
     };
+    let config_time = start.elapsed();
     let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
     let config_dir = snapshot
         .project_root
@@ -273,6 +274,14 @@ pub fn run(args: FmtArgs) {
     let collect_start = Instant::now();
     let files: Vec<PathBuf> = collect_files(&patterns.values, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
+    if let Some(ignore_set) = ignore_set.as_ref().filter(|_| patterns.explicit) {
+        for path in ignore_set.excluded_arguments(&args.patterns) {
+            eprintln!(
+                "Skipping {}: excluded by the configured ignore patterns",
+                path.display()
+            );
+        }
+    }
 
     if files.is_empty() {
         eprintln!("No {FORMAT_EXTENSIONS_DISPLAY} files found matching the patterns");
@@ -401,6 +410,12 @@ pub fn run(args: FmtArgs) {
         let file_rows: Vec<_> = profiles.iter().map(|profile| profile.row.clone()).collect();
 
         let phases = [
+            ProfilePhase {
+                name: "load config",
+                duration: config_time,
+                kind: ProfilePhaseKind::Wall,
+                note: "configuration discovery and evaluation",
+            },
             ProfilePhase {
                 name: "collect files",
                 duration: collect_time,

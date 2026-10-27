@@ -18,6 +18,7 @@ import {
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -52,6 +53,12 @@ interface ManifestCase {
   adapters?: { legacy?: unknown; native?: unknown; reasons?: { native?: unknown } };
   comparison?: { contract?: unknown; requiredFacets?: unknown };
   reference?: { path?: string; sha256?: string; source?: unknown };
+  dialectCoverage?: DialectCoverage;
+}
+
+interface DialectCoverage {
+  state?: string;
+  evidence?: { dialects?: unknown }[];
 }
 
 interface PinnedInput {
@@ -68,6 +75,7 @@ interface Manifest {
   protocolCases?: unknown;
   runtimeCases?: unknown;
   cssApiCases?: unknown;
+  vaporStyleApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -90,6 +98,22 @@ export function legacyProducts(paths: readonly string[]): Product[] {
     }
   }
   return [...products].sort((left, right) => left.localeCompare(right));
+}
+
+const COVERAGE_RANK: Record<string, number> = { partial: 1, "source-inspected": 1, verified: 2 };
+
+// Lower readiness, or fewer dialects at the same readiness.
+function coverageLost(before?: DialectCoverage, after?: DialectCoverage): boolean {
+  const rank = (coverage?: DialectCoverage) => COVERAGE_RANK[coverage?.state ?? ""] ?? 0;
+  const dialects = (coverage?: DialectCoverage) =>
+    new Set(
+      (coverage?.evidence ?? []).flatMap((item) =>
+        Array.isArray(item.dialects) ? (item.dialects as unknown[]) : [],
+      ),
+    );
+  if (rank(before) !== rank(after)) return rank(after) < rank(before);
+  const kept = dialects(after);
+  return [...dialects(before)].some((dialect) => !kept.has(dialect));
 }
 
 function sha256(bytes: Buffer): string {
@@ -165,6 +189,16 @@ function checkProduct(
     const allIds = manifest.cases.map((entry) => entry.id);
     if (new Set(allIds).size !== allIds.length) throw new Error("duplicate case ID");
     const oldIds = new Set(before?.cases?.map((entry) => entry.id) ?? []);
+    // Unit tests only keep baseline floors, so a fix must not drop or
+    // downgrade a case that is already planned.
+    const planned = new Map(manifest.cases.map((entry) => [entry.id, entry]));
+    for (const entry of before?.cases ?? []) {
+      const kept = planned.get(entry.id);
+      if (kept === undefined) throw new Error(`drops planned case: ${entry.id}`);
+      if (coverageLost(entry.dialectCoverage, kept.dialectCoverage)) {
+        throw new Error(`downgrades dialect coverage: ${entry.id}`);
+      }
+    }
     const cases = manifest.cases
       .filter((entry) => !oldIds.has(entry.id))
       .map((entry) => {
@@ -241,13 +275,26 @@ function checkProduct(
       product === "compiler" &&
       cssApi.length > 0 &&
       onlyCompilerCssChanges(paths, compilerCssApiSources(cssApi));
+    const vaporStyle =
+      product === "compiler"
+        ? newVaporStyleApiCases(before?.vaporStyleApiCases, manifest.vaporStyleApiCases, readFile)
+        : { ids: [] as string[], sources: new Set<string>() };
+    const compilerPaths = paths.filter((path) => legacyProducts([path]).includes("compiler"));
+    const vaporIds = compilerPaths.some((path) => vaporStyle.sources.has(path))
+      ? vaporStyle.ids
+      : [];
+    const vaporOnly =
+      product === "compiler" &&
+      vaporIds.length > 0 &&
+      compilerPaths.length > 0 &&
+      compilerPaths.every((path) => vaporStyle.sources.has(path));
     const registered =
-      (cssOnly || !batchRequired || cases.length > 0) &&
+      (cssOnly || vaporOnly || !batchRequired || cases.length > 0) &&
       (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi],
+      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi, ...vaporIds],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
@@ -303,7 +350,7 @@ export function formatSummary(report: LegacyFixReport, enforce: boolean): string
     if (enforce && failingProducts(report).length > 0) {
       lines.push(
         "",
-        "Add the fixed input under `tests/_fixtures/differential/<product>/<case>/` and register it in that product's `manifest.json` with its SHA-256.",
+        "Add the fixed input under `tests/_fixtures/differential/<product>/<case>/` and register it at its sorted position in that product's `manifest.json` with its SHA-256.",
       );
     }
   }

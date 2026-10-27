@@ -76,13 +76,18 @@
       "id": "typecheck",
       "label": "Type checker",
       "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Accepted inline attribute, directive, and interpolation expressions are projected and diagnostics map back to authored Pug; Jade uses the same derived mapping.",
-      "remaining": "External template src and refused Pug stay unprojected; Jade mapping has unit coverage but no matching CLI parity row.",
+      "current": "Accepted inline attribute, directive, and interpolation expressions are projected and diagnostics map back to authored Pug; Jade reports the same CLI diagnostics at the same positions.",
+      "remaining": "External template src and refused Pug stay unprojected, so their expressions get no type diagnostics.",
       "witnesses": [
         {
           "path": "crates/vize/tests/check_pug_template_cli.rs",
           "anchor": "fn pug_attribute_expressions_report_like_html_at_authored_positions()",
           "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize/tests/check_pug_template_cli.rs",
+          "anchor": "fn jade_alias_reports_like_pug_at_authored_positions()",
+          "dialects": ["jade"]
         },
         {
           "path": "crates/vize_canon/src/authored_sfc.rs",
@@ -138,13 +143,18 @@
       "id": "lsp",
       "label": "LSP",
       "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Inline tag and attribute completion, hover, definition, references, and rename are covered for accepted Pug; Jade shares the syntax route and has direct navigation, hover, references, and rename coverage.",
-      "remaining": "Jade prop completion lacks its own end-to-end assertion, and external or refused Pug templates are not covered as a complete editor surface.",
+      "current": "Inline tag and attribute completion, hover, definition, references, and rename are covered for accepted Pug; Jade shares the syntax route with direct prop completion, navigation, hover, references, and rename coverage.",
+      "remaining": "External or refused Pug templates are not covered as a complete editor surface.",
       "witnesses": [
         {
           "path": "crates/vize_maestro/src/ide/completion/component_pug_props_tests.rs",
           "anchor": "fn template_component_prop_completion_resolves_multiline_pug_props()",
           "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/completion/component_pug_props_tests.rs",
+          "anchor": "fn template_component_prop_completion_resolves_jade_props()",
+          "dialects": ["jade"]
         },
         {
           "path": "crates/vize_maestro/src/ide/definition/tests/pug_template.rs",

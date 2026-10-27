@@ -1,0 +1,239 @@
+{
+  "schema": "vize.product-dependency-allowlist",
+  "version": 1,
+  "baselineRevision": "d858ffb3bd9e0bfeae7b64bb3afd577426ff2dc1",
+  "root": "vize_maestro",
+  "entries": [
+    {
+      "from": "vize_canon",
+      "to": "vize_armature",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Canon-to-Armature path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_atelier_core",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Canon-to-Atelier Core path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_atelier_jsx",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Canon-to-Atelier JSX path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Canon-to-Atelier SFC path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Canon-to-Croquis path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_relief",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Canon-to-Relief path."
+    },
+    {
+      "from": "vize_glyph",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Glyph-to-Atelier SFC path."
+    },
+    {
+      "from": "vize_incremental",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Incremental-to-Croquis path."
+    },
+    {
+      "from": "vize_incremental",
+      "to": "vize_relief",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Incremental-to-Relief path."
+    },
+    {
+      "from": "vize_maestro",
+      "to": "vize_armature",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's direct legacy Armature dependency."
+    },
+    {
+      "from": "vize_maestro",
+      "to": "vize_atelier_jsx",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's direct legacy Atelier JSX dependency."
+    },
+    {
+      "from": "vize_maestro",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's direct legacy Atelier SFC dependency."
+    },
+    {
+      "from": "vize_maestro",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's direct legacy Croquis dependency."
+    },
+    {
+      "from": "vize_maestro",
+      "to": "vize_croquis_cf",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's direct legacy Croquis CF dependency."
+    },
+    {
+      "from": "vize_maestro",
+      "to": "vize_relief",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's direct legacy Relief dependency."
+    },
+    {
+      "from": "vize_musea",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Musea-to-Croquis path."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_armature",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Patina-to-Armature path."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_atelier_jsx",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Patina-to-Atelier JSX path."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Patina-to-Atelier SFC path."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Patina-to-Croquis path."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_relief",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_maestro"],
+      "issue": 6851,
+      "reason": "Remove Maestro's inherited Patina-to-Relief path."
+    }
+  ]
+}

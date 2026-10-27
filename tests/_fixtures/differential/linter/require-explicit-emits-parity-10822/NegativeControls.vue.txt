@@ -1,0 +1,33 @@
+<template>
+  <div @click="picker.$emit('pick')" />
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'some-library';
+
+const helper = {
+  methods: {
+    notify() {
+      this.$emit('helper');
+    },
+  },
+};
+
+const External = defineComponent({
+  created() {
+    this.$emit('external');
+  },
+});
+
+export default {
+  emits: ['declared'],
+  methods: {
+    pick(picker) {
+      picker.$emit('pick');
+      (this as any).$emit('cast');
+      this.$emit('declared');
+      this.$emit(this.name);
+    },
+  },
+};
+</script>

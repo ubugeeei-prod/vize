@@ -10,9 +10,10 @@ name: Release
 # failed build burns no version: the next run retries the same number. Every
 # registry then publishes in parallel. npm publishes and verifies every native
 # platform package before exposing @vizejs/native or vize, so an install can
-# never resolve a wrapper while its binding is still propagating. Registry
-# visibility is checked again after publishing. Re-running failed jobs is safe:
-# every publisher skips versions that exist.
+# never resolve a wrapper while its binding is still propagating.
+# release-verify.yml checks registry visibility again after publishing, outside
+# this run. Re-running failed jobs is safe: every publisher skips versions that
+# exist.
 # release-cadence.yml dispatches this workflow automatically. It is always a
 # workflow_dispatch run because crates.io trusted publishing refuses
 # workflow_run and schedule triggers.
@@ -30,7 +31,7 @@ on:
         default: ""
         type: string
       npm_resume_run:
-        description: Failed Release run whose immutable artifacts should resume npm publication
+        description: Release run whose immutable artifacts should resume npm publication
         required: false
         default: ""
         type: string
@@ -62,6 +63,8 @@ jobs:
       allow_newer_tag: ${{ steps.resume.outputs.allow_newer_tag }}
       cli_matrix: ${{ steps.platforms.outputs.cli_matrix }}
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
+      editor_matrix: ${{ steps.platforms.outputs.editor_matrix }}
+      editor_platform_artifacts: ${{ steps.resume.outputs.editor_platform_artifacts }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -232,6 +235,57 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+  # Reuse each native producer image and its token receipt. Packaging does not
+  # execute foreign images or build another native provider.
+  build-editor-platforms:
+    name: Build editor provider - ${{ matrix.settings.target }}
+    needs: [version, build-native]
+    if: needs.version.outputs.ref != ''
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: true, run-install: false }
+      - name: Install packaging dependencies
+        run: vp install --workspace-root --frozen-lockfile --prefer-offline
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          reuse-target: "true"
+          restore-trusted: "true"
+          key: release-tools
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      # The extension installs outside the root workspace; the universal VSIX
+      # recipe installs its packager first, exactly as Build editor extensions does.
+      - name: Install VS Code extension dependencies
+        run: vp run --workspace-root package:vscode-extension
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bindings-${{ matrix.settings.rustTarget }}
+          path: ${{ runner.temp }}/native-provider
+      - name: Package the exact target provider
+        env:
+          RUST_TARGET: ${{ matrix.settings.rustTarget }}
+          VSIX_ARCHIVE: ${{ matrix.settings.archive }}
+        run: >-
+          rust-script tools/commands/editors/vscode/package-typescript-provider.rs
+          "$RUST_TARGET" "$RUNNER_TEMP/native-provider"
+          "$GITHUB_WORKSPACE/.artifacts/vscode/$VSIX_ARCHIVE"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.settings.artifact }}
+          path: .artifacts/vscode/*
+          if-no-files-found: error
+          compression-level: 0
+
   # The single pre-publish gate: install every package tarball together and
   # run it. Runs without registry credentials. Every registry waits for it, so
   # a failed build (wasm included) publishes nowhere.
@@ -390,9 +444,67 @@ jobs:
       - name: Publish to Open VSX
         run: node tools/support/release/publish_open_vsx_extension/main.ts editor-extensions/editors/vscode/dist/vize.vsix
 
+  # Platform VSIXes publish only after every provider package exists. They
+  # never gate the tag, npm or the universal extension.
+  publish-vscode-platforms:
+    if: needs.version.outputs.ref != ''
+    name: Publish VS Code extension - ${{ matrix.settings.target }}
+    needs: [version, tag, build-editor-platforms]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: vscode-marketplace
+    strategy:
+      fail-fast: false
+      matrix:
+        settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
+    env:
+      VIZE_EXTENSION_TARGET: ${{ matrix.settings.target }}
+      VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
+      VSCE_DLX_BIN: npx
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: "${{ matrix.settings.artifact }}", path: editor-extensions }
+      - name: Publish to the VS Code Marketplace
+        run: node tools/support/release/publish_vscode_extension/main.ts "editor-extensions/$VSIX_SOURCE_PATH"
+
+  publish-open-vsx-platforms:
+    if: needs.version.outputs.ref != ''
+    name: Publish Open VSX extension - ${{ matrix.settings.target }}
+    needs: [version, tag, build-editor-platforms]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: open-vsx-registry
+    strategy:
+      fail-fast: false
+      matrix:
+        settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
+    env:
+      VIZE_EXTENSION_TARGET: ${{ matrix.settings.target }}
+      VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
+      PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
+      # Open VSX scans an upload before exposing it: about 2 min, but 0.484.0
+      # and 0.485.0 took over 4. Wait up to 10 min (60 x 10 s).
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "60"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: "${{ matrix.settings.artifact }}", path: editor-extensions }
+      - name: Publish to Open VSX
+        run: node tools/support/release/publish_open_vsx_extension/main.ts "editor-extensions/$VSIX_SOURCE_PATH"
+
   github-release:
     name: Create GitHub Release
-    needs: [version, tag, publish-npm]
+    needs: [version, tag, publish-npm, build-editor-platforms]
     if: ${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -401,6 +513,8 @@ jobs:
     env:
       RELEASE_TAG: ${{ needs.version.outputs.tag }}
       RELEASE_SHA: ${{ needs.version.outputs.sha }}
+      # A failed platform build releases without its files rather than blocking.
+      EDITOR_PLATFORMS: ${{ inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts || needs.build-editor-platforms.result == 'success' && '1' || '0' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -427,6 +541,21 @@ jobs:
           run-id: ${{ inputs.npm_resume_run }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
+      - if: inputs.npm_resume_run == '' && env.EDITOR_PLATFORMS == '1'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: editor-extension-platform-*
+          path: editor-extension-artifacts/platform
+          merge-multiple: true
+      - if: inputs.npm_resume_run != '' && env.EDITOR_PLATFORMS == '1'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: editor-extension-platform-*
+          path: editor-extension-artifacts/platform
+          merge-multiple: true
+          run-id: ${{ inputs.npm_resume_run }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
       - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
         with:
           artifact-name: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
@@ -444,10 +573,12 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Checksum and sign release artifacts
-        env: { COSIGN_YES: "true" }
+        env:
+          COSIGN_YES: "true"
+          VIZE_EDITOR_PLATFORM_ARTIFACTS: ${{ env.EDITOR_PLATFORMS }}
         run: |
           shopt -s nullglob
-          for artifact in cli-artifacts/*.tar.gz cli-artifacts/*.zip editor-extension-artifacts/editors/vscode/dist/*.vsix editor-extension-artifacts/*.tar.gz; do
+          for artifact in cli-artifacts/*.tar.gz cli-artifacts/*.zip editor-extension-artifacts/editors/vscode/dist/*.vsix editor-extension-artifacts/platform/*.vsix editor-extension-artifacts/platform/*.receipt.json editor-extension-artifacts/*.tar.gz; do
             ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "$artifact.sha256"
           done
           node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG"
@@ -466,6 +597,8 @@ jobs:
             cli-artifacts/*.tar.gz
             cli-artifacts/*.zip
             editor-extension-artifacts/editors/vscode/dist/*.vsix
+            editor-extension-artifacts/platform/*.vsix
+            editor-extension-artifacts/platform/*.receipt.json
             editor-extension-artifacts/*.tar.gz
             vize-${{ needs.version.outputs.tag }}-*.sbom.json
             cli-artifacts/*.sha256
@@ -480,81 +613,26 @@ jobs:
             vize-${{ needs.version.outputs.tag }}-*.pem
             vize-${{ needs.version.outputs.tag }}-*.cosign.bundle
 
-  # After publishing, never blocking it: verify every package together and
-  # install the CLI from npm, then JSR (its facade resolves the npm packages).
-  # JSR runs as its own workflow: its server-side processing takes 10-60 min,
-  # and inside this run it kept the cadence from starting the next release.
-  verify-npm:
-    name: Verify npm packages
+  # Post-publish checks and JSR run in release-verify.yml, so this run, and
+  # with it the cadence, ends once every registry has the version.
+  dispatch-verify:
+    name: Dispatch the release verification
     needs: [version, publish-npm]
     if: ${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Wait for npm and smoke the published CLI
-        env:
-          RELEASE_VERSION: ${{ needs.version.outputs.version }}
-          RELEASE_PACKAGES: ${{ needs.publish-npm.outputs.packages }}
-        run: |
-          read -ra packages <<< "$RELEASE_PACKAGES"
-          node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
-
-  # Gates nothing: fresh, migrated and monorepo projects configured only by
-  # vite.config.ts and tsconfig.json, using the packages just verified.
-  verify-config:
-    name: Verify config-free projects
-    needs: [version, verify-npm]
-    if: ${{ always() && needs.version.result == 'success' && needs.verify-npm.result == 'success' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Set up fresh, migrated and monorepo projects without vize.config.*
-        env:
-          RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: node tools/support/release/verify_published/config_free.ts "$RELEASE_VERSION"
-
-  # Gates nothing: Musea VRT from the published plugin in Chromium on Linux.
-  verify-musea-vrt:
-    name: Verify Musea VRT
-    needs: [version, verify-npm]
-    if: ${{ always() && needs.version.result == 'success' && needs.verify-npm.result == 'success' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      # playwright install --with-deps uses apt.
-      - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Capture, match, diff and update a Musea baseline
-        env:
-          RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: node tools/support/release/verify_published/musea_vrt.ts "$RELEASE_VERSION"
-
-  publish-jsr:
-    name: Dispatch the JSR publication
-    needs: [version, verify-npm]
-    if: ${{ always() && needs.version.result == 'success' && needs.verify-npm.result == 'success' }}
-    runs-on: ubuntu-24.04
     timeout-minutes: 5
-    # JSR only accepts OIDC publishes whose actor is a scope member, never
-    # github-actions[bot], so dispatch as the maintainer.
+    # release-verify.yml dispatches JSR, which only accepts OIDC publishes
+    # whose actor is a scope member, never github-actions[bot].
     environment: release-operator
     steps:
-      - name: Dispatch release-jsr.yml
+      - name: Dispatch release-verify.yml
         env:
           GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
-          JSR_VERSION: ${{ needs.version.outputs.tag }}
-          JSR_SOURCE: ${{ needs.version.outputs.sha }}
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          RELEASE_SHA: ${{ needs.version.outputs.sha }}
+          RELEASE_PACKAGES: ${{ needs.publish-npm.outputs.packages }}
         run: |
-          gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
-            -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"
+          gh workflow run release-verify.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f version="$RELEASE_VERSION" -f tag="$RELEASE_TAG" -f sha="$RELEASE_SHA" \
+            -f packages="$RELEASE_PACKAGES"

@@ -4,6 +4,7 @@ mod package_cache_tests;
 mod package_registration_cache_tests;
 mod package_registration_shadow_tests;
 mod package_registration_tests;
+mod program_session_tests;
 mod tests;
 
 mod alias_scaling_tests {

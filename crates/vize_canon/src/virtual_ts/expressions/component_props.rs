@@ -38,7 +38,9 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     inference_only: bool,
+    inert: bool,
     expected_packet: bool,
+    protect_callback_primaries: bool,
 }
 
 impl<'a> ComponentPropSource<'a> {
@@ -54,7 +56,9 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: None,
             diagnostic_ownership: None,
             inference_only: false,
+            inert: false,
             expected_packet: false,
+            protect_callback_primaries: false,
         }
     }
 
@@ -82,7 +86,9 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: self.model_modifiers,
             diagnostic_ownership: ownership,
             inference_only: self.inference_only,
+            inert: self.inert,
             expected_packet: self.expected_packet,
+            protect_callback_primaries: self.protect_callback_primaries,
         }
     }
 
@@ -91,12 +97,35 @@ impl<'a> ComponentPropSource<'a> {
         self
     }
 
+    pub(crate) const fn with_callback_primary_protection(mut self, protect: bool) -> Self {
+        self.protect_callback_primaries = protect;
+        self
+    }
+
+    fn protect_callback_primary(self, generated: std::ops::Range<usize>) {
+        if self.protect_callback_primaries
+            && let Some(collector) = self.diagnostic_ownership
+        {
+            profile!("canon.virtual_ts.root_callback.protect_primary", {
+                collector.borrow_mut().protect_callback_primary(generated);
+            });
+        }
+    }
+
     pub(crate) fn value_source_range(self, prop: &PassedProp) -> Option<std::ops::Range<usize>> {
         prop_value_source_range(self, prop)
     }
 
     pub(crate) const fn inference_only(mut self) -> Self {
         self.inference_only = true;
+        self
+    }
+
+    /// An inference copy whose mappings are discarded. The native checker drops
+    /// its diagnostics as unmapped, so the content mapper ignores them too.
+    pub(crate) const fn inert(mut self) -> Self {
+        self.inference_only = true;
+        self.inert = true;
         self
     }
 
@@ -117,7 +146,7 @@ impl<'a> ComponentPropSource<'a> {
         };
         let ordinary_owner = InputOwner::for_prop(usage, prop);
         let Some(owner) = ordinary_owner.or_else(|| {
-            self.expected_packet
+            (self.expected_packet || self.inert)
                 .then(|| InputOwner::for_expected_projection(usage, prop))
                 .flatten()
         }) else {
@@ -128,7 +157,9 @@ impl<'a> ComponentPropSource<'a> {
         // Do not retain a RefCell borrow while another emitter runs.
         let mut ledger = collector.borrow_mut();
         let mut record = |owner, generated, source| {
-            if ordinary_owner.is_some() {
+            if self.inert {
+                ledger.record_inert(owner, generated, source);
+            } else if ordinary_owner.is_some() {
                 ledger.record(owner, generated, source, self.inference_only);
             } else {
                 // The root relocation proof classifies the callback's creation.
@@ -143,6 +174,24 @@ impl<'a> ComponentPropSource<'a> {
         if let Some(source) = value_source {
             record(owner, value, source);
         }
+    }
+
+    /// A merged `class`/`style` entry repeats each dynamic value that its own
+    /// per-prop assignment already checks; that assignment owns diagnostics.
+    pub(super) fn record_merged_prop_echo(
+        self,
+        usage: &ComponentUsage,
+        prop: &PassedProp,
+        value: std::ops::Range<usize>,
+    ) {
+        let (Some(collector), Some(owner), Some(source)) = (
+            self.diagnostic_ownership,
+            crate::virtual_ts::diagnostic_ownership::InputOwner::for_prop(usage, prop),
+            prop_value_source_range(self, prop),
+        ) else {
+            return;
+        };
+        collector.borrow_mut().record(owner, value, source, true);
     }
 }
 
@@ -353,11 +402,12 @@ pub(crate) fn generate_component_prop_checks(
             let gen_stmt_start = ts.len();
             append!(*ts, "{expr_indent}const ");
             let check_name_start = ts.len();
-            ts.push_str(check_name.as_str());
+            profile!("canon.virtual_ts.prop_check.name_emission", {
+                ts.push_str(check_name.as_str());
+            });
             let check_name_end = ts.len();
-            if crate::virtual_ts::scope::is_inline_callback_prop(prop)
-                && let Some(resolution) = resolved_props.as_ref()
-            {
+            let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
+            if inline_callback && let Some(resolution) = resolved_props.as_ref() {
                 let camel_prop_name = super::super::helpers::to_camel_case(prop.name.as_str());
                 let resolved_props = resolution.resolved_props.as_str();
                 let selected_props = resolution.selected_props.as_str();
@@ -371,7 +421,9 @@ pub(crate) fn generate_component_prop_checks(
                     ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
                 );
             }
-            let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
+            let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
+                append_prop_value(ts, generated_value.text.as_str())
+            });
             ts.push_str(";\n");
             let statement_end = ts.len();
             let gen_stmt_end = if generated_value.omits_tail() {
@@ -414,6 +466,9 @@ pub(crate) fn generate_component_prop_checks(
                 src_range: prop_src_start..prop_src_end,
                 sub_spans,
             });
+            if inline_callback {
+                source_context.protect_callback_primary(gen_stmt_start..statement_end);
+            }
             source_context.record_prop_projection(
                 usage,
                 prop,

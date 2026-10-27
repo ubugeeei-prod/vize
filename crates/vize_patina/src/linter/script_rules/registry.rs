@@ -11,7 +11,7 @@
 //! 1. Implement the rule in `crate::rules::script`.
 //! 2. In `names.rs`, add `pub(crate) const RULE_<NAME>: &str = "<cat>/<kebab>";`
 //!    and append the name to `ALL_BUILTIN_SCRIPT_RULE_NAMES` (and, unless it is
-//!    one of the first three always-on rules, to the test-only
+//!    one of the first two opinionated rules, to the test-only
 //!    `OPT_IN_SCRIPT_RULE_NAMES`).
 //! 3. In `rules.rs`, import the rule type, add a configured `static <NAME>_RULE`
 //!    instance if it needs parameters, and append a [`BuiltinScriptRuleEntry`]
@@ -35,7 +35,7 @@ pub(crate) use names::{
     RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE,
     RULE_NO_EXPOSE_AFTER_AWAIT, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS,
-    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,
+    RULE_NO_NEXT_TICK, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,
     RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS,
     RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_UNSTABLE_NESTED_COMPONENTS,

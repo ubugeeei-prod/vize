@@ -1,6 +1,6 @@
 //! Project-scoped configuration for the official TypeScript content mapper.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
@@ -26,6 +26,29 @@ impl ContentMapperProjectConfiguration {
     /// Read only the host-selected tsconfig and its existing `extends` chain.
     /// An empty path denotes an inferred project and performs no file reads.
     pub fn load(config_file_name: &Path) -> CorsaResult<Self> {
+        Self::load_host_configuration(config_file_name, None)
+            .map(|(configuration, _)| configuration)
+    }
+
+    /// Admit the host's effective compiler options alongside its selected Vue options.
+    /// Compiler options are supplied by TypeScript, including command-line overrides.
+    /// Returns the configuration and its owned, explicitly admitted typed-router root.
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+    pub fn load_with_compiler_options(
+        config_file_name: &Path,
+        compiler_options: &Map<std::string::String, Value>,
+    ) -> CorsaResult<(Self, Option<PathBuf>)> {
+        vize_l0::profile!(
+            "canon.content_mapper.project_configuration",
+            Self::load_host_configuration(config_file_name, Some(compiler_options))
+        )
+    }
+
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+    fn load_host_configuration(
+        config_file_name: &Path,
+        compiler_options: Option<&Map<std::string::String, Value>>,
+    ) -> CorsaResult<(Self, Option<PathBuf>)> {
         let (options, dependencies) = if config_file_name.as_os_str().is_empty() {
             (Map::new(), Vec::new())
         } else {
@@ -41,6 +64,19 @@ impl ContentMapperProjectConfiguration {
             ContentMapperTransformOptions::default()
                 .with_vue_compiler_options(config_file_name, &options)?
         };
+        let typed_router_root = compiler_options.and_then(|compiler| {
+            if config_file_name.as_os_str().is_empty() {
+                return None;
+            }
+            let project_root = vize_carton::path::canonicalize_non_verbatim(
+                config_file_name.parent().unwrap_or(Path::new(".")),
+            );
+            super::typed_router::configured_root_from_options(
+                &project_root,
+                Some(&options),
+                compiler,
+            )
+        });
         if let Some(manifest) = vue_manifest.as_ref() {
             watched_files.push(manifest.to_string_lossy().into());
             watched_files.sort();
@@ -59,12 +95,21 @@ impl ContentMapperProjectConfiguration {
         } else {
             serde_json::to_vec(&(&options, &watched_files))?
         };
-        let digest = super::identity::encode_digest(Sha256::digest(identity));
-        Ok(Self {
-            transform_options,
-            config_identity: cstr!("vize-content-mapper-v1:{digest}"),
-            watched_files,
-        })
+        let mut digest = Sha256::new();
+        digest.update(identity);
+        if let Some(root) = typed_router_root.as_ref() {
+            digest.update(b"\0typed-router-root\0");
+            digest.update(serde_json::to_vec(root)?);
+        }
+        let digest = super::identity::encode_digest(digest.finalize());
+        Ok((
+            Self {
+                transform_options,
+                config_identity: cstr!("vize-content-mapper-v1:{digest}"),
+                watched_files,
+            },
+            typed_router_root,
+        ))
     }
 }
 
@@ -489,3 +534,6 @@ mod tests {
         assert!(!numeric_watches_vue);
     }
 }
+
+#[cfg(test)]
+mod typed_router_tests;

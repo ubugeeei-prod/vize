@@ -1,0 +1,4 @@
+import { greet } from "./greet";
+
+const message: string = greet("vize");
+export { message };

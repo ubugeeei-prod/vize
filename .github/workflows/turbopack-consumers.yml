@@ -10,7 +10,7 @@ on:
       - "npm/native/**"
       - "crates/vize_atelier_sfc/**"
       - "crates/vize_vitrine/**"
-      - "tests/tooling/turbopack-workflow.test.mjs"
+      - "tests/tooling/turbopack-workflow.test.ts"
       - ".github/workflows/turbopack-consumers.yml"
 
 permissions: { contents: read }
@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$VIZE_TURBOPACK_ARTIFACTS"
-          node --test tests/tooling/turbopack-workflow.test.mjs npm/builder/turbopack/test/consumer-packaging.test.mjs
+          node --test tests/tooling/turbopack-workflow.test.ts npm/builder/turbopack/test/consumer-packaging.test.mjs
           node --test npm/builder/turbopack/src/*.test.ts npm/builder/rspack/src/shared/source-map.test.ts npm/builder/rspack/src/shared/output.test.ts npm/builder/rspack/src/shared/hotReload.test.ts | tee "$VIZE_TURBOPACK_ARTIFACTS/source-unit.tap"
       - name: Build both public adapters with bundled shared code
         run: |

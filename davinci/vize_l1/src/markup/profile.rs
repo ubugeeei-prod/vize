@@ -4,8 +4,8 @@
 //! template is one associated constant here, so the list lives in one place
 //! and each branch folds away under static dispatch. The lexer reads
 //! [`Profile::TOLERATE_DECLARATIONS`] and folds special opening-tag names
-//! under [`Profile::FOLD_NAME_CASE`]. The remaining host rules belong to
-//! the L1 tree builder and are declared now so the profile is complete.
+//! under [`Profile::FOLD_NAME_CASE`]. The Document HTML structure builder
+//! reads the name, self-closing, implied-end and table rules.
 
 /// Which profile a generic function was instantiated with.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

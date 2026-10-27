@@ -106,7 +106,7 @@ mod tests {
     use std::{fs, path::Path};
     use vize_patina::HelpLevel;
 
-    fn diagnostics(parent: &str, child: &str) -> Vec<(String, u32, u32)> {
+    fn diagnostics(parent: &str, child: &str) -> Vec<(vize_l0::String, u32, u32)> {
         let dir = tempfile::tempdir().unwrap();
         let parent_path = dir.path().join("Parent.vue");
         let child_path = dir.path().join("Dialog.vue");
@@ -125,13 +125,7 @@ mod tests {
             })
             .flat_map(|result| result.diagnostics)
             .filter(|diagnostic| diagnostic.rule_name == RULE)
-            .map(|diagnostic| {
-                (
-                    diagnostic.message.to_string(),
-                    diagnostic.start,
-                    diagnostic.end,
-                )
-            })
+            .map(|diagnostic| (diagnostic.message, diagnostic.start, diagnostic.end))
             .collect()
     }
 
@@ -150,8 +144,6 @@ defineEmits(['close'])
             vize_l0::cstr!(
                 "{attr} passed to <Dialog> cannot fall through because the component has a Teleport root"
             )
-            .as_str()
-            .to_owned()
         };
         assert_eq!(
             diagnostics(parent, child),
@@ -215,7 +207,7 @@ defineEmits(['close'])
             r"import * as Vue from 'vue'; Vue.\u0075seAttrs()",
             "Vue.useAttrs(); import * as Vue from 'vue'",
         ] {
-            let child = format!(
+            let child = vize_l0::cstr!(
                 "<script setup>{call}</script><template><Teleport to=\"body\"><div /></Teleport></template>"
             );
             assert!(diagnostics(parent, &child).is_empty(), "{child}");

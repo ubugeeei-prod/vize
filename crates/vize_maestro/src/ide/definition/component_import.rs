@@ -11,6 +11,9 @@ use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{IdeContext, helpers};
 
+#[cfg(feature = "native")]
+mod alias;
+
 const MAX_REEXPORT_DEPTH: usize = 8;
 
 pub(crate) fn resolve_component_file(
@@ -24,6 +27,16 @@ pub(crate) fn resolve_component_file(
         return Some(resolved);
     }
     resolve_exported_component(&resolved, &import.imported_name, 0)
+}
+
+/// A component reached through an import, a registration or a setup constant
+/// that holds one.
+#[cfg(feature = "native")]
+pub(crate) fn resolve_component_value_file(
+    ctx: &IdeContext<'_>,
+    component_name: &str,
+) -> Option<PathBuf> {
+    resolve_component_file(ctx, component_name).or_else(|| alias::resolve(ctx, component_name, 0))
 }
 
 /// Whether an Options API `components` entry registers this authored tag.

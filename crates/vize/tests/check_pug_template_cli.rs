@@ -8,7 +8,7 @@
 
 //! `vize check` reads a Pug template through the same lane as HTML: attribute
 //! and directive expressions are type-checked and reported at their authored
-//! Pug positions (#8908).
+//! Pug positions, and `lang="jade"` exactly like `lang="pug"` (#8908).
 
 use crate::support::corsa_requirement;
 
@@ -93,4 +93,21 @@ fn pug_attribute_expressions_report_like_html_at_authored_positions() {
         .to_vec();
         assert_eq!(errors(root.path(), &corsa, name), expected, "{name}");
     }
+}
+
+#[test]
+fn jade_alias_reports_like_pug_at_authored_positions() {
+    let Some(corsa) = corsa_requirement::required_or_skip(None::<String>) else {
+        return;
+    };
+    let root = tempfile::tempdir().unwrap();
+    link_workspace_vue(root.path());
+    let jade = PUG.replace("lang=\"pug\"", "lang=\"jade\"");
+    let mut reports = Vec::new();
+    for (name, template) in [("Pug.vue", PUG), ("Jade.vue", jade.as_str())] {
+        fs::write(root.path().join(name), format!("{SCRIPT}{template}")).unwrap();
+        reports.push(errors(root.path(), &corsa, name));
+    }
+    assert_eq!(reports[1], reports[0]);
+    assert_eq!(reports[0].len(), 3);
 }

@@ -5,12 +5,12 @@ import { test } from "node:test";
 import {
   expectedInitOutput,
   managerCommand,
-} from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
-import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.ts";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
-} from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-shapes.ts";
 
 // Authored before the eighth matrix cell. This is a full source expectation,
 // never an assertion that a package install, CLI or editor host has executed.

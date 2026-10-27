@@ -20,6 +20,11 @@ mod experimental_tests;
 #[cfg(test)]
 mod extends_tests;
 mod js;
+mod js_cache;
+#[cfg(not(target_arch = "wasm32"))]
+mod js_literal;
+#[cfg(test)]
+mod js_literal_tests;
 mod js_observation;
 mod jsx;
 mod language_server;
@@ -35,6 +40,8 @@ mod project_settings_tests;
 #[cfg(test)]
 mod tests;
 mod vapor;
+#[cfg(not(target_arch = "wasm32"))]
+mod vite_projection;
 
 use std::path::{Path, PathBuf};
 
@@ -50,6 +57,7 @@ use super::{
     ConfigFeatureFlags, LinterConfig, VizeConfig,
 };
 pub use compiler_keys::*;
+pub use js_cache::enable_config_evaluation_cache;
 pub use library::{LoadedLibConfig, load_lib_config_with_source};
 pub use lsp_snapshot::{
     ConfigEvaluationSession, LoadedLspConfig, load_lsp_config_snapshot,

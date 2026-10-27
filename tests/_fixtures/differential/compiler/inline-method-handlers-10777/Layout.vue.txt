@@ -1,0 +1,25 @@
+<script setup>
+import { ref } from 'vue'
+import MyButton from './MyButton.js'
+import { useHandlers } from './useHandlers.js'
+const { onPing, hooks } = useHandlers()
+let swap = () => {}
+const fnRef = ref(() => {})
+</script>
+<template>
+  <MyButton
+    @ping="onPing"
+    @pong="
+      onPing
+    "
+    @done="hooks.done"
+    @stop.stop="hooks.stop"
+    @call="hooks.done($event)"
+  />
+  <Transition :css="false" @enter="onPing" @after-enter="hooks.after">
+    <p>box</p>
+  </Transition>
+  <button @click="onPing">a</button>
+  <button @click=" swap ">b</button>
+  <button @click="fnRef">c</button>
+</template>

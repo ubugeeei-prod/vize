@@ -49,17 +49,19 @@ impl super::EmitCx<'_> {
             if_key,
             for_item,
             self.is_ts,
-            &|name| {
-                // The shipped patch gate looks up raw handler names in SFC
-                // binding metadata even when a slot/loop parameter shadows
-                // the script binding. Module-mode reads otherwise carry a
-                // `$setup.` prefix and must stay dynamic.
-                self.reads_lattice_static_patch_binding_name(name)
-                    && (self.reads_constant_binding_name(name)
-                        || self.scope.is_slot_param(name)
-                        || self.scope.binds_in_pattern(name))
+            &|on| {
+                super::props::handler_is_constant(self.source, on, &|name| {
+                    // The shipped patch gate looks up raw handler names in SFC
+                    // binding metadata even when a slot/loop parameter shadows
+                    // the script binding. Module-mode reads otherwise carry a
+                    // `$setup.` prefix and must stay dynamic.
+                    self.reads_lattice_static_patch_binding_name(name)
+                        && (self.reads_constant_binding_name(name)
+                            || self.scope.is_slot_param(name)
+                            || self.scope.binds_in_pattern(name))
+                })
             },
-            &|on| super::on::caches_handler(self, on),
+            &|on| super::on::caches_owned_handler(self, on, is_component),
             self.caches_handlers(),
         );
         self.patch_facts.materialize(owner, facts)
@@ -80,7 +82,7 @@ pub(super) fn binding_patch_facts<'a>(
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
-    constant_handler: &dyn Fn(&str) -> bool,
+    handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
 ) -> PatchFacts {
@@ -91,7 +93,7 @@ pub(super) fn binding_patch_facts<'a>(
             if_key,
             for_item,
             is_ts,
-            constant_handler,
+            handler_is_constant,
             handler_is_cached,
             caches_handlers,
         );
@@ -151,9 +153,7 @@ pub(super) fn binding_patch_facts<'a>(
                 let Ok(key) = super::on::event_key_for(on, !is_component) else {
                     continue;
                 };
-                if !super::props::handler_is_constant(on, constant_handler)
-                    && !handler_is_cached(on)
-                {
+                if !handler_is_constant(on) && !handler_is_cached(on) {
                     flag |= 8;
                     if !dynamic_props.contains(&key) {
                         dynamic_props.push(key.clone());

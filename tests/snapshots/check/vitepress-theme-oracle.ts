@@ -32,9 +32,10 @@ const themeDeclarationPath = "node_modules/vitepress/theme.d.ts";
 const cleanCodeDeclaration = "    code?: string";
 const brokenCodeDeclaration = "    knownCode?: string";
 // `theme.notFound?.co|` is a member position, so the answer is the declared
-// surface of `DefaultTheme.NotFoundOptions` in declaration order (what Volar
-// answers there) rather than the setup-binding list this used to pin (#3911).
-const expectedCompletionLabels = ["title?", "quote?", "link?", "linkLabel?", "linkText?", "code?"];
+// surface of `DefaultTheme.NotFoundOptions` rather than the setup-binding list
+// this used to pin (#3911). tsserver, and so Volar, sorts entries by sortText
+// and then name; every optional member shares one sortText (#10747).
+const expectedCompletionLabels = ["code?", "link?", "linkLabel?", "linkText?", "quote?", "title?"];
 
 test("VitePress theme exports refresh exact template diagnostics", async () => {
   const corsaPath = resolveTsgoBinary();

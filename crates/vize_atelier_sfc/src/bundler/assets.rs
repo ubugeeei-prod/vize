@@ -1,4 +1,5 @@
-use vize_l0::String;
+use vize_armature::{PropNode, TemplateChildNode};
+use vize_l0::{Allocator, String, profiler::global_profiler};
 
 use super::blocks::parse_descriptor;
 
@@ -51,102 +52,64 @@ pub fn collect_template_asset_urls(
     let Some(template) = descriptor.template.as_ref() else {
         return Vec::new();
     };
+    let content = template.content.as_ref();
+    if !names_asset_tag(content, rules) {
+        return Vec::new();
+    }
 
+    // The template parser owns comments, raw text and quoting, so only real
+    // elements contribute asset URLs.
+    global_profiler().record_counter("sfc.asset_urls.template_parse", 1);
+    let allocator = Allocator::default();
+    let (root, _) = vize_armature::Parser::new(&allocator, content).parse();
     let mut urls: Vec<TemplateAssetUrl> = Vec::new();
-    let mut counter = 0usize;
-    scan_template_asset_urls(template.content.as_ref(), rules, &mut urls, &mut counter);
+    collect_element_asset_urls(&root.children, rules, &mut urls);
     // Namespace work is unnecessary until an actual asset import exists.
     if !urls.is_empty() {
-        names::avoid_authored_names(&descriptor, &mut urls);
+        names::avoid_authored_names(&descriptor, &allocator, &root.children, &mut urls);
     }
     urls
 }
 
-fn scan_template_asset_urls(
-    template: &str,
+/// Cheap admission: an asset URL needs an opening tag that a rule names.
+fn names_asset_tag(template: &str, rules: Option<&[TemplateAssetTagRule]>) -> bool {
+    let opens = |tag: &str| {
+        template.match_indices('<').any(|(start, _)| {
+            template
+                .get(start + 1..start + 1 + tag.len())
+                .is_some_and(|name| name.eq_ignore_ascii_case(tag))
+        })
+    };
+    match rules {
+        Some(rules) => rules.iter().any(|rule| opens(rule.tag.as_str())),
+        None => DEFAULT_ASSET_URL_TAGS.iter().any(|(tag, _)| opens(tag)),
+    }
+}
+
+fn collect_element_asset_urls(
+    children: &[TemplateChildNode<'_>],
     rules: Option<&[TemplateAssetTagRule]>,
     urls: &mut Vec<TemplateAssetUrl>,
-    counter: &mut usize,
 ) {
-    let mut cursor = 0usize;
-    while let Some(offset) = template.get(cursor..).and_then(|rest| rest.find('<')) {
-        let start = cursor + offset;
-        let Some(tag) = parse_opening_tag(template, start) else {
-            cursor = start + 1;
+    for child in children {
+        let TemplateChildNode::Element(element) = child else {
             continue;
         };
-
-        if let Some(attrs) = attrs_for_tag(rules, tag.name.as_str()) {
-            for attr in attrs {
-                if let Some(value) = static_attr_value(tag.attrs, attr)
-                    && is_importable_asset_url(value)
-                    && !urls.iter().any(|entry| entry.url.as_str() == value)
-                {
-                    let mut var_name = String::from("_imports_");
-                    push_usize(&mut var_name, *counter);
-                    *counter += 1;
-                    urls.push(TemplateAssetUrl {
-                        url: String::from(value),
-                        var_name,
-                    });
-                }
+        for attr in attrs_for_tag(rules, element.tag).into_iter().flatten() {
+            if let Some(value) = static_attr_value(&element.props, attr)
+                && is_importable_asset_url(value)
+                && !urls.iter().any(|entry| entry.url.as_str() == value)
+            {
+                let mut var_name = String::from("_imports_");
+                push_usize(&mut var_name, urls.len());
+                urls.push(TemplateAssetUrl {
+                    url: String::from(value),
+                    var_name,
+                });
             }
         }
-
-        cursor = tag.end;
+        collect_element_asset_urls(&element.children, rules, urls);
     }
-}
-
-struct OpeningTag<'a> {
-    name: String,
-    attrs: &'a str,
-    end: usize,
-}
-
-fn parse_opening_tag(template: &str, start: usize) -> Option<OpeningTag<'_>> {
-    let bytes = template.as_bytes();
-    if matches!(bytes.get(start + 1), Some(b'/' | b'!' | b'?')) {
-        return None;
-    }
-
-    let mut index = start + 1;
-    while matches!(bytes.get(index), Some(b' ' | b'\t' | b'\n' | b'\r')) {
-        index += 1;
-    }
-    let name_start = index;
-    while matches!(
-        bytes.get(index),
-        Some(b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b':' | b'_')
-    ) {
-        index += 1;
-    }
-    if index == name_start {
-        return None;
-    }
-    let name = String::from(template.get(name_start..index)?);
-    let attrs_start = index;
-    let mut quote = None;
-    while let Some(&byte) = bytes.get(index) {
-        if let Some(active_quote) = quote {
-            if byte == b'\\' {
-                index = (index + 2).min(bytes.len());
-                continue;
-            }
-            if byte == active_quote {
-                quote = None;
-            }
-        } else if byte == b'"' || byte == b'\'' {
-            quote = Some(byte);
-        } else if byte == b'>' {
-            return Some(OpeningTag {
-                name,
-                attrs: template.get(attrs_start..index)?,
-                end: index + 1,
-            });
-        }
-        index += 1;
-    }
-    None
 }
 
 fn attrs_for_tag<'a>(rules: Option<&'a [TemplateAssetTagRule]>, tag: &str) -> Option<Vec<&'a str>> {
@@ -163,49 +126,11 @@ fn attrs_for_tag<'a>(rules: Option<&'a [TemplateAssetTagRule]>, tag: &str) -> Op
         .map(|(_, attrs)| attrs.to_vec())
 }
 
-fn static_attr_value<'a>(attrs: &'a str, name: &str) -> Option<&'a str> {
-    let bytes = attrs.as_bytes();
-    let mut index = 0usize;
-    while index < bytes.len() {
-        while matches!(bytes.get(index), Some(b' ' | b'\t' | b'\n' | b'\r' | b'/')) {
-            index += 1;
-        }
-        let name_start = index;
-        while bytes
-            .get(index)
-            .is_some_and(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r' | b'=' | b'/' | b'>'))
-        {
-            index += 1;
-        }
-        if index == name_start {
-            break;
-        }
-        let attr_name = attrs.get(name_start..index)?;
-        while matches!(bytes.get(index), Some(b' ' | b'\t' | b'\n' | b'\r')) {
-            index += 1;
-        }
-        if bytes.get(index) != Some(&b'=') {
-            continue;
-        }
-        index += 1;
-        while matches!(bytes.get(index), Some(b' ' | b'\t' | b'\n' | b'\r')) {
-            index += 1;
-        }
-        let quote = bytes.get(index).copied()?;
-        if quote != b'"' && quote != b'\'' {
-            continue;
-        }
-        index += 1;
-        let value_start = index;
-        while bytes.get(index).is_some_and(|&byte| byte != quote) {
-            index += 1;
-        }
-        if attr_name == name {
-            return attrs.get(value_start..index);
-        }
-        index += 1;
-    }
-    None
+fn static_attr_value<'a>(props: &[PropNode<'a>], name: &str) -> Option<&'a str> {
+    props.iter().find_map(|prop| match prop {
+        PropNode::Attribute(attr) if attr.name == name => attr.value.as_ref().map(|v| v.content),
+        _ => None,
+    })
 }
 
 fn push_usize(output: &mut String, value: usize) {

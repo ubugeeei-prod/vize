@@ -1,0 +1,8 @@
+{
+  "name": "vize-router-navigation-public-oracle",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "vize": "0.562.0"
+  }
+}

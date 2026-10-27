@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Comp from './Comp.vue'
+const state: { value?: number } = {}
+state.value = 1
+const noop = () => {}
+</script>
+<template>
+  <Comp :pick="(field: typeof state.value) => !!field" @save="noop" />
+  <div>{{ delete state.value }}</div>
+</template>

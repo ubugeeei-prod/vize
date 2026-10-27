@@ -64,19 +64,20 @@ export function writeConfig(workspace, packageRoot, mode, ruleOptions) {
       ),
     ),
   };
+  // Vue settings live under `vue:` in a Vite config; vize.config.* is retired.
   const source = [
     'import { defineConfig } from "vize/config";',
     'import { settings } from "@vize-acceptance/n8n-cli-settings";',
-    "export default defineConfig({",
+    "export default defineConfig({ vue: {",
     "  linter: { ...settings.linter,",
     "    rules: { ...settings.linter.rules, ..." + JSON.stringify(settingsOverrides.rules) + " },",
     "    ruleOptions: " + JSON.stringify(config.linter.ruleOptions) + ",",
     "  },",
     ...(config.entries ? ["  entries: " + JSON.stringify(config.entries) + ","] : []),
-    "});",
+    "} });",
     "",
   ].join("\n");
-  const destination = path.join(workspace, packageRoot, `vize.${mode}.config.ts`);
+  const destination = path.join(workspace, packageRoot, `vite.${mode}.config.ts`);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.writeFileSync(destination, source);
   return { path: destination, sha256: sha256(source), source, config };

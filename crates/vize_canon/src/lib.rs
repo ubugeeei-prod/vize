@@ -53,6 +53,8 @@ pub mod css_classes;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
+#[cfg(feature = "native")]
+pub use file_uri::decode_uri_path;
 pub mod intelligence;
 mod options_api_setup_spread;
 pub mod package_route;
@@ -138,7 +140,7 @@ pub use corsa_bridge::{
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
     LspSignatureInformation, NativeVueCheck, NativeVueError, OriginalProgramCheck,
-    OriginalProgramError, VIRTUAL_URI_SCHEME,
+    OriginalProgramError, VIRTUAL_URI_SCHEME, is_editor_mirror_path,
 };
 
 // Re-export batch type checker
@@ -156,7 +158,8 @@ pub use batch::{
     PackageManager, TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,
     TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
     UnresolvedExtends, VirtualFile, VirtualProject, generate_vue_content_mapper_transform,
-    generate_vue_content_mapper_transform_with_options, legacy_project_virtual_roots,
+    generate_vue_content_mapper_transform_with_options,
+    generate_vue_content_mapper_transform_with_project_options, legacy_project_virtual_roots,
     project_virtual_access_path, project_virtual_lock_paths, project_virtual_root,
     snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
     snapshot_tsconfig_vue_target,

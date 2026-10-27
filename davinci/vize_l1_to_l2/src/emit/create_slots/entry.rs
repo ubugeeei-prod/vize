@@ -133,29 +133,42 @@ pub(super) fn emit_for_entry(
     let key = vfor::optional_ident(&for_op.binding.key)?;
     let index = vfor::optional_ident(&for_op.binding.index)?;
     let id = cx.walk.mint();
+    let prefix_mark = cx.enter_for_scope(for_op, id);
+    let body = emit_loop_body(cx, site, source, [Some(value), key, index]);
+    cx.leave_scope(prefix_mark);
+    body
+}
+
+fn emit_loop_body(
+    cx: &mut EmitCx<'_>,
+    site: &SlotTemplateSite<'_>,
+    source: &str,
+    aliases: [Option<&str>; 3],
+) -> Result<(), EmitError> {
+    let mut texts = [None, None, None];
+    for (text, alias) in texts.iter_mut().zip(aliases) {
+        if let Some(alias) = alias {
+            *text = Some(vfor::prefixed_alias(cx, alias)?.unwrap_or_else(|| alias.into()));
+        }
+    }
     cx.buf.use_render_list();
     cx.buf.push(Buf::render_list_alias());
     cx.buf.push("(");
     cx.buf.push(source);
     cx.buf.push(", (");
-    cx.buf.push(value);
-    if let Some(alias) = key {
-        cx.buf.push(", ");
-        cx.buf.push(alias);
-    }
-    if let Some(alias) = index {
-        cx.buf.push(", ");
+    for (index, alias) in texts.iter().flatten().enumerate() {
+        if index > 0 {
+            cx.buf.push(", ");
+        }
         cx.buf.push(alias);
     }
     cx.buf.push(") => {");
     cx.buf.indent();
     cx.buf.newline();
     cx.buf.push("return ");
-    let prefix_mark = cx.enter_for_scope(for_op, id);
     skip_ops(cx, site.before);
     let body = emit_slot_object(cx, site.element, site.content, None);
     skip_ops(cx, site.after);
-    cx.leave_scope(prefix_mark);
     body?;
     cx.buf.deindent();
     cx.buf.newline();

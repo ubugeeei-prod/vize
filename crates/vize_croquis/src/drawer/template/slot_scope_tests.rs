@@ -168,3 +168,62 @@ fn invalid_authored_attribute_windows_do_not_invent_declaration_offsets() {
         );
     }
 }
+
+/// `<template #name="">` is a slot function without parameters for Vue's
+/// compiler. The scope keeps no props pattern for it either, so the generated
+/// slot function declares its own parameter instead of an empty pattern.
+#[test]
+fn empty_v_slot_expression_declares_no_slot_props() {
+    for template in [
+        r#"<Child><template #text="">{{ label }}</template></Child>"#,
+        r#"<Child><template #text="  ">{{ label }}</template></Child>"#,
+        r#"<Child><template v-slot:text="">{{ label }}</template></Child>"#,
+    ] {
+        let allocator = Allocator::new();
+        let (root, errors) = parse(&allocator, template);
+        assert!(errors.is_empty(), "template should parse: {errors:?}");
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_template(&root);
+        let summary = drawer.finish();
+        let (scope, data) = summary
+            .scopes
+            .iter()
+            .find_map(|scope| match scope.data() {
+                ScopeData::VSlot(data) => Some((scope, data)),
+                _ => None,
+            })
+            .expect("v-slot scope should be recorded");
+        assert_eq!(data.name, "text", "{template}");
+        assert_eq!(data.props_pattern, None, "{template}");
+        assert!(data.prop_names.is_empty(), "{template}");
+        assert_eq!(
+            summary.scopes.v_slot_pattern_offset(scope.id),
+            None,
+            "{template}"
+        );
+        assert!(scope.bindings().next().is_none(), "{template}");
+    }
+}
+
+#[test]
+fn empty_legacy_slot_scope_declares_no_slot_props() {
+    let template = r#"<Child><template slot="text" slot-scope="">{{ label }}</template></Child>"#;
+    let allocator = Allocator::new();
+    let (root, errors) = parse(&allocator, template);
+    assert!(errors.is_empty(), "template should parse: {errors:?}");
+    let mut drawer = Drawer::with_options(DrawerOptions::full()).with_legacy_vue2();
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+    let (scope, data) = summary
+        .scopes
+        .iter()
+        .find_map(|scope| match scope.data() {
+            ScopeData::VSlot(data) => Some((scope, data)),
+            _ => None,
+        })
+        .expect("slot-scope must create a v-slot semantic scope");
+    assert_eq!(data.name, "text");
+    assert_eq!(data.props_pattern, None);
+    assert!(data.prop_names.is_empty());
+    assert_eq!(summary.scopes.v_slot_pattern_offset(scope.id), None);
+}

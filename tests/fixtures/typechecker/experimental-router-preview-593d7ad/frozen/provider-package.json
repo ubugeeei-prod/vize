@@ -1,0 +1,373 @@
+{
+  "upstream": {
+    "repository": "vuejs/router",
+    "revision": "593d7ad9ff99e95c24be28e962717df0fb2be763",
+    "tree": "885476969881154b639ea4e2a0c736ec6fa1796a",
+    "packageName": "vue-router",
+    "packageVersion": "5.4.0",
+    "publishedRegistryArchive": false
+  },
+  "sourceArchive": {
+    "path": "upstream-source.tar",
+    "bytes": 6123520,
+    "sha256": "2d5d2e574d128a9e746399acad951584aa2a5a7eadb36ce9aaf3bab52e3326f1"
+  },
+  "builder": {
+    "node": "v24.14.0",
+    "nodeSha256": "e237a2839d0cbdc9a9a2adda1a184afc0f5b20306ffbe923af5686550472d8a8",
+    "pnpm": "12.14.0",
+    "npm": "11.9.0",
+    "install": ["pnpm", "install", "--frozen-lockfile"],
+    "command": ["pnpm", "--filter", "vue-router", "run", "build"]
+  },
+  "package": {
+    "name": "vue-router",
+    "version": "5.4.0",
+    "filename": "vue-router-5.4.0.tgz",
+    "bytes": 351097,
+    "sha256": "54e73ab24d9152932d7a589e7d3b1c40ab2ba18001ad8b28fa91d52e014d13b9",
+    "integrity": "sha512-Fumr2B2BDrER76qwbqN4SrPqnjYTtDSZgaXjBmBDj/hjAQ+jeXGLwIwU/pcUfZOcGlUuwxaH0uu7mEW7rQryyA==",
+    "files": [
+      {
+        "path": "dist/devtools-DI-Zcsl7.js",
+        "bytes": 37233,
+        "sha256": "b67642e6e37b06355c2944fcc11ff1faf8fc5d6878c97a276f1881a6c3b4dc4a"
+      },
+      {
+        "path": "dist/experimental/index.d.ts",
+        "bytes": 5932,
+        "sha256": "13761cfc15091af523b48a5c55a9172b301df1a843e41efafbfbab9c8fe6a6c1"
+      },
+      {
+        "path": "dist/experimental/index.js",
+        "bytes": 57738,
+        "sha256": "b1d4d52e0c19814d507ce9cc8091e44601563dd1fb807d7aa333a492c56850ae"
+      },
+      {
+        "path": "dist/experimental/pinia-colada.d.ts",
+        "bytes": 7316,
+        "sha256": "0229c9013d9573ae0e73d596974eea30eeb10076d01d0b32c5e35529443d1af3"
+      },
+      {
+        "path": "dist/experimental/pinia-colada.js",
+        "bytes": 8816,
+        "sha256": "f9bc75487bf043536cca462bc44930bc9ead659cb5a03a55886dd58608f59b7b"
+      },
+      {
+        "path": "dist/index-BA_Jc-EQ.d.ts",
+        "bytes": 143209,
+        "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b"
+      },
+      {
+        "path": "dist/navigation-guard-CUjz31ks.js",
+        "bytes": 10227,
+        "sha256": "af00f483235c0c09d32285754c360ddd6ee86295d56174ad8fc8efe8a3e7cd78"
+      },
+      {
+        "path": "dist/options-C6vX1Vxl.mjs",
+        "bytes": 19713,
+        "sha256": "2c4c0d211bee1c63d0c65fd5da2b54eabdf2bf8756dba918d3e0f780e90b5ed7"
+      },
+      {
+        "path": "dist/options-D14Nr6_1.cjs",
+        "bytes": 21984,
+        "sha256": "636d985403b6409b559ecc22d3a631f043a55d185e1d57d7b53b62324ec56124"
+      },
+      {
+        "path": "dist/options-X8AvAxNo.d.cts",
+        "bytes": 105965,
+        "sha256": "8235088f6743af5108333b7baa1ae201f6d6100eb0de7bce2c4f616e9562e201"
+      },
+      {
+        "path": "dist/options-btlgjufQ.d.mts",
+        "bytes": 105965,
+        "sha256": "7142e295252b89f5cb995a6d7079f21318bf03f86e8e8663da55efcb8f2c962c"
+      },
+      {
+        "path": "dist/unplugin-D4ZN1UNP.mjs",
+        "bytes": 115113,
+        "sha256": "0b2bea03b9b0e522dfdc3e458947c83f554f7bd2286fbdc56e9d37dd4fdadfa4"
+      },
+      {
+        "path": "dist/unplugin-DmQaZo2m.cjs",
+        "bytes": 118498,
+        "sha256": "1e16542422b9a77aef415b716234a964f23bd328a2096b0b32de7157ec121ab5"
+      },
+      {
+        "path": "dist/unplugin/esbuild.cjs",
+        "bytes": 357,
+        "sha256": "735d9dff0c23bf1bd0ef65dea87be21440dce0c7757dbf0592bb7ec1427902a8"
+      },
+      {
+        "path": "dist/unplugin/esbuild.d.cts",
+        "bytes": 286,
+        "sha256": "7b717fd059cbb8eeb3fc8840ebeaa5509a1a97d11394776a0c54eaf4fffcc201"
+      },
+      {
+        "path": "dist/unplugin/esbuild.d.mts",
+        "bytes": 312,
+        "sha256": "18855552982ef07c707eefd6ce1fc6cb4ec7bd3eaf8f3c21e25951b50bd6e080"
+      },
+      {
+        "path": "dist/unplugin/esbuild.mjs",
+        "bytes": 279,
+        "sha256": "f20e5b5c452d7628cf22e0f3fa1b851e89b7f795e27291fd5aae2e478e2eea7b"
+      },
+      {
+        "path": "dist/unplugin/index.cjs",
+        "bytes": 958,
+        "sha256": "55ec185c5e575f6d7433f60c0cf5ce72411568b69ae671c68589dcec0795abb4"
+      },
+      {
+        "path": "dist/unplugin/index.d.cts",
+        "bytes": 2880,
+        "sha256": "cf51028ace12a41de2e2e54e12d1b7658866e7ef4cedefe6e96708ca71fef8bf"
+      },
+      {
+        "path": "dist/unplugin/index.d.mts",
+        "bytes": 2880,
+        "sha256": "53be6215d756909478701141a19b222ae5699ea72c02af58bb54e1ebf8f89e8f"
+      },
+      {
+        "path": "dist/unplugin/index.mjs",
+        "bytes": 634,
+        "sha256": "6fdcd4113487273d8bdd8f7c92671c33cf155379b2f364e52961273d627a713a"
+      },
+      {
+        "path": "dist/unplugin/options.cjs",
+        "bytes": 557,
+        "sha256": "1f5f0229f9876bd9f17006889deed1beeb7c148988dad9e4ac107156baf8dc5c"
+      },
+      {
+        "path": "dist/unplugin/options.d.cts",
+        "bytes": 743,
+        "sha256": "c8301cb0b6aad4a48cd091f09ece592ccbc952224a6138c104b3dbae1979cc83"
+      },
+      {
+        "path": "dist/unplugin/options.d.mts",
+        "bytes": 743,
+        "sha256": "d18df93f3a437894d3aeb361e715bea2ea3bb08b3f1115bdcdc9d23dfe0bf2f3"
+      },
+      {
+        "path": "dist/unplugin/options.mjs",
+        "bytes": 377,
+        "sha256": "cd4dad1a20a0ac81602cc738f9b8f518f3f71aa2c2a559be202033b29a98a9ce"
+      },
+      {
+        "path": "dist/unplugin/rolldown.cjs",
+        "bytes": 361,
+        "sha256": "c8fa0bd8e5d4ecd927eeb37930193ed1ef222e565cbba0adde1df50220b12d4d"
+      },
+      {
+        "path": "dist/unplugin/rolldown.d.cts",
+        "bytes": 320,
+        "sha256": "acba998572bb2d5edce2a7d93976e67061195b3003b68daaebcb76692bf9bdfe"
+      },
+      {
+        "path": "dist/unplugin/rolldown.d.mts",
+        "bytes": 346,
+        "sha256": "986dac66d0f9145adc27f11e0a1d1e967d5006eb4ff62f001eaed24285634f4a"
+      },
+      {
+        "path": "dist/unplugin/rolldown.mjs",
+        "bytes": 283,
+        "sha256": "1a6e3f456057c330ff4c86fa66597fbd62ce1a6833c6b0a91ded46f447d9e4d3"
+      },
+      {
+        "path": "dist/unplugin/rollup.cjs",
+        "bytes": 353,
+        "sha256": "b6a050df15f5022d23ba7cd3e4c1150d4531aea624c40558d02b05eb0af4d195"
+      },
+      {
+        "path": "dist/unplugin/rollup.d.cts",
+        "bytes": 314,
+        "sha256": "fc7e9c33c141a2ab0210678d77750da8863cea4b1e4ac48ed18361959735434c"
+      },
+      {
+        "path": "dist/unplugin/rollup.d.mts",
+        "bytes": 340,
+        "sha256": "356d931d76c51987dc1d06c96a0f7388112e1f6ac8acff5fdb9effc15e9e5627"
+      },
+      {
+        "path": "dist/unplugin/rollup.mjs",
+        "bytes": 275,
+        "sha256": "097b4a7c931047e938307e534d883c3b50d7705d4c811c298797a31428e0a734"
+      },
+      {
+        "path": "dist/unplugin/types.cjs",
+        "bytes": 152,
+        "sha256": "1431c20f6ddfb7ca51a56e06f9f2ca88fa6ac40865c8a7dcf3cc3d82838c2f81"
+      },
+      {
+        "path": "dist/unplugin/types.d.cts",
+        "bytes": 401,
+        "sha256": "4bcbb02e84587ef499945d26018e81b8d00bc47282e36e48a5e1ffe82f3362df"
+      },
+      {
+        "path": "dist/unplugin/types.d.mts",
+        "bytes": 401,
+        "sha256": "1701111092c24d01c070a6335c470cf8bbd7c5f6761b984b5d3d5689c4ede1d4"
+      },
+      {
+        "path": "dist/unplugin/types.mjs",
+        "bytes": 90,
+        "sha256": "de7e17903ad8f195b8b4a5c5ae918b2566d1d07f73b554d69aa0914f78ba2739"
+      },
+      {
+        "path": "dist/unplugin/vite.cjs",
+        "bytes": 345,
+        "sha256": "28e441e52fa5edbbe7120af0ea58efa485e658b9e0165349aa73233dab496b8c"
+      },
+      {
+        "path": "dist/unplugin/vite.d.cts",
+        "bytes": 308,
+        "sha256": "9f4a999d8b55ce78bb750313c453e0502fcb033a90a5078bd10151ce6a5a56a7"
+      },
+      {
+        "path": "dist/unplugin/vite.d.mts",
+        "bytes": 334,
+        "sha256": "5402aed74d76fa21802bb13ed990955a7d089b0db8e6b2e078ccff992be3131b"
+      },
+      {
+        "path": "dist/unplugin/vite.mjs",
+        "bytes": 267,
+        "sha256": "1792dfe73cd7062119e7e87a7eab37e0d55b80f7da4746b5412de465a3466871"
+      },
+      {
+        "path": "dist/unplugin/webpack.cjs",
+        "bytes": 357,
+        "sha256": "746ac6798da351899a4f024392b37d8651101dd9c871ce43b1653d36f1ef88e8"
+      },
+      {
+        "path": "dist/unplugin/webpack.d.cts",
+        "bytes": 275,
+        "sha256": "823b4ddb3a3b6a0222d23c56026bbab475de078c9214c77f78cb5baa700c1924"
+      },
+      {
+        "path": "dist/unplugin/webpack.d.mts",
+        "bytes": 301,
+        "sha256": "b53d49b4596cc2b1e9ad53ef35411c84b5478b699291db296c74fa3bc1474ff6"
+      },
+      {
+        "path": "dist/unplugin/webpack.mjs",
+        "bytes": 279,
+        "sha256": "48663c58c7c39a4999573dd3c8f768231ee40a32be2e2d3c02019b3beffc4f5d"
+      },
+      {
+        "path": "dist/useApi-GJujiGfa.js",
+        "bytes": 23703,
+        "sha256": "974da43a2343df3ef446e060e8f3859574c7cab5b4a99d4606375cf4fece5fa5"
+      },
+      {
+        "path": "dist/volar/sfc-route-blocks.cjs",
+        "bytes": 1563,
+        "sha256": "0186b559341b0cfebf9c3f3faf0595ca173e934ea0db73fc0e462ebbcc9c15d1"
+      },
+      {
+        "path": "dist/volar/sfc-route-blocks.d.cts",
+        "bytes": 246,
+        "sha256": "84db71399c76ed2c95e2cc8a4006640ae15a4668250cebcb0b056dc2eb010f56"
+      },
+      {
+        "path": "dist/volar/sfc-typed-router.cjs",
+        "bytes": 5958,
+        "sha256": "ccc3ece87d3a1a176892532cc9ddc86139bd03fe63a4487eb4d358ddb00f9f55"
+      },
+      {
+        "path": "dist/volar/sfc-typed-router.d.cts",
+        "bytes": 292,
+        "sha256": "4ac075d204815183dc509a51de54e4ab2b224a7ded703ebe4ac4dc81f0f02eac"
+      },
+      {
+        "path": "dist/vue-router.cjs",
+        "bytes": 116988,
+        "sha256": "d662e22808e3def77afba59e1a3a4432f67d5bc7874f780d1e45b4ba5bbd468a"
+      },
+      {
+        "path": "dist/vue-router.d.ts",
+        "bytes": 6247,
+        "sha256": "bfe48f2c98fef228be32c79b8dd3728654adfb7580267f47ddaab3ac52a8541b"
+      },
+      {
+        "path": "dist/vue-router.esm-browser.js",
+        "bytes": 113752,
+        "sha256": "7161f61e49e7be83c46d228da45a8df005a01ebbe3b3ef879ed009cb70cc8045"
+      },
+      {
+        "path": "dist/vue-router.esm-browser.prod.js",
+        "bytes": 26041,
+        "sha256": "3925cf4f6c8c2a2d62d6b36903be19eb97ef6fad9d4e076ba3d910b72c135c63"
+      },
+      {
+        "path": "dist/vue-router.esm-bundler.js",
+        "bytes": 163,
+        "sha256": "3b9e04339e552a09b39ea4b4a71fbde2c05585ea2d128b30508e74f14a1f27c1"
+      },
+      {
+        "path": "dist/vue-router.global.js",
+        "bytes": 112002,
+        "sha256": "4e48fdf09488c964a9a6d7777099c012314bd5a94f5ef8f4a05e0b1dafd0b099"
+      },
+      {
+        "path": "dist/vue-router.global.prod.js",
+        "bytes": 26345,
+        "sha256": "43125d9f97821e06112a7ce06484ce5180857a35bb40b8f02c7e5d23e1a9f1a1"
+      },
+      {
+        "path": "dist/vue-router.js",
+        "bytes": 58661,
+        "sha256": "f4510ecd0f2cb621dac4754244ed2cf989b655530592aa870bf4e52419c8b5a7"
+      },
+      {
+        "path": "dist/vue-router.prod.cjs",
+        "bytes": 54831,
+        "sha256": "300a2d91ba14f9f94564c803d030da92ac635daf6ebdde2e30d76c6570b03662"
+      },
+      {
+        "path": "index.cjs",
+        "bytes": 179,
+        "sha256": "10558bd22dd767bf058902af8462c3313e3b831f7422480f1009cbaa7d372230"
+      },
+      {
+        "path": "package.json",
+        "bytes": 6073,
+        "sha256": "79ef1456483509599772a9ae8d7253194a149adfc2f399c85005685a6f341517"
+      },
+      {
+        "path": "route.schema.json",
+        "bytes": 699,
+        "sha256": "2cedb4104050d881bcc0af9015c4b674883dbac5807a62fbb082cbeeb9ced3a3"
+      },
+      {
+        "path": "vetur/attributes.json",
+        "bytes": 1847,
+        "sha256": "57961d463bfacc1006bd816b25a7b29ffa5a7879875064d78abbc8c54de59824"
+      },
+      {
+        "path": "vetur/tags.json",
+        "bytes": 679,
+        "sha256": "9167820a9f12f3a0679acbbb3bae91d5e1b4fed7b65843b3378c72da7f963cc7"
+      },
+      {
+        "path": "vue-router-auto-resolver.d.mts",
+        "bytes": 1441,
+        "sha256": "b7623bdb0a749d79e78bc109adc32f1099b0edaeb612b6e320d15e22a43d085d"
+      },
+      {
+        "path": "vue-router-auto-routes.d.mts",
+        "bytes": 1716,
+        "sha256": "2b242ab6b6518cfc6f62c79163576b198fc22d5b94abcae94ae24781d581874a"
+      },
+      {
+        "path": "vue-router-auto.d.ts",
+        "bytes": 150,
+        "sha256": "bc49e345dfc2479a77d84c712a8a7f1714ae9d8ce7015e11e2be66dbcf9d40c5"
+      },
+      {
+        "path": "vue-router.node.mjs",
+        "bytes": 74,
+        "sha256": "8e81cc52d7e609d9d5547664ca746d5223616d04ec35451d4fa606b7df84ef4c"
+      }
+    ]
+  }
+}

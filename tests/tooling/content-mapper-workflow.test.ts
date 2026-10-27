@@ -52,6 +52,43 @@ function jobSteps(workflow: string, jobName: string): WorkflowStep[] {
   return steps;
 }
 
+type CampaignInputs = Partial<
+  Record<
+    | "event-rename-only"
+    | "official-css-options-only"
+    | "published-defaults-only"
+    | "router-experimental-only",
+    boolean
+  >
+>;
+
+// Evaluates a workflow expression for one trigger, as Actions would.
+function evaluateWorkflowExpression(
+  expression: string,
+  eventName: string,
+  inputs: CampaignInputs,
+): unknown {
+  return runInNewContext(
+    expression
+      .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
+      .replace(/\binputs\.([a-z-]+)/gu, 'inputs["$1"]'),
+    {
+      github: { event_name: eventName, event: { pull_request: {} }, ref: "refs/heads/main" },
+      inputs,
+    },
+  );
+}
+
+function selectedJobs(
+  jobs: Record<string, { if: string }>,
+  eventName: string,
+  inputs: CampaignInputs,
+): string[] {
+  return Object.entries(jobs)
+    .filter(([, job]) => evaluateWorkflowExpression(job.if, eventName, inputs))
+    .map(([name]) => name);
+}
+
 function stepsRunning(steps: WorkflowStep[], command: string): number[] {
   return steps.flatMap((step, index) => (step.run?.includes(command) ? [index] : []));
 }
@@ -282,55 +319,54 @@ test("manual focused campaigns preserve the full default and upload before gatin
   assert.equal(input.default, false);
   assert.equal(workflow.on.workflow_dispatch.inputs["directive-owners-only"], undefined);
   const groups: string[] = [];
-  for (const [job, suffix, rename, official] of [
-    ["exact-tsgo-project", "", false, false],
-    ["event-rename", "-event-rename", true, false],
-    ["official-css-options", "-official-css-options", false, true],
+  for (const [job, suffix, rename, official, router] of [
+    ["exact-tsgo-project", "", false, false, false],
+    ["event-rename", "-event-rename", true, false, false],
+    ["official-css-options", "-official-css-options", false, true, false],
+    ["router-experimental", "-router-experimental", false, false, true],
   ] as const) {
-    const context = {
-      github: {
-        event_name: "workflow_dispatch",
-        event: { pull_request: {} },
-        ref: "refs/heads/main",
-      },
-      inputs: {
-        "event-rename-only": rename,
-        "official-css-options-only": official,
-      },
+    const inputs = {
+      "event-rename-only": rename,
+      "official-css-options-only": official,
+      "router-experimental-only": router,
     };
-    const evaluate = (expression: string): unknown =>
-      runInNewContext(
-        expression
-          .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
-          .replace(/\binputs\.([a-z-]+)/gu, 'inputs["$1"]'),
-        context,
-      );
     const group: string = workflow.concurrency.group.replace(/\$\{\{(.*?)\}\}/gu, (_, expression) =>
-      String(evaluate(expression)),
+      String(evaluateWorkflowExpression(expression, "workflow_dispatch", inputs)),
     );
     assert.equal(group, `content-mapper-refs/heads/main${suffix}`);
     groups.push(group);
+    assert.deepEqual(selectedJobs(workflow.jobs, "workflow_dispatch", inputs), [job]);
+  }
+  assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
+  // Scheduled runs keep the default project and add the Router campaign.
+  assert.deepEqual(selectedJobs(workflow.jobs, "schedule", {}), [
+    "exact-tsgo-project",
+    "router-experimental",
+  ]);
+  assert.deepEqual(selectedJobs(workflow.jobs, "pull_request", {}), ["exact-tsgo-project"]);
+  // The Router input wins over any other focused input.
+  for (const other of [
+    "event-rename-only",
+    "official-css-options-only",
+    "published-defaults-only",
+  ] as const) {
     assert.deepEqual(
-      Object.entries(workflow.jobs)
-        .filter(([, candidate]) => evaluate(candidate.if))
-        .map(([name]) => name),
-      [job],
+      selectedJobs(workflow.jobs, "workflow_dispatch", {
+        "router-experimental-only": true,
+        [other]: true,
+      }),
+      ["router-experimental"],
+      other,
     );
   }
-  assert.equal(
-    new Set(groups).size,
-    3,
-    "all three campaigns must run without canceling each other",
-  );
-  assert.equal(
-    workflow.jobs["exact-tsgo-project"].if,
-    "${{ !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
+  assert.deepEqual(
+    selectedJobs(workflow.jobs, "workflow_dispatch", {
+      "event-rename-only": true,
+      "official-css-options-only": true,
+    }),
+    ["official-css-options"],
   );
   const focused = workflow.jobs["event-rename"];
-  assert.equal(
-    focused.if,
-    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
-  );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
   assert.ok(pinned);
@@ -368,10 +404,14 @@ test("official TypeScript acceptance keeps the reported host and complete instal
     jobs: Record<string, { if: string; steps: WorkflowStep[]; "timeout-minutes": number }>;
   };
   const job = workflow.jobs["official-css-options"];
-  assert.equal(
-    job.if,
-    "github.event_name == 'workflow_dispatch' && (inputs.official-css-options-only || inputs.published-defaults-only)",
-  );
+  for (const [eventName, inputs, selected] of [
+    ["workflow_dispatch", { "official-css-options-only": true }, true],
+    ["workflow_dispatch", { "published-defaults-only": true }, true],
+    ["workflow_dispatch", {}, false],
+    ["schedule", { "official-css-options-only": true }, false],
+  ] as const) {
+    assert.equal(Boolean(evaluateWorkflowExpression(job.if, eventName, inputs)), selected);
+  }
   assert.equal(job["timeout-minutes"], 15);
   const setup = job.steps.find((step) => step.name === "Setup pinned Node and Vite Plus")!;
   assert.equal(setup.uses, "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af");
@@ -542,4 +582,57 @@ test("official-host fixtures preserve every original reported input and referenc
       true,
     );
   }
+});
+
+test("experimental Router campaign preserves each independent outcome before its final gate", () => {
+  const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
+  const steps = jobSteps(workflow, "router-experimental") as Array<
+    WorkflowStep & { "continue-on-error"?: boolean }
+  >;
+  const context = steps.find((step) => step.id === "project-context")!;
+  assert.equal(context["continue-on-error"], true);
+  assert.match(
+    context.run!,
+    /cargo test --locked --profile ci -p vize --lib commands::content_mapper::typed_router_tests::/u,
+  );
+  assert.match(
+    context.run!,
+    /--test fix_history_diagnostics content_mapper_experimental_router_context_preserves_published_page_types/u,
+  );
+  const profile = steps.find((step) => step.id === "source-profile")!;
+  assert.equal(profile["continue-on-error"], true);
+  assert.match(
+    profile.run!,
+    /typed_router_context_admission_is_outside_repeated_projection_work -- --ignored --exact --nocapture/u,
+  );
+  assert.equal(
+    profile.env?.VIZE_TEST_ROUTER_PROFILE_OUTPUT,
+    "${{ runner.temp }}/router-experimental/source-profile.json",
+  );
+  const oracle = steps.find((step) => step.id === "mapper-oracle")!;
+  assert.equal(oracle["continue-on-error"], true);
+  assert.equal(oracle.env?.VIZE_TEST_ROUTER_EXPERIMENTAL_REQUIRED, "1");
+  const upload = steps.findIndex((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  const gate = steps.findIndex((step) => step.env?.MAPPER_ORACLE_OUTCOME !== undefined);
+  assert.ok(
+    upload > steps.indexOf(context) &&
+      upload > steps.indexOf(profile) &&
+      upload > steps.indexOf(oracle),
+  );
+  assert.equal(steps[upload].if, "always()");
+  assert.ok(gate > upload);
+  assert.equal(steps[gate].if, "always()");
+  assert.deepEqual(steps[gate].env, {
+    PROJECT_CONTEXT_OUTCOME: "${{ steps.project-context.outcome }}",
+    SOURCE_PROFILE_OUTCOME: "${{ steps.source-profile.outcome }}",
+    MAPPER_ORACLE_OUTCOME: "${{ steps.mapper-oracle.outcome }}",
+  });
+  assert.equal(
+    steps[gate].run?.trim(),
+    [
+      'test "$PROJECT_CONTEXT_OUTCOME" = success',
+      'test "$SOURCE_PROFILE_OUTCOME" = success',
+      'test "$MAPPER_ORACLE_OUTCOME" = success',
+    ].join("\n"),
+  );
 });

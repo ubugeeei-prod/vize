@@ -19,6 +19,7 @@ fn packet(path: &str, source: &str, collect: bool) -> Value {
             Path::new(path),
             source,
             ContentMapperTransformOptions::default(),
+            None,
             collect.then(Default::default),
         )
         .expect("complete transform"),
@@ -106,6 +107,57 @@ fn each_slot_inference_copy_has_an_expression_owner_without_changing_navigation(
     }
 }
 
+fn rows(value: &Value) -> Vec<[usize; 6]> {
+    serde_json::from_value(value.clone()).expect("protocol tuples")
+}
+
+/// Authored offsets of each `needle` copy that the host would report.
+fn visible_copies(source: &str, needle: &str) -> Vec<usize> {
+    let packet = packet("src/P3.vue", source, true);
+    let text = packet["text"].as_str().expect("virtual text");
+    let spans = rows(&packet["mappings"]);
+    let directives = rows(&packet["diagnosticDirectives"]["directives"]);
+    text.match_indices(needle)
+        .map(|(generated, _)| generated)
+        .filter(|generated| {
+            !directives.iter().any(|[_, _, start, end, policy, _]| {
+                *policy == 0 && (*start..*end).contains(generated)
+            })
+        })
+        .map(|generated| {
+            spans
+                .iter()
+                .filter(|[start, length, ..]| (*start..start + length).contains(&generated))
+                .min_by_key(|[_, length, ..]| *length)
+                .map_or(usize::MAX, |[start, _, original, ..]| {
+                    original + generated - start
+                })
+        })
+        .collect()
+}
+
+#[test]
+fn slot_host_copies_of_function_valued_props_stay_unreported() {
+    // #10774: slot hosts repeat every prop without mappings. A callback has no
+    // proved primary, so its copies reached the host at generated offsets.
+    for value in [
+        "{ request: () => String(items[0].length) }",
+        "{\n        request: () => {\n          const first = items[0].length;\n          return String(first);\n        },\n      }",
+    ] {
+        for slots in [
+            "",
+            "<template #form><span>x</span></template>",
+            "<template #form><span>x</span></template><template #footer=\"{ total }\">{{ total }}</template>",
+        ] {
+            let source = format!(
+                "<script setup lang=\"ts\">\nimport Child2 from \"./Child2.vue\";\nconst items: string[] = [];\n</script>\n\n<template>\n  <Child2\n      label=\"x\"\n      :ctx=\"{value}\"\n    >{slots}</Child2>\n</template>\n"
+            );
+            let authored = source.find("items[0]").expect("authored access");
+            assert_eq!(visible_copies(&source, "items[0]"), [authored], "{slots}");
+        }
+    }
+}
+
 #[test]
 fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
     for newline in ["\n", "\r\n"] {
@@ -116,8 +168,45 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                     &format!(":schema=\"schema\"{callback}"),
                 )
                 .replace('\n', newline);
-            let before = packet("Form.art.vue", &source, false);
+            let mut before = packet("Form.art.vue", &source, false);
             let after = packet("Form.art.vue", &source, true);
+            if !callback.is_empty() {
+                // The old text-based policy hid these three canonical callbacks.
+                // Restore precisely those diagnostic owners before comparing the
+                // remaining complete packet and independently enumerated echoes.
+                for index in 0..3 {
+                    let statement = format!(
+                        "  const __vize_prop_check_{index}_validate_form_field_on: __VizeResolvedProp<typeof __vize_resolved_GenericForm_props_{index}, typeof __vize_selected_GenericForm_props_{index}, 'validateFormFieldOn', __GenericForm_{index}_prop_validate_form_field_on> = (field) => !!field;\n"
+                    );
+                    let start = before["text"].as_str().unwrap().find(&statement).unwrap();
+                    let end = start + statement.len();
+                    let rows = before["diagnosticDirectives"]["directives"]
+                        .as_array_mut()
+                        .unwrap();
+                    let position = rows
+                        .iter()
+                        .position(|row| row[2] == start && row[3] == end)
+                        .expect("one prior canonical callback ignore");
+                    let removed: [usize; 6] =
+                        serde_json::from_value(rows.remove(position)).unwrap();
+                    assert_eq!(removed[4..], [0, 0]);
+                    assert_eq!(
+                        source.get(removed[0]..removed[0] + removed[1]),
+                        Some(callback.trim_start())
+                    );
+                    assert!(
+                        after["diagnosticDirectives"]["directives"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .all(|row| {
+                                row[3].as_u64().unwrap() as usize <= start
+                                    || row[2].as_u64().unwrap() as usize >= end
+                            }),
+                        "canonical callback diagnostics remain visible"
+                    );
+                }
+            }
             let echoes = added_echoes(&before, &after);
             assert!(!echoes.is_empty());
             let fields = [
@@ -141,23 +230,28 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                 ],
             ];
             let mut expected = fields.iter().flatten().copied().collect::<Vec<_>>();
-            expected.extend([
-                "{ role: 'ok', tags: [] }",
-                "schema",
-                "{ role: null, tags: [] }",
-                "schema",
-                "{ role: 'ok', tags: [] }",
-                "schema",
-            ]);
-            // One mapped emit-argument inference literal per usage also reads
-            // these ordinary sibling props before the canonical prop check.
-            expected.extend(fields.iter().flatten().copied());
-            if !callback.is_empty() {
-                for field in fields {
+            if callback.is_empty() {
+                expected.extend([
+                    "{ role: 'ok', tags: [] }",
+                    "schema",
+                    "{ role: null, tags: [] }",
+                    "schema",
+                    "{ role: 'ok', tags: [] }",
+                    "schema",
+                ]);
+            } else {
+                // A callback's canonical packet now precedes the ordinary
+                // source expressions at that exact root usage. Keep both
+                // resolver roles and both bare values for every variant.
+                for field @ [_, value, _, schema] in fields {
                     expected.extend(field);
                     expected.extend(field);
+                    expected.extend([value, schema]);
                 }
             }
+            // The event-handler emit-argument inference phase follows the
+            // authored root stream, still retaining every sibling binding.
+            expected.extend(fields.iter().flatten().copied());
             let actual = echoes
                 .into_iter()
                 .map(|[original, length, _, _, _, _]| {
@@ -192,11 +286,20 @@ fn contextual_object_methods_keep_every_preexisting_diagnostic_surface() {
         let source = format!(
             "<script setup lang=\"ts\">import Child from './Child.vue'</script><template><Child :value=\"{value}\"><template #header>child</template></Child></template>"
         );
-        assert_eq!(
-            packet("Method.vue", &source, true),
-            packet("Method.vue", &source, false),
-            "no new IGNORE may hide contextual method/getter diagnostics"
-        );
+        let before = packet("Method.vue", &source, false);
+        let after = packet("Method.vue", &source, true);
+        let mappings = rows(&after["mappings"]);
+        let echoes = added_echoes(&before, &after);
+        // Only the unmapped slot-host copies become inert (#10774).
+        assert!(!echoes.is_empty());
+        for [_, _, start, end, _, _] in echoes {
+            assert!(
+                mappings
+                    .iter()
+                    .all(|[generated, length, ..]| generated + length <= start || end <= *generated),
+                "no new IGNORE may hide contextual method/getter diagnostics"
+            );
+        }
     }
 }
 
@@ -308,4 +411,59 @@ fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
             );
         }
     }
+}
+
+#[test]
+fn merged_class_and_style_values_keep_one_visible_copy() {
+    // #10788: a static and a bound class/style merge into one props-call entry
+    // that repeats each value its own prop assignment already checks.
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue';
+const { href = "", active = false } = defineProps<{ href?: string; active?: boolean }>();
+function onClick(): void {}
+</script>
+
+<template>
+  <component :is="href ? 'a' : 'button'" class="btn" :class="[{ 'btn--active': active.nope }]" @click.stop="onClick">x</component>
+  <component :is="href ? 'a' : 'button'" class="btn" :class="[{ 'btn--active': active.nope }]">no listener</component>
+  <button class="btn" :class="[{ 'btn--active': active.nope }]" @click.stop="onClick">plain element</button>
+  <Child style="color: red" :style="{ color: active.nope }" />
+</template>
+"#;
+    let packet = packet("src/App.vue", source, true);
+    let rows = |key: &str| -> Vec<[usize; 6]> {
+        serde_json::from_value(
+            key.split('.')
+                .fold(packet.clone(), |value, key| value[key].clone()),
+        )
+        .expect("protocol tuples")
+    };
+    let (spans, directives) = (rows("mappings"), rows("diagnosticDirectives.directives"));
+    let text = packet["text"].as_str().expect("virtual text");
+    let mut visible = text
+        .match_indices("active.nope")
+        .filter(|(generated, _)| {
+            !directives.iter().any(|[_, _, start, end, policy, _]| {
+                *policy == 0 && (*start..*end).contains(generated)
+            })
+        })
+        .filter_map(|(generated, _)| {
+            spans
+                .iter()
+                .filter(|[start, length, _, original_length, _, _]| {
+                    (*start..start + length).contains(&generated) && length == original_length
+                })
+                .min_by_key(|[_, length, _, _, _, _]| *length)
+                .map(|[start, _, original, _, _, _]| original + generated - start)
+        })
+        .collect::<Vec<_>>();
+    visible.sort_unstable();
+    let authored = source
+        .match_indices("active.nope")
+        .map(|(at, _)| at)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        visible, authored,
+        "one diagnostic-visible copy per authored value"
+    );
 }

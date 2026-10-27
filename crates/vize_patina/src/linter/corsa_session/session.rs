@@ -227,6 +227,10 @@ impl CorsaTypeAwareSession {
             .and_then(|filename| self.opened_documents.get(filename))
     }
 
+    pub(in crate::linter) fn is_closed(&self) -> bool {
+        self.closed
+    }
+
     pub(in crate::linter) fn close(&mut self) {
         if self.closed {
             return;

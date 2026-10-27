@@ -35,7 +35,9 @@ impl VirtualProject {
     /// Unchanged files then reuse their recorded diagnostics on the next run
     /// instead of being checked again. Package topology participates in the
     /// identity because Corsa's build info does not otherwise observe a
-    /// symlink retarget whose resolved source bytes are unchanged.
+    /// symlink retarget whose resolved source bytes are unchanged. Generated
+    /// typed-router helper imports participate too: Corsa's build info keeps
+    /// unchanged files' diagnostics when a newly imported module adds globals.
     pub(crate) fn cli_build_info_path(&self, config_path: &Path) -> PathBuf {
         let relative = config_path
             .strip_prefix(&self.virtual_root)
@@ -48,7 +50,8 @@ impl VirtualProject {
             .join("__")
             .into();
         let links = self.desired_package_links();
-        if !links.is_empty() || !self.package_shadow_manifests.is_empty() {
+        let typed_router = self.has_typed_router_imports();
+        if !links.is_empty() || !self.package_shadow_manifests.is_empty() || typed_router {
             let mut links = links.into_iter().collect::<Vec<_>>();
             links.sort();
             let mut manifests = self.package_shadow_manifests.iter().collect::<Vec<_>>();
@@ -64,6 +67,9 @@ impl VirtualProject {
                 digest.update(b"manifest\0");
                 update_path_digest(&mut digest, path);
                 update_path_digest(&mut digest, source);
+            }
+            if typed_router {
+                digest.update(b"typed-router-helper\0");
             }
             let fingerprint = super::super::identity::encode_digest(digest.finalize());
             if let Some(stem) = name.strip_suffix(".tsbuildinfo") {

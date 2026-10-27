@@ -7,6 +7,8 @@
 )]
 
 use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
+mod art_script;
+pub(crate) use art_script::open_art_script_query;
 #[cfg(test)]
 mod art_variant_fallback_tests;
 mod canonical;
@@ -37,10 +39,11 @@ mod workspace_edit;
 #[cfg(test)]
 pub(crate) use canonical::canonical_request_path;
 pub(crate) use canonical::{
-    CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalVirtualDocument,
-    ComponentPropNavigationIdentities, ComponentPropSourceCache, canonical_component_prop_position,
-    canonical_source_offset_to_position, component_attribute_position,
-    component_prop_location_matches, component_prop_navigation_identity_matches,
+    CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalUriIndex,
+    CanonicalVirtualDocument, ComponentPropNavigationIdentities, ComponentPropSourceCache,
+    canonical_component_prop_position, canonical_source_offset_to_position,
+    component_attribute_position, component_prop_location_matches,
+    component_prop_navigation_identity_matches, indexed_linked_semantic_positions,
     is_component_attribute_query, linked_semantic_positions, local_binding_reference_position,
     map_canonical_corsa_location, map_canonical_corsa_locations,
     map_canonical_corsa_workspace_edit, map_canonical_exact_edit_range, map_canonical_lsp_range,
@@ -188,7 +191,9 @@ fn accessible_external_uri(ctx: &IdeContext<'_>, raw_uri: &str) -> Option<Url> {
         return Some(uri);
     }
 
-    uri.to_file_path().ok()?.is_file().then_some(uri)
+    // A private session mirror also exists on disk, but only for the checker.
+    let path = uri.to_file_path().ok()?;
+    (path.is_file() && !vize_canon::is_editor_mirror_path(&path)).then_some(uri)
 }
 
 /// Translate a Corsa prepare-rename payload into SFC coordinates.

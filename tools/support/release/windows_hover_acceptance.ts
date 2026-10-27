@@ -158,7 +158,7 @@ async function main() {
     "fresh consumer must be outside checkout",
   );
   const fixtures: unknown = createRequire(import.meta.url)(
-    "../compat/npm/smoke-release-init-shapes.mjs",
+    "../compat/npm/smoke-release-init-shapes.ts",
   );
   const shape = object(object(object(fixtures).PROJECT_SHAPES)["vite-vue-ts"]);
   assert.ok(typeof shape.files === "function");

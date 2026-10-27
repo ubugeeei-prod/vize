@@ -294,3 +294,43 @@ function format(value: string, precision: number): string {
     assert_eq!(generated.len(), 2);
     assert!(covers(&generated[1].1, &secondary));
 }
+
+#[test]
+fn an_ordinary_template_is_refused_instead_of_published_clean() {
+    use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Position, Range};
+
+    let content = "<script setup lang=\"ts\">\nconst page = 1\n</script>\n<template><p>{{ page }}</p></template>\n";
+    let descriptor = vize_incremental::descriptor::parse_descriptor(art_uri().path(), content)
+        .expect("art sfc parses");
+    assert!(
+        DiagnosticService::generate_virtual_ts_for_art_with_dependencies(
+            content,
+            &descriptor,
+            &VirtualTsOptions::default(),
+        )
+        .is_none()
+    );
+    let diagnostic = super::virtual_ts_art::invalid_art_diagnostic(content, &descriptor)
+        .expect("explicit refusal");
+    assert_eq!(
+        diagnostic.range,
+        Range::new(Position::new(3, 0), Position::new(3, 10))
+    );
+    assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::ERROR));
+    assert_eq!(
+        diagnostic.code,
+        Some(NumberOrString::String("invalid-art".into()))
+    );
+    assert_eq!(diagnostic.source.as_deref(), Some("vize/types"));
+    assert_eq!(
+        diagnostic.message,
+        "Art files need an `<art>` block with `<variant>` templates; this `<template>` is not type checked."
+    );
+
+    let descriptor = vize_incremental::descriptor::parse_descriptor(art_uri().path(), TWO_VARIANTS)
+        .expect("art sfc parses");
+    assert_eq!(
+        super::virtual_ts_art::invalid_art_diagnostic(TWO_VARIANTS, &descriptor),
+        None
+    );
+}

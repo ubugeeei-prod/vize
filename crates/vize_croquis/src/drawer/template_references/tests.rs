@@ -20,7 +20,7 @@ fn component_tokens(source: &str) -> (Vec<(String, u32, u32)>, Vec<TemplateRefer
         })
         .map(|reference| {
             (
-                reference.name.to_string(),
+                String::from(reference.name.as_str()),
                 reference.span.start,
                 reference.span.end,
             )

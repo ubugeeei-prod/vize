@@ -63,3 +63,11 @@ See the official [TypeScript language service plugin guide](https://github.com/m
 and [ContentMapper protocol description](https://github.com/microsoft/typescript-go/pull/4712)
 for the host contracts. The real tsserver packet test packs this package, installs
 it into a separate consumer and retains requests, responses, diagnostics and edits.
+
+The platform VSIX carries its own exact-release Vize native projection provider.
+Its default is bound to the installed extension's package, producer token and
+file hashes; workspace `nativePath` values and global native loader variables
+do not replace that implementation dependency. This does not change the LSP's
+existing `vize.serverPath` selection. The small universal VSIX is a separate
+metadata-only artifact; full native-service acceptance uses a matching platform
+VSIX. Standalone npm/tsserver consumers retain the explicit override above.

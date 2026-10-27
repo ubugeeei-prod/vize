@@ -1,0 +1,47 @@
+{
+  "schema": "vize.router-preview-project",
+  "version": 1,
+  "files": [
+    {
+      "path": "generate.mjs",
+      "bytes": 548,
+      "sha256": "49687bd525be764e8059008fb94c27ef59f1d9da23792d97e452f2a18fa5df74"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 55813,
+      "sha256": "5e08bb084d956d04d2936ecbdf98a6252b35df17ead59928e599bd9889122896"
+    },
+    {
+      "path": "package.json",
+      "bytes": 287,
+      "sha256": "66b26f547482fe15cf766eff9444c36d3e934071c30683c2b5dbb233f6f1f0b0"
+    },
+    {
+      "path": "src/pages/index.vue",
+      "bytes": 37,
+      "sha256": "07033b03a0b3d3c35c16fef923fc846fd858408dff515765280fd79bd536f16c"
+    },
+    {
+      "path": "src/pages/products/[id=int].vue",
+      "bytes": 892,
+      "sha256": "9a4bbfa86d9b9da8d32f12a5a02da448688cd52b15a8ab8636ea7b3f1022bf80"
+    },
+    {
+      "path": "src/params/date.ts",
+      "bytes": 256,
+      "sha256": "cd1c4ef8f84c3dfff8e957635138256f8c1a47fa7f0b29a82f9a8ed727fb14ea"
+    },
+    {
+      "path": "src/router/index.ts",
+      "bytes": 346,
+      "sha256": "128fbad96a5a8014b5efc2ac13378551e3276eb5d7393d9b6b2b33865ba3eae9"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 316,
+      "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+    }
+  ],
+  "strictOracles": "frozen-independent-controls"
+}

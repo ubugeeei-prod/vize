@@ -107,13 +107,15 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
         "src/GreetingCard.vue",
     ]);
     let cli_rules = json_rule_ids(&cli);
-    let expected = BTreeSet::from([
+    // Vapor-only rules stay off for this vdom component (#10784).
+    let probe = BTreeSet::from([
         "script/no-next-tick".to_owned(),
         "vue/no-bare-strings-in-template".to_owned(),
     ]);
+    let expected = BTreeSet::from(["vue/no-bare-strings-in-template".to_owned()]);
     assert_eq!(
         cli_rules
-            .intersection(&expected)
+            .intersection(&probe)
             .cloned()
             .collect::<BTreeSet<_>>(),
         expected,
@@ -137,11 +139,44 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
     let configured_rules = json_rule_ids(&configured);
     assert_eq!(
         configured_rules
-            .intersection(&expected)
+            .intersection(&probe)
             .cloned()
             .collect::<BTreeSet<_>>(),
         expected,
         "{}",
         output_details(&configured)
     );
+}
+
+#[test]
+fn registered_inputs_keep_next_tick_to_vapor_components() {
+    let inputs = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/linter/next-tick-vapor-gating-10784");
+    let project = tempfile::tempdir().unwrap();
+    fs::copy(
+        inputs.join("vite.config.mjs"),
+        project.path().join("vite.config.mjs"),
+    )
+    .unwrap();
+    for (name, expected) in [("VdomBump.vue", 0), ("VaporBump.vue", 2)] {
+        fs::copy(
+            inputs.join(format!("{name}.txt")),
+            project.path().join(name),
+        )
+        .unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(project.path())
+            .args(["lint", "--format", "json", name])
+            .output()
+            .unwrap();
+        let parsed: serde_json::Value = serde_json::from_slice(&output.stdout)
+            .unwrap_or_else(|_| panic!("lint must emit JSON: {}", output_details(&output)));
+        let next_tick = parsed[0]["messages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|message| message["ruleId"] == "script/no-next-tick")
+            .count();
+        assert_eq!(next_tick, expected, "{name}: {}", output_details(&output));
+    }
 }

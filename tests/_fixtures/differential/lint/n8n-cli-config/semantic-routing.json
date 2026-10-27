@@ -61,8 +61,7 @@
               "line": 4,
               "column": 12,
               "endLine": 4,
-              "endColumn": 21,
-              "help": "Import the component in <script setup> or register it in components option"
+              "endColumn": 21
             }
           ],
           "errorCount": 1,
@@ -98,8 +97,7 @@
               "line": 1,
               "column": 12,
               "endLine": 1,
-              "endColumn": 21,
-              "help": "Import the component in <script setup> or register it in components option"
+              "endColumn": 21
             }
           ],
           "errorCount": 1,
@@ -174,8 +172,7 @@
               "line": 1,
               "column": 55,
               "endLine": 1,
-              "endColumn": 64,
-              "help": "Import the component in <script setup> or register it in components option"
+              "endColumn": 64
             }
           ],
           "errorCount": 2,
@@ -227,8 +224,7 @@
               "line": 1,
               "column": 12,
               "endLine": 1,
-              "endColumn": 21,
-              "help": "Import the component in <script setup> or register it in components option"
+              "endColumn": 21
             }
           ],
           "errorCount": 2,
@@ -282,8 +278,7 @@
               "line": 1,
               "column": 55,
               "endLine": 1,
-              "endColumn": 64,
-              "help": "Import the component in <script setup> or register it in components option"
+              "endColumn": 64
             }
           ],
           "errorCount": 2,
@@ -337,8 +332,7 @@
               "line": 1,
               "column": 12,
               "endLine": 1,
-              "endColumn": 21,
-              "help": "Import the component in <script setup> or register it in components option"
+              "endColumn": 21
             }
           ],
           "errorCount": 2,
@@ -658,8 +652,7 @@
               "line": 2,
               "column": 77,
               "endLine": 2,
-              "endColumn": 82,
-              "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
+              "endColumn": 82
             }
           ],
           "errorCount": 1,
@@ -697,8 +690,7 @@
               "line": 2,
               "column": 67,
               "endLine": 2,
-              "endColumn": 72,
-              "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
+              "endColumn": 72
             }
           ],
           "errorCount": 1,

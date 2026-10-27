@@ -62,6 +62,11 @@ export interface AppConfig {
     tsconfig?: string;
     /** Workspace roots linked into node_modules like a hoisted install. */
     workspacePackages?: string[];
+    /**
+     * Pass `--no-config`: the authored Vite config imports packages that these
+     * uninstalled checks never install. Lint loads it on an installed copy.
+     */
+    noConfig?: boolean;
   };
   lint?: {
     cwd: string;
@@ -1145,6 +1150,7 @@ export const npmxApp: AppConfig = {
   check: {
     cwd: path.join(GIT_DIR, "npmx.dev"),
     patterns: ["app/**/*.vue"],
+    noConfig: true,
   },
   lint: {
     cwd: path.join(GIT_DIR, "npmx.dev"),
@@ -1941,6 +1947,7 @@ export const voicevoxApp: AppConfig = {
     cwd: VOICEVOX_DIR,
     patterns: ["src/**/*.vue"],
     tsconfig: "tsconfig.json",
+    noConfig: true,
   },
   lint: {
     cwd: VOICEVOX_DIR,

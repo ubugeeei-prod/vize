@@ -267,3 +267,21 @@ pub struct CrossFileStats {
     /// Analysis time in milliseconds.
     pub analysis_time_ms: f64,
 }
+
+/// Nuxt directories from `nuxt.config` (`srcDir`, `dir.pages`, `dir.layouts`).
+///
+/// Relative paths resolve against the project root like registered files.
+/// `app.vue` lives directly in `src`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NuxtRenderDirs {
+    /// Source directory that holds `app.vue`.
+    pub src: std::path::PathBuf,
+    /// Page directory rendered through `<NuxtPage>`.
+    pub pages: std::path::PathBuf,
+    /// Layout directory; `default.vue` wraps every page.
+    pub layouts: std::path::PathBuf,
+    /// Whether `pages` files are routes (`pages: false` turns routing off). With
+    /// routes and no `app.vue` in `src`, Nuxt's built-in app renders
+    /// `<NuxtLayout><NuxtPage /></NuxtLayout>`.
+    pub pages_enabled: bool,
+}

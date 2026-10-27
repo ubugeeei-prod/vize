@@ -48,6 +48,9 @@ use crate::span::SpanMapper;
 /// site instead of widening three signatures each time.
 #[derive(Clone, Copy, Default)]
 pub(crate) struct BabelLoweringOptions<'m> {
+    /// Pure style evaluation is a native CSR target decision, independent of
+    /// compatibility semantics. Generic/tooling lowering leaves it disabled.
+    pub literal_styles: LiteralStyleTarget,
     /// Whether the current compilation can emit Babel-compatible VDOM output.
     /// SSR has its own backend and must not inherit VDOM-only lowering rules.
     pub vdom_compat: bool,
@@ -62,6 +65,14 @@ pub(crate) struct BabelLoweringOptions<'m> {
     /// as it withholds the `transformOn` / `enableObjectSlots` /
     /// `isCustomElement` inputs there.
     pub vdom_lane: bool,
+}
+
+#[derive(Clone, Copy, Default)]
+pub(crate) enum LiteralStyleTarget {
+    #[default]
+    Disabled,
+    SelectedVapor,
+    AllVapor,
 }
 
 /// Arena box, for call sites that cannot hold a `&self` borrow across the
@@ -88,6 +99,8 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     object_slots_helper: Option<String>,
     babel_vdom_compat_allowed: bool,
     babel_vdom_compat_active: bool,
+    literal_style_target: LiteralStyleTarget,
+    literal_styles_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
     /// `<style scoped>` blocks extracted from the render root currently being
     /// lowered, in source order. Drained by [`Self::take_scoped_styles`] once
@@ -132,6 +145,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             object_slots_helper: babel.object_slots_helper.map(String::from),
             babel_vdom_compat_allowed: babel.vdom_compat,
             babel_vdom_compat_active: false,
+            literal_style_target: babel.literal_styles,
+            literal_styles_active: false,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
         }
@@ -266,6 +281,11 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     pub(crate) fn set_current_output_mode(&mut self, mode: crate::JsxOutputMode) {
         self.current_output_mode = mode;
         self.babel_vdom_compat_active = self.babel_vdom_lane && mode == crate::JsxOutputMode::Vdom;
+        self.literal_styles_active = match self.literal_style_target {
+            LiteralStyleTarget::Disabled => false,
+            LiteralStyleTarget::SelectedVapor => mode == crate::JsxOutputMode::Vapor,
+            LiteralStyleTarget::AllVapor => true,
+        };
     }
 
     /// Whether Babel's `isCustomElement` predicate selects this JSX tag.

@@ -50,6 +50,12 @@ export function custodyFixture(publisherId = 38013719817) {
     assert(values.has(path), "Only exact primary identity endpoints: " + path);
     return values.get(path) as T;
   };
+  api.response = async (path: string) => {
+    assert.match(path, /^\/actions\/artifacts\/\d+$/);
+    return values.has(path)
+      ? Response.json(await api.json(path))
+      : new Response(null, { status: 404 });
+  };
   api.jobLog = async (id: number) => {
     assert.equal(id, job.id);
     return "vize-docs-receipt:" + deployment.id + ":" + sha256(stableJson(receipt));

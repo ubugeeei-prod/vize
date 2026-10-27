@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 
-import { satisfiesVersionRange } from "../../tools/support/compat/npm/smoke-release-semver.mjs";
+import { satisfiesVersionRange } from "../../tools/support/compat/npm/smoke-release-semver.ts";
 
 const manifest = JSON.parse(
   fs.readFileSync(new URL("../../npm/cli/package.json", import.meta.url), "utf8"),

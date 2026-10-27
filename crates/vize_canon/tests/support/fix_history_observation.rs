@@ -9,7 +9,7 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use vize_canon::BatchTypeCheckResult;
 
-use super::super::{Diagnostic, Input};
+use super::fix_history_contract::{Diagnostic, Input};
 
 #[derive(Serialize)]
 struct ObservedInput {

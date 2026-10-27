@@ -70,6 +70,17 @@
         "severity": 1
       },
       {
+        "column": 11,
+        "endColumn": 51,
+        "endLine": 41,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name.",
+        "line": 41,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'open-change'",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1
+      },
+      {
         "column": 13,
         "endColumn": 15,
         "endLine": 65,
@@ -147,12 +158,24 @@
         "severity": 1
       }
     ],
-    "warningCount": 13
+    "warningCount": 14
   },
   {
     "errorCount": 0,
     "file": "site/src/theme/template/IconDisplay/CopyableIcon.vue",
-    "messages": [],
-    "warningCount": 0
+    "messages": [
+      {
+        "column": 18,
+        "endColumn": 26,
+        "endLine": 47,
+        "help": "Add this event to the defineEmits declaration (or the Options API emits option) so the component's event surface is explicit.",
+        "line": 47,
+        "message": "[vize:script/require-explicit-emits] The emitted event 'copied' is not declared in defineEmits or the emits option.",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleId": "script/require-explicit-emits",
+        "severity": 1
+      }
+    ],
+    "warningCount": 1
   }
 ]

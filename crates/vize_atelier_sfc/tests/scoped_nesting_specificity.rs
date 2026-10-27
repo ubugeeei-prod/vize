@@ -13,7 +13,7 @@ fn selector_list_nesting_keeps_full_scoped_modules_and_cascade() {
         serde_json::from_str(include_str!("fixtures/scoped_nesting_specificity.json"))
             .expect("pinned full source and reference CSS");
     let cases = pack["cases"].as_array().expect("all cases");
-    assert_eq!(cases.len(), 26);
+    assert_eq!(cases.len(), 31);
     let mut captures = Vec::new();
     for case in cases {
         let source = case["source"].as_str().expect("whole SFC");

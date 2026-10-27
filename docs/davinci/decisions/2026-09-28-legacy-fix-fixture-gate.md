@@ -29,6 +29,26 @@ adapters exist, with this scope:
 The planner reads the PR title and creation time from the pull request event
 and runs `tools/support/compat/github/report-legacy-fix-fixtures.ts`.
 
+## Registering a case without conflicts (2026-10-26)
+
+Parallel fix PRs used to conflict on every registration: each appended to the
+end of the manifest and edited the same exact counts and manifest hash. Now:
+
+- `cases` in every product manifest stay sorted by `id`. Insert a new case at
+  its sorted position. Typechecker cases sort by `pack` and keep their pack's
+  own order inside it; `TYPECHECKER_TESTS` and `sourceRevisions` in
+  `tests/differential/typechecker-registry.ts` are sorted by pack too.
+  `differential-dialect-coverage.test.ts` rejects unsorted manifests.
+- Tests keep baseline floors instead of exact case counts, and the linter pins
+  its cohort packs instead of the whole manifest. A new case needs no edit to
+  `differential-dialect-coverage.test.ts`, the product tests or any hash.
+  Verified dialect claims stay exact.
+- In return, this gate fails a fix that drops an already planned case or
+  lowers its dialect coverage. Retire or reclassify cases in a separate PR.
+
+Two registrations then touch different lines, so they merge cleanly unless
+their ids are neighbours.
+
 ## Not covered yet
 
 - Non-`fix(...)` behavior changes and JS product sources (CLI, Vite/unplugin,
