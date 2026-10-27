@@ -32,12 +32,22 @@ impl Fixture {
     }
 
     fn project(&self, source: &str, dir: &Path, generated: bool) -> std::string::String {
+        self.project_with_mirrorable(source, dir, generated, None)
+    }
+
+    fn project_with_mirrorable(
+        &self,
+        source: &str,
+        dir: &Path,
+        generated: bool,
+        mirrorable: Option<&vize_carton::FxHashSet<PathBuf>>,
+    ) -> std::string::String {
         let rewriter = ImportRewriter::new();
         let roots = (self.root.as_path(), self.mirror.as_path());
         let options = super::VirtualProjectRewriteOptions {
             has_external_sources: true,
             preserve_relative_declarations: false,
-            mirrorable_project_files: None,
+            mirrorable_project_files: mirrorable,
             alias_rewrite_policy: None,
             module_resolver: None,
         };
@@ -212,4 +222,57 @@ fn relative_file_symlinks_follow_the_registered_physical_identity() {
             format!("export {{ value }} from '{model}.js';")
         );
     }
+}
+
+#[test]
+fn cross_root_json_and_runtime_passthroughs_do_not_need_source_registration() {
+    let fixture = Fixture::new();
+    let app_dir = fixture.root.join("src");
+    let sibling_dir = fixture.sibling.join("src");
+    let registered = vize_carton::FxHashSet::default();
+    for name in ["data.json", "runtime.js", "runtime.mjs", "runtime.cjs"] {
+        std::fs::write(sibling_dir.join(name), "{}").unwrap();
+        let source = format!("import data from '../../ui/src/{name}';");
+        let projected = fixture.expected_specifier(&app_dir, &sibling_dir.join(name));
+        let expected = format!("import data from '{projected}';");
+        for generated in [false, true] {
+            assert_eq!(
+                fixture.project_with_mirrorable(&source, &app_dir, generated, Some(&registered)),
+                expected
+            );
+        }
+    }
+    std::fs::write(sibling_dir.join("unregistered.ts"), "export {}").unwrap();
+    let source = "import '../../ui/src/unregistered.ts';";
+    assert_eq!(
+        fixture.project_with_mirrorable(source, &app_dir, false, Some(&registered)),
+        source
+    );
+}
+
+#[test]
+fn allowjs_sfc_boundary_rewrites_retain_authored_dependency_edges() {
+    let fixture = Fixture::new();
+    std::fs::write(
+        fixture.root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"allowJs":true}}"#,
+    )
+    .unwrap();
+    let app = fixture.root.join("src/App.vue");
+    let shared = fixture.sibling.join("src/Shared.vue");
+    std::fs::write(&app, "<script setup lang='ts'>import Shared from '../../ui/src/Shared.vue';</script><template><Shared /></template>").unwrap();
+    std::fs::write(
+        &shared,
+        "<script setup lang='ts'>defineProps<{ value?: number }>();</script>",
+    )
+    .unwrap();
+    let mut project = crate::batch::virtual_project::VirtualProject::new(&fixture.root).unwrap();
+    project.register_path(&app).unwrap();
+    project.register_reachable_dependencies().unwrap();
+    assert_eq!(
+        project
+            .find_by_original(&shared)
+            .map(|file| &file.original_path),
+        Some(&shared)
+    );
 }
