@@ -159,7 +159,7 @@ fn check(source: &str, expected: &str, context: &str) -> Option<usize> {
 fn pug_corpus_matches_the_pinned_pug_and_compiles_like_it() {
     assert_eq!(
         (fixture_count("matrix"), fixture_count("refused")),
-        (29, 14)
+        (33, 14)
     );
     let rows = baseline();
     assert_eq!(rows.len(), 499, "the corpus baseline scope is pinned");

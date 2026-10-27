@@ -32,7 +32,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{hyphenate, is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_l0::{CompactString, is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, Namespace, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -133,20 +133,15 @@ impl Rule for VOnEventHyphenation {
             Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
             _ => return,
         };
-        // `@vue:beforeMount` is a vnode lifecycle hook, not a component event.
-        if event_name.starts_with("vue:") {
-            return;
-        }
-
-        // camelCase if it contains an uppercase ASCII letter. (Native modifiers
-        // are stripped into `directive.modifiers`, so the arg is the bare name.)
+        // Modifiers are stripped into `directive.modifiers`, so the arg is the
+        // bare name. `@vue:beforeMount` hooks are checked too, as upstream does.
         match self.style {
             VOnEventHyphenationStyle::Always => {
-                if !event_name.bytes().any(|b| b.is_ascii_uppercase()) {
+                if event_name.to_lowercase() == event_name {
                     return;
                 }
 
-                let hyphenated = hyphenate(event_name);
+                let hyphenated = kebab_case(event_name);
                 ctx.warn_with_help(
                     ctx.t_fmt(
                         "vue/v-on-event-hyphenation.message",
@@ -172,6 +167,22 @@ impl Rule for VOnEventHyphenation {
             }
         }
     }
+}
+
+/// eslint-plugin-vue's `kebabCase`: `_` becomes `-`, a capital that follows
+/// a word character gets a `-` before it, and the result is lowercased.
+fn kebab_case(name: &str) -> CompactString {
+    let mut kebab = CompactString::with_capacity(name.len() + 4);
+    let mut after_word = false;
+    for character in name.chars() {
+        let character = if character == '_' { '-' } else { character };
+        if character.is_ascii_uppercase() && after_word {
+            kebab.push('-');
+        }
+        after_word = character.is_ascii_alphanumeric();
+        kebab.extend(character.to_lowercase());
+    }
+    kebab
 }
 
 #[cfg(test)]
@@ -305,17 +316,36 @@ mod tests {
     }
 
     #[test]
-    fn test_vnode_lifecycle_hooks_are_skipped() {
+    fn test_vnode_lifecycle_hooks_are_checked_like_events() {
         let always = create_linter().lint_template(
             r#"<MyComponent @vue:beforeMount="a" @vue:before-unmount="b" />"#,
             "test.vue",
         );
-        assert_eq!(always.warning_count, 0);
+        assert_eq!(always.diagnostics.len(), 1);
+        assert_eq!(
+            always.diagnostics[0].message,
+            "Custom event listeners on components should be hyphenated: use 'vue:before-mount'"
+        );
         let never = create_never_linter().lint_template(
             r#"<MyComponent @vue:beforeMount="a" @vue:before-unmount="b" />"#,
             "test.vue",
         );
-        assert_eq!(never.warning_count, 0);
+        assert_eq!(never.warning_count, 1);
+    }
+
+    #[test]
+    fn suggestions_follow_eslint_plugin_vue_kebab_case() {
+        for (name, kebab) in [
+            ("Change", "change"),
+            ("fooBar", "foo-bar"),
+            ("update:modelValue", "update:model-value"),
+            ("update:ModelValue", "update:model-value"),
+            ("my_event", "my-event"),
+            ("XMLHttp", "x-m-l-http"),
+            ("item2Click", "item2-click"),
+        ] {
+            assert_eq!(super::kebab_case(name), kebab, "{name}");
+        }
     }
 
     #[test]

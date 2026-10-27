@@ -25,17 +25,17 @@ fn is_else<'n, 'a>(node: &'n PugNode<'a>) -> Option<&'n PugRefused<'a>> {
     }
 }
 
-impl Emitter<'_> {
+impl<'t> Emitter<'t> {
     /// Run a conditional chain or a loop headed by `head`; returns how
     /// many of the following siblings (`else if` / `else`) it consumed.
-    pub(super) fn control(&mut self, head: &PugRefused<'_>, rest: &[PugNode<'_>]) -> usize {
+    pub(super) fn control(&mut self, head: &'t PugRefused<'t>, rest: &'t [PugNode<'t>]) -> usize {
         match head.refusal {
             PugRefusal::Each => self.each(head, rest),
             _ => self.conditional(head, rest),
         }
     }
 
-    fn conditional(&mut self, first: &PugRefused<'_>, rest: &[PugNode<'_>]) -> usize {
+    fn conditional(&mut self, first: &'t PugRefused<'t>, rest: &'t [PugNode<'t>]) -> usize {
         let head_span = self.span(&first.head);
         let (test, negate) = match branch(first.head.text) {
             Ok(Branch::If { test, negate }) => (test, negate),
@@ -107,7 +107,7 @@ impl Emitter<'_> {
         consumed
     }
 
-    fn each(&mut self, head: &PugRefused<'_>, rest: &[PugNode<'_>]) -> usize {
+    fn each(&mut self, head: &'t PugRefused<'t>, rest: &'t [PugNode<'t>]) -> usize {
         let head_span = self.span(&head.head);
         let parsed = match each(head.head.text) {
             Ok(parsed) => parsed,
@@ -157,11 +157,11 @@ impl Emitter<'_> {
 
     fn each_in(
         &mut self,
-        head: &PugRefused<'_>,
+        head: &'t PugRefused<'t>,
         value: &str,
         key: Option<&str>,
         subject: &str,
-        alternate: Option<&PugRefused<'_>>,
+        alternate: Option<&'t PugRefused<'t>>,
     ) {
         if key == Some(value) {
             let span = self.span(&head.head);
@@ -198,7 +198,8 @@ impl Emitter<'_> {
                 .into_iter()
                 .map(|(key, item)| (Value::Str(key), item))
                 .collect(),
-            Value::Number(_) | Value::Bool(_) => StdVec::new(),
+            // A function's `length` (a call's `block` has none) is a number.
+            Value::Number(_) | Value::Bool(_) | Value::Function(_) => StdVec::new(),
             Value::Null | Value::Undefined => {
                 let span = self.text_span(subject);
                 let reason = cstr!("`{}` is {}", subject.trim(), object.to_js_string());
@@ -240,7 +241,7 @@ impl Emitter<'_> {
         self.scope.pop();
     }
 
-    fn each_of(&mut self, head: &PugRefused<'_>, names: &[&str], pair: bool, subject: &str) {
+    fn each_of(&mut self, head: &'t PugRefused<'t>, names: &[&str], pair: bool, subject: &str) {
         let Some(object) = self.subject(subject) else {
             return;
         };

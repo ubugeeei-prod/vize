@@ -8,6 +8,7 @@
 //! - `v-x` / `v-x:arg` -> [`DirectiveNode`] named `x`
 
 mod compat;
+mod static_style;
 mod value;
 
 use compat::split_on_event_modifiers;
@@ -44,9 +45,20 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         on_component: bool,
     ) -> Vec<'a, PropNode<'a>> {
         let mut props = self.vec();
+        let mut literal_style = (!on_component && self.literal_styles_active)
+            .then(|| self.literal_style_attribute(items))
+            .flatten();
         for item in items {
             let prop = match item {
                 JSXAttributeItem::Attribute(attr) => {
+                    if literal_style
+                        .as_ref()
+                        .is_some_and(|(span, _)| *span == attr.span)
+                        && let Some((_, property)) = literal_style.take()
+                    {
+                        props.push(property);
+                        continue;
+                    }
                     // `v-models` expands into one model binding per entry, so it
                     // yields several props (or none, plus a diagnostic) and
                     // cannot use the one-prop-per-attribute path below.

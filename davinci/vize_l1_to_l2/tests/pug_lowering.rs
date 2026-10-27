@@ -53,7 +53,7 @@ fn fixtures(dir: &str) -> Vec<(String, String, PathBuf)> {
 #[test]
 fn every_matrix_fixture_derives_the_pinned_pug_html() {
     let matrix = fixtures("matrix");
-    assert_eq!(matrix.len(), 29);
+    assert_eq!(matrix.len(), 33);
     for (name, source, path) in &matrix {
         let expected = std::fs::read_to_string(path.with_extension("html")).expect("html");
         let derived = derive_template_source(source);
@@ -185,4 +185,44 @@ fn vue_lowering_diagnostics_arrive_in_pug_coordinates() {
         [("v-else", "v-else/v-else-if has no adjacent v-if.")],
         "the Vue lowering's diagnostic lands on the authored pug attribute"
     );
+}
+
+#[test]
+fn mixin_errors_land_on_the_construct_pug_rejects() {
+    let cases = [
+        (
+            "+missing\n",
+            "0..8 Semantic \"+missing\" — pug mixin `missing` is not defined before this call\n",
+        ),
+        (
+            "block\n",
+            "0..0 Surface \"\" — Anonymous blocks are not allowed unless they are part of a \
+             mixin.\n",
+        ),
+        (
+            "mixin empty\np x\n",
+            "0..11 Semantic \"mixin empty\" — Mixin empty declared without body\n",
+        ),
+        (
+            "mixin m\n  +m\n+m\n",
+            "10..12 Semantic \"+m\" — pug mixin calls nest too deeply to expand at build time\n",
+        ),
+        (
+            "- var a = {x: 1}\ndiv&attributes(a)&attributes({y: 2})\n",
+            "20..34 Semantic \"&attributes(a)\" — pug `&attributes` cannot be evaluated at build \
+             time: pug_merge would modify the first object in place (use `v-bind` for component \
+             state)\n",
+        ),
+        (
+            "mixin m\n  p= block\n+m\n  i\n",
+            "13..18 Semantic \"block\" — pug code cannot be evaluated at build time: it holds a \
+             mixin `block` function, whose text is pug's generated code (use `{{ … }}` for \
+             component state)\n",
+        ),
+        // An uncalled mixin is only syntax-checked, as pug drops it.
+        ("mixin unused\n  p= notDefined.foo\np ok\n", ""),
+    ];
+    for (source, expected) in cases {
+        assert_eq!(render_diagnostics(source), expected, "{source}");
+    }
 }

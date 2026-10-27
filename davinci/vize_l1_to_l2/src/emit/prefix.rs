@@ -59,7 +59,7 @@ pub(super) fn handler_source_is_expression(source: &str) -> bool {
 }
 
 use vize_l0::{Span, String};
-use vize_l2::expr::JsExpr;
+use vize_l2::expr::{ExprRef, JsExpr};
 
 use super::js::RawJs;
 use super::js_comment::convert_line_comments_to_block;
@@ -247,12 +247,13 @@ pub(super) fn prefix_handler(
     for_caching: bool,
 ) -> Result<Prefixed, Refused> {
     let retained = content.retained(js);
-    let processed = handler::process_inline_handler(content.text.as_str(), retained, scope);
+    let (processed, is_reference) =
+        handler::process_classified_handler(content.text.as_str(), retained, scope);
     if processed.parse_error {
         return Err(Refused);
     }
     Ok(Prefixed {
-        text: handler::finish_event_handler(processed.code, scope, for_caching),
+        text: handler::finish_event_handler(processed.code, scope, for_caching, is_reference),
         used_unref: processed.used_unref,
         used_is_ref: processed.used_is_ref,
         has_identifier_references: processed.has_identifier_references,
@@ -277,6 +278,18 @@ pub(super) fn prefix_inline_handler(
         used_is_ref: processed.used_is_ref,
         has_identifier_references: processed.has_identifier_references,
     })
+}
+
+/// Whether the authored handler is a method reference (Vue's
+/// `isMemberExpression`), read off the node's content.
+pub(super) fn handler_is_reference(file: &str, expr: &ExprRef<'_>) -> bool {
+    let (source, js) = match expr {
+        ExprRef::Js(js) => (js.source, Some(*js)),
+        ExprRef::Opaque(opaque) => (opaque.source, None),
+        ExprRef::Foreign(_) | ExprRef::Filter(_) => return false,
+    };
+    let content = node_content(file, source, expr.span());
+    handler::is_reference(content.text.as_str(), content.retained(js))
 }
 
 /// Whether processed handler text is already a function or a callable

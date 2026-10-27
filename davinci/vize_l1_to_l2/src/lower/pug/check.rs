@@ -3,8 +3,8 @@
 
 use vize_l0::{String, cstr};
 use vize_l1::pug::{
-    PugAttrItem, PugBlock, PugHtmlItem, PugInline, PugNode, PugRefusal, PugTagPart, PugText,
-    PugTextPiece,
+    PugAttrItem, PugBlock, PugHtmlItem, PugInline, PugNode, PugRefusal, PugTag, PugTagPart,
+    PugText, PugTextPiece,
 };
 
 use super::control::interpolated;
@@ -31,31 +31,24 @@ impl Emitter<'_> {
 
     fn check_node(&mut self, node: &PugNode<'_>) {
         match node {
-            PugNode::Tag(tag) => {
-                for part in &tag.parts {
-                    let PugTagPart::Attrs(group) = part else {
-                        continue;
-                    };
-                    for item in &group.items {
-                        if let PugAttrItem::Attr(attr) = item
-                            && let Some(value) = &attr.value
-                        {
-                            self.check_expression(value.text);
-                        }
-                    }
+            PugNode::Tag(tag) => self.check_tag(tag),
+            PugNode::Call(call) => {
+                // pug's lexer checks `[args]` and an interpolated name.
+                if let Some(args) = call.arguments()
+                    && !eval::parses(&cstr!("[{args}]"))
+                {
+                    let span = self.text_span(args);
+                    let message = cstr!("pug mixin arguments `{}` are not valid JavaScript", args);
+                    self.error(span, message);
                 }
-                match &tag.inline {
-                    PugInline::Text(text) => self.check_text(text),
-                    PugInline::Code(code) if code.buffered() => {
-                        self.check_expression(code.code.text);
-                    }
-                    PugInline::Expansion { node, .. } => self.check_node(node),
-                    _ => {}
+                let name = call.head.text.get(1..).unwrap_or_default();
+                let name = name.trim_start_matches(super::literal::is_js_space);
+                if name.starts_with("#{")
+                    && let Some(source) = interpolated(name)
+                {
+                    self.check_expression(source);
                 }
-                match &tag.block {
-                    PugBlock::Nodes(nodes) => self.check(nodes),
-                    PugBlock::Text(text) => self.check_text(text),
-                }
+                self.check_tag(&call.tag);
             }
             PugNode::Text(text) => self.check_text(text),
             PugNode::TextBlock(block) => self.check_text(&block.text),
@@ -95,6 +88,33 @@ impl Emitter<'_> {
                 self.check(&refused.block);
             }
             _ => {}
+        }
+    }
+
+    fn check_tag(&mut self, tag: &PugTag<'_>) {
+        for part in &tag.parts {
+            let PugTagPart::Attrs(group) = part else {
+                continue;
+            };
+            for item in &group.items {
+                if let PugAttrItem::Attr(attr) = item
+                    && let Some(value) = &attr.value
+                {
+                    self.check_expression(value.text);
+                }
+            }
+        }
+        match &tag.inline {
+            PugInline::Text(text) => self.check_text(text),
+            PugInline::Code(code) if code.buffered() => {
+                self.check_expression(code.code.text);
+            }
+            PugInline::Expansion { node, .. } => self.check_node(node),
+            _ => {}
+        }
+        match &tag.block {
+            PugBlock::Nodes(nodes) => self.check(nodes),
+            PugBlock::Text(text) => self.check_text(text),
         }
     }
 

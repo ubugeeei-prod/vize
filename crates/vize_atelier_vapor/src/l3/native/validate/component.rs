@@ -104,6 +104,7 @@ fn static_props<'a>(
                     value_kind: crate::ir::PropValueKind::Expression,
                     dynamic: false,
                     handler: false,
+                    handler_modifiers: None,
                     position: value.value.span.start,
                 });
             }

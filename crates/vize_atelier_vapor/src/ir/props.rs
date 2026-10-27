@@ -3,6 +3,8 @@
 use vize_atelier_core::SimpleExpressionNode;
 use vize_carton::{Box, Vec};
 
+use super::EventModifiers;
+
 /// The origin of a component value. Compiler-owned model artifacts carry
 /// their source operand separately from authored JavaScript expressions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -27,6 +29,8 @@ pub struct IRProp<'a> {
     pub values: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
     pub is_component: bool,
     pub value_kind: PropValueKind,
+    /// Parsed component listener guards and options, shared with native events.
+    pub handler_modifiers: Option<&'a EventModifiers<'a>>,
 }
 
 impl<'a> IRProp<'a> {
@@ -40,6 +44,7 @@ impl<'a> IRProp<'a> {
             values,
             is_component,
             value_kind: PropValueKind::Expression,
+            handler_modifiers: None,
         }
     }
 

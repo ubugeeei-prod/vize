@@ -1,0 +1,42 @@
+[
+  {
+    "id": "static-STYLE-before",
+    "template": "<button STYLE=\"color:red\" :style=\"{fontWeight:'700'}\">ready</button>",
+    "jsx": "export const App=()=> <button STYLE=\"color:red\" style={{fontWeight:'700'}}>ready</button>;"
+  },
+  {
+    "id": "static-STYLE-after",
+    "template": "<button :style=\"{fontWeight:'700'}\" STYLE=\"color:red\">ready</button>",
+    "jsx": "export const App=()=> <button style={{fontWeight:'700'}} STYLE=\"color:red\">ready</button>;"
+  },
+  {
+    "id": "static-Style-before",
+    "template": "<button Style=\"color:red\" :style=\"{fontWeight:'700'}\">ready</button>",
+    "jsx": "export const App=()=> <button Style=\"color:red\" style={{fontWeight:'700'}}>ready</button>;"
+  },
+  {
+    "id": "static-Style-after",
+    "template": "<button :style=\"{fontWeight:'700'}\" Style=\"color:red\">ready</button>",
+    "jsx": "export const App=()=> <button style={{fontWeight:'700'}} Style=\"color:red\">ready</button>;"
+  },
+  {
+    "id": "static-sTyLe-before",
+    "template": "<button sTyLe=\"color:red\" :style=\"{fontWeight:'700'}\">ready</button>",
+    "jsx": "export const App=()=> <button sTyLe=\"color:red\" style={{fontWeight:'700'}}>ready</button>;"
+  },
+  {
+    "id": "static-sTyLe-after",
+    "template": "<button :style=\"{fontWeight:'700'}\" sTyLe=\"color:red\">ready</button>",
+    "jsx": "export const App=()=> <button style={{fontWeight:'700'}} sTyLe=\"color:red\">ready</button>;"
+  },
+  {
+    "id": "bound-STYLE",
+    "template": "<button :STYLE=\"other\" :style=\"{fontWeight:'700'}\">ready</button>",
+    "jsx": "export const App=()=> <button v-bind:STYLE={other} style={{fontWeight:'700'}}>ready</button>;"
+  },
+  {
+    "id": "bound-Style",
+    "template": "<button :Style=\"other\" :style=\"{fontWeight:'700'}\">ready</button>",
+    "jsx": "export const App=()=> <button v-bind:Style={other} style={{fontWeight:'700'}}>ready</button>;"
+  }
+]

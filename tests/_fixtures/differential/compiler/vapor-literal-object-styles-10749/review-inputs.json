@@ -1,0 +1,50 @@
+[
+  {
+    "id": "valid-control",
+    "expression": "{\"color\":\"blue\",\"fontWeight\":\"700\"}",
+    "fold": true,
+    "referenceCss": "color:blue;font-weight:700;"
+  },
+  {
+    "id": "unclosed-function",
+    "expression": "{\"color\":\"var(--missing\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:var(--missing;font-weight:700;"
+  },
+  {
+    "id": "unclosed-string",
+    "expression": "{\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "font-family:\"broken;font-weight:700;"
+  },
+  {
+    "id": "trailing-escape",
+    "expression": "{\"color\":\"red\\\\\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red\\;font-weight:700;"
+  },
+  {
+    "id": "css-float-alias",
+    "expression": "{\"cssFloat\":\"left\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "css-float:left;font-weight:700;"
+  },
+  {
+    "id": "css-text-member",
+    "expression": "{\"cssText\":\"color:red\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "css-text:color:red;font-weight:700;"
+  },
+  {
+    "id": "capitalized-nonvendor",
+    "expression": "{\"Color\":\"red\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red;font-weight:700;"
+  },
+  {
+    "id": "important-control",
+    "expression": "{\"color\":\"red!important\",\"fontWeight\":\"700\"}",
+    "fold": true,
+    "referenceCss": "color:red!important;font-weight:700;"
+  }
+]

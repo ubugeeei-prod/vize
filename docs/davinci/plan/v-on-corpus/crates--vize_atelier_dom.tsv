@@ -8,6 +8,7 @@ crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@keyup.enter
 crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@keyup.enter.stop
 crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@click.once
 crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@click.capture.passive
+crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@finish.stop
 crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@click.stop
 crates/vize_atelier_dom/tests/l2_colon.rs	@click.ctrl
 crates/vize_atelier_dom/tests/l2_colon.rs	@click.ctrl

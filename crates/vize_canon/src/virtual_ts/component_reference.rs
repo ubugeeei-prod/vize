@@ -2,7 +2,7 @@ use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize, cstr};
 use vize_croquis::{BindingType, Croquis};
 
 use super::{
-    helpers::{to_safe_identifier, to_safe_identifier_fragment},
+    helpers::{is_reserved_identifier, to_safe_identifier, to_safe_identifier_fragment},
     types::VirtualTsOptions,
 };
 
@@ -49,6 +49,7 @@ pub(crate) fn resolved_component_binding_reference(
                 summary,
                 candidate,
                 binding_type,
+                options,
             ));
         }
     }
@@ -82,6 +83,7 @@ pub(crate) fn resolved_exact_component_binding_reference(
             summary,
             name,
             binding_type,
+            options,
         ));
     }
     options
@@ -95,7 +97,11 @@ fn component_binding_reference_for_summary_binding(
     summary: &Croquis,
     candidate: &str,
     binding_type: BindingType,
+    options: &VirtualTsOptions,
 ) -> String {
+    if is_reserved_identifier(candidate) && !super::script_facts::is_script_setup(summary) {
+        return options_api_reserved_binding_local(summary, options, candidate);
+    }
     if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
         && !is_props_destructure_local(summary, candidate)
     {
@@ -133,4 +139,29 @@ pub(crate) fn has_type_only_component_candidate(
 
 pub(crate) fn contains_compact_name(names: &FxHashSet<CompactString>, name: &str) -> bool {
     names.iter().any(|candidate| candidate.as_str() == name)
+}
+
+// Both declarations and component references must choose the same local without
+// shadowing an authored binding or a configured template binding.
+pub(crate) fn options_api_reserved_binding_local(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    name: &str,
+) -> String {
+    super::script_facts::with_bindings(summary, |bindings| {
+        let mut local = to_safe_identifier(name);
+        while bindings.contains_binding(local.as_str())
+            || options
+                .template_globals
+                .iter()
+                .any(|global| global.name == local)
+            || options
+                .external_template_bindings
+                .iter()
+                .any(|binding| binding.as_str() == local.as_str())
+        {
+            local.push('_');
+        }
+        local
+    })
 }

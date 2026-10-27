@@ -5,9 +5,7 @@ use vize_croquis::{Croquis, ScopeId, ScopeKind};
 
 use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
-use crate::virtual_ts::expressions::{
-    ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
-};
+use crate::virtual_ts::expressions::{ExpressionListEmitContext, TemplateValueCheckTables};
 
 use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
@@ -16,6 +14,7 @@ use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOpti
 use super::explicit_generics::ExplicitGenerics;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 pub(super) use super::node::generate_scope_node;
+use super::root_callback_owners::RootCallbackOwners;
 use super::root_owner_packets::RootOwnerPackets;
 use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_checks};
 use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
@@ -244,6 +243,22 @@ pub(super) fn emit_scope_closures(
     } else {
         RootOwnerPackets::default()
     };
+    let mut callback_owners = if check_options.check_template_bindings {
+        usages
+            .as_ref()
+            .map_or_else(RootCallbackOwners::default, |usages| {
+                profile!("canon.virtual_ts.root_callback.collect", {
+                    RootCallbackOwners::collect(
+                        &props_ctx,
+                        usages,
+                        &root_packets,
+                        &expressions_by_scope,
+                    )
+                })
+            })
+    } else {
+        RootCallbackOwners::default()
+    };
     if let Some(usages) = &usages {
         if root_packets.is_empty() {
             emit_event_references(ts, mappings, &props_ctx, usages);
@@ -302,13 +317,17 @@ pub(super) fn emit_scope_closures(
                 | ScopeKind::JsGlobalBrowser
                 | ScopeKind::JsGlobalNode
                 | ScopeKind::VueGlobal
-        ) {
+        ) || callback_owners.has_scope(scope_id)
+        {
             if let Some(exprs) = expressions_by_scope.get(&scope_id)
                 && check_options.check_template_bindings
             {
-                generate_expressions(
+                callback_owners.generate_expressions(
                     ts,
                     mappings,
+                    semantic_links,
+                    options.diagnostic_ownership,
+                    scope_id,
                     exprs,
                     template_binding_access,
                     &ExpressionListEmitContext::new(
@@ -372,7 +391,7 @@ pub(super) fn emit_scope_closures(
                 semantic_links,
                 &props_ctx,
                 usages,
-                &mut root_packets
+                (&mut root_packets, &callback_owners)
             )
         );
     }

@@ -25,7 +25,8 @@ export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
   ssrRender: ssrRender,
   __vapor: true,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+  __expose();
 
 
 const __returned__ = { visible, Primitive }

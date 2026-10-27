@@ -10,12 +10,15 @@ use crate::{ElementNode, ExpressionNode, PropNode};
 
 use super::TransformContext;
 
-/// Process directive expressions with _ctx prefix
+/// Process directive expressions with _ctx prefix. With `fold_style`, a Vapor
+/// literal `:style` keeps its retained AST until every prop has been seen.
 pub(super) fn process_directive_expressions<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
+    fold_style: bool,
 ) {
-    for prop in el.props.iter_mut() {
+    let mut style = None;
+    for (index, prop) in el.props.iter_mut().enumerate() {
         if let PropNode::Directive(dir) = prop {
             if ctx.options.ssr
                 && matches!(dir.name, "bind" | "on")
@@ -42,6 +45,15 @@ pub(super) fn process_directive_expressions<'a>(
             }
             match dir.name {
                 "bind" | "show" | "if" | "else-if" | "for" | "memo" => {
+                    // A literal value has no identifiers, so processing it after
+                    // the fold registers nothing out of order.
+                    if fold_style
+                        && style.is_none()
+                        && let Some(css) = super::vapor_static_style::literal_css(dir)
+                    {
+                        style = Some((index, css));
+                        continue;
+                    }
                     // Process value expression
                     if let Some(exp) = &dir.exp {
                         let processed = process_expression(ctx, exp, false);
@@ -110,6 +122,13 @@ pub(super) fn process_directive_expressions<'a>(
                 }
             }
         }
+    }
+    if let Some((index, css)) = style
+        && !super::vapor_static_style::fold_at(ctx, el, index, &css)
+        && let Some(PropNode::Directive(dir)) = el.props.get_mut(index)
+        && let Some(exp) = &dir.exp
+    {
+        dir.exp = Some(process_expression(ctx, exp, false));
     }
 }
 
