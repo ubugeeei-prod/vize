@@ -1,5 +1,6 @@
 use super::*;
 use crate::diagnostics::{CrossFileDiagnosticKind, DiagnosticSeverity};
+use vize_carton::cstr;
 
 fn project(consumer: &str, context: &str, provider: &str) -> CrossFileAnalyzer {
     let mut analyzer =
@@ -43,7 +44,7 @@ fn optional_inject_defaults_preserve_branches_without_findings() {
             "() => false, false",
         ] {
             let script =
-                format!("import {{ inject }} from 'vue'; const state = inject('state', {default})");
+                cstr!("import {{ inject }} from 'vue'; const state = inject('state', {default})");
             let mut analyzer = project(
                 &script,
                 context,
@@ -201,10 +202,10 @@ fn spread_defaults_keep_unproven_findings() {
                 "const { state } = toRefs(INJECT)",
                 "const [state] = toRefs(INJECT)",
             ] {
-                let call = format!("inject('state', {default})");
+                let call = cstr!("inject('state', {default})");
                 let statement = assignment.replace("INJECT", &call);
                 let script =
-                    format!("import {{ inject, toRefs }} from 'vue'; {prelude} {statement};");
+                    cstr!("import {{ inject, toRefs }} from 'vue'; {prelude} {statement};");
                 let analysis = script_analysis(&script, &[]);
                 let entries = vize_croquis::facts::inject_entries(&analysis);
                 assert_eq!(entries.len(), 1);
@@ -260,9 +261,8 @@ fn explicit_default_before_spread_flags_stays_optional() {
             "const [state] = toRefs(INJECT)",
         ] {
             let statement = assignment.replace("INJECT", "inject('state', undefined, ...flags)");
-            let script = format!(
-                "import {{ inject, toRefs }} from 'vue'; const flags: [] = []; {statement};"
-            );
+            let script =
+                cstr!("import {{ inject, toRefs }} from 'vue'; const flags: [] = []; {statement};");
             let mut analyzer = project(
                 &script,
                 context,
