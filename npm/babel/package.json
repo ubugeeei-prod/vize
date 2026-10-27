@@ -49,8 +49,10 @@
     "@babel/core": "catalog:babel-plugin-host",
     "@types/convert-source-map": "catalog:babel-plugin-host",
     "@types/node": "catalog:typescript",
+    "playwright": "catalog:testing",
     "typescript": "catalog:typescript",
-    "vite-plus": "catalog:vite-stack"
+    "vite-plus": "catalog:vite-stack",
+    "vue": "3.6.0-rc.11"
   },
   "peerDependencies": {
     "@babel/core": "^7.29.7 || ^8.0.9"
