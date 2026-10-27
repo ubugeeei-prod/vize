@@ -8,10 +8,32 @@
     reason = "complete Debug packets use owned strings"
 )]
 
+use std::ops::Range;
+
 use super::{
-    Allocator, Parser, ParserReturn, SourceType, String, incomplete_call_before_declaration,
-    incomplete_call_operator, missing_member_operator, parse_program_for_analysis,
+    Allocator, Parser, ParserReturn, SourceType, String, incomplete_call_operator,
+    missing_member_operator, parse_program_for_analysis, starts_declaration,
 };
+
+// Scalar helper frozen from 21dbb3573d4 before vectorizing the producer.
+fn incomplete_call_before_declaration(source: &str) -> Option<Range<usize>> {
+    source.char_indices().find_map(|(line_break, character)| {
+        if !matches!(character, '\n' | '\r' | '\u{2028}' | '\u{2029}') {
+            return None;
+        }
+        let end = source.get(..line_break)?.trim_end().len();
+        let before = source.get(..end)?.strip_suffix('(')?.trim_end();
+        if before.is_empty()
+            || !before.chars().next_back().is_some_and(|character| {
+                character.is_alphanumeric() || matches!(character, '_' | '$' | ')' | ']')
+            })
+        {
+            return None;
+        }
+        let next = source.get(line_break..)?.trim_start();
+        starts_declaration(next).then_some(end - 1..end)
+    })
+}
 
 // Frozen algorithm from 22323f9552c. Keep its first identical retry and budget:
 // this reference is deliberately independent of the optimized dispatch logic.
