@@ -419,13 +419,21 @@ pub(crate) fn generate_for_item_props(
     key_exp: Option<&ExpressionNode<'_>>,
     skip_is_prop: bool,
 ) -> bool {
-    if el.tag_type == ElementType::Component {
-        return ctx.with_component_props(|ctx| generate_item_props(ctx, el, key_exp, skip_is_prop));
-    }
-    generate_item_props(ctx, el, key_exp, skip_is_prop)
+    // A native item root keeps uppercase event names as `on:` keys.
+    let plain = core::mem::replace(
+        &mut ctx.props_is_plain_element,
+        el.tag_type == ElementType::Element,
+    );
+    let emitted = if el.tag_type == ElementType::Component {
+        ctx.with_component_props(|ctx| for_item_props(ctx, el, key_exp, skip_is_prop))
+    } else {
+        for_item_props(ctx, el, key_exp, skip_is_prop)
+    };
+    ctx.props_is_plain_element = plain;
+    emitted
 }
 
-fn generate_item_props(
+fn for_item_props(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,

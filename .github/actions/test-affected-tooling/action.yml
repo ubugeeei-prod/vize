@@ -34,9 +34,9 @@ runs:
       run: |
         if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
         node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
-    - name: Hydrate CLI diagnostic fixtures and install JS dependencies
+    - name: Hydrate CLI and fact corpus fixtures and install JS dependencies
       shell: bash
-      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
+      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
     - uses: ./.github/actions/restore-source-cli
       with: { producer: "${{ inputs.producer }}" }
     - name: Prepare the pinned plugin isolation runtime

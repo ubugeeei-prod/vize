@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
+import { assertCompilerPatchSuccessor } from "../../_helpers/compiler-patch-successors.ts";
 import {
   assertFailedBuild,
   type BuildResult,
@@ -601,16 +602,18 @@ function assertSuccessfulBuild(result: BuildResult): void {
 
 function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
   assertFailedBuild(result, appPath, compiler.output.errors);
-  assert.deepEqual(compiler.output, {
-    filename: "App.vue",
-    code: 'export default {\n  __name: "App",\n  setup(__props) {}\n};',
-    css: null,
-    errors: [
-      'Template compilation errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: Some(SourceLocation { start: Position { offset: 18, line: 2, column: 18 }, end: Position { offset: 23, line: 2, column: 23 }, source: "</h2>" }) }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: Some(SourceLocation { start: Position { offset: 3, line: 2, column: 3 }, end: Position { offset: 7, line: 2, column: 7 }, source: "<h1>" }) }]',
-    ],
-    warnings: [],
-    script_lang: "ts",
-    macro_artifacts: [],
+  assertCompilerPatchSuccessor("create-vue-broken", compiler.outputText, {
+    previousPacket: {
+      filename: "App.vue",
+      code: 'export default {\n  __name: "App",\n  setup(__props) {}\n};',
+      css: null,
+      errors: [
+        'Template compilation errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: Some(SourceLocation { start: Position { offset: 18, line: 2, column: 18 }, end: Position { offset: 23, line: 2, column: 23 }, source: "</h2>" }) }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: Some(SourceLocation { start: Position { offset: 3, line: 2, column: 3 }, end: Position { offset: 7, line: 2, column: 7 }, source: "<h1>" }) }]',
+      ],
+      warnings: [],
+      script_lang: "ts",
+      macro_artifacts: [],
+    },
   });
 }
 

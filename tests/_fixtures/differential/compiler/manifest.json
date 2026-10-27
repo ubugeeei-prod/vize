@@ -183,9 +183,7 @@
     {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "asset-import-binding-collision-10710",
         "files": [
@@ -210,13 +208,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -224,10 +216,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -282,11 +271,143 @@
       }
     },
     {
+      "id": "compiler/sfc/component-event-modifiers-10894",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "component-event-modifiers-10894",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "735f1289ee4f281a4d1b761f57a60ed70c741814deb01fc4c92ebf93d570d6fb",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "component-event-modifiers-10894/module.expected.txt",
+        "sha256": "5ecee0b71a3e25eaaf1b164f3f642cea382e618dd25dfa2802ea661c48839958",
+        "source": "Published @vizejs/native@0.587.0 compileSfc with filename Layout.vue and ssr true; unchanged SSR control only. Vapor event behavior is asserted independently in davinci_mounted_behavior/component_events.rs."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "SSR compatibility control for #10894 only; mounted DOM and both Vapor lowering lanes are tested separately, without SSR credit for client guards."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/component-v-once-10815",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "component-v-once-10815",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6b5cadf24ee940fcca163f6f0d33d5539e8acb3fd3866b648df432c5711d4d2c",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "component-v-once-10815/module.expected.txt",
+        "sha256": "a20c7685e9e2f8af4776c7e520d88176cea3cd721f269ffa9c0c331c645697fc",
+        "source": "crates/vize_atelier_dom/tests/component_v_once.rs:component_v_once_keeps_props_listeners_and_slots_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10815",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
+      "id": "compiler/sfc/element-v-once-10875",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "element-v-once-10875",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "54a3e299de1c9ec3af8e95ba339c6314d512ecfe3397c54125c942807f7162e2",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "element-v-once-10875/module.expected.txt",
+        "sha256": "2c7633d6121678ba60b82089f7972478476a3312c00db2b2a31e9e3fe874db39",
+        "source": "crates/vize_atelier_dom/tests/element_v_once.rs:element_v_once_keeps_listeners_props_and_directives_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10875",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/escaped-for-bindings-10714",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "escaped-for-bindings-10714",
         "files": [
@@ -311,13 +432,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -325,10 +440,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1011,6 +1123,52 @@
       }
     },
     {
+      "id": "compiler/sfc/script-setup-default-expose-10891",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "script-setup-default-expose-10891",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "2e40f0cd045d896bec3ee36bc8c2689a19d24473e212ee5d6efcaf81d46cf68e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "script-setup-default-expose-10891/module.expected.txt",
+        "sha256": "86b3a77f2b456543133897a5aefa0b74fe9b1a5e4da4998155543f809faea7c9",
+        "source": "Public @vizejs/native@0.595.0 SSR compatibility control with the independently specified closed-by-default setup exposure from Vue compileScript. Only setup context expose destructuring and its initial empty call differ; script_setup_default_expose.rs covers client/SSR, explicit macros, parsing and async order."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC path remains unavailable; this case asserts the complete legacy SSR module and does not claim native-only coverage."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/sfc-runtime-options-native",
       "state": "active",
       "targets": ["ssr"],
@@ -1306,6 +1464,52 @@
       }
     },
     {
+      "id": "compiler/sfc/uppercase-native-event-keys-10826",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "uppercase-native-event-keys-10826",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "d75f901aca5657678f2f13ffe978b02ecc0c656c1d336f4786a5223231561c5f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "uppercase-native-event-keys-10826/module.expected.txt",
+        "sha256": "91c41d07e314931f04fcd502d00e1390c511060c6a5f6af8bf9028a9fbefb259",
+        "source": "crates/vize_atelier_dom/tests/uppercase_native_event_keys.rs:branch_and_item_roots_keep_uppercase_native_event_keys_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10826",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/v-model-maybe-ref-9897",
       "state": "active",
       "targets": ["ssr"],
@@ -1595,6 +1799,190 @@
         "runner": "tests/native/css-v-bind-source-maps.mjs",
         "requestCount": 40
       }
+    }
+  ],
+  "vaporStyleApiCases": [
+    {
+      "id": "compiler/vapor/literal-object-styles-10749",
+      "state": "active",
+      "adapter": "shared-vapor-literal-style-source-v1",
+      "targets": ["vapor-csr"],
+      "scope": "source-only; generic SSR CLI unsupported; no whole-product native or browser parity credit",
+      "inputs": [
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/App.vue.txt",
+          "sha256": "555fd69bae5d841628e76aec534fa3d98f3033ca2014fa4ab749862970413a3f"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
+          "sha256": "12725a1c38d5050762348679167dde5ff4c71a1e510cdde966510f86c6126765"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
+          "sha256": "d8510c242246ef26e1639ce5bd3d69b562837f78437fbcec01bed4b119b3f9ad"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/authority.json",
+          "sha256": "e113463a40ba2d54d8c8a82e81f9b5a42e5f88900e1850a1c4ccd791ab0aa01b"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/inputs.json",
+          "sha256": "f5573ccf312011736b6869b4ae0b3005df75c3f2f7791e195512bdd211cca11b"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/observed-base.json",
+          "sha256": "f79947fcb0a25776867e4d2a91566474eb70684c7ecf87683dcd86406bb4601d"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/observed-comparison.json",
+          "sha256": "19463ed6fb9109c7dd8d47beec199d9d08041d326785e0a673816da2010d4597"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/observed-head.json",
+          "sha256": "18244764c91eb3d4ff9451bb6811a9e7840375e9d5af01cd842fc82834c5e63e"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/observed-measurement.json",
+          "sha256": "6294b18d69e400369ac8ca3bdf6373c1294fdcddcca300dd82676a152150f764"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/priority-inputs.json",
+          "sha256": "077394f98a482ad0fb01f4ac09769732254e78ce9aaa6057070a2f2e228aa861"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/review-inputs.json",
+          "sha256": "70d1f7b95a94080628a7134d7d44722f11453f6c7e8f25be52b4e6fb08699b66"
+        }
+      ],
+      "witnesses": [
+        {
+          "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
+          "symbol": "complete_literal_style_source_observations",
+          "sha256": "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/tests/literal_object_styles.rs",
+          "symbol": "original_literal_ast_has_canonical_object_and_css_semantics",
+          "sha256": "cec9e48c493dfd3e343b0ccdb814a8782488a6534b7b2ffa903bd60acb56fbec"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
+          "symbol": "folded_css_has_real_complete_utf16_origins_and_rejects_mutations",
+          "sha256": "badda2c866e4bf68b7ee8e11f09a1c6bbd2dae805c2f25157f39263e96fdf693"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
+          "symbol": "original_sfc_literal_style_reaches_the_shared_static_template",
+          "sha256": "03b8f2d1250db9129485a73d2e63cdc4944e50cfa75da84c1af05718f4c24c90"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
+          "symbol": "priority_tokens_keep_original_runtime_semantics",
+          "sha256": "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f"
+        }
+      ],
+      "sources": [
+        {
+          "path": "crates/vize_atelier_core/src/lane/element.rs",
+          "beforeSha256": "614da41dc6908c8a8dcb989daaa930d1daca88dd05fce48cdf3156b319df514e",
+          "afterSha256": "02c9cbe1e110563d6cf86bd1761094fdfe3b5f5572469354e99726154bdf874a"
+        },
+        {
+          "path": "crates/vize_atelier_core/src/lane/element/directive_expressions.rs",
+          "beforeSha256": "be0d85e8e8468b438aeb7e26d6ed0c9510dd4eec98b7033fdeb836ca08f81704",
+          "afterSha256": "9a49b8604d4e5b5e30a363035863cd8acb0c751334a0b489d98961b4fd84a045"
+        },
+        {
+          "path": "crates/vize_atelier_core/src/lane/element/directive_expressions/ssr_keys.rs",
+          "beforeSha256": "6372842077bada399375a9c8862e28ed35250b544ecbe3dd5f6ef8fac6b3399f",
+          "afterSha256": "6abf37e704fe52ba7498ee08a1d81dcc5228da5291365b7aafa5aa510d5831f6"
+        },
+        {
+          "path": "crates/vize_atelier_core/src/lane/element/directive_expressions/tests.rs",
+          "beforeSha256": "0feb5f4535a2e46595a49acf534f03437daf67db8a914fe670febfd4b8d01939",
+          "afterSha256": "8711cfd45b7a9d8cad91a4627a06639effa5ddb1ee28cdbb4ac597e8020c6af7"
+        },
+        {
+          "path": "crates/vize_atelier_core/src/lane/element/tests.rs",
+          "beforeSha256": "a8931514fe8d5f03eb6c1f64b12625c4eacda13d305968eca42aa0f22aa81b50",
+          "afterSha256": "def579c7aa2e4d420c979bd235d28e674f023a113fe4db34a0ca32275e15598e"
+        },
+        {
+          "path": "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
+          "beforeSha256": null,
+          "afterSha256": "0c7fcb4b338f6ae821cc55fdd4ed4a075a1e407742c2b1090bbd42499262be0e"
+        },
+        {
+          "path": "crates/vize_atelier_core/src/lib.rs",
+          "beforeSha256": "8a295308f7f422e6c7c7b95e71543faaa0c1acd31d0cc2114710cafd162c9d33",
+          "afterSha256": "807fb9af9bc8b02ccd5cbeca049367501f293c957716cc256dccaa7a3720a92c"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/src/compile.rs",
+          "beforeSha256": "31bade7b621bfe6c5ed5b5553d4d3b7a3c6ce42d7e63f5e33349177784b72651",
+          "afterSha256": "a8da2febd1a236316e3d206a12c81d0e318b51053ecde31d3f89693ea673bb03"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/src/lower.rs",
+          "beforeSha256": "9af1f9f9dedd946348ca142eeac46b2e4a4ccb1ea24a35d6dc2e88ae171c79c3",
+          "afterSha256": "b9720550ae1dbdb8705436d44e4579f4882ac453616da7e09caa3f5892dbb087"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/src/lower/attr.rs",
+          "beforeSha256": "e36da4de9d3339d2e698167bc3e728b45180c5eba732f07693bc3f9cfb7aafa2",
+          "afterSha256": "446edfb793140220681335fdf8b73574f1bc95746518594d48738cf9ceed54ec"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/src/lower/attr/static_style.rs",
+          "beforeSha256": null,
+          "afterSha256": "9468e859a7f19aa4fa6cc8b2f3fef1b5231b43d3e591571a931fb625dfc03c53"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/src/vapor.rs",
+          "beforeSha256": "c9777eb8e5fadff520ac988af24f3f7d2982c64701a133b68896e2ecb4436371",
+          "afterSha256": "44307ba62db9b8640ddbf251822a95fb9e9170acc6dcd97e40c15aaf08902736"
+        },
+        {
+          "path": "crates/vize_atelier_vapor/src/l3/native/emit.rs",
+          "beforeSha256": "605b868befbffa307e0b639470c386a1558ccf7ee431f0454391ce7fc6683262",
+          "afterSha256": "7a298ea85bb68cb0055258e37952170b4581d2a221c094c18bf011002164c84d"
+        },
+        {
+          "path": "crates/vize_atelier_vapor/src/l3/native/emit/element.rs",
+          "beforeSha256": "57356e6432c70c8bc8c4e599c3ff03b4477440fb82f73b86193b6e2386f55686",
+          "afterSha256": "cd18eb9b12c3952d112b77e2e9c130f6024823ae354086735b95b2bb997d8c91"
+        },
+        {
+          "path": "crates/vize_atelier_vapor/src/l3/native/emit/static_style.rs",
+          "beforeSha256": null,
+          "afterSha256": "b8069a9df5326dad0c13027679618151d73f68ac48567a4ac97707355e351b07"
+        },
+        {
+          "path": "crates/vize_atelier_vapor/src/lower/element/template.rs",
+          "beforeSha256": "b87d0b198c77e96246573ee20388d047f126be4cf05c1b8ada2355bd63118ac8",
+          "afterSha256": "3ae079172829feeb555ec8db43aeb4a09f57935d652440e4988992314fdfa482"
+        },
+        {
+          "path": "crates/vize_atelier_vapor/src/lower/element/template/attributes.rs",
+          "beforeSha256": "d9696144a81b6fdfc745b8d251be9bff2d599ebf0c9085ea850802aad5ed7b1a",
+          "afterSha256": "bf8e5965e2b65b9fd35e53d66b7c67e34f7e4da5fab57760ba3d43ef3e83b288"
+        },
+        {
+          "path": "crates/vize_relief/src/inline_style.rs",
+          "beforeSha256": "17db6757ce83bf81a80ed5d6bee44f2cbbd0e130a64d71c16b2f01da25b33bf7",
+          "afterSha256": "577c49701667a5d010966e34cfcb7bba61cd489653a025256d702769fc326efb"
+        },
+        {
+          "path": "crates/vize_relief/src/inline_style/literal.rs",
+          "beforeSha256": null,
+          "afterSha256": "b69e196eeaca998c69037dbb101ee0c95dc7c5f5d2b74a2b6a5b8a4bf2eda0e6"
+        },
+        {
+          "path": "crates/vize_relief/src/lib.rs",
+          "beforeSha256": "9e8927ac250185e6ec3e992fa102e09dc6aaab5e691c586dc0fcb8d73b172610",
+          "afterSha256": "67277b24381b9b8887b89db35ad20c3ff6bc817f1c1fa44a4d505a2d26c7bf94"
+        }
+      ]
     }
   ]
 }

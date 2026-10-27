@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10984,
+  "regressionCommit": "c001dc27973a316351d1d45739ad84a7db544f11",
+  "sourceRevision": "c001dc27973a316351d1d45739ad84a7db544f11",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "original-expectation",
+      "inputs": [
+        {
+          "file": "test-workspace/tsconfig.base.json",
+          "source": "tsconfig.base.json.txt"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "source": "original.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "no-directive-missing-member",
+      "inputs": [
+        {
+          "file": "test-workspace/tsconfig.base.json",
+          "source": "tsconfig.base.json.txt"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "source": "no-directive.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "line": 7,
+          "column": 3,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'x' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "valid-local-unused-expectation",
+      "inputs": [
+        {
+          "file": "test-workspace/tsconfig.base.json",
+          "source": "tsconfig.base.json.txt"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "source": "valid-local.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "line": 7,
+          "column": 3,
+          "severity": 1,
+          "code": 2578,
+          "message": "Unused '@ts-expect-error' directive."
+        }
+      ]
+    }
+  ]
+}

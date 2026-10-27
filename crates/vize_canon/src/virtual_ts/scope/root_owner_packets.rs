@@ -14,6 +14,10 @@ use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
 mod safety;
 
+pub(super) fn callback_input_facts(element: &vize_relief::ElementNode<'_>) -> Option<bool> {
+    safety::callback_input_facts(element)
+}
+
 #[derive(Default)]
 pub(crate) struct RootOwnerBuffer {
     pub(crate) diagnostic_ownership:

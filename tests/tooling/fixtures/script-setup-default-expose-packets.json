@@ -1,0 +1,183 @@
+{
+  "sourceBaseline": "7c62954a718a7137dc81c6723db696b674458360",
+  "sourceCandidate": "26f84592686fdab8bd6e416fde82096b8975c72f",
+  "run": 40474716301,
+  "packets": [
+    {
+      "source": "<script setup lang=\"ts\">import { ref } from \"author-runtime\";const n=ref<number>(1)</script><template><button @click=\"n++\">{{ n }}</button></template>",
+      "before": {
+        "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _openBlock(), _createElementBlock(\"button\", { onClick: ($event) => $setup.n++ }, _toDisplayString($setup.n), 9, [\"onClick\"]);\n}\nimport { ref } from \"author-runtime\";\nexport default {\n  __name: \"Case-2\",\n  render: _sfc_render,\n  setup(__props) {\n    const n = ref(1);\n    const __returned__ = {\n      ref,\n      n\n    };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};",
+        "errors": [],
+        "warnings": [],
+        "hasScoped": false,
+        "styles": [],
+        "customBlocks": [],
+        "macroArtifacts": [],
+        "map": "{\"file\":\"./Case-2.vue\",\"mappings\":\";;;;AAAwB;;;;;IAAqC,MAAM,IAAE,IAAY,CAAC\",\"names\":[],\"sources\":[\"./Case-2.vue\"],\"sourcesContent\":[\"<script setup lang=\\\"ts\\\">import { ref } from \\\"author-runtime\\\";const n=ref<number>(1)</script><template><button @click=\\\"n++\\\">{{ n }}</button></template>\"],\"version\":3}",
+        "templateHash": "6c73f32e3f058104",
+        "scriptHash": "b501560ee1684ee2",
+        "moduleShape": {
+          "hasDefaultExport": true,
+          "hasSfcMainDefined": false,
+          "hasNamedRenderExport": false,
+          "hasNamedSsrRenderExport": false,
+          "defaultExportIsSfcMain": false,
+          "defaultExportStart": 372,
+          "defaultExportKeywordEnd": 386,
+          "defaultExportEnd": 669
+        }
+      },
+      "after": {
+        "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _openBlock(), _createElementBlock(\"button\", { onClick: ($event) => $setup.n++ }, _toDisplayString($setup.n), 9, [\"onClick\"]);\n}\nimport { ref } from \"author-runtime\";\nexport default {\n  __name: \"Case-2\",\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    const n = ref(1);\n    const __returned__ = {\n      ref,\n      n\n    };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};",
+        "errors": [],
+        "warnings": [],
+        "hasScoped": false,
+        "styles": [],
+        "customBlocks": [],
+        "macroArtifacts": [],
+        "map": "{\"file\":\"./Case-2.vue\",\"mappings\":\";;;;AAAwB;;;;;;IAAqC,MAAM,IAAE,IAAY,CAAC\",\"names\":[],\"sources\":[\"./Case-2.vue\"],\"sourcesContent\":[\"<script setup lang=\\\"ts\\\">import { ref } from \\\"author-runtime\\\";const n=ref<number>(1)</script><template><button @click=\\\"n++\\\">{{ n }}</button></template>\"],\"version\":3}",
+        "templateHash": "6c73f32e3f058104",
+        "scriptHash": "b501560ee1684ee2",
+        "moduleShape": {
+          "hasDefaultExport": true,
+          "hasSfcMainDefined": false,
+          "hasNamedRenderExport": false,
+          "hasNamedSsrRenderExport": false,
+          "defaultExportIsSfcMain": false,
+          "defaultExportStart": 372,
+          "defaultExportKeywordEnd": 386,
+          "defaultExportEnd": 707
+        }
+      }
+    },
+    {
+      "source": "<script setup>import { ref as authoredRef } from \"vue\"; const n=authoredRef(1)</script><template><button @click=\"n++\">{{ n }}</button></template>",
+      "before": {
+        "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => ($setup.n++)\n  }, _toDisplayString($setup.n), 9 /* TEXT, PROPS */, [\"onClick\"]))\n}\nimport { ref as authoredRef } from 'vue'\n\n\nexport default {\n  __name: 'Case-3',\n  render: _sfc_render,\n  setup(__props) {\n\nconst n=authoredRef(1)\n\nconst __returned__ = { n, authoredRef }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+        "errors": [],
+        "warnings": [],
+        "hasScoped": false,
+        "styles": [],
+        "customBlocks": [],
+        "macroArtifacts": [],
+        "map": "{\"file\":\"./Case-3.vue\",\"mappings\":\";;;;;;;;AAAc;;;;;;;;AAA0C,MAAM,CAAC,CAAC,WAAW,CAAC,CAAC\",\"names\":[],\"sources\":[\"./Case-3.vue\"],\"sourcesContent\":[\"<script setup>import { ref as authoredRef } from \\\"vue\\\"; const n=authoredRef(1)</script><template><button @click=\\\"n++\\\">{{ n }}</button></template>\"],\"version\":3}",
+        "templateHash": "6c73f32e3f058104",
+        "scriptHash": "7b6732f073b6c0ee",
+        "moduleShape": {
+          "hasDefaultExport": true,
+          "hasSfcMainDefined": false,
+          "hasNamedRenderExport": false,
+          "hasNamedSsrRenderExport": false,
+          "defaultExportIsSfcMain": false,
+          "defaultExportStart": 403,
+          "defaultExportKeywordEnd": 417,
+          "defaultExportEnd": 662
+        }
+      },
+      "after": {
+        "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => ($setup.n++)\n  }, _toDisplayString($setup.n), 9 /* TEXT, PROPS */, [\"onClick\"]))\n}\nimport { ref as authoredRef } from 'vue'\n\n\nexport default {\n  __name: 'Case-3',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst n=authoredRef(1)\n\nconst __returned__ = { n, authoredRef }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+        "errors": [],
+        "warnings": [],
+        "hasScoped": false,
+        "styles": [],
+        "customBlocks": [],
+        "macroArtifacts": [],
+        "map": "{\"file\":\"./Case-3.vue\",\"mappings\":\";;;;;;;;AAAc;;;;;;;;;AAA0C,MAAM,CAAC,CAAC,WAAW,CAAC,CAAC\",\"names\":[],\"sources\":[\"./Case-3.vue\"],\"sourcesContent\":[\"<script setup>import { ref as authoredRef } from \\\"vue\\\"; const n=authoredRef(1)</script><template><button @click=\\\"n++\\\">{{ n }}</button></template>\"],\"version\":3}",
+        "templateHash": "6c73f32e3f058104",
+        "scriptHash": "7b6732f073b6c0ee",
+        "moduleShape": {
+          "hasDefaultExport": true,
+          "hasSfcMainDefined": false,
+          "hasNamedRenderExport": false,
+          "hasNamedSsrRenderExport": false,
+          "defaultExportIsSfcMain": false,
+          "defaultExportStart": 403,
+          "defaultExportKeywordEnd": 417,
+          "defaultExportEnd": 698
+        }
+      }
+    },
+    {
+      "source": "<script setup>const n=await Promise.resolve(1)</script><template><div>{{ n }}</div></template>",
+      "before": {
+        "code": "import { withAsyncContext as _withAsyncContext } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.n), 1 /* TEXT */))\n}\n\nexport default {\n  __name: 'Case-4',\n  render: _sfc_render,\n  async setup(__props) {\n\nlet __temp, __restore\n\nconst n= (\n  ([__temp,__restore] = _withAsyncContext(() => Promise.resolve(1))),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)\n\nconst __returned__ = { n }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+        "errors": [],
+        "warnings": [],
+        "hasScoped": false,
+        "styles": [],
+        "customBlocks": [],
+        "macroArtifacts": [],
+        "map": "{\"file\":\"./Case-4.vue\",\"mappings\":\";;;;;;;;;;;;;;;AAAc\",\"names\":[],\"sources\":[\"./Case-4.vue\"],\"sourcesContent\":[\"<script setup>const n=await Promise.resolve(1)</script><template><div>{{ n }}</div></template>\"],\"version\":3}",
+        "templateHash": "cde8dbd76a81e614",
+        "scriptHash": "25dc72e72a8caebb",
+        "moduleShape": {
+          "hasDefaultExport": true,
+          "hasSfcMainDefined": false,
+          "hasNamedRenderExport": false,
+          "hasNamedSsrRenderExport": false,
+          "defaultExportIsSfcMain": false,
+          "defaultExportStart": 361,
+          "defaultExportKeywordEnd": 375,
+          "defaultExportEnd": 745
+        }
+      },
+      "after": {
+        "code": "import { withAsyncContext as _withAsyncContext } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.n), 1 /* TEXT */))\n}\n\nexport default {\n  __name: 'Case-4',\n  render: _sfc_render,\n  async setup(__props, { expose: __expose }) {\n  __expose();\n\nlet __temp, __restore\n\nconst n= (\n  ([__temp,__restore] = _withAsyncContext(() => Promise.resolve(1))),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)\n\nconst __returned__ = { n }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+        "errors": [],
+        "warnings": [],
+        "hasScoped": false,
+        "styles": [],
+        "customBlocks": [],
+        "macroArtifacts": [],
+        "map": "{\"file\":\"./Case-4.vue\",\"mappings\":\";;;;;;;;;;;;;;;;AAAc\",\"names\":[],\"sources\":[\"./Case-4.vue\"],\"sourcesContent\":[\"<script setup>const n=await Promise.resolve(1)</script><template><div>{{ n }}</div></template>\"],\"version\":3}",
+        "templateHash": "cde8dbd76a81e614",
+        "scriptHash": "25dc72e72a8caebb",
+        "moduleShape": {
+          "hasDefaultExport": true,
+          "hasSfcMainDefined": false,
+          "hasNamedRenderExport": false,
+          "hasNamedSsrRenderExport": false,
+          "defaultExportIsSfcMain": false,
+          "defaultExportStart": 361,
+          "defaultExportKeywordEnd": 375,
+          "defaultExportEnd": 781
+        }
+      }
+    }
+  ],
+  "emptySetupModules": {
+    "run": 40481679130,
+    "packets": [
+      {
+        "id": "compiler/sfc/package-import-prop-type-9894",
+        "source": "<script setup lang=\"ts\">\ntype Ripple = boolean | { center?: boolean } | null | undefined\nconst { ripple = undefined } = defineProps<{ ripple?: Ripple }>()\n</script>\n<template><span>{{ JSON.stringify(ripple) }}</span></template>\n",
+        "before": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(JSON.stringify($props.ripple))}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { ripple: {\n    type: [Boolean, Object],\n    required: false,\n    default: undefined\n  } },\n  ssrRender,\n  setup(__props) {\n    return {};\n  }\n};"
+        },
+        "after": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(JSON.stringify($props.ripple))}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { ripple: {\n    type: [Boolean, Object],\n    required: false,\n    default: undefined\n  } },\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    return {};\n  }\n};"
+        }
+      },
+      {
+        "id": "compiler/sfc/production-v-if-comment-9920",
+        "source": "<script setup>\ndefineProps({ open: Boolean })\n</script>\n\n<template>\n  <div class=\"toggle\">\n    <p v-if=\"open\">open</p>\n    <span>always</span>\n  </div>\n</template>\n",
+        "before": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"toggle\" }, _attrs))}>`)\n  if ($props.open) {\n    _push(`<p>open</p>`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`<span>always</span></div>`)\n}\n\nexport default {\n  __name: 'Layout',\n  props: { open: Boolean },\n  ssrRender: ssrRender,\n  setup(__props) {\n\n\nreturn {}\n}\n\n}"
+        },
+        "after": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"toggle\" }, _attrs))}>`)\n  if ($props.open) {\n    _push(`<p>open</p>`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`<span>always</span></div>`)\n}\n\nexport default {\n  __name: 'Layout',\n  props: { open: Boolean },\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nreturn {}\n}\n\n}"
+        }
+      },
+      {
+        "id": "compiler/sfc/root-text-patch-flag-10168",
+        "source": "<script setup lang=\"ts\">\ndefineProps<{ label: string }>();\n</script>\n\n<template>\n  <span class=\"badge\">{{ label }}</span>\n</template>\n",
+        "before": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_mergeProps({ class: \"badge\" }, _attrs))}>${_ssrInterpolate($props.label)}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { label: {\n    type: String,\n    required: true\n  } },\n  ssrRender,\n  setup(__props) {\n    return {};\n  }\n};"
+        },
+        "after": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_mergeProps({ class: \"badge\" }, _attrs))}>${_ssrInterpolate($props.label)}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { label: {\n    type: String,\n    required: true\n  } },\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    return {};\n  }\n};"
+        }
+      }
+    ]
+  }
+}

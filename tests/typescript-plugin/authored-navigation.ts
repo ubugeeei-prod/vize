@@ -95,7 +95,7 @@ export async function checkNavigation(
   ): Promise<Response<Body>> => {
     const response = await client.send<Body>(command, {
       file,
-      ...(marker && text !== undefined ? position(text, marker, delta) : {}),
+      ...(marker ? position(text!, marker, delta) : {}),
     });
     results[name] = response;
     assert.equal(response.success, true, JSON.stringify(response));
@@ -108,7 +108,7 @@ export async function checkNavigation(
       line: 1,
       offset: 1,
       endLine: lines.length,
-      endOffset: lines.at(-1)!.length + 1,
+      endOffset: (lines.at(-1) ?? "").length + 1,
       insertString: text,
     });
   };

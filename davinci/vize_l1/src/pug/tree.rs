@@ -10,9 +10,9 @@ use vize_l0::{Box, Vec};
 
 use crate::markup::surface::Token;
 
-/// pug constructs the Vue lowering refuses: they execute JavaScript at
-/// build time, link other files, or define/expand mixins — none of which
-/// Vue's documented pug support (a static preprocessor pass) covers.
+/// pug's keyword constructs, lexed whole: the lowering runs the
+/// build-time ones it can evaluate (conditionals, iteration, mixin
+/// definitions and their `block`) and refuses the rest.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PugRefusal {
     /// `doctype …`
@@ -37,8 +37,6 @@ pub enum PugRefusal {
     Include,
     /// `mixin NAME(…)`
     Mixin,
-    /// `+NAME(…)` — a mixin call.
-    Call,
     /// `if` / `unless` / `else if` / `else`
     Conditional,
     /// `each` / `for`
@@ -66,7 +64,6 @@ impl PugRefusal {
             Self::MixinBlock => "block (mixin block)",
             Self::Include => "include",
             Self::Mixin => "mixin",
-            Self::Call => "+mixin call",
             Self::Conditional => "if/unless/else",
             Self::Each => "each/for",
             Self::While => "while",
@@ -88,6 +85,8 @@ pub struct PugTree<'a> {
 #[derive(Debug)]
 pub enum PugNode<'a> {
     Tag(Box<'a, PugTag<'a>>),
+    /// `+name(args)` with a tag's tail: a mixin call.
+    Call(Box<'a, PugCall<'a>>),
     /// A text run: piped lines (`| …`), joined with pug's `\n` rule.
     Text(Box<'a, PugText<'a>>),
     /// Raw HTML lines (`<…`) with their nested blocks, joined with `\n`.
@@ -128,8 +127,30 @@ pub enum PugTagPart<'a> {
     /// `#name` — the token includes the hash.
     Id(Token<'a>),
     Attrs(Box<'a, PugAttrGroup<'a>>),
-    /// `&attributes(…)`, refused by the lowering.
+    /// `&attributes(…)`, the token spanning the parentheses.
     AndAttributes(Token<'a>),
+}
+
+/// `+name` / `+#{expr}`, optional `(arguments)`, then a tag's tail
+/// (`pug-parser`'s `parseCall`): attributes, `&attributes`, `.`,
+/// same-line content and the indented block the mixin sees as `block`.
+#[derive(Debug)]
+pub struct PugCall<'a> {
+    /// `+`, any whitespace, and the name or `#{…}`.
+    pub head: Token<'a>,
+    /// `(…)`, parentheses included, when they hold arguments rather
+    /// than attributes.
+    pub args: Option<Token<'a>>,
+    /// The tail; `name` is always `None`.
+    pub tag: PugTag<'a>,
+}
+
+impl<'a> PugCall<'a> {
+    /// The argument source between the parentheses.
+    pub fn arguments(&self) -> Option<&'a str> {
+        let text = self.args.as_ref()?.text;
+        text.strip_prefix('(')?.strip_suffix(')')
+    }
 }
 
 /// `( attr (,? attr)* )`.

@@ -1,5 +1,5 @@
 use super::super::super::VirtualProject;
-use super::check_unknown_props_enabled;
+use super::extends::check_unknown_props_enabled;
 use serde_json::{Map, Value};
 use std::fs;
 use std::path::{Path, PathBuf};

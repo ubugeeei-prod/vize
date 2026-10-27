@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
-import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
+import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.ts";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.ts";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.ts";
 import { runTypecheckCommand } from "./typecheck-command-runner.mjs";

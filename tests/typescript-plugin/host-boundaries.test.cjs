@@ -105,6 +105,8 @@ void test("SFC projections read the project configuration once per project versi
     serverHost: ts.sys,
     config: { nativePath: fakeNative(path.join(project, "native")) },
   });
+  // Project configuration watchers must not outlive the test.
+  t.after(() => support.dispose?.());
   for (const file of ["A.vue", "B.vue", "A.vue"]) assert(support.get(`${project}/${file}`));
   assert.equal(reads.filter((name) => name === config).length, 1);
   version++;

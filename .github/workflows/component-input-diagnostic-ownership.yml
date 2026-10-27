@@ -7,9 +7,22 @@ on:
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership.rs"
       - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets*"
       - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets/**"
+      - "crates/vize_canon/src/virtual_ts/scope/root_callback_owners*"
+      - "crates/vize_canon/src/virtual_ts/scope/root_callback_owners/**"
       - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
+      - "crates/vize_canon/src/virtual_ts/helpers/preamble.rs"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/prop-keys.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"
+      - "npm/cli/content-mapper-helpers.d.*"
+      - "npm/cli/generated/content-mapper-types.d.ts"
       - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
+      - "tools/support/compat/content-mapper/callback-owner*.ts"
+      - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
+      - "tests/tooling/constructor-projection-parity.test.ts"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
       - ".github/workflows/component-input-diagnostic-ownership.yml"
 
@@ -21,7 +34,7 @@ concurrency:
 jobs:
   published-sdk-packets:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
@@ -56,6 +69,26 @@ jobs:
           set -euo pipefail
           [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
           cargo build --locked --profile ci -p vize --bin vize
+      - name: Prove actual root scope admission and complete callback mapping laws
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/component-input-ownership"
+          cargo test --locked --profile ci -p vize_canon --lib 'root_callback_owners::tests::' -- --nocapture > "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stderr"
+      - name: Build the immutable callback-CFA before source separately
+        run: |
+          set -euo pipefail
+          before=78719553cf550bcffbf1d0fb891fda642f42de3a
+          git fetch --no-tags https://github.com/ubugeeei-prod/vize.git "$before"
+          git worktree add --detach "$RUNNER_TEMP/callback-cfa-before" "$before"
+          [[ "$(git -C "$RUNNER_TEMP/callback-cfa-before" rev-parse HEAD)" == "$before" ]]
+          mkdir -p "$RUNNER_TEMP/component-input-ownership/source-images"
+          cp target/ci/vize "$RUNNER_TEMP/component-input-ownership/source-images/candidate-vize"
+          (cd "$RUNNER_TEMP/callback-cfa-before" && CARGO_TARGET_DIR="$RUNNER_TEMP/callback-cfa-before-target" cargo build --locked --profile ci -p vize --bin vize)
+          cp "$RUNNER_TEMP/callback-cfa-before-target/ci/vize" "$RUNNER_TEMP/component-input-ownership/source-images/before-vize"
+          git -C "$RUNNER_TEMP/callback-cfa-before" diff --exit-code
+          sha256sum "$RUNNER_TEMP/component-input-ownership/source-images/"*-vize > "$RUNNER_TEMP/component-input-ownership/source-images/binaries.sha256"
+          printf '%s\n' "$before" > "$RUNNER_TEMP/component-input-ownership/source-images/before.source"
+          printf '%s\n' "$SOURCE_SHA" > "$RUNNER_TEMP/component-input-ownership/source-images/candidate.source"
       - name: Install exact published SDK and baseline packages
         run: |
           set -euo pipefail
@@ -176,6 +209,37 @@ jobs:
           assert.equal(packets.length, 144);
           writeFileSync(`${capture}/whole-packet-inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, executedPid: executed.pid, binarySha256, completePackets: packets.length, packets}, null, 2) + '\n');
           JS
+      - name: Retain every callback-CFA before, head and independent reference packet
+        run: |
+          set -uo pipefail
+          failed=0
+          for sdk in actual-20261024 beta-3e923 d6c4; do
+            extra=()
+            if [[ "$sdk" == beta-3e923 ]]; then
+              native="$RUNNER_TEMP/component-input-beta/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+              extra=(--mapper-host "$native" --mapper-version 'Version 7.1.0-beta')
+            elif [[ "$sdk" == d6c4 ]]; then
+              native="$RUNNER_TEMP/component-input-d6c4/tsgo"
+              extra=(--mapper-host "$native" --mapper-version "$("$native" --version)")
+            fi
+            node tools/support/compat/content-mapper/diagnostic-ownership.ts \
+              --callback-cfa-controls \
+              --consumer "$RUNNER_TEMP/component-input-consumer" \
+              --candidate-cli "$RUNNER_TEMP/component-input-ownership/source-images/candidate-vize" \
+              --source-sha "$SOURCE_SHA" \
+              --comparison-cli "$RUNNER_TEMP/component-input-ownership/source-images/before-vize" \
+              --comparison-source-sha 78719553cf550bcffbf1d0fb891fda642f42de3a \
+              --output "$RUNNER_TEMP/component-input-ownership/callback-cfa/$sdk" "${extra[@]}" || failed=1
+          done
+          exit "$failed"
+      - name: Audit callback creation order without waiving the separate event frontier
+        run: |
+          set -uo pipefail
+          failed=0
+          for sdk in actual-20261024 beta-3e923 d6c4; do
+            node tools/support/compat/content-mapper/callback-owner-audit.ts "$RUNNER_TEMP/component-input-ownership/callback-cfa/$sdk" || failed=1
+          done
+          exit "$failed"
       # The bounded CFA discovery batch is preserved under #10738/#10739.
       # Its manual harness remains available; it is not an acceptance gate.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -237,29 +301,20 @@ jobs:
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/vize_canon/src
           export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-base-target"
-          (cd "$baseline" && VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
+          (cd "$baseline" && VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base-legacy.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base-legacy.log" 2>&1
+          (cd "$baseline" && VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
           export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
-          VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
-      - name: Compare complete generated bytes, projection mappings and semantic links
+          VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head-legacy.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head-legacy.log" 2>&1
+          VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
+          cmp "$capture/base-legacy.json" "$capture/head-legacy.json"
+      - name: Prove complete packets under the exact canonical helper relocation
         shell: bash
         run: |
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import { createHash } from 'node:crypto';
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const directory = `${process.env.RUNNER_TEMP}/component-input-parity`;
-          const baseBytes = readFileSync(`${directory}/base.json`);
-          const headBytes = readFileSync(`${directory}/head.json`);
-          const base = JSON.parse(baseBytes), head = JSON.parse(headBytes);
-          assert.equal(base.length, 228);
-          assert.equal(head.length, 228);
-          assert.deepEqual(head, base, 'complete checker/mapper projection packets must be unchanged');
-          const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-          const observer = readFileSync('crates/vize_canon/tests/constructor_emission_projection.rs');
-          const receipt = { pullRequestBase: process.env.BASE_SHA, base: readFileSync(`${directory}/base-revision.txt`, 'utf8').trim(), head: process.env.HEAD_SHA, observerSha256: hash(observer), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), completePackets: head.length, scope: 'Exact source projection parity; not native type-engine or publication acceptance' };
-          writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
-          console.log(JSON.stringify(receipt));
-          JS
+          set -euo pipefail
+          node --test tests/tooling/constructor-projection-parity.test.ts
+          node tools/support/compat/content-mapper/constructor-projection-parity.ts \
+            "$RUNNER_TEMP/component-input-parity" \
+            "$RUNNER_TEMP/component-input-base" "$GITHUB_WORKSPACE"
       - name: Observe actual mapper generation and gated parser allocations
         shell: bash
         run: |
@@ -267,6 +322,8 @@ jobs:
           export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
           export VIZE_INPUT_OWNERSHIP_PROFILE_CAPTURE="$RUNNER_TEMP/component-input-parity/generation-profile.json"
           cargo test --locked --profile ci -p vize_benchmarks --test component_input_ownership_profile actual_mapper_generation_reports_gated_parse_and_allocation_costs -- --exact --nocapture > "$RUNNER_TEMP/component-input-parity/generation-profile.log" 2>&1
+          export VIZE_ROOT_CALLBACK_PROFILE_CAPTURE="$RUNNER_TEMP/component-input-parity/root-callback-generation-profile.json"
+          cargo test --locked --profile ci -p vize_benchmarks --test component_input_ownership_profile actual_root_callback_generation_reports_roles_and_buffer_costs -- --exact --nocapture > "$RUNNER_TEMP/component-input-parity/root-callback-generation-profile.log" 2>&1
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

@@ -1,0 +1,27 @@
+mixin card(title)
+  .card
+    h3= title
+    if block
+      .card-body
+        block
+    else
+      p.empty(v-if="!items.length") Nothing here
+mixin row
+  my-row(:row="row")
+    block
+mixin frame
+  section
+    +row
+      block
+ul
+  each name in ['a', 'b']
+    li
+      +card(name)
+        span(@click="pick('" + name + "')") Pick #{name}
++card('Empty')
++card('Inline') inline text
++card('Expanded'): button(type="button") Go
++card('Dotted').
+  Dotted <b>{{ query }}</b>
++frame
+  my-cell(v-for="cell in cells" :key="cell.id") {{ cell.text }}

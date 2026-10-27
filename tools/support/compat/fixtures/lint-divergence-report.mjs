@@ -147,7 +147,7 @@ async function measureProject(context) {
 
 /**
  * The patina half, invoked exactly as the corpus matrix invokes it
- * (`tools/fixtures/tool-matrix-command.mjs`) so the two runs stay comparable,
+ * (`tools/fixtures/tool-matrix-command.ts`) so the two runs stay comparable,
  * then flattened from the per-file envelope into the one-record-per-finding
  * dialect the comparator normalizes.
  */

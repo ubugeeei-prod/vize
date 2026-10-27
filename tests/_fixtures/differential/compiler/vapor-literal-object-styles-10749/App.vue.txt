@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const label = 'ready'
+</script>
+<template>
+  <button type="button" :style="{fontWeight:'700'}" id="own">{{ label }}</button>
+</template>

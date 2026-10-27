@@ -179,6 +179,11 @@ pub struct ProfileExportCounter {
 /// Process-wide allocation totals over the profile window.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct ProfileExportAllocation {
+    /// Raw successful/failing allocation operation counts and requested layouts.
+    /// Present only in an instrumented host; these are not process RSS or copies.
+    #[cfg(feature = "micro-profiling")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operations: Option<ProfileExportAllocationOperations>,
     /// Allocation-like calls (`alloc` + `alloc_zeroed` + successful `realloc`).
     pub calls: u64,
     /// Bytes requested through allocation-like calls.
@@ -189,12 +194,35 @@ pub struct ProfileExportAllocation {
     pub failures: u64,
 }
 
+/// Allocator API events, with `realloc` old/new layouts kept distinct.
+#[cfg(feature = "micro-profiling")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct ProfileExportAllocationOperations {
+    pub alloc_calls: u64,
+    pub alloc_bytes: u64,
+    pub alloc_failures: u64,
+    pub alloc_zeroed_calls: u64,
+    pub alloc_zeroed_bytes: u64,
+    pub alloc_zeroed_failures: u64,
+    pub dealloc_calls: u64,
+    pub dealloc_bytes: u64,
+    pub realloc_calls: u64,
+    pub realloc_old_bytes: u64,
+    pub realloc_new_bytes: u64,
+    pub realloc_failures: u64,
+}
+
 /// Versioned, deterministic machine-readable profile report.
 ///
 /// Shape is committed at `docs/davinci/plan/profile-export.schema.json`;
 /// bump [`PROFILE_EXPORT_SCHEMA_VERSION`] with any incompatible change.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProfileExport {
+    /// Source callsite counts, aggregated across Rust threads in this process.
+    /// Profiling-only; ordinary builds preserve the existing serialized shape.
+    #[cfg(feature = "micro-profiling")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub micro: Option<Vec<vize_l0::profiler::micro::Entry>>,
     /// Export format version.
     pub schema_version: u64,
     /// Producing tool. Always `"vize"`.
@@ -236,7 +264,38 @@ impl ProfileExport {
 pub fn export_report(profiler: &Profiler, options: &ProfileExportOptions) -> ProfileExport {
     let spans = assemble::spans(profiler.span_snapshot(), options);
     let counters = assemble::counters(profiler.counter_snapshot(), options);
-    assemble::report(spans, counters, options)
+    let report = assemble::report(spans, counters, options);
+    #[cfg(feature = "micro-profiling")]
+    {
+        let mut report = report;
+        // Micros belong to this process's global profiling window only.
+        // Owned snapshot exports remain pure and never acquire another collector.
+        if core::ptr::eq(profiler, vize_l0::profiler::global_profiler()) {
+            let entries = vize_l0::profiler::micro::snapshot();
+            if !entries.is_empty() {
+                report.micro = Some(entries);
+            }
+            if let (Some(allocation), Some(raw)) = (&mut report.allocation, options.allocation) {
+                allocation.operations = Some(ProfileExportAllocationOperations {
+                    alloc_calls: raw.alloc_calls,
+                    alloc_bytes: raw.alloc_bytes,
+                    alloc_failures: raw.alloc_failures,
+                    alloc_zeroed_calls: raw.alloc_zeroed_calls,
+                    alloc_zeroed_bytes: raw.alloc_zeroed_bytes,
+                    alloc_zeroed_failures: raw.alloc_zeroed_failures,
+                    dealloc_calls: raw.dealloc_calls,
+                    dealloc_bytes: raw.dealloc_bytes,
+                    realloc_calls: raw.realloc_calls,
+                    realloc_old_bytes: raw.realloc_old_bytes,
+                    realloc_new_bytes: raw.realloc_new_bytes,
+                    realloc_failures: raw.realloc_failures,
+                });
+            }
+        }
+        report
+    }
+    #[cfg(not(feature = "micro-profiling"))]
+    report
 }
 
 /// Build the same wire report from the caller's already collected owned metrics.

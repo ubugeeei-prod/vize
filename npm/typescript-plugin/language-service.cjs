@@ -17,6 +17,10 @@ function createMappedLanguageService(ts, service, support) {
   for (const key of Object.keys(service))
     proxy[key] = typeof service[key] === "function" ? service[key].bind(service) : service[key];
   const get = (file) => support?.get(file);
+  proxy.dispose = () => {
+    support?.dispose?.();
+    service.dispose?.();
+  };
   // tsserver uses this method after receiving mapped numeric spans. Its
   // default implementation reads the generated Program's line map again.
   if (service.toLineColumnOffset)

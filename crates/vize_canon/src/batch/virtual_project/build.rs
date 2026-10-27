@@ -144,7 +144,7 @@ pub(super) fn build_vue_registered_file(
             VueCodegenOptions {
                 diagnostic_ownership: None,
                 check_options: context.virtual_ts_check_options,
-                typed_router_root: context.typed_router_root,
+                typed_router: context.typed_router,
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 // Batch check/declaration codegen must keep the authored

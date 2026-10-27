@@ -24,6 +24,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         crate::config::try_load_project_config_with_source(args.config.as_deref()).unwrap_or_else(
             |error| {
                 eprintln!("\x1b[31mError:\x1b[0m {error}");
+                eprintln!(
+                    "Hint: use `vize check --no-config` to type-check without loading project configuration."
+                );
                 std::process::exit(2);
             },
         )

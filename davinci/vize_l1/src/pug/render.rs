@@ -93,6 +93,13 @@ impl<'a> Visitor<'_, 'a> {
     fn node(&mut self, node: &PugNode<'a>) {
         match node {
             PugNode::Tag(tag) => self.tag(tag),
+            PugNode::Call(call) => {
+                self.token(&call.head);
+                if let Some(args) = &call.args {
+                    self.token(args);
+                }
+                self.tag(&call.tag);
+            }
             PugNode::Text(text) => self.text(text),
             PugNode::Html(html) => {
                 for item in &html.items {

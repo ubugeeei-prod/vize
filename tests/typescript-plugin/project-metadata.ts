@@ -13,6 +13,7 @@ export interface NativeProjectApi {
       readonly filename: string;
       readonly configFileName: string;
       readonly preserveUnusedDiagnostics?: boolean;
+      readonly checkJavaScript?: boolean;
     },
   ): string;
 }
@@ -130,3 +131,6 @@ export function checkProjectMetadata(
     );
   }
 }
+
+export type NativeApi = NativeProjectApi;
+export type { TsserverClient } from "./tsserver-client.ts";

@@ -1,0 +1,2 @@
+<script setup>const msg = 1</script>
+<template><div>{{ msg }}</div></template>

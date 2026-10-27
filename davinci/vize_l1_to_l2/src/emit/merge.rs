@@ -223,7 +223,6 @@ pub(super) fn emit_spread_props(
                         empty_key_multiline: for_item,
                         is_plain_element,
                         for_item,
-                        suppress_once_cache_dynamic: false,
                         force_multiline,
                     },
                 )?;
