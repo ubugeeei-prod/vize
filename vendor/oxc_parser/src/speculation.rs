@@ -64,7 +64,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub(crate) fn memoize_failed_speculative_subproblem<T: Dummy<'a>>(
         &mut self,
         production: SpeculativeProduction,
@@ -83,6 +83,17 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         if !self.state.reuse_failed_type_argument_subproblems {
             return parse(self);
         }
+        self.memoize_failed_speculative_subproblem_active(production, parse)
+    }
+
+    // Keep inactive speculation independent of the transaction's key/trivia frame.
+    // The active path retains the same effects, context and failed-end fences.
+    #[inline(never)]
+    fn memoize_failed_speculative_subproblem_active<T: Dummy<'a>>(
+        &mut self,
+        production: SpeculativeProduction,
+        parse: impl FnOnce(&mut Self) -> T,
+    ) -> T {
         let key = FailedSubproblemKey {
             production,
             token: self.token,
