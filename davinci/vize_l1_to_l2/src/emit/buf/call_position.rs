@@ -9,16 +9,20 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
     let alias = alias.as_bytes();
     let mut position = 0;
     while let Some(&byte) = bytes.get(position) {
+        let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
-            b'/' if bytes.get(position + 1) == Some(&b'/') => {
-                position = bytes[position + 2..]
+            b'/' if rest.first() == Some(&b'/') => {
+                position = rest
                     .iter()
+                    .skip(1)
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |end| position + 2 + end);
             }
-            b'/' if bytes.get(position + 1) == Some(&b'*') => {
-                position = bytes[position + 2..]
+            b'/' if rest.first() == Some(&b'*') => {
+                position = rest
+                    .get(1..)
+                    .unwrap_or_default()
                     .windows(2)
                     .position(|pair| pair == b"*/")
                     .map_or(bytes.len(), |end| position + 4 + end);
@@ -60,16 +64,20 @@ pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &st
     let bytes = text.as_bytes();
     let mut position = 0;
     while let Some(&byte) = bytes.get(position) {
+        let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
-            b'/' if bytes.get(position + 1) == Some(&b'/') => {
-                position = bytes[position + 2..]
+            b'/' if rest.first() == Some(&b'/') => {
+                position = rest
                     .iter()
+                    .skip(1)
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |end| position + 2 + end);
             }
-            b'/' if bytes.get(position + 1) == Some(&b'*') => {
-                position = bytes[position + 2..]
+            b'/' if rest.first() == Some(&b'*') => {
+                position = rest
+                    .get(1..)
+                    .unwrap_or_default()
                     .windows(2)
                     .position(|pair| pair == b"*/")
                     .map_or(bytes.len(), |end| position + 4 + end);
@@ -81,7 +89,6 @@ pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &st
                     .is_none_or(|ch| !is_identifier_part(ch) && ch != '.')
             }) =>
             {
-                let rest = &bytes[position + 1..];
                 let len = rest
                     .iter()
                     .position(|byte| !(byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')))
