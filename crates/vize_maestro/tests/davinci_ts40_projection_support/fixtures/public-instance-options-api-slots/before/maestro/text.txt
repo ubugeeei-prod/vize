@@ -1,0 +1,2 @@
+tests/_fixtures/davinci-ts40-projection/options-api-slots.vue.__template.ts|Template|19053|435e2e085db9c26b5a436d3624df0c2df7aa05e95dedfe24f414372c8ddd1bcd
+tests/_fixtures/davinci-ts40-projection/options-api-slots.vue.__script.ts|Script|141|a7dbca1d6c4c937743cfacd2ea86407d7253aabe040ac292c63db8461d2bd374
