@@ -317,3 +317,5 @@ fn includes_without_a_reader_stay_refused() {
 }
 
 mod include_cycles;
+
+mod include_limits;

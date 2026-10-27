@@ -11,11 +11,13 @@
 //! error diagnostic, located in the SFC.
 
 use std::borrow::Cow;
-use std::path::{Component, Path, PathBuf};
 
 use vize_l1_to_l2::lower::pug::{PugIncludes, PugRendering, derive_template_source_including};
 
 use crate::types::{BlockLocation, SfcDescriptor, SfcError};
+
+mod files;
+use files::FileIncludes;
 
 /// A compile view of `descriptor` whose pug template content is its
 /// derived Vue template, and the files it includes; borrowed unchanged
@@ -50,48 +52,6 @@ pub(super) fn prepare_pug_template<'d, 's>(
         template.content = Cow::Owned(derived.html.into());
     }
     Ok((Cow::Owned(view), dependencies))
-}
-
-/// pug-load's `resolve` and `read`: `path.join(dirname(from), path)`,
-/// read from disk.
-struct FileIncludes;
-
-impl PugIncludes for FileIncludes {
-    fn read(
-        &mut self,
-        from: &str,
-        path: &str,
-    ) -> Result<(vize_l0::String, vize_l0::String), vize_l0::String> {
-        let base = Path::new(from).parent().unwrap_or(Path::new(""));
-        let resolved = normalize(&base.join(path));
-        match std::fs::read_to_string(&resolved) {
-            Ok(content) => Ok((
-                vize_l0::String::from(resolved.to_string_lossy().as_ref()),
-                vize_l0::String::from(content.as_str()),
-            )),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                Err(vize_l0::String::from("the file does not exist"))
-            }
-            Err(error) => Err(vize_l0::cstr!("{error}")),
-        }
-    }
-}
-
-/// `path.join`'s lexical normalization of `.` and `..`.
-fn normalize(path: &Path) -> PathBuf {
-    let mut out = PathBuf::new();
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir
-                if matches!(out.components().next_back(), Some(Component::Normal(_))) =>
-            {
-                out.pop();
-            }
-            other => out.push(other),
-        }
-    }
-    out
 }
 
 fn is_pug_language(lang: &str) -> bool {

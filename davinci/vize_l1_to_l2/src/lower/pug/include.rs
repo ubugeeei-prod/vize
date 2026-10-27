@@ -20,7 +20,9 @@ use vize_l1::pug::{
 use super::emit::Emitter;
 
 mod head;
+mod limits;
 use head::head;
+pub use limits::MAX_INCLUDE_BYTES;
 
 /// Reads the files a pug template includes.
 pub trait PugIncludes {
@@ -50,6 +52,7 @@ struct File {
 pub(super) struct Includes<'t> {
     /// Whether the host reads files; without one includes are refused.
     reads: bool,
+    pub(super) budget: limits::Budget,
     /// The template's own file name.
     filename: Option<String>,
     arena: &'t Allocator,
@@ -66,6 +69,7 @@ impl<'t> Includes<'t> {
     pub(super) fn new(arena: &'t Allocator, reads: bool, filename: Option<&str>) -> Self {
         Self {
             reads,
+            budget: limits::Budget::default(),
             filename: filename.map(String::from),
             active: filename.into_iter().map(String::from).collect(),
             arena,
@@ -179,6 +183,9 @@ impl<'t> Emitter<'t> {
         depth: usize,
         reader: &mut dyn PugIncludes,
     ) {
+        if self.includes.budget.halted {
+            return;
+        }
         let mut directives = StdVec::new();
         walk(nodes, &mut |node| {
             if let PugNode::Refused(refused) = node
@@ -188,6 +195,9 @@ impl<'t> Emitter<'t> {
             }
         });
         for directive in directives {
+            if self.includes.budget.halted {
+                break;
+            }
             self.load(directive, depth, reader);
         }
     }
@@ -207,8 +217,8 @@ impl<'t> Emitter<'t> {
         if filtered {
             return self.error(span, super::refusal::message(PugRefusal::Filter));
         }
-        let Some(from) = from.filter(|_| !path.starts_with('/')) else {
-            let option = if path.starts_with('/') {
+        let Some(from) = from.filter(|_| !limits::absolute(path)) else {
+            let option = if limits::absolute(path) {
                 "\"basedir\" option is required to use includes and extends with \"absolute\""
             } else {
                 "\"filename\" option is required to use includes and extends with \"relative\""
@@ -218,10 +228,16 @@ impl<'t> Emitter<'t> {
         if depth >= MAX_DEPTH {
             return self.error(span, String::from(super::refusal::INCLUDE_DEPTH));
         }
+        if !self.includes.budget.load() {
+            return self.include_budget_error(span);
+        }
         let (name, content) = match reader.read(&from, path) {
             Ok(read) => read,
             Err(reason) => return self.error(span, super::refusal::include(path, &reason)),
         };
+        if !self.includes.budget.source(content.len()) {
+            return self.include_budget_error(span);
+        }
         if self.includes.active.contains(&name) {
             return self.error(span, String::from(super::refusal::INCLUDE_DEPTH));
         }
@@ -282,6 +298,13 @@ impl<'t> Emitter<'t> {
         if !self.includes.reads {
             let span = self.span(&directive.head);
             return self.error(span, super::refusal::message(PugRefusal::Include));
+        }
+        if self.includes.budget.halted {
+            return;
+        }
+        if !self.includes.budget.expand() {
+            let span = self.span(&directive.head);
+            return self.include_budget_error(span);
         }
         let loaded = self
             .includes

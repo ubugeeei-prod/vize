@@ -63,7 +63,7 @@ use vize_l0::diag::{Diagnostic, Severity};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::pug::{PugError, PugErrorCode, PugTree, parse_pug};
 
-pub use include::PugIncludes;
+pub use include::{MAX_INCLUDE_BYTES, PugIncludes};
 pub use map::PugSourceMap;
 pub use view::PugBlockView;
 
@@ -127,6 +127,9 @@ pub fn derive_template_with(
 
 /// [`derive_template_with`] reading includes through `reader`, resolved
 /// against `filename` (the template's file).
+/// Includes are limited per compilation to 4096 loads and expansions,
+/// 16 MiB total included source, and 16 MiB derived output. Cycles and
+/// chains deeper than 32 are refused independently.
 #[must_use]
 pub fn derive_template_including(
     tree: &PugTree<'_>,

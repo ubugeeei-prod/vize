@@ -85,12 +85,18 @@ impl<'t> Emitter<'t> {
         if !self.is_authored(token.text) {
             return self.synth(token.text, span);
         }
+        if !self.include_output(token.text.len(), span) {
+            return;
+        }
         self.html.push_str(token.text);
         self.map.push_verbatim(token.text.len(), span.start);
     }
 
     /// Emit bytes pug synthesizes for the construct at `span`.
     pub(super) fn synth(&mut self, text: &str, span: Span) {
+        if !self.include_output(text.len(), span) {
+            return;
+        }
         self.html.push_str(text);
         self.map
             .push_synth(text.len(), span.start, span.end.max(span.start));
@@ -104,6 +110,9 @@ impl<'t> Emitter<'t> {
     pub(super) fn nodes(&mut self, nodes: &'t [PugNode<'t>]) {
         let mut index = 0;
         while let Some(node) = nodes.get(index) {
+            if self.includes.budget.halted {
+                return;
+            }
             index += 1;
             match node {
                 PugNode::Refused(refused)

@@ -112,6 +112,9 @@ pub(super) fn include(path: &str, reason: &str) -> String {
 
 pub(super) const INCLUDE_DEPTH: &str = "pug includes nest too deeply (an include cycle?)";
 
+pub(super) const INCLUDE_BUDGET: &str =
+    "pug includes exceed the compilation budget (4096 loads/expansions or 16 MiB source/output)";
+
 /// Why a value holding a mixin `block` cannot be printed.
 pub(super) const FUNCTION_VALUE: &str =
     "it holds a mixin `block` function, whose text is pug's generated code";
