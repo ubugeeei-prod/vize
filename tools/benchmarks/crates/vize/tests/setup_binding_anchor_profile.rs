@@ -1,9 +1,4 @@
 //! Fresh-process source generation and allocation evidence, with full packets.
-#![expect(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    reason = "qualification asserts by panicking"
-)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use standard formatting")]
 
 use serde_json::json;
@@ -40,7 +35,8 @@ fn authored_source(count: usize, imports: bool) -> String {
     source.push_str("const { label: localLabel, ...rest } = defineProps<{label: string; 'aria-label'?: string; class?: string}>();\r\n");
     source
         .push_str("</script>\r\n<template><section :class=\"rest.class\">{{ localLabel }} {{ item");
-    source.push_str(&(count - 1).to_string());
+    let last = count - 1;
+    source.push_str(vize_l0::cstr!("{last}").as_str());
     source.push_str(".id }}</section></template>\r\n");
     source
 }
