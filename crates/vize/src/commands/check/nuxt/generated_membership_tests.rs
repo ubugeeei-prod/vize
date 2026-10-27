@@ -54,6 +54,7 @@ fn configured_generated_stubs_follow_references_and_literal_includes() {
         let mut files = super::super::tsconfig_inputs::collect_default_check_files(
             &root,
             Some(&config),
+            false,
             &mut super::super::tsconfig_inputs::TsconfigInputCache::default(),
         );
         files.extend(
@@ -126,6 +127,7 @@ fn configured_generated_stubs_follow_custom_build_dir_outside_the_app() {
     let files = super::super::tsconfig_inputs::collect_default_check_files(
         &app,
         Some(&config),
+        false,
         &mut super::super::tsconfig_inputs::TsconfigInputCache::default(),
     );
     let mut options = VirtualTsOptions::default();
