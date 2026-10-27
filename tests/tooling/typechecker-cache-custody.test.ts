@@ -12,6 +12,7 @@ import {
 import { createColdBackendObserver } from "../../tools/benchmarks/scripts/typechecker-cache-backend.ts";
 import { summarizeColdBackendObserver } from "../../tools/benchmarks/scripts/typechecker-cache-custody.ts";
 import { sealFixtureInputs } from "../../tools/benchmarks/scripts/typechecker-fixture-identity.ts";
+import { inferCacheSemanticRoot } from "../../tools/benchmarks/scripts/typechecker-cache-root.ts";
 
 const hash = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 
@@ -228,6 +229,45 @@ void test("authored compiler-option changes invalidate the seal without traversi
       before.sha256,
       after.sha256,
       "changing check coverage cannot reuse an old oracle/custody receipt",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("actual explicit generated include roots qualify only when every primary input is listed", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-include-control-"));
+  try {
+    const project = path.join(root, "project"),
+      virtual = path.join(root, "mirror");
+    fs.mkdirSync(path.join(project, "src"), { recursive: true });
+    fs.mkdirSync(path.join(virtual, "src"), { recursive: true });
+    const entries = [{ path: "src/First.vue" }, { path: "src/Second.vue" }];
+    for (const entry of entries) {
+      fs.writeFileSync(path.join(project, entry.path), "<template/>");
+      fs.writeFileSync(path.join(virtual, entry.path + ".ts"), "export {};");
+    }
+    const request = {
+      projectRoot: project,
+      entries,
+      virtualRoot: virtual,
+      configPath: path.join(virtual, "tsconfig.json"),
+      config: { include: entries.map((entry) => entry.path + ".ts") },
+    };
+    assert.equal(inferCacheSemanticRoot(request).qualified, true);
+    assert.equal(
+      inferCacheSemanticRoot({ ...request, config: { include: ["src/First.vue.ts"] } }).qualified,
+      false,
+      "an unlisted primary input cannot be admitted only because its mirror exists",
+    );
+    assert.equal(
+      inferCacheSemanticRoot({ ...request, config: { include: ["src/*.vue.ts"] } }).qualified,
+      false,
+      "this observer does not pretend an authored glob is an exact generated-root census",
+    );
+    assert.equal(
+      inferCacheSemanticRoot({ ...request, config: { files: request.config.include } }).qualified,
+      true,
     );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

@@ -14,13 +14,14 @@ export function inferCacheSemanticRoot(options: {
   entries: { path: string }[];
   virtualRoot: string;
   configPath: string;
-  config: { files?: unknown };
+  config: { files?: unknown; include?: unknown };
 }) {
-  const files = Array.isArray(options.config.files)
-    ? options.config.files
-        .filter((file): file is string => typeof file === "string")
-        .map((file) => path.resolve(path.dirname(options.configPath), file))
-    : [];
+  // Canon uses explicit generated include paths; files is retained for other exact-root hosts.
+  // Do not expand authored globs or infer membership from a file that merely exists on disk.
+  const files = [options.config.files, options.config.include]
+    .flatMap((list) => (Array.isArray(list) ? list : []))
+    .filter((file): file is string => typeof file === "string" && !/[*?]/u.test(file))
+    .map((file) => path.resolve(path.dirname(options.configPath), file));
   const sfcs = options.entries.filter((entry) => entry.path.endsWith(".vue"));
   const names = new Map<string, number>();
   for (const entry of sfcs) {
@@ -72,7 +73,7 @@ export function inferCacheSemanticRoot(options: {
     qualified:
       unambiguous &&
       sfcs.length > 0 &&
-      mappings.every((row) => inside(root, row.original) && row.exists),
+      mappings.every((row) => inside(root, row.original) && row.exists && row.listed),
     sourceFiles: sfcs.length,
     configFiles: files.length,
     mappings,
