@@ -93,3 +93,52 @@ fn configured_generated_stubs_follow_references_and_literal_includes() {
         assert!(options.strict_instance_globals);
     }
 }
+
+#[test]
+fn configured_generated_stubs_follow_custom_build_dir_outside_the_app() {
+    let directory = tempfile::tempdir().unwrap();
+    let base = directory.path().canonicalize().unwrap();
+    let app = base.join("app");
+    std::fs::create_dir_all(&app).unwrap();
+    std::fs::create_dir_all(base.join("generated/types")).unwrap();
+    std::fs::write(
+        app.join("nuxt.config.ts"),
+        "export default defineNuxtConfig({ buildDir: '../generated' });\n",
+    )
+    .unwrap();
+    std::fs::write(
+        base.join("generated/nuxt.d.ts"),
+        "/// <reference path=\"./types/imports.d.ts\" />\nexport {};\n",
+    )
+    .unwrap();
+    std::fs::write(
+        base.join("generated/types/imports.d.ts"),
+        "declare global { const useOutsideBuildDir: () => string; }\nexport {};\n",
+    )
+    .unwrap();
+    std::fs::write(
+        base.join("generated/types/stale.d.ts"),
+        "declare global { const staleOutsideBuildDir: string; }\nexport {};\n",
+    )
+    .unwrap();
+    let config = app.join("tsconfig.json");
+    std::fs::write(&config, r#"{"files":["../generated/nuxt.d.ts"]}"#).unwrap();
+    let files = super::super::tsconfig_inputs::collect_default_check_files(
+        &app,
+        Some(&config),
+        &mut super::super::tsconfig_inputs::TsconfigInputCache::default(),
+    );
+    let mut options = VirtualTsOptions::default();
+    super::detect(
+        &mut options,
+        &app,
+        Some(&config),
+        Some(&files),
+        false,
+        VueVersion::V3,
+    );
+    let stubs = options.auto_import_stubs.join("\n");
+    assert!(stubs.contains("declare const useOutsideBuildDir:"));
+    assert!(!stubs.contains("declare const staleOutsideBuildDir:"));
+    assert!(options.strict_instance_globals);
+}

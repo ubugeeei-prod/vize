@@ -94,7 +94,7 @@ pub(in crate::commands::check) fn detect(
     let declaration_graph = configured_files.map(|files| {
         vize_l0::profile!(
             "cli.check.nuxt.declaration_graph",
-            super::tsconfig_inputs::collect_declaration_reference_graph(cwd, files)
+            super::tsconfig_inputs::collect_declaration_reference_graph(files)
         )
     });
     let has_generated_imports = collect_generated_stubs(
