@@ -11,6 +11,8 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/cross-file-finalization-compare.yml
+      - .github/scripts/cross-file-finalization-scope.ts
+      - tests/tooling/cross-file-finalization-scope.test.ts
       - crates/vize/src/commands/lint/cross_file.rs
       - crates/vize_vitrine/src/wasm/cross_file.rs
       - crates/vize_croquis_cf/benches/cross_file.rs
@@ -26,7 +28,37 @@ env:
   EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   BASE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
 jobs:
+  scope:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run_comparison: ${{ steps.plan.outputs.run_comparison }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Validate historical comparison applicability
+        run: node --test tests/tooling/cross-file-finalization-scope.test.ts
+      - name: Record exact changed-source applicability
+        id: plan
+        run: node .github/scripts/cross-file-finalization-scope.ts
+      - name: Preserve applicability without claiming measurements
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cross-file-finalization-scope-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/cross-file-finalization-scope
+          if-no-files-found: warn
+          retention-days: 14
   paired-optimized-source:
+    needs: scope
+    if: ${{ needs.scope.outputs.run_comparison == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:

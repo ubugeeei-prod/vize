@@ -1,0 +1,68 @@
+{
+  "queries": [
+    {
+      "expected": "boolean",
+      "kind": "lexical",
+      "name": "isSP",
+      "position": 3324,
+      "type": "boolean",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"21\",\n    ),\n    flags: 134217984,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "boolean",
+      "kind": "instance",
+      "name": "isSP",
+      "position": 3413,
+      "type": "boolean",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"21\",\n    ),\n    flags: 134217984,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "string",
+      "kind": "lexical",
+      "name": "appName",
+      "position": 3461,
+      "type": "string",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"14\",\n    ),\n    flags: 32,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "string",
+      "kind": "instance",
+      "name": "appName",
+      "position": 3559,
+      "type": "string",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"14\",\n    ),\n    flags: 32,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "unknown",
+      "kind": "lexical",
+      "name": "opaque",
+      "position": 3765,
+      "type": "unknown",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"9\",\n    ),\n    flags: 2,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "unknown",
+      "kind": "instance",
+      "name": "opaque",
+      "position": 3860,
+      "type": "unknown",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"9\",\n    ),\n    flags: 2,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "any",
+      "kind": "lexical",
+      "name": "dynamic",
+      "position": 3912,
+      "type": "any",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"1\",\n    ),\n    flags: 1,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    },
+    {
+      "expected": "any",
+      "kind": "instance",
+      "name": "dynamic",
+      "position": 4010,
+      "type": "any",
+      "wholeRecord": "TypeResponse {\n    id: TypeHandle(\n        \"1\",\n    ),\n    flags: 1,\n    object_flags: Some(\n        0,\n    ),\n    value: None,\n    target: None,\n    type_parameters: [],\n    outer_type_parameters: [],\n    local_type_parameters: [],\n    element_flags: [],\n    fixed_length: None,\n    readonly: None,\n    object_type: None,\n    index_type: None,\n    check_type: None,\n    extends_type: None,\n    base_type: None,\n    subst_constraint: None,\n    texts: [],\n    symbol: None,\n}"
+    }
+  ]
+}
