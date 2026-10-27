@@ -29,8 +29,6 @@ pub(super) struct BindPropsOptions<'a> {
     pub skip_is: bool,
     pub for_item: bool,
     pub is_plain_element: bool,
-    pub once_layout: bool,
-    pub once_cache_initializer: bool,
     pub force_multiline: bool,
 }
 
@@ -102,13 +100,24 @@ pub(super) fn emit_bind_props(
     bindings: &[BindingOp<'_>],
     options: BindPropsOptions<'_>,
 ) -> Result<(), EmitError> {
+    // Only components and native elements reach here; outlets emit their own.
+    let previous = core::mem::replace(&mut cx.component_props, !options.is_plain_element);
+    let result = emit_owned_bind_props(cx, attributes, bindings, options);
+    cx.component_props = previous;
+    result
+}
+
+fn emit_owned_bind_props(
+    cx: &mut EmitCx<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    options: BindPropsOptions<'_>,
+) -> Result<(), EmitError> {
     let BindPropsOptions {
         if_key,
         skip_is,
         for_item,
         is_plain_element,
-        once_layout,
-        once_cache_initializer,
         force_multiline,
     } = options;
     if super::merge::has_object_spread(bindings) {
@@ -137,11 +146,12 @@ pub(super) fn emit_bind_props(
             if_key,
             skip_normalize: false,
             empty_key_multiline: for_item
-                && (super::directive::has_runtime(bindings) || once_layout || force_multiline),
+                && (super::directive::has_runtime(bindings)
+                    || super::once::has(bindings)
+                    || force_multiline),
             is_plain_element,
             for_item,
-            suppress_once_cache_dynamic: once_cache_initializer,
-            force_multiline: once_layout || force_multiline,
+            force_multiline,
         },
     )?;
     if normalize {

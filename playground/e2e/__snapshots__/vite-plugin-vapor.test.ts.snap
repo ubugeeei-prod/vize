@@ -15,7 +15,8 @@ const __vaporRender = render
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'Collision',
   render: __vaporRender,
-  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 function render() {
   return "local";
@@ -69,7 +70,8 @@ import { ref } from "vue";
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'App',
   render: __vaporRender,
-  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 const count = ref(1);
 
@@ -228,7 +230,8 @@ type MainTab =
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'App',
   render: __vaporRender,
-  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 // Theme toggle
 const isDark = ref(false);
@@ -343,7 +346,8 @@ export default /*@__PURE__*/_defineVaporComponent({
     theme: { type: String, required: false }
   },
   render: __vaporRender,
-  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props: any, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 const props = __props;
 const codeContentEl = useTemplateRef<HTMLDivElement>("codeContentEl");
@@ -1301,7 +1305,8 @@ export default /*@__PURE__*/_defineVaporComponent({
     compiler: { type: null, required: true }
   },
   render: __vaporRender,
-  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props: any, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 const props = __props;
 const { theme } = useTheme();
@@ -1400,7 +1405,8 @@ const visible = true;
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'TresCustomRenderer',
   render: __vaporRender,
-  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 
 const __returned__ = { visible, Primitive }
@@ -1705,7 +1711,8 @@ export default /*@__PURE__*/_defineVaporComponent({
     compiler: { type: null, required: true }
   },
   render: __vaporRender,
-  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props: any, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 const props = __props;
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
@@ -1843,7 +1850,8 @@ import { Primitive } from "@tresjs/core";
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'TresPrimitive',
   render: __vaporRender,
-  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
 
 
 const __returned__ = { Primitive }
@@ -1871,7 +1879,8 @@ const count = 1;
 export default /*@__PURE__*/_defineComponent({
   __name: 'SsrFallback',
   ssrRender: ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+  __expose();
 
 
 const __returned__ = { count }

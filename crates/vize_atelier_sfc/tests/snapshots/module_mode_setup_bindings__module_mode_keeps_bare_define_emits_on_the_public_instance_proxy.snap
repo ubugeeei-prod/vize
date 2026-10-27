@@ -21,7 +21,8 @@ export default {
   __name: 'anonymous',
   emits: ['destroy'],
   render: _sfc_render,
-  setup(__props, { emit: $emit }) {
+  setup(__props, { expose: __expose, emit: $emit }) {
+  __expose();
 
 
 return {}

@@ -43,8 +43,9 @@ runs:
         targets: ${{ inputs.target }}
     - uses: ./.github/actions/setup-rust-script
       if: runner.os == 'Linux' && endsWith(inputs.target, '-musl')
+    # x86_64 gnu links with rust-lld so crates/vize/build.rs can fold identical code.
     - name: Setup Wild linker (Linux)
-      if: runner.os == 'Linux' && !endsWith(inputs.target, '-musl')
+      if: runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'
       uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
       with:
         wild-version: "0.9.0"

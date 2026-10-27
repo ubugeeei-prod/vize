@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+  "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reserved-prop-dynamic-component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Heading.vue",
+          "source": "src/Heading.vue.txt"
+        },
+        {
+          "file": "src/Page.vue",
+          "source": "src/Page.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reserved-prop-dynamic-component-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Heading.vue",
+          "source": "src/HeadingWrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Heading.vue",
+          "line": 2,
+          "column": 32,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "reserved-prop-authored-local-collision",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Heading.vue",
+          "source": "src/HeadingCollision.vue.txt"
+        },
+        {
+          "file": "src/Page.vue",
+          "source": "src/Page.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

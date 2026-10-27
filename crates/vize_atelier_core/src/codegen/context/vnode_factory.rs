@@ -62,9 +62,11 @@ impl CodegenContext {
             in_match_scope: false,
             skip_v_memo: false,
             props_is_plain_element: false,
+            props_is_component: false,
             parent_ns: Namespace::Html,
             static_cache: false,
             in_cached_static: false,
+            in_v_once: false,
             v_if_branch_counter: 0,
             source: String::default(),
         }

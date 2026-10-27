@@ -126,12 +126,39 @@ const BATTERY: &[(&str, &str)] = &[
     ("optional_chain_ref", r#"<div @click="obj?.go"></div>"#),
     ("component_ref_handler", r#"<MyComp @finish="handler" />"#),
     ("component_let_handler", r#"<MyComp @finish="looseFn" />"#),
+    ("ref_maybe", r#"<div @click="maybeFn"></div>"#),
+    ("ref_value", r#"<div @click="count"></div>"#),
+    ("padded_ref", "<div @click=\"\n  maybeFn\n\"></div>"),
+    ("component_maybe_handler", r#"<MyComp @finish="maybeFn" />"#),
+    (
+        "component_padded_handler",
+        r#"<MyComp @finish=" maybeFn " />"#,
+    ),
+    ("component_member_handler", r#"<MyComp @finish="obj.go" />"#),
+    (
+        "component_member_modifier",
+        r#"<MyComp @finish.stop="obj.go" @done="obj.go($event)" />"#,
+    ),
+    (
+        "transition_hooks",
+        r#"<Transition @enter="maybeFn" @after-enter="looseFn"><p>x</p></Transition>"#,
+    ),
+    (
+        "branch_component_handler",
+        r#"<MyComp v-if="count" @finish="maybeFn" /><MyComp v-else @finish="obj.go" />"#,
+    ),
+    (
+        "for_component_handler",
+        r#"<MyComp v-for="i in items" :key="i" @finish="maybeFn" />"#,
+    ),
+    ("outlet_handler", r#"<slot @finish="maybeFn" />"#),
 ];
 
 fn metadata() -> BindingMetadata {
     let entries: &[(&str, BindingType)] = &[
         ("handler", BindingType::SetupConst),
         ("looseFn", BindingType::SetupLet),
+        ("maybeFn", BindingType::SetupMaybeRef),
         ("obj", BindingType::SetupConst),
         ("count", BindingType::SetupRef),
         ("items", BindingType::SetupConst),
@@ -262,10 +289,10 @@ fn the_slot_the_guard_and_the_dropped_patch_flag_are_option_only() {
         render(r#"<div @click="handler(1)"></div>"#, false),
         "onClick: $event => (handler(1))"
     );
-    // A reference the script can rebind is guarded and forwarded.
+    // A reference the script can rebind is unwrapped, guarded and forwarded.
     assert_eq!(
         render(r#"<div @click="looseFn"></div>"#, true),
-        "onClick: _cache[0] || (_cache[0] = (...args) => (looseFn && looseFn(...args)))"
+        "onClick: _cache[0] || (_cache[0] = (...args) => (_unref(looseFn) && _unref(looseFn)(...args)))"
     );
     // A `SetupConst` reference needs no slot at all — the shipped
     // `needs_von_handler_cache` carves it out.

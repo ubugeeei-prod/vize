@@ -294,8 +294,12 @@ fn transform_with_diagnostic_ownership(
     }
     let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
-    let mut diagnostic_echoes = diagnostic_ownership
-        .map(|collector| collector.into_inner().into_echoes())
+    let (mut diagnostic_echoes, callback_primaries) = diagnostic_ownership
+        .map(|collector| {
+            let mut ownership = collector.into_inner();
+            let primaries = ownership.take_callback_primaries();
+            (ownership.into_echoes(), primaries)
+        })
         .unwrap_or_default();
     for echo in &mut diagnostic_echoes {
         echo.authored = authored.to_authored(echo.authored.clone());
@@ -310,7 +314,7 @@ fn transform_with_diagnostic_ownership(
                         sfc_diagnostic_directives(content, &descriptor, &spans, &diagnostic_echoes),
                         generic_copies.as_ref(),
                     );
-                    with_component_prop_echoes(directives, &code, &mappings)
+                    with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
                 })
                 .flatten(),
             &diagnostic_echoes,

@@ -48,7 +48,7 @@ pub use vize_relief::{
     RetainedJsAstKind, ReturnStatement, ReturnValue, RootNode, RuntimeHelper, SequenceExpression,
     SimpleExpressionNode, SlotsExpression, SourceLocation, TemplateChildNode, TemplateLiteral,
     TemplateLiteralElement, TemplateTextChildNode, TextCallContent, TextCallNode, TextNode,
-    VNodeCall, VNodeChildren, VNodeTag,
+    VNodeCall, VNodeChildren, VNodeTag, literal_object_style,
 };
 pub use vize_relief::{errors, options};
 

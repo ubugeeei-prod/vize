@@ -139,13 +139,19 @@ impl TemplateFormatter<'_> {
             }
         }
         let tail = tail.get(..end).unwrap_or_default();
-        if !CANONICAL && memchr::memmem::find(tail.as_bytes(), b"{{").is_some_and(|open| open > 0) {
+        let interpolation = memchr::memmem::find(tail.as_bytes(), b"{{");
+        if !CANONICAL && interpolation.is_some_and(|open| open > 0) {
             // The default profile already wraps a prefixed sole mustache
             // inside its syntax; keep that established layout.
             return false;
         }
         let column = self.output_column(output) + 1;
-        if column + tail.len() <= self.options.print_width as usize && !tail.contains('\t') {
+        // Formatting a mustache can add spaces or expand its expression. Raw
+        // byte length bounds display width only for an unchanged text tail.
+        if interpolation.is_none()
+            && column + tail.len() <= self.options.print_width as usize
+            && !tail.contains('\t')
+        {
             return false;
         }
         let formatted =

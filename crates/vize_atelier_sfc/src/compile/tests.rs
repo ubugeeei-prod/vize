@@ -1,5 +1,6 @@
 mod custom_elements;
 mod define_props_regressions;
+mod inline_handlers;
 mod options_api_events;
 mod page_meta;
 mod props_rest;

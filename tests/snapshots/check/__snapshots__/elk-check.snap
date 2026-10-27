@@ -775,7 +775,7 @@
     {
       "file": "app/components/user/UserPicker.vue",
       "diagnostics": [
-        "error:18:48 [TS2339] Property 'id' does not exist on type 'UserLogin'."
+        "error:18:48 [TS2339] Property 'id' does not exist on type 'UserLogin'. (source: <template v-for=\"user of all\" :key=\"user.id\">; binding: 'key')"
       ]
     },
     {
@@ -789,7 +789,7 @@
     {
       "file": "app/components/user/UserSwitcher.vue",
       "diagnostics": [
-        "error:35:49 [TS2339] Property 'id' does not exist on type 'UserLogin'."
+        "error:35:49 [TS2339] Property 'id' does not exist on type 'UserLogin'. (source: <template v-for=\"user of sorted\" :key=\"user.id\">; binding: 'key')"
       ]
     },
     {

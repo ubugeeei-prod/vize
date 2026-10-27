@@ -425,7 +425,7 @@ jobs:
     name: Publish Open VSX extension
     needs: [version, tag]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment: open-vsx-registry
     env:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
@@ -451,7 +451,7 @@ jobs:
     name: Publish VS Code extension - ${{ matrix.settings.target }}
     needs: [version, tag, build-editor-platforms]
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     environment: vscode-marketplace
     strategy:
       fail-fast: false
@@ -462,6 +462,9 @@ jobs:
       VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
       VSCE_DLX_BIN: npx
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      # The Marketplace validates a platform upload before listing it: 0.584.0
+      # took 6.5-9 min. Wait up to 20 min (120 x 10 s).
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "120"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -477,7 +480,7 @@ jobs:
     name: Publish Open VSX extension - ${{ matrix.settings.target }}
     needs: [version, tag, build-editor-platforms]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment: open-vsx-registry
     strategy:
       fail-fast: false
