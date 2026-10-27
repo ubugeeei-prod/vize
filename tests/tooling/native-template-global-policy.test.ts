@@ -4,12 +4,28 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
+import { asArray, asRecord, readJsonRecord } from "../../tools/support/json-value.ts";
+import type { Target, WholePacket } from "./support/template-global-stock.ts";
+import type { RuntimeResult } from "./support/template-global-runtime.ts";
+import type { SfcCompileOptionsNapi } from "../../npm/native/index.js";
+type Native = typeof import("../../npm/native/index.js");
+type ProducerName = "before" | "candidate" | "stock";
+type ProducerResult = { packet: WholePacket; runtime?: RuntimeResult; resolvedWholeCode?: string };
+type Row = {
+  id: string;
+  source: string;
+  target: Target;
+  inlineTemplate: boolean;
+  options: SfcCompileOptionsNapi;
+  producers: Partial<Record<ProducerName, ProducerResult>>;
+};
+import { templateGlobalCases as cases } from "./support/template-global-inputs.ts";
 
 const proof = process.env.VIZE_TEMPLATE_GLOBAL_RUNTIME_PROOF;
 const selected = Boolean(proof) || process.env.VIZE_TEMPLATE_GLOBAL_RUNTIME_REQUIRED === "1";
 
 await test(
-  "template globals match the actual Vue compiler and runtime in both setup modes",
+  "Vue 3.5.41 template globals hold across native targets and both setup modes",
   { skip: !selected },
   async () => {
     assert.ok(proof, "required execution retains every complete packet");
@@ -38,14 +54,14 @@ await test(
       "MouseEvent",
       "ShadowRoot",
     ])
-      globalThis[name] = name === "window" ? window : window[name];
+      Reflect.set(globalThis, name, name === "window" ? window : Reflect.get(window, name));
     // Runtime-dom must first load after the real DOM globals have been registered.
-    const { stockSfc, stableProvider } = await import("./support/template-global-stock.mjs");
+    const { stockSfc, stableProvider } = await import("./support/template-global-stock.ts");
     const { loadWholeComponent, executeWholeComponent } =
-      await import("./support/template-global-runtime.mjs");
+      await import("./support/template-global-runtime.ts");
     const require = createRequire(import.meta.url);
-    const candidate = require("../../npm/native/index.js");
-    const before = stableProvider("@vizejs/native");
+    const candidate: Native = require("../../npm/native/index.js");
+    const before: Native = stableProvider("@vizejs/native");
     const { getBindingIdentity } = require("../../npm/native/native-binding-identity.js");
     const identities = {
       candidate: getBindingIdentity(candidate),
@@ -76,6 +92,17 @@ await test(
     const receipt = {
       source: process.env.VIZE_TEMPLATE_GLOBAL_SOURCE_SHA,
       identities,
+      policy: {
+        authority: "Vue 3.5.41 DOM/SFC",
+        nativeTargets: "same explicit compiler policy",
+        vaporReference: "independent RC9 observation; not native parity",
+      },
+      publicBinary: {
+        filename: stableProvider.resolve("@vizejs/native-linux-x64-gnu"),
+        sha256: createHash("sha256")
+          .update(readFileSync(stableProvider.resolve("@vizejs/native-linux-x64-gnu")))
+          .digest("hex"),
+      },
       candidateBinary: {
         filename: nativeBinary.pathname,
         bytes: readFileSync(nativeBinary).length,
@@ -93,83 +120,23 @@ await test(
       JSON.stringify(receipt, null, 2) + "\n",
     );
 
-    const script = `const emit = defineEmits<{ press: [] }>();`;
-    const component = (setup, template) =>
-      `<script setup lang="ts">\n${script}\n${setup}\n</script>\n<template>${template}</template>`;
-    const cases = [
-      {
-        id: "focus",
-        source: component(
-          "",
-          `<button @click="(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }">press</button>`,
-        ),
-        missing: true,
-        beforeEmits: 1,
-      },
-      {
-        id: "explicit",
-        source: component(
-          "",
-          `<button @click="(event: MouseEvent) => { if (globalThis.document.activeElement !== event.currentTarget) return; emit('press'); }">press</button>`,
-        ),
-        missing: true,
-        beforeEmits: 1,
-      },
-      {
-        id: "allowed",
-        source: component(
-          "",
-          `<button @click="(event: MouseEvent) => { if (Math.max(1, 2) !== 2 || Intl.NumberFormat('en-US').format(2) !== '2') return; emit('press'); }">press</button>`,
-        ),
-        emits: 1,
-      },
-      {
-        id: "callback",
-        source: component(
-          "",
-          `<button @click="(document: MouseEvent) => { if (!document.currentTarget) return; emit('press'); }">press</button>`,
-        ),
-        emits: 1,
-      },
-      {
-        id: "setup",
-        source: component(
-          "const document = { activeElement: null };",
-          `<button @click="(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }">press</button>`,
-        ),
-        emits: 0,
-      },
-      {
-        id: "loop",
-        source: component(
-          "",
-          `<div><button v-for="document in [{ activeElement: null }]" @click="(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }">press</button></div>`,
-        ),
-        emits: 0,
-      },
-      {
-        id: "render-unknown",
-        source: component("", `<p>{{ document.activeElement }}{{ Math.max(1, 2) }}</p>`),
-        missing: true,
-        render: true,
-      },
-      {
-        id: "render-setup",
-        source: component(
-          "const document = { activeElement: 'setup' };",
-          `<p>{{ document.activeElement }}{{ Math.max(1, 2) }}</p>`,
-        ),
-        emits: 0,
-        render: true,
-        html: "<p>setup2</p>",
-      },
-    ];
-    const rows = [];
+    const vaporOracle = readJsonRecord(
+      new URL(
+        "../_fixtures/differential/compiler/template-global-policy/stock-vapor-rc9-runtime.json",
+        import.meta.url,
+      ),
+    );
+    assert.equal(vaporOracle.compiler, "3.6.0-rc.9");
+    assert.equal(vaporOracle.plugin, "6.0.7");
+    const vaporObservations = asArray(vaporOracle.observations).map((value) => asRecord(value));
+    assert.equal(vaporObservations.length, 16);
+    assert.equal(new Set(vaporObservations.map((value) => `${value.id}/${value.inline}`)).size, 16);
+    const rows: Row[] = [];
     const persist = () =>
       writeFileSync(join(proof, "whole-observations.json"), JSON.stringify(rows, null, 2) + "\n");
     try {
       for (const input of cases)
-        for (const target of ["dom", "vapor", "ssr"])
+        for (const target of ["dom", "vapor", "ssr"] as const)
           for (const inlineTemplate of [false, true]) {
             const filename = `/template-global-policy/${input.id}-${target}-${inlineTemplate}.vue`;
             const options = {
@@ -180,7 +147,7 @@ await test(
               isProd: inlineTemplate,
               ...(target === "ssr" ? { ssr: true } : target === "vapor" ? { vapor: true } : {}),
             };
-            const row = {
+            const row: Row = {
               id: input.id,
               source: input.source,
               target,
@@ -190,16 +157,18 @@ await test(
             };
             rows.push(row);
             persist();
-            for (const [name, producer] of [
+            const producers: [ProducerName, Native | null][] = [
               ["before", before],
               ["candidate", candidate],
               ["stock", null],
-            ]) {
+            ];
+            for (const [name, producer] of producers) {
               const packet =
                 name === "stock"
                   ? await stockSfc(input.source, filename, target, inlineTemplate)
-                  : producer.compileSfc(input.source, options);
-              row.producers[name] = { packet };
+                  : producer!.compileSfc(input.source, options);
+              const observation: ProducerResult = { packet };
+              row.producers[name] = observation;
               persist();
               if (name !== "stock")
                 assert.deepEqual(
@@ -209,16 +178,21 @@ await test(
                 );
               try {
                 const loaded = await loadWholeComponent(packet, target);
-                row.producers[name].resolvedWholeCode = loaded.resolvedCode;
-                row.producers[name].runtime = await executeWholeComponent(
+                observation.resolvedWholeCode = loaded.resolvedCode;
+                observation.runtime = await executeWholeComponent(
                   loaded,
                   target,
                   !input.render && target !== "ssr",
                 );
               } catch (error) {
-                row.producers[name].runtime = {
+                assert.ok(error instanceof Error);
+                observation.runtime = {
+                  html: null,
+                  warnings: [],
                   emitted: 0,
-                  errors: [{ name: error.name, message: error.message, stack: error.stack }],
+                  errors: [
+                    { name: error.name, message: error.message, stack: error.stack, info: null },
+                  ],
                   phase: "module-or-runtime",
                 };
                 persist();
@@ -226,13 +200,19 @@ await test(
               }
               persist();
             }
-            const actual = row.producers.candidate.runtime;
-            const expected = row.producers.stock.runtime;
+            const actual = row.producers.candidate?.runtime;
+            assert.ok(actual);
+            const expected = row.producers.stock?.runtime;
+            assert.ok(expected);
             if (input.missing && (input.render || target !== "ssr")) {
-              for (const [owner, result] of [
-                ["candidate", actual],
-                ["stock", expected],
-              ]) {
+              const results: [string, RuntimeResult][] =
+                target === "vapor"
+                  ? [["candidate", actual]]
+                  : [
+                      ["candidate", actual],
+                      ["stock", expected],
+                    ];
+              for (const [owner, result] of results) {
                 assert.ok(
                   result.errors.some((error) => error.name === "TypeError"),
                   `${input.id}/${target}/${inlineTemplate}/${owner} observes the missing component property`,
@@ -245,25 +225,45 @@ await test(
                 [],
                 `${input.id}/${target}/${inlineTemplate} native runtime`,
               );
-              assert.deepEqual(
-                expected.errors,
-                [],
-                `${input.id}/${target}/${inlineTemplate} Vue runtime`,
-              );
+              if (target !== "vapor")
+                assert.deepEqual(
+                  expected.errors,
+                  [],
+                  `${input.id}/${target}/${inlineTemplate} Vue runtime`,
+                );
               assert.equal(actual.emitted, target === "ssr" ? 0 : (input.emits ?? 0));
-              assert.equal(actual.emitted, expected.emitted);
+              if (target !== "vapor") assert.equal(actual.emitted, expected.emitted);
               if (input.html) {
                 assert.equal(actual.html, input.html);
-                assert.equal(expected.html, input.html);
+                if (target !== "vapor") assert.equal(expected.html, input.html);
               }
+            }
+            if (target === "vapor") {
+              // This independently freezes what the actual RC9 compiler/runtime does.
+              // Native Vapor is checked above against our explicit 3.5.41 policy.
+              const observation = vaporObservations.find(
+                (value) => value.id === input.id && value.inline === inlineTemplate,
+              );
+              assert.ok(observation);
+              assert.deepEqual(
+                {
+                  id: input.id,
+                  inline: inlineTemplate,
+                  html: expected.html,
+                  emitted: expected.emitted,
+                  errors: expected.errors.map(({ name, message }) => ({ name, message })),
+                },
+                observation,
+                "the upstream RC9 divergence remains an independent observation",
+              );
             }
             if (target === "dom" && input.beforeEmits !== undefined) {
               assert.deepEqual(
-                row.producers.before.runtime.errors,
+                row.producers.before!.runtime!.errors,
                 [],
                 "public 0.600 reproduces the host-global behavior",
               );
-              assert.equal(row.producers.before.runtime.emitted, input.beforeEmits);
+              assert.equal(row.producers.before!.runtime!.emitted, input.beforeEmits);
             }
           }
       assert.equal(rows.length, 48);

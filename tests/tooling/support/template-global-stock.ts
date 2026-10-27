@@ -8,22 +8,53 @@ const fromPlugin = createRequire(fromUi.resolve("@vitejs/plugin-vue/package.json
 const pluginFactory = (await import(pathToFileURL(fromUi.resolve("@vitejs/plugin-vue")).href))
   .default;
 const { transformWithOxc } = await import(pathToFileURL(fromPlugin.resolve("vite")).href);
-const { parse } = fromUi("@babel/parser");
-const fromStable = createRequire(process.env.VIZE_TEMPLATE_GLOBAL_ORACLE_PACKAGE);
+const fromBabel = createRequire(fromUi.resolve("@babel/core"));
+const { parse } = fromBabel("@babel/parser");
+const oraclePackage = process.env.VIZE_TEMPLATE_GLOBAL_ORACLE_PACKAGE;
+assert.ok(oraclePackage);
+const fromStable = createRequire(oraclePackage);
 const fromVapor = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
-const serialized = (value) => JSON.parse(JSON.stringify(value));
-export const declarations = (code) =>
+const serialized = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
+type Declaration = { type: string; source?: { value: string; start: number; end: number } };
+export type Target = "dom" | "vapor" | "ssr";
+export type VirtualModule = {
+  id: string;
+  loaded: { code: string; map: unknown };
+  selected: { code: string; map: unknown };
+  transformed: { code: string; map: unknown };
+};
+export type WholePacket = {
+  code: string;
+  errors?: unknown[];
+  helperCode?: string;
+  virtualModules?: VirtualModule[];
+};
+export type StockPacket = WholePacket & {
+  source: string;
+  filename: string;
+  target: Target;
+  inlineTemplate: boolean;
+  compilerVersion: string;
+  pluginVersion: string;
+  map: unknown;
+  helperCode: string;
+  virtualModules: VirtualModule[];
+  graph: Record<string, unknown>[];
+};
+export const declarations = (code: string): Declaration[] =>
   parse(code, { sourceType: "module", plugins: ["typescript"] }).program.body;
-export const dataUrl = (code) =>
+export const dataUrl = (code: string): string =>
   `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
 export const stableProvider = fromStable;
 export const vaporProvider = fromVapor;
 export const pluginVersion = fromUi("@vitejs/plugin-vue/package.json").version;
 assert.equal(pluginVersion, "6.0.7");
 
-export function resolveModuleOwners(code, owners) {
+export function resolveModuleOwners(code: string, owners: ReadonlyMap<string, string>): string {
   const edits = declarations(code)
-    .filter((node) => node.source)
+    .filter((node): node is Declaration & { source: NonNullable<Declaration["source"]> } =>
+      Boolean(node.source),
+    )
     .map((node) => {
       assert.ok(
         ["ImportDeclaration", "ExportNamedDeclaration", "ExportAllDeclaration"].includes(node.type),
@@ -40,14 +71,19 @@ export function resolveModuleOwners(code, owners) {
   return code;
 }
 
-export async function stockSfc(source, filename, target, inlineTemplate) {
+export async function stockSfc(
+  source: string,
+  filename: string,
+  target: Target,
+  inlineTemplate: boolean,
+): Promise<StockPacket> {
   const provider = target === "vapor" ? fromVapor : fromStable;
   const compiler = provider("vue/compiler-sfc");
   assert.equal(compiler.version, target === "vapor" ? "3.6.0-rc.9" : "3.5.41");
-  const graph = [];
+  const graph: Record<string, unknown>[] = [];
   const selectedCompiler = {
     ...compiler,
-    parse(...args) {
+    parse(...args: [string, ...unknown[]]) {
       const result = compiler.parse(...args);
       assert.equal(result.descriptor.source, source);
       if (target === "vapor") result.descriptor.vapor = true;
@@ -59,7 +95,10 @@ export async function stockSfc(source, filename, target, inlineTemplate) {
       });
       return result;
     },
-    compileScript(descriptor, options) {
+    compileScript(
+      descriptor: unknown,
+      options: { inlineTemplate: boolean; isProd?: boolean; templateOptions?: { ssr?: boolean } },
+    ) {
       assert.equal(
         options.inlineTemplate,
         inlineTemplate,
@@ -78,7 +117,7 @@ export async function stockSfc(source, filename, target, inlineTemplate) {
       });
       return result;
     },
-    compileTemplate(options) {
+    compileTemplate(options: { source: string; ssr?: boolean }) {
       const result = compiler.compileTemplate(options);
       graph.push({
         api: "compileTemplate",
@@ -97,10 +136,10 @@ export async function stockSfc(source, filename, target, inlineTemplate) {
     template: { compilerOptions: { comments: true } },
   });
   const context = {
-    error(value) {
+    error(value: string | { message: string }) {
       throw new Error(typeof value === "string" ? value : value.message);
     },
-    warn(value) {
+    warn(value: string | { message: string }) {
       throw new Error(typeof value === "string" ? value : value.message);
     },
     addWatchFile() {},
@@ -112,7 +151,7 @@ export async function stockSfc(source, filename, target, inlineTemplate) {
     isProduction: inlineTemplate,
     build: { sourcemap: true },
     define: {},
-    logger: { warn: (value) => context.warn(value) },
+    logger: { warn: (value: string | { message: string }) => context.warn(value) },
   });
   plugin.buildStart.call(context);
   const ssr = target === "ssr";
@@ -124,10 +163,13 @@ export async function stockSfc(source, filename, target, inlineTemplate) {
     ...new Set(
       declarations(result.code)
         .filter((node) => node.source?.value.includes("?vue&"))
-        .map((node) => node.source.value),
+        .map((node) => {
+          assert.ok(node.source);
+          return node.source.value;
+        }),
     ),
   ];
-  const virtualModules = [];
+  const virtualModules: VirtualModule[] = [];
   for (const id of virtualIds) {
     assert.equal(plugin.resolveId.handler.call(context, id), id);
     const loaded = plugin.load.handler.call(context, id, { ssr });

@@ -11,8 +11,9 @@ on:
       - crates/vize_atelier_core/src/codegen/slots/params.rs
       - crates/vize_atelier_sfc/src/script/import_usage_check/**
       - crates/vize_atelier_sfc/tests/template_global_policy.rs
-      - tests/tooling/native-template-global-policy.test.mjs
-      - tests/tooling/support/template-global-*.mjs
+      - tests/tooling/native-template-global-policy.test.ts
+      - tests/tooling/support/template-global-*.ts
+      - tests/_fixtures/differential/compiler/template-global-policy/**
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -141,7 +142,7 @@ jobs:
       - name: Execute complete modules under the actual Vue runtimes
         run: |
           unset NAPI_RS_NATIVE_LIBRARY_PATH
-          node --test tests/tooling/native-template-global-policy.test.mjs
+          node --test tests/tooling/native-template-global-policy.test.ts
       - name: Preserve complete public and candidate modules, graphs and actual runtime observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -6,7 +6,47 @@ import {
   resolveModuleOwners,
   stableProvider,
   vaporProvider,
-} from "./template-global-stock.mjs";
+} from "./template-global-stock.ts";
+import type { Target, WholePacket } from "./template-global-stock.ts";
+
+export type RuntimeError = { name: string; message: string; stack?: string; info: string | null };
+export type RuntimeResult = {
+  html: string | null;
+  emitted: number;
+  errors: RuntimeError[];
+  warnings: string[];
+  beforeClick?: string | null;
+  focused?: boolean;
+  phase?: string;
+};
+type Component = { setup: unknown; render?: unknown };
+type HostElement = {
+  innerHTML: string;
+  appendChild(node: HostElement): HostElement;
+  querySelector(selector: string): { focus(): void; dispatchEvent(event: unknown): void } | null;
+  remove(): void;
+};
+type RuntimeApp = {
+  _component: Component;
+  config: {
+    errorHandler?: (error: unknown, instance: unknown, info: string) => void;
+    warnHandler?: (message: string) => void;
+  };
+  mount(host: HostElement): unknown;
+  unmount(): void;
+};
+type RuntimeProvider = Record<string, unknown> & {
+  version: string;
+  createSSRApp(component: Component, props: unknown): RuntimeApp;
+  createApp(component: Component, props: unknown): RuntimeApp;
+  createVaporApp(component: Component, props: unknown): RuntimeApp;
+  nextTick(): Promise<void>;
+};
+type LoadedComponent = { component: Component; runtime: RuntimeProvider; resolvedCode: string };
+const dom = globalThis as typeof globalThis & {
+  document: { body: HostElement; activeElement: unknown; createElement(tag: string): HostElement };
+  MouseEvent: new (type: string, options: { bubbles: boolean }) => unknown;
+};
 
 const stable = await import(
   dataUrl(readFileSync(stableProvider.resolve("vue/dist/vue.runtime.esm-browser.js"), "utf8"))
@@ -24,12 +64,12 @@ assert.equal(vapor.version, "3.6.0-rc.9");
 assert.equal(stableProvider("@vue/server-renderer/package.json").version, "3.5.41");
 
 // These provider modules forward the actual runtime exports without replacing helpers.
-const providers = new Map();
+const providers = new Map<Record<string, unknown>, string>();
 let providerSequence = 0;
-function providerUrl(provider) {
-  if (providers.has(provider)) return providers.get(provider);
+function providerUrl(provider: Record<string, unknown>): string {
+  if (providers.has(provider)) return providers.get(provider)!;
   const key = `__templateGlobalProvider${providerSequence++}`;
-  globalThis[key] = provider;
+  Reflect.set(globalThis, key, provider);
   const names = Object.keys(provider).filter(
     (name) => /^[A-Za-z_$][\w$]*$/.test(name) && name !== "default",
   );
@@ -45,7 +85,10 @@ function providerUrl(provider) {
   return url;
 }
 
-export async function loadWholeComponent(packet, target) {
+export async function loadWholeComponent(
+  packet: WholePacket,
+  target: Target,
+): Promise<LoadedComponent> {
   const runtime = target === "vapor" ? vapor : target === "ssr" ? serverVue : stable;
   const owners = new Map([
     ["vue", providerUrl(runtime)],
@@ -62,31 +105,43 @@ export async function loadWholeComponent(packet, target) {
     "function",
     "the complete compiled default owns setup",
   );
-  return { component: module.default, runtime, resolvedCode };
+  return {
+    component: module.default as Component,
+    runtime: runtime as RuntimeProvider,
+    resolvedCode,
+  };
 }
 
-function describeError(error, info) {
+function describeError(error: unknown, info?: string): RuntimeError {
+  assert.ok(error instanceof Error);
   return { name: error.name, message: error.message, stack: error.stack, info: info ?? null };
 }
 
-export async function executeWholeComponent(loaded, target, click) {
+export async function executeWholeComponent(
+  loaded: LoadedComponent,
+  target: Target,
+  click: boolean,
+): Promise<RuntimeResult> {
   const { component, runtime } = loaded;
-  const errors = [];
-  const warnings = [];
+  const errors: RuntimeError[] = [];
+  const warnings: string[] = [];
   let emitted = 0;
-  const props = { onPress: () => emitted++ };
+  const onPress = () => emitted++;
+  // Vapor raw props are getters; event listener values must be returned.
+  const props = target === "vapor" ? { onPress: () => onPress } : { onPress };
   const app =
     target === "ssr"
       ? runtime.createSSRApp(component, props)
       : target === "vapor"
         ? runtime.createVaporApp(component, props)
         : runtime.createApp(component, props);
-  assert.equal(app._component, component, "actual app consumes the exact emitted default");
+  // Vue createApp copies the options object; the emitted setup/render owners survive.
+  assert.equal(app._component.render, component.render, "actual render identity survives loading");
   assert.equal(app._component.setup, component.setup, "actual setup identity survives loading");
   app.config.errorHandler = (error, _instance, info) => errors.push(describeError(error, info));
   app.config.warnHandler = (message) => warnings.push(message);
   if (target === "ssr") {
-    let html = null;
+    let html: string | null = null;
     try {
       html = await renderer.renderToString(app);
     } catch (error) {
@@ -94,9 +149,9 @@ export async function executeWholeComponent(loaded, target, click) {
     }
     return { html, emitted, errors, warnings };
   }
-  const host = document.body.appendChild(document.createElement("div"));
-  let beforeClick = null;
-  let html = null;
+  const host = dom.document.body.appendChild(dom.document.createElement("div"));
+  let beforeClick: string | null = null;
+  let html: string | null = null;
   let focused = false;
   try {
     app.mount(host);
@@ -106,9 +161,9 @@ export async function executeWholeComponent(loaded, target, click) {
       const button = host.querySelector("button");
       assert.ok(button, "actual mounted button exists");
       button.focus();
-      focused = document.activeElement === button;
+      focused = dom.document.activeElement === button;
       assert.equal(focused, true, "the real document owns the focused button");
-      button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      button.dispatchEvent(new dom.MouseEvent("click", { bubbles: true }));
       await runtime.nextTick();
     }
     html = host.innerHTML;
