@@ -19,7 +19,7 @@ export type FixtureData = {
   documentVersion: number;
   openDocument?: false;
   languageId?: "vue" | "javascriptreact" | "typescriptreact";
-  initializationOptions?: Record<string, boolean>;
+  initializationOptions?: Record<string, boolean | number>;
   initialDiagnostics?: unknown[];
   hierarchicalDocumentSymbols?: true;
   files?: FileReference[];
@@ -38,7 +38,7 @@ export type PlannedLspFixture = {
   case: { path: string; sha256: string };
   inputs: { root: string; files: { path: string; sha256: string }[] };
   requestCount: number;
-  initializationOptions: Record<string, boolean>;
+  initializationOptions: Record<string, boolean | number>;
   dialectCoverage: SourceInspectedDialectCoverage;
 };
 export type LspFixture = PlannedLspFixture & {
