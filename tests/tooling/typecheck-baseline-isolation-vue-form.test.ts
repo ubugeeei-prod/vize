@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateUniqueVueFormPackages } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { isolateUniqueVueFormPackages } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation-unique.ts";
 
 /**
  * FormKit and VeeValidate live in Vize's `tests/package.json`. TypeScript can

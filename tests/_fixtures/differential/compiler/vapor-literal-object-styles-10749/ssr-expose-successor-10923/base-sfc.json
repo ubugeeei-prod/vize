@@ -1,0 +1,86 @@
+[
+  {
+    "fold": false,
+    "output": {
+      "bindings": {
+        "bindings": {
+          "label": "literal-const"
+        },
+        "isScriptSetup": true,
+        "propsAliases": {}
+      },
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nconst _hoisted_1 = {\n  type: \"button\",\n  style: { fontWeight: \"700\" },\n  id: \"own\"\n};\nconst label = \"ready\";\nexport default {\n  __name: \"anonymous\",\n  setup(__props) {\n    return (_ctx, _cache) => {\n      return _openBlock(), _createElementBlock(\"button\", _hoisted_1, _toDisplayString(label));\n    };\n  }\n};",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "source": "<script setup lang=\"ts\">\nconst label = 'ready'\n</script>\n<template>\n  <button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{ label }}</button>\n</template>\n",
+    "ssr": false,
+    "vapor": false
+  },
+  {
+    "fold": false,
+    "output": {
+      "bindings": {
+        "bindings": {
+          "label": "literal-const"
+        },
+        "isScriptSetup": true,
+        "propsAliases": {}
+      },
+      "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({\n    type: \"button\",\n    id: \"own\",\n    style: { fontWeight: \"700\" }\n  }, _attrs))}>${_ssrInterpolate($setup.label)}</button>`);\n}\nconst label = \"ready\";\nexport default {\n  __name: \"anonymous\",\n  ssrRender,\n  setup(__props) {\n    const __returned__ = { label };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "source": "<script setup lang=\"ts\">\nconst label = 'ready'\n</script>\n<template>\n  <button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{ label }}</button>\n</template>\n",
+    "ssr": true,
+    "vapor": false
+  },
+  {
+    "fold": true,
+    "output": {
+      "bindings": {
+        "bindings": {
+          "label": "literal-const"
+        },
+        "isScriptSetup": true,
+        "propsAliases": {}
+      },
+      "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\";\nconst t0 = _template(\"<button type=\\\"button\\\" id=\\\"own\\\"> </button>\", true);\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0();\n  const x0 = _txt(n0);\n  _renderEffect(() => {\n    _setStyle(n0, { fontWeight: \"700\" });\n    _setText(x0, _toDisplayString(label));\n  });\n  return n0;\n}\nconst __vaporRender = render;\nconst label = \"ready\";\nexport default /*@__PURE__*/ _defineVaporComponent({\n  __name: \"anonymous\",\n  render: __vaporRender,\n  setup(__props) {\n    const __returned__ = { label };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n});",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "source": "<script setup lang=\"ts\">\nconst label = 'ready'\n</script>\n<template>\n  <button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{ label }}</button>\n</template>\n",
+    "ssr": false,
+    "vapor": true
+  },
+  {
+    "fold": false,
+    "output": {
+      "bindings": {
+        "bindings": {
+          "label": "literal-const"
+        },
+        "isScriptSetup": true,
+        "propsAliases": {}
+      },
+      "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({\n    type: \"button\",\n    id: \"own\",\n    style: { fontWeight: \"700\" }\n  }, _attrs))}>${_ssrInterpolate($setup.label)}</button>`);\n}\nconst label = \"ready\";\nexport default {\n  __name: \"anonymous\",\n  ssrRender,\n  __vapor: true,\n  setup(__props) {\n    const __returned__ = { label };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "source": "<script setup lang=\"ts\">\nconst label = 'ready'\n</script>\n<template>\n  <button type=\"button\" :style=\"{fontWeight:'700'}\" id=\"own\">{{ label }}</button>\n</template>\n",
+    "ssr": true,
+    "vapor": true
+  }
+]

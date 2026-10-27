@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const n = 1;
+</script>
+
+<template>
+  <div>{{ $declared.known }} {{ $declared.missing }} {{ $undeclared.anything }} {{ n }}</div>
+  <p :title="$undeclared.x">{{ $undeclared.y }}</p>
+</template>

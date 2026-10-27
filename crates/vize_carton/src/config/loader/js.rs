@@ -9,11 +9,14 @@
 use std::{
     io::{Error as IoError, ErrorKind},
     path::{Path, PathBuf},
-    process::Command,
     time::SystemTime,
 };
 
 use crate::config::ConfigDocument;
+
+mod runtime_file;
+
+use runtime_file::NodeRuntimeFile;
 
 use super::{
     BeforeConfigRead,
@@ -215,13 +218,10 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         observed.extend(cached.dependencies.iter().map(PathBuf::from));
         return Ok(cached);
     }
-    let mut command = Command::new("node");
-    command
-        .arg("--input-type=module")
-        .arg("-e")
-        .arg(script)
-        .arg(config_path)
-        .current_dir(config_path.parent().unwrap_or_else(|| Path::new(".")));
+    // Keep the module alive through child completion and observation callbacks.
+    // Large evaluator code must not enter the Windows process command line.
+    let runtime = NodeRuntimeFile::new(&script)?;
+    let mut command = runtime.command(config_path);
     if let Some(directory) = compile_cache {
         command.arg(directory);
     }

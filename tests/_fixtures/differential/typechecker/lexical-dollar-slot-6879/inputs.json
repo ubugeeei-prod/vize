@@ -54,8 +54,8 @@
   },
   "expected": {
     "path": "expected.json",
-    "byteLength": 3340,
-    "sha256": "54c2ff42c61dfa94bb15e9f72dea283c94191637d2e5687a2a30bac5d7d6f122",
+    "byteLength": 3794,
+    "sha256": "671806945fc03efb3a130b5625ccfcf6ba0b91d5117b4120c185573c2a8461c2",
     "observations": 9,
     "comparison": "complete ordered diagnostic vector, success and exit code for every case"
   }

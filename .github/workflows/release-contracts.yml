@@ -23,6 +23,23 @@ on:
       - "tests/tooling/support/fake-npm-registry.ts"
       - "tests/tooling/support/fake-command.ts"
   workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published version for an optional consumer qualification
+        required: false
+        type: string
+      source_sha:
+        description: Exact immutable public release tag commit
+        required: false
+        type: string
+      candidate:
+        description: Exact released candidate for complete public contracts
+        required: false
+        type: string
+      phase:
+        description: Set release-contracts only for the independent public consumer
+        required: false
+        type: string
 permissions: { contents: read }
 concurrency:
   group: release-contracts-${{ github.event.pull_request.number || github.ref }}
@@ -31,6 +48,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   contracts:
+    if: github.event_name != 'workflow_dispatch' || inputs.phase != 'release-contracts'
     name: Release pipeline contracts
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
@@ -44,6 +62,8 @@ jobs:
         run: >-
           node --test
           tests/tooling/release/npm-resume.test.ts
+          tests/tooling/release/public-consumer-guards.test.ts
+          tests/tooling/release/public-provider.test.ts
           tests/tooling/release/release-workflow.test.ts
           tests/tooling/release/release-notes.test.ts
           tests/tooling/release/verify-published-registry.test.ts
@@ -59,3 +79,43 @@ jobs:
         run: node --test tests/tooling/publish-npm-package*.test.ts
       - name: Target-aware editor publication
         run: node --test tests/tooling/publish-editor*.test.ts tests/tooling/publish-open-vsx-extension.test.ts tests/tooling/publish-vscode-extension*.test.ts
+  public-release-contracts:
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+      PUBLIC_CANDIDATE: ${{ inputs.candidate }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - name: Validate the explicit public candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { mkdirSync, writeFileSync } from "node:fs";
+          import path from "node:path";
+          const { PUBLIC_VERSION: version, PUBLIC_CANDIDATE: candidate, PUBLIC_SOURCE_SHA: source } = process.env;
+          const valid = /^0\.[0-9]+\.0$/.test(version ?? "") && /^[0-9a-f]{40}$/.test(candidate ?? "") && source === candidate;
+          const directory = path.join(process.env.RUNNER_TEMP, "public-release-proof");
+          mkdirSync(directory, { recursive: true });
+          writeFileSync(path.join(directory, "candidate-validation.json"), JSON.stringify({
+            version, candidate, source, accepted: valid, workflowSha: process.env.GITHUB_SHA,
+          }, null, 2) + "\n", { flag: "wx" });
+          assert.equal(valid, true, "an exact public version and matching immutable candidate are required");
+          NODE
+      - name: Install exact public packages in an independent fresh consumer
+        run: node tools/support/release/public_release_contracts/bootstrap.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof"
+      - name: Verify complete packets, runtime controls, and native public custody
+        run: node tools/support/release/public_release_contracts/run.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof" "$PUBLIC_CANDIDATE"
+      - name: Preserve complete consumer evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-release-consumer-${{ inputs.version }}
+          path: ${{ runner.temp }}/public-release-proof/
+          if-no-files-found: error
+          retention-days: 30

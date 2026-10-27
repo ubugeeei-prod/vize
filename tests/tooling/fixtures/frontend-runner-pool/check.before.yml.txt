@@ -1,0 +1,438 @@
+name: Check
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
+on:
+  push:
+    branches: [main, davinci]
+  pull_request: {}
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
+  schedule:
+    # Daily 03:11 UTC, staggered from native smoke and e2e.
+    - cron: "11 3 * * *"
+  workflow_dispatch:
+    inputs:
+      release-qualification:
+        description: Qualify an immutable release source without repeating daily source coverage
+        type: boolean
+        required: false
+        default: false
+      compare-rust-test-profile:
+        description: Also run the original test profile and require exact same-source ci parity
+        type: boolean
+        required: false
+        default: false
+concurrency:
+  # A push to main must not cancel an exact-SHA full validation used by release.
+  group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
+  cancel-in-progress: true
+permissions: { contents: read }
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+  iteration-plan:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 2
+    outputs:
+      apps: ${{ steps.plan.outputs.apps }}
+      dependencies: ${{ steps.plan.outputs.dependencies }}
+      engines: ${{ steps.plan.outputs.engines }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 2 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Validate explicit release qualification
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release-qualification }}
+        env: { RELEASE_QUALIFICATION_REF: "${{ github.ref }}" }
+        run: |
+          if [[ ! "$RELEASE_QUALIFICATION_REF" =~ ^refs/(heads/release/|tags/)v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release qualification requires an immutable release/vSEMVER branch or vSEMVER tag." >&2
+            exit 1
+          fi
+      - id: plan
+        name: Select product and dependency checks
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tools/support/compat/github/plan-check-inputs.ts
+  pr-source-checks:
+    name: PR source checks
+    permissions: { contents: read, actions: read, checks: read, pull-requests: read }
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/pr-source-checks.yml
+  instruction-counts:
+    name: Instruction ceilings
+    if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/level-instruction-counts.yml
+  level-dependency-direction:
+    uses: ./.github/workflows/level-dependencies.yml
+  nix-flake:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/check-nix
+  fmt-rust:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: rustfmt }
+      - name: Format Rust
+        run: cargo fmt --all -- --check
+  check-js:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    permissions: { contents: read, actions: read }
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 2 }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Guard legacy crate deletion
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+        run: vp node tools/support/compat/davinci/legacy-deletion-guard.ts
+      - name: Check Davinci source inventories
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        uses: ./.github/actions/check-level-inventories
+      - uses: ./.github/actions/setup-js-check-runtime
+        with:
+          {
+            full: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+          }
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check JS/TS
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci
+      - name: Check fast JS/TS
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}
+        run: vp run --workspace-root check:iteration && node --test tests/tooling/github-workflows-source-selection.test.ts tests/tooling/vp-bootstrap-cache.test.mjs
+  semver-checks:
+    name: cargo-semver-checks (${{ matrix.crate }})
+    # Check published APIs before tag promotion and when resuming an exact release tag.
+    if: ${{ github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')) }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    permissions: { contents: read }
+    # Keep this list in sync with crates published by tools/support/release/publish_crates.
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+          - vize_armature
+          - vize_atelier_core
+          - vize_atelier_dom
+          - vize_atelier_sfc
+          - vize_atelier_ssr
+          - vize_atelier_vapor
+          - vize_carton
+          - vize_croquis
+          - vize_fresco
+          - vize_musea
+          - vize_relief
+          - vize_l1_to_l2
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: 1.99.0 }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Use candidate version for SemVer classification
+        # cargo-semver-checks derives the release type from the bumped version.
+        run: |
+          : > "$RUNNER_TEMP/semver-change-marker.txt"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: semver-checks
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-semver-checks@0.51.0 # 0.50.0+ reads the rustdoc JSON v61 of Rust 1.99
+      - name: Check public API SemVer compatibility
+        env:
+          BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
+          RUSTUP_TOOLCHAIN: 1.99.0
+        run: node tools/commands/ci/github/check-semver.ts "${{ matrix.crate }}"
+  security-audit:
+    needs: iteration-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+        with: { toolchain: stable }
+      - name: Install JS dependencies
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Audit production npm dependencies
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+        run: node tools/commands/ci/npm-audit-retry.ts
+      - name: Install cargo-audit
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: cargo-audit }
+      - name: Audit Rust dependencies
+        if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
+        run: cargo audit --deny warnings
+      - name: Report unchanged inputs
+        if: ${{ needs.iteration-plan.outputs.dependencies != 'true' }}
+        run: echo 'dependencies inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
+  node-engine-compat:
+    needs: iteration-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["22", "24"]
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+        with:
+          version: latest
+          node-version: ${{ matrix.node-version }}
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install JS dependencies
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check package engine matrix
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/bundler-plugin-manifests.test.ts tests/tooling/dependency-security-compat.test.ts tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
+      - name: Report unchanged inputs
+        if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
+        run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
+  check-vize-apps:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    needs: iteration-plan
+    timeout-minutes: 20
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check affected product applications
+        if: ${{ needs.iteration-plan.outputs.apps == 'true' }}
+        uses: ./.github/actions/check-vize-apps
+      - name: Report unaffected applications
+        if: ${{ needs.iteration-plan.outputs.apps != 'true' }}
+        run: echo 'Product application inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
+  vue-parity:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: vue-parity, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/check-vue-parity
+  full-qualification:
+    name: Full qualification
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/full-qualification.yml
+    with:
+      compare-rust-test-profile: ${{ inputs.compare-rust-test-profile == true }}
+  full-js-report:
+    name: full-js-report
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    # Whole callee success retains all four original full-product dependencies.
+    needs: [full-qualification, check-js, instruction-counts]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/report-full-js-qualification
+        with: { needs-json: "${{ toJSON(needs) }}" }
+  coverage:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: coverage
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          run-install: false
+      # The fixture-coverage runner evaluates the SFC Pkl fixtures.
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Coverage report
+        run: rust-script tools/commands/ci/github/write-coverage-summary.rs
+  source-coverage:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 50
+    # Keep daily and ordinary manual measurement; immutable release qualification
+    # retains all correctness jobs without repeating the instrumented trend run.
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: llvm-tools-preview }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: coverage-source
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          # A manual Full off main reads the scheduled run's instrumented disk.
+          restore-trusted: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install Pkl CLI and hydrate pinned native fixture
+        run: npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-llvm-cov,cargo-nextest@0.9.146
+      - name: Source coverage report
+        env:
+          VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/source-coverage-native-syntax
+        run: vp run --workspace-root coverage:source
+      - name: Retain raw source coverage native syntax packets
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-coverage-native-syntax-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-coverage-native-syntax/
+          if-no-files-found: warn
+      - name: Verify source coverage summary
+        run: test -s target/llvm-cov/source-summary.json
+      - name: Upload source coverage summary
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-source-coverage-summary
+          path: target/llvm-cov/source-summary.json
+          if-no-files-found: error
+          retention-days: 14
+  branch-coverage:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    # Keep the strict nightly instrumentation gate on scheduled and explicit runs.
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
+        with: { toolchain: nightly, components: llvm-tools-preview }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: coverage-branch
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Branch coverage report
+        run: vp run --workspace-root coverage:source:branch
+      - name: Verify branch coverage summary
+        run: test -s target/llvm-cov/source-branch-summary.json
+      - name: Upload branch coverage summary
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-branch-coverage-summary
+          path: target/llvm-cov/source-branch-summary.json
+          if-no-files-found: error
+          retention-days: 14
+  test-report:
+    name: test-report
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+    needs:
+      - iteration-plan
+      - fmt-rust
+      - check-js
+      - security-audit
+      - node-engine-compat
+      - check-vize-apps
+      - pr-source-checks
+      - instruction-counts
+      - level-dependency-direction
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Require every needed job to succeed
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts --check-report

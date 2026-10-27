@@ -152,7 +152,7 @@ pub(super) fn collect_value_import_binding_names(
     summary: &Croquis,
     script: &str,
 ) -> FxHashSet<CompactString> {
-    summary
+    let mut names = summary
         .import_statements
         .iter()
         .flat_map(|imp| {
@@ -164,8 +164,16 @@ pub(super) fn collect_value_import_binding_names(
                 .map(CompactString::new)
                 .collect::<Vec<_>>()
         })
-        .filter(|name| crate::virtual_ts::script_facts::contains_binding(summary, name))
-        .collect()
+        .peekable();
+    // Preserve the allocation-free fact path for scripts with no value imports.
+    if names.peek().is_none() {
+        return FxHashSet::default();
+    }
+    crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+        names
+            .filter(|name| bindings.contains_binding(name))
+            .collect()
+    })
 }
 
 #[derive(Default)]

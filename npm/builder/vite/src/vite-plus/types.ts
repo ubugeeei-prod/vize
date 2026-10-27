@@ -93,6 +93,8 @@ export interface VizePlusOptions {
   conflicts?: boolean;
   /** Rename or disable generated tasks. Existing run.tasks take precedence. */
   tasks?: false | Partial<Record<VizeTask, string | false>>;
+  /** Cache generated read-only checks using Vite+ file tracking. @default false */
+  taskCache?: boolean;
 }
 export interface VizeTaskConfig {
   config?: UserConfigExport;
