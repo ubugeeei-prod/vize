@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       base_sha:
-        description: Immutable pre-optimization baseline commit
+        description: Immutable first-parent baseline commit
         type: string
         required: true
 permissions: { contents: read }
@@ -45,8 +45,13 @@ jobs:
           git worktree add --detach "$RUNNER_TEMP/recovery-base" "$BASE_SHA"
           git rev-parse HEAD > evidence/head.sha
           git -C "$RUNNER_TEMP/recovery-base" rev-parse HEAD > evidence/base.sha
+          git cat-file commit HEAD > evidence/head.commit
+          python3 -c 'from pathlib import Path; h=Path("evidence/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); p=[x.split()[1].decode() for x in h if x.startswith(b"parent ")]; assert p; Path("evidence/first-parent.sha").write_text(p[0]+"\n")'
+          test "$BASE_SHA" = "$(cat evidence/first-parent.sha)"
+          git diff --name-status "$BASE_SHA" HEAD > evidence/source-diff.txt
           cp davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
-          sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs > evidence/carrier.sha256
+          sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
+          test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
           rustc +1.99.1 -vV > evidence/rustc.txt
           lscpu > evidence/cpu.txt
       - name: Compare complete parser packets and exact source counter controls
@@ -66,6 +71,28 @@ jobs:
           done
           sha256sum evidence/normal-base evidence/normal-head > evidence/binaries.sha256
           test "$(sha256sum evidence/normal-base | cut -d' ' -f1)" != "$(sha256sum evidence/normal-head | cut -d' ' -f1)"
+          python3 - <<'PYIDENTITY'
+          import hashlib, json, os, pathlib
+          evidence = pathlib.Path('evidence')
+          sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          receipt = {'base': (evidence/'base.sha').read_text().strip(), 'head': (evidence/'head.sha').read_text().strip(), 'firstParent': (evidence/'first-parent.sha').read_text().strip(), 'sourceDiff': (evidence/'source-diff.txt').read_text().splitlines(), 'roles': {}}
+          assert receipt['base'] == receipt['firstParent']
+          for role in ('base', 'head'):
+              source = pathlib.Path(os.environ['RUNNER_TEMP'])/'recovery-base' if role == 'base' else pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+              rows = [json.loads(x) for x in (evidence/f'build-{role}.jsonl').read_text().splitlines()]
+              artifacts = [x for x in rows if x.get('reason') == 'compiler-artifact']
+              croquis = [x for x in artifacts if x['target']['name'] == 'vize_croquis' and x['target']['kind'] == ['lib']]
+              carrier = [x for x in artifacts if x['target']['name'] == 'source_recovery_benchmark' and x['target']['kind'] == ['example']]
+              assert len(croquis) == len(carrier) == 1
+              assert pathlib.Path(croquis[0]['manifest_path']) == source/'crates/vize_croquis/Cargo.toml'
+              assert pathlib.Path(carrier[0]['target']['src_path']) == source/'davinci/vize_l0/examples/source_recovery_benchmark.rs'
+              executable = pathlib.Path(carrier[0]['executable'])
+              assert sha(executable) == sha(evidence/f'normal-{role}')
+              receipt['roles'][role] = {'sourceRoot': str(source), 'recoverySha256': sha(source/'crates/vize_croquis/src/script_parser/recovery.rs'), 'lockSha256': sha(source/'Cargo.lock'), 'carrierSha256': sha(source/'davinci/vize_l0/examples/source_recovery_benchmark.rs'), 'binarySha256': sha(executable), 'artifacts': [{k:x[k] for k in ('package_id', 'manifest_path', 'target', 'profile', 'features', 'fresh', 'executable')} for x in (croquis[0], carrier[0])]}
+          assert receipt['roles']['base']['carrierSha256'] == receipt['roles']['head']['carrierSha256']
+          assert receipt['roles']['base']['lockSha256'] == receipt['roles']['head']['lockSha256']
+          (evidence/'identity.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          PYIDENTITY
       - name: Measure normal processes and separate instrumented allocation windows
         run: |
           set -euo pipefail
@@ -104,8 +131,17 @@ jobs:
           assert profiles['head']['allocation']['requestedBytes'] < profiles['base']['allocation']['requestedBytes']
           summary['allocation'] = {role: x['allocation'] for role,x in profiles.items()}
           (root/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
+          print('comparisonReceipt='+json.dumps({'identity': json.loads((root/'identity.json').read_text()), 'comparison': summary}, separators=(',', ':')))
           PY
           rm evidence/normal-base evidence/normal-head
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: success()
+        with:
+          name: script-recovery-summary-${{ github.sha }}
+          path: |
+            evidence/summary.json
+            evidence/identity.json
+          if-no-files-found: error
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
