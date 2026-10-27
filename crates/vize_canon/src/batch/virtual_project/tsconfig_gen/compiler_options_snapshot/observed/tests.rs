@@ -135,11 +135,9 @@ fn compiler_options_snapshot_records_absence_and_rejects_later_config() {
         assert!(selected.options().is_empty());
         assert!(selected.observations().changed_paths().is_empty());
         std::fs::write(&missing_target, r#"{"compilerOptions":{"strict":true}}"#).unwrap();
-        assert!(
-            selected
-                .observations()
-                .changed_paths()
-                .contains(&config_link)
+        assert_eq!(
+            selected.observations().changed_paths(),
+            vec![config_link.clone()]
         );
         let repaired =
             CompilerOptionsSnapshot::capture(&linked_root, Some(&config_link), &[]).unwrap();
@@ -214,22 +212,30 @@ fn compiler_options_snapshot_retains_missing_extends_and_original_revision() {
     )
     .unwrap();
     let captured = CompilerOptionsSnapshot::capture(&root, Some(&config), &[]).unwrap();
-    assert_eq!(captured.unresolved_extends().len(), 1);
     assert_eq!(
-        captured.unresolved_extends()[0].specifier.as_str(),
-        "./missing.json"
+        captured.unresolved_extends(),
+        &[crate::UnresolvedExtends {
+            config: config.clone(),
+            specifier: "./missing.json".into(),
+        }]
     );
     assert_eq!(
         captured.options(),
         serde_json::json!({"strict":true}).as_object().unwrap()
     );
-    assert!(captured.observations().paths().contains(&missing));
+    assert_eq!(
+        captured.observations().paths(),
+        vec![missing.clone(), config.clone()]
+    );
     std::fs::write(
         &missing,
         r#"{"compilerOptions":{"moduleSuffixes":[".native",""]}}"#,
     )
     .unwrap();
-    assert!(captured.observations().changed_paths().contains(&missing));
+    assert_eq!(
+        captured.observations().changed_paths(),
+        vec![missing.clone()]
+    );
     let repaired = CompilerOptionsSnapshot::capture(&root, Some(&config), &[]).unwrap();
     assert!(repaired.unresolved_extends().is_empty());
     assert_eq!(
