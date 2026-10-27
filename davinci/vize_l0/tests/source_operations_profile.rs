@@ -5,7 +5,6 @@ static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
 #[cfg(feature = "micro-profiling")]
-#[path = "source_operations_profile/sources.rs"]
 mod source_probes;
 
 // Keep libtest's listing protocol while excluding its reporting threads from
