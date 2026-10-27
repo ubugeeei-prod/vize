@@ -150,7 +150,7 @@ export function selfTest(): void {
   add("boolean-iterations", one, (value) => {
     value.head.iterations = true;
   });
-  for (const [name, value] of cases) assert.throws(() => validate(value), undefined, name);
+  for (const [name, value] of cases) assert.throws(() => validate(value), Error, name);
   assert.throws(() => validate({ ...one, extra: head }));
   console.log(
     "recovery-class-controls=" +

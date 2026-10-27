@@ -158,7 +158,7 @@ export function selfTest(): void {
   add("unsupported-scenario", irreparable, (row) => {
     row[0].scenario = row[1].scenario = "unknown";
   });
-  for (const [name, pair] of cases) assert.throws(() => profilePair(...pair), undefined, name);
+  for (const [name, pair] of cases) assert.throws(() => profilePair(...pair), Error, name);
   console.log(
     "clone-contract-controls=" + render({ positive: 3n, rejected: cases.map(([name]) => name) }),
   );

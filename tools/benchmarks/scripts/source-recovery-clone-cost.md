@@ -30,7 +30,8 @@ counts. Neither result is a cold whole-project benchmark.
 The 4 KiB carrier must pass before the larger matrix runs:
 
 - Both roles parse the original exactly once per repetition and report equal
-  selected Croquis source calls and bytes. Irreparable input enters no semantic\n  analysis; the other cases enter it once per repetition.
+  selected Croquis source calls and bytes. Irreparable input enters no semantic
+  analysis; the other cases enter it once per repetition.
 - Irreparable input has no recovery parse. The candidate removes exactly one
   successful allocation request per repetition. Raw requested layout bytes are
   recorded; they are not physical copied bytes, live memory or RSS.
