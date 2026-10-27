@@ -14,9 +14,12 @@ import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
 import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
+import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
 
 interface RunResult {
   run: number;
+  corpus: ReturnType<typeof captureLspResourceCorpus>;
+  fixture_preparation_ms: number;
   dependencies: { corsaPath: string; vuePath: string };
   opened_files: number;
   metadata_requests: number;
@@ -55,6 +58,7 @@ interface Measurement {
   services: { editor: boolean; ecosystem: boolean; lint: boolean; typecheck: boolean };
   server: string;
   server_binary_mib: number;
+  server_sha256: string;
   build: string;
   sampler: string;
   idle_seconds: number;
@@ -108,6 +112,7 @@ async function measure() {
     services: { editor: true, ecosystem: true, lint: true, typecheck: true },
     server,
     server_binary_mib: mib(fs.statSync(server).size),
+    server_sha256: createHash("sha256").update(fs.readFileSync(server)).digest("hex"),
     build: flag("--build", "unspecified: pass --build to record the actual server recipe"),
     sampler: "Linux /proc process-tree summed RSS every 50 ms, from spawn through idle",
     idle_seconds: idleSeconds,
@@ -125,16 +130,21 @@ async function measure() {
   save();
   for (let run = 0; run < runs; run++) {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-real-lsp-resource-"));
-    const started = performance.now();
+    const setupStarted = performance.now();
     const dependencies = prepareWorkspace(workspace, files);
+    const corpus = captureLspResourceCorpus(workspace, dependencies);
     const profilePath = profileDirectory && path.join(profileDirectory, `run-${run + 1}.json`);
     process.env.VIZE_LSP_BIN = profilePath
       ? profiledLauncher(server, workspace, profilePath)
       : server;
+    const fixturePreparationMs = performance.now() - setupStarted;
+    const started = performance.now();
     const session = new LspSession();
     const sampler = createSampler(session.processId);
     const result: RunResult = {
       run: run + 1,
+      corpus,
+      fixture_preparation_ms: fixturePreparationMs,
       dependencies,
       opened_files: 0,
       metadata_requests: 0,

@@ -1,0 +1,175 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+
+interface Run {
+  corpus: {
+    sha256: string;
+    sfcFiles: number;
+    entries: unknown[];
+    backendSha256: string;
+    vuePackageSha256: string;
+  };
+  opened_files: number;
+  metadata_requests: number;
+  successful_unique_provider_requests: number;
+  resident_document_witnesses: number;
+  body_edit_churn: unknown;
+  controlled_edits: Record<string, unknown>[];
+  warming_elapsed_ms: number;
+}
+interface Capture {
+  complete: boolean;
+  completed_runs: number;
+  runs: number;
+  workspace_files: number;
+  unique_imported_providers: number;
+  server_sha256: string;
+  per_run: Run[];
+}
+interface Identity {
+  source: { revision: string };
+  build: {
+    features: string[];
+    rustc: string;
+    cargo: string;
+    target: string;
+    profile_manifest: string[];
+  };
+  binary: { sha256: string; bytes: number };
+}
+interface SourceSpan {
+  count: number;
+  wall_ns: { total: number; self: number };
+  alloc: { calls: number; bytes: number; self_calls: number; self_bytes: number };
+}
+const median = (values: number[]) =>
+  [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+
+/** Reject mismatched executables, inputs, providers or complete diagnostic packets. */
+export function compareLspMarkerScans(directory: string) {
+  const load = <T>(name: string) =>
+    JSON.parse(fs.readFileSync(path.join(directory, name), "utf8")) as T;
+  const baseIdentity = load<Identity>("base-normal-identity.json");
+  const headIdentity = load<Identity>("head-normal-identity.json");
+  assert.notEqual(baseIdentity.source.revision, headIdentity.source.revision);
+  assert.notEqual(
+    baseIdentity.binary.sha256,
+    headIdentity.binary.sha256,
+    "different production code must produce distinct actual measured binaries",
+  );
+  assert.deepEqual(
+    baseIdentity.build,
+    headIdentity.build,
+    "compiler, features and flags must match",
+  );
+  const baseline = load<Capture>("base-normal-1.json");
+  const reference = baseline.per_run[0];
+  const semantics = (run: Run) => ({
+    churn: run.body_edit_churn,
+    edits: run.controlled_edits.map(({ elapsed_ms: _timing, ...semantic }) => semantic),
+  });
+  const admit = (capture: Capture, binaryHash: string) => {
+    assert.equal(capture.complete, true);
+    assert.equal(capture.completed_runs, 1);
+    assert.equal(capture.runs, 1);
+    assert.equal(capture.per_run.length, 1);
+    assert.equal(capture.workspace_files, baseline.workspace_files);
+    assert.equal(
+      capture.server_sha256,
+      binaryHash,
+      "the harness must observe the built executable",
+    );
+    const run = capture.per_run[0];
+    assert.equal(run.opened_files, capture.workspace_files);
+    assert.equal(run.resident_document_witnesses, capture.workspace_files);
+    assert.equal(run.metadata_requests, capture.unique_imported_providers);
+    assert.equal(run.successful_unique_provider_requests, capture.unique_imported_providers);
+    assert.equal(capture.unique_imported_providers, baseline.unique_imported_providers);
+    assert.equal(run.corpus.sfcFiles, capture.workspace_files);
+    assert.equal(run.corpus.entries.length, capture.workspace_files + 2);
+    assert.deepEqual(
+      run.corpus,
+      reference.corpus,
+      "all authored bytes and installed providers must match",
+    );
+    assert.deepEqual(
+      semantics(run),
+      semantics(reference),
+      "every prop, emit, expose and body diagnostic must match",
+    );
+    assert.ok(run.warming_elapsed_ms > 0);
+    return run.warming_elapsed_ms;
+  };
+  const normal = { base: [] as number[], head: [] as number[] };
+  for (const role of ["base", "head"] as const) {
+    const identity = role === "base" ? baseIdentity : headIdentity;
+    for (let round = 1; round <= 3; round++) {
+      normal[role].push(
+        admit(load<Capture>(`${role}-normal-${round}.json`), identity.binary.sha256),
+      );
+    }
+  }
+  const profiles = {} as Record<
+    "base" | "head",
+    { root: SourceSpan; allocation: unknown; calls: number; entries: number }
+  >;
+  let profileBuild: Identity["build"] | undefined;
+  for (const role of ["base", "head"] as const) {
+    const identity = load<Identity>(`${role}-profile-identity.json`);
+    assert.equal(
+      identity.source.revision,
+      (role === "base" ? baseIdentity : headIdentity).source.revision,
+    );
+    assert.ok(identity.build.features.includes("profiling"));
+    if (profileBuild) assert.deepEqual(identity.build, profileBuild);
+    profileBuild = identity.build;
+    admit(load<Capture>(`${role}-profile.json`), identity.binary.sha256);
+    const profile = load<{
+      spans: (SourceSpan & { key: string })[];
+      micro: { name: string; calls: number; units: number }[];
+      allocation: unknown;
+    }>(`profile-${role}/run-1.json`);
+    const root = profile.spans.find((span) =>
+      span.key.startsWith("maestro.project.document_root@"),
+    );
+    assert.ok(root && root.count > 0 && root.alloc.self_calls > 0 && root.alloc.self_bytes > 0);
+    const entryCounter = profile.micro.filter((counter) => counter.name === "fs.read_dir.entries");
+    const calls = profile.micro
+      .filter((counter) => counter.name === "fs.read_dir.calls")
+      .reduce((sum, counter) => sum + counter.units, 0);
+    const entries = entryCounter.reduce((sum, counter) => sum + counter.units, 0);
+    assert.ok(calls > 0 && entries > baseline.workspace_files);
+    profiles[role] = { root, allocation: profile.allocation, calls, entries };
+  }
+  assert.ok(
+    profiles.head.root.alloc.self_calls < profiles.base.root.alloc.self_calls,
+    "the measured allocation hotspot must decrease",
+  );
+  assert.ok(
+    profiles.head.root.alloc.self_bytes < profiles.base.root.alloc.self_bytes,
+    "the measured requested bytes must decrease",
+  );
+  return {
+    scope:
+      "full production LSP residency plus controlled edits; fixture generation/hashing excluded; fresh process per sample",
+    files: baseline.workspace_files,
+    corpusSha256: reference.corpus.sha256,
+    normal: {
+      ...normal,
+      baseMedianMs: median(normal.base),
+      headMedianMs: median(normal.head),
+      warmingChangePct: 100 * (median(normal.head) / median(normal.base) - 1),
+    },
+    profiles,
+    note: "profiling counts/cumulative requested bytes are separate from normal timing and process-tree RSS; no canonical 500ms qualification",
+  };
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  const directory = path.resolve(process.argv[2]);
+  const report = compareLspMarkerScans(directory);
+  fs.writeFileSync(path.join(directory, "comparison.json"), JSON.stringify(report, null, 2) + "\n");
+  console.log(JSON.stringify(report, null, 2));
+}
