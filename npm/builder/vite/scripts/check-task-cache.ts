@@ -221,13 +221,14 @@ try {
     // Vite+ filters non-system environment for cached tasks. Declare the owned
     // cache redirect as a tracked input using the installed provider's API.
     return (
-      original.replace("export default ", "const config = ") +
+      original.replace("export default ", "const factory = ") +
+      "export default async (env) => {\nconst config = await factory(env);\n" +
       "for (const task of Object.values(config.run.tasks)) {\n" +
       '  if (task && typeof task === "object" && task.cache) {\n' +
       '    if (typeof task.cache === "object") task.cache.env = ["XDG_CACHE_HOME"];\n' +
       '    else task.env = ["XDG_CACHE_HOME"];\n' +
       "  }\n" +
-      "}\nexport default config;\n"
+      "}\nreturn config;\n};\n"
     );
   };
   write("vite.config.ts", sourceConfig());
