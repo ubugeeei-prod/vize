@@ -79,7 +79,7 @@ if (process.argv[2] === "inspect") {
     typeof artifact.workflow_run.head_sha === "string" &&
       /^[a-f0-9]{40}$/u.test(artifact.workflow_run.head_sha),
   );
-  const producer = github(`actions/runs/${artifact.workflow_run.id}`);
+  const producer = github(`actions/runs/${String(artifact.workflow_run.id)}`);
   record(producer);
   assert.equal(producer.id, artifact.workflow_run.id);
   assert.equal(producer.head_sha, artifact.workflow_run.head_sha);
