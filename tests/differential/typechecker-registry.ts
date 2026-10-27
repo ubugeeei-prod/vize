@@ -50,6 +50,7 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_unknown_options_preserve_requested_diagnostics",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
+  "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
   "dynamic-component-union-listener-10026":
     "dynamic_component_union_listener_preserves_clean_diagnostics",
   "dynamic-directive-expression-mapping-10182":
@@ -155,6 +156,7 @@ export const sourceRevisions = {
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+  "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
   "dynamic-component-union-listener-10026": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "editor-alias-import-extension-10753": "377e5df97c4effa786a6426a62f61296ce16c750",

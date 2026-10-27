@@ -69,6 +69,7 @@ pub(crate) fn check_pack(
             | "allow-importing-ts-extensions-9890"
             | "nuxt-plugin-injection-types"
             | "listener-attribute-parity-9852"
+            | "dependency-probe-history-10936"
             | "dynamic-component-union-listener-10026"
             | "native-inline-event-handler-9835"
             | "art-variant-implicit-component-9854"

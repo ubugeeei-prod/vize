@@ -67,7 +67,7 @@ pub(crate) fn resolve_dependency(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> Option<PathBuf> {
-    resolve_dependency_with_inputs(specifier, importer_dir, project_root, aliases).0
+    resolve_dependency_inner::<false>(specifier, importer_dir, project_root, aliases).0
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -77,15 +77,29 @@ pub(crate) fn resolve_dependency_with_inputs(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    let specifier = specifier
-        .strip_suffix(".vue.ts")
-        .map_or_else(|| specifier.to_owned(), |stem| cstr!("{stem}.vue").into());
-    if matches!(specifier.as_str(), "." | "..")
+    resolve_dependency_inner::<true>(specifier, importer_dir, project_root, aliases)
+}
+
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
+fn resolve_dependency_inner<const RECORD_INPUTS: bool>(
+    specifier: &str,
+    importer_dir: &Path,
+    project_root: &Path,
+    aliases: &[(std::string::String, std::string::String)],
+) -> (Option<PathBuf>, Vec<PathBuf>) {
+    let folded;
+    let specifier = if let Some(stem) = specifier.strip_suffix(".vue.ts") {
+        folded = cstr!("{stem}.vue");
+        folded.as_str()
+    } else {
+        specifier
+    };
+    if matches!(specifier, "." | "..")
         || specifier.starts_with("./")
         || specifier.starts_with("../")
-        || Path::new(&specifier).is_absolute()
+        || Path::new(specifier).is_absolute()
     {
-        return probe_candidates_with_inputs(&importer_dir.join(&specifier));
+        return probe_candidates_inner::<RECORD_INPUTS>(&importer_dir.join(specifier));
     }
 
     // Select the authored pattern before probing its targets. An exact key
@@ -93,7 +107,7 @@ pub(crate) fn resolve_dependency_with_inputs(
     // wildcard prefix wins. Equal prefixes retain their incoming order.
     let mut selected: Option<(&str, Option<&str>, usize)> = None;
     for (pattern, _) in aliases {
-        if !pattern.contains('*') && specifier == *pattern {
+        if !pattern.contains('*') && specifier == pattern.as_str() {
             selected = Some((pattern, None, 0));
             break;
         }
@@ -142,7 +156,7 @@ pub(crate) fn resolve_dependency_with_inputs(
         } else {
             project_root.join(&substituted)
         };
-        let (resolved, consulted) = probe_candidates_with_inputs(&absolute);
+        let (resolved, consulted) = probe_candidates_inner::<RECORD_INPUTS>(&absolute);
         inputs.extend(consulted);
         if resolved.is_some() {
             return (resolved, inputs);
@@ -152,11 +166,18 @@ pub(crate) fn resolve_dependency_with_inputs(
 }
 
 pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
-    probe_candidates_with_inputs(base).0
+    probe_candidates_inner::<false>(base).0
 }
 
-fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) {
-    let mut inputs = vec![base.to_path_buf()];
+// Only freshness-aware callers own consulted candidates. Reachability only
+// needs the selected module and must not allocate a discarded path history.
+fn probe_candidates_inner<const RECORD_INPUTS: bool>(
+    base: &Path,
+) -> (Option<PathBuf>, Vec<PathBuf>) {
+    let mut inputs = Vec::new();
+    if RECORD_INPUTS {
+        inputs.push(base.to_path_buf());
+    }
     let extension = base.extension().and_then(|extension| extension.to_str());
     // TypeScript substitutes type-bearing extensions before consulting the
     // JavaScript runtime file, even when that runtime file exists.
@@ -178,7 +199,9 @@ fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) 
     };
     for extension in extensions {
         let candidate = PathBuf::from(cstr!("{}.{extension}", probe_base.display()).as_str());
-        inputs.push(candidate.clone());
+        if RECORD_INPUTS {
+            inputs.push(candidate.clone());
+        }
         if candidate.is_file() {
             return (Some(candidate), inputs);
         }
@@ -201,7 +224,9 @@ fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) 
         "index.cjs",
     ] {
         let candidate = base.join(index);
-        inputs.push(candidate.clone());
+        if RECORD_INPUTS {
+            inputs.push(candidate.clone());
+        }
         if candidate.is_file() {
             return (Some(candidate), inputs);
         }
@@ -217,3 +242,6 @@ mod precedence_tests;
 
 #[cfg(test)]
 mod directory_module_tests;
+
+#[cfg(test)]
+mod input_history_tests;

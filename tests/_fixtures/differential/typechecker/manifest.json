@@ -3336,6 +3336,195 @@
       }
     },
     {
+      "id": "typechecker/dependency-probe-history-10936/valid-precedence-and-alias",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dependency-probe-history-10936",
+      "case": "valid-precedence-and-alias",
+      "test": "dependency_probe_histories_preserve_complete_diagnostics",
+      "regressionCommit": "1266cd3a014654bbdcf3378500b93447411b26d9",
+      "sourceRevision": "1266cd3a014654bbdcf3378500b93447411b26d9",
+      "packReference": {
+        "path": "dependency-probe-history-10936/cases.json",
+        "sha256": "e28826478f640d7d1a0fa7f1dbaaa2072b8afa93d4da84de4f173d773306e394"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dependency-probe-history-10936/tsconfig.json.txt",
+          "sha256": "ec131153900800fc8cbbce588b4f4e23476f04478e4d9fdb4b63a248309ebe04"
+        },
+        {
+          "file": "src/model.ts",
+          "path": "dependency-probe-history-10936/model.ts.txt",
+          "sha256": "734c6c4f739454d09703bad545056fbe1d1c18b32d718d1bb4360a6a8ac1b364"
+        },
+        {
+          "file": "src/model.js",
+          "path": "dependency-probe-history-10936/model.js.txt",
+          "sha256": "7107ab3fbddeeb744430072fbf7372255cef33c84b2de01dfcdd79c044c1d595"
+        },
+        {
+          "file": "second/part.ts",
+          "path": "dependency-probe-history-10936/part.ts.txt",
+          "sha256": "6b605c7337d9a21dfb16e6c6104d9f8b867c9eefa292ed498cfb3edc9e88ac41"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dependency-probe-history-10936/valid.vue.txt",
+          "sha256": "bf61f9623ea4af6501070ff8df023acaa6c60272d39c57858e39f257ae479fc4"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dependency-probe-history-10936/invalid-authored-model",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dependency-probe-history-10936",
+      "case": "invalid-authored-model",
+      "test": "dependency_probe_histories_preserve_complete_diagnostics",
+      "regressionCommit": "1266cd3a014654bbdcf3378500b93447411b26d9",
+      "sourceRevision": "1266cd3a014654bbdcf3378500b93447411b26d9",
+      "packReference": {
+        "path": "dependency-probe-history-10936/cases.json",
+        "sha256": "e28826478f640d7d1a0fa7f1dbaaa2072b8afa93d4da84de4f173d773306e394"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dependency-probe-history-10936/tsconfig.json.txt",
+          "sha256": "ec131153900800fc8cbbce588b4f4e23476f04478e4d9fdb4b63a248309ebe04"
+        },
+        {
+          "file": "src/model.ts",
+          "path": "dependency-probe-history-10936/model.ts.txt",
+          "sha256": "734c6c4f739454d09703bad545056fbe1d1c18b32d718d1bb4360a6a8ac1b364"
+        },
+        {
+          "file": "src/model.js",
+          "path": "dependency-probe-history-10936/model.js.txt",
+          "sha256": "7107ab3fbddeeb744430072fbf7372255cef33c84b2de01dfcdd79c044c1d595"
+        },
+        {
+          "file": "second/part.ts",
+          "path": "dependency-probe-history-10936/part.ts.txt",
+          "sha256": "6b605c7337d9a21dfb16e6c6104d9f8b867c9eefa292ed498cfb3edc9e88ac41"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dependency-probe-history-10936/invalid.vue.txt",
+          "sha256": "2311fb8e9b9bc812674e625b1b0d15a15ba188cc16e43ef2c01531110d010593"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dependency-probe-history-10936/repaired-authored-model",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dependency-probe-history-10936",
+      "case": "repaired-authored-model",
+      "test": "dependency_probe_histories_preserve_complete_diagnostics",
+      "regressionCommit": "1266cd3a014654bbdcf3378500b93447411b26d9",
+      "sourceRevision": "1266cd3a014654bbdcf3378500b93447411b26d9",
+      "packReference": {
+        "path": "dependency-probe-history-10936/cases.json",
+        "sha256": "e28826478f640d7d1a0fa7f1dbaaa2072b8afa93d4da84de4f173d773306e394"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dependency-probe-history-10936/tsconfig.json.txt",
+          "sha256": "ec131153900800fc8cbbce588b4f4e23476f04478e4d9fdb4b63a248309ebe04"
+        },
+        {
+          "file": "src/model.ts",
+          "path": "dependency-probe-history-10936/model.ts.txt",
+          "sha256": "734c6c4f739454d09703bad545056fbe1d1c18b32d718d1bb4360a6a8ac1b364"
+        },
+        {
+          "file": "src/model.js",
+          "path": "dependency-probe-history-10936/model.js.txt",
+          "sha256": "7107ab3fbddeeb744430072fbf7372255cef33c84b2de01dfcdd79c044c1d595"
+        },
+        {
+          "file": "second/part.ts",
+          "path": "dependency-probe-history-10936/part.ts.txt",
+          "sha256": "6b605c7337d9a21dfb16e6c6104d9f8b867c9eefa292ed498cfb3edc9e88ac41"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dependency-probe-history-10936/valid.vue.txt",
+          "sha256": "bf61f9623ea4af6501070ff8df023acaa6c60272d39c57858e39f257ae479fc4"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-component-union-listener-10026/native-element-union",
       "state": "active",
       "targets": ["batch"],
