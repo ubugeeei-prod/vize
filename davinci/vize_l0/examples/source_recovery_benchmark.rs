@@ -24,13 +24,13 @@ fn main() {
         !instrument || cfg!(feature = "micro-profiling"),
         "profile mode requires instrumentation"
     );
-    let mut source = vize_l0::String::new();
+    let mut source = vize_l0::String::default();
     for row in 0..rows {
         use std::fmt::Write;
         writeln!(source, "const item_{row}: number = {row};").expect("source builds");
     }
     source.push_str("const damaged = missing.;\n");
-    let source_hash = vize_l0::hash_bytes(source.as_bytes());
+    let source_hash = vize_l0::hash::hash_bytes(source.as_bytes());
     let profiler = vize_l0::profiler::global_profiler();
     if instrument {
         profiler.clear();
