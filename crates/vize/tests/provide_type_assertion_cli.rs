@@ -16,11 +16,12 @@ const CHILD: &str = "import { inject } from \"vue\";\nimport { CastKey, PlainKey
 const SETUP: &str = "import { computed, provide, ref, reactive, readonly } from 'vue';\nimport type { Ref } from 'vue';\nimport MyChild from './components/MyChild.vue';\nimport { CastKey, PlainKey } from './composables/keys';\nconst source = ref('a');\nconst value = computed(() => source.value);\nconst state = reactive({ count: 1 });\nconst plainValue = 'a';\nconst snapshot = source.value;\nfunction getValue() { return 'a'; }\nfunction useService() { return { value: source }; }\nprovide(PlainKey, value);\n";
 
 #[test]
-#[ignore = "explicit Actions observer retains whole reports"]
 fn observe_complete_provide_assertion_packets() {
+    let owned_artifacts = tempfile::tempdir().unwrap();
     let artifacts = std::env::var_os("VIZE_PROVIDE_ASSERTION_ARTIFACTS")
-        .expect("observer requires artifact directory");
-    let artifacts = Path::new(&artifacts);
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| owned_artifacts.path().to_owned());
+    let artifacts = artifacts.as_path();
     fs::create_dir_all(artifacts).unwrap();
     let cases = [
         ("original", "value as Ref<string>", false),
@@ -252,7 +253,7 @@ fn add_script(analyzer: &mut CrossFileAnalyzer, path: &str, script: &str, used: 
     for component in used {
         local
             .croquis_mut()
-            .note_used_component(vize_carton::CompactString::new(*component));
+            .note_used_component(vize_l0::CompactString::new(*component));
     }
     let summary =
         build_effect_graph_from_sfc_scripts(None, Some(EffectGraphScript::new(script, Some("ts"))))
