@@ -1,0 +1,60 @@
+name: Public typechecker consumer
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/public-typechecker-consumer.yml
+      - tools/benchmarks/scripts/public-typechecker-consumer.ts
+      - tests/_fixtures/differential/typechecker/dependency-probe-history-10936/**
+permissions: { contents: read }
+concurrency:
+  group: public-typechecker-consumer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  public:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Install a fresh public 0.602 consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/public-provider"
+          cd "$RUNNER_TEMP/public-provider"
+          cat > package.json <<'JSON'
+          {"private":true,"dependencies":{"vize":"0.602.0","@vizejs/native":"0.602.0","vue":"3.5.44","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}
+          JSON
+          npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify the published standalone archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/public-cli"
+          cd "$RUNNER_TEMP/public-cli"
+          curl --fail --location --retry 3 --output vize.tar.gz https://github.com/ubugeeei-prod/vize/releases/download/v0.602.0/vize-x86_64-unknown-linux-gnu.tar.gz
+          printf '%s\n' '4a75062b16eeee03449c0e471f3776be383f16e99e0820fe6a170b40e63ff93e  vize.tar.gz' | sha256sum --check -
+          tar -xzf vize.tar.gz
+          test -x vize
+      - name: Run complete public mutation and repair packets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/public-typechecker-consumer.ts --provider "$RUNNER_TEMP/public-provider" --binary "$RUNNER_TEMP/public-cli/vize" --archive "$RUNNER_TEMP/public-cli/vize.tar.gz" --out "$RUNNER_TEMP/public-acceptance"
+      - name: Package only owned evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/public-acceptance"
+          cp "$RUNNER_TEMP/public-provider/package.json" "$RUNNER_TEMP/public-provider/package-lock.json" "$RUNNER_TEMP/public-acceptance/" 2>/dev/null || true
+          tar --exclude='*/node_modules' -czf "$RUNNER_TEMP/public-acceptance.tgz" -C "$RUNNER_TEMP" public-acceptance
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: public-typechecker-0.602-${{ github.sha }}
+          path: ${{ runner.temp }}/public-acceptance.tgz
+          retention-days: 14
