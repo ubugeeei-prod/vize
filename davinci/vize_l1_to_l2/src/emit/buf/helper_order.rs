@@ -51,7 +51,9 @@ impl Buf {
                 .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
                 > 65_536
         {
-            self.sort_helpers::<true>(listed, alias_mask)
+            // Virtual positions also consult neighboring helpers of other ranks.
+            // Include them in the shared scan instead of rescanning the module.
+            self.sort_helpers::<true>(listed, self.used)
         } else {
             self.sort_helpers::<false>(listed, 0)
         }
@@ -379,13 +381,7 @@ mod tests {
         );
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
-            alias_mask: Helper::ALL.iter().fold(0, |mask, helper| {
-                if matches!(helper.rank(), 2 | 5) {
-                    mask | helper.bit()
-                } else {
-                    mask
-                }
-            }),
+            alias_mask: buf.used,
             alias_positions: None,
         };
         assert!(
