@@ -158,7 +158,9 @@ test(
                 project === "fallthroughAttributes" || project === "#3488"
                   ? {
                       name:
-                        project === "#3488" ? "upstream-instance-expect-error" : "upstream-original",
+                        project === "#3488"
+                          ? "upstream-instance-expect-error"
+                          : "upstream-original",
                       sources: fs
                         .readdirSync(projectRoot, { withFileTypes: true })
                         .filter((entry) => entry.isFile())
