@@ -1,0 +1,86 @@
+name: Source symbolizer smoke
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/source-symbolizer-smoke.yml
+      - tools/benchmarks/scripts/source-symbolizer-*.ts
+      - tests/tooling/source-symbolizer-protocol.test.ts
+  workflow_dispatch:
+    inputs:
+      replay_run_id:
+        description: Optional existing public cold-scale run for normal CPU replay
+        type: string
+        required: false
+      replay_artifact_id:
+        description: Optional immutable cold-scale artifact from the specified run
+        type: string
+        required: false
+permissions: { contents: read, actions: read }
+concurrency:
+  group: source-symbolizer-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  software-source:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - name: Install bounded symbolizer tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y linux-tools-generic binutils llvm elfutils
+          sudo sysctl kernel.perf_event_paranoid=0
+          shopt -s nullglob
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then
+              echo "SMOKE_PERF=$candidate" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+      - name: Validate exact count and source ownership admission
+        run: node --test tests/tooling/source-symbolizer-protocol.test.ts
+      - name: Prove the small original Rust carrier before decoding normal captures
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          node tools/benchmarks/scripts/source-symbolizer-smoke.ts \
+            --perf "$SMOKE_PERF" --out "$out/carrier"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
+        with:
+          artifact-ids: ${{ inputs.replay_artifact_id }}
+          run-id: ${{ inputs.replay_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/source-symbolizer-replay-download
+      - name: Replay the exact retained normal Rust binary and software CPU samples
+        if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mapfile -t archives < <(find "$RUNNER_TEMP/source-symbolizer-replay-download" -type f -name '*.tgz')
+          [[ "${#archives[@]}" == 1 ]]
+          tar -xzf "${archives[0]}" -C "$RUNNER_TEMP" \
+            cold-scale/record-head/direct-process/perf.data \
+            cold-scale/record-head/direct-process/receipt.json \
+            cold-scale/binaries/normal-head/vize \
+            cold-scale/builds/normal-head.json
+          node tools/benchmarks/scripts/source-symbolizer-smoke.ts --perf "$SMOKE_PERF" \
+            --out "$out/normal" --replay-root "$RUNNER_TEMP/cold-scale" \
+            --carrier-result "$out/carrier/result.json"
+      - name: Preserve raw protocols, exact sample census, and separate self/inclusive reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: source-symbolizer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-symbolizer/${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 14
