@@ -63,6 +63,24 @@ jobs:
           VIZE_TEST_STOCK_VUE_TSC: ${{ github.workspace }}/tests/node_modules/vue-tsc/bin/vue-tsc.js
           VIZE_NUXT_MEMBERSHIP_ARTIFACTS: ${{ runner.temp }}/nuxt-membership-packets
         run: cargo test --locked --profile ci -p vize --test integration check_cli::check_nuxt_generated_computed_map_values_preserve_record_types -- --exact --nocapture
+      - name: Require every executed native stock and graph control
+        env:
+          PACKETS: ${{ runner.temp }}/nuxt-membership-packets
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ["PACKETS"])
+          expected = {"unreferenced-native":1,"unreferenced-stock":2,"referenced-native":0,"referenced-stock":0,"typed-invalid-native":1,"typed-invalid-stock":2,"repair-native":0,"repair-stock":0,"unreferenced-stock-files":0,"referenced-stock-files":0}
+          assert {p.stem.removesuffix(".process") for p in root.glob("*.process.json")} == set(expected)
+          for name, status in expected.items():
+              process = json.loads((root / (name + ".process.json")).read_text())
+              assert process["exitCode"] == status, (name, process)
+              assert (root / (name + ".stdout")).is_file()
+              assert (root / (name + ".stderr")).is_file()
+              if name.endswith("-native"):
+                  packet = json.loads((root / (name + ".stdout")).read_text())
+                  assert packet["programs"][0]["files"] == ["nuxt.config.ts", "src/App.vue"]
+          PY
       - name: Preserve actual executable and providers
         if: ${{ always() }}
         run: |
@@ -72,7 +90,7 @@ jobs:
             sha256sum "$binary" > "$RUNNER_TEMP/nuxt-membership-packets/binary-sha256.txt"
             "$binary" --version > "$RUNNER_TEMP/nuxt-membership-packets/binary-version.txt"
           fi
-          node -e 'const fs=require("node:fs"); for(const p of ["tests/node_modules/vue-tsc/package.json","tests/node_modules/typescript/package.json","node_modules/@typescript/typescript-linux-x64/package.json"]) if(fs.existsSync(p)) console.log(p,fs.readFileSync(p,"utf8"));' > "$RUNNER_TEMP/nuxt-membership-packets/providers.txt"
+          node -e 'const fs=require("node:fs"); for(const p of ["node_modules/vue/package.json","tests/node_modules/vue-tsc/package.json","tests/node_modules/typescript/package.json","node_modules/@typescript/typescript-linux-x64/package.json"]) if(fs.existsSync(p)) console.log(p,fs.readFileSync(p,"utf8"));' > "$RUNNER_TEMP/nuxt-membership-packets/providers.txt"
       - name: Preserve every complete packet and original input
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

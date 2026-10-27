@@ -482,6 +482,13 @@ void firstOptionValue;
 
 #[test]
 fn check_nuxt_generated_computed_map_values_preserve_record_types() {
+    if std::env::var_os("VIZE_NUXT_MEMBERSHIP_ARTIFACTS").is_some() {
+        assert_eq!(std::env::var_os("VIZE_TEST_DISABLE_TSGO"), None);
+        assert_eq!(
+            std::env::var("VIZE_TEST_REQUIRE_TSGO").ok().as_deref(),
+            Some("1")
+        );
+    }
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
@@ -581,6 +588,9 @@ export {}
         "src/App.vue(29,20): error TS2304: Cannot find name 'computed'.\nsrc/App.vue(30,20): error TS2304: Cannot find name 'computed'.\nsrc/App.vue(31,24): error TS2304: Cannot find name 'computed'.\nsrc/App.vue(32,25): error TS7006: Parameter 'record' implicitly has an 'any' type.\n",
     );
 
+    let unreferenced_stock_files =
+        stock_nuxt_computed_membership_files(&project_root, "unreferenced-stock-files");
+
     // A real configured manifest references the same unchanged declaration.
     std::fs::write(
         project_root.join(".nuxt/nuxt.d.ts"),
@@ -597,10 +607,30 @@ export {}
     )
     .unwrap();
     assert_stock_nuxt_computed_membership(&project_root, "referenced-stock", "");
+    if let Some(mut expected_files) = unreferenced_stock_files {
+        expected_files.push(
+            project_root
+                .join(".nuxt/nuxt.d.ts")
+                .to_string_lossy()
+                .into_owned(),
+        );
+        expected_files.push(
+            project_root
+                .join(".nuxt/types/imports.d.ts")
+                .to_string_lossy()
+                .into_owned(),
+        );
+        expected_files.sort();
+        assert_eq!(
+            stock_nuxt_computed_membership_files(&project_root, "referenced-stock-files"),
+            Some(expected_files),
+            "complete stock physical graph adds only the configured manifest and its declaration"
+        );
+    }
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .env("CORSA_PATH", corsa_path)
+        .env("CORSA_PATH", &corsa_path)
         .args(["check", ".", "--format", "json"])
         .output()
         .unwrap();
@@ -612,10 +642,11 @@ export {}
         panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
     });
 
+    // This report inventories diagnostic/mirror inputs. The pure reference
+    // manifest and Nuxt codegen imports feed the declaration graph, not extra
+    // diagnostic roots. Stock's full physical graph is retained separately.
     let mut expected_positive = expected_negative;
     expected_positive["files"][1]["diagnostics"] = serde_json::json!([]);
-    expected_positive["programs"][0]["files"] =
-        serde_json::json!([".nuxt/nuxt.d.ts", "nuxt.config.ts", "src/App.vue"]);
     expected_positive["errorCount"] = serde_json::json!(0);
     assert_eq!(
         json, expected_positive,
@@ -631,6 +662,49 @@ export {}
         json["errorCount"].as_u64(),
         Some(0),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    // The configured declaration must preserve the callback record type:
+    // an any-valued fallback would silently accept this invalid property.
+    let original_source = std::fs::read_to_string(project_root.join("src/App.vue")).unwrap();
+    let invalid_source = original_source.replacen("record.name", "record.missing", 1);
+    assert_ne!(invalid_source, original_source);
+    std::fs::write(project_root.join("src/App.vue"), &invalid_source).unwrap();
+    assert_stock_nuxt_computed_membership(
+        &project_root,
+        "typed-invalid-stock",
+        "src/App.vue(33,22): error TS2339: Property 'missing' does not exist on type 'SpeakerRecord'.\n",
+    );
+    let invalid = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+    capture_nuxt_computed_membership_process(&project_root, "typed-invalid-native", &invalid);
+    let mut expected_invalid = expected_positive.clone();
+    expected_invalid["files"][1]["diagnostics"] = serde_json::json!([
+        "error:33:22 [TS2339] Property 'missing' does not exist on type 'SpeakerRecord'."
+    ]);
+    expected_invalid["errorCount"] = serde_json::json!(1);
+    assert_eq!(invalid.status.code(), Some(1));
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&invalid.stdout).unwrap(),
+        expected_invalid
+    );
+    std::fs::write(project_root.join("src/App.vue"), original_source).unwrap();
+    assert_stock_nuxt_computed_membership(&project_root, "repair-stock", "");
+    let repaired = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+    capture_nuxt_computed_membership_process(&project_root, "repair-native", &repaired);
+    assert_eq!(repaired.status.code(), Some(0));
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&repaired.stdout).unwrap(),
+        expected_positive
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -3405,6 +3479,7 @@ fn capture_nuxt_computed_membership_process(
             format!("{:?}\n", output.status),
         )
         .unwrap();
+        std::fs::write(artifacts.join(format!("{name}.process.json")), serde_json::to_vec_pretty(&serde_json::json!({"exitCode":output.status.code(),"success":output.status.success(),"cwd":root.to_string_lossy()})).unwrap()).unwrap();
         for source in [
             "tsconfig.json",
             "src/App.vue",
@@ -3441,6 +3516,39 @@ fn assert_stock_nuxt_computed_membership(root: &Path, name: &str, expected: &str
         output.status.code(),
         Some(if expected.is_empty() { 0 } else { 2 })
     );
+}
+
+fn stock_nuxt_computed_membership_files(root: &Path, name: &str) -> Option<Vec<String>> {
+    let Some(stock) = std::env::var_os("VIZE_TEST_STOCK_VUE_TSC") else {
+        assert!(
+            std::env::var_os("VIZE_NUXT_MEMBERSHIP_ARTIFACTS").is_none(),
+            "focused qualification requires stock inventory"
+        );
+        return None;
+    };
+    let output = Command::new("node")
+        .arg(stock)
+        .args([
+            "--noEmit",
+            "--pretty",
+            "false",
+            "--listFilesOnly",
+            "-p",
+            "tsconfig.json",
+        ])
+        .current_dir(root)
+        .output()
+        .unwrap();
+    capture_nuxt_computed_membership_process(root, name, &output);
+    assert_eq!(output.status.code(), Some(0));
+    assert_eq!(output.stderr, b"");
+    let mut files = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    files.sort();
+    Some(files)
 }
 
 fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
