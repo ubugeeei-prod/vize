@@ -203,24 +203,10 @@ mod tests {
 
     #[test]
     fn clickable_tag_sfc_with_runtime_role_does_not_report() {
-        let source = r#"<script setup lang="ts">
-const { clickable = false } = defineProps<{ clickable?: boolean }>();
-const emit = defineEmits<{ press: [] }>();
-function press(): void {
-  if (clickable) emit("press");
-}
-</script>
-<template>
-  <span
-    :role="clickable ? 'button' : undefined"
-    :tabindex="clickable ? 0 : undefined"
-    @click="press"
-    @keydown.enter="press"
-  >
-    <slot />
-  </span>
-</template>
-"#;
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/a11y-dynamic-role-10926/ClickableTag.vue.txt"
+        ));
         for newline in ["\n", "\r\n"] {
             let result =
                 create_linter().lint_sfc(&source.replace('\n', newline), "ClickableTag.vue");
@@ -228,6 +214,18 @@ function press(): void {
             assert_eq!(result.warning_count, 0);
             assert!(result.diagnostics.is_empty(), "{newline:?}: {result:?}");
         }
+        let control = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/a11y-dynamic-role-10926/StaticControl.vue.txt"
+        ));
+        let result = create_linter().lint_sfc(control, "StaticControl.vue");
+        assert_eq!(result.error_count, 0);
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(
+            result.diagnostics[0].rule_name,
+            "a11y/no-static-element-interactions"
+        );
     }
 
     #[test]
