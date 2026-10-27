@@ -395,6 +395,17 @@ try {
     evidence,
     JSON.stringify(
       {
+        runtime: {
+          node: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          cpus: os.cpus().length,
+          availableParallelism: os.availableParallelism(),
+          runnerName: process.env.RUNNER_NAME,
+          runnerOs: process.env.RUNNER_OS,
+          imageOs: process.env.ImageOS,
+          imageVersion: process.env.ImageVersion,
+        },
         provider,
         publicVersion,
         published: Boolean(published),
