@@ -21,6 +21,7 @@ use vize_canon::virtual_ts::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_l0::Allocator;
 
+mod loop_sources;
 mod projection_carriers;
 
 /// Measured template-expression anchors on the committed TS-40 matrix.
@@ -87,6 +88,8 @@ fn compare_template(id: &str, template: &str) -> usize {
 }
 
 /// Measured check diagnostics on `tests/_fixtures` that both mappings cover.
+// Preserve all original comparisons. The two audited same-element v-for
+// collection reads have a separate exact registry and counter below.
 const CHECK_DIAGNOSTIC_COMPARISONS: usize = 64;
 
 #[test]
@@ -102,8 +105,11 @@ fn check_diagnostics_land_inside_the_projection() {
     let mut compared = 0usize;
     let mut added = 0usize;
     let mut svg_added = 0usize;
+    let mut loop_source_added = 0usize;
+    let mut original_comparisons = Vec::new();
     let mut carriers = projection_carriers::Carriers::new(&root, &files);
     let mut svg_carriers = projection_carriers::Carriers::svg(&root, &files);
+    let mut loop_sources = loop_sources::Additions::new(&root);
     let mut divergences = Vec::new();
     for path in &files {
         let Ok(source) = std::fs::read_to_string(path) else {
@@ -152,7 +158,21 @@ fn check_diagnostics_land_inside_the_projection() {
                     added += 1;
                     additions.push(diagnostic);
                 } else {
-                    compared += 1;
+                    let observation = serde_json::json!({
+                        "path": path.strip_prefix(&root).expect("fixture relative path")
+                            .to_string_lossy().replace('\\', "/"),
+                        "diagnostic": diagnostic,
+                        "templateBase": base,
+                        "authoredSpan": [span.start, span.end],
+                        "authoredText": body.get(span.clone()).expect("checked template span"),
+                    });
+                    if loop_sources.accept(path, &source, &observation) {
+                        loop_source_added += 1;
+                    } else {
+                        eprintln!("projection baseline comparison={observation}");
+                        original_comparisons.push(observation);
+                        compared += 1;
+                    }
                 }
             } else if divergences.len() < 12 {
                 divergences.push(format!(
@@ -174,12 +194,16 @@ fn check_diagnostics_land_inside_the_projection() {
     }
     carriers.finish();
     svg_carriers.finish();
+    loop_sources.finish();
+    loop_sources::assert_original_comparisons(original_comparisons);
     assert!(
         divergences.is_empty(),
         "check diagnostics missed by the projection:\n{}",
         divergences.join("\n")
     );
-    eprintln!("check diagnostic comparisons={compared} additive={added} svg={svg_added}");
+    eprintln!(
+        "check diagnostic comparisons={compared} additive={added} svg={svg_added} loop-source={loop_source_added}"
+    );
     assert_eq!(
         compared, CHECK_DIAGNOSTIC_COMPARISONS,
         "vize check diagnostic comparisons changed; a zero run fails"
@@ -191,6 +215,10 @@ fn check_diagnostics_land_inside_the_projection() {
     assert_eq!(
         svg_added, 2,
         "SVG carrier comparisons changed; additions do not replace the original 64 or registered 7"
+    );
+    assert_eq!(
+        loop_source_added, 2,
+        "loop-source comparisons changed; additions do not replace the original 64, registered 7 or SVG 2"
     );
 }
 

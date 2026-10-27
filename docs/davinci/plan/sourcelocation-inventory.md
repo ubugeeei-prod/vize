@@ -66,7 +66,7 @@ already carries `content` as a source slice or arena copy, so it reads that
 text directly and also preserves text changed by transforms. Representative
 migrated sites:
 
-- `crates/vize_atelier_core/src/codegen/expression/generate.rs:48` — codegen reads `simple.content` directly; its retained
+- `crates/vize_atelier_core/src/codegen/expression/generate.rs:77` — codegen reads `simple.content` directly; its retained
   expression text can differ from the original span after a transform
 - `crates/vize_croquis/src/drawer/template/components.rs:48` — croquis captures component/expression text into
   analysis products

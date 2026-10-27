@@ -40,6 +40,24 @@ impl MacroTracker {
         self.define_options_name = name;
     }
 
+    /// Replace the type argument of the recognized `defineProps` call at
+    /// `start..end` with a host-owned projection (e.g. a typed-page plugin).
+    pub fn project_define_props_type_args(
+        &mut self,
+        (start, end): (u32, u32),
+        type_args: CompactString,
+    ) -> bool {
+        let Some(call) = self
+            .define_props_idx
+            .and_then(|index| self.calls.get_mut(index))
+            .filter(|call| (call.start, call.end) == (start, end))
+        else {
+            return false;
+        };
+        call.type_args = Some(type_args);
+        true
+    }
+
     /// Get defineArt metadata.
     #[inline]
     pub fn define_art(&self) -> Option<&super::ArtDefinition> {

@@ -40,7 +40,7 @@ jobs:
       - uses: ./.github/actions/setup-js-package-tests
       - uses: ./.github/actions/setup-rust-script
       - name: Exercise plugin boundaries and canonical staging
-        run: vp node --test npm/native/test/language-projection.test.cjs tests/typescript-plugin/mapped-language-service.test.cjs tests/typescript-plugin/host-boundaries.test.cjs tests/tooling/vscode-typescript-vue-plugin.test.ts tests/tooling/vscode-typescript-vue-plugin-types.test.ts tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts tests/tooling/vscode-typescript-plugin-staging.test.ts tests/tooling/vscode-vsix-policy.test.ts
+        run: vp node --test npm/native/test/language-projection.test.cjs tests/typescript-plugin/mapped-language-service.test.cjs tests/typescript-plugin/project-configuration.test.cjs tests/typescript-plugin/host-boundaries.test.cjs tests/tooling/vscode-typescript-vue-plugin.test.ts tests/tooling/vscode-typescript-vue-plugin-types.test.ts tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts tests/tooling/vscode-typescript-plugin-staging.test.ts tests/tooling/vscode-vsix-policy.test.ts
       - name: Build the exact-source native producer
         run: vp run --filter './npm/native' build:ci
       - name: Measure the installed package with real tsserver packets

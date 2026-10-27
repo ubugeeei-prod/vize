@@ -274,7 +274,7 @@ crates/vize_canon/src/virtual_ts/tests/slot_component_bindings.rs	16
 crates/vize_canon/src/virtual_ts/tests/slot_outlet_spread.rs	2
 crates/vize_canon/src/virtual_ts/tests/slot_outlet_spread/union.rs	1
 crates/vize_canon/src/virtual_ts/tests/unused_refs.rs	11
-crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	8
+crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	7
 crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	14
 crates/vize_carton/src/config/loader/project_settings_tests.rs	1
 crates/vize_carton/src/corsa_resolver/tests.rs	2
