@@ -78,15 +78,18 @@ def profile_pair(left, right):
     }
 
 
-def profile_identity(root):
+def profile_identity(root, require_normal=True):
     receipt = json.loads((root / "identity.json").read_text())
     assert receipt["base"] == receipt["firstParent"]
     records = {}
     for role in ("base", "head"):
         normal = receipt["roles"][role]
         source = Path(normal["sourceRoot"])
-        assert all(not artifact["fresh"] for artifact in normal["artifacts"])
-        assert "micro-profiling" not in normal["artifacts"][1]["features"]
+        if require_normal:
+            assert all(not artifact["fresh"] for artifact in normal["artifacts"])
+            assert "micro-profiling" not in normal["artifacts"][1]["features"]
+        for name, path in (("recoverySha256", "crates/vize_croquis/src/script_parser/recovery.rs"), ("lockSha256", "Cargo.lock"), ("carrierSha256", "davinci/vize_l0/examples/source_recovery_clone_benchmark.rs")):
+            assert normal[name] == hashlib.sha256((source / path).read_bytes()).hexdigest()
         messages = [
             json.loads(line) for line in (root / f"profile-build-{role}.jsonl").read_text().splitlines()
         ]
@@ -120,7 +123,8 @@ def profile_identity(root):
     for index in (0, 1):
         for key in ("features", "profile"):
             assert records["base"]["artifacts"][index][key] == records["head"]["artifacts"][index][key]
-            assert receipt["roles"]["base"]["artifacts"][index][key] == receipt["roles"]["head"]["artifacts"][index][key]
+            if require_normal:
+                assert receipt["roles"]["base"]["artifacts"][index][key] == receipt["roles"]["head"]["artifacts"][index][key]
     receipt["instrumentedRoles"] = records
     (root / "identity.json").write_text(json.dumps(receipt, indent=2) + "\n")
     return receipt
@@ -171,12 +175,44 @@ def self_test():
     print("clone-contract-controls=" + json.dumps({"positive": 3, "rejected": rejected}))
 
 
+def allocation_only(mode, root):
+    assert mode in ("tiny", "matrix")
+    if mode == "tiny":
+        profile_identity(root, require_normal=False)
+    sizes = [4096] if mode == "tiny" else [128 * 1024, 1024 * 1024, 10 * 1024 * 1024]
+    summary = {
+        "scope": "instrumented Rust allocation-request and source-count laws",
+        "normalTimingQualified": False,
+        "profileElapsedNsQualified": False,
+        "cases": [],
+    }
+    for scenario in ("irreparable", "valid", "repairable"):
+        for size in sizes:
+            profiles = {
+                role: sample(root / f"profile-{scenario}-{role}-{size}.json")
+                for role in ("base", "head")
+            }
+            assert all(row["minimumSourceBytes"] == size for row in profiles.values())
+            summary["cases"].append({
+                "scenario": scenario, "minimumSourceBytes": size,
+                "sourceBytes": profiles["base"]["sourceBytes"],
+                "sourceHash": profiles["base"]["sourceHash"],
+                "iterations": profiles["base"]["iterations"],
+                "allocation": profile_pair(profiles["base"], profiles["head"]),
+            })
+    (root / f"clone-allocation-{mode}-summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    print("allocationComparison=" + json.dumps(summary, separators=(",", ":")))
+
+
 def main():
     mode = sys.argv[1]
     if mode == "--self-test":
         self_test()
         return
     root = Path(sys.argv[2])
+    if mode in ("allocation-tiny", "allocation-matrix"):
+        allocation_only(mode.split("-", 1)[1], root)
+        return
     assert mode in ("tiny", "matrix")
     if mode == "tiny":
         profile_identity(root)
@@ -195,6 +231,7 @@ def main():
                 for role in ("base", "head")
             }
             assert len({signature(row) for rows in normal.values() for row in rows}) == 1
+            assert all(row["minimumSourceBytes"] == size for rows in normal.values() for row in rows)
             assert all(not row["instrumented"] for rows in normal.values() for row in rows)
             profiles = {
                 role: sample(root / f"profile-{scenario}-{role}-{size}.json")
@@ -202,7 +239,7 @@ def main():
             }
             # Instrumented repetition count may differ; the actual source must match.
             for row in profiles.values():
-                for key in ("sourceBytes", "sourceHash", "rows", "scenario"):
+                for key in ("minimumSourceBytes", "sourceBytes", "sourceHash", "rows", "scenario"):
                     assert row[key] == normal["base"][0][key]
             summary["cases"].append({
                 "scenario": scenario, "minimumSourceBytes": size,

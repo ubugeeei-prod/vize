@@ -54,8 +54,101 @@ jobs:
           name: script-recovery-clone-functional-${{ github.sha }}
           path: functional-evidence/
           if-no-files-found: error
-  compare:
+  allocation-law:
     needs: functional
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      DECLARED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: script-recovery-clone-allocation-law-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Preserve the immutable profile-only pair and shared carrier
+        run: |
+          set -euo pipefail
+          mkdir -p allocation-evidence
+          git rev-parse HEAD > allocation-evidence/head.sha
+          git cat-file commit HEAD > allocation-evidence/head.commit
+          python3 -c 'from pathlib import Path; lines=Path("allocation-evidence/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); parents=[line.split()[1].decode() for line in lines if line.startswith(b"parent ")]; assert parents; Path("allocation-evidence/base.sha").write_text(parents[0]+"\n")'
+          allocation_base_sha=$(cat allocation-evidence/base.sha)
+          [[ "$allocation_base_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$allocation_base_sha" = "$DECLARED_BASE_SHA"
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$allocation_base_sha"
+          git worktree add --detach "$RUNNER_TEMP/recovery-allocation-base" "$allocation_base_sha"
+          test "$(git -C "$RUNNER_TEMP/recovery-allocation-base" rev-parse HEAD)" = "$allocation_base_sha"
+          cp davinci/vize_l0/examples/source_recovery_clone_benchmark.rs "$RUNNER_TEMP/recovery-allocation-base/davinci/vize_l0/examples/"
+          git diff --name-status "$allocation_base_sha" HEAD > allocation-evidence/source-diff.txt
+          rustc +1.99.1 -vV > allocation-evidence/rustc.txt
+          lscpu > allocation-evidence/cpu.txt
+          python3 - <<'PYIDENTITY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path('allocation-evidence')
+          sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          receipt = {'base': (root/'base.sha').read_text().strip(), 'firstParent': (root/'base.sha').read_text().strip(), 'declaredBase': os.environ['DECLARED_BASE_SHA'], 'head': (root/'head.sha').read_text().strip(), 'sourceDiff': (root/'source-diff.txt').read_text().splitlines(), 'normalTimingQualified': False, 'roles': {}}
+          for role in ('base','head'):
+              source = pathlib.Path(os.environ['RUNNER_TEMP'])/'recovery-allocation-base' if role == 'base' else pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+              receipt['roles'][role] = {'sourceRoot': str(source), 'recoverySha256': sha(source/'crates/vize_croquis/src/script_parser/recovery.rs'), 'lockSha256': sha(source/'Cargo.lock'), 'carrierSha256': sha(source/'davinci/vize_l0/examples/source_recovery_clone_benchmark.rs')}
+          assert receipt['roles']['base']['lockSha256'] == receipt['roles']['head']['lockSha256']
+          assert receipt['roles']['base']['carrierSha256'] == receipt['roles']['head']['carrierSha256']
+          (root/'identity.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          (root/'resources.json').write_text(json.dumps({'runner': {key:os.environ.get(key) for key in ('RUNNER_NAME','RUNNER_OS','RUNNER_ARCH','RUNNER_ENVIRONMENT','CARGO_BUILD_JOBS','RUSTFLAGS','CARGO_ENCODED_RUSTFLAGS','CARGO_INCREMENTAL')}, 'affinity':sorted(os.sched_getaffinity(0)), 'scope':'untimed allocation/source-count law only; instrumented elapsedNs is unqualified'},indent=2)+'\n')
+          PYIDENTITY
+      - name: Build independent instrumented roles and admit the small allocation law
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            source="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-allocation-base"; fi
+            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-allocation-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --features micro-profiling --message-format json > "allocation-evidence/profile-build-$role.jsonl"
+            cp "target/recovery-allocation-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/examples/source_recovery_clone_benchmark" "allocation-evidence/instrumented-$role"
+            for scenario in irreparable valid repairable; do
+              "allocation-evidence/instrumented-$role" 8 4096 profile "$scenario" > "allocation-evidence/profile-$scenario-$role-4096.json"
+            done
+          done
+          python3 tools/benchmarks/scripts/compare_recovery_clone.py allocation-tiny allocation-evidence
+      - name: Enforce allocation and parse-call laws on huge authored sources
+        run: |
+          set -euo pipefail
+          for scenario in irreparable valid repairable; do
+            for bytes in 131072 1048576 10485760; do
+              for role in base head; do
+                "allocation-evidence/instrumented-$role" 3 "$bytes" profile "$scenario" > "allocation-evidence/profile-$scenario-$role-$bytes.json"
+              done
+            done
+          done
+          python3 tools/benchmarks/scripts/compare_recovery_clone.py allocation-matrix allocation-evidence
+          rm allocation-evidence/instrumented-base allocation-evidence/instrumented-head
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: success()
+        with:
+          name: script-recovery-clone-allocation-summary-${{ github.sha }}
+          path: |
+            allocation-evidence/clone-allocation-*-summary.json
+            allocation-evidence/identity.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: script-recovery-clone-allocation-${{ github.sha }}
+          path: |
+            allocation-evidence/*.json
+            allocation-evidence/*.jsonl
+            allocation-evidence/*.txt
+            allocation-evidence/*.sha
+            allocation-evidence/*.commit
+          if-no-files-found: error
+  compare:
+    needs: [functional, allocation-law]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:

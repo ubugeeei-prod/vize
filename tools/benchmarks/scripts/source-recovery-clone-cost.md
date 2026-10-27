@@ -38,6 +38,10 @@ The 4 KiB carrier must pass before the larger matrix runs:
   requested bytes. Repairable input still has exactly one recovery parse.
 
 The matrix repeats those laws for all three cases and all three source sizes.
+A separate official Linux job qualifies instrumented allocation and source-count
+laws first. It retains equal compiler flags and separate targets in both roles;
+its elapsed times remain unqualified. Normal timing stays on the original
+Blacksmith runner recipe and has separate source/binary provenance.
 Normal timing uses three alternating baseline/candidate rounds. Whole-process
 RSS receipts include generation and are kept separate from allocation windows.
 A timing improvement is claimed only from completed normal measurements.
