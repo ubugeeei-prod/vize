@@ -21,7 +21,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    # Functional admission can use the official pool; full timing stays on one fixed runner class.
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.full && 'blacksmith-8vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 60
     env:
       GOMAXPROCS: "8"
