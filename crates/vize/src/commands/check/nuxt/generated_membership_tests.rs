@@ -142,3 +142,50 @@ fn configured_generated_stubs_follow_custom_build_dir_outside_the_app() {
     assert!(!stubs.contains("declare const staleOutsideBuildDir:"));
     assert!(options.strict_instance_globals);
 }
+
+#[test]
+fn configured_pure_manifest_retains_imports_after_ambient_root_filtering() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    std::fs::create_dir_all(root.join(".nuxt/types")).unwrap();
+    std::fs::write(root.join("nuxt.config.ts"), "export default {};\n").unwrap();
+    std::fs::write(
+        root.join(".nuxt/nuxt.d.ts"),
+        "/// <reference path=\"./imports.d.ts\" />\nexport {};\n",
+    )
+    .unwrap();
+    std::fs::write(
+        root.join(".nuxt/imports.d.ts"),
+        "declare global { const useConfigured: () => string; }\nexport {};\n",
+    )
+    .unwrap();
+    std::fs::write(
+        root.join(".nuxt/types/stale.d.ts"),
+        "declare global { const staleGlobal: string; }\nexport {};\n",
+    )
+    .unwrap();
+    let config = root.join(".nuxt/tsconfig.app.json");
+    std::fs::write(&config, r#"{"include":["./nuxt.d.ts"]}"#).unwrap();
+    let files = super::super::tsconfig_inputs::collect_ambient_declaration_files(
+        &root,
+        Some(&config),
+        &mut super::super::tsconfig_inputs::TsconfigInputCache::default(),
+    );
+    assert!(
+        files.is_empty(),
+        "pure/import manifests are not ambient roots"
+    );
+    let mut options = VirtualTsOptions::default();
+    super::detect(
+        &mut options,
+        &root,
+        Some(&config),
+        Some(&files),
+        false,
+        VueVersion::V3,
+    );
+    let stubs = options.auto_import_stubs.join("\n");
+    assert!(stubs.contains("declare const useConfigured:"));
+    assert!(!stubs.contains("declare const staleGlobal:"));
+    assert!(options.strict_instance_globals);
+}

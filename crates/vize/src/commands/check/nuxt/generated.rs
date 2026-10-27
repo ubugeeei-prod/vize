@@ -2,7 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use ignore::WalkBuilder;
 use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
 
@@ -13,7 +12,7 @@ use super::generated_ast::{
     parse_import_manifest_exports, rewrite_component_imports_for_virtual_project,
 };
 use super::generated_dir::{
-    NuxtGeneratedDir, is_declaration_file, is_imports_declaration, is_nitro_imports_declaration,
+    NuxtGeneratedDir, is_imports_declaration, is_nitro_imports_declaration,
 };
 use super::generated_values::{
     push_generated_declared_const, push_generated_declared_global_const,
@@ -24,6 +23,7 @@ use super::stubs::{push_declared_const, tracked_read_to_string};
 pub(super) fn collect_generated_stubs(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
+    generated_files: &[PathBuf],
     declaration_graph: Option<&FxHashSet<PathBuf>>,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
@@ -32,56 +32,41 @@ pub(super) fn collect_generated_stubs(
     let nuxt_types_dir = generated_dir.types_dir();
     let mut found_import_manifest = false;
 
-    if nuxt_types_dir.exists() {
-        let walker = WalkBuilder::new(nuxt_types_dir.as_path())
-            .hidden(false)
-            .standard_filters(false)
-            .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
-            .build();
-
-        for entry in walker.flatten() {
-            let path = entry.path();
-            if !path.is_file() || !is_declaration_file(path) {
-                continue;
-            }
-
-            if is_nitro_imports_declaration(path) {
-                continue;
-            }
-            if is_imports_declaration(path) {
-                found_import_manifest = true;
-            }
-            if !is_configured_declaration(path, declaration_graph) {
-                continue;
-            }
-
-            if let Ok(values) = parse_declared_global_values(path) {
-                for (name, type_annotation) in values {
-                    push_generated_declared_global_const(
-                        cwd,
-                        path,
-                        stubs,
-                        seen_names,
-                        external_template_bindings,
-                        &name,
-                        &type_annotation,
-                    );
-                }
-            }
-
-            collect_global_component_stubs(
-                cwd,
-                path,
-                stubs,
-                seen_names,
-                external_template_bindings,
-            );
+    for path in generated_files
+        .iter()
+        .filter(|path| path.starts_with(&nuxt_types_dir))
+    {
+        if is_nitro_imports_declaration(path) {
+            continue;
         }
+        if is_imports_declaration(path) {
+            found_import_manifest = true;
+        }
+        if !is_configured_declaration(path, declaration_graph) {
+            continue;
+        }
+
+        if let Ok(values) = parse_declared_global_values(path) {
+            for (name, type_annotation) in values {
+                push_generated_declared_global_const(
+                    cwd,
+                    path,
+                    stubs,
+                    seen_names,
+                    external_template_bindings,
+                    &name,
+                    &type_annotation,
+                );
+            }
+        }
+
+        collect_global_component_stubs(cwd, path, stubs, seen_names, external_template_bindings);
     }
 
     collect_root_generated_global_stubs(
         cwd,
         generated_dir,
+        generated_files,
         declaration_graph,
         stubs,
         seen_names,
@@ -90,6 +75,7 @@ pub(super) fn collect_generated_stubs(
     collect_root_generated_component_stubs(
         cwd,
         generated_dir,
+        generated_files,
         declaration_graph,
         stubs,
         seen_names,
@@ -134,13 +120,17 @@ pub(super) fn collect_generated_stubs(
 fn collect_root_generated_global_stubs(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
+    generated_files: &[PathBuf],
     declaration_graph: Option<&FxHashSet<PathBuf>>,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
-    for path in generated_dir.root_dts_files() {
-        if !is_configured_declaration(&path, declaration_graph) {
+    for path in generated_files
+        .iter()
+        .filter(|path| path.parent() == Some(generated_dir.path()))
+    {
+        if !is_configured_declaration(path, declaration_graph) {
             continue;
         }
         if let Ok(values) = parse_declared_global_values(path.as_path()) {
@@ -162,13 +152,17 @@ fn collect_root_generated_global_stubs(
 fn collect_root_generated_component_stubs(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
+    generated_files: &[PathBuf],
     declaration_graph: Option<&FxHashSet<PathBuf>>,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
-    for path in generated_dir.root_dts_files() {
-        if !is_configured_declaration(&path, declaration_graph) {
+    for path in generated_files
+        .iter()
+        .filter(|path| path.parent() == Some(generated_dir.path()))
+    {
+        if !is_configured_declaration(path, declaration_graph) {
             continue;
         }
         collect_global_component_stubs(
@@ -213,7 +207,7 @@ fn collect_global_component_stubs(
 /// `useI18n` says nothing about whether `$t` is declared, and inventing it hides
 /// the `TS2339` the Vue toolchain reports for every authored use.
 pub(super) fn collect_generated_template_globals(
-    generated_dir: &NuxtGeneratedDir,
+    generated_files: &[PathBuf],
     declaration_graph: Option<&FxHashSet<PathBuf>>,
     options: &mut VirtualTsOptions,
     seen_auto_imports: &FxHashSet<String>,
@@ -225,8 +219,8 @@ pub(super) fn collect_generated_template_globals(
         .map(|global| global.name.clone())
         .collect::<FxHashSet<_>>();
 
-    for path in generated_dir.dts_files() {
-        if !is_configured_declaration(&path, declaration_graph) {
+    for path in generated_files {
+        if !is_configured_declaration(path, declaration_graph) {
             continue;
         }
         let Ok(members) = parse_interface_members_with_rewritten_imports(
