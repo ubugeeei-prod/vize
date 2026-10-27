@@ -241,6 +241,7 @@ mod lsp_bound_event_casing_cli;
 mod lsp_canceled_hover_cli;
 mod lsp_checked_prop_rename_cli;
 mod lsp_cli;
+mod lsp_profile_cli;
 mod lsp_completion_sibling_overlay_cli;
 mod lsp_component_attribute_authority_cli;
 mod lsp_component_native_events_cli;
