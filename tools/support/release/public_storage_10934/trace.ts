@@ -33,6 +33,7 @@ export function attestGoExecutions(evidence: string, backend: string, virtualRoo
       assert.ok(requested && path.isAbsolute(requested));
       const config = inside(virtualRoot, requested);
       const bytes = fs.readFileSync(config);
+      fs.writeFileSync(path.join(evidence, "requested-config.post-" + sha256(bytes) + ".json"), bytes);
       calls.push({
         pid: Number(name.slice("exec.".length)), trace: name, executable, args,
         cwd: virtualRoot, requestedConfig: config,

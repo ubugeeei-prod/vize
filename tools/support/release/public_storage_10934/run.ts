@@ -46,10 +46,16 @@ try {
   fs.mkdirSync(cachePath);
   const cache = fs.realpathSync(cachePath);
   const environment = { ...process.env };
+  const publicMode: Record<string, { inheritedPresent: boolean; effective: string | null }> = {};
   for (const name of [
     "NAPI_RS_NATIVE_LIBRARY_PATH", "NAPI_RS_FORCE_WASI", "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
-    "NODE_OPTIONS", "NODE_PATH",
-  ]) delete environment[name];
+    "REQUIRE_SOURCE_BUILD", "NODE_OPTIONS", "NODE_PATH",
+  ]) {
+    delete environment[name];
+    publicMode[name] = { inheritedPresent: name in process.env, effective: environment[name] ?? null };
+    assert.equal(environment[name], undefined, name);
+  }
+  save(path.join(evidence, "public-mode-environment.json"), publicMode);
   environment.XDG_CACHE_HOME = cache;
   environment.CORSA_PATH = backend;
   run("strace", [
@@ -95,7 +101,9 @@ try {
   const workspace = fs.realpathSync(path.join(harnessOutput, "project"));
   const app = fs.realpathSync(path.join(workspace, "apps/app"));
   const originalConfig = fs.realpathSync(path.join(app, "tsconfig.json"));
-  const configSha256 = sha256(fs.readFileSync(originalConfig));
+  const configBytes = fs.readFileSync(originalConfig);
+  const configSha256 = sha256(configBytes);
+  fs.writeFileSync(path.join(evidence, "original-tsconfig.post.json"), configBytes);
   const original = asArray(receipt.inputs).map((value) => asRecord(value))
     .find((item) => item.file === "apps/app/tsconfig.json");
   assert.ok(original);
@@ -138,7 +146,7 @@ try {
     checkout: candidate, sourceFixture: fixture, receiptSha256: sha256(fs.readFileSync(receiptFile)),
     providerAuthority, loadedPublicNativeImage: image, backend: backendIdentity,
     owner: { workspace, app, originalConfig, configSha256, ownerSha256, contextSha256, virtualRoot },
-    finalBuildInfo, actualGoExecutions,
+    finalBuildInfo, actualGoExecutions, publicModeEnvironment: publicMode,
     cacheRegime: {
       freshCheckProcesses: 3, firstProjectCacheInitiallyEmpty: true,
       laterProcesses: "persistent build-info and unchanged mirror reuse",
