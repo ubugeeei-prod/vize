@@ -22,7 +22,8 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
-      BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      DECLARED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      EVENT_KIND: ${{ github.event_name }}
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
     steps:
@@ -38,17 +39,21 @@ jobs:
       - name: Preserve exact source identities and the shared benchmark carrier
         run: |
           set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$BASE_SHA" != "$(git rev-parse HEAD)"
+          [[ "$DECLARED_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           mkdir -p evidence
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
-          git worktree add --detach "$RUNNER_TEMP/recovery-base" "$BASE_SHA"
+          printf '%s\n' "$DECLARED_BASE_SHA" > evidence/declared-base.sha
           git rev-parse HEAD > evidence/head.sha
-          git -C "$RUNNER_TEMP/recovery-base" rev-parse HEAD > evidence/base.sha
           git cat-file commit HEAD > evidence/head.commit
           python3 -c 'from pathlib import Path; h=Path("evidence/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); p=[x.split()[1].decode() for x in h if x.startswith(b"parent ")]; assert p; Path("evidence/first-parent.sha").write_text(p[0]+"\n")'
-          test "$BASE_SHA" = "$(cat evidence/first-parent.sha)"
-          git diff --name-status "$BASE_SHA" HEAD > evidence/source-diff.txt
+          recovery_base_sha=$(cat evidence/first-parent.sha)
+          [[ "$recovery_base_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$recovery_base_sha" != "$(git rev-parse HEAD)"
+          if [[ "$EVENT_KIND" == workflow_dispatch ]]; then test "$DECLARED_BASE_SHA" = "$recovery_base_sha"; fi
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$recovery_base_sha"
+          git worktree add --detach "$RUNNER_TEMP/recovery-base" "$recovery_base_sha"
+          git -C "$RUNNER_TEMP/recovery-base" rev-parse HEAD > evidence/base.sha
+          test "$(cat evidence/base.sha)" = "$(cat evidence/first-parent.sha)"
+          git diff --name-status "$recovery_base_sha" HEAD > evidence/source-diff.txt
           cp davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
           sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
           test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
@@ -75,7 +80,7 @@ jobs:
           import hashlib, json, os, pathlib
           evidence = pathlib.Path('evidence')
           sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
-          receipt = {'base': (evidence/'base.sha').read_text().strip(), 'head': (evidence/'head.sha').read_text().strip(), 'firstParent': (evidence/'first-parent.sha').read_text().strip(), 'sourceDiff': (evidence/'source-diff.txt').read_text().splitlines(), 'roles': {}}
+          receipt = {'declaredBase': (evidence/'declared-base.sha').read_text().strip(), 'base': (evidence/'base.sha').read_text().strip(), 'head': (evidence/'head.sha').read_text().strip(), 'firstParent': (evidence/'first-parent.sha').read_text().strip(), 'sourceDiff': (evidence/'source-diff.txt').read_text().splitlines(), 'roles': {}}
           assert receipt['base'] == receipt['firstParent']
           for role in ('base', 'head'):
               source = pathlib.Path(os.environ['RUNNER_TEMP'])/'recovery-base' if role == 'base' else pathlib.Path(os.environ['GITHUB_WORKSPACE'])
