@@ -1,0 +1,3 @@
+<template>
+<ul id="outer" role="listbox" ><template v-for="item in items"><li role="option" :tabindex="item === selected ? 0 : -1">A</li></template></ul>
+</template>

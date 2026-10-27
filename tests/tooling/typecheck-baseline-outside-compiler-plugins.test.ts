@@ -4,10 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
-import { rewriteOutsideCompilerPlugins } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-compiler-plugins.mjs";
-import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
-import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
+import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.ts";
+import { rewriteOutsideCompilerPlugins } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-compiler-plugins.ts";
+import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.ts";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.ts";
 
 /**
  * Unique isolation cannot retarget `require("../../node_modules/<pkg>")` from
@@ -134,8 +134,8 @@ test("relative extends concatenates parent compiler plugin paths onto the overla
       sourcePath,
       writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath),
     );
-    assert.equal(overlay.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.check.json"));
-    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+    assert.equal(overlay!.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.check.json"));
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay!.path, "utf8")), {
       extends: "./tsconfig.check.json",
       compilerOptions: {
         plugins: [{ name: "./node_modules/typescript-plugin-css-modules" }],
