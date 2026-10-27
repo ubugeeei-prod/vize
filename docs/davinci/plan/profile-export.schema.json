@@ -85,8 +85,8 @@
           "key": {
             "type": "string",
             "minLength": 1,
-            "pattern": "^[A-Za-z0-9._-]+$",
-            "description": "Dotted operation key (for example `atelier.dom.template.parse`)."
+            "pattern": "^[A-Za-z0-9._/@:-]+$",
+            "description": "Dotted operation key, or profiling-only source callsite name@file:line."
           },
           "count": {
             "type": "integer",
@@ -274,6 +274,119 @@
           "type": "integer",
           "minimum": 0,
           "description": "Failed allocation-like calls."
+        },
+        "operations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "alloc_calls",
+            "alloc_bytes",
+            "alloc_failures",
+            "alloc_zeroed_calls",
+            "alloc_zeroed_bytes",
+            "alloc_zeroed_failures",
+            "dealloc_calls",
+            "dealloc_bytes",
+            "realloc_calls",
+            "realloc_old_bytes",
+            "realloc_new_bytes",
+            "realloc_failures"
+          ],
+          "description": "Raw allocator API counts/layout sizes in profiling builds; no claim of physical copied bytes or process RSS.",
+          "properties": {
+            "alloc_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alloc_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alloc_failures": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alloc_zeroed_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alloc_zeroed_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alloc_zeroed_failures": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "dealloc_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "dealloc_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "realloc_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "realloc_old_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "realloc_new_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "realloc_failures": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "micro": {
+      "type": "array",
+      "description": "Optional profiling-build source callsite counters across all Rust threads of this process, excluding descendants. No truncation. Timed span key joins spans; per-span allocations belong to the synchronous thread only. Snapshot after producers stop. units is an explicit callsite unit, not a universal byte count.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "name", "file", "module", "kind", "line", "calls", "units"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "module": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "enum": ["counter", "span"]
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "calls": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "units": {
+            "type": "integer",
+            "minimum": 0
+          }
         }
       }
     }
