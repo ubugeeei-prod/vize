@@ -11,6 +11,8 @@ const builder = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const root = path.resolve(builder, "../../..");
 const provider = process.env.VIZE_TASK_CACHE_PROVIDER ?? "1.4.0";
 const published = process.argv[2];
+const preflight = process.env.VIZE_TASK_CACHE_PREFLIGHT === "1";
+let configPreflight: unknown;
 assert.ok(
   !published || /^\d+\.\d+\.\d+$/u.test(published),
   "optional argument is a published Vize version",
@@ -25,7 +27,7 @@ const privateCache = sourceCli
 const evidence = path.join(
   root,
   "target/differential/viteplus-task-cache",
-  `${provider}${published ? `-published-${published}` : sourceCli ? "-source-cli" : ""}.json`,
+  `${provider}${published ? `-published-${published}` : sourceCli ? "-source-cli-preflight" : ""}.json`,
 );
 interface TaskRunOptions {
   hit?: boolean;
@@ -232,6 +234,30 @@ try {
     );
   };
   write("vite.config.ts", sourceConfig());
+  if (preflight) {
+    assert.ok(sourceCli, "preflight requires the verified source CLI");
+    const normalized = () =>
+      JSON.parse(
+        requireSuccess(process.execPath, [
+          "--input-type=commonjs",
+          "-e",
+          'const assert=require("node:assert/strict");const{loadConfigFromFile}=require("vite-plus");(async()=>{const loaded=await loadConfigFromFile({command:"build",mode:"production"});assert(loaded&&loaded.config&&loaded.config.run&&loaded.config.run.tasks);process.stdout.write(JSON.stringify(loaded.config.run.tasks));})().catch(e=>{console.error(e);process.exitCode=1;});',
+        ]).stdout,
+      );
+    write("vite.config.ts", config());
+    const before = normalized();
+    write("vite.config.ts", sourceConfig());
+    const after = normalized();
+    const verification = JSON.parse(
+      requireSuccess(process.execPath, [
+        "--input-type=commonjs",
+        "-e",
+        'const assert=require("node:assert/strict");const{before,after}=JSON.parse(process.argv[1]);assert.deepEqual(Object.keys(after).sort(),Object.keys(before).sort());let checked=0;for(const name of Object.keys(after)){const current=after[name],previous=before[name];if(current&&typeof current==="object"&&current.cache){const now=typeof current.cache==="object"?current.cache:current;const old=typeof previous.cache==="object"?previous.cache:previous;const original=old.env??[];assert(Array.isArray(now.env));assert(now.env.includes("XDG_CACHE_HOME"));for(const key of original)assert(now.env.includes(key));assert.equal(new Set(now.env).size,now.env.length);assert.equal(now.env.length,new Set([...original,"XDG_CACHE_HOME"]).size);delete now.env;delete old.env;checked++;}}assert.equal(checked,4);assert.deepEqual(after,before,"all other normalized task fields are unchanged");process.stdout.write(JSON.stringify({resolvedFactory:true,trackedEnvironmentVerified:checked,allOtherTaskFieldsUnchanged:true}));',
+        JSON.stringify({ before, after }),
+      ]).stdout,
+    );
+    configPreflight = { before, after, verification };
+  }
   // Initialize the provider's summary before checks enumerate the project.
   requireSuccess(process.execPath, [vp, "run", "warmup"]);
   function run(
@@ -269,8 +295,10 @@ try {
     return output;
   }
   // Real installed tools normalize the fixture before the read-only oracles.
-  run("initial-format", "fmt", { unchanged: false });
-  for (const task of ["verify:lint", "fmt:check", "typecheck", "vize:check"]) {
+  if (!preflight) run("initial-format", "fmt", { unchanged: false });
+  for (const task of preflight
+    ? ["typecheck"]
+    : ["verify:lint", "fmt:check", "typecheck", "vize:check"]) {
     run(`${task}-cold`, task, { hit: false });
     if (task === "typecheck" && privateCache) {
       const row = rows.find((selected) => selected.label === "typecheck-cold");
@@ -301,94 +329,96 @@ try {
       assert.ok(files.length > 0, "typecheck uses the new private batch store outside the project");
       privateStorage = { root: storage, files };
     }
-    run(`${task}-hit`, task, { hit: true });
+    if (!preflight) run(`${task}-hit`, task, { hit: true });
   }
-  write("src/value.ts", 'export const value: string = "hello";\ndebugger;\n');
-  run("source-change", "verify:lint", { hit: false });
-  run("source-change-hit", "verify:lint", { hit: true });
-  write("lint-policy.ts", 'export const debuggerRule = "error";\n');
-  run("imported-config-diagnostic", "verify:lint", {
-    hit: false,
-    status: 1,
-    diagnostic: /no-debugger/u,
-  });
-  write("lint-policy.ts", 'export const debuggerRule = "off";\n');
-  run("imported-config-clean", "verify:lint");
-  write(
-    "vite.config.ts",
-    sourceConfig().replace('"no-debugger": debuggerRule', '"no-debugger": "error"'),
-  );
-  run("direct-config-diagnostic", "verify:lint", {
-    hit: false,
-    status: 1,
-    diagnostic: /no-debugger/u,
-  });
-  write("vite.config.ts", sourceConfig());
-  write("src/value.ts", 'export const value: string = "hello";\n');
-  run("typecheck-before-transitive-change", "typecheck");
-  write("src/value.ts", "export const value: string = 42;\n");
-  run("transitive-type-diagnostic", "typecheck", {
-    hit: false,
-    status: 1,
-    diagnostic: /(?:number|42).*string|not assignable/u,
-  });
-  write("src/value.ts", 'export const value: string = "hello";\n');
-  write("lint-policy.ts", 'export const debuggerRule = "error";\n');
-  run("new-file-lint-baseline", "verify:lint");
-  run("new-file-type-baseline", "typecheck");
-  write("src/new-file.ts", "const marker: string = 1;\ndebugger;\n");
-  run("new-file-lint-diagnostic", "verify:lint", {
-    hit: false,
-    status: 1,
-    diagnostic: /new-file\.ts/u,
-  });
-  run("new-file-type-diagnostic", "typecheck", {
-    hit: false,
-    status: 1,
-    diagnostic: /new-file\.ts/u,
-  });
-  fs.rmSync(path.join(directory, "src/new-file.ts"));
-  write("lint-policy.ts", 'export const debuggerRule = "off";\n');
-  write("node_modules/.vize/generated.ts", "first generation\n");
-  write(".vize/generated.ts", "first generation\n");
-  run("generated-files-baseline", "verify:lint");
-  write("node_modules/.vize/generated.ts", "second generation\n");
-  write(".vize/generated.ts", "second generation\n");
-  run("generated-files-churn-hit", "verify:lint", { hit: true });
-  for (const task of ["fmt", "lint:fix"]) {
-    run(`${task}-first`, task, { hit: false, unchanged: false });
-    run(`${task}-second-uncached`, task, { hit: false });
+  if (!preflight) {
+    write("src/value.ts", 'export const value: string = "hello";\ndebugger;\n');
+    run("source-change", "verify:lint", { hit: false });
+    run("source-change-hit", "verify:lint", { hit: true });
+    write("lint-policy.ts", 'export const debuggerRule = "error";\n');
+    run("imported-config-diagnostic", "verify:lint", {
+      hit: false,
+      status: 1,
+      diagnostic: /no-debugger/u,
+    });
+    write("lint-policy.ts", 'export const debuggerRule = "off";\n');
+    run("imported-config-clean", "verify:lint");
+    write(
+      "vite.config.ts",
+      sourceConfig().replace('"no-debugger": debuggerRule', '"no-debugger": "error"'),
+    );
+    run("direct-config-diagnostic", "verify:lint", {
+      hit: false,
+      status: 1,
+      diagnostic: /no-debugger/u,
+    });
+    write("vite.config.ts", sourceConfig());
+    write("src/value.ts", 'export const value: string = "hello";\n');
+    run("typecheck-before-transitive-change", "typecheck");
+    write("src/value.ts", "export const value: string = 42;\n");
+    run("transitive-type-diagnostic", "typecheck", {
+      hit: false,
+      status: 1,
+      diagnostic: /(?:number|42).*string|not assignable/u,
+    });
+    write("src/value.ts", 'export const value: string = "hello";\n');
+    write("lint-policy.ts", 'export const debuggerRule = "error";\n');
+    run("new-file-lint-baseline", "verify:lint");
+    run("new-file-type-baseline", "typecheck");
+    write("src/new-file.ts", "const marker: string = 1;\ndebugger;\n");
+    run("new-file-lint-diagnostic", "verify:lint", {
+      hit: false,
+      status: 1,
+      diagnostic: /new-file\.ts/u,
+    });
+    run("new-file-type-diagnostic", "typecheck", {
+      hit: false,
+      status: 1,
+      diagnostic: /new-file\.ts/u,
+    });
+    fs.rmSync(path.join(directory, "src/new-file.ts"));
+    write("lint-policy.ts", 'export const debuggerRule = "off";\n');
+    write("node_modules/.vize/generated.ts", "first generation\n");
+    write(".vize/generated.ts", "first generation\n");
+    run("generated-files-baseline", "verify:lint");
+    write("node_modules/.vize/generated.ts", "second generation\n");
+    write(".vize/generated.ts", "second generation\n");
+    run("generated-files-churn-hit", "verify:lint", { hit: true });
+    for (const task of ["fmt", "lint:fix"]) {
+      run(`${task}-first`, task, { hit: false, unchanged: false });
+      run(`${task}-second-uncached`, task, { hit: false });
+    }
+    const dirtyVue = "<template><div   > changed </div></template>\n";
+    write("src/App.vue", dirtyVue);
+    run("check-fix-writes", "vize:check", { hit: false, args: ["--", "--fix"], unchanged: false });
+    const formatted = fs.readFileSync(path.join(directory, "src/App.vue"), "utf8");
+    assert.notEqual(formatted, dirtyVue);
+    write("src/App.vue", dirtyVue);
+    run("check-fix-identical-dirty-input", "vize:check", {
+      hit: false,
+      args: ["--", "--fix"],
+      unchanged: false,
+    });
+    assert.equal(
+      fs.readFileSync(path.join(directory, "src/App.vue"), "utf8"),
+      formatted,
+      "reintroducing the same dirty input must apply fixes again",
+    );
+    write("src/App.vue", "<template><div   > changed again </div></template>\n");
+    run("check-fix-changed-source", "vize:check", {
+      hit: false,
+      args: ["--", "--fix"],
+      unchanged: false,
+    });
+    assert.notEqual(
+      fs.readFileSync(path.join(directory, "src/App.vue"), "utf8"),
+      formatted,
+      "cache must not restore an earlier fixed source",
+    );
+    write("vite.config.ts", sourceConfig(false));
+    run("opt-out-first", "verify:lint", { hit: false });
+    run("opt-out-second", "verify:lint", { hit: false });
   }
-  const dirtyVue = "<template><div   > changed </div></template>\n";
-  write("src/App.vue", dirtyVue);
-  run("check-fix-writes", "vize:check", { hit: false, args: ["--", "--fix"], unchanged: false });
-  const formatted = fs.readFileSync(path.join(directory, "src/App.vue"), "utf8");
-  assert.notEqual(formatted, dirtyVue);
-  write("src/App.vue", dirtyVue);
-  run("check-fix-identical-dirty-input", "vize:check", {
-    hit: false,
-    args: ["--", "--fix"],
-    unchanged: false,
-  });
-  assert.equal(
-    fs.readFileSync(path.join(directory, "src/App.vue"), "utf8"),
-    formatted,
-    "reintroducing the same dirty input must apply fixes again",
-  );
-  write("src/App.vue", "<template><div   > changed again </div></template>\n");
-  run("check-fix-changed-source", "vize:check", {
-    hit: false,
-    args: ["--", "--fix"],
-    unchanged: false,
-  });
-  assert.notEqual(
-    fs.readFileSync(path.join(directory, "src/App.vue"), "utf8"),
-    formatted,
-    "cache must not restore an earlier fixed source",
-  );
-  write("vite.config.ts", sourceConfig(false));
-  run("opt-out-first", "verify:lint", { hit: false });
-  run("opt-out-second", "verify:lint", { hit: false });
 } finally {
   fs.mkdirSync(path.dirname(evidence), { recursive: true });
   fs.writeFileSync(
@@ -396,6 +426,8 @@ try {
     JSON.stringify(
       {
         provider,
+        preflight,
+        configPreflight,
         publicVersion,
         published: Boolean(published),
         directory,
