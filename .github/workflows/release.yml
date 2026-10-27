@@ -46,7 +46,7 @@ env:
   # Release binaries report the plain version; every other build says <version>-dev.
   VIZE_RELEASE_BUILD: "1"
   # JS packages built by ./.github/actions/release-build-packages.
-  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk
+  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk npm/babel
 jobs:
   version:
     if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'

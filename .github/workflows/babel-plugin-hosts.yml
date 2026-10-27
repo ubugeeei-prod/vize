@@ -25,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", fetch-depth: 0, persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           version: latest
@@ -33,7 +34,7 @@ jobs:
           cache: true
           cache-save: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
+        with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -41,7 +42,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Install frozen source and exact isolated host graphs
         run: |
-          vp install --frozen-lockfile --prefer-offline --filter './npm/babel...' --filter './npm/native...'
+          node tools/support/github/vp-install.ts --filter './npm/babel...' --filter './npm/native...'
           npm ci --prefix npm/babel/test/hosts/fixtures/babel7 --ignore-scripts --no-audit --no-fund
           npm ci --prefix npm/babel/test/hosts/fixtures/babel8 --ignore-scripts --no-audit --no-fund
           for runtime in vdom vapor-rc9 vapor-rc11; do
