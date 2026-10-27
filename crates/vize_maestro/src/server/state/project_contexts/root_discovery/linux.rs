@@ -64,21 +64,24 @@ pub(super) fn directory_markers(directory: &Path) -> io::Result<DirectoryMarkers
 fn observe_records(mut bytes: &[u8], markers: &mut DirectoryMarkers) -> io::Result<bool> {
     const NAME_OFFSET: usize = 19;
     while !bytes.is_empty() {
-        if bytes.len() <= NAME_OFFSET {
-            return Err(io::ErrorKind::InvalidData.into());
-        }
-        let length = u16::from_ne_bytes([bytes[16], bytes[17]]) as usize;
-        let Some(record) = bytes
-            .get(..length)
-            .filter(|record| record.len() > NAME_OFFSET)
+        let encoded_length: [u8; 2] = bytes
+            .get(16..18)
+            .and_then(|field| field.try_into().ok())
+            .ok_or(io::ErrorKind::InvalidData)?;
+        let length = usize::from(u16::from_ne_bytes(encoded_length));
+        let Some((record, remaining)) = bytes
+            .split_at_checked(length)
+            .filter(|(record, _)| record.len() > NAME_OFFSET)
         else {
             return Err(io::ErrorKind::InvalidData.into());
         };
-        let name = &record[NAME_OFFSET..];
+        let name = record
+            .get(NAME_OFFSET..)
+            .ok_or(io::ErrorKind::InvalidData)?;
         let Some(terminator) = memchr::memchr(0, name) else {
             return Err(io::ErrorKind::InvalidData.into());
         };
-        let name = &name[..terminator];
+        let name = name.get(..terminator).ok_or(io::ErrorKind::InvalidData)?;
         if name.is_empty() {
             return Err(io::ErrorKind::InvalidData.into());
         }
@@ -89,7 +92,7 @@ fn observe_records(mut bytes: &[u8], markers: &mut DirectoryMarkers) -> io::Resu
                 return Ok(true);
             }
         }
-        bytes = &bytes[length..];
+        bytes = remaining;
     }
     Ok(false)
 }
