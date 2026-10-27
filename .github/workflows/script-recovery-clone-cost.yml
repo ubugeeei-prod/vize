@@ -19,7 +19,43 @@ concurrency:
   group: script-recovery-clone-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
+  functional:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: script-recovery-clone-functional-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Check full parser packets and source laws without timing qualification
+        run: |
+          set -euo pipefail
+          mkdir -p functional-evidence
+          git rev-parse HEAD > functional-evidence/source.sha
+          rustc +1.99.1 -vV > functional-evidence/rustc.txt
+          lscpu > functional-evidence/cpu.txt
+          python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed parser packets and counter laws; no throughput comparison"}))' > functional-evidence/resources.json
+          python3 tools/benchmarks/scripts/recovery_cost_contract.py | tee functional-evidence/recovery-class-controls.log
+          python3 tools/benchmarks/scripts/compare_recovery_clone.py --self-test | tee functional-evidence/clone-class-controls.log
+          cargo +1.99.1 test --locked --profile ci -p vize_croquis script_parser::recovery --message-format json -- --nocapture 2>&1 | tee functional-evidence/parser-packets.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling --message-format json 2>&1 | tee functional-evidence/source-counter-laws.log
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: script-recovery-clone-functional-${{ github.sha }}
+          path: functional-evidence/
+          if-no-files-found: error
   compare:
+    needs: functional
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
