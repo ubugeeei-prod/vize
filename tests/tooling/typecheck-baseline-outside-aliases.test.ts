@@ -8,8 +8,8 @@ import {
   applyIsolatedAliasOverlay,
   mergePathRewrites,
   rewriteOutsideAliasPaths,
-} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
-import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.ts";
+import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.ts";
 
 /**
  * Non-package `paths` keys still load outside trees (#4461). Overlay retargets

@@ -12,6 +12,15 @@ pub(super) fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &s
             .is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
 }
 
+pub(super) fn should_skip_template_prop_binding_with_type(
+    summary: &Croquis,
+    prop_name: &str,
+    binding_type: Option<BindingType>,
+) -> bool {
+    is_define_props_destructure_local(summary.macros.props_destructure(), prop_name)
+        || binding_type.is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
+}
+
 fn is_define_props_destructure_local(
     destructure: Option<&PropsDestructuredBindings>,
     prop_name: &str,

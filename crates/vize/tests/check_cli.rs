@@ -6,6 +6,7 @@ use crate::support::corsa_path;
 use crate::support::corsa_requirement;
 mod empty_inputs;
 mod global_component_value_imports;
+mod instance_globals;
 mod spread_instantiation_depth;
 mod stubs;
 use crate::support::vite_config;

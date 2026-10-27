@@ -710,10 +710,9 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         &VirtualTsOptions::default(),
     );
 
-    assert!(
-        output
-            .code
-            .contains("const $t: __VizeInstanceGlobal<'$t'> = undefined as any;"),
+    assert_eq!(
+        output.code.matches("const $t = __ctx.$t;").count(),
+        1,
         "{}",
         output.code
     );

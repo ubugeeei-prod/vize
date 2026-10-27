@@ -67,7 +67,7 @@ export function referenceObservation(fixture: LspFixture): WireObservation {
       params: {
         uri: entryUri,
         version: fixture.data.documentVersion,
-        diagnostics: [],
+        diagnostics: materializeWorkspace(fixture.data.initialDiagnostics ?? [], workspaceUri),
       },
     });
   }

@@ -20,7 +20,7 @@ import {
   toolArgs,
   typecheckCorpusGlobs,
   typecheckSourceTsconfig,
-} from "./tool-matrix-command.mjs";
+} from "./tool-matrix-command.ts";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.ts";
 import {
   collectTypecheckerAuthoredPaths,
