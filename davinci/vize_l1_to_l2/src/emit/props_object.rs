@@ -22,7 +22,6 @@ pub(super) struct PropsObjectOptions<'a> {
     pub empty_key_multiline: bool,
     pub is_plain_element: bool,
     pub for_item: bool,
-    pub suppress_once_cache_dynamic: bool,
     pub force_multiline: bool,
 }
 
@@ -37,19 +36,12 @@ pub(super) fn emit_props_object(
         empty_key_multiline,
         is_plain_element,
         for_item,
-        suppress_once_cache_dynamic,
         force_multiline,
     } = options;
-    let split_once_static_class = cx.once_depth > 0
-        && pieces_have_static_attr(pieces, "class")
-        && pieces_have_named(pieces, "class");
-    let skip_class = pieces_have_named(pieces, "class") && !split_once_static_class;
+    let skip_class = pieces_have_named(pieces, "class");
     let skip_style = pieces_have_named(pieces, "style");
     let skip_key = if_key.is_some() || cx.suppress_template_for_child_key;
     let keep_template_if_static_key = if_key.is_some() && cx.template_if_branch_root;
-    if suppress_once_cache_dynamic {
-        reserve_skipped_once_helpers(cx, pieces)?;
-    }
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
         .filter(|piece| {
@@ -59,7 +51,7 @@ pub(super) fn emit_props_object(
                 skip_style,
                 skip_key,
                 keep_template_if_static_key,
-            ) && !(suppress_once_cache_dynamic && skip_once_cache_piece(piece))
+            )
         })
         .collect();
     let scope_id = cx.scope_id_here();
@@ -107,7 +99,6 @@ pub(super) fn emit_props_object(
                     || pieces_have_named(pieces, "class")
                     || pieces_have_named(pieces, "style")
                     || pieces_have_vue_text(pieces))));
-    let event_key_plain_element = is_plain_element && if_key.is_none();
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -127,18 +118,12 @@ pub(super) fn emit_props_object(
     // Most props objects are small. Building and sorting a key index costs
     // more than a short scan; reserve it for wide v-on objects.
     let event_keys = (visible.len() >= 16)
-        .then(|| super::props_object_merge::EventKeys::of(&visible, event_key_plain_element));
+        .then(|| super::props_object_merge::EventKeys::of(&visible, is_plain_element));
     for (index, piece) in visible.iter().enumerate() {
-        if let Some(key) = super::props_object_merge::event_key(piece, event_key_plain_element)
+        if let Some(key) = super::props_object_merge::event_key(piece, is_plain_element)
             && event_keys.as_ref().map_or_else(
-                || {
-                    super::props_object_merge::count(
-                        &visible,
-                        key.as_str(),
-                        event_key_plain_element,
-                    ) > 1
-                },
-                |keys| keys.is_shared(&visible, index, key.as_str(), event_key_plain_element),
+                || super::props_object_merge::count(&visible, key.as_str(), is_plain_element) > 1,
+                |keys| keys.is_shared(&visible, index, key.as_str(), is_plain_element),
             )
         {
             if emitted_merged.contains(&key) {
@@ -152,12 +137,7 @@ pub(super) fn emit_props_object(
             } else if i > 0 {
                 cx.buf.push(" ");
             }
-            super::props_object_merge::emit_handlers(
-                cx,
-                &visible,
-                key.as_str(),
-                event_key_plain_element,
-            )?;
+            super::props_object_merge::emit_handlers(cx, &visible, key.as_str(), is_plain_element)?;
             emitted_merged.push(key);
             i += 1;
             continue;
@@ -175,7 +155,7 @@ pub(super) fn emit_props_object(
             Piece::Bind(bind) => {
                 emit_bind_pair(cx, pieces, bind, skip_normalize, is_plain_element)?
             }
-            Piece::On(event) => on::emit_on_pair(cx, event, event_key_plain_element)?,
+            Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
             Piece::ModelValue { name, model, .. } => {
@@ -239,22 +219,6 @@ fn skip_emitted_key(
         Piece::Bind(bind) if skip_key && super::props_bind::is_key_bind_name(bind) => true,
         _ => false,
     }
-}
-
-fn skip_once_cache_piece(piece: &Piece<'_>) -> bool {
-    matches!(piece, Piece::On(_) | Piece::VueHtml(_))
-}
-
-fn reserve_skipped_once_helpers(
-    cx: &mut EmitCx<'_>,
-    pieces: &[Piece<'_>],
-) -> Result<(), EmitError> {
-    for piece in pieces {
-        if let Piece::On(on) = piece {
-            on::reserve_skipped_once_helpers(cx, on)?;
-        }
-    }
-    Ok(())
 }
 
 pub(super) fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {

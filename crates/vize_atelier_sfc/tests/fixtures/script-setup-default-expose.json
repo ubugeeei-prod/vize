@@ -1,0 +1,189 @@
+{
+  "reference": "Public0.595 whole modules, changed only by independently specified empty default exposure; explicit/inline/ordinary controls unchanged",
+  "cases": [
+    {
+      "id": "plain-client-dev",
+      "source": "<script setup>const msg = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "plain-client-prod",
+      "source": "<script setup>const msg = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": true,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "plain-ssr-dev",
+      "source": "<script setup>const msg = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": false,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`)\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "plain-ssr-prod",
+      "source": "<script setup>const msg = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": true,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`)\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "typed-client-dev",
+      "source": "<script setup lang=\"ts\">const msg: number = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _openBlock(), _createElementBlock(\n    \"div\",\n    null,\n    _toDisplayString($setup.msg),\n    1\n    /* TEXT */\n  );\n}\nconst msg = 1;\nexport default {\n  __name: \"Closed\",\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    const __returned__ = { msg };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};"
+    },
+    {
+      "id": "typed-client-prod",
+      "source": "<script setup lang=\"ts\">const msg: number = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": true,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _openBlock(), _createElementBlock(\n    \"div\",\n    null,\n    _toDisplayString($setup.msg),\n    1\n    /* TEXT */\n  );\n}\nconst msg = 1;\nexport default {\n  __name: \"Closed\",\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    const __returned__ = { msg };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};"
+    },
+    {
+      "id": "typed-ssr-dev",
+      "source": "<script setup lang=\"ts\">const msg: number = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": false,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`);\n}\nconst msg = 1;\nexport default {\n  __name: \"Closed\",\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    const __returned__ = { msg };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};"
+    },
+    {
+      "id": "typed-ssr-prod",
+      "source": "<script setup lang=\"ts\">const msg: number = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": true,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`);\n}\nconst msg = 1;\nexport default {\n  __name: \"Closed\",\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    const __returned__ = { msg };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};"
+    },
+    {
+      "id": "authored-call-client-dev",
+      "source": "<script setup>const msg = String(1)</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst msg = String(1)\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "authored-call-client-prod",
+      "source": "<script setup>const msg = String(1)</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": true,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst msg = String(1)\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "authored-call-ssr-dev",
+      "source": "<script setup>const msg = String(1)</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": false,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`)\n}\n\nexport default {\n  __name: 'Closed',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst msg = String(1)\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "authored-call-ssr-prod",
+      "source": "<script setup>const msg = String(1)</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": true,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`)\n}\n\nexport default {\n  __name: 'Closed',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst msg = String(1)\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "emit-client-dev",
+      "source": "<script setup>defineEmits(['save']); const msg = 1</script><template><button @click=\"$emit('save')\">{{ msg }}</button></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => (_ctx.$emit('save'))\n  }, _toDisplayString($setup.msg), 9 /* TEXT, PROPS */, [\"onClick\"]))\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  emits: ['save'],\n  render: _sfc_render,\n  setup(__props, { expose: __expose, emit: $emit }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "emit-client-prod",
+      "source": "<script setup>defineEmits(['save']); const msg = 1</script><template><button @click=\"$emit('save')\">{{ msg }}</button></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": true,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => (_ctx.$emit('save'))\n  }, _toDisplayString($setup.msg), 9 /* TEXT, PROPS */, [\"onClick\"]))\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  emits: ['save'],\n  render: _sfc_render,\n  setup(__props, { expose: __expose, emit: $emit }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "emit-ssr-dev",
+      "source": "<script setup>defineEmits(['save']); const msg = 1</script><template><button @click=\"$emit('save')\">{{ msg }}</button></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": false,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<button${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</button>`)\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  emits: ['save'],\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "emit-ssr-prod",
+      "source": "<script setup>defineEmits(['save']); const msg = 1</script><template><button @click=\"$emit('save')\">{{ msg }}</button></template>",
+      "inline": false,
+      "ssr": true,
+      "prod": true,
+      "expected": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<button${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</button>`)\n}\n\nconst msg = 1\n\nexport default {\n  __name: 'Closed',\n  emits: ['save'],\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "explicit-value-module",
+      "source": "<script setup>const msg = 1; defineExpose({ msg })</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nconst msg = 1;\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n\n__expose({ msg })\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "explicit-value-inline",
+      "source": "<script setup>const msg = 1; defineExpose({ msg })</script><template><div>{{ msg }}</div></template>",
+      "inline": true,
+      "ssr": false,
+      "prod": false,
+      "expected": "const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nconst msg = 1;\n\nreturn {\n  __name: 'Closed',\n  setup(__props, { expose: __expose }) {\n\n__expose({ msg })\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(msg)))\n}\n}\n\n}"
+    },
+    {
+      "id": "explicit-empty-module",
+      "source": "<script setup>const msg = 1; defineExpose()</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nconst msg = 1;\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n\n__expose()\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "explicit-empty-inline",
+      "source": "<script setup>const msg = 1; defineExpose()</script><template><div>{{ msg }}</div></template>",
+      "inline": true,
+      "ssr": false,
+      "prod": false,
+      "expected": "const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nconst msg = 1;\n\nreturn {\n  __name: 'Closed',\n  setup(__props, { expose: __expose }) {\n\n__expose()\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(msg)))\n}\n}\n\n}"
+    },
+    {
+      "id": "inline-private",
+      "source": "<script setup>const msg = 1</script><template><div>{{ msg }}</div></template>",
+      "inline": true,
+      "ssr": false,
+      "prod": true,
+      "expected": "const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nconst msg = 1\n\nreturn {\n  __name: 'Closed',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(msg)))\n}\n}\n\n}"
+    },
+    {
+      "id": "async-private",
+      "source": "<script setup>const msg = await Promise.resolve(1)</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "import { withAsyncContext as _withAsyncContext } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.msg), 1 /* TEXT */))\n}\n\nexport default {\n  __name: 'Closed',\n  render: _sfc_render,\n  async setup(__props, { expose: __expose }) {\n  __expose();\n\nlet __temp, __restore\n\nconst msg =  (\n  ([__temp,__restore] = _withAsyncContext(() => Promise.resolve(1))),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)\n\nconst __returned__ = { msg }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}"
+    },
+    {
+      "id": "ordinary-script",
+      "source": "<script>export default { data() { return { msg: 1 } } }</script><template><div>{{ msg }}</div></template>",
+      "inline": false,
+      "ssr": false,
+      "prod": false,
+      "expected": "const _sfc_main = { data() { return { msg: 1 } } }\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($data.msg), 1 /* TEXT */))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main"
+    }
+  ]
+}

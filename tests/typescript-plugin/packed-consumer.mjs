@@ -7,8 +7,14 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startTsserver, position } from "./tsserver-client.mjs";
-import { createNavigationFixtures, checkNavigation } from "./authored-navigation.mjs";
-import { checkProjectMetadata } from "./project-metadata.mjs";
+import { createNavigationFixtures, checkNavigation } from "./authored-navigation.ts";
+import { checkProjectMetadata } from "./project-metadata.ts";
+import {
+  createInheritedConfig,
+  checkInheritedConfig,
+  checkConfigurationLog,
+  checkAutoTargetMetadata,
+} from "./inherited-config.ts";
 
 const typescriptVersion = process.env.VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT || "6.0.3";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -166,6 +172,7 @@ assert.equal(
 );
 fs.writeFileSync(path.join(output, "native-image.json"), JSON.stringify(loadedImage, null, 2));
 checkProjectMetadata(nativeApi, consumer, output);
+checkAutoTargetMetadata(nativeApi, consumer, output);
 for (const [file, source] of [
   [vue, vueText],
   [art, artText],
@@ -182,6 +189,7 @@ for (const [file, source] of [
   );
 }
 const navigation = createNavigationFixtures(src, output);
+const inherited = createInheritedConfig(consumer, src, output, typescriptVersion);
 const tsserver = path.join(consumer, "node_modules/typescript/lib/tsserver.js");
 const client = startTsserver(tsserver, consumer, output);
 const results = {};
@@ -285,6 +293,15 @@ try {
     JSON.stringify(tsDiagnostics),
   );
   await checkNavigation(client, navigation, results, vue, vueText, path.join(src, "util.ts"));
+  const inheritedQualification = await checkInheritedConfig(
+    client,
+    inherited,
+    nativeApi,
+    tsserver,
+    consumer,
+    output,
+    results,
+  );
   let renamed = vueText;
   const lineOffsets = [0];
   for (let index = 0; index < vueText.length; index++)
@@ -436,6 +453,8 @@ try {
   await isolatedScenario("disabled-plugin", main, mainText, 2307, (entry) =>
     entry.text.includes("App.vue"),
   );
+  await client.stop();
+  checkConfigurationLog(output);
   fs.writeFileSync(
     path.join(output, "receipt.json"),
     JSON.stringify(
@@ -461,6 +480,8 @@ try {
           sha256: digest(fs.readFileSync(file)),
         })),
         results: Object.keys(results),
+        qualificationRole: "typescript-vue-projection",
+        inheritedQualification,
         passed: true,
       },
       null,

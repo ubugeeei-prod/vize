@@ -183,9 +183,7 @@
     {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "asset-import-binding-collision-10710",
         "files": [
@@ -210,13 +208,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -224,10 +216,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -324,11 +313,101 @@
       }
     },
     {
+      "id": "compiler/sfc/component-v-once-10815",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "component-v-once-10815",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6b5cadf24ee940fcca163f6f0d33d5539e8acb3fd3866b648df432c5711d4d2c",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "component-v-once-10815/module.expected.txt",
+        "sha256": "a20c7685e9e2f8af4776c7e520d88176cea3cd721f269ffa9c0c331c645697fc",
+        "source": "crates/vize_atelier_dom/tests/component_v_once.rs:component_v_once_keeps_props_listeners_and_slots_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10815",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
+      "id": "compiler/sfc/element-v-once-10875",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "element-v-once-10875",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "54a3e299de1c9ec3af8e95ba339c6314d512ecfe3397c54125c942807f7162e2",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "element-v-once-10875/module.expected.txt",
+        "sha256": "2c7633d6121678ba60b82089f7972478476a3312c00db2b2a31e9e3fe874db39",
+        "source": "crates/vize_atelier_dom/tests/element_v_once.rs:element_v_once_keeps_listeners_props_and_directives_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10875",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/escaped-for-bindings-10714",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "escaped-for-bindings-10714",
         "files": [
@@ -353,13 +432,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -367,10 +440,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1053,6 +1123,52 @@
       }
     },
     {
+      "id": "compiler/sfc/script-setup-default-expose-10891",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "script-setup-default-expose-10891",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "2e40f0cd045d896bec3ee36bc8c2689a19d24473e212ee5d6efcaf81d46cf68e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "script-setup-default-expose-10891/module.expected.txt",
+        "sha256": "86b3a77f2b456543133897a5aefa0b74fe9b1a5e4da4998155543f809faea7c9",
+        "source": "Public @vizejs/native@0.595.0 SSR compatibility control with the independently specified closed-by-default setup exposure from Vue compileScript. Only setup context expose destructuring and its initial empty call differ; script_setup_default_expose.rs covers client/SSR, explicit macros, parsing and async order."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC path remains unavailable; this case asserts the complete legacy SSR module and does not claim native-only coverage."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/sfc-runtime-options-native",
       "state": "active",
       "targets": ["ssr"],
@@ -1345,6 +1461,52 @@
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
+      }
+    },
+    {
+      "id": "compiler/sfc/uppercase-native-event-keys-10826",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "uppercase-native-event-keys-10826",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "d75f901aca5657678f2f13ffe978b02ecc0c656c1d336f4786a5223231561c5f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "uppercase-native-event-keys-10826/module.expected.txt",
+        "sha256": "91c41d07e314931f04fcd502d00e1390c511060c6a5f6af8bf9028a9fbefb259",
+        "source": "crates/vize_atelier_dom/tests/uppercase_native_event_keys.rs:branch_and_item_roots_keep_uppercase_native_event_keys_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10826",
+        "reporter": "ubugeeei"
       }
     },
     {
@@ -1644,9 +1806,7 @@
       "id": "compiler/vapor/literal-object-styles-10749",
       "state": "active",
       "adapter": "shared-vapor-literal-style-source-v1",
-      "targets": [
-        "vapor-csr"
-      ],
+      "targets": ["vapor-csr"],
       "scope": "source-only; generic SSR CLI unsupported; no whole-product native or browser parity credit",
       "inputs": [
         {

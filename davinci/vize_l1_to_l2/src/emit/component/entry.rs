@@ -78,6 +78,15 @@ fn emit_vnode(
     })
 }
 
+/// The vnode a `v-once` component caches: the plain nested call.
+pub(in crate::emit) fn emit_once(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
+    emit_vnode(cx, component, None, false, id, Position::Nested)
+}
+
 pub(in crate::emit) fn emit_nested(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
