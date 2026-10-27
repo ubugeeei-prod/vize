@@ -22,11 +22,39 @@ const identity = (directory: string) => {
     manifestBytes: bytes.toString("utf8"),
   };
 };
-const resolve = (owner: string, name: string) =>
-  fs.realpathSync(
-    path.dirname(createRequire(path.join(owner, "package.json")).resolve(`${name}/package.json`)),
-  );
+// Resolve the public entry, then identify its owning manifest. Modern c12
+// intentionally does not export its package.json subpath.
+const resolve = (owner: string, name: string, actualName = name): string => {
+  const entry = createRequire(path.join(owner, "package.json")).resolve(name);
+  for (
+    let directory = path.dirname(fs.realpathSync(entry));
+    ;
+    directory = path.dirname(directory)
+  ) {
+    const manifest = path.join(directory, "package.json");
+    if (
+      fs.existsSync(manifest) &&
+      JSON.parse(fs.readFileSync(manifest, "utf8")).name === actualName
+    )
+      return directory;
+    if (path.dirname(directory) === directory)
+      throw new Error(`No owning manifest for ${name}: ${entry}`);
+  }
+};
+fs.mkdirSync(artifacts, { recursive: true });
+fs.writeFileSync(
+  path.join(artifacts, "source-head.txt"),
+  execFileSync("git", ["rev-parse", "HEAD"], { cwd: root }),
+);
 const census = installedBracesCensus(root);
+fs.writeFileSync(
+  path.join(artifacts, "installed-census-paths.json"),
+  JSON.stringify(
+    { instances: [...census.instances].sort(), consumers: [...census.consumers].sort() },
+    null,
+    2,
+  ) + "\n",
+);
 const kit = resolve(path.join(root, "npm/framework/nuxt"), "@nuxt/kit");
 const c12 = resolve(kit, "c12");
 const chokidar = resolve(c12, "chokidar");
@@ -48,7 +76,7 @@ fs.writeFileSync(
       kitC12: identity(c12),
       kitChokidar: identity(chokidar),
       explicitDevOracle: fs.existsSync(path.join(root, "node_modules/chokidar-braces-oracle"))
-        ? identity(resolve(root, "chokidar-braces-oracle"))
+        ? identity(resolve(root, "chokidar-braces-oracle", "chokidar"))
         : null,
       instances: [...census.instances].sort().map(identity),
       consumers: [...census.consumers].sort().map((directory) => ({
