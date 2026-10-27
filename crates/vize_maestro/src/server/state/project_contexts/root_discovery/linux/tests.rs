@@ -1,4 +1,5 @@
 use std::{fs, os::unix::ffi::OsStrExt};
+use vize_l0::cstr;
 
 use super::{DirectoryMarkers, directory_markers, observe_records};
 use crate::server::state::project_contexts::root_discovery::standard_directory_markers;
@@ -70,7 +71,13 @@ fn truncated_and_malformed_records_fail_without_out_of_bounds_reads() {
 fn native_scans_match_standard_enumeration_across_multiple_kernel_batches() {
     let fixture = tempfile::tempdir().unwrap();
     for index in 0..3000 {
-        fs::write(fixture.path().join(format!("component-{index:04}.vue")), "").unwrap();
+        fs::write(
+            fixture
+                .path()
+                .join(cstr!("component-{index:04}.vue").as_str()),
+            "",
+        )
+        .unwrap();
     }
     fs::write(
         fixture
