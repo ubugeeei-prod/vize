@@ -1,5 +1,6 @@
 mod canon;
 mod capture;
+mod evidence;
 mod maestro;
 mod matrix;
 mod normalize;

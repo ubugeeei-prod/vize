@@ -30,12 +30,13 @@ fn duplicated_template_diagnostic_is_reported_once() {
     let virtual_file = project.find_by_original(&app_path).unwrap();
     let virtual_source = virtual_file.content.as_str();
 
-    // Each authored interpolation is emitted once. A backend can still
-    // report the same diagnostic twice; mapping must deduplicate it.
-    let message = "Cannot find name 'missingThing'.";
+    // Each authored interpolation is read off the public instance once. A
+    // backend can still report the same diagnostic twice; mapping must
+    // deduplicate it.
+    let message = "Property 'missingThing' does not exist on type '__VizeTemplateInstance'.";
     let mut diagnostics: Vec<_> = virtual_source
-        .match_indices("void (missingThing)")
-        .map(|(at, _)| at + "void (".len())
+        .match_indices("void (__vize_public_instance.missingThing)")
+        .map(|(at, _)| at + "void (__vize_public_instance.".len())
         .map(|offset| {
             let (line, character) = LineIndex::new(virtual_source)
                 .offset_to_line_col(virtual_source, offset as u32)
@@ -49,7 +50,7 @@ fn duplicated_template_diagnostic_is_reported_once() {
                     },
                 },
                 severity: Some(1),
-                code: Some(json!("TS2304")),
+                code: Some(json!("TS2339")),
                 source: Some("ts".into()),
                 message: message.into(),
             }
@@ -75,6 +76,10 @@ fn duplicated_template_diagnostic_is_reported_once() {
     );
     assert_eq!(mapped[0].file, app_path);
     assert_eq!(mapped[0].code, Some(2339));
+    assert_eq!(
+        mapped[0].message,
+        "Property 'missingThing' does not exist on the component instance."
+    );
 }
 
 #[test]

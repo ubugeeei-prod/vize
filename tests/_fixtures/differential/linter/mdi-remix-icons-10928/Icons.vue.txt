@@ -1,0 +1,14 @@
+<template>
+  <div>
+    <i class="mdi mdi-close" />
+    <i class="fa fa-user" />
+    <i class="fa-solid fa-user" />
+    <i class="bi bi-alarm" />
+    <i class="material-icons">home</i>
+    <i class="ri-home-line" />
+    <i class="mdi mdi-pencil edit-icon" />
+    <i class="icon-close" />
+    <i class="arrow" />
+    <i>emphasis</i>
+  </div>
+</template>

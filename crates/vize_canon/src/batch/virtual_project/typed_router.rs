@@ -9,10 +9,12 @@ use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 use super::{VirtualProject, tsconfig_paths::normalize_path_lexically};
 use crate::virtual_ts::{TemplateGlobal, VirtualTsOptions};
 
-mod transform;
-use transform::apply;
 #[cfg(test)]
 mod config_tests;
+pub(super) mod provider;
+#[cfg(test)]
+mod route_props_tests;
+mod transform;
 
 const PLUGIN: &str = "vue-router/volar/sfc-typed-router";
 
@@ -20,30 +22,111 @@ const PLUGIN: &str = "vue-router/volar/sfc-typed-router";
 pub(super) struct Context {
     /// Explicit configuration for the known plugin; arbitrary plugins are not executed.
     pub(super) root: Option<PathBuf>,
+    /// The project's resolved router declarations admit the route-props projection.
+    pub(super) route_props: bool,
     /// Registered files whose generated code actually imports the route helper.
     pub(super) import_files: FxHashSet<PathBuf>,
 }
 
+impl Context {
+    pub(super) fn config(&self) -> Option<Config<'_>> {
+        self.root.as_deref().map(|root| Config {
+            root,
+            route_props: self.route_props,
+        })
+    }
+}
+
+/// Project-owned typed-page authority shared by every generated SFC.
+#[derive(Clone, Copy)]
+pub(super) struct Config<'a> {
+    pub(super) root: &'a Path,
+    pub(super) route_props: bool,
+}
+
+impl<'a> Config<'a> {
+    /// Hosts without a route-props admission keep the file-only projection.
+    pub(super) fn files_only(root: &'a Path) -> Self {
+        Self {
+            root,
+            route_props: false,
+        }
+    }
+}
+
 pub(super) struct Generation {
     literal: Option<String>,
+    /// The self-import literal when the project admits route props.
+    component: Option<String>,
     template_options: Option<VirtualTsOptions>,
+    plan: Option<transform::Plan>,
 }
 
 impl Generation {
     pub(super) fn new(
-        root: Option<&Path>,
+        config: Option<Config<'_>>,
         path: &Path,
         options: &VirtualTsOptions,
         uses_template_route: bool,
     ) -> Self {
-        let literal = root.and_then(|root| file_literal(root, path));
+        let literal = config.and_then(|config| file_literal(config.root, path));
         let template_options = literal
             .as_deref()
             .filter(|_| uses_template_route)
             .map(|literal| template_options(options, literal));
+        let component = config
+            .filter(|config| config.route_props && literal.is_some())
+            .and_then(|_| path.file_name()?.to_str())
+            .and_then(|name| string_literal(&vize_carton::cstr!("./{name}")));
         Self {
             literal,
+            component,
             template_options,
+            plan: None,
+        }
+    }
+
+    /// Parse setup once before generation. A `props: true` page's
+    /// `defineProps` contract also becomes the public and template contract.
+    pub(super) fn prepare(
+        &mut self,
+        croquis: &mut vize_croquis::Croquis,
+        descriptor: &vize_atelier_sfc::SfcDescriptor,
+        script: Option<&str>,
+        script_offset: u32,
+        split: Option<(usize, usize)>,
+    ) {
+        let (Some(literal), Some(setup), Some(script)) = (
+            self.literal.as_deref(),
+            descriptor.script_setup.as_ref(),
+            script,
+        ) else {
+            return;
+        };
+        let Some(source_type) = source_type(setup.lang.as_deref()) else {
+            return;
+        };
+        let setup_range = setup.loc.start..setup.loc.start + setup.content.len();
+        self.plan = transform::plan(
+            script,
+            |offset| source_offset(split, script_offset, offset),
+            setup_range,
+            source_type,
+            self.component.is_some(),
+        );
+        let route_props = transform::route_props_type(literal);
+        for (call, type_argument) in self.plan.iter().flat_map(|plan| &plan.props_calls) {
+            let projected = match type_argument {
+                Some(span) => script
+                    .get(span.start as usize..span.end as usize)
+                    .map(|authored| cstr!("<{route_props} & ({authored})>")),
+                None => Some(cstr!("<{route_props}>")),
+            };
+            if let Some(projected) = projected {
+                croquis
+                    .macros
+                    .project_define_props_type_args((call.start, call.end), projected);
+            }
         }
     }
 
@@ -66,35 +149,64 @@ impl Generation {
         if let Some(literal) = self.literal.as_deref()
             && let Some(setup) = descriptor.script_setup.as_ref()
             && let Some(script) = script
+            && let Some(plan) = self.plan.as_ref()
         {
-            let source_type = match setup.lang.as_deref().unwrap_or("js") {
-                "ts" => oxc_span::SourceType::ts(),
-                "tsx" => oxc_span::SourceType::tsx(),
-                "jsx" => oxc_span::SourceType::jsx(),
-                "js" => oxc_span::SourceType::mjs(),
-                _ => return imported,
-            };
-            let source_offset = |offset: usize| {
-                if let Some((synthetic_start, authored_start)) = split
-                    && offset >= synthetic_start
-                {
-                    authored_start + offset - synthetic_start
-                } else {
-                    script_offset as usize + offset
-                }
-            };
-            imported |= apply(
+            imported |= transform::apply(
                 output,
+                plan,
                 script,
-                source_offset,
+                |offset| source_offset(split, script_offset, offset),
                 setup.loc.start..setup.loc.start + setup.content.len(),
-                source_type,
-                literal,
+                (literal, self.component.as_deref()),
                 diagnostic_ownership,
             );
         }
         imported
     }
+}
+
+fn source_type(lang: Option<&str>) -> Option<oxc_span::SourceType> {
+    match lang.unwrap_or("js") {
+        "ts" => Some(oxc_span::SourceType::ts()),
+        "tsx" => Some(oxc_span::SourceType::tsx()),
+        "jsx" => Some(oxc_span::SourceType::jsx()),
+        "js" => Some(oxc_span::SourceType::mjs()),
+        _ => None,
+    }
+}
+
+fn source_offset(split: Option<(usize, usize)>, script_offset: u32, offset: usize) -> usize {
+    if let Some((synthetic_start, authored_start)) = split
+        && offset >= synthetic_start
+    {
+        authored_start + offset - synthetic_start
+    } else {
+        script_offset as usize + offset
+    }
+}
+
+/// Refresh the opt-in and its route-props admission. An admitted editor
+/// snapshot owns both; otherwise the live compiler options decide.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
+pub(super) fn refresh(
+    project: &mut VirtualProject,
+    options: Option<&Map<std::string::String, Value>>,
+    tsconfig: Option<&Path>,
+) {
+    project.typed_router.root = configured_root(project, options, tsconfig);
+    project.typed_router.route_props = project.typed_router.root.is_some()
+        && project.compiler_configuration.as_ref().map_or_else(
+            || {
+                let Ok(compiler) = project.load_compiler_options(tsconfig) else {
+                    return false;
+                };
+                let directory = tsconfig
+                    .and_then(Path::parent)
+                    .unwrap_or(&project.project_root);
+                provider::admits_route_props(directory, &compiler, &Default::default())
+            },
+            |snapshot| snapshot.typed_router_route_props(),
+        );
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
@@ -179,8 +291,12 @@ pub(super) fn file_literal(root: &Path, path: &Path) -> Option<String> {
         relative.push(component.as_os_str());
     }
     let filename = relative.to_str()?.replace('\\', "/");
+    string_literal(&filename)
+}
+
+fn string_literal(value: &str) -> Option<String> {
     Some(
-        serde_json::to_string(&filename)
+        serde_json::to_string(value)
             .ok()?
             .replace('\u{2028}', "\\u2028")
             .replace('\u{2029}', "\\u2029")
