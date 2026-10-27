@@ -98,12 +98,14 @@ jobs:
           set -euo pipefail
           cpus=$(python3 -c 'import os;print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
           printf '%s\n' "$cpus" > evidence/affinity.txt
-          for rows in 32 256 2048; do
-            for round in 1 2 3; do
-              order='base head'
-              if [[ "$round" == 2 ]]; then order='head base'; fi
-              for role in $order; do
-                /usr/bin/time -v -o "evidence/time-$role-$rows-$round.txt" taskset -c "$cpus" "evidence/normal-$role" 100 "$rows" > "evidence/normal-$role-$rows-$round.json"
+          for scenario in valid incomplete-member; do
+            for rows in 32 256 2048; do
+              for round in 1 2 3; do
+                order='base head'
+                if [[ "$round" == 2 ]]; then order='head base'; fi
+                for role in $order; do
+                  /usr/bin/time -v -o "evidence/time-$scenario-$role-$rows-$round.txt" taskset -c "$cpus" "evidence/normal-$role" 100 "$rows" normal "$scenario" > "evidence/normal-$scenario-$role-$rows-$round.json"
+                done
               done
             done
           done
@@ -117,10 +119,12 @@ jobs:
           import json, pathlib, statistics
           root = pathlib.Path('evidence')
           summary = {'scope': 'repeated source parse+analysis, not cold whole-project time', 'normal': {}}
-          for rows in (32, 256, 2048):
-              data = {role: [json.loads((root/f'normal-{role}-{rows}-{n}.json').read_text()) for n in (1,2,3)] for role in ('base','head')}
-              assert len({(x['sourceHash'], x['sourceBytes'], x['checksum'], x['iterations']) for samples in data.values() for x in samples}) == 1
-              summary['normal'][rows] = {role: {'samplesNs': [x['elapsedNs'] for x in samples], 'medianNs': statistics.median(x['elapsedNs'] for x in samples)} for role,samples in data.items()}
+          for scenario in ('valid', 'incomplete-member'):
+              summary['normal'][scenario] = {}
+              for rows in (32, 256, 2048):
+                  data = {role: [json.loads((root/f'normal-{scenario}-{role}-{rows}-{n}.json').read_text()) for n in (1,2,3)] for role in ('base','head')}
+                  assert len({(x['sourceHash'], x['sourceBytes'], x['checksum'], x['iterations'], x['scenario']) for samples in data.values() for x in samples}) == 1
+                  summary['normal'][scenario][rows] = {role: {'samplesNs': [x['elapsedNs'] for x in samples], 'medianNs': statistics.median(x['elapsedNs'] for x in samples)} for role,samples in data.items()}
           profiles = {role: json.loads((root/f'profile-{role}.json').read_text()) for role in ('base','head')}
           assert profiles['base']['sourceHash'] == profiles['head']['sourceHash']
           for role, multiplier in (('base', 2), ('head', 1)):

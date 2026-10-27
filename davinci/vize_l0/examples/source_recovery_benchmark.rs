@@ -7,7 +7,7 @@ static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
 fn main() {
-    let args: vize_l0::SmallVec<[_; 3]> = std::env::args()
+    let args: vize_l0::SmallVec<[_; 4]> = std::env::args()
         .skip(1)
         .map(vize_l0::String::from)
         .collect();
@@ -20,6 +20,7 @@ fn main() {
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap_or(256);
     let instrument = args.get(2).is_some_and(|s| s == "profile");
+    let valid = args.get(3).is_some_and(|s| s == "valid");
     assert!(
         !instrument || cfg!(feature = "micro-profiling"),
         "profile mode requires instrumentation"
@@ -29,7 +30,11 @@ fn main() {
         use std::fmt::Write;
         writeln!(source, "const item_{row}: number = {row};").expect("source builds");
     }
-    source.push_str("const damaged = missing.;\n");
+    source.push_str(if valid {
+        "const damaged = 0;\n"
+    } else {
+        "const damaged = missing.;\n"
+    });
     let source_hash = vize_l0::hash::hash_bytes(source.as_bytes());
     let profiler = vize_l0::profiler::global_profiler();
     if instrument {
@@ -51,6 +56,7 @@ fn main() {
         "scope":"repeated source parse+semantic-analysis microbenchmark; no backend or daemon",
         "iterations":iterations,"rows":rows,"sourceBytes":source.len(),"sourceHash":source_hash,
         "elapsedNs":elapsed_ns,"checksum":checksum,"instrumented":instrument,
+        "scenario":if valid {"valid"} else {"incomplete-member"},
     });
     #[cfg(feature = "micro-profiling")]
     let report = {
