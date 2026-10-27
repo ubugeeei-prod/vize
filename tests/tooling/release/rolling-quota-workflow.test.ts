@@ -108,3 +108,15 @@ test("cadence and manual preparation both use the common guard before stamping",
   );
   assert.match(cadence, /releaseQuota\(version\)/);
 });
+
+test("runner output paths belong to step context rather than invalid job env context", () => {
+  for (const job of [release.jobs["publication-quota"]!, verification.jobs["quota-dry-run"]!]) {
+    assert.equal(
+      Object.values(job.env ?? {}).some((value) => value.includes("runner.")),
+      false,
+    );
+    const step = job.steps.find((item) => item.run?.includes("release/main.ts quota"));
+    assert.ok(step);
+    assert.match(step.env?.RELEASE_QUOTA_EVIDENCE ?? "", /^\$\{\{ runner\.temp \}\}\//);
+  }
+});

@@ -43,7 +43,6 @@ jobs:
     permissions: { contents: read }
     env:
       RELEASE_VERSION: ${{ inputs.version }}
-      RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/quota-dry-run/report.json
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -52,6 +51,8 @@ jobs:
       - name: Run the admission controls without a package install
         run: node --test tests/tooling/release/rolling-quota.test.ts tests/tooling/release/rolling-quota-ownership.test.ts
       - name: Read every live crate history without stamping or publishing
+        env:
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/quota-dry-run/report.json
         run: node tools/support/release/release/main.ts quota-dry-run "$RELEASE_VERSION"
       - name: Retain the live dry-run receipt
         if: always()

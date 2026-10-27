@@ -338,13 +338,14 @@ jobs:
       RELEASE_VERSION: ${{ needs.version.outputs.version }}
       RELEASE_SHA: ${{ needs.version.outputs.sha }}
       RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
-      RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/publication-quota/report.json
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Require a fresh rolling crate budget for the original producer
+        env:
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/publication-quota/report.json
         run: node tools/support/release/release/main.ts quota "$RELEASE_VERSION"
       - name: Retain the publication admission receipt
         if: always()
