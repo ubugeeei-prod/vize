@@ -22,8 +22,13 @@ const fixtureRoot = path.join(root, "tests/_fixtures/differential/lsp/unused-dis
 const unused = fs.readFileSync(path.join(fixtureRoot, "App.vue.txt"), "utf8");
 const used = source(`😀 <!-- ${marker} -->\n<div v-html="'trusted'" />`);
 const repaired = source("<div />");
+const referenceBinary = process.env.VIZE_UNUSED_DISABLE_BASELINE_BIN;
+assert.ok(
+  !referenceBinary || process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD !== "1",
+  "an external reference cannot satisfy requested source-built validation",
+);
 const binary =
-  process.env.VIZE_UNUSED_DISABLE_BASELINE_BIN ??
+  referenceBinary ??
   resolveVizeLaunchCommand(undefined, path.join(root, "target/ci/vize"), {
     required: true,
     repoRoot: root,
