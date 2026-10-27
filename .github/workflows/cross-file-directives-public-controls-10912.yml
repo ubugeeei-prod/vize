@@ -1,0 +1,63 @@
+name: Published cross-file directive successor controls
+run-name: Public 0.602.0 cross-file directive successor controls @ ${{ github.sha }}
+on:
+  push:
+    branches: ["test/published-cross-file-directives-controls-10912-0.602.0"]
+permissions: { contents: read }
+jobs:
+  fresh-public-before:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PUBLIC_VERSION: "0.602.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 3 }
+      - name: Bind the immutable public release
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD^)" = "f8eec86cc0758521cbad4e8eb9a6a1bbc1099505"
+          test "$(git rev-parse HEAD^^)" = "92223735e9c41cefbfe584d7f364e4847569c92b"
+          git diff --name-only HEAD^ HEAD
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          version: "1.4.0"
+          cache: false
+          run-install: false
+      - name: Install an absent public consumer graph
+        shell: bash
+        run: |
+          consumer="$RUNNER_TEMP/cross-file-directives-public-controls-$PUBLIC_VERSION"
+          test ! -e "$consumer"
+          mkdir "$consumer"
+          printf '%s\n' '{"name":"vize-public-directives-before-10912","private":true,"type":"module","packageManager":"pnpm@10.30.1","dependencies":{"@vizejs/vite-plugin":"0.602.0","vite-plus":"1.4.0"}}' > "$consumer/package.json"
+          printf '%s\n' 'minimum-release-age=0' 'node-linker=isolated' 'virtual-store-dir=node_modules/.pnpm' 'enable-global-virtual-store=false' > "$consumer/.npmrc"
+          cd "$consumer"
+          vp install
+          node --version
+          vp --version
+      - name: Verify registry SRI and actual loaded public addon
+        shell: bash
+        run: |
+          printf '%s  %s\n' 'e85a39c2ae3a7314da0e1b5d9e79f9145e7de06d6ddd39e5c3eb41d9e88a9b56' 'tools/support/compat/cross-file-directives-public-before-registry-10912.mjs' | sha256sum --check
+          node tools/support/compat/cross-file-directives-public-before-registry-10912.mjs "$RUNNER_TEMP/cross-file-directives-public-controls-$PUBLIC_VERSION" "$RUNNER_TEMP/cross-file-directives-public-controls-$PUBLIC_VERSION/registry-native.json"
+      - name: Preserve whole original and grammar control packets
+        shell: bash
+        run: |
+          printf '%s  %s\n' 'e6faee8e2f269b5620323117d636b406f10f9a3fd661294231233332610a663a' 'tools/support/compat/cross-file-directives-public-controls-10912.ts' | sha256sum --check
+          node tools/support/compat/cross-file-directives-public-controls-10912.ts "$RUNNER_TEMP/cross-file-directives-public-controls-$PUBLIC_VERSION" "tests/_fixtures/differential/linter/cross-file-directives-10912" "$RUNNER_TEMP/cross-file-directives-public-controls-$PUBLIC_VERSION/before.json"
+          node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const e=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); assert.equal(e.status,"captured"); assert.equal(e.originalIssueReproduced,true); assert.equal(e.caseCount,10); assert.equal(e.packetCount,60); console.log(JSON.stringify({status:e.status,originalIssueReproduced:e.originalIssueReproduced,packets:e.packetCount}));' "$RUNNER_TEMP/cross-file-directives-public-controls-$PUBLIC_VERSION/before.json"
+      - name: Retain every raw command, source, range packet, and registry identity
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cross-file-directives-public-controls-0.602.0-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/cross-file-directives-public-controls-0.602.0/before.json
+            ${{ runner.temp }}/cross-file-directives-public-controls-0.602.0/registry-native.json
+            ${{ runner.temp }}/cross-file-directives-public-controls-0.602.0/package.json
+            ${{ runner.temp }}/cross-file-directives-public-controls-0.602.0/pnpm-lock.yaml
+            tests/_fixtures/differential/linter/cross-file-directives-10912
+          if-no-files-found: error
+          retention-days: 90
