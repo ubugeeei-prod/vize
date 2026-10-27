@@ -5,7 +5,8 @@ expression: output.as_str()
 import { onMounted } from "vue";
 export default {
   __name: "TestComponent",
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     onMounted(() => {
       console.log("mounted");
     });

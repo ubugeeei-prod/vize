@@ -62,6 +62,11 @@ fn separate_template_render_collision_keeps_complete_module_result() {
     // Standard mode now accepts authored HTML self-closing tags without a warning.
     // Keep the archived reference exact for every other public result field.
     expected["Ok"]["warnings"] = Value::Array(vec![]);
+    let expected = support::closed_setup_reference::advance(
+        expected,
+        "  setup(__props) {\n",
+        "  setup(__props, { expose: __expose }) {\n    __expose();\n",
+    );
     assert_eq!(
         serde_json::to_value(actual).expect("serialize complete public Result"),
         expected,

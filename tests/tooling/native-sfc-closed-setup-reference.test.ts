@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   closedSetupReference,
+  historicalSetupCode,
   type ExposurePacket,
 } from "./support/script-setup-default-expose.ts";
 
@@ -56,4 +57,23 @@ test("ordinary sources and explicit exposure are not advanced again", () => {
   assert.deepEqual(closedSetupReference(before, "<script>export default {}</script>"), before);
   const after = fixture.packets[1].after;
   assert.deepEqual(closedSetupReference(after, fixture.packets[1].source), after);
+});
+
+test("historical checksum receipts reverse only the exact initial exposure edit", () => {
+  for (const row of fixture.packets) {
+    assert.equal(historicalSetupCode(row.after.code, row.source), row.before.code);
+    assert.throws(() => historicalSetupCode(row.before.code, row.source), {
+      code: "ERR_ASSERTION",
+    });
+    const misplaced = row.after.code.replace("__expose();", "void 0;\n__expose();");
+    assert.throws(() => historicalSetupCode(misplaced, row.source), { code: "ERR_ASSERTION" });
+  }
+});
+
+test("Rust structured source maps retain the same complete coordinate contract", () => {
+  for (const row of fixture.packets) {
+    const before = { ...row.before, map: JSON.parse(row.before.map as string) };
+    const after = { ...row.after, map: JSON.parse(row.after.map as string) };
+    assert.deepEqual(closedSetupReference(before, row.source), after);
+  }
 });
