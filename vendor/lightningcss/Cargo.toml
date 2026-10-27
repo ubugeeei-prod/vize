@@ -247,3 +247,7 @@ default-features = false
 version = "0.3.2"
 features = ["disable_initial_exec_tls"]
 optional = true
+
+[[test]]
+name = "vize_scope_nesting"
+path = "tests/vize_scope_nesting.rs"

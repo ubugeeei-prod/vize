@@ -1,0 +1,137 @@
+name: Typechecker cache custody
+on:
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Run public/source2500-SFC coverage and five fresh shipping-profile samples
+        type: boolean
+        default: false
+      coverage_only:
+        description: Run full untimed cache and accuracy gates on official Ubuntu without latency samples
+        type: boolean
+        default: false
+      source_mode:
+        description: Immutable normalfb550 checkpoint or one fresh normal source build
+        type: choice
+        options: [reuse-checkpoint, build-current]
+        default: reuse-checkpoint
+  pull_request:
+    paths:
+      - .github/workflows/typechecker-cache-custody.yml
+      - tools/benchmarks/scripts/typechecker-cache-*.ts
+      - tools/benchmarks/scripts/cold-typechecker-scale*.ts
+      - tools/benchmarks/scripts/check-workspace.ts
+      - tools/benchmarks/scripts/typechecker-fixture-identity.ts
+      - tools/benchmarks/scripts/typechecker-source-coverage.ts
+      - tests/tooling/typechecker-cache*.test.ts
+permissions: { contents: read, actions: read }
+concurrency:
+  group: typechecker-cache-custody-${{ github.event.pull_request.number || github.ref }}${{ inputs.coverage_only && '-untimed-coverage' || '' }}
+  cancel-in-progress: false
+jobs:
+  observe:
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.full && !inputs.coverage_only && 'blacksmith-8vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    timeout-minutes: 60
+    env:
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+      VIZE_BENCH_RUNTIME_CACHE_BASE: /tmp/vize-cold-cache-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Check observer protocol controls
+        run: node --test tests/tooling/typechecker-cache-custody.test.ts tests/tooling/typechecker-cache-root.test.ts
+      - name: Prepare the genuine public shipping baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/cache-provider" "$RUNNER_TEMP/cache-public" "$RUNNER_TEMP/cache-evidence"
+          cd "$RUNNER_TEMP/cache-provider"
+          cat > package.json <<'JSON'
+          {"private":true,"dependencies":{"vize":"0.602.0","@vizejs/native":"0.602.0","vue":"3.5.44","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"}}
+          JSON
+          npm install --ignore-scripts --no-audit --no-fund
+          cd "$RUNNER_TEMP/cache-public"
+          curl --fail --location --retry 3 --output vize.tar.gz https://github.com/ubugeeei-prod/vize/releases/download/v0.602.0/vize-x86_64-unknown-linux-gnu.tar.gz
+          printf '%s\n' '4a75062b16eeee03449c0e471f3776be383f16e99e0820fe6a170b40e63ff93e  vize.tar.gz' | sha256sum --check -
+          tar -xzf vize.tar.gz
+          test -x vize
+      - name: Admit public actual cache boundaries at1/10/100SFCs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sfcs in 1 10 100; do
+            node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$RUNNER_TEMP/cache-public/vize" --carrier-sfcs "$sfcs" --out "$RUNNER_TEMP/cache-evidence/public-carrier-$sfcs"
+          done
+      - name: Reuse the immutable normal shipping-profile source checkpoint
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'reuse-checkpoint' }}
+        env: { GH_TOKEN: "${{ github.token }}" }
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/cache-source-checkpoint" "$RUNNER_TEMP/cache-source-build-proof"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439/zip > "$RUNNER_TEMP/cache-source-checkpoint.zip"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12764104945/zip > "$RUNNER_TEMP/cache-source-build-proof.zip"
+          unzip -q "$RUNNER_TEMP/cache-source-checkpoint.zip" -d "$RUNNER_TEMP/cache-source-checkpoint"
+          unzip -q "$RUNNER_TEMP/cache-source-build-proof.zip" -d "$RUNNER_TEMP/cache-source-build-proof"
+          tar -xzf "$RUNNER_TEMP/cache-source-checkpoint/cache-source-image.tgz" -C "$RUNNER_TEMP/cache-source-checkpoint"
+          tar -xzf "$RUNNER_TEMP/cache-source-build-proof/cache-metadata.tgz" -C "$RUNNER_TEMP/cache-source-build-proof"
+          node tools/benchmarks/scripts/typechecker-cache-reuse.ts --image "$RUNNER_TEMP/cache-source-checkpoint/target/ci/vize" --build "$RUNNER_TEMP/cache-source-build-proof/cache-evidence/source-build.json" --out "$RUNNER_TEMP/cache-evidence/source-reuse"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}
+        with: { wild-version: "0.9.0" }
+      - name: Build one genuinely fresh normal shipping-profile source CLI
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/typechecker-cache-source.ts --source-root "$GITHUB_WORKSPACE" --target-dir "$RUNNER_TEMP/cache-source-target" --receipt "$RUNNER_TEMP/cache-evidence/source-build.json"
+      - name: Full all-SFC coverage before absolute timing
+        env:
+          { SOURCE_MODE: "${{ inputs.source_mode }}", COVERAGE_ONLY: "${{ inputs.coverage_only }}" }
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_binary="$RUNNER_TEMP/cache-source-checkpoint/target/ci/vize"
+          source_sha=fb550c424e4256860647dbf96ce32c31cea3774b
+          if [[ "$SOURCE_MODE" == build-current ]]; then source_binary="$GITHUB_WORKSPACE/target/ci/vize"; source_sha=$(git rev-parse HEAD); fi
+          failures=0
+          for role in public source; do
+            binary="$RUNNER_TEMP/cache-public/vize"
+            source_args=()
+            if [[ "$role" == source ]]; then binary="$source_binary"; source_args=(--source "$source_sha"); fi
+            mkdir -p "$RUNNER_TEMP/cache-evidence/$role"
+            cache_valid=true
+            if ! node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --out "$RUNNER_TEMP/cache-evidence/$role/audit"; then failures=$((failures+1)); cache_valid=false; fi
+            if ! node tools/benchmarks/scripts/typechecker-source-coverage.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --sfcs 2500 --out "$RUNNER_TEMP/cache-evidence/$role/coverage"; then failures=$((failures+1)); continue; fi
+            if [[ "$cache_valid" != true || "$COVERAGE_ONLY" == true ]]; then continue; fi
+            if ! node tools/benchmarks/scripts/typechecker-cache-latency.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --role "$role" --out "$RUNNER_TEMP/cache-evidence/$role" --custody "$RUNNER_TEMP/cache-evidence/$role/audit/custody.json" --coverage "$RUNNER_TEMP/cache-evidence/$role/coverage/acceptance.json"; then failures=$((failures+1)); fi
+          done
+          test "$failures" -eq 0
+      - name: Package metadata separately from replay images
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cache-evidence"
+          cp "$RUNNER_TEMP/cache-provider/package.json" "$RUNNER_TEMP/cache-provider/package-lock.json" "$RUNNER_TEMP/cache-evidence/" 2>/dev/null || true
+          tar --exclude='*/node_modules' -czf "$RUNNER_TEMP/cache-metadata.tgz" -C "$RUNNER_TEMP" cache-evidence
+          if [[ -f target/ci/vize ]]; then tar -czf "$RUNNER_TEMP/cache-source-image.tgz" target/ci/vize target/ci/vize.differential-build.json; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: typechecker-cache-metadata-${{ github.sha }}
+          path: ${{ runner.temp }}/cache-metadata.tgz
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() && hashFiles('target/ci/vize.differential-build.json') != '' }}
+        with:
+          name: typechecker-cache-source-image-${{ github.sha }}
+          path: ${{ runner.temp }}/cache-source-image.tgz
+          retention-days: 14

@@ -1,0 +1,8 @@
+import vize from "@vizejs/vite-plugin";
+import vue from "@vitejs/plugin-vue";
+
+// COMPILER=vue → @vitejs/plugin-vue (control)
+export default {
+  plugins: [process.env.COMPILER === "vue" ? vue() : vize()],
+  logLevel: "warn"
+};

@@ -1,0 +1,62 @@
+name: Profile allocation thread law
+on:
+  pull_request:
+    paths:
+      - .github/workflows/profile-allocation-thread-law.yml
+      - davinci/vize_l0/src/profiler/core.rs
+      - davinci/vize_l0/src/profiler/allocation.rs
+      - davinci/vize_l0/src/profiler/metrics.rs
+      - davinci/vize_l0/tests/profile_allocation_thread_law.rs
+      - tools/benchmarks/scripts/profile_guard_send_law.ts
+      - tools/benchmarks/scripts/profile-evidence-json.ts
+  workflow_dispatch: {}
+permissions: { contents: read }
+concurrency:
+  group: profile-allocation-thread-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  laws:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0" }
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: profile-thread-law-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Check the small normal and instrumented allocation carriers
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          git rev-parse HEAD > evidence/source.sha
+          rustc +1.99.1 -vV > evidence/rustc.txt
+          lscpu > evidence/cpu.txt
+          python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS","RAYON_NUM_THREADS","GOMAXPROCS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed correctness and source-counter law; no throughput comparison"}))' > evidence/resources.json
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --message-format json -- --nocapture 2>&1 | tee evidence/normal-law.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --features micro-profiling --message-format json -- --nocapture 2>&1 | tee evidence/instrumented-law.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --features micro-profiling --doc ProfileGuard 2>&1 | tee evidence/send-law.log
+          python3 -c 'from pathlib import Path; text=Path("evidence/send-law.log").read_text(); assert "running 1 test" in text and "1 passed; 0 failed" in text'
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/observer-law.log
+          cargo +1.99.1 test --locked --profile ci -p vize_carton --test davinci_profile_export --features micro-profiling per_span_allocation_counts_and_schema_validation 2>&1 | tee evidence/nested-export-law.log
+      - name: Check the same public-type snippet against old and new guards
+        run: node tools/benchmarks/scripts/profile_guard_send_law.ts
+      - name: Compile the profiling CLI after the carrier succeeds
+        run: |
+          set -euo pipefail
+          cargo +1.99.1 build --locked --profile ci -p vize --features profiling --message-format json > evidence/profiling-cli-artifacts.jsonl
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: profile-allocation-thread-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error

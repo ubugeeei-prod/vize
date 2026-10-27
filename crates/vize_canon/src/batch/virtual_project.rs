@@ -62,6 +62,9 @@ pub(in crate::batch) use diagnostic_route::DiagnosticRoute;
 mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
+mod persistent_namespace;
+pub(in crate::batch) use persistent_namespace::prepare_persistent_batch_root;
+pub use persistent_namespace::{persistent_batch_storage_root, persistent_batch_virtual_root};
 mod identity;
 pub use identity::{
     legacy_project_virtual_roots, project_virtual_access_path, project_virtual_lock_paths,
@@ -201,6 +204,7 @@ pub struct VirtualProject {
     /// outside the checked tree and `node_modules`; editor projects are
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
+    private_batch_namespace: bool,
 
     /// Shared owner lock held for as long as this project can read or patch
     /// its materialized cache. Cache GC takes the same file exclusively.
