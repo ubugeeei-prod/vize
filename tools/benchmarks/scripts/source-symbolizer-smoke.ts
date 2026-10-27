@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { calibrateSourcePmu } from "./source-pmu-calibration.ts";
 import { captureSourceOperationPerf } from "./source-operation-perf.ts";
 import { frozenSourceLocations } from "./source-symbolizer-protocol.ts";
+import { renderSymbolCpu } from "./source-symbolizer-symbols.ts";
 import {
   boundedCommand,
   digest,
@@ -164,6 +165,15 @@ export function replayNormal(options: {
   );
   assert.equal(dwarf.status, 0);
   assert.ok(dwarf.stdout.includes(".debug_line"), "actual normal binary has no line tables");
+  const symbols = renderSymbolCpu({
+    binary,
+    data: join(options.root, "record-head/direct-process/perf.data"),
+    perf: options.perf,
+    out: join(options.out, "symbols"),
+    totalSamples: original.sampleCount,
+    identity: { compiledSource: build.sourceSha, build, originalCapture: original },
+  });
+  assert.ok(symbols.qualified, "exact ELF symbol-only self census failed");
   const normalProbes = probeDecoders(binary, join(options.out, "normal-query"), [options.decoder], {
     symbol: "generate_vue_virtual_ts",
     source: ".rs:",
@@ -186,6 +196,7 @@ export function replayNormal(options: {
   const result = {
     schemaVersion: 1,
     qualified: decoded.qualified,
+    symbols,
     compiledSource: build.sourceSha,
     observerSource: process.env.GITHUB_SHA ?? null,
     sourceLocations: frozenSourceLocations(

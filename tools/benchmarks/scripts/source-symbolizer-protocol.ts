@@ -206,3 +206,43 @@ export function completeKnownFrames(
   ];
   return JSON.stringify(tokens) === JSON.stringify(expected);
 }
+
+export type SymbolCpuRow = Omit<SourceCpuRow, "source" | "childrenPercent">;
+export function parseFlatSymbolReport(output: string) {
+  const lines = output.split("\n");
+  const header = lines.findIndex(
+    (line) =>
+      line.startsWith("#") &&
+      line.includes("\t") &&
+      /(?:Overhead|Self)/u.test(line) &&
+      /Symbol/u.test(line),
+  );
+  if (header < 0) return { qualifiedFormat: false, rows: [] as SymbolCpuRow[] };
+  const fields = lines[header]
+    .replace(/^#\s*/u, "")
+    .split("\t")
+    .map((part) => part.trim());
+  const index = (pattern: RegExp) => fields.findIndex((field) => pattern.test(field));
+  const dso = index(/^(?:Shared Object|DSO)$/iu),
+    symbol = index(/^Symbol$/iu),
+    self = index(/^(?:Overhead|Self)$/iu),
+    samples = index(/^(?:Samples|Sample)$/iu),
+    period = index(/^(?:Period|Total Period)$/iu);
+  if ([dso, symbol, self, samples].some((column) => column < 0))
+    return { qualifiedFormat: false, rows: [] as SymbolCpuRow[] };
+  const rows: SymbolCpuRow[] = [];
+  for (const line of lines.slice(header + 1)) {
+    if (!line.trim() || line.startsWith("#")) continue;
+    const values = line.split("\t").map((part) => part.trim()),
+      selfPercent = percentage(values[self]);
+    if (selfPercent === null) continue;
+    rows.push({
+      dso: values[dso] ?? "",
+      symbol: values[symbol] ?? "",
+      selfPercent,
+      samples: count(values[samples]),
+      period: period < 0 ? null : (values[period] ?? null),
+    });
+  }
+  return { qualifiedFormat: rows.length > 0, rows };
+}

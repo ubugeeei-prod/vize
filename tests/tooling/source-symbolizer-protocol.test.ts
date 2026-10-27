@@ -159,3 +159,27 @@ void test("stream adapter preserves real UTF8 frames and rejects invalid synthet
   assert.equal(malformed.status, 1);
   assert.match(malformed.stderr, /sentinel frame failed/u);
 });
+
+void test("symbol-only census accounts for all DSOs without inventing source locations", async () => {
+  const { parseFlatSymbolReport } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-protocol.ts");
+  const { symbolSelfCensus } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-symbols.ts");
+  const raw =
+    "# Overhead\tSamples\tPeriod\tShared Object\tSymbol\n" +
+    "25.00%\t3\t30\tvize\t[.] original_function\n" +
+    "75.00%\t9\t90\ttsc\t[.] 0x1234\n";
+  const parsed = parseFlatSymbolReport(raw);
+  assert.equal(parsed.qualifiedFormat, true);
+  const census = symbolSelfCensus(parsed.rows, 12, "vize");
+  assert.equal(census.qualified, true);
+  assert.equal(census.allSelfSamples, 12);
+  assert.equal(census.sourceLineQualified, false);
+  assert.equal(census.allDsos.find((row) => row.dso === "tsc")?.unresolvedSymbolSamples, 9);
+  assert.equal(symbolSelfCensus(parsed.rows, 13, "vize").qualified, false);
+  assert.equal(
+    symbolSelfCensus(parseFlatSymbolReport(raw.replace("\t3\t", "\t1K\t")).rows, 12, "vize")
+      .qualified,
+    false,
+  );
+});
