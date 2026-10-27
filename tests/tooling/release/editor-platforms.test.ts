@@ -147,6 +147,8 @@ test("editor publishers outwait registry validation and Open VSX maintenance", (
   // Read-only retries wait 30 + 60 + 120 + 240 s before the scan wait starts.
   for (const key of ["publish-open-vsx", "publish-open-vsx-platforms"]) {
     const job = release.jobs[key];
+    // Release 0.598.0 still had missing targets over twelve minutes after upload.
+    assert.equal(waitSeconds(job), 20 * 60, key);
     assert.ok(job["timeout-minutes"] * 60 >= 450 + waitSeconds(job) + 5 * 60, key);
   }
 });
