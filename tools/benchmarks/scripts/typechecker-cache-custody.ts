@@ -30,6 +30,7 @@ export function summarizeColdBackendObserver(
   ownedRoot: string | null,
   corpus?: {
     projectRoot: string;
+    primaryRoot?: string;
     entries: { path: string }[];
   },
   metadataDirectory?: string,
@@ -267,7 +268,7 @@ export function auditColdScaleCache(options: {
     const observed = summarizeColdBackendObserver(
       observer.calls,
       runtime.evidence.ownedRoot,
-      { projectRoot, entries: corpus.entries },
+      { projectRoot, primaryRoot: corpus.app, entries: corpus.entries },
       undefined,
       undefined,
     );

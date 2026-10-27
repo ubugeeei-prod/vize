@@ -19,7 +19,7 @@ on:
       - tools/benchmarks/scripts/check-workspace.ts
       - tools/benchmarks/scripts/typechecker-fixture-identity.ts
       - tools/benchmarks/scripts/typechecker-source-coverage.ts
-      - tests/tooling/typechecker-cache-custody.test.ts
+      - tests/tooling/typechecker-cache*.test.ts
 permissions: { contents: read, actions: read }
 concurrency:
   group: typechecker-cache-custody-${{ github.event.pull_request.number || github.ref }}
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Check observer protocol controls
-        run: node --test tests/tooling/typechecker-cache-custody.test.ts
+        run: node --test tests/tooling/typechecker-cache-custody.test.ts tests/tooling/typechecker-cache-root.test.ts
       - name: Prepare the genuine public shipping baseline
         shell: bash
         run: |
@@ -102,8 +102,10 @@ jobs:
             source_args=()
             if [[ "$role" == source ]]; then binary="$source_binary"; source_args=(--source "$source_sha"); fi
             mkdir -p "$RUNNER_TEMP/cache-evidence/$role"
-            if ! node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --out "$RUNNER_TEMP/cache-evidence/$role/audit"; then failures=$((failures+1)); continue; fi
+            cache_valid=true
+            if ! node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --out "$RUNNER_TEMP/cache-evidence/$role/audit"; then failures=$((failures+1)); cache_valid=false; fi
             if ! node tools/benchmarks/scripts/typechecker-source-coverage.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --sfcs 2500 --out "$RUNNER_TEMP/cache-evidence/$role/coverage"; then failures=$((failures+1)); continue; fi
+            if [[ "$cache_valid" != true ]]; then continue; fi
             if ! node tools/benchmarks/scripts/typechecker-cache-latency.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --role "$role" --out "$RUNNER_TEMP/cache-evidence/$role" --custody "$RUNNER_TEMP/cache-evidence/$role/audit/custody.json" --coverage "$RUNNER_TEMP/cache-evidence/$role/coverage/acceptance.json"; then failures=$((failures+1)); fi
           done
           test "$failures" -eq 0
