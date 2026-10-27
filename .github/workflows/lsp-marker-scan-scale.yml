@@ -7,8 +7,10 @@ on:
       - crates/vize_maestro/src/server/state/project_contexts/root_discovery/**
       - crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs
       - tools/support/compat/davinci/lsp-marker-scan-compare.ts
+      - tools/support/compat/davinci/lsp-marker-scan-source.ts
       - tools/support/compat/davinci/lib/lsp-resource-corpus.ts
       - tests/tooling/lsp-marker-scan-compare.test.ts
+      - tests/tooling/lsp-marker-scan-source.test.ts
       - tests/tooling/lsp-resource-corpus.test.ts
   workflow_dispatch:
     inputs:
@@ -32,7 +34,8 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
-      BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      REQUESTED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      EXPECTED_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       FILES: ${{ inputs.files || '2500' }}
       GOMAXPROCS: "8"
       RAYON_NUM_THREADS: "8"
@@ -48,6 +51,10 @@ jobs:
         with:
           key: lsp-marker-scan-head
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Pin the actual checked-out comparison parents
+        run: |
+          mkdir -p "$RUNNER_TEMP/lsp-marker-evidence"
+          node tools/support/compat/davinci/lsp-marker-scan-source.ts "$RUNNER_TEMP/lsp-marker-evidence/source-selection.json"
       - name: Validate immutable paired sources
         run: |
           [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
