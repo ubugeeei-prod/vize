@@ -32,6 +32,7 @@ fn managed_artifact_paths_are_lifecycle_owned_entries() {
             root.join(".vize/snapshots"),
             root.join(".vize/tokens"),
             vize_canon::project_virtual_root(root),
+            vize_canon::persistent_batch_storage_root(root),
             vize_canon::project_virtual_access_path(root),
             vize_canon::project_virtual_lock_paths(root)[0].clone(),
             vize_canon::project_virtual_lock_paths(root)[1].clone(),
@@ -161,10 +162,16 @@ fn project_clean_preserves_a_foreign_canon_namespace_without_force() {
         let root = dir.path();
         let current = vize_canon::project_virtual_root(root);
         let foreign = vize_canon::project_virtual_root(&root.join("foreign"));
+        let private_current = vize_canon::persistent_batch_storage_root(root);
+        let private_foreign = vize_canon::persistent_batch_storage_root(&root.join("foreign"));
         let foreign_lock = foreign.with_extension("lock");
         let foreign_windows_lock = foreign.with_extension("materialize.lock");
         std::fs::create_dir_all(&current).unwrap();
         std::fs::create_dir_all(&foreign).unwrap();
+        std::fs::create_dir_all(&private_current).unwrap();
+        std::fs::create_dir_all(&private_foreign).unwrap();
+        std::fs::write(private_current.join("current.ts"), b"current-private").unwrap();
+        std::fs::write(private_foreign.join("foreign.ts"), b"foreign-private").unwrap();
         std::fs::write(current.join("current.ts"), "current").unwrap();
         std::fs::write(foreign.join("foreign.ts"), "foreign").unwrap();
         std::fs::write(&foreign_lock, "foreign").unwrap();
@@ -178,6 +185,15 @@ fn project_clean_preserves_a_foreign_canon_namespace_without_force() {
             quiet: true,
         });
         assert!(!current.exists(), "current key survived scope={scope:?}");
+        assert!(
+            !private_current.exists(),
+            "private owner survived scope={scope:?}"
+        );
+        assert_eq!(
+            std::fs::read(private_foreign.join("foreign.ts")).unwrap(),
+            b"foreign-private"
+        );
+        std::fs::remove_dir_all(&private_foreign).unwrap();
         assert!(
             foreign.join("foreign.ts").is_file(),
             "scope={scope:?} removed state owned by another project"
