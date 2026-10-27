@@ -1,6 +1,5 @@
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Expression, ObjectPattern, PropertyKey,
-    VariableDeclarationKind,
+    Argument, BindingPattern, Expression, ObjectPattern, PropertyKey, VariableDeclarationKind,
 };
 use oxc_span::GetSpan;
 
@@ -29,7 +28,7 @@ mod define_model_destructure;
 mod injection;
 mod object_origins;
 
-use injection::is_inject_call;
+use injection::{extract_inject_call_from_torefs, is_inject_call};
 use object_origins::record_object_pattern_property_origins;
 
 pub(in crate::script_parser) fn process_variable_declarator(
@@ -638,36 +637,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
             add_binding_pattern_names(&mut result.bindings, &assign.left, binding_type);
         }
     }
-}
-
-fn extract_inject_call_from_torefs<'a>(
-    init: &'a Expression<'a>,
-    result: &ScriptParseResult,
-) -> Option<&'a CallExpression<'a>> {
-    let outer = extract_call_expression(init)?;
-    if !is_torefs_call(outer, result) {
-        return None;
-    }
-
-    let first_arg = outer.arguments.first()?;
-    let inner = match first_arg {
-        Argument::CallExpression(call) => Some(call.as_ref()),
-        _ => first_arg.as_expression().and_then(extract_call_expression),
-    }?;
-
-    is_inject_call(inner, result).then_some(inner)
-}
-
-fn is_torefs_call(call: &CallExpression<'_>, result: &ScriptParseResult) -> bool {
-    let Expression::Identifier(id) = &call.callee else {
-        return false;
-    };
-    let callee_name = id.name.as_str();
-    callee_name == "toRefs"
-        || result
-            .reactivity_aliases
-            .get(callee_name)
-            .is_some_and(|api_name| api_name.as_str() == "toRefs")
 }
 
 fn collect_object_pattern_keys(obj: &ObjectPattern<'_>) -> Vec<CompactString> {
