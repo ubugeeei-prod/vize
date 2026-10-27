@@ -7,6 +7,9 @@ use oxc_parser::{Parser, ParserReturn};
 use oxc_span::SourceType;
 use vize_carton::String;
 
+mod declaration;
+use declaration::starts_declaration;
+
 /// Parse facts for analysis without discarding an entire script at `value.` or
 /// `value?.`. Diagnostics and emitted code must still use the authored source.
 ///
@@ -22,7 +25,11 @@ pub fn parse_program_for_analysis<'a>(
     source: &'a str,
     source_type: SourceType,
 ) -> ParserReturn<'a> {
-    let original = Parser::new(allocator, source, source_type).parse();
+    vize_carton::micro_count!("croquis.oxc.original.bytes", source.len());
+    let original = vize_carton::micro_span!(
+        "croquis.oxc.original",
+        Parser::new(allocator, source, source_type).parse()
+    );
     if !original.panicked && original.diagnostics.is_empty() {
         return original;
     }
@@ -38,7 +45,11 @@ pub fn parse_program_for_analysis<'a>(
     }
     for _ in 0..4 {
         let view = allocator.alloc_str(&analysis);
-        let mut parsed = Parser::new(allocator, view, source_type).parse();
+        vize_carton::micro_count!("croquis.oxc.recovery.bytes", view.len());
+        let mut parsed = vize_carton::micro_span!(
+            "croquis.oxc.recovery",
+            Parser::new(allocator, view, source_type).parse()
+        );
         if !parsed.panicked {
             // The recovered AST only borrows the repaired view to establish
             // structure. Its spans are byte-for-byte compatible with the
@@ -112,29 +123,6 @@ fn incomplete_call_operator(parsed: &ParserReturn<'_>, source: &str) -> Option<R
         }
         let next = source.get(line_break..)?.trim_start();
         starts_declaration(next).then_some(end - 1..end)
-    })
-}
-
-fn starts_declaration(source: &str) -> bool {
-    [
-        "const",
-        "let",
-        "var",
-        "function",
-        "class",
-        "interface",
-        "type",
-        "enum",
-        "import",
-        "export",
-    ]
-    .into_iter()
-    .any(|keyword| {
-        source.strip_prefix(keyword).is_some_and(|rest| {
-            rest.chars().next().is_some_and(|character| {
-                character.is_whitespace() || matches!(character, '{' | '*')
-            })
-        })
     })
 }
 
