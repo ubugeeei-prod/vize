@@ -94,7 +94,7 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
       "--fail",
       "--silent",
       "--show-error",
-      "https://open-vsx.org/api/ubugeeei/vize/0.57.0",
+      "https://open-vsx.org/api/ubugeeei/vize/universal/0.57.0",
     ];
     assert.deepEqual(JSON.parse(fs.readFileSync(curlCallsPath, "utf8")), [expectedLookup]);
 
@@ -123,7 +123,7 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
   }
 });
 
-test("publish_open_vsx_extension skips an already visible Open VSX version", () => {
+test("publish_open_vsx_extension selects the published universal version even when the generic endpoint selects another platform", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "release-open-vsx-skip-"));
   const binDir = path.join(tempDir, "bin");
   const manifestPath = path.join(tempDir, "package.json");
@@ -160,7 +160,8 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
         "fs.writeFileSync(process.env.CURL_CALLS_PATH, JSON.stringify([args]));",
-        "process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
+        "const targetPlatform = args.at(-1).includes('/universal/') ? 'universal' : 'darwin-x64';",
+        "process.stdout.write(JSON.stringify({ version: '0.57.0', targetPlatform }));",
       ].join("\n"),
     );
 
@@ -177,7 +178,12 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
     const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
     assert.deepEqual(calls, []);
     assert.deepEqual(JSON.parse(fs.readFileSync(curlCallsPath, "utf8")), [
-      ["--fail", "--silent", "--show-error", "https://open-vsx.org/api/ubugeeei/vize/0.57.0"],
+      [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "https://open-vsx.org/api/ubugeeei/vize/universal/0.57.0",
+      ],
     ]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });

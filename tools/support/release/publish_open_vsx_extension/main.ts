@@ -23,7 +23,9 @@ async function extensionVersionIsVisible(
 ): Promise<boolean> {
   // The exact-version API returns the version directly. `ovsx get --metadata`
   // now returns `allVersions`, which is not the `versions` array checked below.
-  const targetPath = target === "universal" ? "" : `${target}/`;
+  // The version-only endpoint may select a platform build even when the
+  // universal version exists. Every target needs its own immutable lookup.
+  const targetPath = `${target}/`;
   const url = `https://open-vsx.org/api/${publisher}/${name}/${targetPath}${version}`;
   const { status, stdout } = await collectOutput("curl", [
     "--fail",
