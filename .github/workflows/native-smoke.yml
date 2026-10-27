@@ -1,267 +1,132 @@
-name: Native Smoke
-
+name: Capture exact official plain-script history boundary
 on:
   workflow_dispatch:
-    inputs:
-      target:
-        description: Native producer scope; default retains the full smoke matrix
-        type: choice
-        options: [all, darwin-arm64]
-        default: all
-      host_only:
-        description: Produce one selected host artifact; not full matrix qualification
-        type: boolean
-        default: false
-  schedule:
-    # Full native/fresh-install smoke is release evidence, not a per-push gate.
-    # Keep it on a weekly cadence plus manual runs so normal PR pushes stay
-    # fast while release promotion still has a reproducible matrix check.
-    - cron: "17 3 * * 1"
-
+permissions: { contents: read }
 concurrency:
-  group: native-smoke-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-env:
-  CARGO_INCREMENTAL: 0
-  CARGO_TERM_COLOR: always
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # One Linux/Node 24 fresh-install row builds the complete graph so the packed
-  # Nuxt consumer and its LSP run before release, not only in the release job.
-  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk
-
+  group: plain-script-history-official-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  host-native-smoke:
-    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
-    name: Native host smoke (${{ matrix.target }})
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: ubuntu-22.04
-            target: linux-x64-gnu
-            msvc_arch: amd64
-          - runner: ubuntu-22.04-arm
-            target: linux-arm64-gnu
-            msvc_arch: amd64
-          - runner: macos-15-intel
-            target: darwin-x64
-            msvc_arch: amd64
-          - runner: blacksmith-12vcpu-macos-15
-            target: darwin-arm64
-            msvc_arch: amd64
-          - runner: blacksmith-32vcpu-windows-2025
-            target: win32-x64-msvc
-            msvc_arch: amd64
-          - runner: windows-11-arm
-            target: win32-arm64-msvc
-            msvc_arch: arm64
-    env: &native-host-env
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-    steps: &native-host-steps
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
-      - name: Setup MSVC toolchain (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
-        with:
-          arch: ${{ matrix.msvc_arch }}
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: runner.os == 'Linux'
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        if: runner.os == 'Linux'
-        with:
-          key: native-smoke-${{ matrix.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        if: runner.os != 'Linux'
-        with:
-          shared-key: native-smoke-${{ matrix.target }}
-          cache-workspace-crates: "true"
-      - uses: ./.github/actions/setup-rust-script
-      - name: Install native package dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
-      - name: Test native image token producer
-        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
-        run: node --test tests/tooling/native-build-token.test.ts
-      - name: Build CLI
-        run: cargo build --profile ci -p vize
-      - name: Smoke CLI
-        shell: bash
-        run: |
-          if [ -x target/ci/vize.exe ]; then
-            target/ci/vize.exe --version
-          else
-            target/ci/vize --version
-          fi
-      - name: Build @vizejs/native
-        run: vp run --filter './npm/native' build:ci
-      - name: Verify GNU native glibc compatibility
-        if: runner.os == 'Linux' && endsWith(matrix.target, '-gnu')
-        run: rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node
-      - name: Smoke @vizejs/native
-        run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
-      - name: Package-install smoke for host native package
-        if: runner.os == 'Linux'
-        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/native
-      - name: Capture selected native image authority
-        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
-        run: node npm/native/scripts/native-build-receipt.mjs
-      - name: Preserve selected native image
-        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: native-image-${{ github.sha }}-${{ matrix.target }}-${{ github.run_attempt }}
-          if-no-files-found: error
-          include-hidden-files: true
-          path: |
-            npm/native/*.node
-            npm/native/index.js
-            npm/native/index.d.ts
-            npm/native/native-binding.js
-            npm/native/native-binding-identity.js
-            npm/native/native-targets.js
-            npm/native/.artifacts/native/build-token-receipt.json
-
-  fresh-install-smoke:
-    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
-    name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
-    runs-on: ${{ matrix.platform.runner }}
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ["22", "24"]
-        # Linux musl targets are intentionally absent here: Ubuntu runners
-        # provide GNU hosts, not native Alpine/musl hosts. Keep the
-        # known-limitation policy in docs/content/stability.md in sync when
-        # containerized musl tarball staging is added.
-        platform:
-          - runner: ubuntu-22.04
-            target: linux-x64-gnu
-            msvc_arch: amd64
-          - runner: ubuntu-22.04-arm
-            target: linux-arm64-gnu
-            msvc_arch: amd64
-          - runner: macos-15-intel
-            target: darwin-x64
-            msvc_arch: amd64
-          - runner: blacksmith-12vcpu-macos-15
-            target: darwin-arm64
-            msvc_arch: amd64
-          - runner: blacksmith-32vcpu-windows-2025
-            target: win32-x64-msvc
-            msvc_arch: amd64
-          - runner: windows-11-arm
-            target: win32-arm64-msvc
-            msvc_arch: arm64
+  official:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
     env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      OFFICIAL_PROOF: /tmp/plain-script-history-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Setup runtime package managers
-        uses: ./.github/actions/setup-runtime-package-managers
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: Setup MSVC toolchain (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+          ref: 01775187e97a99382367b7c833b825749185eaae
+          path: fixture-source
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0" }
+      - name: Install only the pinned official compiler on the remote runner
+        run: |
+          node --input-type=module <<'NODE'
+          import { mkdirSync, writeFileSync } from "node:fs";
+          import { join } from "node:path";
+          const host=join(process.env.OFFICIAL_PROOF,"host");
+          mkdirSync(host,{recursive:true});
+          writeFileSync(join(host,"package.json"),JSON.stringify({private:true,dependencies:{"@vue/compiler-sfc":"3.5.41"}})+"\n");
+          NODE
+          npm install --prefix "$OFFICIAL_PROOF/host" --registry=https://registry.npmjs.org --ignore-scripts --no-audit --no-fund
+      - name: Capture the exact immutable input and both original option boundaries
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { createHash } from "node:crypto";
+          import { execFileSync } from "node:child_process";
+          import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+          import { createRequire } from "node:module";
+          import { join, resolve } from "node:path";
+          const proof = process.env.OFFICIAL_PROOF;
+          const root = resolve("fixture-source");
+          const source = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+          assert.equal(source, "01775187e97a99382367b7c833b825749185eaae");
+          mkdirSync(proof, { recursive: true });
+          const fixture = "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports";
+          const read = (suffix, blob) => {
+            const raw = readFileSync(join(root, fixture + suffix));
+            const actual = createHash("sha1").update(Buffer.from("blob " + raw.length + "\0")).update(raw).digest("hex");
+            assert.equal(actual, blob);
+            return raw;
+          };
+          const input = read(".input.txt", "92e10c4411502a796d46c528985c8ad9e086be64");
+          const optionBytes = read(".options.json", "07b6a946b9420ed40aca54a49a4f666519110f97");
+          const archivedBytes = read(".expected.json", "60f002af8c9b73de3f592d76acd29168ea509fe8");
+          const options = JSON.parse(optionBytes);
+          const archived = JSON.parse(archivedBytes);
+          assert.equal(archived.Ok.bindings.bindings.runtimeValue, "setup-const");
+          assert.equal(options.effectiveAdapterInputs.templateSyntax, "Standard");
+          assert.equal(options.compileOptions.template.dialect, "V3");
+          assert.equal(options.effectiveAdapterInputs.scriptOutput, "InlineTemplate");
+          const fromHost = createRequire(join(proof, "host/package.json"));
+          const vue = fromHost("@vue/compiler-sfc");
+          assert.equal(fromHost("@vue/compiler-sfc/package.json").version, "3.5.41");
+          const sha = (raw) => createHash("sha256").update(raw).digest("hex");
+          const packet = {
+            schema: "vize.plain-script-history-official",
+            source, recipe: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID,
+            input: input.toString(), inputSha256: sha(input),
+            authoredOptions: options, optionsSha256: sha(optionBytes),
+            archived, archivedSha256: sha(archivedBytes),
+            officialVersion: "3.5.41", dialect: "Vue 3 standard SFC",
+            mapping: "The original source and options are frozen. Both authored script.inline_template=false and effectiveAdapterInputs.scriptOutput=InlineTemplate are executed. Null optional IDs map to the empty API id; original filename/source_map/is_prod/propsDestructure are retained. Script language is inferred from the unchanged authored lang=ts blocks.",
+            observations: [],
+          };
+          const retain = () => writeFileSync(join(proof, "official-whole-packets.json"), JSON.stringify(packet, null, 2) + "\n");
+          retain();
+          for (const inlineTemplate of [options.compileOptions.script.inline_template, true]) {
+            const warnings = [];
+            const previousWarn = console.warn;
+            console.warn = (...args) => warnings.push(args.map(String).join(" "));
+            try {
+              const parseOptions = {
+                filename: options.descriptorParseOptions.filename,
+                sourceMap: options.descriptorParseOptions.source_map,
+                pad: false,
+              };
+              const parsed = vue.parse(input.toString(), parseOptions);
+              const apiOptions = {
+                id: options.compileOptions.script.id ?? options.compileOptions.template.id ?? "",
+                inlineTemplate,
+                sourceMap: options.effectiveAdapterInputs.codegen.source_map,
+                isProd: options.compileOptions.template.is_prod,
+                propsDestructure: false,
+              };
+              const script = vue.compileScript(parsed.descriptor, apiOptions);
+              packet.observations.push({
+                parseOptions, apiOptions, parseErrors: parsed.errors, warnings,
+                scriptLang: parsed.descriptor.script.lang,
+                setupLang: parsed.descriptor.scriptSetup.lang,
+                script,
+              });
+            } finally { console.warn = previousWarn; }
+            retain();
+          }
+          writeFileSync(join(proof, "original.input.txt"), input);
+          writeFileSync(join(proof, "original.options.json"), optionBytes);
+          writeFileSync(join(proof, "original.expected.json"), archivedBytes);
+          for (const observation of packet.observations) {
+            assert.deepEqual(observation.parseErrors, []);
+            assert.equal(observation.script.bindings.runtimeValue, "setup-maybe-ref");
+            assert(!Object.hasOwn(observation.script.bindings, "Foo"));
+            assert(!Object.hasOwn(observation.script.bindings, "Bar"));
+          }
+          console.log(JSON.stringify({
+            normative: "official-vue-3.5.41",
+            source, inputBytes: input.length, inputSha256: packet.inputSha256,
+            optionsSha256: packet.optionsSha256, archivedSha256: packet.archivedSha256,
+            observations: packet.observations.map(({ apiOptions, script }) => ({ apiOptions, bindings: script.bindings })),
+            completePacketSha256: sha(readFileSync(join(proof, "official-whole-packets.json"))),
+          }));
+          NODE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
         with:
-          arch: ${{ matrix.platform.msvc_arch }}
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: runner.os == 'Linux'
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        if: runner.os == 'Linux'
-        with:
-          key: fresh-install-smoke-${{ matrix.platform.target }}-node-${{ matrix.node-version }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        if: runner.os != 'Linux'
-        with:
-          shared-key: fresh-install-smoke-${{ matrix.platform.target }}
-          cache-workspace-crates: "true"
-      - uses: ./.github/actions/setup-rust-script
-      - name: Install package dependencies
-        shell: bash
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter . \
-            --filter './npm/native...' \
-            --filter './npm/cli...' \
-            --filter './npm/builder/vite...'
-      - name: Build @vizejs/native
-        run: vp run --filter './npm/native' build:ci
-      - name: Prepare native platform packages
-        shell: bash
-        working-directory: npm/native
-        run: |
-          vp exec napi create-npm-dirs
-          vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
-          # `napi pre-publish --skip-optional-publish` does not move the host
-          # platform's .node binary into its per-platform npm subdir. Without
-          # that move, the per-platform tarball that the smoke test installs is
-          # empty of the actual binding, and the umbrella package fails to load
-          # at runtime. Copy the host's .node into the matching subdir so the
-          # smoke test exercises a real install + runtime path.
-          for binary in vize-vitrine.*.node; do
-            [ -f "$binary" ] || continue
-            target="${binary#vize-vitrine.}"
-            target="${target%.node}"
-            if [ -d "npm/$target" ]; then
-              cp "$binary" "npm/$target/"
-            fi
-          done
-      - name: Build npm runtime packages
-        if: ${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}
-        shell: bash
-        run: |
-          vp run --filter './npm/cli' build
-          vp run --filter './npm/builder/vite' build
-      - name: Build the packed Nuxt release graph
-        if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
-        uses: ./.github/actions/release-build-packages
-      - name: Fresh install and runtime smoke published tarballs
-        if: ${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}
-        shell: bash
-        run: |
-          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
-            npm/native npm/native/npm/* \
-            npm/cli npm/builder/vite
-      - name: Fresh packed Nuxt init, check, and LSP smoke
-        if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
-        shell: bash
-        run: |
-          read -ra js <<< "$RELEASE_JS_PACKAGES"
-          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
-            npm/native npm/native/npm/* "${js[@]}"
-
-  selected-host-native-producer:
-    if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
-    name: Selected native producer (darwin-arm64)
-    runs-on: blacksmith-12vcpu-macos-15
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        include:
-          - runner: blacksmith-12vcpu-macos-15
-            target: darwin-arm64
-            msvc_arch: amd64
-    env: *native-host-env
-    steps: *native-host-steps
+          name: plain-script-history-official-${{ github.run_id }}
+          path: |
+            /tmp/plain-script-history-${{ github.run_id }}-${{ github.run_attempt }}/*.json
+            /tmp/plain-script-history-${{ github.run_id }}-${{ github.run_attempt }}/*.txt
+            /tmp/plain-script-history-${{ github.run_id }}-${{ github.run_attempt }}/host/package-lock.json
+          if-no-files-found: error
+          retention-days: 90
