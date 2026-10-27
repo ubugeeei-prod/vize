@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import {
+  assertVaporSfcExposeTransition,
   assertVaporSsrExposeSuccessor,
   frozenVaporSsrExposePair,
   verifyVaporSsrExposeRegistration,
@@ -118,4 +119,36 @@ test("registration cannot widen indices, facets, provenance, edit anchors or imm
   assert.throws(() =>
     verifyVaporSsrExposeRegistration({ ...original, jsxFeatureDependency: true }),
   );
+});
+
+test("the actual workflow dispatch rejects both-side fold reclassification and missing rows", () => {
+  const before = read("base-sfc.json");
+  const after = read("head-sfc.json");
+  assertVaporSfcExposeTransition(before, after);
+  for (const index of [1, 3]) {
+    const changedBefore = structuredClone(before);
+    const changedAfter = structuredClone(after);
+    changedBefore[index].fold = true;
+    changedAfter[index].fold = true;
+    assert.throws(() => assertVaporSfcExposeTransition(changedBefore, changedAfter));
+  }
+  const changedBefore = structuredClone(before);
+  const changedAfter = structuredClone(after);
+  changedBefore[0].fold = true;
+  changedAfter[0].fold = true;
+  changedAfter[0].output.code += "\nchanged non-SSR output";
+  assert.throws(() => assertVaporSfcExposeTransition(changedBefore, changedAfter));
+  changedBefore[0] = before[0];
+  changedAfter[0] = after[0];
+  changedBefore[2].fold = false;
+  changedAfter[2].fold = false;
+  changedAfter[2].output = structuredClone(changedBefore[2].output);
+  assert.throws(() => assertVaporSfcExposeTransition(changedBefore, changedAfter));
+  assert.throws(() => assertVaporSfcExposeTransition(before.slice(1), after.slice(1)));
+  assert.throws(() => assertVaporSfcExposeTransition([...before, before[0]], [...after, after[0]]));
+  const missingBefore = structuredClone(before);
+  const missingAfter = structuredClone(after);
+  delete missingBefore[1];
+  delete missingAfter[1];
+  assert.throws(() => assertVaporSfcExposeTransition(missingBefore, missingAfter));
 });

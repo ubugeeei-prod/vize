@@ -77,7 +77,7 @@ jobs:
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import fs from 'node:fs';
-          import { assertVaporSsrExposeSuccessor } from './tests/_helpers/vapor-ssr-expose-successor.ts';
+          import { assertVaporSfcExposeTransition } from './tests/_helpers/vapor-ssr-expose-successor.ts';
           const directory = `${process.env.RUNNER_TEMP}/vapor-literal-styles`;
           const base = JSON.parse(fs.readFileSync(`${directory}/base.json`));
           const head = JSON.parse(fs.readFileSync(`${directory}/head.json`));
@@ -114,13 +114,7 @@ jobs:
           const beforeSfc=JSON.parse(fs.readFileSync(`${directory}/base-sfc.json`));
           const afterSfc=JSON.parse(fs.readFileSync(`${directory}/head-sfc.json`));
           assert.equal(beforeSfc.length,4);assert.equal(afterSfc.length,4);
-          afterSfc.forEach((row,index)=>{
-            const previous=beforeSfc[index];
-            for(const key of ['source','vapor','ssr','fold'])assert.deepEqual(row[key],previous[key]);
-            if(row.fold)assert.notDeepEqual(row.output,previous.output);
-            else if(index===1 || index===3)assertVaporSsrExposeSuccessor(index,previous,row);
-            else assert.deepEqual(row.output,previous.output);
-          });
+          assertVaporSfcExposeTransition(beforeSfc,afterSfc);
           const beforeProfile=JSON.parse(fs.readFileSync(`${directory}/base-profile.json`));
           const afterProfile=JSON.parse(fs.readFileSync(`${directory}/head-profile.json`));
           assert.equal(beforeProfile.length,24); assert.equal(afterProfile.length,24);

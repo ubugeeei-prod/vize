@@ -118,3 +118,24 @@ export function assertVaporSsrExposeSuccessor(
   assert.deepEqual(before, frozen.before, `SSR ${index}: exact original complete producer packet`);
   assert.deepEqual(after, frozen.after, `SSR ${index}: exact current complete producer packet`);
 }
+
+/** Fixed case indices cannot be reclassified by changing producer fold flags. */
+export function assertVaporSfcExposeTransition(before: SfcRow[], after: SfcRow[]): void {
+  assert.equal(before.length, 4);
+  assert.equal(after.length, 4);
+  for (let index = 0; index < 4; index++) {
+    const previous = before[index]!;
+    const row = after[index]!;
+    for (const key of ["source", "vapor", "ssr", "fold"] as const)
+      assert.deepEqual(row[key], previous[key]);
+    if (index === 1 || index === 3) assertVaporSsrExposeSuccessor(index, previous, row);
+    else if (index === 2) {
+      assert.equal(row.fold, true);
+      assert.notDeepEqual(row.output, previous.output);
+    } else {
+      assert.equal(index, 0);
+      assert.equal(row.fold, false);
+      assert.deepEqual(row.output, previous.output);
+    }
+  }
+}
