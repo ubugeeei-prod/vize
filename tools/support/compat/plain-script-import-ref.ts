@@ -278,10 +278,10 @@ async function matrix() {
       app: originalApp
         .replace(
           'import { label, onPing } from "./store";',
-          'import * as store from "./constants";\nimport { unref as identity } from "vue";\nimport Child from "./Child.vue";\nimport type { Hidden } from "./types";\nimport { type Marker, label, onPing } from "./store";',
+          'import * as store from "./constants";\nimport { unref as identity } from "vue";\nimport Child from "./Child.vue";\nimport { default as DefaultAlias } from "./Child.vue";\nimport { "default" as StringDefaultAlias } from "./Child.vue";\nimport type { Hidden } from "./types";\nimport { type Marker, label, onPing } from "./store";',
         )
         .replace('import Child from "./Child.vue";\n</script>', "const ready = true;\n</script>")
-        .replace(':text="label"', ':text="store.label"')
+        .replace('<Child :text="label"', '<DefaultAlias :text="store.label"')
         .replace('@ping="onPing"', '@ping="store.onPing"'),
       files: {
         "src/constants.ts":
@@ -363,9 +363,9 @@ async function matrix() {
             }
           }
           if (filename === "src/App.vue" && entry.kind === "constant") {
-            for (const name of ["store", "identity", "Child"])
+            for (const name of ["store", "identity", "Child", "DefaultAlias", "StringDefaultAlias"])
               assert.equal(officialScript.bindings[name], "setup-const");
-            for (const name of ["store", "identity", "Child"])
+            for (const name of ["store", "identity", "Child", "DefaultAlias", "StringDefaultAlias"])
               assert(!result.code.includes("_unref(" + name + ")"), name + " must stay constant");
             assert(!result.code.includes("Hidden"));
             assert(!result.code.includes("Marker"));

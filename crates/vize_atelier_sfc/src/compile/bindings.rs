@@ -64,6 +64,7 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
                 if decl.import_kind.is_type() {
                     continue;
                 }
+                // Imported runtime values can be refs, except Vue helpers and SFC defaults.
                 let source = decl.source.value.as_str();
                 if let Some(specifiers) = &decl.specifiers {
                     for spec in specifiers {
@@ -74,14 +75,16 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
                                     continue;
                                 }
                                 let local = s.local.name.to_compact_string();
-                                bindings
-                                    .bindings
-                                    .entry(local)
-                                    .or_insert(if source == "vue" {
+                                bindings.bindings.entry(local).or_insert(
+                                    if source == "vue"
+                                        || (s.imported.name().as_str() == "default"
+                                            && source.ends_with(".vue"))
+                                    {
                                         BindingType::SetupConst
                                     } else {
                                         BindingType::SetupMaybeRef
-                                    });
+                                    },
+                                );
                             }
                             ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
                                 let local = s.local.name.to_compact_string();
@@ -368,6 +371,8 @@ import * as namespace from "./store";
 import { ref as makeRef } from "vue";
 import VueDefault from "vue";
 import Component from "./Child.vue";
+import { default as ComponentAlias } from "./Child.vue";
+import { "default" as StringComponentAlias } from "./Child.vue";
 import { namedComponent } from "./Child.vue";
 import type TypeOnly from "./types";
 import type { OtherType } from "./types";
@@ -387,7 +392,14 @@ import { type MixedType, runtimeValue } from "./mixed";
                 "{name}"
             );
         }
-        for name in ["namespace", "makeRef", "VueDefault", "Component"] {
+        for name in [
+            "namespace",
+            "makeRef",
+            "VueDefault",
+            "Component",
+            "ComponentAlias",
+            "StringComponentAlias",
+        ] {
             assert_eq!(
                 bindings.bindings.get(name),
                 Some(&BindingType::SetupConst),
