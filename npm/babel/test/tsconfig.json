@@ -3,8 +3,8 @@
   "compilerOptions": {
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "paths": {
-      "vue": ["./runtime/fixtures/vapor-rc11/node_modules/vue"],
-      "playwright": ["./runtime/fixtures/vdom/node_modules/playwright"]
+      "vue": ["./runtime/fixtures/vapor-rc11/node_modules/vue/dist/vue.d.mts"],
+      "playwright": ["./runtime/fixtures/vdom/node_modules/playwright/index.d.ts"]
     }
   },
   "references": [],
