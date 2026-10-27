@@ -169,6 +169,20 @@ fn unsupported_vize_disable_alias_keeps_the_normal_lint_grammar() {
 
 #[test]
 fn canonical_vize_comment_controls_share_the_normal_template_prescan() {
+    for marker in ["@vize:level off", "@vize:level warn"] {
+        let source = PAGE_B.replace("eslint-disable-next-line croquis/cf/duplicate-id", marker);
+        let directives = ProjectLintDirectives::from_sfc(&source, "PageB.vue").unwrap();
+        let start = source.find("id=").unwrap() as u32;
+        let mut diagnostic = crate::LintDiagnostic::error(
+            "cross-file",
+            "unsupported syntax stays active",
+            start,
+            start + 2,
+        );
+        assert!(directives.admit(DUPLICATE, &mut diagnostic));
+        assert_eq!(diagnostic.severity, crate::Severity::Error);
+    }
+
     for marker in [
         "@vize:forget deliberate",
         "@vize:ignore-start",
@@ -189,7 +203,7 @@ fn canonical_vize_comment_controls_share_the_normal_template_prescan() {
     ] {
         let source = PAGE_B.replace(
             "eslint-disable-next-line croquis/cf/duplicate-id",
-            &format!("@vize:level {level}"),
+            &format!("@vize:level({level})"),
         );
         let directives = ProjectLintDirectives::from_sfc(&source, "PageB.vue").unwrap();
         let start = source.find("id=").unwrap() as u32;

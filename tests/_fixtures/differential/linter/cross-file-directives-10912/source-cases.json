@@ -1779,11 +1779,231 @@
       }
     },
     {
-      "id": "canonical-vize-level-off",
+      "id": "unsupported-vize-level-space-off",
       "files": {
         "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level off\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
         "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
         "src/PageB.vue": "<template>\n  <!-- @vize:level off -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false,
+      "beforePacket": [
+        {
+          "file": "src/Editor.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 2,
+              "message": "[vize:cross-file] vize:croquis/cf/spread-breaks-reactivity: Spreading 'initial' creates a non-reactive copy",
+              "line": 7,
+              "column": 26,
+              "endLine": 7,
+              "endColumn": 36,
+              "help": "ERROR vize:croquis/cf/spread-breaks-reactivity\nSpreading 'initial' creates a non-reactive copy\nProblem: Spreading initial (a reactive) creates a non-reactive shallow copy.\nWhat happens:\n\n  const copy = { ...initial } // copy is NOT reactive\n  initial.foo = 'bar' // copy.foo is still the old value\nFix: Keep the reference, or use toRefs():\n\n  const { foo, bar } = toRefs(initial) // foo, bar are refs\nSuggestion: Use toRefs(initial) to maintain reactivity, or toRaw(initial) for intentional copy"
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageA.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageB.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/duplicate-id: Element ID 'panel' is used in 2 different locations across files",
+              "line": 3,
+              "column": 8,
+              "endLine": 3,
+              "endColumn": 18,
+              "help": "WARNING vize:croquis/cf/duplicate-id\nElement ID 'panel' is used in 2 different locations across files\nSuggestion: Use useId() to generate unique IDs for each component instance"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterPacket": [
+        {
+          "file": "src/Editor.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 2,
+              "message": "[vize:cross-file] vize:croquis/cf/spread-breaks-reactivity: Spreading 'initial' creates a non-reactive copy",
+              "line": 7,
+              "column": 26,
+              "endLine": 7,
+              "endColumn": 36,
+              "help": "ERROR vize:croquis/cf/spread-breaks-reactivity\nSpreading 'initial' creates a non-reactive copy\nProblem: Spreading initial (a reactive) creates a non-reactive shallow copy.\nWhat happens:\n\n  const copy = { ...initial } // copy is NOT reactive\n  initial.foo = 'bar' // copy.foo is still the old value\nFix: Keep the reference, or use toRefs():\n\n  const { foo, bar } = toRefs(initial) // foo, bar are refs\nSuggestion: Use toRefs(initial) to maintain reactivity, or toRaw(initial) for intentional copy"
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageA.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageB.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/duplicate-id: Element ID 'panel' is used in 2 different locations across files",
+              "line": 3,
+              "column": 8,
+              "endLine": 3,
+              "endColumn": 18,
+              "help": "WARNING vize:croquis/cf/duplicate-id\nElement ID 'panel' is used in 2 different locations across files\nSuggestion: Use useId() to generate unique IDs for each component instance"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 1,
+      "wholeChanges": [],
+      "beforeEvidence": {
+        "run": 40586808222,
+        "head": "8d2ab5e682c962307192ba0ece27e8f9dc037d51",
+        "artifact": 12772287867,
+        "entrySha256": "7136af79cf4f9eba9f9252443016892005a4c19197a88f7af3cac3636cb49ca9"
+      },
+      "grammar": "unsupported space form retained as a negative control; existing grammar requires @vize:level(...)",
+      "beforeCaseId": "canonical-vize-level-off"
+    },
+    {
+      "id": "unsupported-vize-level-space-warn",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level warn\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:level warn -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false,
+      "beforePacket": [
+        {
+          "file": "src/Editor.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 2,
+              "message": "[vize:cross-file] vize:croquis/cf/spread-breaks-reactivity: Spreading 'initial' creates a non-reactive copy",
+              "line": 7,
+              "column": 26,
+              "endLine": 7,
+              "endColumn": 36,
+              "help": "ERROR vize:croquis/cf/spread-breaks-reactivity\nSpreading 'initial' creates a non-reactive copy\nProblem: Spreading initial (a reactive) creates a non-reactive shallow copy.\nWhat happens:\n\n  const copy = { ...initial } // copy is NOT reactive\n  initial.foo = 'bar' // copy.foo is still the old value\nFix: Keep the reference, or use toRefs():\n\n  const { foo, bar } = toRefs(initial) // foo, bar are refs\nSuggestion: Use toRefs(initial) to maintain reactivity, or toRaw(initial) for intentional copy"
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageA.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageB.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/duplicate-id: Element ID 'panel' is used in 2 different locations across files",
+              "line": 3,
+              "column": 8,
+              "endLine": 3,
+              "endColumn": 18,
+              "help": "WARNING vize:croquis/cf/duplicate-id\nElement ID 'panel' is used in 2 different locations across files\nSuggestion: Use useId() to generate unique IDs for each component instance"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterPacket": [
+        {
+          "file": "src/Editor.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 2,
+              "message": "[vize:cross-file] vize:croquis/cf/spread-breaks-reactivity: Spreading 'initial' creates a non-reactive copy",
+              "line": 7,
+              "column": 26,
+              "endLine": 7,
+              "endColumn": 36,
+              "help": "ERROR vize:croquis/cf/spread-breaks-reactivity\nSpreading 'initial' creates a non-reactive copy\nProblem: Spreading initial (a reactive) creates a non-reactive shallow copy.\nWhat happens:\n\n  const copy = { ...initial } // copy is NOT reactive\n  initial.foo = 'bar' // copy.foo is still the old value\nFix: Keep the reference, or use toRefs():\n\n  const { foo, bar } = toRefs(initial) // foo, bar are refs\nSuggestion: Use toRefs(initial) to maintain reactivity, or toRaw(initial) for intentional copy"
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageA.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        },
+        {
+          "file": "src/PageB.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/duplicate-id: Element ID 'panel' is used in 2 different locations across files",
+              "line": 3,
+              "column": 8,
+              "endLine": 3,
+              "endColumn": 18,
+              "help": "WARNING vize:croquis/cf/duplicate-id\nElement ID 'panel' is used in 2 different locations across files\nSuggestion: Use useId() to generate unique IDs for each component instance"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 1,
+      "wholeChanges": [],
+      "beforeEvidence": {
+        "run": 40586808222,
+        "head": "8d2ab5e682c962307192ba0ece27e8f9dc037d51",
+        "artifact": 12772287867,
+        "entrySha256": "7136af79cf4f9eba9f9252443016892005a4c19197a88f7af3cac3636cb49ca9"
+      },
+      "grammar": "unsupported space form retained as a negative control; existing grammar requires @vize:level(...)",
+      "beforeCaseId": "canonical-vize-level-warn"
+    },
+    {
+      "id": "canonical-vize-level-off-parenthesized",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level(off)\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:level(off) -->\n  <div id=\"panel\">b</div>\n</template>\n",
         "src/host-control.ts": "export const taskControl = 1;\n"
       },
       "crossFile": true,
@@ -1887,18 +2107,18 @@
         }
       ],
       "beforeEvidence": {
-        "run": 40586808222,
-        "head": "8d2ab5e682c962307192ba0ece27e8f9dc037d51",
-        "artifact": 12772287867,
-        "entrySha256": "7136af79cf4f9eba9f9252443016892005a4c19197a88f7af3cac3636cb49ca9"
-      }
+        "kind": "new source-only canonical control; exact authored combined baseline must verify the whole before packet",
+        "baseline": "5803734f02597be28a52cc19c15014bc5816b413",
+        "syntaxSource": "davinci/vize_l0/src/directive.rs parse_vize_directive/parse_level_severity; docs/content/guide/comment-annotations.md"
+      },
+      "grammar": "existing parenthesized level form; no parser changes"
     },
     {
-      "id": "canonical-vize-level-warn",
+      "id": "canonical-vize-level-warn-parenthesized",
       "files": {
-        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level warn\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level(warn)\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
         "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
-        "src/PageB.vue": "<template>\n  <!-- @vize:level warn -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:level(warn) -->\n  <div id=\"panel\">b</div>\n</template>\n",
         "src/host-control.ts": "export const taskControl = 1;\n"
       },
       "crossFile": true,
@@ -2022,11 +2242,11 @@
         }
       ],
       "beforeEvidence": {
-        "run": 40586808222,
-        "head": "8d2ab5e682c962307192ba0ece27e8f9dc037d51",
-        "artifact": 12772287867,
-        "entrySha256": "7136af79cf4f9eba9f9252443016892005a4c19197a88f7af3cac3636cb49ca9"
-      }
+        "kind": "new source-only canonical control; exact authored combined baseline must verify the whole before packet",
+        "baseline": "5803734f02597be28a52cc19c15014bc5816b413",
+        "syntaxSource": "davinci/vize_l0/src/directive.rs parse_vize_directive/parse_level_severity; docs/content/guide/comment-annotations.md"
+      },
+      "grammar": "existing parenthesized level form; no parser changes"
     }
   ]
 }

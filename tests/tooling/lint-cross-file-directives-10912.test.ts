@@ -17,7 +17,7 @@ const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
 void test("cross-file directives share authored ranges, actual suppression, unused accounting and normal rule packets", () => {
   const corpus = read("source-cases.json");
-  assert.equal(corpus.cases.length, 23);
+  assert.equal(corpus.cases.length, 25);
   const build = expectedBuildIdentity(root);
   const receipt = JSON.parse(
     fs.readFileSync(path.join(root, build.binaryPath + ".differential-build.json"), "utf8"),
@@ -121,13 +121,16 @@ void test("cross-file directives share authored ranges, actual suppression, unus
       warningCount: file.messages.filter((message: any) => message.severity === 1).length,
     }));
   try {
+    const archived = new Map<number, any>();
     for (const frozen of [
       {
+        run: 40583916685,
         file: "public-0.602.0-before-102.json.zlib.base64.txt",
         sha256: "7703f497e2bebf2f518608a1ad9d136511855df1e21cb3ec25f462166134f558",
         packets: 102,
       },
       {
+        run: 40586808222,
         file: "public-0.602.0-controls-before-60.json.zlib.base64.txt",
         sha256: "7136af79cf4f9eba9f9252443016892005a4c19197a88f7af3cac3636cb49ca9",
         packets: 60,
@@ -138,6 +141,7 @@ void test("cross-file directives share authored ranges, actual suppression, unus
       );
       assert.equal(sha256(raw), frozen.sha256);
       assert.equal(JSON.parse(raw.toString()).observations.length, frozen.packets);
+      archived.set(frozen.run, JSON.parse(raw.toString()));
     }
     for (const original of read("public-before-cases.json.txt").originalSources) {
       const bytes = fs.readFileSync(path.join(fixture, "original", original.path + ".txt"));
@@ -154,6 +158,27 @@ void test("cross-file directives share authored ranges, actual suppression, unus
       corpus.originalReportedSha256,
     );
     for (const entry of corpus.cases) {
+      if (entry.beforeEvidence.run) {
+        const raw = archived.get(entry.beforeEvidence.run);
+        assert.ok(raw);
+        const before = raw.observations.find(
+          (row: any) =>
+            row.id === (entry.beforeCaseId ?? entry.id) &&
+            row.route === "cli-json" &&
+            row.repetition === 0,
+        );
+        assert.ok(before, entry.id + ": archived whole before packet is required");
+        assert.deepEqual(
+          before.sourceFiles,
+          entry.files,
+          entry.id + ": original archived source bytes",
+        );
+        assert.deepEqual(
+          before.packet,
+          entry.beforePacket,
+          entry.id + ": original archived whole packet",
+        );
+      }
       write(entry.files);
       const flags = [
         ...(entry.crossFile ? ["--cross-file"] : []),
@@ -291,7 +316,7 @@ void test("cross-file directives share authored ranges, actual suppression, unus
         phase === "before" ? 0 : config.status,
       );
     }
-    assert.equal(runs.length, 66);
+    assert.equal(runs.length, 70);
     for (const observed of runs) {
       const label = observed.id + "/" + observed.route + "/" + observed.repetition;
       assert.equal(observed.error, null, label);
