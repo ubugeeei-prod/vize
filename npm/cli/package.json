@@ -30,6 +30,7 @@
     "content-mapper-helpers.d.cts",
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.ts",
+    "generated/content-mapper-types.d.ts",
     "dist",
     "src",
     "schemas",

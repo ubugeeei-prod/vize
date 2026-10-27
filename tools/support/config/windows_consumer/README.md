@@ -1,0 +1,13 @@
+# Windows dynamic config consumer
+
+Original authority: kazupon/ox-jsdoc commit 86005b1a5d1266148e61b8969edaaaa73a7bfe53, failed run40498957092/job122171489741. Its unchanged 1868-byte dynamic vite.config.ts Git blob is 2be55582077c5f010546169ebffd316a950aecc6. The pre-workaround opinionated command is exactly vp exec vize lint --preset opinionated --help-level short src. No command adds --no-config.
+
+Actions pins Node24.22.1, Vite+1.4.0, pnpm10.34.7, Vue3.5.35 and plugin-vue6.0.7. Windows2025-VS2026 must reproduce public0.601 OSerror206. Linux/macOS controls evaluate the same config. The Node preloader observes physical and final logical argv and copies the temporary evaluator bytes without reading stdin or touching stdout/stderr. Imported config markers independently assert the actual evaluator's Node version/execPath.
+
+The source-image SDK control keeps published0.601 CLI/native JS wrappers unchanged and installs an npm host tarball containing a newly built exact-source NAPI image. Normal binding guards remain active. Metadata0.601 versus the observed source CLI version is recorded separately. This is neither a full-source JS SDK nor public acceptance. A loaded-image token/hash/source receipt and every wrapper hash reject an old image. The standalone source CLI additionally executes the original command. Five mandatory Node transport/error identity cases and the complete config::loader:: Rust suite cannot be skipped.
+
+After the unmodified original command, only an imported policy module changes off/error/off/throw. Actual JSON rule severity, imported graph reload, errors, argv compatibility and cleanup are required. Full stdout/stderr/status, original source and both locks remain in artifacts.
+
+Public dispatch: windows-config-consumer.yml with phase=public, version=EXACT_PUBLIC_VERSION, source_sha=EXACT_PREPARED_TAG_COMMIT, authority_blob=GIT_BLOB_SHA. Explicit public mode with missing fields or wrong ref fails validation. Authority fields: version, tagSourceSha, producerSource, required10990MergeSha, optional required10985MergeSha, receipts[{rawBase64,sha256,origin:{runId,artifactId,member}}], npmSRI[barePackageName]{integrity,tarball,metadataOrigin}. Actual installed image/token matches unchanged genuine producer receipt bytes; producer source and prepared tag remain distinct. No GitHub Release sidecar URL, VSIX publication or editor-marketplace visibility is required.
+
+Direct entrypoint: node verify.ts CONSUMER_REPO EVIDENCE_DIR before|candidate|public VERSION [AUTHORITY_JSON]. Source SDK authority is build-sdk.ts's source-image-sdk.json; public authority uses the genuine release capsule above.

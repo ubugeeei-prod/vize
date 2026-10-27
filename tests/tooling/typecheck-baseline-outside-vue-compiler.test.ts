@@ -4,10 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
-import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
-import { rewriteOutsideVueCompilerOptions } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-vue-compiler.mjs";
-import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
+import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.ts";
+import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.ts";
+import { rewriteOutsideVueCompilerOptions } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-vue-compiler.ts";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.ts";
 
 /**
  * Unique isolation cannot retarget `vueCompilerOptions.globalTypesPath` or
@@ -105,8 +105,8 @@ test("vueCompilerOptions reached only through relative extends are still retarge
       sourcePath,
       writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath),
     );
-    assert.equal(overlay.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.check.json"));
-    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+    assert.equal(overlay!.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.check.json"));
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay!.path, "utf8")), {
       extends: "./tsconfig.check.json",
       vueCompilerOptions: {
         globalTypesPath: "./node_modules/@vue/language-core/vue-global-types.d.ts",
@@ -188,7 +188,7 @@ test("alias overlay keeps vueCompilerOptions when it also rewrites #app", () => 
       sourcePath,
       writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath),
     );
-    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay!.path, "utf8")), {
       extends: "./tsconfig.json",
       compilerOptions: { paths: { "#app": ["./node_modules/nuxt/dist/app"] } },
       vueCompilerOptions: {
