@@ -31,13 +31,18 @@ fn private_storage_separates_owners_resolution_roots_and_configs() {
         first,
         persistent_batch_virtual_root(root.path(), &app, None)
     );
-    assert!(!first.starts_with(crate::batch::project_virtual_root(&app)));
-    assert!(first.starts_with(persistent_batch_storage_root(&app)));
-    assert!(!first.starts_with(root.path()));
+    let storage = persistent_batch_storage_root(&app);
+    let ordinary = crate::batch::project_virtual_root(&app);
+    assert_eq!(first.parent().unwrap(), storage.join("canon/projects"));
     assert_eq!(
-        first.parent().unwrap().parent().unwrap().file_name(),
-        Some(std::ffi::OsStr::new("canon"))
+        storage.parent().unwrap().file_name(),
+        Some(std::ffi::OsStr::new("private-batch-v1"))
     );
+    assert_eq!(
+        storage.parent().unwrap().parent().unwrap(),
+        ordinary.parent().unwrap().parent().unwrap()
+    );
+    assert_eq!(first.file_name().unwrap().as_encoded_bytes().len(), 64);
 }
 
 #[cfg(unix)]
