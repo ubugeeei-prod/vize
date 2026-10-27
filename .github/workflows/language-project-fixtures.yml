@@ -3,6 +3,13 @@ on:
   pull_request:
     paths:
       - .github/workflows/language-project-fixtures.yml
+      - .github/workflows/typescript-plugin.yml
+      - .github/workflows/typescript-provider-vsix.yml
+      - crates/vize_vitrine/src/napi/language_code.rs
+      - npm/typescript-plugin/**
+      - editors/vscode/test/run-typescript-provider-host.mjs
+      - editors/vscode/test/suite/typescript-provider-host.cjs
+      - tests/typescript-plugin/**
       - tools/support/compat/github/**
       - tests/tooling/language-project-*.test.ts
       - tests/_fixtures/tooling/language-project-source-pairs-10740.json
