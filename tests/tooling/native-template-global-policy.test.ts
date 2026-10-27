@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
-import { asArray, asRecord, readJsonRecord } from "../../tools/support/json-value.ts";
+import { asArray, asRecord, asString, readJsonRecord } from "../../tools/support/json-value.ts";
 import type { Target, WholePacket } from "./support/template-global-stock.ts";
 import type { RuntimeResult } from "./support/template-global-runtime.ts";
 import type { SfcCompileOptionsNapi } from "../../npm/native/index.js";
@@ -128,9 +128,16 @@ await test(
     );
     assert.equal(vaporOracle.compiler, "3.6.0-rc.9");
     assert.equal(vaporOracle.plugin, "6.0.7");
-    const vaporObservations = asArray(vaporOracle.observations).map((value) => asRecord(value));
+    const vaporObservations = asArray(vaporOracle.observations).map((value) => {
+      const record = asRecord(value);
+      assert.ok(typeof record.inline === "boolean");
+      return { ...record, id: asString(record.id), inline: record.inline };
+    });
     assert.equal(vaporObservations.length, 16);
-    assert.equal(new Set(vaporObservations.map((value) => `${value.id}/${value.inline}`)).size, 16);
+    assert.equal(
+      new Set(vaporObservations.map((value) => value.id + "/" + String(value.inline))).size,
+      16,
+    );
     const rows: Row[] = [];
     const persist = () =>
       writeFileSync(join(proof, "whole-observations.json"), JSON.stringify(rows, null, 2) + "\n");

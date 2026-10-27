@@ -81,7 +81,7 @@ jobs:
               for case in ['globals', 'local', 'loop', 'import']
               for target in ['dom', 'vapor', 'ssr'] for inline in [False, True]}
           actual = {file.name for file in root.glob('*.json')}
-          assert actual == expected, (actual, expected)
+          assert actual == expected | {'legacy-fixture.json'}, (actual, expected)
           packets = []
           for name in sorted(expected):
               file = root / name
@@ -89,8 +89,14 @@ jobs:
               assert whole['wholeSource'] and whole['wholeResult']['code']
               packets.append({'name':name,'bytes':file.stat().st_size,
                   'sha256':hashlib.sha256(file.read_bytes()).hexdigest()})
+          legacy_file = root / 'legacy-fixture.json'
+          legacy = json.loads(legacy_file.read_text())
+          assert legacy['wholeSource'] and legacy['wholeResult']['code']
+          assert legacy['options'] == {'filename':'Layout.vue','scriptIsTs':False,'templateIsTs':False,
+              'ssr':True,'scriptOutput':'InlineTemplate'}
           (root / 'receipt.json').write_text(json.dumps({'producer':(root / 'producer.sha').read_text().strip(),
-              'executed':1,'wholePackets':packets}, indent=2) + '\n')
+              'executed':1,'wholePackets':packets,'auxiliaryLegacyFixture':{'name':legacy_file.name,
+              'bytes':legacy_file.stat().st_size,'sha256':hashlib.sha256(legacy_file.read_bytes()).hexdigest()}}, indent=2) + '\n')
           PYTHON
       - name: Preserve complete authored inputs, modules, maps and free-reference results
         if: always()

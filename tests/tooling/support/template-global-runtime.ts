@@ -93,6 +93,7 @@ export async function loadWholeComponent(
   const owners = new Map([
     ["vue", providerUrl(runtime)],
     ["vue/server-renderer", providerUrl(renderer)],
+    ["@vue/server-renderer", providerUrl(renderer)],
   ]);
   if (packet.helperCode) owners.set("\0plugin-vue:export-helper", dataUrl(packet.helperCode));
   for (const virtual of packet.virtualModules ?? []) {

@@ -155,4 +155,66 @@ fn every_sfc_backend_keeps_host_globals_on_the_component_proxy() {
             }
         }
     }
+    capture_legacy_fixture();
+}
+
+fn capture_legacy_fixture() {
+    let Some(directory) = std::env::var_os("VIZE_TEMPLATE_GLOBAL_CAPTURE_DIR") else {
+        return;
+    };
+    let descriptor = parse_sfc(
+        SOURCE,
+        SfcParseOptions {
+            filename: "Layout.vue".into(),
+            ..Default::default()
+        },
+    )
+    .expect("exact legacy CLI input");
+    let result = compile_sfc_for_adapter(
+        &descriptor,
+        SfcCompileOptions {
+            parse: SfcParseOptions {
+                filename: "Layout.vue".into(),
+                ..Default::default()
+            },
+            script: ScriptCompileOptions {
+                id: Some("Layout.vue".into()),
+                is_ts: false,
+                ..Default::default()
+            },
+            template: TemplateCompileOptions {
+                id: Some("Layout.vue".into()),
+                is_ts: false,
+                ssr: true,
+                ..Default::default()
+            },
+            style: vize_atelier_sfc::StyleCompileOptions {
+                id: "Layout.vue".into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        CodegenOptions::default(),
+        SfcScriptOutputMode::InlineTemplate,
+    )
+    .expect("exact CLI adapter mode");
+    assert!(result.errors.is_empty(), "legacy input must compile");
+    let packet = serde_json::json!({
+        "wholeSource": SOURCE,
+        "wholeResult": result,
+        "options": {
+            "filename": "Layout.vue",
+            "scriptIsTs": false,
+            "templateIsTs": false,
+            "ssr": true,
+            "scriptOutput": "InlineTemplate"
+        }
+    });
+    std::fs::write(
+        std::path::PathBuf::from(directory).join("legacy-fixture.json"),
+        serde_json::to_vec_pretty(&packet).expect("whole legacy packet"),
+    )
+    .expect("retain exact legacy CLI packet");
 }
