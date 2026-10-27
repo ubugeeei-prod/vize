@@ -99,6 +99,11 @@ test("lint-only empties, started passes and foreign URI/version finishes never p
   trace += "sent collected diagnostics for " + probe.uri + " version 3";
   assert.equal(complete(), false, "a partial trace line is not yet a source receipt");
   trace += "\n";
+  assert.equal(complete(), false, "a send after finish cannot qualify the earlier pass");
+  trace += "starting initial type diagnostics for " + probe.uri + " version 3\n";
+  trace += "sent collected diagnostics for " + probe.uri + " version 3\n";
+  assert.equal(complete(), false, "a send without its matching finish is not complete");
+  trace += "finished initial type diagnostics for " + probe.uri + " version 3\n";
   native.assertComplete(3, true);
   assert.equal(native.idle(), true);
   coverage.record({ uri: probe.uri, version: 3, diagnostics: [{ code: 2339 }] }, 2);

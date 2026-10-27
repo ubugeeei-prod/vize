@@ -39,6 +39,11 @@ test(
       "native runtime unavailable",
     );
     if (!runtime) return;
+    const sourceRoot = process.env.VIZE_CAPACITY_SOURCE_ROOT ?? root;
+    const binary = process.env.VIZE_LSP_BIN ?? path.join(sourceRoot, "target/ci/vize");
+    const producer: unknown = JSON.parse(
+      fs.readFileSync(binary + ".differential-build.json", "utf8"),
+    );
     const directory = workspace("diagnostic-capacity-reopen-");
     const uri = (file: string) => pathToFileURL(path.join(directory, file)).href;
     const warm = { ...capacitySource(9000, uri("Warm.vue")), file: "Warm.vue" };
@@ -68,8 +73,6 @@ test(
       linter: { rules: { "vue/require-v-for-key": "error" } },
       typeChecker: { corsaPath: runtime },
     });
-    const sourceRoot = process.env.VIZE_CAPACITY_SOURCE_ROOT ?? root;
-    const binary = process.env.VIZE_LSP_BIN ?? path.join(sourceRoot, "target/ci/vize");
     const session = new LspSession({ repoRoot: sourceRoot, binary });
     const warmPackets = new CapacityCoverage([warm]);
     const oldPackets = new CapacityCoverage([old]);
@@ -84,7 +87,7 @@ test(
     const events: { stage: string; value?: unknown }[] = [];
     const report: Record<string, unknown> = {
       scope: "same URI and reused version1 with a genuine old native pass held in flight",
-      producer: JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8")) as unknown,
+      producer,
       input: { warm, old, next },
       events,
       qualified: false,

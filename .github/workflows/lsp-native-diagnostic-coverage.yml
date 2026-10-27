@@ -5,6 +5,12 @@ on:
       - ".github/workflows/lsp-native-diagnostic-coverage.yml"
       - "tests/tooling/lsp-diagnostic-capacity*.test.ts"
       - "tests/tooling/support/lsp/diagnostic-capacity*.ts"
+      - "crates/vize_maestro/src/server/open_document.rs"
+      - "crates/vize_maestro/src/server/diagnostic_publishing.rs"
+      - "crates/vize_maestro/src/server/diagnostic_publishing/**"
+      - "crates/vize_maestro/src/server/document_changes.rs"
+      - "crates/vize_maestro/src/document/store.rs"
+      - "crates/vize_maestro/src/server/state/corsa_requests.rs"
       - "crates/vize_maestro/src/server/initial_diagnostics/**"
       - "crates/vize_maestro/src/server/initial_diagnostics.rs"
   workflow_dispatch:
@@ -42,6 +48,7 @@ jobs:
         run: >-
           vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts
           tests/tooling/lsp-diagnostic-capacity-socket.test.ts
+          tests/tooling/lsp-diagnostic-capacity-workflow.test.ts
       - name: Prove the same conservation law fails on the original scheduler
         run: |
           set -euo pipefail
@@ -93,8 +100,11 @@ jobs:
           echo "CARGO_TARGET_DIR=$target_dir" >> "$GITHUB_ENV"
           echo "VIZE_LSP_BIN=$GITHUB_WORKSPACE/target/ci/vize" >> "$GITHUB_ENV"
       - name: Preserve scheduler/version/cancellation laws
-        run: >-
-          cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics::
+        run: |
+          set -euo pipefail
+          capture="$GITHUB_WORKSPACE/target/vize-tests/diagnostic-capacity-129"
+          cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics:: 2>&1 | tee "$capture/scheduler-current.log"
+          python3 -c 'import pathlib,re,sys; text=pathlib.Path(sys.argv[1]).read_text(); result=re.search(r"test result: ok[.] ([0-9]+) passed; 0 failed; 0 ignored",text); assert result and int(result[1])>0,"nonzero scheduler laws with zero ignored tests are required"' "$capture/scheduler-current.log"
       - name: Observe all native errors, complete repairs and checked idle
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
@@ -104,7 +114,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: lsp-native-diagnostic-coverage-${{ github.run_id }}-${{ github.event.pull_request.head.sha || github.sha }}
+          name: lsp-native-diagnostic-coverage-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             target/ci/vize.differential-build.json
             target/vize-tests/diagnostic-capacity-129/

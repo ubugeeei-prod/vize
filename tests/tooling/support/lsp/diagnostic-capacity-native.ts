@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import type { CapacityCoverage } from "./diagnostic-capacity.ts";
 
-type NativePublication = { started: number; sent: number; finished: number };
+type NativePublication = {
+  started: number;
+  sent: number;
+  finished: number;
+  completedPasses: number;
+  outsidePassSent: number;
+  activeSent: number | null;
+};
 
 /** A versioned empty edit notification can be lint-only. Require the actual native send too. */
 export class CapacityNativeCoverage {
@@ -9,6 +16,8 @@ export class CapacityNativeCoverage {
   private tail = "";
   private started = 0;
   private finished = 0;
+  private active = 0;
+  private invalidTransitions = 0;
   private readonly index = new Map<string, NativePublication>();
   private readonly coverage: CapacityCoverage;
   private readonly stderr: () => string;
@@ -31,14 +40,34 @@ export class CapacityNativeCoverage {
       const [, stage, uri, version] = match;
       assert.ok(stage && uri && version);
       const key = uri + "\0" + version;
-      const state = this.index.get(key) ?? { started: 0, sent: 0, finished: 0 };
+      const state = this.index.get(key) ?? {
+        started: 0,
+        sent: 0,
+        finished: 0,
+        completedPasses: 0,
+        outsidePassSent: 0,
+        activeSent: null,
+      };
       if (stage.startsWith("starting")) {
         state.started++;
         this.started++;
+        if (state.activeSent !== null) this.invalidTransitions++;
+        else this.active++;
+        state.activeSent = 0;
       } else if (stage.startsWith("finished")) {
         state.finished++;
         this.finished++;
-      } else state.sent++;
+        if (state.activeSent === null) this.invalidTransitions++;
+        else {
+          if (state.activeSent > 0) state.completedPasses++;
+          state.activeSent = null;
+          this.active--;
+        }
+      } else {
+        state.sent++;
+        if (state.activeSent === null) state.outsidePassSent++;
+        else state.activeSent++;
+      }
       this.index.set(key, state);
     }
   }
@@ -51,18 +80,20 @@ export class CapacityNativeCoverage {
         nativeStarted: state?.started ?? 0,
         nativeSent: state?.sent ?? 0,
         nativeFinished: state?.finished ?? 0,
-        complete:
-          row.complete &&
-          state !== undefined &&
-          state.started > 0 &&
-          state.sent > 0 &&
-          state.finished > 0,
+        nativeCompletedPasses: state?.completedPasses ?? 0,
+        nativeSendsOutsidePass: state?.outsidePassSent ?? 0,
+        complete: row.complete && state !== undefined && state.completedPasses > 0,
       };
     });
   }
   idle(): boolean {
     this.refresh();
-    return this.started > 0 && this.started === this.finished;
+    return (
+      this.started > 0 &&
+      this.started === this.finished &&
+      this.active === 0 &&
+      this.invalidTransitions === 0
+    );
   }
   assertComplete(version: number, repaired: boolean): void {
     assert.deepEqual(

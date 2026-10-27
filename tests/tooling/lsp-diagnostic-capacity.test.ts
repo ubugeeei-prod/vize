@@ -39,6 +39,11 @@ test(
       "native runtime unavailable",
     );
     if (!runtime) return;
+    const sourceRoot = process.env.VIZE_CAPACITY_SOURCE_ROOT ?? root;
+    const binary = process.env.VIZE_LSP_BIN ?? path.join(sourceRoot, "target/ci/vize");
+    const producer: unknown = JSON.parse(
+      fs.readFileSync(binary + ".differential-build.json", "utf8"),
+    );
     const count = Number(process.env.VIZE_CAPACITY_FILES ?? "129");
     assert.ok(Number.isInteger(count) && count >= 65 && count <= 2500);
     const directory = workspace("diagnostic-capacity-");
@@ -72,8 +77,6 @@ test(
       linter: { rules: { "vue/require-v-for-key": "error" } },
       typeChecker: { corsaPath: runtime },
     });
-    const sourceRoot = process.env.VIZE_CAPACITY_SOURCE_ROOT ?? root;
-    const binary = process.env.VIZE_LSP_BIN ?? path.join(sourceRoot, "target/ci/vize");
     const session = new LspSession({ repoRoot: sourceRoot, binary });
     const coverage = new CapacityCoverage(probes);
     const seedCoverage = new CapacityCoverage([seed]);
@@ -87,7 +90,7 @@ test(
       scope:
         "Linux real native backend paused to expose scheduling; correctness only, no cold latency claim",
       eventSource: process.env.GITHUB_SHA,
-      producer: JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8")) as unknown,
+      producer,
       count,
       backend: runtime,
       input: [seed, ...probes],

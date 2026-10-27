@@ -222,16 +222,27 @@ fn did_change_after_a_cheap_settled_pass_validates_without_the_quiet_period() {
 }
 
 #[test]
-fn work_observed_before_close_cannot_reinsert_closed_metadata() {
-    let fixture = super::open_importer_tests::queued_open();
-    let server = fixture.service.inner();
-    let scheduler = server.initial_diagnostics.as_ref().unwrap();
-    let version = server.state.documents.version(&fixture.uri).unwrap();
-    server.state.documents.close(&fixture.uri);
-    scheduler.discard_closed(&fixture.uri, &server.state.documents);
-    assert!(!scheduler.retry(fixture.uri.clone(), version, &server.state.documents));
-    assert!(server.schedule_initial_diagnostics(fixture.uri.clone(), version));
-    assert!(fixture.pending.lock().jobs.is_empty());
+fn closed_documents_reject_delayed_schedule_and_retry_for_queued_or_taken_jobs() {
+    for taken in [false, true] {
+        let fixture = super::open_importer_tests::queued_open();
+        let server = fixture.service.inner();
+        let scheduler = server.initial_diagnostics.as_ref().unwrap();
+        let version = server.state.documents.version(&fixture.uri).unwrap();
+        assert!(fixture.pending.lock().jobs.contains_key(&fixture.uri));
+        if taken {
+            let mut pending = fixture.pending.lock();
+            finish_sync(&mut pending);
+            let (uri, job) = pending
+                .take_ready(Instant::now() + Duration::from_secs(2))
+                .unwrap();
+            assert_eq!((uri, job.version), (fixture.uri.clone(), version));
+        }
+        server.state.documents.close(&fixture.uri);
+        scheduler.discard_closed(&fixture.uri, &server.state.documents);
+        assert!(!scheduler.retry(fixture.uri.clone(), version, &server.state.documents));
+        assert!(server.schedule_initial_diagnostics(fixture.uri.clone(), version));
+        assert!(fixture.pending.lock().jobs.is_empty());
+    }
 }
 
 #[test]
