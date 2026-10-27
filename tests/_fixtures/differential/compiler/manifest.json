@@ -183,9 +183,7 @@
     {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "asset-import-binding-collision-10710",
         "files": [
@@ -210,13 +208,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -224,10 +216,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -326,9 +315,7 @@
     {
       "id": "compiler/sfc/escaped-for-bindings-10714",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "escaped-for-bindings-10714",
         "files": [
@@ -353,13 +340,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -367,10 +348,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1053,6 +1031,52 @@
       }
     },
     {
+      "id": "compiler/sfc/script-setup-default-expose-10891",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "script-setup-default-expose-10891",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "2e40f0cd045d896bec3ee36bc8c2689a19d24473e212ee5d6efcaf81d46cf68e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "script-setup-default-expose-10891/module.expected.txt",
+        "sha256": "86b3a77f2b456543133897a5aefa0b74fe9b1a5e4da4998155543f809faea7c9",
+        "source": "Public @vizejs/native@0.595.0 SSR compatibility control with the independently specified closed-by-default setup exposure from Vue compileScript. Only setup context expose destructuring and its initial empty call differ; script_setup_default_expose.rs covers client/SSR, explicit macros, parsing and async order."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC path remains unavailable; this case asserts the complete legacy SSR module and does not claim native-only coverage."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/sfc-runtime-options-native",
       "state": "active",
       "targets": ["ssr"],
@@ -1644,9 +1668,7 @@
       "id": "compiler/vapor/literal-object-styles-10749",
       "state": "active",
       "adapter": "shared-vapor-literal-style-source-v1",
-      "targets": [
-        "vapor-csr"
-      ],
+      "targets": ["vapor-csr"],
       "scope": "source-only; generic SSR CLI unsupported; no whole-product native or browser parity credit",
       "inputs": [
         {
