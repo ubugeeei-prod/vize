@@ -150,7 +150,7 @@ fn irreversible_side_effects_are_fenced_even_when_collection_lengths_match() {
     use super::SpeculativeProduction;
     use oxc_allocator::{Dummy, GetAllocator};
     use oxc_ast::ast::Expression;
-    for writer in 0..5 {
+    for writer in 0..6 {
         let allocator = Allocator::default();
         let mut parser = parser(&allocator, "[x]", SourceType::ts(), true);
         parser.bump_any();
@@ -164,14 +164,19 @@ fn irreversible_side_effects_are_fenced_even_when_collection_lengths_match() {
                     2 => p.lexer.trivia_builder.speculation_effects_revision += 1,
                     3 => p.state.encountered_await_identifier = true,
                     4 => p.ctx.toggle(crate::Context::Decorator),
+                    5 => {}
                     _ => unreachable!(),
                 }
                 p.set_unexpected();
                 Dummy::dummy(p.allocator())
             });
-        assert!(
-            parser.state.failed_speculative_subproblems.is_empty(),
-            "writer {writer} was memoized"
+        assert!(parser.fatal_error.is_some(), "writer {writer} did not produce a fatal error");
+        // The no-effect control must populate the table, so the other cases
+        // cannot pass without exercising their individual fences.
+        assert_eq!(
+            parser.state.failed_speculative_subproblems.len(),
+            usize::from(writer == 5),
+            "writer {writer} memoization mismatch"
         );
     }
 }
