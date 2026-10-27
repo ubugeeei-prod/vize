@@ -17,6 +17,7 @@
 //! - [`extract`] - Props/emits extraction and reactivity detection
 //! - [`walk`] - Scope walking functions
 
+mod async_components;
 mod define_art;
 mod execution_facts;
 mod expose;
@@ -36,7 +37,11 @@ mod ssr_guards;
 mod type_definitions;
 mod typeof_refs;
 mod unused;
+mod value_binding_origins;
 mod walk;
+
+#[doc(hidden)]
+pub use value_binding_origins::ValueBindingOrigins;
 
 pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
@@ -111,3 +116,6 @@ mod with_defaults_tests;
 
 #[cfg(test)]
 mod reexecuted_map_tests;
+
+#[cfg(test)]
+mod value_binding_origins_tests;

@@ -36,6 +36,7 @@ pub(in crate::script_parser) fn walk_statement(
             }
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
+                result.note_value_declaration(decl, var_decl.kind);
                 super::super::ssr_functions::note_initializer(result, &decl.id, decl.init.as_ref());
                 result.prepare_ref_value_declaration(decl);
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
@@ -65,6 +66,7 @@ pub(in crate::script_parser) fn walk_statement(
         }
         // Nested function declarations
         Statement::FunctionDeclaration(func) => {
+            result.note_value_function(func);
             super::super::ssr_functions::note_function(result, func);
             result.refuse_function_type_reads(func);
             // Add function name as binding
@@ -113,6 +115,7 @@ pub(in crate::script_parser) fn walk_statement(
             if let Some(capture) = result.occurrence_capture.as_mut() {
                 capture.refuse();
             }
+            result.note_value_class(class);
             classes::walk_nested_class(result, class, source);
         }
         Statement::ReturnStatement(ret) => {
@@ -339,9 +342,17 @@ pub(in crate::script_parser) fn walk_statement(
             }
         }
         Statement::WithStatement(with_stmt) => {
+            if let Some(origins) = result.value_binding_origins.as_mut() {
+                origins.refuse();
+            }
             result.refuse_occurrences();
             with_statement::walk_with_statement(result, with_stmt, source);
         }
-        _ => result.refuse_occurrences(),
+        _ => {
+            if let Some(origins) = result.value_binding_origins.as_mut() {
+                origins.refuse();
+            }
+            result.refuse_occurrences();
+        }
     }
 }

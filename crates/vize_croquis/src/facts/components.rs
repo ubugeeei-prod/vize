@@ -207,3 +207,50 @@ mod tests {
         );
     }
 }
+
+/// Source-owned local component binding. This is private CF authority, not a
+/// synthetic static import and not part of the serialized component DTO.
+pub enum LocalComponentBinding<'a> {
+    Absent,
+    StaticImport,
+    Opaque,
+    Async(&'a str),
+}
+
+/// A known opaque local must not acquire a project component by filename.
+pub fn local_component_binding<'a>(
+    croquis: &'a crate::Croquis,
+    tag: &str,
+) -> LocalComponentBinding<'a> {
+    if !croquis.bindings.is_script_setup {
+        return LocalComponentBinding::Absent;
+    }
+    let Some(origins) = croquis.value_binding_origins.as_deref() else {
+        return LocalComponentBinding::Absent;
+    };
+    let mut names = origins.binding_names().filter(|name| {
+        *name == tag || crate::naming::to_pascal_case(name) == crate::naming::to_pascal_case(tag)
+    });
+    let Some(name) = names.next() else {
+        return LocalComponentBinding::Absent;
+    };
+    if names.next().is_some() {
+        return LocalComponentBinding::Opaque;
+    }
+    let Some(reference) = origins.root_reference(name) else {
+        return LocalComponentBinding::Opaque;
+    };
+    let Some(resolved) = origins.resolve(&reference) else {
+        return LocalComponentBinding::Opaque;
+    };
+    if resolved.canonical.is_none() {
+        return LocalComponentBinding::Opaque;
+    }
+    if resolved.import.is_some() {
+        return LocalComponentBinding::StaticImport;
+    }
+    match origins.async_components.module_for(origins, name) {
+        Some(module) => LocalComponentBinding::Async(module),
+        None => LocalComponentBinding::Opaque,
+    }
+}

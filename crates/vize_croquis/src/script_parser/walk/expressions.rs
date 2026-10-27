@@ -23,6 +23,7 @@ pub(in crate::script_parser) fn walk_expression(
     expr: &Expression<'_>,
     source: &str,
 ) {
+    super::super::value_binding_origins::note_expression_mutation(result, expr);
     refuse_expression_type_reads(result, expr);
     match expr {
         // Arrow functions create closure scopes (no `arguments`, no `this` binding)

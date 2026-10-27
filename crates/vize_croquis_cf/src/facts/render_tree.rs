@@ -9,6 +9,7 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use vize_carton::CompactString;
+use vize_croquis::facts::components::{LocalComponentBinding, local_component_binding};
 use vize_croquis::facts::{FactGroup, component_identity};
 use vize_l0::fact::{Demand, FactProducer, FactTable, FactTableBuilder, FactView};
 use vize_l0::pass::AnalysisId;
@@ -164,7 +165,7 @@ pub fn imported_render_target(
     tag: &str,
 ) -> Option<FileId> {
     let entry = registry.get(caller)?;
-    resolve_imported(registry, entry, tag).map(|(file, _)| file)
+    resolve_bound(registry, entry, tag).map(|(file, _)| file)
 }
 
 fn resolve_tag(
@@ -172,8 +173,57 @@ fn resolve_tag(
     entry: &ModuleEntry,
     tag: &str,
 ) -> Option<(FileId, CompactString)> {
-    resolve_imported(registry, entry, tag).or_else(|| {
-        unique_component(registry, tag).map(|target| (target, CompactString::new("default")))
+    match local_component_binding(&entry.analysis, tag) {
+        LocalComponentBinding::Absent | LocalComponentBinding::StaticImport => {
+            resolve_imported(registry, entry, tag).or_else(|| {
+                unique_component(registry, tag)
+                    .map(|target| (target, CompactString::new("default")))
+            })
+        }
+        _ => resolve_bound(registry, entry, tag),
+    }
+}
+
+/// Resolve an actual local binding, preserving the distinction between a
+/// missing binding and one whose value is opaque.
+fn resolve_bound(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
+    tag: &str,
+) -> Option<(FileId, CompactString)> {
+    match local_component_binding(&entry.analysis, tag) {
+        LocalComponentBinding::Async(module) => {
+            // Literal relative .vue imports have one runtime file identity.
+            // Reuse the logical resolver candidates, requiring convergence;
+            // package/alias/type-view candidates cannot certify this fact.
+            if !(module.starts_with("./") || module.starts_with("../")) || !module.ends_with(".vue")
+            {
+                return None;
+            }
+            let mut targets = import_candidates(module, entry.path.parent())
+                .into_iter()
+                .filter_map(|candidate| registry.get_by_path(&candidate).map(|target| target.id));
+            let target = targets.next()?;
+            if targets.any(|other| other != target) {
+                return None;
+            }
+            Some((target, CompactString::new("default")))
+        }
+        LocalComponentBinding::StaticImport | LocalComponentBinding::Absent => {
+            resolve_imported(registry, entry, tag)
+        }
+        LocalComponentBinding::Opaque => None,
+    }
+}
+
+/// Whether the template tag is owned by a local binding, even when its value
+/// cannot establish render ancestry.
+pub fn has_local_render_binding(registry: &ModuleRegistry, caller: FileId, tag: &str) -> bool {
+    registry.get(caller).is_some_and(|entry| {
+        matches!(
+            local_component_binding(&entry.analysis, tag),
+            LocalComponentBinding::Opaque | LocalComponentBinding::Async(_)
+        )
     })
 }
 

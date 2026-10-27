@@ -65,7 +65,15 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
         exports,
         !ret.panicked && ret.diagnostics.is_empty(),
     );
+    if ret.diagnostics.is_empty() {
+        if let Some(origins) = result.value_binding_origins.as_mut() {
+            origins.admit();
+        }
+    }
     if !ret.diagnostics.is_empty() {
+        if let Some(origins) = result.value_binding_origins.as_mut() {
+            origins.refuse();
+        }
         result.setup_context.clear_ssr_facts();
         result.occurrence_capture = None;
         if BUILTIN_TYPES {
@@ -158,6 +166,9 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
 
     if !skip_diagnostics {
         super::extract::prepare_race_analysis(&mut result, program);
+        result.value_binding_origins = Some(Box::new(
+            super::value_binding_origins::ValueBindingOrigins::new(result.scopes.current_id()),
+        ));
     }
 
     // Process all statements
@@ -174,6 +185,10 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     if result.bindings.contains("definePageMeta") {
         // A lexical binding owns the call instead of Nuxt's compile-time macro.
         result.nuxt_page_layout = None;
+    }
+
+    if let Some(origins) = result.value_binding_origins.as_mut() {
+        origins.finish(&result.scopes);
     }
 
     // After every binding is known, demote any `type` / `interface` that
@@ -320,6 +335,10 @@ pub(crate) fn parse_script_with_options_source_type(
         }
     });
 
+    if let Some(origins) = result.value_binding_origins.as_mut() {
+        origins.finish(&result.scopes);
+    }
+
     // Mirror the setup path so non-setup scripts also keep typeof-anchored
     // types adjacent to their value bindings in any downstream emitters.
     profile!(
@@ -328,6 +347,9 @@ pub(crate) fn parse_script_with_options_source_type(
     );
 
     if !ret.diagnostics.is_empty() {
+        if let Some(origins) = result.value_binding_origins.as_mut() {
+            origins.refuse();
+        }
         result.setup_context.clear_ssr_facts();
         result.occurrence_capture = None;
     }

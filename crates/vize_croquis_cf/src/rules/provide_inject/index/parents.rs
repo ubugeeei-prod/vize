@@ -1,5 +1,6 @@
 mod slot_tree;
 
+use crate::facts::has_local_render_binding;
 use crate::facts::imported_render_target;
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
@@ -256,7 +257,13 @@ fn runtime_usages(
         .iter()
         .filter_map(|usage| {
             let target_id = imported_render_target(registry, entry.id, usage.name.as_str())
-                .or_else(|| graph.find_by_component(usage.name.as_str()))?;
+                .or_else(|| {
+                    if has_local_render_binding(registry, entry.id, usage.name.as_str()) {
+                        None
+                    } else {
+                        graph.find_by_component(usage.name.as_str())
+                    }
+                })?;
             Some(RuntimeUsage {
                 target_id,
                 start: usage.start,

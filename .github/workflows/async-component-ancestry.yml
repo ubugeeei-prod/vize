@@ -1,0 +1,93 @@
+name: Async component render ancestry
+on:
+  pull_request:
+    paths:
+      - .github/workflows/async-component-ancestry.yml
+      - crates/vize_croquis/**
+      - crates/vize_croquis_cf/**
+      - tools/support/cross_file/async_component/**
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: async-component-ancestry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  whole-project:
+    name: Whole project and lexical controls (${{ matrix.role }})
+    strategy:
+      fail-fast: false
+      matrix: { role: [before, candidate] }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "8"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ matrix.role == 'before' && 'b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd' || github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualification
+          persist-credentials: false
+          sparse-checkout: tools/support/cross_file/async_component
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0" }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Require complete Croquis and cross-file unit suites
+        if: matrix.role == 'candidate'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/async-component
+          cargo test --locked --profile ci -p vize_croquis -p vize_croquis_cf --lib -- --nocapture >target/vize-tests/async-component/units.stdout 2>target/vize-tests/async-component/units.stderr
+          cat target/vize-tests/async-component/units.stdout
+          cat target/vize-tests/async-component/units.stderr >&2
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          text = Path('target/vize-tests/async-component/units.stdout').read_text()
+          names = [
+            'stable_opaque_functions_and_const_leaves_keep_identity',
+            'reassignment_tdz_and_mutable_bindings_refuse_value_authority',
+            'closure_parameters_and_hoisted_function_shadow_imports',
+            'incomplete_and_two_program_domains_refuse_but_absent_script_preserves',
+            'async_component_ancestry_accepts_alias_namespace_and_exact_loader_forms',
+            'async_component_ancestry_rejects_fake_opaque_nonliteral_and_uncalled_nested_loaders',
+            'async_component_ancestry_keeps_static_import_and_kebab_alias_controls',
+          ]
+          for name in names:
+              assert any(line.endswith('::' + name + ' ... ok') for line in text.splitlines()), name
+          assert '0 failed;' in text
+          PYTHON
+      - name: Build the exact source CLI and source NAPI image
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          token="$(openssl rand -hex 16)"
+          VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked --profile ci -p vize_vitrine --features napi
+          cargo build --locked --profile ci --no-default-features -p vize --bin vize
+          cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
+          echo "EXPECTED_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Preserve every original file and full process, graph, Doctor and inspector packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset NAPI_RS_NATIVE_LIBRARY_PATH
+          node qualification/tools/support/cross_file/async_component/verify.ts target/ci/vize npm/native/index.js target/vize-tests/async-component ${{ matrix.role }} "$SOURCE_SHA" "$EXPECTED_TOKEN"
+      - name: Preserve complete evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: async-component-ancestry-${{ matrix.role }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: target/vize-tests/async-component
+          if-no-files-found: error

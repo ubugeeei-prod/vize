@@ -11,6 +11,14 @@ impl Croquis {
     /// facts from the regular script are retained for virtual TS, lint, and
     /// cross-file consumers.
     pub fn merge_plain_script(&mut self, mut plain: Self) {
+        match (
+            &mut self.value_binding_origins,
+            plain.value_binding_origins.take(),
+        ) {
+            (Some(setup), Some(_)) => setup.refuse(),
+            (slot @ None, Some(origins)) => *slot = Some(origins),
+            _ => {}
+        }
         if let Some(reads) = plain.setup_context.take_module_read_facts() {
             self.apply_module_reads(reads);
         }
