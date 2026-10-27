@@ -4,9 +4,10 @@ use vize_carton::{FxHashMap, String};
 
 mod collect;
 mod declarations;
+mod globals;
 mod graph;
 mod type_queries;
-pub use collect::collect;
+pub use collect::{collect, collect_requested_globals};
 pub use graph::seal;
 #[cfg(test)]
 mod tests;
@@ -14,6 +15,8 @@ mod tests;
 mod tests_ambient;
 #[cfg(test)]
 mod tests_graph;
+#[cfg(test)]
+mod tests_requested_globals;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Namespace {

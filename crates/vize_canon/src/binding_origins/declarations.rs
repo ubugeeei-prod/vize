@@ -5,7 +5,7 @@ use oxc_ast::ast::{
     ImportSpecifier, Statement, TSTypeAliasDeclaration, VariableDeclaration, VariableDeclarator,
 };
 use oxc_syntax::symbol::SymbolId;
-use vize_carton::{FxHashMap, String};
+use vize_carton::FxHashMap;
 
 #[derive(Clone, Copy)]
 pub(super) enum Syntax<'s, 'a> {
@@ -38,7 +38,7 @@ pub(super) struct DeclarationIndex<'s, 'a> {
     pub(super) namespaces: FxHashMap<SymbolId, &'s ImportDeclaration<'a>>,
 }
 impl<'s, 'a> Collector<'s, 'a> {
-    fn binding(
+    pub(super) fn binding(
         &mut self,
         name: &str,
         symbol: Option<SymbolId>,
@@ -54,8 +54,7 @@ impl<'s, 'a> Collector<'s, 'a> {
                 .and_modify(|declarations| declarations.push(syntax))
                 .or_insert(SyntaxDeclarations::One(syntax));
             if global {
-                self.facts.globals.push((String::from(name), local));
-                self.pending.push_back(local);
+                self.note_global(name, local);
             }
         }
     }
@@ -142,6 +141,7 @@ impl<'s, 'a> Collector<'s, 'a> {
                 for statement in &declaration.body.body {
                     self.statement(statement, true, true);
                 }
+                self.global_scope(declaration.scope_id.get().expect("existing semantic scope"));
             }
             Declaration::VariableDeclaration(declaration) => {
                 self.variables(declaration, global, ambient)
@@ -157,6 +157,7 @@ impl<'s, 'a> Collector<'s, 'a> {
                 for statement in &declaration.body.body {
                     self.statement(statement, true, true);
                 }
+                self.global_scope(declaration.scope_id.get().expect("existing semantic scope"));
             }
             Statement::VariableDeclaration(declaration) => {
                 self.variables(declaration, global, ambient)
