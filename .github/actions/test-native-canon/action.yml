@@ -56,6 +56,21 @@ runs:
       env:
         VIZE_DAVINCI_DIFFERENTIAL_CORPUS: ${{ github.workspace }}
       run: cargo test --locked --profile ci -p vize_canon --features legacy-differential --test davinci_projection_differential -- --nocapture
+    - name: Test declared public-instance member types with the native checker
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::setup_custom_properties::custom_property_member_types_and_native_type_queries_remain_exact -- --exact --nocapture
+    - name: Test repeated loop source reads and public-instance alias shadowing
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::setup_custom_properties::loop_sources_keep_authored_reads_and_parent_scope -- --exact --nocapture
     - name: Install locked Vue dependency and pinned syntax corpus
       shell: bash
       run: |
