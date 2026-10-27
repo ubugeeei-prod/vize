@@ -104,10 +104,9 @@ pub(crate) fn note_expression_mutation(
         }
         Expression::ImportExpression(import)
             if import.options.is_some()
-                || import.phase.is_some()
                 || !matches!(
                     import.source.get_inner_expression(),
-                    Expression::StringLiteral(_)
+                    Expression::StringLiteral(_) | Expression::Identifier(_)
                 ) =>
         {
             origins.refuse()

@@ -113,3 +113,10 @@ fn async_component_ancestry_keeps_static_import_and_kebab_alias_controls() {
         true,
     );
 }
+
+#[test]
+fn opaque_loader_reads_preserve_an_independent_proven_component() {
+    let source = "import { defineAsyncComponent as dac } from 'vue'; const Healthy = dac(() => import('./NoticeLink.vue')); const path = './NoticeLink.vue'; const NoticeLink = dac(() => import(path));";
+    assert_target(source, "Healthy", true);
+    assert_target(source, "NoticeLink", false);
+}

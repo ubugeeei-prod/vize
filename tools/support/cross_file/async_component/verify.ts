@@ -181,13 +181,31 @@ const image = images[0];
 assert(image);
 const imageBytes = readFileSync(image);
 const imageIdentity = { path: image, bytes: imageBytes.length, sha256: sha(imageBytes) };
+writeFileSync(
+  join(output, "source-native-identity.json"),
+  JSON.stringify(
+    {
+      role,
+      sourceSha,
+      node: process.version,
+      wrapper: { path: resolve(nativeArg), sha256: sha(readFileSync(resolve(nativeArg))) },
+      buildToken: native.getNativeBuildToken(),
+      image: imageIdentity,
+      claim: "exact source producer; public-after remains separate",
+    },
+    null,
+    2,
+  ) + "\n",
+);
 assert.equal(native.getNativeBuildToken(), expectedToken);
 const sourceFiles = Object.entries(original.files).map(([path, file]) => {
   assert.equal(Buffer.byteLength(file.source), file.bytes, path);
   assert.equal(sha(file.source), file.sha256, path);
   return { path, source: file.source };
 });
-assert.deepEqual(native.buildInspectorGraph(sourceFiles), publicBefore.graph);
+const wholeNativeGraph = native.buildInspectorGraph(sourceFiles);
+writeFileSync(join(output, "native-graph.json"), JSON.stringify(wholeNativeGraph, null, 2) + "\n");
+assert.deepEqual(wholeNativeGraph, publicBefore.graph);
 const cleanDoctor = structuredClone(publicBefore.reports.doctor);
 cleanDoctor.findings = [];
 const summary = object(cleanDoctor.summary);

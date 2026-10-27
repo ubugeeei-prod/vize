@@ -69,6 +69,7 @@ jobs:
           from pathlib import Path
           text = Path('target/vize-tests/async-component/units.stdout').read_text()
           names = [
+            'opaque_loader_reads_preserve_an_independent_proven_component',
             'actual_uncaptured_refused_and_empty_programs_never_alias_absence',
             'unsupported_top_level_try_refuses_the_original_domain',
             'demanded_builtin_walk_retains_the_same_lexical_bindings',
