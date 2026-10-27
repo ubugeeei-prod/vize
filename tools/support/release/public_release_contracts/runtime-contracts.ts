@@ -58,7 +58,13 @@ assert(mode === "assert" || mode === "capture");
 const require = createRequire(join(resolve(workspace), "package.json"));
 const Vue = require("vue") as VueRuntime;
 assert.equal(Vue.version, "3.6.0-rc.13");
-assert.equal(require("@vizejs/" + backend + "/package.json").version, version);
+const packagePath = join(dirname(require.resolve("@vizejs/" + backend)), "package.json");
+const packageMetadata = JSON.parse(readFileSync(packagePath, "utf8")) as {
+  name?: unknown;
+  version?: unknown;
+};
+assert.equal(packageMetadata.name, "@vizejs/" + backend);
+assert.equal(packageMetadata.version, version);
 let native: Compiler;
 if (backend === "native") native = require("@vizejs/native") as Compiler;
 else {

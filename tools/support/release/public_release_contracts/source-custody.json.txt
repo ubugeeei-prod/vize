@@ -189,9 +189,9 @@
       },
       "ported": {
         "path": "tools/support/release/public_release_contracts/runtime-contracts.ts",
-        "sha": "640b52916691e107e4980bec63c390b6d9d3001c",
-        "bytes": 7823,
-        "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329"
+        "sha": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e",
+        "bytes": 8056,
+        "sha256": "5350cddf80198131a315d20f48933f129022bc5fca7943fc9c30fcd7ad753920"
       },
       "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
     },
@@ -253,9 +253,9 @@
       },
       "ported": {
         "path": "tools/support/release/public_release_contracts/runtime-contracts.ts",
-        "sha": "640b52916691e107e4980bec63c390b6d9d3001c",
-        "bytes": 7823,
-        "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329"
+        "sha": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e",
+        "bytes": 8056,
+        "sha256": "5350cddf80198131a315d20f48933f129022bc5fca7943fc9c30fcd7ad753920"
       },
       "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
     },
@@ -269,9 +269,9 @@
       },
       "ported": {
         "path": "tools/support/release/public_release_contracts/run.ts",
-        "sha": "118c40d3edc418e5a0445afbc620d21616043e6f",
-        "bytes": 6980,
-        "sha256": "7be3203c762bcf1c7c7d27c27824053dccabdcaae2b4889df3c0d19d7f3ae0cb"
+        "sha": "a476cc0d7cc3dfb733752392dc8aaf816e768836",
+        "bytes": 7605,
+        "sha256": "f17a67cc63b502de72017b3c956a981d2a4ead2e809b4dcf3656e026bea467df"
       },
       "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
     }
@@ -285,7 +285,7 @@
     "formatterErrors": 0,
     "virtualCompilerHost": true,
     "localFilesystemWrites": false,
-    "runtimePortCustodyBlob": "d357b007ba376025792559ed45c7c3d0c182ab7e",
+    "runtimePortCustodyBlob": "9abd9819abd6299972cacf3dfedda1e61da4218d",
     "runtimeOriginal600NativeAndWasmPacketsEqual": true
   },
   "workflowMutation": {
@@ -294,5 +294,15 @@
     "customPropertiesIsSeparateFreshAfterOnlyOptIn": true,
     "publishedCandidateSeparatedFromProducerSource": true
   },
-  "note": "Original before/after proof data are not reformatted or repinned. JSON and authored fixture bytes are stored as explicit .txt payloads."
+  "note": "Original before/after proof data are not reformatted or repinned. JSON and authored fixture bytes are stored as explicit .txt payloads.",
+  "history": [
+    {
+      "previousOverallCustodyBlob": "2879d6547353a4ae23567b58f6685119701adb86",
+      "previousRuntimeBlob": "640b52916691e107e4980bec63c390b6d9d3001c",
+      "runtimeBlob": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e",
+      "fix": "Resolve the exported package root, then read adjacent package.json; no unexported package.json require. All four native and WASM packets retain original values.",
+      "frozenReferenceDigestsNowEnforced": true,
+      "yamlChange": "one trailing newline; parsed workflow deep-equal"
+    }
+  ]
 }

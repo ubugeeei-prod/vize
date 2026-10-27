@@ -185,4 +185,3 @@ jobs:
             ${{ runner.temp }}/public-custom-properties-consumer/*.txt
             ${{ runner.temp }}/public-custom-properties-consumer/src/
             tools/support/release/public_custom_properties/
-

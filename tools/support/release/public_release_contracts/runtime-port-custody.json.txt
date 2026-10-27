@@ -1,5 +1,5 @@
 {
-  "schema": "vize-public-runtime-ts-port-custody-v1",
+  "schema": "vize-public-runtime-ts-port-custody-v2",
   "originals": [
     {
       "path": "public-compiler-contracts-admitted.mjs",
@@ -12,8 +12,9 @@
   ],
   "ported": {
     "path": "runtime-contracts.ts",
-    "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329",
-    "bytes": 7823
+    "sha256": "5350cddf80198131a315d20f48933f129022bc5fca7943fc9c30fcd7ad753920",
+    "bytes": 8056,
+    "blob": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e"
   },
   "validation": {
     "strictTypeScript": "PASS",
@@ -22,10 +23,9 @@
     "wasmOriginalToPortedWholePacketEqual": true,
     "frozenPublic600NativeWholePacketEqual": true,
     "frozenPublic600WasmWholePacketEqual": true,
-    "vue": "3.6.0-rc.13",
-    "version": "0.600.0",
+    "metadataValueAdapter": false,
     "freshConsumerAcceptanceCredit": false,
-    "adapters": "In-memory stdout capture only; WASM resolver points to previously extracted public600 payload, with file URL for data-URL evaluation."
+    "adapters": "In-memory stdout capture; WASM root resolver uses the existing package's actual exported self-reference entry. Metadata is read normally from its adjacent original package.json."
   },
   "frozenPackets": [
     {
@@ -37,101 +37,238 @@
       "sha256": "7dc56029bf34d86066b1389264589cc454f683bc673cc0db4c4ea2dbd2132f0b"
     }
   ],
-  "nativeProof": {
-    "strictTypeScript": "PASS",
-    "nativePublicVersion": "0.600.0",
-    "vue": "3.6.0-rc.13",
-    "completeRows": [
-      {
-        "id": "10875-native-once-click",
-        "observed": {
-          "handler": "function",
-          "button": "0",
-          "title": "0",
-          "output": "2"
+  "historicalPort": {
+    "runtimeBlob": "640b52916691e107e4980bec63c390b6d9d3001c",
+    "custodyBlob": "d357b007ba376025792559ed45c7c3d0c182ab7e",
+    "ported": {
+      "path": "runtime-contracts.ts",
+      "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329",
+      "bytes": 7823
+    },
+    "validation": {
+      "strictTypeScript": "PASS",
+      "oxfmt": "PASS",
+      "nativeOriginalToPortedWholePacketEqual": true,
+      "wasmOriginalToPortedWholePacketEqual": true,
+      "frozenPublic600NativeWholePacketEqual": true,
+      "frozenPublic600WasmWholePacketEqual": true,
+      "vue": "3.6.0-rc.13",
+      "version": "0.600.0",
+      "freshConsumerAcceptanceCredit": false,
+      "adapters": "In-memory stdout capture only; WASM resolver points to previously extracted public600 payload, with file URL for data-URL evaluation."
+    },
+    "nativeProof": {
+      "strictTypeScript": "PASS",
+      "nativePublicVersion": "0.600.0",
+      "vue": "3.6.0-rc.13",
+      "completeRows": [
+        {
+          "id": "10875-native-once-click",
+          "observed": {
+            "handler": "function",
+            "button": "0",
+            "title": "0",
+            "output": "2"
+          },
+          "passed": true
         },
-        "passed": true
-      },
-      {
-        "id": "10815-component-once-props-events-slots",
-        "observed": {
-          "button": "0:2",
-          "output": "2"
+        {
+          "id": "10815-component-once-props-events-slots",
+          "observed": {
+            "button": "0:2",
+            "output": "2"
+          },
+          "passed": true
         },
-        "passed": true
-      },
-      {
-        "id": "10891-private-default",
-        "observed": {
-          "text": "1",
-          "publicMsg": null,
-          "exposed": {}
+        {
+          "id": "10891-private-default",
+          "observed": {
+            "text": "1",
+            "publicMsg": null,
+            "exposed": {}
+          },
+          "passed": true
         },
-        "passed": true
-      },
-      {
-        "id": "10891-explicit-expose",
-        "observed": {
-          "text": "1",
-          "publicMsg": 1,
-          "exposed": {
-            "msg": 1
-          }
+        {
+          "id": "10891-explicit-expose",
+          "observed": {
+            "text": "1",
+            "publicMsg": 1,
+            "exposed": {
+              "msg": 1
+            }
+          },
+          "passed": true
+        }
+      ],
+      "originalSourceToPortedEqual": true,
+      "frozenOriginalPublic600Equal": true
+    },
+    "wasmProof": {
+      "backend": "wasm",
+      "version": "0.600.0",
+      "vue": "3.6.0-rc.13",
+      "completeRows": [
+        {
+          "id": "10875-native-once-click",
+          "observed": {
+            "handler": "function",
+            "button": "0",
+            "title": "0",
+            "output": "2"
+          },
+          "passed": true
         },
-        "passed": true
-      }
-    ],
-    "originalSourceToPortedEqual": true,
-    "frozenOriginalPublic600Equal": true
+        {
+          "id": "10815-component-once-props-events-slots",
+          "observed": {
+            "button": "0:2",
+            "output": "2"
+          },
+          "passed": true
+        },
+        {
+          "id": "10891-private-default",
+          "observed": {
+            "text": "1",
+            "publicMsg": null,
+            "exposed": {}
+          },
+          "passed": true
+        },
+        {
+          "id": "10891-explicit-expose",
+          "observed": {
+            "text": "1",
+            "publicMsg": 1,
+            "exposed": {
+              "msg": 1
+            }
+          },
+          "passed": true
+        }
+      ],
+      "originalSourceToPortedEqual": true,
+      "frozenOriginalPublic600Equal": true,
+      "resolverOnlyAdapter": "/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package",
+      "acceptanceCredit": false
+    }
   },
-  "wasmProof": {
-    "backend": "wasm",
-    "version": "0.600.0",
-    "vue": "3.6.0-rc.13",
-    "completeRows": [
+  "transition": {
+    "changed": "Read package metadata adjacent to the exported package root entry instead of a private package.json subpath.",
+    "reason": "Actual public WASM exports reject ./package.json; the previous extracted-payload test did not exercise that exports boundary.",
+    "originalInputsAndAllEightRuntimeObservationsChanged": false,
+    "previousSourceAndCustodyRemainInGitHistory": true,
+    "exportsRegression": {
+      "oldSubpathRejected": "ERR_PACKAGE_PATH_NOT_EXPORTED",
+      "rootEntry": "/private/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package/index.js",
+      "adjacentManifest": "/private/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package/package.json",
+      "name": "@vizejs/wasm",
+      "version": "0.600.0",
+      "result": "PASS"
+    }
+  },
+  "currentWholePacketProof": {
+    "proofs": [
       {
-        "id": "10875-native-once-click",
-        "observed": {
-          "handler": "function",
-          "button": "0",
-          "title": "0",
-          "output": "2"
-        },
-        "passed": true
-      },
-      {
-        "id": "10815-component-once-props-events-slots",
-        "observed": {
-          "button": "0:2",
-          "output": "2"
-        },
-        "passed": true
-      },
-      {
-        "id": "10891-private-default",
-        "observed": {
-          "text": "1",
-          "publicMsg": null,
-          "exposed": {}
-        },
-        "passed": true
-      },
-      {
-        "id": "10891-explicit-expose",
-        "observed": {
-          "text": "1",
-          "publicMsg": 1,
-          "exposed": {
-            "msg": 1
+        "backend": "native",
+        "version": "0.600.0",
+        "vue": "3.6.0-rc.13",
+        "completeRows": [
+          {
+            "id": "10875-native-once-click",
+            "observed": {
+              "handler": "function",
+              "button": "0",
+              "title": "0",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10815-component-once-props-events-slots",
+            "observed": {
+              "button": "0:2",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-private-default",
+            "observed": {
+              "text": "1",
+              "publicMsg": null,
+              "exposed": {}
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-explicit-expose",
+            "observed": {
+              "text": "1",
+              "publicMsg": 1,
+              "exposed": {
+                "msg": 1
+              }
+            },
+            "passed": true
           }
-        },
-        "passed": true
+        ],
+        "originalSourceToPortedEqual": true,
+        "frozenOriginalPublic600Equal": true,
+        "metadataValueAdapter": false,
+        "resolverAdapter": null
+      },
+      {
+        "backend": "wasm",
+        "version": "0.600.0",
+        "vue": "3.6.0-rc.13",
+        "completeRows": [
+          {
+            "id": "10875-native-once-click",
+            "observed": {
+              "handler": "function",
+              "button": "0",
+              "title": "0",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10815-component-once-props-events-slots",
+            "observed": {
+              "button": "0:2",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-private-default",
+            "observed": {
+              "text": "1",
+              "publicMsg": null,
+              "exposed": {}
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-explicit-expose",
+            "observed": {
+              "text": "1",
+              "publicMsg": 1,
+              "exposed": {
+                "msg": 1
+              }
+            },
+            "passed": true
+          }
+        ],
+        "originalSourceToPortedEqual": true,
+        "frozenOriginalPublic600Equal": true,
+        "metadataValueAdapter": false,
+        "resolverAdapter": "/private/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package/index.js"
       }
     ],
-    "originalSourceToPortedEqual": true,
-    "frozenOriginalPublic600Equal": true,
-    "resolverOnlyAdapter": "/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package",
-    "acceptanceCredit": false
+    "freshPublicAfterAcceptanceCredit": false
   }
 }
-

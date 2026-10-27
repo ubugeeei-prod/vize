@@ -36,6 +36,23 @@ const capsule = path.dirname(fileURLToPath(import.meta.url));
 assert.match(version, /^0\.\d+\.0$/);
 assert.match(candidate, /^[a-f0-9]{40}$/);
 fs.mkdirSync(out, { recursive: true });
+const custody = readJson<{ frozenInputs: Array<{ path: string; sha256: string }> }>(
+  path.join(capsule, "source-custody.json.txt"),
+);
+const logicalPrefix = "tools/support/release/public_release_contracts/";
+for (const input of custody.frozenInputs) {
+  assert.ok(input.path.startsWith(logicalPrefix));
+  assert.equal(
+    sha256(fs.readFileSync(path.join(capsule, input.path.slice(logicalPrefix.length)))),
+    input.sha256,
+    input.path,
+  );
+}
+assert.equal(
+  sha256(fs.readFileSync(path.join(capsule, "diagnostic-reference-0.600.json.txt"))),
+  "c0bc78179f9d0fa1b06b608862f7dd6298f272c6cbc769b7fef304f98d4fc41b",
+);
+
 const identities = ["vize", "@vizejs/native", "@vizejs/wasm", "vue"].map((name) => {
   const root = fs.realpathSync(path.join(workspace, "node_modules", name));
   assert.ok(root.startsWith(workspace + path.sep));
