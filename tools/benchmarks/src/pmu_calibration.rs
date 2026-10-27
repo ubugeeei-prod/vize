@@ -73,14 +73,50 @@ fn main() {
     assert!(arguments.next().is_none());
     assert!((1..=100_000_000).contains(&iterations));
     assert!(bytes >= 64 && bytes.is_power_of_two());
+    let mut child_pid = None;
+    let mut child_exit = None;
+    let mut workers = Vec::new();
     let checksum = match mode.as_str() {
         "baseline" => black_box(42),
         "instructions" => instruction_work(iterations),
         "branches" => branch_work(iterations),
         "cache-small" | "cache-large" => cache_work(iterations, bytes),
+        "threads" => {
+            let first = std::thread::spawn(move || instruction_work(iterations));
+            let second = std::thread::spawn(move || instruction_work(iterations));
+            workers.extend([first.join().unwrap(), second.join().unwrap()]);
+            workers[0].wrapping_add(workers[1])
+        }
+        "child" => {
+            let process = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["instructions", &iterations.to_string(), &bytes.to_string()])
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap();
+            child_pid = Some(process.id());
+            let output = process.wait_with_output().unwrap();
+            child_exit = output.status.code();
+            assert!(output.status.success());
+            eprintln!(
+                "child_packet={}",
+                std::str::from_utf8(&output.stdout).unwrap().trim()
+            );
+            output
+                .stdout
+                .iter()
+                .fold(0_u64, |sum, byte| sum.wrapping_add(u64::from(*byte)))
+        }
         _ => panic!("unknown control"),
     };
+    let child_pid = child_pid.map_or_else(|| "null".to_owned(), |pid| pid.to_string());
+    let child_exit = child_exit.map_or_else(|| "null".to_owned(), |exit| exit.to_string());
+    let worker_checksums = workers
+        .iter()
+        .map(|word| format!("\"{word:016x}\""))
+        .collect::<Vec<_>>()
+        .join(",");
     println!(
-        "{{\"schema\":\"vize-pmu-calibration\",\"mode\":\"{mode}\",\"iterations\":{iterations},\"bytes\":{bytes},\"checksum\":\"{checksum:016x}\",\"completed\":true}}"
+        "{{\"schema\":\"vize-pmu-calibration\",\"mode\":\"{mode}\",\"iterations\":{iterations},\"bytes\":{bytes},\"checksum\":\"{checksum:016x}\",\"completed\":true,\"childPid\":{child_pid},\"childExit\":{child_exit},\"workerChecksums\":[{worker_checksums}]}}"
     );
 }
