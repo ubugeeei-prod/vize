@@ -13,6 +13,7 @@ import {
   type ScaleDiagnostic,
 } from "./type-admission-scale.ts";
 import type { ScaleOptions, ScaleShape, ScaleStage } from "./type-admission-scale-types.ts";
+import { scaleCliIdentity, scaleNativeIdentity } from "./type-admission-scale-identity.ts";
 
 type Tool = "cli" | "mapper" | "vue-tsc";
 type Capture = {
@@ -64,12 +65,7 @@ export function scaleDiagnostics(stdout: string, tool: Tool, project: string) {
 
 export function captureAdmissionScale(options: Capture) {
   const { provider, tool } = options;
-  if (options.binary)
-    assert.match(
-      options.source ?? "",
-      /^[a-f0-9]{40}$/,
-      "a source binary requires its immutable source SHA",
-    );
+  const sourceBuild = scaleCliIdentity(options.binary, options.source);
   fs.mkdirSync(options.out, { recursive: true });
   const project = path.join(options.out, "project");
   const corpus = prepareAdmissionScale(project, provider, options.scale);
@@ -146,15 +142,7 @@ export function captureAdmissionScale(options: Capture) {
         .version,
     ]),
   );
-  const nativeDirectory = path.join(provider, "node_modules/@vizejs/native");
-  const localImages = fs.readdirSync(nativeDirectory).filter((name) => name.endsWith(".node"));
-  const target = `${process.platform}-${process.arch}${process.platform === "linux" ? "-gnu" : process.platform === "win32" ? "-msvc" : ""}`;
-  const bindingRequire = createRequire(path.join(nativeDirectory, "package.json"));
-  const nativeImage =
-    localImages.length === 1
-      ? path.join(nativeDirectory, localImages[0])
-      : bindingRequire.resolve(`@vizejs/native-${target}`);
-  const nativeBytes = fs.readFileSync(nativeImage);
+  const nativeBinding = scaleNativeIdentity(provider, options.mapperSource);
   let accuracy: { passed: boolean; diagnostics?: unknown; error?: string };
   try {
     assert.equal(run.error, undefined);
@@ -195,12 +183,8 @@ export function captureAdmissionScale(options: Capture) {
           : `installed-${tool}`,
     binarySha256: sha(fs.readFileSync(tool === "cli" ? cli : checker)),
     checkerSha256: sha(fs.readFileSync(checker)),
-    nativeBinding: {
-      path: nativeImage,
-      bytes: nativeBytes.length,
-      sha256: sha(nativeBytes),
-      source: options.mapperSource ?? `installed-native-${versions["@vizejs/native"]}`,
-    },
+    sourceBuild,
+    nativeBinding,
     status: run.status,
     signal: run.signal,
     error: run.error?.message ?? null,
