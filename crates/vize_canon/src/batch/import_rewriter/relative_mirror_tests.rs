@@ -139,14 +139,13 @@ fn external_neighbors_and_missing_generated_collisions_keep_their_semantics() {
     let sibling_dir = fixture.sibling.join("src");
     std::fs::write(sibling_dir.join("Shared.vue"), "<template />").unwrap();
     let source = "import Shared from './Shared.vue'; import Missing from '../../app/src/Missing.vue'; import Forged from './Shared.vue.ts';";
+    let missing = crate::batch::virtual_specifier_message::MISSING_VUE_IMPORT_SENTINEL;
+    let forged = crate::batch::AUTHORED_VUE_TS_SENTINEL;
+    let expected = format!(
+        "import Shared from './Shared.vue.ts'; import Missing from '../../app/src/Missing.vue.ts{missing}'; import Forged from './Shared.vue.ts{forged}';"
+    );
     for generated in [false, true] {
-        let rewritten = fixture.project(source, &sibling_dir, generated);
-        assert!(rewritten.starts_with("import Shared from './Shared.vue.ts';"));
-        assert!(
-            rewritten
-                .contains(crate::batch::virtual_specifier_message::MISSING_VUE_IMPORT_SENTINEL)
-        );
-        assert!(rewritten.contains(crate::batch::AUTHORED_VUE_TS_SENTINEL));
+        assert_eq!(fixture.project(source, &sibling_dir, generated), expected);
     }
 }
 

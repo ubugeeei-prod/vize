@@ -96,7 +96,8 @@ export const TYPECHECKER_TESTS = {
   "quoted-generic-parameters-10540":
     "quoted_generic_parameters_preserve_complete_batch_diagnostics",
   "reactive-props-destructure-10008": "reactive_props_destructure_preserves_unused_diagnostics",
-  "relative-sibling-storage-10934": "relative_sibling_imports_preserve_complete_package_diagnostics",
+  "relative-sibling-storage-10934":
+    "relative_sibling_imports_preserve_complete_package_diagnostics",
   "reopen-repaired-diagnostics-10730": "repaired_dependency_buffer_keeps_its_own_diagnostics",
   "required-props-edges": "required_props_keep_exact_unicode_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
