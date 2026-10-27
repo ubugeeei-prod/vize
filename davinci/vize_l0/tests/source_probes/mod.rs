@@ -64,11 +64,7 @@ pub(super) fn run() {
                 3,
                 (setup.len() + plain.len() + incomplete.len()) as u64
             ),
-            (
-                "croquis.oxc.recovery.bytes",
-                2,
-                (incomplete.len() * 2) as u64
-            ),
+            ("croquis.oxc.recovery.bytes", 1, incomplete.len() as u64),
             ("croquis.plain.parse_requests.bytes", 1, plain.len() as u64),
             (
                 "croquis.setup.analysis_requests.bytes",
