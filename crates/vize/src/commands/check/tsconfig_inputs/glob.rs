@@ -22,7 +22,7 @@ pub(super) fn compiler_option_dir_exclude(
     GlobSpec::exclude(dir, raw)
 }
 
-pub(super) fn normalize_input_path(path: &Path) -> PathBuf {
+pub(in crate::commands::check) fn normalize_input_path(path: &Path) -> PathBuf {
     vize_carton::path::canonicalize_non_verbatim(path)
 }
 
