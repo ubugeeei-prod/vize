@@ -7,10 +7,12 @@ on:
       - tools/benchmarks/scripts/source-symbolizer-*.ts
       - tests/tooling/source-symbolizer-protocol.test.ts
       - tools/benchmarks/scripts/cold-evidence-thin.py
+      - tools/benchmarks/scripts/cold-evidence-summary.py
   workflow_dispatch:
     inputs:
       metadata_run_id: { type: string, default: "" }
       metadata_artifact_id: { type: string, default: "" }
+      metadata_summary_only: { type: boolean, default: false }
 permissions: { contents: read, actions: read }
 concurrency:
   group: retained-source-replay-${{ github.event.pull_request.number || github.ref }}-${{ inputs.metadata_artifact_id != '' && 'metadata' || 'source' }}
@@ -118,6 +120,7 @@ jobs:
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/thin-download
       - name: Copy allowlisted text from one archive without executing it
+        if: ${{ !inputs.metadata_summary_only }}
         env:
           SOURCE_RUN: ${{ inputs.metadata_run_id }}
           SOURCE_ARTIFACT: ${{ inputs.metadata_artifact_id }}
@@ -129,10 +132,27 @@ jobs:
             "$RUNNER_TEMP/thin-metadata" "$SOURCE_RUN" "$SOURCE_ARTIFACT" \
             "$RUNNER_TEMP/source-artifact-api.json"
       - name: Preserve metadata and extraction custody
-        if: always()
+        if: ${{ always() && !inputs.metadata_summary_only }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: cold-metadata-${{ github.run_id }}
           path: ${{ runner.temp }}/thin-metadata
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verify capsule custody and derive the bounded summary remotely
+        if: ${{ inputs.metadata_summary_only }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/metadata-summary"
+          python3 tools/benchmarks/scripts/cold-evidence-summary.py \
+            "$RUNNER_TEMP/thin-download" "$RUNNER_TEMP/metadata-summary/summary.json"
+          cp "$RUNNER_TEMP/source-artifact-api.json" "$RUNNER_TEMP/metadata-summary/capsule-api.json"
+      - name: Preserve the small summary separately from raw metadata
+        if: ${{ always() && inputs.metadata_summary_only }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cold-summary-${{ github.run_id }}
+          path: ${{ runner.temp }}/metadata-summary
           if-no-files-found: warn
           retention-days: 14
