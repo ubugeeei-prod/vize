@@ -1,7 +1,10 @@
 use oxc_allocator::Allocator;
 use oxc_span::SourceType;
 
-use crate::{ParseOptions, ParserImpl, UniquePromise, config::TokensParserConfig};
+use crate::{
+    ParseOptions, Parser, ParserConfig, ParserImpl, ParserReturn, UniquePromise,
+    config::{NoTokensParserConfig, RuntimeParserConfig, TokensParserConfig},
+};
 
 fn parser<'a>(
     allocator: &'a Allocator,
@@ -24,6 +27,10 @@ fn parser<'a>(
 fn packet(source: &str, source_type: SourceType, enabled: bool) -> String {
     let allocator = Allocator::default();
     let result = parser(&allocator, source, source_type, enabled).parse();
+    complete_packet(result)
+}
+
+fn complete_packet(result: ParserReturn<'_>) -> String {
     format!(
         "{:?}\n{:?}\n{:?}\n{:?}\n{:?}\n{:?}",
         result.program,
@@ -38,6 +45,92 @@ fn packet(source: &str, source_type: SourceType, enabled: bool) -> String {
             result.has_jsdoc_comments
         ),
     )
+}
+
+#[test]
+fn known_entry_policies_preserve_complete_packets_and_token_modes() {
+    fn compare<C: ParserConfig + Copy>(source: &str, source_type: SourceType, config: C) {
+        let options = ParseOptions { parse_regular_expression: true, ..ParseOptions::default() };
+        let forced = {
+            let allocator = Allocator::default();
+            complete_packet(
+                ParserImpl::new(
+                    &allocator,
+                    source,
+                    source_type,
+                    options,
+                    config,
+                    UniquePromise::new_for_tests_and_benchmarks(),
+                )
+                .parse(),
+            )
+        };
+        let selected = {
+            let allocator = Allocator::default();
+            complete_packet(
+                Parser::new(&allocator, source, source_type)
+                    .with_options(options)
+                    .with_config(config)
+                    .parse(),
+            )
+        };
+        assert_eq!(forced, selected, "program entry policy: {source:?} {source_type:?}");
+
+        let forced = {
+            let allocator = Allocator::default();
+            format!(
+                "{:?}",
+                ParserImpl::new(
+                    &allocator,
+                    source,
+                    source_type,
+                    options,
+                    config,
+                    UniquePromise::new_for_tests_and_benchmarks(),
+                )
+                .parse_expression()
+            )
+        };
+        let selected = {
+            let allocator = Allocator::default();
+            format!(
+                "{:?}",
+                Parser::new(&allocator, source, source_type)
+                    .with_options(options)
+                    .with_config(config)
+                    .parse_expression()
+            )
+        };
+        assert_eq!(forced, selected, "expression entry policy: {source:?} {source_type:?}");
+    }
+
+    for source in [
+        "a + b",
+        "({ [name]: /a>b/u })",
+        "/** @type {number} */ var value = 077;",
+        "// @flow\na",
+        "a\u{00a0}+ b",
+        "return 1",
+        "type T = number | null",
+        "const value = ;",
+        "'literal < opener'",
+        "/* < */ a",
+        "f<T>(x)",
+        "<T,>(x: T) => x",
+    ] {
+        for source_type in [
+            SourceType::ts(),
+            SourceType::tsx(),
+            SourceType::jsx(),
+            SourceType::ts().with_script(true),
+            SourceType::ts().with_unambiguous(true),
+        ] {
+            compare(source, source_type, NoTokensParserConfig);
+            compare(source, source_type, TokensParserConfig);
+            compare(source, source_type, RuntimeParserConfig::new(false));
+            compare(source, source_type, RuntimeParserConfig::new(true));
+        }
+    }
 }
 
 #[test]

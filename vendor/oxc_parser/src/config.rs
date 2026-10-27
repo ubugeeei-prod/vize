@@ -27,8 +27,8 @@ use crate::lexer::{ByteHandler, ByteHandlers, byte_handler_tables};
 /// * If your application uses only a specific set of options, use a static config.
 /// * If your application uses multiple sets of options, probably a runtime config is preferable.
 ///
-/// At present the only option controlled by `ParserConfig` is whether to parse with or without tokens.
-/// Other options will be added in future.
+/// Token collection is the public option controlled by `ParserConfig`.
+/// Known entry points also choose an internal failed-subproblem cache policy.
 ///
 /// You can also create your own config by implementing [`ParserConfig`] on a type.
 ///
@@ -39,11 +39,31 @@ use crate::lexer::{ByteHandler, ByteHandlers, byte_handler_tables};
 /// [`Any`]: std::any::Any
 /// [`Parser::parse`]: crate::Parser::parse
 pub trait ParserConfig: Default + 'static {
+    /// Internal policy for sharing fatal subproblems in type-argument probes.
+    #[doc(hidden)]
+    const MEMOIZE_FAILED_SUBPROBLEMS: bool = true;
+
     /// Type of [`LexerConfig`] this [`ParserConfig`] uses.
     type LexerConfig: LexerConfig;
 
     /// Get [`LexerConfig`] for this [`ParserConfig`].
     fn lexer_config(&self) -> Self::LexerConfig;
+}
+
+/// An entry whose source cannot start a type-argument probe needs no cache.
+/// The lexer config is unchanged; static token configs remain zero-sized.
+#[derive(Default)]
+pub(crate) struct NoSubproblemMemoConfig<C>(pub(crate) C);
+
+impl<C: ParserConfig> ParserConfig for NoSubproblemMemoConfig<C> {
+    type LexerConfig = C::LexerConfig;
+
+    const MEMOIZE_FAILED_SUBPROBLEMS: bool = false;
+
+    #[inline(always)]
+    fn lexer_config(&self) -> Self::LexerConfig {
+        self.0.lexer_config()
+    }
 }
 
 /// Parser config for parsing without tokens (default).

@@ -107,7 +107,8 @@ use oxc_syntax::module_record::ModuleRecord;
 pub use crate::lexer::{Kind, Token};
 use crate::{
     config::{
-        LexerConfig, NoTokensParserConfig, ParserConfig, RuntimeParserConfig, TokensParserConfig,
+        LexerConfig, NoSubproblemMemoConfig, NoTokensParserConfig, ParserConfig,
+        RuntimeParserConfig, TokensParserConfig,
     },
     context::{Context, StatementContext},
     diagnostics::ParserDiagnostic,
@@ -506,6 +507,69 @@ mod parser_parse {
     // to the rare custom-config case.
     // ===========================================================================
 
+    // A type-argument probe requires a literal ASCII '<'. Choose the policy
+    // once, before creating the unique parser; both policies use the same lexer,
+    // grammar, options and parse entry. Custom configs retain their own policy.
+    fn parse_with_memo_policy<'a, C: ParserConfig>(
+        allocator: &'a Allocator,
+        source_text: &'a str,
+        source_type: SourceType,
+        options: ParseOptions,
+        config: C,
+    ) -> ParserReturn<'a> {
+        if source_text.as_bytes().contains(&b'<') {
+            ParserImpl::<C>::new(
+                allocator,
+                source_text,
+                source_type,
+                options,
+                config,
+                UniquePromise::new(),
+            )
+            .parse()
+        } else {
+            ParserImpl::<NoSubproblemMemoConfig<C>>::new(
+                allocator,
+                source_text,
+                source_type,
+                options,
+                NoSubproblemMemoConfig(config),
+                UniquePromise::new(),
+            )
+            .parse()
+        }
+    }
+
+    fn parse_expression_with_memo_policy<'a, C: ParserConfig>(
+        allocator: &'a Allocator,
+        source_text: &'a str,
+        source_type: SourceType,
+        options: ParseOptions,
+        config: C,
+    ) -> Result<Expression<'a>, Diagnostics> {
+        if source_text.as_bytes().contains(&b'<') {
+            ParserImpl::<C>::new(
+                allocator,
+                source_text,
+                source_type,
+                options,
+                config,
+                UniquePromise::new(),
+            )
+            .parse_expression()
+        } else {
+            ParserImpl::<NoSubproblemMemoConfig<C>>::new(
+                allocator,
+                source_text,
+                source_type,
+                options,
+                NoSubproblemMemoConfig(config),
+                UniquePromise::new(),
+            )
+            .parse_expression()
+        }
+    }
+
     #[inline(never)]
     fn parse_with_no_tokens_config<'a>(
         allocator: &'a Allocator,
@@ -513,15 +577,7 @@ mod parser_parse {
         source_type: SourceType,
         options: ParseOptions,
     ) -> ParserReturn<'a> {
-        ParserImpl::<NoTokensParserConfig>::new(
-            allocator,
-            source_text,
-            source_type,
-            options,
-            NoTokensParserConfig,
-            UniquePromise::new(),
-        )
-        .parse()
+        parse_with_memo_policy(allocator, source_text, source_type, options, NoTokensParserConfig)
     }
 
     #[inline(never)]
@@ -531,15 +587,7 @@ mod parser_parse {
         source_type: SourceType,
         options: ParseOptions,
     ) -> ParserReturn<'a> {
-        ParserImpl::<TokensParserConfig>::new(
-            allocator,
-            source_text,
-            source_type,
-            options,
-            TokensParserConfig,
-            UniquePromise::new(),
-        )
-        .parse()
+        parse_with_memo_policy(allocator, source_text, source_type, options, TokensParserConfig)
     }
 
     #[inline(never)]
@@ -550,15 +598,7 @@ mod parser_parse {
         options: ParseOptions,
         config: RuntimeParserConfig,
     ) -> ParserReturn<'a> {
-        ParserImpl::<RuntimeParserConfig>::new(
-            allocator,
-            source_text,
-            source_type,
-            options,
-            config,
-            UniquePromise::new(),
-        )
-        .parse()
+        parse_with_memo_policy(allocator, source_text, source_type, options, config)
     }
 
     #[inline(never)]
@@ -568,15 +608,13 @@ mod parser_parse {
         source_type: SourceType,
         options: ParseOptions,
     ) -> Result<Expression<'a>, Diagnostics> {
-        ParserImpl::<NoTokensParserConfig>::new(
+        parse_expression_with_memo_policy(
             allocator,
             source_text,
             source_type,
             options,
             NoTokensParserConfig,
-            UniquePromise::new(),
         )
-        .parse_expression()
     }
 
     #[inline(never)]
@@ -586,15 +624,13 @@ mod parser_parse {
         source_type: SourceType,
         options: ParseOptions,
     ) -> Result<Expression<'a>, Diagnostics> {
-        ParserImpl::<TokensParserConfig>::new(
+        parse_expression_with_memo_policy(
             allocator,
             source_text,
             source_type,
             options,
             TokensParserConfig,
-            UniquePromise::new(),
         )
-        .parse_expression()
     }
 
     #[inline(never)]
@@ -605,15 +641,7 @@ mod parser_parse {
         options: ParseOptions,
         config: RuntimeParserConfig,
     ) -> Result<Expression<'a>, Diagnostics> {
-        ParserImpl::<RuntimeParserConfig>::new(
-            allocator,
-            source_text,
-            source_type,
-            options,
-            config,
-            UniquePromise::new(),
-        )
-        .parse_expression()
+        parse_expression_with_memo_policy(allocator, source_text, source_type, options, config)
     }
 }
 use parser_parse::UniquePromise;

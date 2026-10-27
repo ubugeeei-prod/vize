@@ -70,6 +70,9 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         production: SpeculativeProduction,
         parse: impl FnOnce(&mut Self) -> T,
     ) -> T {
+        if !C::MEMOIZE_FAILED_SUBPROBLEMS {
+            return parse(self);
+        }
         if self.state.type_argument_speculation_depth == 0 || self.fatal_error.is_some() {
             return parse(self);
         }
