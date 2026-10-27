@@ -68,7 +68,7 @@ jobs:
           assert.equal(before.head, "9157b9fa83dbdc98100be084be288f21d0d1bc18");
           for (const packet of [before, after]) assert.equal(packet.proofSourceSha256, packet.executedProofSourceSha256);
           assert.equal(before.proofSourceSha256, after.proofSourceSha256);
-          const normalized = (packet, field) => JSON.parse(JSON.stringify(packet[field]).replaceAll(packet.root, "<ROOT>"));
+          const normalized = (packet, field) => JSON.parse(JSON.stringify(packet[field]).replaceAll(path.resolve(packet.root), "<ROOT>"));
           for (const field of ["instances", "consumers"]) assert.deepEqual(normalized(after, field), normalized(before, field));
           assert.equal(before.moduleKit.version, "3.11.2");
           assert.equal(after.moduleKit.version, "3.21.8");
