@@ -154,3 +154,20 @@ fn a_later_code_line_and_a_repeated_sibling_are_not_owned() {
     filter(&AuthoredSource::vue(source), &mut diagnostics);
     assert_eq!(diagnostics, original);
 }
+
+#[test]
+fn javascript_line_terminators_and_unicode_indentation_match_native_directives() {
+    for newline in ["\n", "\r\n", "\r", "\u{2028}", "\u{2029}"] {
+        for indentation in ["", "\u{00a0}", "\u{feff}", "\u{3000}"] {
+            let source = format!(
+                "<template>{{{{{newline}{indentation}// @ts-expect-error{newline}{indentation}missing{newline}}}}}</template>"
+            );
+            let mut diagnostics = vec![
+                diagnostic(&source, "// @ts-expect-error", 2578),
+                diagnostic(&source, "missing", 2339),
+            ];
+            filter(&AuthoredSource::vue(&source), &mut diagnostics);
+            assert!(diagnostics.is_empty(), "{source:?}");
+        }
+    }
+}

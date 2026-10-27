@@ -114,10 +114,10 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
     let mut owner = None;
     loop {
         let rest = expression.get(cursor..)?;
-        let trimmed = rest.trim_start_matches(|c: char| c.is_ascii_whitespace());
+        let trimmed = rest.trim_start_matches(is_js_whitespace);
         cursor += rest.len() - trimmed.len();
         let (body, end) = if let Some(after) = trimmed.strip_prefix("//") {
-            let length = after.find('\n').unwrap_or(after.len());
+            let length = after.find(is_line_terminator).unwrap_or(after.len());
             (after.get(..length)?, cursor + 2 + length)
         } else if let Some(after) = trimmed.strip_prefix("/*") {
             let length = after.find("*/")?;
@@ -125,7 +125,7 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
         } else {
             break;
         };
-        let body = body.trim_start();
+        let body = body.trim_start_matches(is_js_whitespace);
         let expect = if directive_token(body, "@ts-expect-error") {
             Some(true)
         } else if directive_token(body, "@ts-ignore") {
@@ -142,14 +142,19 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
     // The leading-comment walk admits only whitespace and complete comments
     // between this directive and the first code token. TypeScript permits
     // blank lines and explanatory comments here; later code lines are separate.
-    let target_start = expression.get(..cursor)?.rfind('\n')? + 1;
+    let (line_start, terminator) = expression
+        .get(..cursor)?
+        .char_indices()
+        .rev()
+        .find(|(_, c)| is_line_terminator(*c))?;
+    let target_start = line_start + terminator.len_utf8();
     if comment.end >= target_start {
         return None;
     }
     let target_end = cursor
         + expression
             .get(cursor..)?
-            .find('\n')
+            .find(is_line_terminator)
             .unwrap_or(expression.len() - cursor);
     if cursor >= target_end {
         return None;
@@ -160,6 +165,19 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
         expect,
         consumed: false,
     })
+}
+
+fn is_line_terminator(c: char) -> bool {
+    matches!(c, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
+fn is_js_whitespace(c: char) -> bool {
+    is_line_terminator(c)
+        || matches!(
+            c,
+            '\t' | '\u{000b}' | '\u{000c}' | ' ' | '\u{00a0}' | '\u{1680}' | '\u{2000}'
+                ..='\u{200a}' | '\u{202f}' | '\u{205f}' | '\u{3000}' | '\u{feff}'
+        )
 }
 
 fn directive_token(text: &str, token: &str) -> bool {
