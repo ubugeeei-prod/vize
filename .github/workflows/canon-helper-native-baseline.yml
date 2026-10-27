@@ -1,0 +1,117 @@
+name: Canon helper native baseline
+on:
+  pull_request:
+    paths:
+      - tools/benchmarks/scripts/canon-helper-*.ts
+      - tools/benchmarks/scripts/canon-template-helper-carrier.ts
+      - tests/tooling/canon-helper-native-proxy.test.ts
+      - .github/workflows/canon-helper-native-baseline.yml
+  workflow_dispatch:
+    inputs:
+      sfcs:
+        type: choice
+        options: ["1", "10", "100", "2500"]
+        default: "1"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: canon-helper-native-baseline-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        sfcs: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{0}]', inputs.sfcs) || '[1,10]') }}
+    env:
+      NODE_DISABLE_COMPILE_CACHE: "1"
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: b31168ec9c5282f4b58de1d9f5f64e8aa7b7bdaf
+          path: .admission-driver
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/benchmarks/scripts/type-admission-scale.ts
+            /tools/benchmarks/scripts/type-admission-scale-types.ts
+            /tools/benchmarks/scripts/type-admission-scale-sfc.ts
+            /tools/benchmarks/scripts/type-admission-scale-graph.ts
+            /tests/tooling/support/type-admission-fixtures.ts
+            /tests/tooling/support/type-admission-mutation.ts
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24.14.0"
+          package-manager-cache: false
+      - name: Fetch the existing normal source image without rebuilding
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/helper-baseline-custody"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439 > "$RUNNER_TEMP/helper-baseline-custody/image-api.json"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12764104945 > "$RUNNER_TEMP/helper-baseline-custody/metadata-api.json"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439/zip > "$RUNNER_TEMP/helper-image.zip"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12764104945/zip > "$RUNNER_TEMP/helper-metadata.zip"
+          python3 - <<'PY'
+          import hashlib, io, json, os, pathlib, tarfile, zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP']); custody=root/'helper-baseline-custody'
+          records=[]
+          for kind,expected in [('image','85be25beb129752cebab4c5e96bba80505e82b14f43115b526beee8dc6dd853b'),('metadata','c6010fed95cfd24975b941b54011715a887d731678faf44acfde54e1702a1107')]:
+            archive=root/('helper-'+kind+'.zip'); data=archive.read_bytes()
+            assert hashlib.sha256(data).hexdigest()==expected
+            members=zipfile.ZipFile(io.BytesIO(data))
+            names=members.namelist(); assert len(names)==1 and names[0].endswith('.tgz')
+            payload=members.read(names[0]); destination=root/('helper-'+kind); destination.mkdir()
+            tar=tarfile.open(fileobj=io.BytesIO(payload))
+            if kind=='image':
+              assert set(m.name for m in tar.getmembers() if m.isfile())=={'target/ci/vize','target/ci/vize.differential-build.json'}
+            tar.extractall(destination,filter='data')
+            records.append({'kind':kind,'archiveBytes':len(data),'archiveSha256':expected,'payloadSha256':hashlib.sha256(payload).hexdigest(),'members':tar.getnames()})
+          binary=root/'helper-image/target/ci/vize'
+          assert binary.stat().st_size==55080984
+          assert hashlib.sha256(binary.read_bytes()).hexdigest()=='cdf44149ddfe160339887a256c1bd0253fb34f1f7c774759e6c5382b42ed0cb9'
+          (custody/'archives.json').write_text(json.dumps(records,indent=2))
+          PY
+          cp -R "$RUNNER_TEMP/helper-metadata/." "$RUNNER_TEMP/helper-baseline-custody/"
+          uname -a > "$RUNNER_TEMP/helper-baseline-custody/kernel.txt"
+          lscpu > "$RUNNER_TEMP/helper-baseline-custody/cpu.txt"
+          node --version > "$RUNNER_TEMP/helper-baseline-custody/node.txt"
+      - name: Install one pinned public helper provider and the integrated native backend
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/helper-provider"
+          cd "$RUNNER_TEMP/helper-provider"
+          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}));'
+          npm install --ignore-scripts --no-audit --no-fund
+          cp package.json package-lock.json "$RUNNER_TEMP/helper-baseline-custody/"
+      - name: Run the proxy byte and classification controls
+        run: |
+          set -euo pipefail
+          node --test tests/tooling/canon-helper-native-proxy.test.ts
+      - name: Capture actual CLI and source mapper packets with mutation and repair oracles
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/canon-helper-baseline.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-baseline" "${{ matrix.sfcs }}"
+      - name: Package only bounded authored inputs and raw evidence
+        if: always()
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          paths=(helper-baseline-custody)
+          if [[ -d helper-baseline ]]; then paths+=(helper-baseline); fi
+          tar --exclude=node_modules --exclude=project --exclude=tmp --exclude=cache --exclude=xdg-cache -czf helper-baseline-evidence.tgz "${paths[@]}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: canon-helper-native-baseline-${{ matrix.sfcs }}-${{ github.sha }}
+          path: ${{ runner.temp }}/helper-baseline-evidence.tgz
+          retention-days: 14
