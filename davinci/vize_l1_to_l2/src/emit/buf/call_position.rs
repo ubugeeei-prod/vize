@@ -9,20 +9,16 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
     let alias = alias.as_bytes();
     let mut position = 0;
     while let Some(&byte) = bytes.get(position) {
-        let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
-            b'/' if rest.first() == Some(&b'/') => {
-                position = rest
+            b'/' if bytes.get(position + 1) == Some(&b'/') => {
+                position = bytes[position + 2..]
                     .iter()
-                    .skip(1)
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |end| position + 2 + end);
             }
-            b'/' if rest.first() == Some(&b'*') => {
-                position = rest
-                    .get(1..)
-                    .unwrap_or_default()
+            b'/' if bytes.get(position + 1) == Some(&b'*') => {
+                position = bytes[position + 2..]
                     .windows(2)
                     .position(|pair| pair == b"*/")
                     .map_or(bytes.len(), |end| position + 4 + end);
@@ -32,7 +28,12 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
             b'_' if bytes
                 .get(position..)
                 .is_some_and(|tail| tail.starts_with(alias))
-                && can_start_alias(text, position) =>
+                && text.get(..position).is_some_and(|before| {
+                    before
+                        .chars()
+                        .next_back()
+                        .is_none_or(|ch| !is_identifier_part(ch) && ch != '.')
+                }) =>
             {
                 let after = position + alias.len();
                 if bytes
@@ -59,25 +60,28 @@ pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &st
     let bytes = text.as_bytes();
     let mut position = 0;
     while let Some(&byte) = bytes.get(position) {
-        let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
-            b'/' if rest.first() == Some(&b'/') => {
-                position = rest
+            b'/' if bytes.get(position + 1) == Some(&b'/') => {
+                position = bytes[position + 2..]
                     .iter()
-                    .skip(1)
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |end| position + 2 + end);
             }
-            b'/' if rest.first() == Some(&b'*') => {
-                position = rest
-                    .get(1..)
-                    .unwrap_or_default()
+            b'/' if bytes.get(position + 1) == Some(&b'*') => {
+                position = bytes[position + 2..]
                     .windows(2)
                     .position(|pair| pair == b"*/")
                     .map_or(bytes.len(), |end| position + 4 + end);
             }
-            b'_' if can_start_alias(text, position) => {
+            b'_' if text.get(..position).is_some_and(|before| {
+                before
+                    .chars()
+                    .next_back()
+                    .is_none_or(|ch| !is_identifier_part(ch) && ch != '.')
+            }) =>
+            {
+                let rest = &bytes[position + 1..];
                 let len = rest
                     .iter()
                     .position(|byte| !(byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')))
@@ -102,24 +106,6 @@ pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &st
     }
 }
 
-fn can_start_alias(text: &str, position: usize) -> bool {
-    if position == 0 {
-        return true;
-    }
-    match text.as_bytes().get(position - 1).copied() {
-        Some(byte) if byte.is_ascii() => {
-            !(byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$' | b'.'))
-        }
-        Some(_) => text.get(..position).is_some_and(|before| {
-            before
-                .chars()
-                .next_back()
-                .is_none_or(|ch| !is_identifier_part(ch) && ch != '.')
-        }),
-        None => false,
-    }
-}
-
 fn quoted_end(bytes: &[u8], start: usize) -> usize {
     let Some(&quote) = bytes.get(start) else {
         return bytes.len();
@@ -137,7 +123,7 @@ fn quoted_end(bytes: &[u8], start: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::{can_start_alias, helper_call_position};
+    use super::{helper_call_position, underscore_call_sites};
 
     #[test]
     fn scans_helper_calls_without_picking_up_strings_comments_or_members() {
@@ -160,21 +146,26 @@ mod tests {
     }
 
     #[test]
-    fn ascii_boundaries_and_unicode_fallback_match_the_identifier_oracle() {
+    fn batched_and_scalar_scans_agree_across_ascii_and_unicode_prefixes() {
         for ch in (0u8..=127)
             .map(char::from)
             .chain(['é', '中', '\u{200c}', '😀', '\u{a0}'])
         {
             let mut text = String::new();
             text.push(ch);
-            let position = text.len();
             text.push_str("_createVNode()");
+            let mut selected = None;
+            underscore_call_sites(&text, |position, alias| {
+                if alias == "_createVNode" {
+                    selected = Some(position);
+                }
+                false
+            });
             assert_eq!(
-                can_start_alias(&text, position),
-                !oxc_syntax::identifier::is_identifier_part(ch) && ch != '.',
+                selected,
+                helper_call_position(&text, "_createVNode"),
                 "{ch:?}"
             );
         }
-        assert!(can_start_alias("_createVNode()", 0));
     }
 }
