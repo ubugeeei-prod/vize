@@ -519,7 +519,7 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "three-file authored source family; tests/tooling/lint-cross-file-directives-10912.test.ts validates the complete original project together"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

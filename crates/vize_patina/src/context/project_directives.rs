@@ -166,7 +166,7 @@ impl ProjectLintDirectives {
         }
         unused.sort_unstable_by_key(|directive| (directive.start, directive.end));
         unused.dedup_by(|a, b| a.start == b.start && a.end == b.end && a.rule == b.rule);
-        unused.into_iter().map(unused_diagnostic).collect()
+        unused.into_iter().filter_map(unused_diagnostic).collect()
     }
 
     /// The ordinary template pass finishes before project diagnostics exist.
@@ -194,16 +194,14 @@ fn source_line(source: &str, offset: u32) -> u32 {
         + 1
 }
 
-fn unused_diagnostic(directive: UnusedDirective) -> LintDiagnostic {
-    let rule = directive
-        .rule
-        .expect("only named project directives are admitted");
-    LintDiagnostic::error(
+fn unused_diagnostic(directive: UnusedDirective) -> Option<LintDiagnostic> {
+    let rule = directive.rule?;
+    Some(LintDiagnostic::error(
         UNUSED_RULE,
         cstr!("Unused eslint-disable directive (no problems were reported from '{rule}')."),
         directive.start,
         directive.end,
-    )
+    ))
 }
 
 #[cfg(test)]
