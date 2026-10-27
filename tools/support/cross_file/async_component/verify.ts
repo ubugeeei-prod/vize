@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { createRequire, registerHooks } from "node:module";
 import { dirname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type ObjectValue = { [key: string]: Json };
@@ -38,6 +39,114 @@ function object(value: Json | undefined): ObjectValue {
 function array(value: Json | undefined): Json[] {
   assert(Array.isArray(value));
   return value;
+}
+interface SfcCompiler {
+  parse(source: string, options: { filename: string }): { descriptor: unknown; errors: unknown[] };
+  compileScript(descriptor: unknown, options: { id: string }): { content: string };
+}
+async function actualVueLoaderMutation(): Promise<ObjectValue> {
+  assert.equal(process.versions.node, "26.6.0");
+  const packageFile = process.env.VIZE_ASYNC_RUNTIME_PACKAGE;
+  assert(packageFile, "actual Vue runtime provider is required");
+  const providerRequire = createRequire(packageFile);
+  const vueManifestFile = providerRequire.resolve("vue/package.json");
+  const compilerManifestFile = providerRequire.resolve("@vue/compiler-sfc/package.json");
+  const vueManifest = JSON.parse(readFileSync(vueManifestFile, "utf8")) as {
+    name: string;
+    version: string;
+  };
+  const compilerManifest = JSON.parse(readFileSync(compilerManifestFile, "utf8")) as {
+    name: string;
+    version: string;
+  };
+  assert.deepEqual(
+    [vueManifest.name, vueManifest.version, compilerManifest.name, compilerManifest.version],
+    ["vue", "3.5.43", "@vue/compiler-sfc", "3.5.43"],
+  );
+  const compiler = providerRequire("@vue/compiler-sfc") as SfcCompiler;
+  const project = join(dirname(packageFile), "loader-mutation-runtime");
+  mkdirSync(project, { recursive: true });
+  const sources: Record<string, string> = {
+    "Child.vue":
+      '<script>export default { name: "Child" };</script>\n<template><div/></template>\n',
+    "Other.vue":
+      '<script>export default { name: "Other" };</script>\n<template><div/></template>\n',
+    "entry.ts":
+      'import { defineAsyncComponent } from "vue";\nfunction wrapped() {\n  function loader() { return import("./Child.vue"); }\n  for (var loader of [() => import("./Other.vue")]) {}\n  return defineAsyncComponent(loader);\n}\nfunction rootLoader() { return import("./Child.vue"); }\nfor (rootLoader of [() => import("./Other.vue")]) {}\nexport const outcomes = Promise.all([defineAsyncComponent(() => import("./Child.vue")).__asyncLoader(), wrapped().__asyncLoader(), defineAsyncComponent(rootLoader).__asyncLoader()]).then(values => values.map(value => value.name));\n',
+  };
+  const compiled: Record<string, string> = {};
+  const admittedUrls = new Map<string, string>();
+  for (const [name, source] of Object.entries(sources)) {
+    const file = join(project, name);
+    writeFileSync(file, source);
+    if (name.endsWith(".vue")) {
+      const parsed = compiler.parse(source, { filename: file });
+      assert.deepEqual(parsed.errors, []);
+      const code = compiler.compileScript(parsed.descriptor, { id: name }).content;
+      compiled[name] = code;
+      admittedUrls.set(pathToFileURL(file).href, code);
+    }
+  }
+  let vueResolved = "";
+  const hooks = registerHooks({
+    resolve(specifier, context, nextResolve) {
+      const result = nextResolve(specifier, context);
+      if (
+        specifier === "vue" &&
+        context.parentURL === pathToFileURL(join(project, "entry.ts")).href
+      ) {
+        vueResolved = result.url;
+      }
+      return result;
+    },
+    load(url, context, nextLoad) {
+      const code = admittedUrls.get(url);
+      return code === undefined
+        ? nextLoad(url, context)
+        : { format: "module", source: code, shortCircuit: true };
+    },
+  });
+  let outcomes: unknown;
+  try {
+    const entry = (await import(pathToFileURL(join(project, "entry.ts")).href)) as {
+      outcomes: Promise<unknown>;
+    };
+    outcomes = await entry.outcomes;
+    assert.deepEqual(outcomes, ["Child", "Other", "Other"]);
+  } finally {
+    hooks.deregister();
+  }
+  assert(vueResolved.startsWith("file:"));
+  const vueEntryBytes = readFileSync(new URL(vueResolved));
+  const lockFile = join(dirname(packageFile), "package-lock.json");
+  const lock = JSON.parse(readFileSync(lockFile, "utf8")) as {
+    packages: Record<string, { integrity?: string }>;
+  };
+  const vueSri = lock.packages["node_modules/vue"]?.integrity;
+  const compilerSri = lock.packages["node_modules/@vue/compiler-sfc"]?.integrity;
+  assert(vueSri && compilerSri);
+  return {
+    node: process.version,
+    sourceAuthority: "fresh public Vue runtime control; separate from source NAPI identity",
+    vue: {
+      manifest: vueManifestFile,
+      version: vueManifest.version,
+      manifestSha256: sha(readFileSync(vueManifestFile)),
+      sri: vueSri,
+    },
+    compiler: {
+      manifest: compilerManifestFile,
+      version: compilerManifest.version,
+      manifestSha256: sha(readFileSync(compilerManifestFile)),
+      sri: compilerSri,
+    },
+    resolvedVueEntry: { url: vueResolved, bytes: vueEntryBytes.length, sha256: sha(vueEntryBytes) },
+    lockSha256: sha(readFileSync(lockFile)),
+    sources,
+    compiledSfcScripts: compiled,
+    outcomes: outcomes as Json,
+    syntaxDomain: "wrapped function+var is valid; root uses assignment without var redeclaration",
+  };
 }
 const [cliArg, nativeArg, outputArg, role, sourceSha, expectedToken] = process.argv.slice(2);
 assert(cliArg && nativeArg && outputArg && (role === "before" || role === "candidate"));
@@ -155,6 +264,11 @@ function observe(
     inspector: JSON.parse(inspectorRow.stdout) as ObjectValue,
   };
 }
+const actualVueRuntime = await actualVueLoaderMutation();
+writeFileSync(
+  join(output, "actual-vue-runtime.json"),
+  JSON.stringify(actualVueRuntime, null, 2) + "\n",
+);
 const actualOriginal = observe("original", original.files);
 assert.deepEqual(actualOriginal.statuses, role === "before" ? [1, 1, 1, 0] : [0, 0, 0, 0]);
 assert.deepEqual(
@@ -299,6 +413,7 @@ writeFileSync(
         buildToken: native.getNativeBuildToken(),
         image: imageIdentity,
       },
+      actualVueRuntime,
       original: actualOriginal,
       controls: packets,
     },

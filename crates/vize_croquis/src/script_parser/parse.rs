@@ -330,6 +330,12 @@ pub(crate) fn parse_script_with_options_source_type(
         options.legacy_vue2,
     );
 
+    if !skip_diagnostics {
+        result.value_binding_origins = Some(Box::new(
+            super::value_binding_origins::ValueBindingOrigins::new(result.scopes.current_id()),
+        ));
+    }
+
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
         for stmt in ret.program.body.iter() {

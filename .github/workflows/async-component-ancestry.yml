@@ -43,6 +43,19 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Record the exact producer before execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/async-component
+          git rev-parse HEAD > target/vize-tests/async-component/producer.sha
+          node --version > target/vize-tests/async-component/node.version
+      - name: Install the independent pinned actual Vue runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/async-component-runtime" --registry=https://registry.npmjs.org --no-audit --no-fund --save-exact vue@3.5.43 @vue/compiler-sfc@3.5.43
+          echo "VIZE_ASYNC_RUNTIME_PACKAGE=$RUNNER_TEMP/async-component-runtime/package.json" >> "$GITHUB_ENV"
       - name: Require complete Croquis and cross-file unit suites
         if: matrix.role == 'candidate'
         shell: bash
@@ -56,6 +69,8 @@ jobs:
           from pathlib import Path
           text = Path('target/vize-tests/async-component/units.stdout').read_text()
           names = [
+            'unsupported_top_level_try_refuses_the_original_domain',
+            'demanded_builtin_walk_retains_the_same_lexical_bindings',
             'loop_lvalues_and_var_hoisting_cannot_keep_stale_loader_identity',
             'cached_identity_keeps_each_use_tdz_independent',
             'long_aliases_and_many_functions_use_indexed_iterative_identity',
@@ -77,8 +92,20 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           token="$(openssl rand -hex 16)"
-          VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked --profile ci -p vize_vitrine --features napi
-          cargo build --locked --profile ci --no-default-features -p vize --bin vize
+          set +e
+          VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked --profile ci -p vize_vitrine --features napi >target/vize-tests/async-component/napi-build.stdout 2>target/vize-tests/async-component/napi-build.stderr
+          napi_status=$?
+          printf '%s\n' "$napi_status" >target/vize-tests/async-component/napi-build.status
+          set -e
+          cat target/vize-tests/async-component/napi-build.stderr >&2
+          test "$napi_status" = 0
+          set +e
+          cargo build --locked --profile ci -p vize --bin vize >target/vize-tests/async-component/cli-build.stdout 2>target/vize-tests/async-component/cli-build.stderr
+          cli_status=$?
+          printf '%s\n' "$cli_status" >target/vize-tests/async-component/cli-build.status
+          set -e
+          cat target/vize-tests/async-component/cli-build.stderr >&2
+          test "$cli_status" = 0
           cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
           echo "EXPECTED_TOKEN=$token" >> "$GITHUB_ENV"
       - name: Preserve every original file and full process, graph, Doctor and inspector packet

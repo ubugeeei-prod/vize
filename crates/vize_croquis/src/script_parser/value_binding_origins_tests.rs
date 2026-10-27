@@ -70,7 +70,7 @@ fn closure_parameters_and_hoisted_function_shadow_imports() {
         "import { ref } from 'vue'; function f(ref) { const value = ref; }",
         "import { ref } from 'vue'; function f() { const value = ref; function ref() {} }",
         "import { ref } from 'vue'; function f() { const value = ref; class ref {} }",
-        "import { ref } from 'vue'; try {} catch (ref) { const value = ref; }",
+        "import { ref } from 'vue'; function f() { try {} catch (ref) { const value = ref; } }",
     ] {
         let result = parse_script_setup(source);
         let origins = result.value_binding_origins.as_ref().expect("capture");
@@ -217,5 +217,50 @@ fn long_aliases_and_many_functions_use_indexed_iterative_identity() {
         "VALUE_BINDING_ORIGINS_INVENTORY inventory={:?} aliases=20000 functions=10000 source_bytes={}",
         origins.inventory(),
         source.len()
+    );
+}
+
+#[test]
+fn unsupported_top_level_try_refuses_the_original_domain() {
+    let result =
+        parse_script_setup("import { ref } from 'vue'; try {} catch (ref) { const value = ref; }");
+    let origins = result
+        .value_binding_origins
+        .as_ref()
+        .expect("original program capture");
+    assert!(!origins.is_complete());
+}
+
+#[test]
+fn demanded_builtin_walk_retains_the_same_lexical_bindings() {
+    let source = "import { ref } from 'vue'; const count = ref(0); const alias = count;";
+    let regular = parse_script_setup(source);
+    let demanded =
+        super::parse_script_setup_for_unused::<true>(source, None, false, false, false, false);
+    let normal = regular
+        .value_binding_origins
+        .as_ref()
+        .expect("regular domain");
+    let builtin = demanded
+        .value_binding_origins
+        .as_ref()
+        .expect("demanded domain");
+    assert_eq!(normal.inventory(), builtin.inventory());
+    let scope = regular
+        .scopes
+        .iter()
+        .find(|scope| scope.kind == ScopeKind::ScriptSetup)
+        .expect("setup")
+        .id;
+    let reference = ValueReference::new(scope, "alias", Span::new(u32::MAX, u32::MAX));
+    assert_eq!(
+        normal
+            .resolve(&reference)
+            .expect("normal binding")
+            .canonical,
+        builtin
+            .resolve(&reference)
+            .expect("demanded binding")
+            .canonical
     );
 }
