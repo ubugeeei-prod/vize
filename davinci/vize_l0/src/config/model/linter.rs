@@ -7,6 +7,7 @@ use super::linter_rule_options::ConfigLintRuleOptions;
 use crate::{FxHashMap, String};
 
 const CATEGORY_LINT_MARKER_PREFIX: &str = "__vize_internal/category/";
+const REPORT_UNUSED_DISABLE_MARKER: &str = "__vize_internal/report-unused-disable-directives";
 const TYPE_AWARE_LINT_MARKER: &str = "__vize_internal/type-aware-lint";
 
 /// Per-rule lint severity.
@@ -39,6 +40,7 @@ pub(crate) struct RawLinterConfig {
     config: LinterConfig,
     type_aware: bool,
     strict_reactivity: bool,
+    report_unused_disable_directives: Option<bool>,
     #[serde(flatten)]
     execution: LinterExecutionOptions,
     categories: FxHashMap<String, LintRuleSeverity>,
@@ -89,6 +91,13 @@ impl LinterConfig {
     fn enable_type_aware_lint(&mut self) {
         self.rules
             .insert(TYPE_AWARE_LINT_MARKER.into(), LintRuleSeverity::Warn);
+    }
+
+    /// Whether to report template disable comments that suppress no active rule.
+    pub fn report_unused_disable_directives(&self) -> bool {
+        self.rules
+            .get(REPORT_UNUSED_DISABLE_MARKER)
+            .is_some_and(|severity| !matches!(severity, LintRuleSeverity::Off))
     }
 
     /// Rule names explicitly disabled by config.
@@ -182,6 +191,16 @@ impl From<RawLinterConfig> for LinterConfig {
                 .entry("type/no-reactivity-loss".into())
                 .or_insert(LintRuleSeverity::Warn);
         }
+        if let Some(report) = raw.report_unused_disable_directives {
+            config.rules.insert(
+                REPORT_UNUSED_DISABLE_MARKER.into(),
+                if report {
+                    LintRuleSeverity::Warn
+                } else {
+                    LintRuleSeverity::Off
+                },
+            );
+        }
         if raw.type_aware {
             config.enable_type_aware_lint();
         }
@@ -196,7 +215,9 @@ impl From<RawLinterConfig> for LinterConfig {
 }
 
 fn is_public_rule(rule: &str) -> bool {
-    rule != TYPE_AWARE_LINT_MARKER && category_marker_name(rule).is_none()
+    rule != TYPE_AWARE_LINT_MARKER
+        && rule != REPORT_UNUSED_DISABLE_MARKER
+        && category_marker_name(rule).is_none()
 }
 
 fn category_marker_name(rule: &str) -> Option<&str> {
@@ -206,6 +227,27 @@ fn category_marker_name(rule: &str) -> Option<&str> {
 #[cfg(test)]
 mod tests {
     use super::{LintRuleSeverity, LinterConfig, RawLinterConfig};
+
+    #[test]
+    fn unused_disable_setting_defaults_and_explicit_values_are_internal_policy() {
+        for (json, enabled) in [
+            ("{}", false),
+            (r#"{"reportUnusedDisableDirectives":false}"#, false),
+            (r#"{"reportUnusedDisableDirectives":true}"#, true),
+        ] {
+            let raw = serde_json::from_str::<RawLinterConfig>(json).unwrap();
+            let config = LinterConfig::from(raw);
+            assert_eq!(config.report_unused_disable_directives(), enabled);
+            assert!(config.enabled_rules().is_empty());
+            assert!(config.disabled_rules().is_empty());
+            assert!(config.rule_severity_overrides().is_empty());
+            assert!(!config.type_aware_lint_enabled());
+        }
+        assert!(
+            serde_json::from_str::<RawLinterConfig>(r#"{"reportUnusedDisableDirectives":"true"}"#)
+                .is_err()
+        );
+    }
 
     #[test]
     fn type_aware_lint_defaults_to_disabled() {
