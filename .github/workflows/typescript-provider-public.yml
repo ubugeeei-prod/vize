@@ -183,8 +183,36 @@ jobs:
           JS
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { version: latest, node-version-file: package.json, run-install: false, cache: true }
-      - name: Install only the source harness dependencies
-        run: vp install --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Install the exact editor harness dependency without a source build
+        shell: bash
+        run: |
+          vp node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          // editors/vscode is deliberately outside the root pnpm workspace.
+          // Its test runner needs only this declared package, not an editor build.
+          const manifest = JSON.parse(fs.readFileSync('editors/vscode/package.json', 'utf8'));
+          const version = manifest.devDependencies['@vscode/test-electron'];
+          assert(/^\d+\.\d+\.\d+$/.test(version));
+          const npm = [process.env.npm_execpath,
+            path.resolve(path.dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js'),
+            path.resolve(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'),
+          ].find((file) => file && fs.existsSync(file));
+          assert(npm, 'Managed Node must provide npm');
+          const temporary = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP, 'typescript-provider-harness-'));
+          fs.writeFileSync(path.join(temporary, 'package.json'), '{"private":true}');
+          execFileSync(process.execPath, [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund',
+            `@vscode/test-electron@${version}`], { cwd: temporary, stdio: 'inherit' });
+          const installed = path.join(temporary, 'node_modules/@vscode/test-electron');
+          assert.equal(JSON.parse(fs.readFileSync(path.join(installed, 'package.json'), 'utf8')).version, version);
+          const scope = path.resolve('editors/vscode/node_modules/@vscode');
+          fs.mkdirSync(scope, { recursive: true });
+          fs.symlinkSync(installed, path.join(scope, 'test-electron'), process.platform === 'win32' ? 'junction' : 'dir');
+          fs.copyFileSync(path.join(temporary, 'package-lock.json'),
+            path.join(process.env.RUNNER_TEMP, 'typescript-provider-public/harness-package-lock.json'));
+          JS
       - name: Ensure the Linux virtual display
         if: runner.os == 'Linux'
         run: |
@@ -208,5 +236,16 @@ jobs:
         with:
           name: typescript-provider-public-${{ inputs.release_tag }}-${{ inputs.channel || 'github-release' }}-${{ matrix.os }}
           path: ${{ runner.temp }}/typescript-provider-public
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain small proof packets separately from the public archive
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typescript-provider-public-proof-${{ inputs.release_tag }}-${{ inputs.channel || 'github-release' }}-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/typescript-provider-public/**/*.json
+            ${{ runner.temp }}/typescript-provider-public/**/*.sha256
+            ${{ runner.temp }}/typescript-provider-public/host/vscode-logs/**
           if-no-files-found: error
           retention-days: 14
