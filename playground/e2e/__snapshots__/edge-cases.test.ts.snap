@@ -14,7 +14,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const user = {};
     const name = user?.name?.first;
     const __returned__ = {
@@ -45,7 +46,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  async setup(__props) {
+  async setup(__props, { expose: __expose }) {
+    __expose();
     let __temp, __restore;
     async function fetchData() {
       return "data";
@@ -78,7 +80,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     class MyClass {
       name;
       constructor(name) {
@@ -116,7 +119,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     function identity(value) {
       return value;
     }
@@ -142,7 +146,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const element = document.querySelector(".test");
     const value = someValue;
     const __returned__ = {
@@ -171,7 +176,8 @@ interface User { name?: { first: string } }
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+  __expose();
 
 const user: User = {}
 const name = user?.name?.first

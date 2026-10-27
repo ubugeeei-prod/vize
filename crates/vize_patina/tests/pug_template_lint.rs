@@ -125,7 +125,7 @@ fn every_matrix_fixture_lints_like_its_pug_rendered_html() {
         .filter(|path| path.extension().is_some_and(|ext| ext == "pug"))
         .collect();
     paths.sort();
-    assert_eq!(paths.len(), 29);
+    assert_eq!(paths.len(), 33);
     let linter = Linter::new();
     let mut findings = 0;
     for path in &paths {
@@ -267,41 +267,22 @@ fn a_refused_template_keeps_complete_independent_script_and_style_diagnostics() 
 }
 
 #[test]
-fn pinned_original_pug_and_jade_refusals_keep_the_complete_public_result() {
-    for (source, start) in [
-        (
-            include_str!(
-                "../../../tests/_fixtures/differential/linter/pug-refusal-10428/App.pug.vue.txt"
-            ),
-            46,
+fn pinned_original_pug_and_jade_attribute_blocks_lint_like_their_html_twin() {
+    // #10428 pinned these as refusals; `&attributes` with a build-time
+    // object now derives `<div id="x"></div>`, as pug renders it.
+    for source in [
+        include_str!(
+            "../../../tests/_fixtures/differential/linter/pug-refusal-10428/App.pug.vue.txt"
         ),
-        (
-            include_str!(
-                "../../../tests/_fixtures/differential/linter/pug-refusal-10428/App.jade.vue.txt"
-            ),
-            47,
+        include_str!(
+            "../../../tests/_fixtures/differential/linter/pug-refusal-10428/App.jade.vue.txt"
         ),
     ] {
+        let twin = "<!-- 日本 🧭 -->\n<template><div id=\"x\"></div></template>\n";
         let result = Linter::new().lint_sfc(source, "Original.vue");
+        let expected = Linter::new().lint_sfc(twin, "Original.vue");
         assert_eq!(result.filename.as_str(), "Original.vue");
-        assert_eq!((result.error_count, result.warning_count), (1, 0));
-        assert_eq!(result.diagnostics.len(), 1);
-        let diagnostic = result.diagnostics.first().unwrap();
-        assert_eq!(diagnostic.rule_name, "parser/template");
-        assert_eq!(diagnostic.severity, vize_patina::Severity::Error);
-        assert_eq!(
-            diagnostic.message.as_str(),
-            "pug `&attributes` is not supported in Vue templates: use `v-bind`"
-        );
-        assert_eq!((diagnostic.start, diagnostic.end), (start, start + 24));
-        assert_eq!(
-            source
-                .get(diagnostic.start as usize..diagnostic.end as usize)
-                .unwrap(),
-            "&attributes({ id: 'x' })"
-        );
-        assert!(diagnostic.help.is_none());
-        assert!(diagnostic.labels.is_empty());
-        assert!(diagnostic.fix.is_none());
+        assert_eq!((result.error_count, result.warning_count), (0, 0));
+        assert_eq!(signature(&result), signature(&expected));
     }
 }

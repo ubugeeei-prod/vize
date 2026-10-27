@@ -76,6 +76,7 @@ struct Prop<'a> {
     value_kind: crate::ir::PropValueKind,
     dynamic: bool,
     handler: bool,
+    handler_modifiers: Option<&'a crate::ir::EventModifiers<'a>>,
     position: u32,
 }
 

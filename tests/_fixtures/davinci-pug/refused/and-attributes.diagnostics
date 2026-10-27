@@ -1,1 +1,1 @@
-3..27 Semantic "&attributes({ id: 'x' })" — pug `&attributes` is not supported in Vue templates: use `v-bind`
+3..22 Semantic "&attributes($attrs)" — pug `&attributes` cannot be evaluated at build time: `$attrs` is not defined by the template (use `v-bind` for component state)

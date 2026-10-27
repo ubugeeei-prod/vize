@@ -31,6 +31,7 @@ mod native_prop_names;
 mod node;
 mod patterns;
 mod ref_instances;
+mod root_callback_owners;
 mod root_owner_packets;
 pub(crate) use root_owner_packets::RootOwnerBuffer;
 mod slot_outlet_props;

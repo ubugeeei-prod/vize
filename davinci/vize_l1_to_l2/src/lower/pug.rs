@@ -23,16 +23,19 @@
 //! pug runs its template function once, with no component data, so code
 //! built from literals and the template's own bindings has one value.
 //! Conditionals, iteration, `- var` declarations, `=` code, `#{…}`
-//! interpolation and attribute values are evaluated to that value
-//! (`eval`, `control`).
+//! interpolation, attribute values and `&attributes` are evaluated to
+//! that value (`eval`, `control`, `attr_object`), and mixins expand as
+//! closures over the frames they are written in (`mixin`, `scope`).
 //!
 //! # Refusal
 //!
 //! What needs a JavaScript engine or other files at build time — names the
-//! template does not define, calls, mixins, includes, `extends`/`block`,
-//! `case`, `while`, filters, `&attributes`, `doctype` — is refused with an
-//! error diagnostic at the construct; nothing is emitted for it.
+//! template does not define, calls of JavaScript functions, includes,
+//! `extends`/named `block`s, `case`, `while`, filters, `doctype` — is
+//! refused with an error diagnostic at the construct; nothing is emitted
+//! for it.
 
+mod attr_object;
 mod attrs;
 mod check;
 mod control;
@@ -41,6 +44,7 @@ mod eval;
 mod heads;
 mod literal;
 mod map;
+mod mixin;
 mod ops;
 #[cfg(test)]
 mod oversize_tests;
@@ -134,9 +138,12 @@ pub fn derive_template_with(
         ));
     }
     emitter.nodes(&tree.nodes);
+    emitter.check_uncalled();
+    // Code that runs more than once (a loop body, a mixin) reports once.
     emitter
         .diagnostics
         .sort_by_key(|diagnostic| (diagnostic.span.start, diagnostic.span.end));
+    emitter.diagnostics.dedup();
     PugTemplate {
         html: emitter.html,
         map: emitter.map,

@@ -87,6 +87,9 @@ pub struct CodegenContext {
     /// the cached array — no nested `_cache[...]` wrappers and no per-descendant
     /// `CACHED` patch flag. This flag suppresses re-caching inside that subtree.
     pub(super) in_cached_static: bool,
+    /// True while emitting a cached `v-once` vnode: Vue caches no handlers
+    /// inside `v-once`.
+    pub(super) in_v_once: bool,
     /// Template-wide counter for v-if branch keys. Each branch in any
     /// conditional chain in the template consumes one value, so sibling
     /// `v-if`/`v-else` blocks do not reuse the same `{ key: n }` and a
@@ -230,7 +233,7 @@ impl CodegenContext {
     /// because a cached closure would capture the first scoped value.
     #[inline]
     pub fn cache_handlers_in_current_scope(&self) -> bool {
-        self.options.cache_handlers && !self.has_slot_params()
+        self.options.cache_handlers && !self.in_v_once && !self.has_slot_params()
     }
 
     /// Run `generate` while emitting the props of a component.

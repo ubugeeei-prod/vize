@@ -28,6 +28,8 @@ pub enum PugErrorCode {
     MalformedKeyword,
     /// `INVALID_TOKEN`: a token pug's parser does not accept here.
     InvalidToken,
+    /// `BLOCK_OUTISDE_MIXIN`: a bare `block` outside a mixin definition.
+    BlockOutsideMixin,
     /// The source is too large to address with `u32` offsets; nothing was
     /// parsed (the whole source is the end-of-file token's leading).
     SourceTooLarge,
@@ -48,6 +50,9 @@ impl PugErrorCode {
             Self::UnexpectedText => "Unexpected text",
             Self::MalformedKeyword => "Malformed pug keyword",
             Self::InvalidToken => "Unexpected token",
+            Self::BlockOutsideMixin => {
+                "Anonymous blocks are not allowed unless they are part of a mixin."
+            }
             Self::SourceTooLarge => "Pug source is too large to address with u32 offsets",
         }
     }

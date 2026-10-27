@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10883,
+  "regressionCommit": "42ca747027a86da7f94b473cff737cb330134d8c",
+  "sourceRevision": "42ca747027a86da7f94b473cff737cb330134d8c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "defaulted-parameter",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CheckboxRoot.vue",
+          "source": "src/CheckboxRoot.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "constrained-parameter",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PinInputRoot.vue",
+          "source": "src/PinInputRoot.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CheckboxRoot.vue",
+          "source": "src/CheckboxRoot.wrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/CheckboxRoot.vue",
+          "line": 13,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type '\"indeterminate\" | T'."
+        }
+      ]
+    }
+  ]
+}

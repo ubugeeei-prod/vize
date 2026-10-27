@@ -35,7 +35,7 @@ const CASES: &[Case] = &[
         sites: &["1 /* TEXT */"],
     },
     Case {
-        name: "compound_static_tail_splits_inside_cache_initializer",
+        name: "compound_static_tail_merges_inside_cache_initializer",
         src: r##"<strong v-once>{{ $t("createdBy") }}:</strong>"##,
         sites: &["1 /* TEXT */"],
     },
@@ -60,39 +60,39 @@ const CASES: &[Case] = &[
         sites: &["3 /* TEXT, CLASS */"],
     },
     Case {
-        name: "html_binding_is_omitted_from_cache_initializer",
+        name: "html_binding_stays_in_cache_initializer",
         src: r##"<div v-once class="opt-out-description" v-html="$t('optOutOfClassesText', optOutLinks)"></div>"##,
-        sites: &[],
+        sites: &["8 /* PROPS */, [\"innerHTML\"]"],
     },
     Case {
-        name: "event_and_html_bindings_are_omitted_from_cache_initializer",
+        name: "event_and_html_bindings_stay_in_cache_initializer",
         src: r###"<span v-once class="close-icon svg-icon inline icon-10" @click="close()" v-html="icons.close"></span>"###,
-        sites: &[],
+        sites: &["8 /* PROPS */, [\"onClick\", \"innerHTML\"]"],
     },
     Case {
-        name: "static_dynamic_class_and_html_omits_empty_patch_child",
+        name: "static_dynamic_class_and_html_keep_props_flag",
         src: r#"<span v-once class="svg-icon inline icon-16 mr-1" :class="{ 'w-0': currencyClass === 'unlock'}" v-html="icons[currencyClass]"></span>"#,
-        sites: &["2 /* CLASS */"],
+        sites: &["10 /* CLASS, PROPS */, [\"innerHTML\"]"],
     },
     Case {
-        name: "html_only_cache_initializer_keeps_empty_multiline_props",
+        name: "html_only_cache_initializer_keeps_inner_html",
         src: r#"<div v-once v-html="raw"></div>"#,
-        sites: &[],
+        sites: &["8 /* PROPS */, [\"innerHTML\"]"],
     },
     Case {
-        name: "custom_directive_is_resolved_but_not_wrapped",
+        name: "custom_directive_is_wrapped_inside_cache",
         src: r#"<h3 v-once v-example="heading">{{ question }}</h3>"#,
-        sites: &["1 /* TEXT */"],
+        sites: &["1 /* TEXT */", "512 /* NEED_PATCH */"],
     },
     Case {
-        name: "component_custom_directive_is_resolved_but_not_wrapped",
+        name: "component_custom_directive_is_wrapped_inside_cache",
         src: r#"<Foo v-once v-example="heading" />"#,
-        sites: &[],
+        sites: &["512 /* NEED_PATCH */"],
     },
     Case {
-        name: "event_binding_is_omitted_from_cache_initializer",
+        name: "event_binding_stays_in_cache_initializer",
         src: r###"<button v-once class="btn" @click="closeWithAction()">{{ $t("viewAchievements") }}</button>"###,
-        sites: &["1 /* TEXT */"],
+        sites: &["1 /* TEXT */", "8 /* PROPS */, [\"onClick\"]"],
     },
     Case {
         name: "nested_html_inside_once_parent_still_emits_html_prop",
@@ -112,7 +112,7 @@ const CASES: &[Case] = &[
     Case {
         name: "component_with_props_and_slot",
         src: r#"<Foo v-once :title="title"><span>x</span></Foo>"#,
-        sites: &[],
+        sites: &["1 /* STABLE */", "8 /* PROPS */, [\"title\"]"],
     },
     Case {
         name: "inside_v_for",

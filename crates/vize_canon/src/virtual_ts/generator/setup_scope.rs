@@ -45,7 +45,7 @@ pub(super) fn define_emits_type_requires_setup_scope(summary: &Croquis) -> bool 
             })
 }
 
-pub(super) fn define_slots_type_requires_setup_scope(summary: &Croquis) -> bool {
+pub(in crate::virtual_ts) fn define_slots_type_requires_setup_scope(summary: &Croquis) -> bool {
     summary
         .macros
         .define_slots()

@@ -21,7 +21,8 @@ describe(`${app.name} build (compiler)`, () => {
     const outDir = path.join(__dirname, "__snapshots__", `${app.name}-build-output`);
     fs.rmSync(outDir, { recursive: true, force: true });
 
-    const cmd = `${VIZE_BIN} build ${patterns} -o '${outDir}' --continue-on-error`;
+    const noConfig = app.check!.noConfig ? " --no-config" : "";
+    const cmd = `${VIZE_BIN} build ${patterns} -o '${outDir}' --continue-on-error${noConfig}`;
     console.log(`Running: ${cmd}`);
 
     const stdout = execSync(cmd, {

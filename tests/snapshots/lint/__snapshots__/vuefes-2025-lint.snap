@@ -386,7 +386,7 @@
         "column": 1,
         "endLine": 116,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
