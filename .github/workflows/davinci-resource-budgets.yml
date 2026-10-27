@@ -10,6 +10,11 @@ on:
     # Daily, offset from the other nightly lanes.
     - cron: "53 5 * * *"
   workflow_dispatch:
+    inputs:
+      include_release:
+        description: Also measure the shipped fat-LTO Linux CLI at the same source revision
+        type: boolean
+        default: false
 
 concurrency:
   group: davinci-resource-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
@@ -58,6 +63,12 @@ jobs:
           --config 'profile.ci-opt.inherits="release"'
           --config 'profile.ci-opt.lto="thin"'
           --config 'profile.ci-opt.codegen-units=16'
+          --message-format=json-render-diagnostics > "${RUNNER_TEMP}/resource-build.jsonl"
+      - name: Record the measured binary and build identity
+        run: >-
+          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
+          target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl"
+          "${RUNNER_TEMP}/resource-build-identity.json"
 
       - name: Measure the resident server
         run: >-
@@ -98,7 +109,9 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: resource-${{ env.RESOURCE_PRESET }}
-          path: ${{ runner.temp }}/resource.json
+          path: |
+            ${{ runner.temp }}/resource.json
+            ${{ runner.temp }}/resource-build-identity.json
           retention-days: 30
 
   resident-resource:
@@ -181,12 +194,14 @@ jobs:
         run: >-
           vp exec node tools/support/compat/davinci/lsp-resources.ts
           --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10
+          --build "ci-opt: release, thin LTO, 16 codegen units"
           --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
       - name: Measure 10000 open buffers, 16 production providers, and Corsa
         run: >-
           timeout --signal=TERM --kill-after=30s 45m
           vp exec node tools/support/compat/davinci/lsp-resources.ts
           --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10
+          --build "ci-opt: release, thin LTO, 16 codegen units"
           --out "${RUNNER_TEMP}/lsp-resource.json"
       - name: Summarize the actual scope and every process
         if: ${{ !cancelled() }}
@@ -205,3 +220,8 @@ jobs:
           name: production-lsp-resource-linux-x64-ci
           path: ${{ runner.temp }}/lsp-resource*.json
           retention-days: 30
+
+  release-resource:
+    name: Shipped Linux CLI resource comparison
+    if: github.event_name == 'workflow_dispatch' && inputs.include_release
+    uses: ./.github/workflows/lsp-release-resources.yml

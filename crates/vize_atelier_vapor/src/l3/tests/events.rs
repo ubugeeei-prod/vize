@@ -66,19 +66,28 @@ fn computed_event_name_is_owned_by_the_checked_graph() {
 }
 
 #[test]
-fn computed_component_modifiers_and_once_events_remain_explicitly_unsupported() {
+fn computed_component_modifiers_are_admitted() {
     for source in [
         r#"<MyComp @[name].stop="save" />"#,
         r#"<component :is="component" @[name].stop="save" />"#,
-        r#"<button v-once @[name]="save">go</button>"#,
     ] {
         let allocator = Allocator::new();
         assert!(
             matches!(
                 lower_source_for_vapor(&allocator, source, options()),
-                VaporL3BridgeStatus::Legacy(_)
+                VaporL3BridgeStatus::Accepted(_)
             ),
             "{source}"
         );
     }
+}
+
+#[test]
+fn computed_once_element_events_remain_explicitly_unsupported() {
+    let source = r#"<button v-once @[name]="save">go</button>"#;
+    let allocator = Allocator::new();
+    assert!(matches!(
+        lower_source_for_vapor(&allocator, source, options()),
+        VaporL3BridgeStatus::Legacy(_)
+    ));
 }

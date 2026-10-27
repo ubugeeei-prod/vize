@@ -9,6 +9,7 @@ use core::str::Utf8Error;
 /// library so `valid_up_to`, `error_len`, and diagnostic spelling stay exact.
 #[inline]
 pub fn decode_utf8(bytes: &[u8]) -> Result<&str, Utf8Error> {
+    crate::micro_count!("source.utf8.validate.bytes", bytes.len());
     if bytes.len() < 64 {
         return core::str::from_utf8(bytes);
     }

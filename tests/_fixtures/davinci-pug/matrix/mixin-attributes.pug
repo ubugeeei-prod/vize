@@ -1,0 +1,11 @@
+mixin field(name)
+  label(for=name class="field")&attributes(attributes)
+    span= name
+    input(:id="'" + name + "'" v-model="query" class=attributes.class)
+mixin button
+  button.btn(type="button" style="padding:0")&attributes(attributes)
+    block
++field('email')(class="wide" data-help="a<b" required)
++field('name').short#name-field
++button(class=['primary', { active: true }] style={ color: 'red' } @click="submit") Send
++button&attributes({ class: 'ghost', disabled: true, 'aria-label': 'close' }) ×

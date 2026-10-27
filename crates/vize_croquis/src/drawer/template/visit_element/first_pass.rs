@@ -90,7 +90,17 @@ impl Drawer {
                     let (slot_name, slot_name_is_static) =
                         slot_argument_name(dir.arg.as_ref(), &self.template_source);
 
-                    let (prop_names, props_pattern, prop_offsets) = if let Some(ref exp) = dir.exp {
+                    // `<template #name="">` keeps an expression node with no
+                    // content: Vue's compiler reads it as a slot function without
+                    // parameters, so the scope records no props pattern either.
+                    // An empty pattern would otherwise become the parameter of
+                    // the generated slot function.
+                    let slot_props = dir.exp.as_ref().filter(|exp| {
+                        !expression_content(exp, &self.template_source)
+                            .trim()
+                            .is_empty()
+                    });
+                    let (prop_names, props_pattern, prop_offsets) = if let Some(exp) = slot_props {
                         let content = expression_content(exp, &self.template_source);
                         let base = exp.loc().span.start;
                         let span = exp.loc().span;
@@ -121,7 +131,7 @@ impl Drawer {
                         prop_names,
                         props_pattern,
                         prop_offsets,
-                        pattern_offset: dir.exp.as_ref().map(|exp| exp.loc().span.start),
+                        pattern_offset: slot_props.map(|exp| exp.loc().span.start),
                         offset: dir.loc.span.start,
                     });
                 } else if dir.name == "scope" && self.options.analyze_template_scopes {
@@ -172,8 +182,9 @@ fn legacy_slot_scope(el: &ElementNode<'_>, source: &str) -> Option<super::scopes
     let value = scope_attr.value.as_ref()?;
     let span = value.loc.span;
     let authored = source.get(span.start as usize..span.end as usize)?;
-    let pattern = value.content;
-    let prop_bindings = extract_slot_prop_bindings(pattern);
+    // `slot-scope=""` names no slot props, like an empty `v-slot` expression.
+    let pattern = Some(value.content).filter(|pattern| !pattern.trim().is_empty());
+    let prop_bindings = pattern.map(extract_slot_prop_bindings).unwrap_or_default();
     let prop_names = prop_bindings.iter().map(|(name, _)| name.clone()).collect();
     let prop_offsets = slot_prop_declaration_offsets(span.start, &prop_bindings, authored);
     let slot_name = el
@@ -191,9 +202,9 @@ fn legacy_slot_scope(el: &ElementNode<'_>, source: &str) -> Option<super::scopes
         slot_name,
         name_is_static: true,
         prop_names,
-        props_pattern: Some(CompactString::new(pattern)),
+        props_pattern: pattern.map(CompactString::new),
         prop_offsets,
-        pattern_offset: Some(value.loc.span.start),
+        pattern_offset: pattern.map(|_| value.loc.span.start),
         offset: value.loc.span.start,
     })
 }

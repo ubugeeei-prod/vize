@@ -83,6 +83,11 @@ fn imported_component_precedes_same_name_prop_in_complete_result() {
     let (expected, observed) =
         parse_archive(IMPORT_EXPECTED, IMPORT_OBSERVED).expect("valid immutable archive");
     assert_eq!(observed.get("result"), Some(&expected));
+    let expected = support::closed_setup_reference::advance(
+        expected,
+        "  setup(__props: any) {\n",
+        "  setup(__props: any, { expose: __expose }) {\n  __expose();\n",
+    );
     assert_eq!(
         serde_json::to_value(actual).expect("serialize complete public Result"),
         expected,
@@ -148,6 +153,11 @@ fn dynamic_loop_ref_keeps_complete_separate_template_result() {
     let (expected, observed) =
         parse_archive(LOOP_EXPECTED, LOOP_OBSERVED).expect("valid immutable archive");
     assert_eq!(observed.get("result"), Some(&expected));
+    let expected = support::closed_setup_reference::advance(
+        expected,
+        "  setup(__props) {\n",
+        "  setup(__props, { expose: __expose }) {\n    __expose();\n",
+    );
     assert_eq!(
         serde_json::to_value(actual).expect("serialize complete public Result"),
         expected,

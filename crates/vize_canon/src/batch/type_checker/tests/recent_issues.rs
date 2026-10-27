@@ -54,6 +54,7 @@ mod reference_path_dot_directory;
 mod reference_path_module;
 mod release_opaque_slot_hosts;
 mod sequence_prop_expressions;
+mod setup_custom_properties;
 mod sfc_syntax_error_module;
 mod single_required_camel_prop;
 mod slot_key;

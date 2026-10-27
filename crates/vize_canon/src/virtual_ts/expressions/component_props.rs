@@ -40,6 +40,7 @@ pub(crate) struct ComponentPropSource<'a> {
     inference_only: bool,
     inert: bool,
     expected_packet: bool,
+    protect_callback_primaries: bool,
 }
 
 impl<'a> ComponentPropSource<'a> {
@@ -57,6 +58,7 @@ impl<'a> ComponentPropSource<'a> {
             inference_only: false,
             inert: false,
             expected_packet: false,
+            protect_callback_primaries: false,
         }
     }
 
@@ -86,12 +88,28 @@ impl<'a> ComponentPropSource<'a> {
             inference_only: self.inference_only,
             inert: self.inert,
             expected_packet: self.expected_packet,
+            protect_callback_primaries: self.protect_callback_primaries,
         }
     }
 
     pub(crate) const fn with_expected_packet(mut self, expected: bool) -> Self {
         self.expected_packet = expected;
         self
+    }
+
+    pub(crate) const fn with_callback_primary_protection(mut self, protect: bool) -> Self {
+        self.protect_callback_primaries = protect;
+        self
+    }
+
+    fn protect_callback_primary(self, generated: std::ops::Range<usize>) {
+        if self.protect_callback_primaries
+            && let Some(collector) = self.diagnostic_ownership
+        {
+            profile!("canon.virtual_ts.root_callback.protect_primary", {
+                collector.borrow_mut().protect_callback_primary(generated);
+            });
+        }
     }
 
     pub(crate) fn value_source_range(self, prop: &PassedProp) -> Option<std::ops::Range<usize>> {
@@ -384,11 +402,12 @@ pub(crate) fn generate_component_prop_checks(
             let gen_stmt_start = ts.len();
             append!(*ts, "{expr_indent}const ");
             let check_name_start = ts.len();
-            ts.push_str(check_name.as_str());
+            profile!("canon.virtual_ts.prop_check.name_emission", {
+                ts.push_str(check_name.as_str());
+            });
             let check_name_end = ts.len();
-            if crate::virtual_ts::scope::is_inline_callback_prop(prop)
-                && let Some(resolution) = resolved_props.as_ref()
-            {
+            let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
+            if inline_callback && let Some(resolution) = resolved_props.as_ref() {
                 let camel_prop_name = super::super::helpers::to_camel_case(prop.name.as_str());
                 let resolved_props = resolution.resolved_props.as_str();
                 let selected_props = resolution.selected_props.as_str();
@@ -402,7 +421,9 @@ pub(crate) fn generate_component_prop_checks(
                     ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
                 );
             }
-            let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
+            let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
+                append_prop_value(ts, generated_value.text.as_str())
+            });
             ts.push_str(";\n");
             let statement_end = ts.len();
             let gen_stmt_end = if generated_value.omits_tail() {
@@ -445,6 +466,9 @@ pub(crate) fn generate_component_prop_checks(
                 src_range: prop_src_start..prop_src_end,
                 sub_spans,
             });
+            if inline_callback {
+                source_context.protect_callback_primary(gen_stmt_start..statement_end);
+            }
             source_context.record_prop_projection(
                 usage,
                 prop,

@@ -64,7 +64,7 @@ const msg = "x"
   t.assert.match(result.code, /_sfc_main/);
   t.assert.match(result.code, /function _sfc_render\(/);
   t.assert.match(result.code, /render: _sfc_render/);
-  t.assert.match(result.code, /setup\(__props\)/);
+  t.assert.match(result.code, /setup\(__props, \{ expose: __expose \}\)/);
   t.assert.match(result.code, /_createElementBlock/);
   t.assert.match(result.code, /from "vue"/);
 

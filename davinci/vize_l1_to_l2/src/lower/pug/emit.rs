@@ -14,6 +14,8 @@ use vize_l1::pug::{
     PugTextPiece, PugTree,
 };
 
+use super::mixin::Mixins;
+
 use super::control::interpolated;
 use super::eval;
 use super::literal::is_js_space;
@@ -35,6 +37,7 @@ pub(super) struct Emitter<'t> {
     pub(super) rendering: super::PugRendering,
     /// The bindings pug's build-time code has made so far.
     pub(super) scope: Scope,
+    pub(super) mixins: Mixins<'t>,
 }
 
 impl<'t> Emitter<'t> {
@@ -47,6 +50,7 @@ impl<'t> Emitter<'t> {
             diagnostics: StdVec::new(),
             compiled_tag: false,
             scope: Scope::default(),
+            mixins: Mixins::default(),
         }
     }
 
@@ -82,7 +86,7 @@ impl<'t> Emitter<'t> {
             .push(crate::exemptions::lowering(span, &message));
     }
 
-    pub(super) fn nodes(&mut self, nodes: &[PugNode<'_>]) {
+    pub(super) fn nodes(&mut self, nodes: &'t [PugNode<'t>]) {
         let mut index = 0;
         while let Some(node) = nodes.get(index) {
             index += 1;
@@ -98,9 +102,16 @@ impl<'t> Emitter<'t> {
         }
     }
 
-    fn node(&mut self, node: &PugNode<'_>) {
+    fn node(&mut self, node: &'t PugNode<'t>) {
         match node {
             PugNode::Tag(tag) => self.tag(tag),
+            PugNode::Call(call) => self.call(call),
+            PugNode::Refused(refused) if refused.refusal == PugRefusal::Mixin => {
+                self.define(refused);
+            }
+            PugNode::Refused(refused) if refused.refusal == PugRefusal::MixinBlock => {
+                self.mixin_block(refused);
+            }
             PugNode::Text(text) => self.text(text),
             PugNode::Html(html) => self.html(&html.items),
             PugNode::TextBlock(block) => self.text(&block.text),
@@ -116,7 +127,7 @@ impl<'t> Emitter<'t> {
         }
     }
 
-    fn tag(&mut self, tag: &PugTag<'_>) {
+    fn tag(&mut self, tag: &'t PugTag<'t>) {
         let name = tag.tag_name();
         let head = tag.name.as_ref().map_or_else(
             || Span::new(self.head_offset(tag), self.head_offset(tag)),
@@ -143,6 +154,14 @@ impl<'t> Emitter<'t> {
             return;
         }
         self.synth(">", head);
+        self.content(tag);
+        self.synth("</", head);
+        self.name(tag, head);
+        self.synth(">", head);
+    }
+
+    /// A tag's (or a mixin call's) same-line content and block.
+    pub(super) fn content(&mut self, tag: &'t PugTag<'t>) {
         match &tag.inline {
             PugInline::Text(text) => self.text(text),
             PugInline::Code(code) => self.code(code),
@@ -153,9 +172,6 @@ impl<'t> Emitter<'t> {
             PugBlock::Nodes(nodes) => self.nodes(nodes),
             PugBlock::Text(text) => self.text(text),
         }
-        self.synth("</", head);
-        self.name(tag, head);
-        self.synth(">", head);
     }
 
     fn name(&mut self, tag: &PugTag<'_>, head: Span) {
@@ -174,7 +190,7 @@ impl<'t> Emitter<'t> {
         })
     }
 
-    pub(super) fn text(&mut self, text: &PugText<'_>) {
+    pub(super) fn text(&mut self, text: &'t PugText<'t>) {
         for piece in &text.pieces {
             match piece {
                 PugTextPiece::Raw(token) => self.verbatim(token),
@@ -194,7 +210,7 @@ impl<'t> Emitter<'t> {
 
     /// `parseTextHtml`'s run: consecutive HTML text joins with `\n`,
     /// including HTML nodes of a nested block; anything else breaks it.
-    fn html(&mut self, items: &[PugHtmlItem<'_>]) {
+    fn html(&mut self, items: &'t [PugHtmlItem<'t>]) {
         let mut open = false;
         for item in items {
             match item {
@@ -256,7 +272,7 @@ impl<'t> Emitter<'t> {
 
     /// `= value` / `!= value` output the evaluated value; `- …` runs
     /// declarations.
-    fn code(&mut self, code: &PugCode<'_>) {
+    fn code(&mut self, code: &'t PugCode<'t>) {
         let span = self.span(&code.code);
         if !code.buffered() {
             let whole = Span::new(self.offset(&code.flag), span.end);
@@ -280,6 +296,10 @@ impl<'t> Emitter<'t> {
     /// values their string, HTML-escaped unless `!=` / `!{…}`.
     fn buffer(&mut self, source: &str, escaped: bool, span: Span) {
         let value = match eval::expression(&self.scope, source) {
+            Ok(evaluated) if evaluated.value.has_function() => {
+                self.error(span, super::refusal::code(super::refusal::FUNCTION_VALUE));
+                return;
+            }
             Ok(evaluated) => evaluated.value,
             Err(reason) => {
                 self.error(span, super::refusal::code(&reason));
@@ -299,7 +319,7 @@ impl<'t> Emitter<'t> {
         self.synth(&text, span);
     }
 
-    fn comment(&mut self, comment: &PugComment<'_>) {
+    fn comment(&mut self, comment: &'t PugComment<'t>) {
         if !comment.buffered() {
             return;
         }

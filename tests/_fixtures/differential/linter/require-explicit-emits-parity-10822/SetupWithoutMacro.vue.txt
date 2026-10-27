@@ -1,0 +1,10 @@
+<template>
+  <div class="welcome">
+    <button @click="$emit('next')">Next</button>
+    <button @click="$emit(`skip`)">Skip</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+const steps = ['intro', 'account'];
+</script>

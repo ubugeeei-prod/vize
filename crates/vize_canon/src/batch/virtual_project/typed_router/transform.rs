@@ -3,8 +3,9 @@
 use std::ops::Range;
 
 use oxc_ast::ast::{
-    CallExpression, Expression, IdentifierReference, ImportDeclarationSpecifier,
-    ImportOrExportKind, Statement, TSTypeQuery, TSTypeQueryExprName,
+    Argument, CallExpression, ChainElement, Expression, IdentifierReference,
+    ImportDeclarationSpecifier, ImportOrExportKind, ObjectPropertyKind, PropertyKey, PropertyKind,
+    Statement, TSTypeQuery, TSTypeQueryExprName,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -14,33 +15,52 @@ use vize_carton::{String, cstr};
 
 use crate::virtual_ts::{ProjectionMapping, VirtualTsOutput};
 
-/// Returns whether an actual edit introduced the generated route-name import.
-pub(super) fn apply(
-    output: &mut VirtualTsOutput,
+/// Sites collected by one parse before generation; edits apply afterwards.
+pub(super) struct Plan {
+    javascript: bool,
+    sites: Vec<Site>,
+    /// `defineProps` calls that receive the route-props helper, with their type argument.
+    pub(super) props_calls: Vec<(Span, Option<Span>)>,
+}
+
+/// `route_props` means the project's own router types admit the experimental
+/// component generic and `props: true` helper; otherwise only the file applies.
+pub(super) fn plan(
     script: &str,
     source_offset: impl Fn(usize) -> usize,
     setup_range: Range<usize>,
     source_type: SourceType,
-    file_literal: &str,
-    diagnostic_ownership: Option<
-        &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
-    >,
-) -> bool {
-    if serde_json::from_str::<String>(file_literal).is_err() {
-        return false;
-    }
+    route_props: bool,
+) -> Option<Plan> {
     let allocator = oxc_allocator::Allocator::default();
     let javascript = source_type.is_javascript();
     let parsed = Parser::new(&allocator, script, source_type).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return false;
+        return None;
     }
     let built = SemanticBuilder::new().build(&parsed.program);
     if !built.diagnostics.is_empty() {
-        return false;
+        return None;
     }
     let mut imports = Vec::new();
+    // The plugin reads only setup statements, by name, before any rewrite.
+    let mut props_true = false;
     for statement in &parsed.program.body {
+        if let Statement::ExpressionStatement(statement) = statement
+            && setup_range.contains(&source_offset(statement.span.start as usize))
+            && let Some(call) = match &statement.expression {
+                Expression::CallExpression(call) => Some(&**call),
+                Expression::ChainExpression(chain) => match &chain.expression {
+                    ChainElement::CallExpression(call) => Some(&**call),
+                    _ => None,
+                },
+                _ => None,
+            }
+            && matches!(&call.callee, Expression::Identifier(name) if name.name == "definePage")
+            && matches!(props_option(call), Some(Expression::BooleanLiteral(value)) if value.value)
+        {
+            props_true = true;
+        }
         let Statement::ImportDeclaration(import) = statement else {
             continue;
         };
@@ -73,13 +93,66 @@ pub(super) fn apply(
         scoping: built.semantic.scoping(),
         imports,
         javascript,
+        route_props: route_props && !javascript,
+        props_true: route_props && props_true && !javascript,
         sites: Vec::new(),
+        props_calls: Vec::new(),
     };
     collector.visit_program(&parsed.program);
+    Some(Plan {
+        javascript,
+        sites: collector.sites,
+        props_calls: collector.props_calls,
+    })
+}
+
+/// The first identifier-keyed `props` assignment of the macro's object argument.
+fn props_option<'a, 'b>(call: &'b CallExpression<'a>) -> Option<&'b Expression<'a>> {
+    let Some(Argument::ObjectExpression(object)) = call.arguments.first() else {
+        return None;
+    };
+    object.properties.iter().find_map(|property| match property {
+        ObjectPropertyKind::ObjectProperty(property)
+            if property.kind == PropertyKind::Init
+                && !property.method
+                && !property.shorthand
+                && !property.computed
+                && matches!(&property.key, PropertyKey::StaticIdentifier(key) if key.name == "props") =>
+        {
+            Some(&property.value)
+        }
+        _ => None,
+    })
+}
+
+/// The plugin's `props: true` helper for one file identity.
+pub(super) fn route_props_type(file_literal: &str) -> String {
+    cstr!("import('vue-router/experimental')._RoutePropsForFilePath<{file_literal}>")
+}
+
+/// Returns whether an actual edit introduced a generated route type import.
+/// `component` is the self-import literal admitted with the route-props plan.
+pub(super) fn apply(
+    output: &mut VirtualTsOutput,
+    plan: &Plan,
+    script: &str,
+    source_offset: impl Fn(usize) -> usize,
+    setup_range: Range<usize>,
+    (file_literal, component): (&str, Option<&str>),
+    diagnostic_ownership: Option<
+        &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    >,
+) -> bool {
+    if serde_json::from_str::<String>(file_literal).is_err()
+        || component.is_some_and(|literal| serde_json::from_str::<String>(literal).is_err())
+    {
+        return false;
+    }
+    let javascript = plan.javascript;
     let route_type =
         cstr!("<import('vue-router/auto-routes')._RouteNamesForFilePath<{file_literal}>>");
     let mut edits = Vec::new();
-    for site in collector.sites {
+    for site in &plan.sites {
         let source = site.span.start as usize..site.span.end as usize;
         if site.validation_end < site.token.end
             || site.validation_end > site.span.end
@@ -123,12 +196,26 @@ pub(super) fn apply(
         let mut proposed = Vec::new();
         match site.kind {
             Kind::Page if javascript => continue,
-            Kind::Page => proposed.push((token.end, cstr!("<{file_literal}>"))),
+            Kind::Page => match component.filter(|_| site.component) {
+                Some(component) => proposed.push((
+                    token.end,
+                    cstr!("<{file_literal}, typeof import({component}).default>"),
+                )),
+                None => proposed.push((token.end, cstr!("<{file_literal}>"))),
+            },
             Kind::Route if javascript => {
                 proposed.push((start, String::from("(")));
                 proposed.push((end, cstr!(" as ReturnType<typeof useRoute{route_type}>)")));
             }
             Kind::Route | Kind::Query => proposed.push((token.end, route_type.clone())),
+            Kind::Props if component.is_none() => continue,
+            Kind::Props if site.token == site.span => {
+                proposed.push((start, cstr!("{} & (", route_props_type(file_literal))));
+                proposed.push((end, String::from(")")));
+            }
+            Kind::Props => {
+                proposed.push((token.end, cstr!("<{}>", route_props_type(file_literal))))
+            }
         }
         if proposed
             .iter()
@@ -161,6 +248,8 @@ enum Kind {
     Route,
     Query,
     Page,
+    /// A `props: true` page's `defineProps()`; a type argument is its own token.
+    Props,
 }
 
 struct Site {
@@ -169,13 +258,18 @@ struct Site {
     kind: Kind,
     /// The complete call/query, or the macro header before its sole argument.
     validation_end: u32,
+    /// A page macro whose `props` option is present and not `false`.
+    component: bool,
 }
 
 struct Collector<'a> {
     scoping: &'a Scoping,
     imports: Vec<SymbolId>,
     javascript: bool,
+    route_props: bool,
+    props_true: bool,
     sites: Vec<Site>,
+    props_calls: Vec<(Span, Option<Span>)>,
 }
 
 impl Collector<'_> {
@@ -202,6 +296,29 @@ impl Collector<'_> {
 
 impl<'a> Visit<'a> for Collector<'_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if self.props_true
+            && call.arguments.is_empty()
+            && let Expression::Identifier(identifier) = &call.callee
+            && identifier.name == "defineProps"
+        {
+            // `props: true` passes route params as props; the plugin stops here.
+            let type_argument = call
+                .type_arguments
+                .as_ref()
+                .and_then(|arguments| arguments.params.first())
+                .map(GetSpan::span);
+            self.props_calls.push((call.span, type_argument));
+            let (span, token) =
+                type_argument.map_or((call.span, identifier.span), |span| (span, span));
+            self.sites.push(Site {
+                span,
+                token,
+                kind: Kind::Props,
+                validation_end: span.end,
+                component: false,
+            });
+            return;
+        }
         if !call.optional
             && call.type_arguments.is_none()
             && let Expression::Identifier(identifier) = &call.callee
@@ -225,6 +342,11 @@ impl<'a> Visit<'a> for Collector<'_> {
                     } else {
                         call.span.end
                     },
+                    component: kind == Kind::Page
+                        && self.route_props
+                        && props_option(call).is_some_and(|props| {
+                            !matches!(props, Expression::BooleanLiteral(value) if !value.value)
+                        }),
                 });
                 // The provider stops at this macro; its argument keeps authored route types.
                 if kind == Kind::Page && !self.javascript {
@@ -247,6 +369,7 @@ impl<'a> Visit<'a> for Collector<'_> {
                 token: identifier.span,
                 kind: Kind::Query,
                 validation_end: query.span.end,
+                component: false,
             });
         }
         walk::walk_ts_type_query(self, query);

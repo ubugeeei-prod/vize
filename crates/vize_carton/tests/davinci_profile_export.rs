@@ -166,8 +166,21 @@ fn schema_rejects_const_mismatch_and_bad_span_key() {
     let error = schema_check::validate(&schema, &value, "$").expect_err("pattern must fail");
     assert_eq!(
         error.message().as_str(),
-        "schema violation at `$.spans[0].key`: string does not match pattern `^[A-Za-z0-9._-]+$`"
+        "schema violation at `$.spans[0].key`: string does not match pattern `^[A-Za-z0-9._/@:-]+$`"
     );
+}
+
+#[test]
+fn schema_accepts_complete_source_callsite_keys() {
+    let schema = load_schema();
+    let mut value = minimal_valid_export();
+    for key in [
+        "croquis.parse@crates/vize_croquis/src/script_parser/recovery.rs:31",
+        "lsp.root@crates/vize_maestro/src/server/state/project_contexts.rs:441",
+    ] {
+        value["spans"][0]["key"] = serde_json::Value::from(key);
+        schema_check::validate(&schema, &value, "$").expect("complete source callsite must pass");
+    }
 }
 
 #[test]

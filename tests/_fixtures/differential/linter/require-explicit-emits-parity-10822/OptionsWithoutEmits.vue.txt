@@ -1,0 +1,32 @@
+<template>
+  <div class="el-switch" @click.prevent="switchValue">
+    <input class="el-switch__input" type="checkbox" @change="handleChange" />
+    <span @click="$emit('label-click')">{{ label }}</span>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ElSwitch',
+  props: { value: Boolean, label: String },
+  methods: {
+    handleChange() {
+      const vm = this;
+      this.$emit('input', !this.value);
+      this.$nextTick(() => {
+        vm.$emit('change', this.value);
+      });
+    },
+    switchValue() {
+      function later() {
+        this.$emit('later');
+      }
+      setTimeout(later.bind(this));
+      this.$emit(`switch`);
+    },
+  },
+  setup(props, { emit }) {
+    emit('setup-ready');
+  },
+};
+</script>

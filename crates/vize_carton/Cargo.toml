@@ -27,6 +27,7 @@ which = { workspace = true }
 
 [features]
 default = []
+micro-profiling = ["vize_l0/micro-profiling"]
 lint-glob = ["dep:globset"]
 
 [dev-dependencies]

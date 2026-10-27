@@ -106,9 +106,12 @@ pub(crate) fn check_pack(
             | "unicode-prop-bindings-10573"
             | "undeclared-instance-globals-10617"
             | "experimental-router-import-10520"
+            | "experimental-router-props-10579"
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
+            | "callback-render-position-10738"
+            | "generic-slot-outlet-10883"
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607"
             | "content-mapper-merged-class-10788"
@@ -116,7 +119,10 @@ pub(crate) fn check_pack(
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
             | "reopen-repaired-diagnostics-10730"
-            | "editor-alias-import-extension-10753" => regression,
+            | "editor-alias-import-extension-10753"
+            | "options-api-reserved-component-reference"
+            | "setup-custom-properties"
+            | "empty-v-slot-expression" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -141,9 +147,17 @@ pub(crate) fn check_pack(
             .map(|options| options.options_api),
         matches!(
             name,
-            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
+                | "jsx-prop-token-ranges-10494"
         )
-        .then_some(name == "options-api-any-instance"),
+        .then_some(matches!(
+            name,
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
+        )),
         "the original explicit checker options must be retained"
     );
     assert_eq!(
@@ -152,7 +166,10 @@ pub(crate) fn check_pack(
             .map(|options| options.jsx_typecheck),
         matches!(
             name,
-            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
+                | "jsx-prop-token-ranges-10494"
         )
         .then_some(name == "jsx-prop-token-ranges-10494"),
         "the authored JSX lowering option must be retained"
@@ -211,6 +228,9 @@ pub(crate) fn check_pack(
         }
         if pack.project_options.is_some() {
             assert!(!project_root.join("node_modules").exists());
+        }
+        if name == "experimental-router-props-10579" {
+            super::fix_history_router_provider::install_source_build(&root, &project_root);
         }
         if name == "workspace-alias-cache-10063" {
             for (source, destination) in [

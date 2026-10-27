@@ -1,0 +1,9 @@
+<script setup>
+import MyButton from './MyButton.vue'
+import { useX } from './x'
+const { label, onPing } = useX()
+</script>
+<template>
+  <MyButton v-once :label="label" @ping="onPing">text {{ label }}</MyButton>
+  <MyButton v-once label="static" />
+</template>

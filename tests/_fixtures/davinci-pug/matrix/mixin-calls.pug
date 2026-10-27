@@ -1,0 +1,24 @@
+- var prefix = 'nav'
+mixin link(href, label = href, ...rest)
+  a(href=href class=prefix + '-link' data-extra=rest.length)= label
+mixin badge(count)
+  span.badge(v-if="showBadges")= count > 9 ? '9+' : count
+mixin tree(node)
+  li(:key="'" + node.id + "'")= node.label
+    if node.kids.length
+      ul
+        each kid in node.kids
+          +tree(kid)
+nav
+  +link('/home', 'Home')
+  +link('/docs', 'Docs', 1, 2)
+  - var prefix = 'menu'
+  +link('/blog')
+  +badge(12)
+  +#{'badge'}(3)
+  p Inline #[+badge(1)] call
+  ul
+    +tree({ id: 1, label: 'root', kids: [{ id: 2, label: 'leaf', kids: [] }] })
+mixin badge(count)
+  em(:title="'count ' + " + count + "")= count
++badge(4)

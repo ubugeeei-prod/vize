@@ -1,0 +1,88 @@
+{
+  "upstream": {
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2"
+  },
+  "rule": "vue/require-explicit-emits",
+  "files": {
+    "NegativeControls.vue.txt": [],
+    "OptionsWithoutEmits.vue.txt": [
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 4,
+        "column": 25,
+        "endLine": 4,
+        "endColumn": 38,
+        "message": "The \"label-click\" event has been triggered but not declared on `emits` option."
+      },
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 15,
+        "column": 18,
+        "endLine": 15,
+        "endColumn": 25,
+        "message": "The \"input\" event has been triggered but not declared on `emits` option."
+      },
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 17,
+        "column": 18,
+        "endLine": 17,
+        "endColumn": 26,
+        "message": "The \"change\" event has been triggered but not declared on `emits` option."
+      },
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 22,
+        "column": 20,
+        "endLine": 22,
+        "endColumn": 27,
+        "message": "The \"later\" event has been triggered but not declared on `emits` option."
+      },
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 25,
+        "column": 18,
+        "endLine": 25,
+        "endColumn": 26,
+        "message": "The \"switch\" event has been triggered but not declared on `emits` option."
+      },
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 29,
+        "column": 10,
+        "endLine": 29,
+        "endColumn": 23,
+        "message": "The \"setup-ready\" event has been triggered but not declared on `emits` option."
+      }
+    ],
+    "SetupWithoutMacro.vue.txt": [
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 3,
+        "column": 27,
+        "endLine": 3,
+        "endColumn": 33,
+        "message": "The \"next\" event has been triggered but not declared on `defineEmits`."
+      },
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 4,
+        "column": 27,
+        "endLine": 4,
+        "endColumn": 33,
+        "message": "The \"skip\" event has been triggered but not declared on `defineEmits`."
+      }
+    ],
+    "SiblingBlockTypes.vue.txt": [
+      {
+        "ruleId": "vue/require-explicit-emits",
+        "line": 12,
+        "column": 33,
+        "endLine": 12,
+        "endColumn": 48,
+        "message": "The \"openAutoFocus\" event has been triggered but not declared on `defineEmits`."
+      }
+    ]
+  }
+}
