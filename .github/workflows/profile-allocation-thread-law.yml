@@ -7,7 +7,8 @@ on:
       - davinci/vize_l0/src/profiler/allocation.rs
       - davinci/vize_l0/src/profiler/metrics.rs
       - davinci/vize_l0/tests/profile_allocation_thread_law.rs
-      - tools/benchmarks/scripts/profile_guard_send_law.py
+      - tools/benchmarks/scripts/profile_guard_send_law.ts
+      - tools/benchmarks/scripts/profile-evidence-json.ts
   workflow_dispatch: {}
 permissions: { contents: read }
 concurrency:
@@ -24,6 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0" }
       - run: rustup toolchain install 1.99.1 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
@@ -46,7 +49,7 @@ jobs:
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/observer-law.log
           cargo +1.99.1 test --locked --profile ci -p vize_carton --test davinci_profile_export --features micro-profiling per_span_allocation_counts_and_schema_validation 2>&1 | tee evidence/nested-export-law.log
       - name: Check the same public-type snippet against old and new guards
-        run: python3 tools/benchmarks/scripts/profile_guard_send_law.py
+        run: node tools/benchmarks/scripts/profile_guard_send_law.ts
       - name: Compile the profiling CLI after the carrier succeeds
         run: |
           set -euo pipefail
