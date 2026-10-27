@@ -41,6 +41,10 @@ pub(super) fn emit_component_definition(
     let has_emit = ctx.macros.define_emits.is_some()
         && (has_emit_binding || render_uses_dollar_emit(template));
     let has_expose = ctx.macros.define_expose.is_some();
+    // An inline render never returns setup bindings to the public instance.
+    // Separate renders do, so register Vue's closed-by-default exposure even
+    // when the author did not call defineExpose (#10891).
+    let close_by_default = !has_expose && template.render_body.is_empty();
 
     if let (true, Some(define_options)) = (has_options, ctx.macros.define_options.as_ref()) {
         let options_args = define_options.args.trim();
@@ -115,7 +119,7 @@ pub(super) fn emit_component_definition(
 
     // Build setup function signature based on what macros are used
     let mut setup_args = Vec::new();
-    if has_expose {
+    if has_expose || close_by_default {
         setup_args.push("expose: __expose");
     }
     if has_emit || needs_vapor_setup_context {
@@ -159,6 +163,11 @@ pub(super) fn emit_component_definition(
         output.extend_from_slice(b", { ");
         output.extend_from_slice(setup_args.join(", ").as_bytes());
         output.extend_from_slice(b" }) {\n");
+    }
+
+    // Register before any authored code or await can suspend setup.
+    if close_by_default {
+        output.extend_from_slice(b"  __expose();\n");
     }
 
     // Always add a blank line after setup signature
