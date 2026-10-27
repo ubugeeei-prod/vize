@@ -1,0 +1,66 @@
+name: Published parser expression acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published vize_oxc_parser version without v
+        type: string
+        required: true
+      source-sha:
+        description: Exact immutable release tag commit
+        type: string
+        required: true
+permissions: { contents: read, pull-requests: read }
+concurrency:
+  group: parser-expression-public-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  registry-consumer:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      SOURCE_SHA: ${{ inputs.source-sha }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+      VIZE_EXPRESSION_PUBLIC_VERSION: ${{ inputs.version }}
+      VIZE_EXPRESSION_PUBLIC_PROOF: /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "v${{ inputs.version }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0" }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - name: Verify the immutable release includes the merged parser fix
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          node --input-type=module -e '
+          import assert from "node:assert/strict";
+          import { execFileSync } from "node:child_process";
+          import { mkdirSync, writeFileSync } from "node:fs";
+          const api = path => JSON.parse(execFileSync("gh", ["api", path], { encoding: "utf8" }));
+          assert(/^0\.\d+\.\d+$/.test(process.env.PUBLIC_VERSION));
+          assert(/^[a-f0-9]{40}$/.test(process.env.SOURCE_SHA));
+          const pr = api("repos/ubugeeei-prod/vize/pulls/10945");
+          assert.equal(pr.merged, true);
+          const comparison = api("repos/ubugeeei-prod/vize/compare/" + pr.merge_commit_sha + "..." + process.env.SOURCE_SHA);
+          assert(["ahead", "identical"].includes(comparison.status));
+          assert.equal(comparison.merge_base_commit.sha, pr.merge_commit_sha);
+          mkdirSync(process.env.VIZE_EXPRESSION_PUBLIC_PROOF, { recursive: true });
+          writeFileSync(process.env.VIZE_EXPRESSION_PUBLIC_PROOF + "/release-provenance.json", JSON.stringify({ version: process.env.PUBLIC_VERSION, source: process.env.SOURCE_SHA, fix: pr.html_url, merge: pr.merge_commit_sha, comparison: comparison.html_url, status: comparison.status }, null, 2) + "\n");
+          '
+      - name: Build a fresh registry-only crate with two Cargo jobs and verify complete packets
+        run: node tools/support/compat/parser/expression-public-consumer.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: parser-expression-public-${{ inputs.version }}-${{ github.run_id }}
+          path: |
+            /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}/*.json
+            /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}/consumer/Cargo.toml
+            /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}/consumer/Cargo.lock
+            /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}/consumer/src/main.rs
+            /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}/consumer/original.input
+            /tmp/vize-parser-expression-public-${{ github.run_id }}-${{ github.run_attempt }}/consumer/expected-expression.txt
+          if-no-files-found: error
+          retention-days: 90
