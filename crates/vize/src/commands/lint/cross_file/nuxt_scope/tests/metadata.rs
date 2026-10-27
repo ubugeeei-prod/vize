@@ -1,5 +1,5 @@
-use super::super::io::{MAX_MANIFEST_BYTES, ProbeIo};
 use super::fixture::Fixture;
+use crate::commands::project_nuxt::host_authority::io::{MAX_MANIFEST_BYTES, ProbeIo};
 
 #[test]
 fn original_source_facts_and_counted_complete_inventory_are_required() {
@@ -28,8 +28,8 @@ fn original_source_facts_and_counted_complete_inventory_are_required() {
     assert_eq!(counts.manifest_reads, 5);
     assert_eq!(counts.manifest_parses, 5);
     assert_eq!(counts.manifest_bytes, fixture.manifest_bytes());
-    assert_eq!(counts.package_lookups, 11);
-    assert_eq!(counts.canonicalize, 11);
+    assert_eq!(counts.package_lookups, 15);
+    assert_eq!(counts.canonicalize, 15);
     assert!(Fixture::ids(&mut analyzer).is_empty());
     // The host witness cannot silently survive another analysis invocation.
     assert_eq!(Fixture::ids(&mut analyzer).len(), 2);
@@ -94,7 +94,7 @@ fn missing_first_winner_does_not_fall_through_to_an_ancestor_version() {
 
 #[test]
 fn unknown_exports_bundled_loader_versions_and_project_aliases_are_refused() {
-    for role in ["exports", "loader", "project-alias"] {
+    for role in ["exports", "subpath", "loader", "project-alias"] {
         let fixture = Fixture::new();
         if role == "project-alias" {
             fixture.json(
@@ -111,6 +111,8 @@ fn unknown_exports_bundled_loader_versions_and_project_aliases_are_refused() {
                 value["exports"]["."] = serde_json::json!({
                     "custom": "./custom.mjs", "default": "./dist/index.mjs",
                 });
+            } else if role == "subpath" {
+                value["exports"]["./internal"] = "./alternate.mjs".into();
             } else {
                 value["inlinedDependencies"]["c12"] = "99.0.0".into();
             }
@@ -207,4 +209,77 @@ fn a_config_borrowed_from_an_ancestor_does_not_authenticate_a_child_invocation()
     std::fs::create_dir(&nested).unwrap();
     let dirs = crate::commands::project_nuxt::render_dirs(&nested).unwrap();
     assert!(!dirs.static_render_config);
+}
+
+#[test]
+fn exported_dist_importers_take_precedence_over_package_root_copies() {
+    for (parent, package, version) in [
+        ("nuxt", "@nuxt/kit", "99.0.0"),
+        ("@nuxt/kit", "@nuxt/schema", "99.0.0"),
+        ("@nuxt/kit", "rc9", "99.0.0"),
+    ] {
+        let fixture = Fixture::new();
+        let nested = fixture
+            .root
+            .join("node_modules")
+            .join(parent)
+            .join("dist/node_modules")
+            .join(package);
+        fixture.package(&nested, package, version);
+        let mut analyzer = fixture.analyzer(&[]);
+        assert!(!fixture.prove(&mut analyzer).0, "{parent} -> {package}");
+        assert_eq!(Fixture::ids(&mut analyzer).len(), 2);
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn linked_export_directories_cannot_change_the_importer_context() {
+    use std::os::unix::fs::symlink;
+    let fixture = Fixture::new();
+    let original = fixture.root.join("node_modules/nuxt/dist");
+    let outside = std::fs::canonicalize(fixture.temp.path())
+        .unwrap()
+        .join("external-dist");
+    std::fs::rename(&original, &outside).unwrap();
+    symlink(&outside, &original).unwrap();
+    let mut analyzer = fixture.analyzer(&[]);
+    assert!(!fixture.prove(&mut analyzer).0);
+    assert_eq!(Fixture::ids(&mut analyzer).len(), 2);
+}
+
+#[test]
+fn an_export_directory_package_scope_cannot_add_unobserved_self_references() {
+    for package in ["nuxt", "@nuxt/kit"] {
+        let fixture = Fixture::new();
+        let path = fixture
+            .root
+            .join("node_modules")
+            .join(package)
+            .join("dist/package.json");
+        std::fs::write(
+            path,
+            br#"{"name":"@nuxt/kit","type":"module","exports":{".":"./index.mjs"}}"#,
+        )
+        .unwrap();
+        let mut analyzer = fixture.analyzer(&[]);
+        assert!(!fixture.prove(&mut analyzer).0, "{package}");
+        assert_eq!(Fixture::ids(&mut analyzer).len(), 2);
+    }
+}
+
+#[test]
+fn a_shared_probe_cannot_open_more_than_six_distinct_manifests() {
+    let fixture = Fixture::new();
+    let mut io = ProbeIo::default();
+    for index in 0..7 {
+        let root = fixture
+            .root
+            .join(vize_l0::cstr!("manifest-{index}").as_str());
+        fixture.package(&root, "rc9", "3.1.0");
+        assert_eq!(io.manifest(&root).is_some(), index < 6);
+    }
+    assert_eq!(io.counts.manifest_opens, 6);
+    assert_eq!(io.counts.manifest_reads, 6);
+    assert_eq!(io.counts.manifest_parses, 6);
 }

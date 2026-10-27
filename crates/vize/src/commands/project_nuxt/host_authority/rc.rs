@@ -9,14 +9,14 @@ use super::io::{PathMetadata, ProbeIo};
 const MAX_RC_ANCESTORS: usize = 64;
 
 #[derive(Clone)]
-pub(super) struct Environment {
-    pub(super) home: Option<PathBuf>,
-    pub(super) xdg: Option<PathBuf>,
-    pub(super) opaque: bool,
+pub(crate) struct Environment {
+    pub(crate) home: Option<PathBuf>,
+    pub(crate) xdg: Option<PathBuf>,
+    pub(crate) opaque: bool,
 }
 
 impl Environment {
-    pub(super) fn capture() -> Self {
+    pub(crate) fn capture() -> Self {
         let home = std::env::var_os("HOME")
             .filter(|value| !value.is_empty())
             .map(PathBuf::from);
@@ -27,7 +27,7 @@ impl Environment {
         Self { home, xdg, opaque }
     }
 
-    pub(super) fn absent(&self, root: &Path, io: &mut ProbeIo) -> Option<()> {
+    pub(crate) fn absent(&self, root: &Path, io: &mut ProbeIo) -> Option<()> {
         if self.opaque || cfg!(windows) {
             return None;
         }

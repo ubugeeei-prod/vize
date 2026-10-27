@@ -9,7 +9,8 @@ use vize_croquis_cf::{
 use vize_l0::String;
 
 use super::super::super::sfc::analyze_sfc_for_cross_file;
-use super::super::{admit_with_environment, io::IoCounts, rc::Environment};
+use super::super::admit_with_environment;
+use crate::commands::project_nuxt::host_authority::{io::IoCounts, rc::Environment};
 
 pub(super) struct Fixture {
     pub(super) temp: tempfile::TempDir,
@@ -81,13 +82,8 @@ impl Fixture {
         std::fs::create_dir_all(root.join("dist")).unwrap();
         let mut manifest = json!({
             "name": name, "version": version, "type": "module",
-            "exports": {".": "./dist/index.mjs"},
+            "exports": crate::commands::project_nuxt::host_authority::authority::published_exports(name).unwrap(),
         });
-        if name == "nuxt" {
-            manifest["exports"]["."] = json!({
-                "import": "./dist/index.mjs", "types": "./types.d.mts",
-            });
-        }
         if name == "@nuxt/kit" {
             manifest["inlinedDependencies"] = json!({
                 "c12": "4.0.0-rc.3", "pkg-types": "2.4.0", "untyped": "2.0.0",

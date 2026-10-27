@@ -1,9 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 export function sha256(value: string | Uint8Array): string {
   return createHash("sha256").update(value).digest("hex");
@@ -19,7 +18,7 @@ export type RuntimePackage = {
   entry: { path: string; sha256: string };
   body: Record<string, unknown>;
 };
-export function readManifest(manifest: string, importer: string): RuntimePackage {
+export function readManifest(manifest: string, importer: string, entry?: string): RuntimePackage {
   const physical = fs.realpathSync(manifest);
   const bytes = fs.readFileSync(physical);
   const body = JSON.parse(bytes.toString("utf8")) as Record<string, unknown>;
@@ -34,22 +33,30 @@ export function readManifest(manifest: string, importer: string): RuntimePackage
     sha256: sha256(bytes),
     bytes: bytes.length,
     entry: {
-      path: path.join(path.dirname(physical), "dist/index.mjs"),
-      sha256: sha256(fs.readFileSync(path.join(path.dirname(physical), "dist/index.mjs"))),
+      path: fs.realpathSync(entry ?? path.join(path.dirname(physical), "dist/index.mjs")),
+      sha256: sha256(fs.readFileSync(entry ?? path.join(path.dirname(physical), "dist/index.mjs"))),
     },
     body,
   };
 }
 function resolveManifest(importer: string, name: string): RuntimePackage {
-  const require = createRequire(importer);
-  if (name !== "rc9") return readManifest(require.resolve(name + "/package.json"), importer);
-  // rc9 does not export package.json. Resolve its real public entry first,
-  // then identify the enclosing package without independently choosing a root copy.
-  let directory = path.dirname(fs.realpathSync(require.resolve("rc9")));
+  assert(
+    process.execArgv.includes("--experimental-import-meta-resolve"),
+    "The oracle must use Node's real parent-aware ESM import-condition resolution",
+  );
+  const parent = pathToFileURL(importer).href;
+  const entry = fs.realpathSync(fileURLToPath(import.meta.resolve(name, parent)));
+  if (name !== "rc9") {
+    const manifest = fileURLToPath(import.meta.resolve(name + "/package.json", parent));
+    return readManifest(manifest, importer, entry);
+  }
+  // rc9 does not export package.json. Resolve its actual ESM public entry,
+  // then identify its package without choosing an independent hoisted copy.
+  let directory = path.dirname(entry);
   for (let depth = 0; depth < 64; depth++) {
     const manifest = path.join(directory, "package.json");
     if (fs.existsSync(manifest)) {
-      const result = readManifest(manifest, importer);
+      const result = readManifest(manifest, importer, entry);
       assert.equal(result.name, "rc9");
       return result;
     }
@@ -59,13 +66,14 @@ function resolveManifest(importer: string, name: string): RuntimePackage {
   }
   throw new Error("rc9 manifest resolution exceeded the bounded oracle");
 }
+
 export function observeRuntime(project: string): RuntimePackage[] {
   const projectManifest = path.join(project, "package.json");
   const nuxt = resolveManifest(projectManifest, "nuxt");
-  const kit = resolveManifest(nuxt.manifest, "@nuxt/kit");
-  const schema = resolveManifest(kit.manifest, "@nuxt/schema");
-  const rc9 = resolveManifest(kit.manifest, "rc9");
-  const coreSchema = resolveManifest(nuxt.manifest, "@nuxt/schema");
+  const kit = resolveManifest(nuxt.entry.path, "@nuxt/kit");
+  const schema = resolveManifest(kit.entry.path, "@nuxt/schema");
+  const rc9 = resolveManifest(kit.entry.path, "rc9");
+  const coreSchema = resolveManifest(nuxt.entry.path, "@nuxt/schema");
   return [nuxt, kit, schema, rc9, coreSchema];
 }
 export function requireSupported(packages: RuntimePackage[]): void {
@@ -97,6 +105,7 @@ export function copyGenuineNuxtWithNestedKit(
   project: string,
   supported: RuntimePackage[],
   unsupportedKit: string,
+  location: "root" | "dist-unsupported" | "dist-supported" = "root",
 ): void {
   const destination = path.join(project, "node_modules/nuxt");
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -105,14 +114,26 @@ export function copyGenuineNuxtWithNestedKit(
     filter: (entry) =>
       !path.relative(supported[0].root, entry).split(path.sep).includes("node_modules"),
   });
-  const nested = path.join(destination, "node_modules/@nuxt/kit");
+  const nested = path.join(
+    destination,
+    location === "root" ? "node_modules/@nuxt/kit" : "dist/node_modules/@nuxt/kit",
+  );
   fs.mkdirSync(path.dirname(nested), { recursive: true });
-  fs.symlinkSync(unsupportedKit, nested, "dir");
+  fs.symlinkSync(location === "dist-supported" ? supported[1].root : unsupportedKit, nested, "dir");
+  if (location === "dist-supported") {
+    const decoy = path.join(destination, "node_modules/@nuxt/kit");
+    fs.mkdirSync(path.dirname(decoy), { recursive: true });
+    fs.symlinkSync(unsupportedKit, decoy, "dir");
+  }
   // These are unmodified genuine package bytes in a deliberately unsupported
   // dependency context, not an invented version or a supported runtime proof.
   assert.equal(
     sha256(fs.readFileSync(path.join(destination, "package.json"))),
     supported[0].sha256,
+  );
+  assert.equal(
+    sha256(fs.readFileSync(path.join(destination, "dist/index.mjs"))),
+    supported[0].entry.sha256,
   );
 }
 
@@ -139,9 +160,11 @@ export function verifyRegistryAuthority(
       name: string;
       version: string;
       dist: { integrity: string; tarball: string };
+      exports: unknown;
     };
     assert.equal(metadata.name, pkg.name);
     assert.equal(metadata.version, pkg.version);
+    assert.deepEqual(pkg.body.exports, metadata.exports);
     const relative = path.relative(runtime, pkg.root).split(path.sep).join("/");
     assert(!relative.startsWith("../") && !path.isAbsolute(relative));
     const installed = lock.packages[relative];
@@ -162,7 +185,10 @@ export function verifyRegistryAuthority(
   });
 }
 
-if (process.argv[2] === "--probe-effective-config") {
+if (
+  process.argv[2] === "--probe-effective-config" ||
+  process.argv[2] === "--probe-effective-config-unknown"
+) {
   const requested = process.argv[3];
   assert(requested, "Missing runtime project");
   const cwd = fs.realpathSync(requested);
@@ -179,9 +205,11 @@ if (process.argv[2] === "--probe-effective-config") {
   assert.equal(dir.pages, "pages");
   assert.equal(dir.layouts, "layouts");
   assert.notEqual(config.pages, false);
-  assert.equal(app.pageTransition, false);
-  assert.equal(app.layoutTransition, false);
-  assert.equal(app.keepalive, false);
+  if (process.argv[2] === "--probe-effective-config") {
+    assert.equal(app.pageTransition, false);
+    assert.equal(app.layoutTransition, false);
+    assert.equal(app.keepalive, false);
+  }
   assert.deepEqual(config.modules, []);
   console.log(
     JSON.stringify({

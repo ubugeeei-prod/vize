@@ -120,7 +120,7 @@ jobs:
         env:
           VIZE_NUXT_SCOPE_AUTHORED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          vp node tests/tooling/support/nuxt-render-scope-acceptance.ts --runtime "$RUNNER_TEMP/nuxt-runtime-10919" --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-scope"
+          vp node --experimental-import-meta-resolve tests/tooling/support/nuxt-render-scope-acceptance.ts --runtime "$RUNNER_TEMP/nuxt-runtime-10919" --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-scope"
       - name: Preserve all original producer inputs, processes and output packets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

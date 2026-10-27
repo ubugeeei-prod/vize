@@ -7,66 +7,67 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use vize_l0::{FxHashMap, String, profiler::global_profiler};
 
-pub(super) const MAX_MANIFEST_BYTES: u64 = 64 * 1024;
+pub(crate) const MAX_MANIFEST_BYTES: u64 = 64 * 1024;
 const MAX_DIRECTORY_ENTRIES: usize = 4096;
+const MAX_MANIFEST_READS: u64 = 6;
 
 #[derive(Debug, Clone)]
-pub(super) struct ManifestEvidence {
-    pub(super) package_root: PathBuf,
-    pub(super) name: Option<String>,
-    pub(super) version: Option<String>,
-    pub(super) module: bool,
-    pub(super) exports: Option<Value>,
-    pub(super) has_imports: bool,
-    pub(super) manager_overrides: bool,
-    pub(super) inlined_dependencies: FxHashMap<String, String>,
-    pub(super) bytes: u64,
+pub(crate) struct ManifestEvidence {
+    pub(crate) package_root: PathBuf,
+    pub(crate) name: Option<String>,
+    pub(crate) version: Option<String>,
+    pub(crate) module: bool,
+    pub(crate) exports: Option<Value>,
+    pub(crate) has_imports: bool,
+    pub(crate) manager_overrides: bool,
+    pub(crate) inlined_dependencies: FxHashMap<String, String>,
+    pub(crate) bytes: u64,
 }
 
 #[derive(Clone)]
-pub(super) enum PathMetadata {
+pub(crate) enum PathMetadata {
     Missing,
     Present(Metadata),
     Unknown,
 }
 
 #[derive(Clone)]
-pub(super) enum PackageDirectory {
+pub(crate) enum PackageDirectory {
     Missing,
     Canonical(PathBuf),
     Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum EntryKind {
+pub(crate) enum EntryKind {
     File,
     Directory,
     Unknown,
 }
 
 #[derive(Debug, Clone)]
-pub(super) struct Entry {
-    pub(super) name: std::ffi::OsString,
-    pub(super) kind: EntryKind,
+pub(crate) struct Entry {
+    pub(crate) name: std::ffi::OsString,
+    pub(crate) kind: EntryKind,
 }
 
 #[derive(Default, Debug, Clone)]
-pub(super) struct IoCounts {
-    pub(super) metadata: u64,
-    pub(super) canonicalize: u64,
-    pub(super) package_lookups: u64,
-    pub(super) manifest_opens: u64,
-    pub(super) manifest_reads: u64,
-    pub(super) manifest_bytes: u64,
-    pub(super) manifest_parses: u64,
-    pub(super) read_dir: u64,
-    pub(super) entries: u64,
-    pub(super) file_types: u64,
+pub(crate) struct IoCounts {
+    pub(crate) metadata: u64,
+    pub(crate) canonicalize: u64,
+    pub(crate) package_lookups: u64,
+    pub(crate) manifest_opens: u64,
+    pub(crate) manifest_reads: u64,
+    pub(crate) manifest_bytes: u64,
+    pub(crate) manifest_parses: u64,
+    pub(crate) read_dir: u64,
+    pub(crate) entries: u64,
+    pub(crate) file_types: u64,
 }
 
 #[derive(Default)]
-pub(super) struct ProbeIo {
-    pub(super) counts: IoCounts,
+pub(crate) struct ProbeIo {
+    pub(crate) counts: IoCounts,
     metadata: FxHashMap<PathBuf, PathMetadata>,
     canonical: FxHashMap<PathBuf, Option<PathBuf>>,
     manifests: FxHashMap<PathBuf, Option<ManifestEvidence>>,
@@ -74,7 +75,7 @@ pub(super) struct ProbeIo {
 }
 
 impl ProbeIo {
-    pub(super) fn metadata(&mut self, path: &Path) -> PathMetadata {
+    pub(crate) fn metadata(&mut self, path: &Path) -> PathMetadata {
         if let Some(cached) = self.metadata.get(path) {
             return cached.clone();
         }
@@ -88,7 +89,7 @@ impl ProbeIo {
         result
     }
 
-    pub(super) fn directory(&mut self, path: &Path) -> Option<Vec<Entry>> {
+    pub(crate) fn directory(&mut self, path: &Path) -> Option<Vec<Entry>> {
         if let Some(cached) = self.directories.get(path) {
             return cached.clone();
         }
@@ -125,7 +126,7 @@ impl ProbeIo {
         result
     }
 
-    pub(super) fn canonical_directory(
+    pub(crate) fn canonical_directory(
         &mut self,
         path: &Path,
         package_link: bool,
@@ -156,7 +157,7 @@ impl ProbeIo {
         result
     }
 
-    pub(super) fn package_directory(&mut self, path: &Path) -> PackageDirectory {
+    pub(crate) fn package_directory(&mut self, path: &Path) -> PackageDirectory {
         match self.metadata(path) {
             PathMetadata::Missing => PackageDirectory::Missing,
             PathMetadata::Present(_) => self
@@ -166,16 +167,16 @@ impl ProbeIo {
         }
     }
 
-    pub(super) fn regular_file(&mut self, path: &Path) -> bool {
+    pub(crate) fn regular_file(&mut self, path: &Path) -> bool {
         matches!(self.metadata(path), PathMetadata::Present(metadata)
             if metadata.is_file() && !metadata.file_type().is_symlink() && metadata.len() > 0)
     }
 
-    pub(super) fn package_lookup_request(&mut self) {
+    pub(crate) fn package_lookup_request(&mut self) {
         self.counts.package_lookups += 1;
     }
 
-    pub(super) fn manifest(&mut self, root: &Path) -> Option<ManifestEvidence> {
+    pub(crate) fn manifest(&mut self, root: &Path) -> Option<ManifestEvidence> {
         let path = root.join("package.json");
         if let Some(cached) = self.manifests.get(&path) {
             return cached.clone();
@@ -186,6 +187,9 @@ impl ProbeIo {
     }
 
     fn read_manifest(&mut self, root: &Path, path: &Path) -> Option<ManifestEvidence> {
+        if self.counts.manifest_opens >= MAX_MANIFEST_READS {
+            return None;
+        }
         match self.metadata(path) {
             PathMetadata::Present(metadata)
                 if metadata.is_file()

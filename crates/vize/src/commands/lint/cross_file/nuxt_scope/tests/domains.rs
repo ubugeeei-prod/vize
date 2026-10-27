@@ -139,3 +139,23 @@ fn nested_parent_and_child_and_loop_errors_remain_reported() {
         vize_croquis_cf::CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
     )));
 }
+
+#[test]
+fn private_render_carriers_preserve_the_original_semantic_debug_projection() {
+    let source = "<template><main id=\"debug\"/></template>";
+    let mut captured = super::super::super::sfc::analyze_sfc_for_cross_file(
+        source,
+        std::path::Path::new("src/pages/debug.vue"),
+    )
+    .unwrap();
+    let original = vize_l0::cstr!("{:?}", captured.analysis);
+    for script in [None, Some(false), Some(true)] {
+        captured.analysis.nuxt_static_render_script = script;
+        if let Some(template) = captured.analysis.nuxt_render_template.as_mut() {
+            template.admitted = false;
+            template.opaque_structure = true;
+            template.slot_outlets = 99;
+        }
+        assert_eq!(vize_l0::cstr!("{:?}", captured.analysis), original);
+    }
+}

@@ -5,7 +5,7 @@ use std::path::{Component, Path, PathBuf};
 use vize_croquis_cf::{ModuleRegistry, NuxtRenderDirs};
 use vize_l0::FxHashSet;
 
-use super::io::{Entry, EntryKind, ProbeIo};
+use crate::commands::project_nuxt::host_authority::io::{Entry, EntryKind, ProbeIo};
 
 const CONFIG_NAMES: [&str; 6] = [
     "nuxt.config.ts",

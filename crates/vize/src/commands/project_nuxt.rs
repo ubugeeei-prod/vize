@@ -3,6 +3,7 @@
 //! Only literal values count. Anything dynamic reads as unknown so callers can
 //! keep their conservative default.
 
+pub(crate) mod host_authority;
 mod static_render;
 
 use std::{

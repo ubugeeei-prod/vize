@@ -4,10 +4,7 @@
 //! narrow supported runtime needs bounded physical inventories and explicit
 //! absence of opaque loader inputs before the ID consumer may use them.
 
-mod authority;
 mod inventory;
-mod io;
-mod rc;
 #[cfg(all(test, not(windows)))]
 mod tests;
 
@@ -15,9 +12,11 @@ use std::path::Path;
 use vize_croquis_cf::{CrossFileAnalyzer, NuxtRenderDirs};
 use vize_l0::profiler::global_profiler;
 
-use authority::RuntimeAuthority;
-use io::ProbeIo;
-use rc::Environment;
+use crate::commands::project_nuxt::host_authority::{
+    authority::RuntimeAuthority,
+    io::{self, ProbeIo},
+    rc::Environment,
+};
 
 pub(super) fn admitted(
     root: &Path,

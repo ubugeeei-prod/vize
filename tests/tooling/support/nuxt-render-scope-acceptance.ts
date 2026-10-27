@@ -22,28 +22,10 @@ import {
   valid,
   withoutOriginalTwoGroups,
 } from "./nuxt-render-scope-packets.ts";
+import { scopeCases } from "./nuxt-render-scope-cases.ts";
+import type { CorpusCase } from "./nuxt-render-scope-cases.ts";
 import type { ProcessPacket, Profile } from "./nuxt-render-scope-packets.ts";
 
-type CorpusCase = {
-  id: string;
-  role: string;
-  files: Record<string, string>;
-  expectedDuplicateIds: string[];
-};
-type Spec = CorpusCase & {
-  exclusive?: boolean;
-  scopeExpected?: boolean;
-  patterns?: string[];
-  setup?:
-    | "ignored"
-    | "project-rc"
-    | "ancestor-rc"
-    | "xdg-rc"
-    | "env"
-    | "node-env"
-    | "decoy-kit"
-    | "nested-kit";
-};
 type CaseReport = {
   id: string;
   role: string;
@@ -147,60 +129,11 @@ const report = {
 function persist(): void {
   fs.writeFileSync(path.join(output, "index.json"), JSON.stringify(report, null, 2) + "\n");
 }
-const overview =
-  "<script setup>import Login from './login.vue';import Signup from './signup.vue'</script><template><Login/><Signup/></template>\n";
 const originals = corpus.originalFiles;
-function changed(id: string, files: Record<string, string>, setup?: Spec["setup"]): Spec {
-  return {
-    id,
-    role: "unknown-or-co-render-must-retain",
-    files: { ...originals, ...files },
-    expectedDuplicateIds: ["shell", "auth-page"],
-    setup,
-  };
-}
-const specs: Spec[] = [
-  ...corpus.cases.map((entry, index) => ({
-    ...entry,
-    exclusive: index === 0,
-    scopeExpected: index === 0 || entry.id === "layout-and-page",
-  })),
-  changed("unselected-co-rendering-importer", { "src/pages/overview.vue": overview }),
-  changed(
-    "ignored-co-rendering-importer",
-    { "src/pages/overview.vue": overview, ".gitignore": "src/pages/overview.vue\n" },
-    "ignored",
-  ),
-  changed("page-transition", {
-    "src/pages/login.vue":
-      "<script setup>definePageMeta({layout:'bare',pageTransition:{mode:'in-out'}})</script><template><section id=\"auth-page\">login</section></template>\n",
-  }),
-  changed("repeated-layout-slot", {
-    "src/layouts/bare.vue": '<template><div id="shell"><slot/><slot/></div></template>\n',
-  }),
-  changed("looped-layout-slot", {
-    "src/layouts/bare.vue":
-      '<template><div id="shell"><template v-for="item in [1,2]"><slot/></template></div></template>\n',
-  }),
-  changed("shadowed-framework-component", {
-    "src/components/NuxtPage.vue": "<template><slot/><slot/></template>\n",
-  }),
-  changed("inline-event-carrier", {
-    "src/layouts/bare.vue":
-      '<template><div id="shell" onclick="document.body.appendChild(this.cloneNode(true))"><slot/></div></template>\n',
-  }),
-  ...(["project-rc", "ancestor-rc", "xdg-rc", "env", "node-env", "nested-kit"] as const).map(
-    (setup) => changed(setup, {}, setup),
-  ),
-  { ...changed("top-level-kit-decoy", {}, "decoy-kit"), exclusive: true },
-];
-specs.find((entry) => entry.id === "unselected-co-rendering-importer")!.patterns = [
-  "src/app.vue",
-  "src/layouts/bare.vue",
-  "src/layouts/default.vue",
-  "src/pages/login.vue",
-  "src/pages/signup.vue",
-];
+const specs = scopeCases(corpus);
+assert.equal(specs.length, 30);
+assert.equal(new Set(specs.map((entry) => entry.id)).size, 30);
+assert.equal(specs.filter((entry) => entry.exclusive).length, 3);
 const removedKeys = Object.keys(process.env).filter(
   (key) =>
     key.startsWith("NUXT_") ||
@@ -251,13 +184,27 @@ for (const spec of specs) {
       row.setup = run("git", ["init", "--quiet"], cwd, env);
       assert.equal(row.setup.status, 0);
     }
-    if (spec.setup === "project-rc" || spec.setup === "ancestor-rc" || spec.setup === "xdg-rc") {
+    if (
+      spec.setup === "project-rc" ||
+      spec.setup === "ancestor-rc" ||
+      spec.setup === "xdg-rc" ||
+      spec.setup === "home-rc"
+    ) {
+      if (spec.setup === "home-rc") {
+        const controlledHome = path.join(runtime, "controlled-home", spec.id);
+        fs.mkdirSync(path.join(controlledHome, ".config"), { recursive: true });
+        // This changes only the tested child-process input, never the runner home.
+        env.HOME = controlledHome;
+        row.environment.home = controlledHome;
+      }
       ambientPath =
         spec.setup === "project-rc"
           ? path.join(cwd, ".nuxtrc")
           : spec.setup === "ancestor-rc"
-            ? path.join(path.dirname(cwd), ".nuxtrc")
-            : path.join(xdg, ".nuxtrc");
+            ? path.join(runtime, ".nuxtrc")
+            : spec.setup === "home-rc"
+              ? path.join(env.HOME!, ".nuxtrc")
+              : path.join(xdg, ".nuxtrc");
       assert(!fs.existsSync(ambientPath), "Never overwrite an existing ambient input");
       const source = 'app.pageTransition={"mode":"in-out"}\n';
       fs.writeFileSync(ambientPath, source);
@@ -273,10 +220,24 @@ for (const spec of specs) {
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.symlinkSync(unsupportedKit, target, "dir");
     }
-    if (spec.setup === "nested-kit")
-      copyGenuineNuxtWithNestedKit(cwd, runtimePackages, unsupportedKit);
+    if (
+      spec.setup === "nested-kit" ||
+      spec.setup === "nested-dist-kit" ||
+      spec.setup === "nested-dist-supported"
+    ) {
+      copyGenuineNuxtWithNestedKit(
+        cwd,
+        runtimePackages,
+        unsupportedKit,
+        spec.setup === "nested-kit"
+          ? "root"
+          : spec.setup === "nested-dist-kit"
+            ? "dist-unsupported"
+            : "dist-supported",
+      );
+    }
     row.runtime = observeRuntime(cwd);
-    if (spec.setup === "nested-kit") {
+    if (spec.setup === "nested-kit" || spec.setup === "nested-dist-kit") {
       assert.equal(row.runtime[1].version, "4.6.2");
     } else {
       requireSupported(row.runtime);
@@ -310,8 +271,21 @@ for (const spec of specs) {
       row.processes.genuineNuxtConfig = run(
         process.execPath,
         [
+          "--experimental-import-meta-resolve",
           fileURLToPath(new URL("./nuxt-render-scope-runtime.ts", import.meta.url)),
           "--probe-effective-config",
+          cwd,
+        ],
+        cwd,
+        env,
+      );
+    if (row.ambient)
+      row.processes.genuineNuxtConfig = run(
+        process.execPath,
+        [
+          "--experimental-import-meta-resolve",
+          fileURLToPath(new URL("./nuxt-render-scope-runtime.ts", import.meta.url)),
+          "--probe-effective-config-unknown",
           cwd,
         ],
         cwd,
@@ -326,6 +300,21 @@ for (const spec of specs) {
     }));
     saveCase();
     for (const packet of Object.values(row.processes)) valid(packet);
+    if (row.ambient) {
+      assert.equal(
+        row.processes.genuineNuxtConfig.status,
+        0,
+        row.processes.genuineNuxtConfig.stderr,
+      );
+      const effective = JSON.parse(row.processes.genuineNuxtConfig.stdout) as {
+        app: { pageTransition: unknown };
+      };
+      assert.deepEqual(
+        effective.app.pageTransition,
+        { mode: "in-out" },
+        "The real loader must observe this RC input",
+      );
+    }
     const beforeBody = body(row.processes.beforeOn);
     const sourceBody = body(row.processes.sourceOn);
     for (const id of spec.expectedDuplicateIds)
