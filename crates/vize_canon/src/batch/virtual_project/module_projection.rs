@@ -27,7 +27,16 @@ impl VirtualProject {
             self.finalize_editor_imports();
             return;
         }
-        if !self.jsx_typecheck && !self.virtual_files.values().any(is_denied_javascript_sfc) {
+        // Relative mirror edges are projected only after reachability closes,
+        // making initial registration independent of file and batch ordering.
+        let external_sources = self
+            .original_index
+            .keys()
+            .any(|path| !path.starts_with(&self.project_root));
+        if !external_sources
+            && !self.jsx_typecheck
+            && !self.virtual_files.values().any(is_denied_javascript_sfc)
+        {
             self.finalize_declaration_imports();
             return;
         }

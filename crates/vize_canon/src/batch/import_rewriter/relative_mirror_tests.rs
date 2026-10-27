@@ -276,3 +276,49 @@ fn allowjs_sfc_boundary_rewrites_retain_authored_dependency_edges() {
         Some(&shared)
     );
 }
+
+#[test]
+fn batch_order_and_repeated_finalization_keep_complete_virtual_packets_identical() {
+    use crate::batch::virtual_project::VirtualProject;
+    let fixture = Fixture::new();
+    let app = fixture.root.join("src/App.vue");
+    let model = fixture.root.join("src/model.ts");
+    std::fs::write(&app, "<script setup lang='ts'>import Shared from '../../ui/src/Shared.vue';</script><template><Shared /></template>").unwrap();
+    std::fs::write(
+        &model,
+        "import data from '../../ui/src/data.json'; export type Id = typeof data.id;",
+    )
+    .unwrap();
+    std::fs::write(fixture.sibling.join("src/Shared.vue"), "<script setup lang='ts'>import type { Id } from '../../app/src/model'; defineProps<{ id?: Id }>();</script>").unwrap();
+    std::fs::write(fixture.sibling.join("src/data.json"), "{\"id\":1}").unwrap();
+    let capture = |project: &VirtualProject| {
+        let files = project
+            .virtual_files_sorted()
+            .iter()
+            .map(|file| {
+                (
+                    file.original_path.clone(),
+                    file.virtual_path.clone(),
+                    file.content.clone(),
+                    format!("{:?}", file.source_map),
+                )
+            })
+            .collect::<Vec<_>>();
+        (files, format!("{:?}", project.diagnostics()))
+    };
+    let mut bulk = VirtualProject::new(&fixture.root).unwrap();
+    let mut sequential = VirtualProject::new(&fixture.root).unwrap();
+    bulk.register_paths(&[app.clone(), model.clone()]).unwrap();
+    for path in [&model, &app] {
+        sequential.register_path(path).unwrap();
+    }
+    assert_eq!(capture(&bulk), capture(&sequential));
+    for project in [&mut bulk, &mut sequential] {
+        project.register_reachable_dependencies().unwrap();
+        project.finalize_package_routes().unwrap();
+    }
+    assert_eq!(capture(&bulk), capture(&sequential));
+    let finalized = capture(&bulk);
+    bulk.finalize_package_routes().unwrap();
+    assert_eq!(capture(&bulk), finalized);
+}
