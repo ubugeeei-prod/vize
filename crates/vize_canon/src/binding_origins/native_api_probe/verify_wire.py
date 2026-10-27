@@ -36,84 +36,114 @@ def frames(data):
     return packets
 
 
+SDK_IMAGES = {
+    "7.0.2":"4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "7.1.0-beta":"a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+}
+FIXTURE_REF_TAGS = {
+    "7.0.2":{"import":277,"function":263},
+    "7.1.0-beta":{"import":278,"function":264},
+}
+
+
+def fixture_reference(handle, version, role, image_sha):
+    # Fixture observation only. This is NOT an ASTSyntaxKind or origin classifier.
+    if SDK_IMAGES.get(version) != image_sha or version not in FIXTURE_REF_TAGS:
+        return False
+    parts = handle.split(".", 2)
+    return len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit() and parts[2].startswith("/") and int(parts[1]) == FIXTURE_REF_TAGS[version][role]
+
+
 def verify(directory, version):
     directory = pathlib.Path(directory)
     client_bytes = (directory / "client-to-native.wire.bin").read_bytes()
     native_bytes = (directory / "native-to-client.wire.bin").read_bytes()
-    client = frames(client_bytes)
-    native = frames(native_bytes)
+    client, native = frames(client_bytes), frames(native_bytes)
     requests = [p for p in client if isinstance(p.get("method"), str) and "id" in p]
-    assert len(requests) == len(client), "classify unexpected client notifications/responses"
     responses = [p for p in native if "id" in p and "method" not in p]
-    assert len(responses) == len(native), "classify unexpected peer callbacks/notifications"
-    symbol_ids = [p["id"] for p in requests if p["method"] in ["getSymbolAtPosition", "getAliasedSymbol"]]
+    assert len(requests) == len(client) and len(responses) == len(native)
+    symbol_methods = ["getSymbolAtPosition","getAliasedSymbol","getTypeOfSymbol","getSymbolOfType"]
+    symbol_ids = [p["id"] for p in requests if p["method"] in symbol_methods]
     candidates = {
         "requests":[p for p in requests if p["id"] in symbol_ids],
         "responses":[p for p in responses if p["id"] in symbol_ids],
     }
-    (directory / "raw-symbol-candidates.json").write_text(json.dumps(candidates, indent=2) + "\n")
-    request_ids = [p["id"] for p in requests]
-    response_ids = [p["id"] for p in responses]
-    assert all(type(value) in [int, str] for value in request_ids + response_ids)
-    assert len(set(request_ids)) == len(request_ids), "duplicate request ID"
-    assert Counter(request_ids) == Counter(response_ids), "lost or duplicate full response"
-    by_id = {p["id"]: p for p in responses}
-    assert all("result" in p and "error" not in p for p in responses), "native API error"
+    (directory / "raw-symbol-candidates.json").write_text(json.dumps(candidates, indent=2)+"\n")
+    request_ids, response_ids = [p["id"] for p in requests], [p["id"] for p in responses]
+    assert all(type(value) in [int,str] for value in request_ids+response_ids)
+    assert len(set(request_ids)) == len(request_ids)
+    assert Counter(request_ids) == Counter(response_ids)
+    assert all("result" in p and "error" not in p for p in responses)
+    by_id = {p["id"]:p for p in responses}
     counts = Counter(p["method"] for p in requests)
-    assert counts["getSymbolAtPosition"] == 3
-    assert counts["getAliasedSymbol"] == 1
-    assert counts["getSourceFileNames"] == 1
-    assert counts["getSourceFile"] == 1
+    carrier = json.loads((directory / "carrier-receipt.json").read_text())
+    assert carrier["backendSha256"] == SDK_IMAGES[version]
+    assert len(carrier["phases"]) == 3
+    assert [p["syntaxComplete"] for p in carrier["phases"]] == [True,False,True]
+    grouped = {}
     selected_requests = [p for p in requests if p["method"] == "getSymbolAtPosition"]
-    assert all(p["params"] == selected_requests[0]["params"] for p in selected_requests)
-    selected = [by_id[p["id"]]["result"] for p in selected_requests]
-    assert len(selected) == 3 and all(p == selected[0] for p in selected), "same-snapshot reference changed"
-    assert selected[0]["name"] == "actual"
-    alias_request, = [p for p in requests if p["method"] == "getAliasedSymbol"]
-    target = by_id[alias_request["id"]]["result"]
-    assert target["name"] == "useTemplateRef"
-    symbols = [selected[0], target]
-    for symbol in symbols:
-        assert isinstance(symbol["declarations"], list) and symbol["declarations"]
-        assert all(isinstance(handle, str) and handle for handle in symbol["declarations"])
-        if version == "7.1.0-beta":
-            reference = symbol["reference"]
-            assert isinstance(reference, dict)
-            assert type(reference["id"]) is int
-            if reference["kind"] == 0:
-                descriptor = reference["file"]
-                for key in ["fileName", "path", "contentHash", "parseOptionsKey", "scriptKind", "nodeId"]:
-                    assert key in descriptor, "incomplete native file-owner reference"
+    for request in selected_requests:
+        key = json.dumps(request["params"], sort_keys=True)
+        grouped.setdefault(key, []).append(request)
+    baselines = [group for group in grouped.values() if len(group) == 3]
+    assert len(baselines) == 3
+    assert counts["getSymbolAtPosition"] == 54
+    assert counts["getAliasedSymbol"] == 15
+    assert counts["getTypeOfSymbol"] == 3 and counts["getSymbolOfType"] == 3
+    assert counts["getSourceFileNames"] == 3
+    symbols = []
+    for request in requests:
+        value = by_id[request["id"]]["result"]
+        if request["method"] in ["getSymbolAtPosition","getAliasedSymbol","getSymbolOfType"] and value is not None:
+            assert isinstance(value["declarations"],list) and value["declarations"]
+            assert all(isinstance(handle,str) and handle for handle in value["declarations"])
+            if version == "7.1.0-beta":
+                ref = value["reference"]
+                assert type(ref["id"]) is int
+                if ref["kind"] == 0:
+                    assert all(key in ref["file"] for key in ["fileName","path","contentHash","parseOptionsKey","scriptKind","nodeId"])
+                else:
+                    assert ref["kind"] == 1 and "snapshot" in ref and "project" in ref
             else:
-                assert reference["kind"] == 1
-                assert "snapshot" in reference and "project" in reference
-        else:
-            assert version == "7.0.2"
-            assert type(symbol["id"]) in [int, str]
-    expected_argument = selected[0]["reference"] if version == "7.1.0-beta" else selected[0]["id"]
-    assert alias_request["params"]["symbol"] == expected_argument, "adapter lost full selected owner"
-    retained = [{"request":p, "response":by_id[p["id"]]} for p in requests if p["method"] in ["getSymbolAtPosition", "getAliasedSymbol"]]
-    (directory / "full-wire-symbol-packets.json").write_text(json.dumps(retained, indent=2) + "\n")
-    receipt = json.loads((directory / "carrier-receipt.json").read_text())
-    assert receipt["forwardedClientBytes"] == len(client_bytes)
-    assert receipt["observedNativeStdoutBytes"] == len(native_bytes)
+                assert type(value["id"]) in [int,str]
+            symbols.append(value)
+    controls = []
+    for group in baselines:
+        values = [by_id[p["id"]]["result"] for p in group]
+        assert all(value == values[0] for value in values)
+        selected = values[0]
+        assert selected["name"] == "actual"
+        argument = selected["reference"] if version == "7.1.0-beta" else selected["id"]
+        aliases = [p for p in requests if p["method"] == "getAliasedSymbol" and p["params"]["symbol"] == argument and p["params"]["snapshot"] == group[0]["params"]["snapshot"]]
+        assert len(aliases) == 1
+        target = by_id[aliases[0]["id"]]["result"]
+        assert target["name"] == "useTemplateRef"
+        for role, symbol in [("import", selected),("function", target)]:
+            handle = symbol["declarations"][0]
+            assert fixture_reference(handle,version,role,carrier["backendSha256"])
+            index,kind,path = handle.split(".",2)
+            other = "7.1.0-beta" if version == "7.0.2" else "7.0.2"
+            poisoned = ".".join([index,str(FIXTURE_REF_TAGS[other][role]),path])
+            assert not fixture_reference(poisoned,version,role,carrier["backendSha256"])
+            assert not fixture_reference(".".join([index,"99999",path]),version,role,carrier["backendSha256"])
+            assert not fixture_reference(handle,"unknown",role,carrier["backendSha256"])
+            assert not fixture_reference(handle,version,role,"0"*64)
+            controls.append({"role":role,"actual":handle,"oppositeVersionTag":poisoned,"rejected":True})
+    retained = [{"request":p,"response":by_id[p["id"]]} for p in requests if p["method"] in symbol_methods]
+    (directory / "full-wire-symbol-packets.json").write_text(json.dumps(retained,indent=2)+"\n")
+    assert carrier["forwardedClientBytes"] == len(client_bytes)
+    assert carrier["observedNativeStdoutBytes"] == len(native_bytes)
     result = {
-        "schema":"vize.binding-origin.native-api-wire.v1",
-        "version":version,
-        "scope":"pre-normalization Unix relay to standalone native stdio; product LSP socket unqualified",
-        "actualRequestCounts":dict(counts),
-        "actualResponseCount":len(responses),
-        "clientWireBytes":len(client_bytes),
-        "clientWireSha256":hashlib.sha256(client_bytes).hexdigest(),
-        "nativeWireBytes":len(native_bytes),
-        "nativeWireSha256":hashlib.sha256(native_bytes).hexdigest(),
-        "sameSnapshotSelectedResponses":3,
-        "fullReferenceFieldsRetained":True,
-        "rawSymbolFields":[sorted(symbol) for symbol in symbols],
-        "rawValueDeclarationPresent":["valueDeclaration" in symbol for symbol in symbols],
-        "nativeProgramCount":None,
-        "nativeBindCount":None,
-        "passed":True,
+        "schema":"vize.binding-origin.native-api-wire.v2","version":version,
+        "scope":"test Unix relay to standalone native stdio; product LSP socket and origin host wiring unqualified",
+        "actualRequestCounts":dict(counts),"actualResponseCount":len(responses),
+        "clientWireBytes":len(client_bytes),"clientWireSha256":hashlib.sha256(client_bytes).hexdigest(),
+        "nativeWireBytes":len(native_bytes),"nativeWireSha256":hashlib.sha256(native_bytes).hexdigest(),
+        "sameSnapshotRepeatGroups":3,"rawSymbolPacketsRetained":len(retained),
+        "versionBoundFixtureRefControls":controls,
+        "nodeRefTagIsNotPortableASTSyntaxKind":True,
+        "nativeProgramCount":None,"nativeBindCount":None,
+        "originClassifierQualified":False,"hostWire":False,"passed":True,
     }
-    (directory / "full-wire-receipt.json").write_text(json.dumps(result, indent=2) + "\n")
+    (directory / "full-wire-receipt.json").write_text(json.dumps(result,indent=2)+"\n")
     return result

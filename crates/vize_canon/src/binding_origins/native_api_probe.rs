@@ -1,6 +1,6 @@
-//! Test-only direct-stdio API carrier. This does not qualify editor socket IPC.
+//! Test-only raw metadata capability; no production origin inference is wired.
 use corsa::{
-    api::{ApiClient, ProjectSession},
+    api::{ApiClient, FileChanges, ProjectSession},
     runtime::block_on,
 };
 use serde_json::{Value, json};
@@ -12,7 +12,9 @@ use std::{
     process::Command,
 };
 use vize_carton::{String, append, cstr};
-
+mod cases;
+mod coverage;
+mod fixture;
 mod transport;
 use transport::NativeTap;
 
@@ -29,14 +31,15 @@ fn write(path: &Path, value: &Value) {
 fn required(name: &str) -> PathBuf {
     PathBuf::from(std::env::var_os(name).expect(name))
 }
+
 #[test]
 #[ignore = "requires exact public native providers; mandatory in source-law Actions"]
 fn standalone_native_api_retains_one_project_symbol_owner() {
+    assert_hash_vectors();
     let provider = required("VIZE_ORIGIN_API_PROVIDER").canonicalize().unwrap();
     let backend = required("VIZE_ORIGIN_API_BACKEND").canonicalize().unwrap();
     let output = required("VIZE_ORIGIN_API_CAPTURE");
     let version = std::env::var("VIZE_ORIGIN_API_VERSION").unwrap();
-    assert_hash_vectors();
     assert!(!output.exists(), "never replace earlier evidence");
     fs::create_dir(&output).unwrap();
     let probe = Command::new(&backend).arg("--version").output().unwrap();
@@ -50,30 +53,19 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     let root = output.join("project");
     fs::create_dir(&root).unwrap();
     symlink(provider.join("node_modules"), root.join("node_modules")).unwrap();
+    fixture::write(&root);
     let config = root.join("tsconfig.json");
-    fs::write(
-        &config,
-        r#"{"compilerOptions":{"strict":true,"noEmit":true,"skipLibCheck":true,"module":"ESNext","moduleResolution":"Bundler","target":"ES2024","types":[]},"files":["probe.ts"]}"#,
-    )
-    .unwrap();
-    let source = "import { useTemplateRef as actual } from 'vue';\n/*😀*/ void actual;\n";
-    let file = root.join("probe.ts");
-    fs::write(&file, source).unwrap();
     let launcher = output.join("api-exec.py");
     fs::write(&launcher, include_str!("native_api_probe.py")).unwrap();
     fs::set_permissions(&launcher, fs::Permissions::from_mode(0o755)).unwrap();
     let mut tap = NativeTap::start(&launcher, &backend, &root, &output);
     let client = block_on(ApiClient::connect_pipe(tap.socket())).unwrap();
-    let session = block_on(ProjectSession::open(
+    let mut session = block_on(ProjectSession::open(
         client,
         config.to_string_lossy().as_ref(),
         None,
     ))
-    .expect("the observed standalone API must open the configured project");
-    let lease = session.snapshot_lease();
-    let snapshot = lease.handle.clone();
-    let project = session.project().clone();
-    assert_eq!(Path::new(&project.config_file_name), config);
+    .unwrap();
     let launch: Value =
         serde_json::from_slice(&fs::read(output.join("actual-launch.json")).unwrap()).unwrap();
     let pid = launch.get("pid").and_then(Value::as_u64).unwrap();
@@ -84,77 +76,37 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     let stdout = fs::read_link(cstr!("/proc/{pid}/fd/1").as_str()).unwrap();
     assert!(stdin.to_string_lossy().starts_with("pipe:["));
     assert!(stdout.to_string_lossy().starts_with("pipe:["));
-    let offset = source.rfind("actual").unwrap();
-    let position = u32::try_from(source.get(..offset).unwrap().encode_utf16().count()).unwrap();
-    let selected =
-        block_on(session.get_symbol_at_position(file.to_string_lossy().as_ref(), position))
-            .unwrap()
-            .expect("authored import alias must resolve");
-    assert_ne!(selected.flags & (1 << 21), 0);
-    let target = block_on(session.client().get_aliased_symbol(
-        snapshot.clone(),
-        project.id.clone(),
-        selected.id.clone(),
-    ))
-    .unwrap()
-    .expect("actual Vue alias must resolve");
-    assert_eq!(target.name, "useTemplateRef");
-    assert!(!target.declarations.is_empty());
-    let again = block_on(session.get_symbol_at_position(file.to_string_lossy().as_ref(), position))
-        .unwrap()
-        .unwrap();
-    assert_eq!(selected, again);
-    let normalized = block_on(session.client().raw_json_request(
-        "getSymbolAtPosition",
-        json!({"snapshot":snapshot,"project":project.id,"file":file,"position":position}),
-    ))
-    .unwrap();
-    write(&output.join("adapter-normalized-symbol.json"), &normalized);
-    assert_eq!(
-        normalized.get("name").and_then(Value::as_str),
-        Some("actual")
-    );
-    let names = block_on(session.client().raw_json_request(
-        "getSourceFileNames",
-        json!({"snapshot":snapshot,"project":project.id}),
-    ))
-    .unwrap();
-    write(&output.join("source-file-names.json"), &names);
-    let names: Vec<String> = serde_json::from_value(names).unwrap();
-    assert!(names.iter().any(|name| Path::new(name.as_str()) == file));
-    let manifest = names
-        .iter()
-        .map(|name| {
-            let real = Path::new(name.as_str()).canonicalize().unwrap();
-            let bytes = fs::read(&real).unwrap();
-            json!({"nativeName":name,"actualPath":real,"bytes":bytes.len(),"sha256":hash(&bytes)})
-        })
-        .collect::<Vec<_>>();
-    write(&output.join("source-input-manifest.json"), &json!(manifest));
-    let declaration = target
-        .declarations
-        .first()
-        .unwrap()
-        .declaring_path()
-        .unwrap();
-    let declaration = Path::new(declaration.as_str()).canonicalize().unwrap();
-    let core = provider
-        .join("node_modules/@vue/runtime-core")
-        .canonicalize()
-        .unwrap();
-    assert!(declaration.starts_with(&core));
-    let payload = block_on(session.client().get_source_file(
-        snapshot.clone(),
-        project.id.clone(),
-        declaration.to_string_lossy().as_ref(),
-    ))
-    .unwrap()
-    .expect("the selected declaration owner must exist in this same snapshot");
-    fs::write(
-        output.join("declaration-owner.encoded.bin"),
-        payload.as_bytes(),
-    )
-    .unwrap();
+    let mut phases = Vec::new();
+    for (index, (name, partial)) in [("valid", false), ("partial", true), ("repaired", false)]
+        .into_iter()
+        .enumerate()
+    {
+        if index > 0 {
+            if partial {
+                fixture::partial(&root);
+            } else {
+                fixture::repair(&root);
+            }
+            block_on(session.refresh(Some(FileChanges::InvalidateAll {
+                invalidate_all: true,
+            })))
+            .unwrap();
+        }
+        let lease = session.snapshot_lease();
+        let handle = lease.handle.clone();
+        assert_eq!(Path::new(&session.project().config_file_name), config);
+        let phase = cases::run(
+            &session,
+            &provider,
+            &root,
+            &output.join(name),
+            &version,
+            partial,
+        );
+        assert_eq!(session.snapshot().handle, handle);
+        phases.push(phase);
+        drop(lease);
+    }
     let dialect = session.client().dialect().unwrap().as_str();
     assert_eq!(
         dialect,
@@ -165,28 +117,6 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
             "derived-snapshots"
         }
     );
-    assert_eq!(session.snapshot().handle, snapshot);
-    assert_eq!(session.project(), &project);
-    let mut receipt = json!({
-        "schema":"vize.binding-origin.native-api-carrier.v2",
-        "scope":"test-only Unix relay to standalone native stdio; product editor socket IPC and origin host wiring are unqualified",
-        "version":version,"backend":backend,"backendSha256":hash(&fs::read(&backend).unwrap()),
-        "provider":provider,"launch":launch,"actualExecutable":executable,
-        "actualStdin":stdin,"actualStdout":stdout,"dialect":dialect,
-        "snapshot":snapshot,"project":project,"sourceInputManifestEntries":manifest.len(),
-        "selected":selected,"target":target,"repeat":again,"adapterNormalized":normalized,
-        "fullWireCaptured":true,"actualWireRequestCounts":"offline verify_wire.py",
-        "transport":{"client":"test Unix relay","native":"standalone stdio","apiProgramsInferred":false},
-        "hashVectors":{"count":4,"oracle":"Node26 crypto; SHA256 empty and abc known vectors"},
-        "explicitHostCalls":{"getSymbolAtPosition":3,"getAliasedSymbol":1,"getSourceFileNames":1,"getSourceFile":1},
-        "managedSnapshotLeaseBytes":Value::Null,
-        "retainedEncodedSourcePayloadBytes":payload.as_bytes().len(),
-        "retainedEncodedSourcePayloadSha256":hash(payload.as_bytes()),
-        "nativeProgramCreationCount":Value::Null,"nativeBindCount":Value::Null,
-        "hostProjectSessionSpawns":1,"hostSnapshotRefreshes":0,"snapshotHandleTransfers":0,
-        "hostWire":false,"passed":true
-    });
-    drop(lease);
     block_on(session.snapshot().release()).unwrap();
     let (forwarded, received) = tap.finish().unwrap();
     block_on(session.close()).unwrap();
@@ -203,8 +133,19 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
             .len(),
         received
     );
-    receipt["forwardedClientBytes"] = json!(forwarded);
-    receipt["observedNativeStdoutBytes"] = json!(received);
+    let receipt = json!({
+        "schema":"vize.binding-origin.native-api-carrier.v3","version":version,
+        "scope":"test Unix relay to standalone native stdio; product editor IPC and origin classifier are unqualified",
+        "backend":backend,"backendSha256":hash(&fs::read(&backend).unwrap()),
+        "provider":provider,"launch":launch,"actualExecutable":executable,
+        "actualStdin":stdin,"actualStdout":stdout,"dialect":dialect,
+        "phases":phases,"hashVectors":{"count":4,"oracle":"Node26 crypto and known SHA256 vectors"},
+        "forwardedClientBytes":forwarded,"observedNativeStdoutBytes":received,"fullWireCaptured":true,
+        "managedSnapshotLeaseBytes":Value::Null,"nativeProgramCreationCount":Value::Null,"nativeBindCount":Value::Null,
+        "hostProjectSessionSpawns":1,"hostSnapshotRefreshes":2,"snapshotHandleTransfers":0,
+        "currentBaseRelease":"observed wire only; derived current-base ownership may defer release",
+        "originClassifierQualified":false,"hostWire":false,"passed":true
+    });
     write(&output.join("carrier-receipt.json"), &receipt);
     println!("NATIVE_ORIGIN_API_RECEIPT {receipt}");
 }
@@ -227,4 +168,3 @@ fn assert_hash_vectors() {
         assert_eq!(hash(bytes), expected);
     }
 }
-

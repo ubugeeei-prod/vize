@@ -123,7 +123,7 @@ jobs:
           for version in ["7.0.2", "7.1.0-beta"]:
               provider = out / "providers" / version
               provider.mkdir(parents=True)
-              (provider / "package.json").write_text(json.dumps({"name":"vize-origin-api-provider","version":"1.0.0","private":True,"dependencies":{"typescript":version,"vue":"3.5.42"}}))
+              (provider / "package.json").write_text(json.dumps({"name":"vize-origin-api-provider","version":"1.0.0","private":True,"dependencies":{"typescript":version,"vue":"3.5.42","vue-authentic":"npm:vue@3.5.42","vue-other":"npm:vue@3.5.44"}}))
               install = subprocess.run(["npm","install","--ignore-scripts","--no-audit","--no-fund","--registry=https://registry.npmjs.org"], cwd=provider, env=env, capture_output=True, text=True, timeout=300)
               (out / f"{version}.npm.stdout.txt").write_text(install.stdout)
               (out / f"{version}.npm.stderr.txt").write_text(install.stderr)
@@ -140,6 +140,9 @@ jobs:
               assert metadata["version"] == version
               assert json.loads((provider / "node_modules/typescript/package.json").read_text())["version"] == version
               assert json.loads((provider / "node_modules/vue/package.json").read_text())["version"] == "3.5.42"
+              for alias, expected in [("vue-authentic","3.5.42"),("vue-other","3.5.44")]:
+                  alias_manifest = json.loads((provider / "node_modules" / alias / "package.json").read_text())
+                  assert alias_manifest["name"] == "vue" and alias_manifest["version"] == expected
               capture = out / f"native-{version}"
               role_env = dict(env, VIZE_ORIGIN_API_PROVIDER=str(provider), VIZE_ORIGIN_API_BACKEND=str(backend), VIZE_ORIGIN_API_CAPTURE=str(capture), VIZE_ORIGIN_API_VERSION=version)
               command = [str(binary),"--exact",native_name,"--ignored","--nocapture","--test-threads","1"]
@@ -149,7 +152,7 @@ jobs:
               qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
               wire = None
               wire_error = None
-              if qualified:
+              if (capture / "client-to-native.wire.bin").is_file() and (capture / "native-to-client.wire.bin").is_file():
                   try:
                       verifier = runpy.run_path(str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify_wire.py"))
                       wire = verifier["verify"](capture, version)
@@ -169,11 +172,17 @@ jobs:
                   print("NATIVE_ORIGIN_WIRE_RECEIPT " + json.dumps(wire), flush=True)
               lean = out / "native-metadata" / version
               lean.mkdir(parents=True)
-              wanted = ["backend-version.json","actual-launch.json","adapter-normalized-symbol.json","source-file-names.json","source-input-manifest.json","carrier-receipt.json","raw-symbol-candidates.json","full-wire-symbol-packets.json","full-wire-receipt.json","native.stderr.txt"]
+              wanted = ["backend-version.json","actual-launch.json","carrier-receipt.json","raw-symbol-candidates.json","full-wire-symbol-packets.json","full-wire-receipt.json","native.stderr.txt"]
               for name in wanted:
                   if (capture / name).is_file():
                       shutil.copyfile(capture / name, lean / name)
-              for name in ["probe.ts","tsconfig.json"]:
+              for phase in ["valid","partial","repaired"]:
+                  phase_out = lean / phase
+                  phase_out.mkdir()
+                  for name in ["baseline-normalized.json","cases-selected.json","cases-normalized.json","source-file-names.json","source-input-manifest.json","getSyntacticDiagnostics.json","getSemanticDiagnostics.json","phase-receipt.json","original-partial.ts"]:
+                      if (capture / phase / name).is_file():
+                          shutil.copyfile(capture / phase / name, phase_out / name)
+              for name in ["probe.ts","tsconfig.json","custom.ts","custom-vue.ts","globals.d.ts","merged.d.ts","opaque-globals.ts","partial.ts"]:
                   if (capture / "project" / name).is_file():
                       shutil.copyfile(capture / "project" / name, lean / name)
               for suffix in ["native.stdout.txt","native.stderr.txt","package-lock.json.txt","npm.stdout.txt","npm.stderr.txt"]:
@@ -187,14 +196,14 @@ jobs:
               "sourceSha":source,"sourceTree":tree,
               "requestedRef":os.environ.get("GITHUB_REF"),
               "eventSourceSha":os.environ.get("GITHUB_SHA"),
-              "scope":"Unwired Rust declaration-origin foundation only; not CLI, mapper, LSP accuracy or performance qualification",
+              "scope":"Unwired origin foundation plus test-only same-session native symbol/closure laws; not product CLI, mapper, LSP or performance qualification",
               "targetStartedAbsent":True,"target":str(target),
               "cargoCommand":argv,"actualCargoArtifact":artifact,
               "actualTestImage":{"path":str(binary),"bytes":binary.stat().st_size,"sha256":image_sha},
               "compiler":compiler,
               "compilerEnvironment":{k:v for k,v in env.items() if k in ["RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","RUSTC","RUSTC_WRAPPER","RUSTC_WORKSPACE_WRAPPER","CARGO_BUILD_TARGET","CARGO_INCREMENTAL","CARGO_BUILD_JOBS"] or k.startswith("CARGO_PROFILE_CI_")},
               "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
-              "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").glob("*.rs"))},
+              "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").rglob("*.rs"))},
               "tests":rows,"nativeCarrierRoles":native_rows,
               "passed":len(rows)==17 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
           }
