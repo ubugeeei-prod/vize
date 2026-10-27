@@ -47,7 +47,8 @@ const visible = true;
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       Primitive,
       visible
@@ -106,7 +107,8 @@ import { Form, Input } from "ant-design-vue";
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = {
       Input,
       Form
@@ -158,7 +160,8 @@ import DashTest from "./dash-test.vue";
 export default {
   __name: "anonymous",
   ssrRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = { DashTest };
     Object.defineProperty(__returned__, "__isScriptSetup", {
       enumerable: false,
