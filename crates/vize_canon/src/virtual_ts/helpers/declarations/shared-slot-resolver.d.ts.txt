@@ -6,6 +6,9 @@ declare module "vize:virtual-ts" {
   type __VizeHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
   type __VizeDirectSlotConstructor<C> = __VizeIsAny<C> extends true ? never : __VizeHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
   export type __VizeSlotConstructor<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : __VizeDirectSlotConstructor<C>;
+  type __VizeSlotConstructorArgumentLists<C> = C extends { new (...args: infer A1): any; new (...args: infer A2): any; new (...args: infer A3): any; new (...args: infer A4): any; new (...args: infer A5): any; new (...args: infer A6): any; new (...args: infer A7): any; new (...args: infer A8): any } ? A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 : C extends new (...args: infer A) => any ? A : [unknown];
+  type __VizeSlotConstructorHasArguments<C> = __VizeSlotConstructorArgumentLists<C> extends infer A ? A extends [] ? never : true : never;
+  export type __VizeSlotConstructorFirstArgument<C, P> = [__VizeSlotConstructorHasArguments<C>] extends [never] ? [] : [props: P];
   export type __VizeSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
   export type __VizeSlotHostSelector<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 }

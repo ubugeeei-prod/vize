@@ -61,6 +61,37 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
 }
 
 #[test]
+fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signature() {
+    let code = generate(TEMPLATE);
+    for helper in [
+        "type __VizeSlotConstructorArgumentLists<C> =",
+        "type __VizeSlotConstructorHasArguments<C> =",
+        "type __VizeSlotConstructorFirstArgument<C, P> =",
+        "declare function __vizeSlotConstructorFirstArgument<C>():",
+    ] {
+        assert_eq!(
+            code.matches(helper).count(),
+            1,
+            "expected one exact {helper} declaration:\n{code}",
+        );
+    }
+    assert_eq!(
+        code.matches(
+            "(...__vizeSlotConstructorFirstArgument<__VizeSlotConstructor<typeof el_badge>>()(",
+        )
+        .count(),
+        1,
+        "the slot-host constructor must use the conditional tuple:\n{code}",
+    );
+    assert_eq!(
+        code.matches("__VizeSlotConstructor<typeof el_badge>)({")
+            .count(),
+        0,
+        "the unconditional first argument must not survive:\n{code}",
+    );
+}
+
+#[test]
 fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
     let script = r#"import { ElBadge } from 'element-plus'"#;
     let allocator = vize_carton::Allocator::new();
