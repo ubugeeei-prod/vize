@@ -206,8 +206,16 @@ async function matrix() {
   });
   command(
     "npm",
-    ["install", "--prefix", host, "--ignore-scripts", "--no-audit", "--no-fund"],
-    root,
+    [
+      "install",
+      "--prefix",
+      host,
+      "--registry=https://registry.npmjs.org",
+      "--ignore-scripts",
+      "--no-audit",
+      "--no-fund",
+    ],
+    host,
     process.env,
     join(proof, "install.json"),
   );
@@ -303,7 +311,7 @@ async function matrix() {
     },
   ];
   const packets: unknown[] = [];
-  const historicalMapOmissions: unknown[] = [];
+  const mapAbsences: unknown[] = [];
   const vue = fromHost("@vue/compiler-sfc");
   for (const entry of cases) {
     const files = new Map(original);
@@ -349,21 +357,27 @@ async function matrix() {
           json(join(proof, "full-module-packets.json"), packets);
           assert.deepEqual(result.errors, []);
           if (sourceMap) {
-            if (
-              mode === "public" &&
-              publicVersion === "0.589.0" &&
-              expected === "before" &&
-              result.map === undefined
-            ) {
-              historicalMapOmissions.push({
+            if (result.map === undefined) {
+              const historicalPublic =
+                mode === "public" && publicVersion === "0.589.0" && expected === "before";
+              const originalMacroOnlyChild =
+                filename === "src/Child.vue" && source === original.get("src/Child.vue");
+              assert(
+                historicalPublic || originalMacroOnlyChild,
+                filename + " must retain its complete map",
+              );
+              mapAbsences.push({
                 case: entry.name,
                 filename,
                 options,
-                nativeVersion: "0.589.0",
+                nativeVersion: mode === "public" ? publicVersion : null,
+                source: process.env.SOURCE_SHA ?? null,
                 sourceSha256: sha(source),
-                observation: "Historical public response omits map; no current-source allowance",
+                observation: historicalPublic
+                  ? "Historical public response omits map"
+                  : "Exact original macro-only Child has no authored module provenance; complete DTO must match before/after",
               });
-              json(join(proof, "historical-map-omissions.json"), historicalMapOmissions);
+              json(join(proof, "map-absence-observations.json"), mapAbsences);
             } else validateMap(result, source, filename, fromHost);
           } else assert(!result.map, "sourceMap:false must stay absent");
           if (filename === "src/App.vue" && inlineTemplate && entry.kind === "unknown") {

@@ -25,7 +25,7 @@ jobs:
       VIZE10903_MODE: public
       VIZE10903_EXPECT: after
       VIZE10903_PUBLIC_VERSION: ${{ inputs.version }}
-      VIZE10903_PROOF: ${{ github.workspace }}/.tmp/plain-script-public-release
+      VIZE10903_PROOF: /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "v${{ inputs.version }}", persist-credentials: false }
@@ -56,9 +56,9 @@ jobs:
         with:
           name: plain-script-public-release-${{ inputs.version }}-${{ github.run_id }}
           path: |
-            ${{ github.workspace }}/.tmp/plain-script-public-release/*.json
-            ${{ github.workspace }}/.tmp/plain-script-public-release/host/package*.json
-            ${{ github.workspace }}/.tmp/plain-script-public-release/projects/*/src/
-            ${{ github.workspace }}/.tmp/plain-script-public-release/actual-vite-native/
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/*.json
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/host/package*.json
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/projects/*/src/
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/actual-vite-native/
           if-no-files-found: error
           retention-days: 90
