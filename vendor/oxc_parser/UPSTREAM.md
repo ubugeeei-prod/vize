@@ -84,3 +84,15 @@ positions. Original AST spans, regex/comment boundaries, complete-input checks,
 and rest-last/trailing-comma errors remain under that parser; ordinary JavaScript
 and `parse_slot_parameters()` explicitly keep elisions disabled. Focused parser
 API tests and public native template-scope controls cover this fork addition.
+
+Expression type-argument transactions also share proven fatal type/assignment
+subproblems across distinct overlapping probes (#10845, #10682). The original
+production bodies remain intact. Sharing is scoped to reversible probes, keyed
+by full grammar and lexer state, and fenced by nontransactional state revisions;
+committed parses and successful productions are never replaced. The first failed
+type-argument probe enables this table, preserving ordinary successful-generic
+fast paths. A reused failure restores its end-token and trivia state before the
+owning probe rewinds. Private tests compare complete Program/expression packets
+with sharing disabled and count the exact original input's repeated work.
+The immutable source audit retains before/after source profiles, complete packets
+and original sanitizer resource limits. See `tests/fuzz/ISSUE-10845.md`.

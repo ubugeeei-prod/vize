@@ -3,7 +3,11 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use oxc_ast::ast::AssignmentExpression;
 use oxc_span::Span;
 
-use crate::{Context, cursor::ParserCheckpoint};
+use crate::{
+    Context,
+    cursor::ParserCheckpoint,
+    speculation::{FailedSubproblem, FailedSubproblemKey},
+};
 
 pub struct ParserState<'a> {
     /// Last raw `>` in this parser's immutable source, computed on the first
@@ -15,6 +19,25 @@ pub struct ParserState<'a> {
     /// Failed probes survive rewinds. Share the existing arrow-probe table so
     /// ordinary parses incur no additional table initialization or drop cost.
     pub failed_speculations: FxHashSet<FailedSpeculation>,
+
+    /// Dynamic scope of reversible expression type-argument probes. The
+    /// committed parser never consumes memoized failing subproblems.
+    pub type_argument_speculation_depth: usize,
+    /// Keep valid generic fast paths free of memo-table/key work. The first
+    /// failed expression type-argument probe enables sharing for later probes.
+    pub reuse_failed_type_argument_subproblems: bool,
+    /// Keys include grammar/lexer context and persistent effect revisions.
+    /// Empty on successful parses; initialized without allocating a table.
+    pub failed_speculative_subproblems: FxHashMap<FailedSubproblemKey, FailedSubproblem<'a>>,
+    /// Cover-grammar table mutations survive parser rewind. Fence sharing
+    /// across those changes, including changes which keep table length fixed.
+    pub speculation_effects_revision: u64,
+    #[cfg(test)]
+    pub disable_failed_subproblems: bool,
+    #[cfg(test)]
+    pub subproblem_visits: usize,
+    #[cfg(test)]
+    pub subproblem_reuses: usize,
 
     /// Temporary storage for `CoverInitializedName` `({ foo = bar })`.
     /// Keyed by `ObjectProperty`'s span.start.
@@ -46,6 +69,16 @@ impl ParserState<'_> {
         Self {
             last_type_argument_close: None,
             failed_speculations: FxHashSet::default(),
+            type_argument_speculation_depth: 0,
+            reuse_failed_type_argument_subproblems: false,
+            failed_speculative_subproblems: FxHashMap::default(),
+            speculation_effects_revision: 0,
+            #[cfg(test)]
+            disable_failed_subproblems: false,
+            #[cfg(test)]
+            subproblem_visits: 0,
+            #[cfg(test)]
+            subproblem_reuses: 0,
             cover_initialized_name: FxHashMap::default(),
             trailing_commas: FxHashMap::default(),
             potential_await_reparse: Vec::new(),
