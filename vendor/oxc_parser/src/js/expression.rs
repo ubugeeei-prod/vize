@@ -1487,6 +1487,11 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         &mut self,
         allow_return_type_in_arrow_function: bool,
     ) -> Expression<'a> {
+        if self.state.type_argument_speculation_depth == 0 || self.fatal_error.is_some() {
+            return self.parse_assignment_expression_or_higher_uncached(
+                allow_return_type_in_arrow_function,
+            );
+        }
         self.memoize_failed_speculative_subproblem(
             SpeculativeProduction::Assignment { allow_return_type_in_arrow_function },
             |parser| {
