@@ -281,7 +281,7 @@ function admitSnapshotSuccessors(root: string, alignments: Map<string, LintSnaps
 
 function sourceRange(source: string, message: Record<string, any>): string {
   // Lint JSON columns count Unicode characters, with one-based exclusive ends.
-  const lines = source.split("\n").map((line) => [...line]);
+  const lines = source.split("\n").map((line) => Array.from(line));
   const start = message.line - 1;
   const end = message.endLine - 1;
   if (start === end) return lines[start].slice(message.column - 1, message.endColumn - 1).join("");
@@ -366,7 +366,9 @@ function verifySuccessorPolicy(
     const lines = source.split("\n");
     const prefix = [
       ...lines.slice(0, message.line - 1),
-      [...lines[message.line - 1]].slice(0, message.column - 1).join(""),
+      Array.from(lines[message.line - 1])
+        .slice(0, message.column - 1)
+        .join(""),
     ].join("\n");
     const tag = /^<([\w-]+)/.exec(prefix.slice(prefix.lastIndexOf("<")))?.[1];
     assert.ok(tag && (tag === "component" || /^[A-Z]/.test(tag) || tag.includes("-")));
