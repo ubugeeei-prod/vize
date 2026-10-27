@@ -1,0 +1,65 @@
+name: Published listbox focus acceptance
+run-name: Public listbox focus 0.603.0 @ ${{ github.sha }}
+on:
+  push:
+    branches: ["test/published-listbox-focus-10925-0.603.0"]
+permissions: { contents: read }
+jobs:
+  fresh-public-consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      PUBLIC_VERSION: "0.603.0"
+      PUBLIC_TAG_SHA: "3778a06863bc70bf63b435ae816cca134d2d438e"
+      PUBLIC_PRODUCER_SHA: "e89e962840c3f7f13b8ee0e13b5ecee1678bf863"
+      PUBLIC_NAPI_SHA: "d796239a23da0b9c29e34016ca736a72fbb8afc26f170bc0b201b2654b5c67d4"
+      PUBLIC_NAPI_BYTES: "77726478"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 64 }
+      - name: Bind the public tag, source cut, fix, and original complete oracle
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD^)" = "$PUBLIC_TAG_SHA"
+          git merge-base --is-ancestor "$PUBLIC_PRODUCER_SHA" HEAD
+          git merge-base --is-ancestor b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd HEAD
+          git diff --exit-code b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd HEAD -- tests/_fixtures/differential/linter/a11y-listbox-focus-10925
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          version: "1.4.0"
+          cache: false
+          run-install: false
+      - name: Install a fresh public consumer graph
+        shell: bash
+        run: |
+          consumer="$RUNNER_TEMP/listbox-public-$PUBLIC_VERSION"
+          test ! -e "$consumer"
+          mkdir "$consumer"
+          printf '%s\n' '{"name":"vize-public-listbox-10925","private":true,"type":"module","packageManager":"pnpm@10.30.1","dependencies":{"@vizejs/vite-plugin":"0.603.0","vite-plus":"1.4.0"}}' > "$consumer/package.json"
+          printf '%s\n' 'minimum-release-age=0' 'node-linker=isolated' 'virtual-store-dir=node_modules/.pnpm' 'enable-global-virtual-store=false' > "$consumer/.npmrc"
+          cd "$consumer"
+          vp install
+          node --version
+          vp --version
+      - name: Verify all registry SRI identities and the physical public addon
+        shell: bash
+        run: node tools/support/compat/listbox-focus-public-registry-10925.mjs "$RUNNER_TEMP/listbox-public-$PUBLIC_VERSION" "$RUNNER_TEMP/listbox-public-$PUBLIC_VERSION/registry-native.json"
+      - name: Run all 298 complete packets through the installed public CLI
+        shell: bash
+        run: |
+          printf '%s  %s\n' 'b6de31d40fb8768802800af05be68b93360fca0d63b8398762b2a6507c071a96' 'tools/support/compat/listbox-focus-public-10925.ts' | sha256sum --check
+          node tools/support/compat/listbox-focus-public-10925.ts "$RUNNER_TEMP/listbox-public-$PUBLIC_VERSION" "$GITHUB_WORKSPACE/tests/_fixtures/differential/linter/a11y-listbox-focus-10925" "$RUNNER_TEMP/listbox-public-$PUBLIC_VERSION/acceptance.json"
+          node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const e=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); assert.equal(e.status,"passed"); assert.equal(e.observations.length,298); assert.equal(e.packages.plugin.version,process.env.PUBLIC_VERSION); assert.equal(e.packages.vize.version,process.env.PUBLIC_VERSION); for (const r of e.observations) { assert.equal(r.error,null); assert.equal(r.signal,null); assert.equal(r.stderr,""); assert.equal(r.status,r.expectedStatus); assert.deepEqual(r.actual,r.expected); } console.log(JSON.stringify({qualified:true,publicVersion:process.env.PUBLIC_VERSION,wholePackets:e.observations.length,packages:e.packages}));' "$RUNNER_TEMP/listbox-public-$PUBLIC_VERSION/acceptance.json"
+      - name: Retain complete fresh public observations and identities
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: listbox-focus-public-0.603.0-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/listbox-public-0.603.0/acceptance.json
+            ${{ runner.temp }}/listbox-public-0.603.0/registry-native.json
+            ${{ runner.temp }}/listbox-public-0.603.0/package.json
+            ${{ runner.temp }}/listbox-public-0.603.0/pnpm-lock.yaml
+          if-no-files-found: error
+          retention-days: 90
