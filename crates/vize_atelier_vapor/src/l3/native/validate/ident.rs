@@ -38,7 +38,7 @@ pub(super) fn path_root(text: &str) -> Option<&str> {
         return None;
     }
     // The first validated segment is already known; avoid finding its dot again.
-    Some(&text[..root.len()])
+    text.get(..root.len())
 }
 
 /// oxc's `RESERVED_KEYWORDS`, spelled out so admission avoids its SipHash
