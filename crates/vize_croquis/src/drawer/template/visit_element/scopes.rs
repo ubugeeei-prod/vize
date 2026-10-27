@@ -129,6 +129,21 @@ impl Drawer {
             return 0;
         }
 
+        // The source is evaluated in the enclosing scope, before the aliases
+        // exist. Walk it like any other template expression, so a name nothing
+        // binds is an unresolved read of the template (`UndefinedRefs`) and
+        // reaches the same instance resolution as a binding expression.
+        if self.checks_binding_reads()
+            && let Some(source_offset) = source_offset
+        {
+            self.check_expression_text_refs(
+                aliases.source.as_str(),
+                None,
+                source_offset,
+                scope_vars,
+                false,
+            );
+        }
         if self.checks_binding_reads() {
             if let Some(names) = source_identifiers.as_ref() {
                 for name in names {

@@ -27,6 +27,22 @@ pub(super) fn generate_if_branch_props(
     branch_index: usize,
     skip_is_prop: bool,
 ) {
+    // A native branch root keeps uppercase event names as `on:` keys.
+    let plain = core::mem::replace(
+        &mut ctx.props_is_plain_element,
+        el.tag_type == ElementType::Element,
+    );
+    branch_props(ctx, el, branch, branch_index, skip_is_prop);
+    ctx.props_is_plain_element = plain;
+}
+
+fn branch_props(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    branch: &IfBranchNode<'_>,
+    branch_index: usize,
+    skip_is_prop: bool,
+) {
     let scope_id = if ctx.skip_scope_id {
         None
     } else {

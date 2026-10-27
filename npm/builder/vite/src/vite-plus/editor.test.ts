@@ -37,8 +37,53 @@ void test("a new editor setup assigns only Vue formatting to Vize", () => {
   const settings = parse(recommendEditor("{}", false));
   assert.equal(settings["[vue]"]["editor.defaultFormatter"], "ubugeeei.vize");
   assert.equal(settings["editor.defaultFormatter"], undefined);
-  assert.equal(settings["vize.lint.enable"], true);
-  assert.equal(settings["vize.formatting.enable"], true);
+  assert.deepEqual(Object.keys(settings), ["[vue]"]);
+});
+
+void test("project LSP feature policy stays authoritative and disabled formatting stays unclaimed", () => {
+  for (const policy of [{ formatting: false }, { enabled: false, formatting: true }]) {
+    const source = '{ // another formatter owns Vue\n "other.setting": true,\n}\n';
+    assert.equal(recommendEditor(source, false, policy), source);
+  }
+  const settings = parse(
+    recommendEditor("{}", false, { lint: true, formatting: true, typecheck: false, editor: false }),
+  );
+  assert.deepEqual(settings, {
+    "[vue]": { "editor.defaultFormatter": "ubugeeei.vize", "editor.formatOnSave": true },
+  });
+});
+
+void test("adding extension recommendations retains comments inside the array", () => {
+  const source = `// team extension policy
+{
+  "recommendations": [
+    // keep the test explorer
+    "Vitest.explorer", /* inline rationale */
+    // retain Volar alongside Vize linting
+    "Vue.volar", // trailing comment
+  ],
+  "unwantedRecommendations": ["other.extension"],
+}
+`;
+  const result = recommendEditor(source, true);
+  for (const comment of [
+    "// team extension policy",
+    "// keep the test explorer",
+    "/* inline rationale */",
+    "// retain Volar alongside Vize linting",
+    "// trailing comment",
+  ])
+    assert.ok(result.includes(comment), comment);
+  assert.deepEqual(parse(result), {
+    recommendations: [
+      "Vitest.explorer",
+      "Vue.volar",
+      "VoidZero.vite-plus-extension-pack",
+      "ubugeeei.vize",
+    ],
+    unwantedRecommendations: ["other.extension"],
+  });
+  assert.equal(recommendEditor(result, true), result);
 });
 
 void test("extension recommendations compare IDs without case and keep existing spelling", () => {
