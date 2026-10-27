@@ -8,7 +8,7 @@ import { bootstrap, NATIVE_PACKAGE } from "./provider.ts";
 import { attestGoExecutions } from "./trace.ts";
 import { validatePublicProvider } from "../public-provider.ts";
 import {
-  asArray, asNumber, asRecord, asString, blob, env, inside, read, run, save, sha256,
+  asArray, asNumber, asRecord, asString, env, inside, read, run, save, sha256,
   HARNESS_BLOB, HARNESS_SHA, REQUIRED_MERGE,
 } from "./io.ts";
 
@@ -32,15 +32,19 @@ try {
   assert.equal(checkout.stdout.trim(), candidate);
   const authority = await loadAuthority(version, candidate, authorityBlob, evidence);
   const { provider, backend, backendIdentity } = await bootstrap(root, evidence, authority);
-  const scriptBytes = await blob(HARNESS_BLOB);
+  const capsule = path.dirname(fileURLToPath(import.meta.url));
+  const scriptBytes = fs.readFileSync(path.join(capsule, "acceptance.py.txt"));
+  assert.equal(createHash("sha1").update(Buffer.from("blob " + scriptBytes.length + "\0"))
+    .update(scriptBytes).digest("hex"), HARNESS_BLOB);
   assert.equal(sha256(scriptBytes), HARNESS_SHA);
   const script = path.join(root, "acceptance.py");
   fs.writeFileSync(script, scriptBytes);
   const fixture = path.join(source, "tests/_fixtures/differential/typechecker/relative-sibling-storage-10934");
   const harnessOutput = path.join(evidence, "harness");
-  const cache = path.join(root, "cache");
-  assert.equal(fs.existsSync(cache), false);
-  fs.mkdirSync(cache);
+  const cachePath = path.join(root, "cache");
+  assert.equal(fs.existsSync(cachePath), false);
+  fs.mkdirSync(cachePath);
+  const cache = fs.realpathSync(cachePath);
   const environment = { ...process.env };
   for (const name of [
     "NAPI_RS_NATIVE_LIBRARY_PATH", "NAPI_RS_FORCE_WASI", "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
@@ -122,7 +126,7 @@ try {
       runId: env("GITHUB_RUN_ID"), attempt: env("GITHUB_RUN_ATTEMPT"),
       workflowHead: env("GITHUB_SHA"), workflowRef: env("GITHUB_WORKFLOW_REF"),
       node: process.version,
-      carrierFiles: ["run.ts", "io.ts", "authority.ts", "provider.ts", "trace.ts"].map((name) => {
+      carrierFiles: ["run.ts", "io.ts", "authority.ts", "provider.ts", "trace.ts", "acceptance.py.txt"].map((name) => {
         const file = path.join(path.dirname(fileURLToPath(import.meta.url)), name);
         return { file, sha256: sha256(fs.readFileSync(file)) };
       }),

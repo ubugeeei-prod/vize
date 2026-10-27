@@ -1,0 +1,226 @@
+#!/usr/bin/env python3
+"""Replay the pinned #10934 public-package regression without Cargo or installs.
+
+Baseline: one fresh check process, expected root widening and exact TS2322.
+Fixed: cold error, unchanged error, repaired clean; persistent mirror assertions.
+The fixture Vue stub matches the source CLI integration test. This is a
+correctness/storage acceptance check, not a cold-performance benchmark.
+"""
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import tempfile
+import time
+
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def save(path, value):
+    Path(path).write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
+
+
+def owned_files(root):
+    result = []
+    for current, directories, files in os.walk(root, followlinks=False):
+        directories[:] = [d for d in directories if not (Path(current) / d).is_symlink()]
+        result.extend(Path(current) / f for f in files if not (Path(current) / f).is_symlink())
+    return result
+
+
+def cache_projects():
+    if sys.platform == "darwin":
+        base = Path.home() / "Library/Caches"
+    elif sys.platform == "win32":
+        base = Path(os.environ["LOCALAPPDATA"])
+    else:
+        base = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+    return base / "vize/canon/projects"
+
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--provider", type=Path, required=True, help="existing public npm provider root")
+parser.add_argument("--corsa", type=Path, required=True, help="exact existing native TypeScript binary")
+parser.add_argument("--fixture", type=Path, required=True, help="pinned relative-sibling-storage-10934 folder")
+parser.add_argument("--mode", choices=["baseline", "fixed"], required=True)
+parser.add_argument("--output", type=Path, help="new, empty evidence directory; default: fresh /tmp directory")
+parser.add_argument("--cache-projects", type=Path, help="override public Canon projects cache directory")
+args = parser.parse_args()
+
+provider = args.provider.resolve(strict=True)
+corsa = args.corsa.resolve(strict=True)
+fixture = args.fixture.resolve(strict=True)
+cli = provider / "node_modules/.bin/vize"
+assert cli.is_file(), cli
+assert corsa.is_file(), corsa
+output = args.output or Path(tempfile.mkdtemp(prefix=f"vize-10934-{args.mode}-"))
+output = output.resolve()
+output.mkdir(parents=True, exist_ok=True)
+assert not any(output.iterdir()), f"evidence directory must be empty: {output}"
+(output / "acceptance-script.py").write_bytes(Path(__file__).read_bytes())
+workspace = output / "project"
+workspace.mkdir()
+workspace = workspace.resolve()
+app = workspace / "apps/app"
+pack_path = fixture / "cases.json"
+pack = json.loads(pack_path.read_text())
+assert [case["id"] for case in pack["cases"]] == ["typed-sibling-error", "repaired-sibling-import"]
+manifest = json.loads((fixture.parent / "manifest.json").read_text())
+planned = [case for case in manifest["cases"] if case.get("pack") == fixture.name]
+assert len(planned) == 2
+for case in planned:
+    assert case["packReference"]["sha256"] == digest(pack_path)
+    for item in case["inputs"]:
+        assert digest(fixture.parent / item["path"]) == item["sha256"]
+
+# Match the existing CLI regression's shared Vue support, with no provider writes.
+stub_path = fixture.parents[4] / "crates/vize/tests/support/vue_stub.rs"
+stub = stub_path.read_text()
+for name in ["package.json", "index.d.ts", "jsx.d.ts"]:
+    match = re.search(r'vue_dir\.join\("' + re.escape(name) + r'"\),\s*r#"(.*?)"#', stub, re.S)
+    assert match, name
+    target = workspace / "node_modules/vue" / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(match.group(1))
+
+input_identity = []
+for item in pack["cases"][0]["inputs"]:
+    source = (fixture / item["source"]).resolve(strict=True)
+    assert source.is_relative_to(fixture)
+    target = (workspace / item["file"]).resolve()
+    assert target.is_relative_to(workspace)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+    input_identity.append({"file": item["file"], "fixtureSource": str(source), "sha256": digest(target)})
+
+project_key = hashlib.sha256(b"vize-canon-project-key:v1\0" + os.fsencode(app)).hexdigest()
+project_cache = (args.cache_projects or cache_projects()).resolve()
+if args.mode == "fixed":
+    context = hashlib.sha256(b"vize-persistent-installed-batch:v1\0")
+    for path in [workspace, app, app / "tsconfig.json"]:
+        encoded = os.fsencode(path.resolve(strict=True))
+        context.update(b"\1")
+        context.update(len(encoded).to_bytes(8, "little"))
+        context.update(encoded)
+    virtual_root = project_cache.parent / "private-batch-v1" / project_key / "canon/projects" / context.hexdigest()
+else:
+    virtual_root = project_cache / project_key
+command = [str(cli), "check", "src/*.ts", "--no-config", "--format", "json", "--tsconfig", "tsconfig.json"]
+environment = {**os.environ, "CORSA_PATH": str(corsa)}
+# The public provider must select its own immutable native image, not a local override.
+for key in ["NAPI_RS_NATIVE_LIBRARY_PATH", "NAPI_RS_FORCE_WASI", "VIZE_ALLOW_NATIVE_VERSION_MISMATCH"]:
+    environment.pop(key, None)
+probe = r"""
+const {createRequire}=require('node:module');
+const {readFileSync,realpathSync,statSync}=require('node:fs');
+const {createHash}=require('node:crypto');
+const {dirname,join}=require('node:path');
+const r=createRequire(realpathSync(join(process.argv[1],'node_modules/vize/dist/cli.mjs')));
+const binding=r('@vizejs/native');
+const images=Object.keys(require.cache).filter(p=>p.endsWith('.node') && p.includes('vize-vitrine'));
+if(images.length!==1) throw Error('expected exactly one loaded Vize native image: '+JSON.stringify(images));
+const path=realpathSync(images[0]);
+const metadata=JSON.parse(readFileSync(join(dirname(path),'package.json'),'utf8'));
+console.log(JSON.stringify({path,bytes:statSync(path).size,
+ sha256:createHash('sha256').update(readFileSync(path)).digest('hex'),
+ buildToken:binding.getNativeBuildToken?.() ?? null,
+ package:metadata.name,version:metadata.version,node:process.version}));
+"""
+loaded_native = json.loads(subprocess.run(["node", "-e", probe, str(provider)], env=environment,
+                                         capture_output=True, text=True, check=True).stdout)
+assert Path(loaded_native["path"]).resolve(strict=True).is_relative_to(provider), loaded_native
+assert loaded_native["version"] == json.loads((provider / "node_modules/@vizejs/native/package.json").read_text())["version"], loaded_native
+runtime = subprocess.run([str(corsa), "--version"], capture_output=True, text=True, check=True)
+receipt = {
+    "schema": "vize.issue-10934-public-acceptance", "version": 1, "mode": args.mode,
+    "script": str(Path(__file__).resolve()), "scriptSha256": digest(__file__), "sourceSnapshot": "acceptance-script.py",
+    "fixture": str(fixture), "fixturePackSha256": digest(pack_path),
+    "fixtureSourceRevision": pack["sourceRevision"], "inputs": input_identity,
+    "provider": str(provider), "providerPackageSha256": digest(provider / "package.json"),
+    "publicVizeVersion": json.loads((provider / "node_modules/vize/package.json").read_text())["version"],
+    "publicNativeVersion": json.loads((provider / "node_modules/@vizejs/native/package.json").read_text())["version"],
+    "loadedPublicNativeImage": loaded_native,
+    "cliWrapper": {"path": str(cli), "realPath": str(cli.resolve()), "sha256": digest(cli)},
+    "nativeBackend": {"path": str(corsa), "sha256": digest(corsa), "version": runtime.stdout.strip()},
+    "vueSupport": {"kind": "source CLI fixture stub", "source": str(stub_path), "sha256": digest(stub_path)},
+    "command": command, "cwd": str(app),
+    "environment": {"CORSA_PATH": str(corsa), "PATH": environment.get("PATH", "")},
+    "virtualRoot": str(virtual_root), "output": str(output), "runs": [],
+    "measurement": "fresh check processes; OS page cache not flushed; not a cold-performance qualification",
+}
+save(output / "command.json", {key: receipt[key] for key in ["command", "cwd", "environment", "provider", "nativeBackend"]})
+expected = [["src/entry.ts", "error:2:31 [TS2322] Type 'string' is not assignable to type 'number'."]]
+jsx = workspace / "node_modules/.pnpm/vue@3.4.23/node_modules/vue/jsx.d.ts"
+jsx_bytes = jsx.read_bytes()
+jsx_modified = jsx.stat().st_mtime_ns
+receipt["immutableInstalledInput"] = {
+    "path": str(jsx), "sha256": digest(jsx), "mtimeNs": jsx_modified,
+}
+persisted = None
+build_info = None
+
+try:
+    for index in range(1 if args.mode == "baseline" else 3):
+        repaired = index == 2
+        if repaired:
+            (app / "src/entry.ts").write_bytes((fixture / "repaired/entry.ts.txt").read_bytes())
+        started = time.perf_counter()
+        completed = subprocess.run(command, cwd=app, env=environment, capture_output=True, text=True)
+        elapsed = (time.perf_counter() - started) * 1000
+        prefix = f"run-{index + 1}"
+        (output / f"{prefix}.stdout.json").write_text(completed.stdout)
+        (output / f"{prefix}.stderr.txt").write_text(completed.stderr)
+        report = json.loads(completed.stdout)
+        diagnostics = [[file["file"], message] for file in report["files"] for message in file["diagnostics"]]
+        row = {"index": index + 1, "freshProcess": True, "elapsedMs": elapsed,
+               "exitCode": completed.returncode, "programRoot": report["programs"][0]["root"],
+               "diagnostics": diagnostics, "stdout": f"{prefix}.stdout.json", "stderr": f"{prefix}.stderr.txt"}
+        receipt["runs"].append(row)
+        assert completed.returncode == (0 if repaired else 1), row
+        assert diagnostics == ([] if repaired else expected), row
+        assert report["errorCount"] == (0 if repaired else 1), report
+        assert report["warningCount"] == 0, report
+        assert "TS2307" not in completed.stdout, completed.stdout
+        assert jsx.read_bytes() == jsx_bytes, "installed declaration was changed"
+        assert jsx.stat().st_mtime_ns == jsx_modified, "installed declaration mtime was changed"
+        if args.mode == "baseline":
+            assert row["programRoot"] == str(workspace), row
+            assert f" under {workspace}..." in completed.stderr, completed.stderr
+            assert not (virtual_root / "src/entry.ts").exists(), "baseline unexpectedly retained package storage"
+            row["storageRegressionConfirmed"] = True
+        else:
+            assert row["programRoot"] == ".", row
+            assert f" under {app}..." in completed.stderr, completed.stderr
+            assert (virtual_root / "apps/app/src/entry.ts").is_file(), virtual_root
+            owned = owned_files(virtual_root)
+            data = [p for p in owned if p == virtual_root / "packages/ui/src/data.json"]
+            assert len(data) == 1 and data[0].read_bytes() == (workspace / "packages/ui/src/data.json").read_bytes(), data
+            current_info = sorted(str(p) for p in owned if p.suffix == ".tsbuildinfo")
+            assert current_info, "incremental build info must survive process exit"
+            current = {str(p): p.stat().st_mtime_ns for p in owned if p.name == "Shared.vue.ts" or p.as_posix().endswith("/src/model.ts")}
+            assert len(current) == 2, current
+            if persisted is None:
+                persisted, build_info = current, current_info
+            else:
+                assert current == persisted, "unchanged SFC/model mirrors were rewritten"
+                assert current_info == build_info, "build-info namespace changed"
+            row["ownedJsonMirror"] = str(data[0])
+            row["preservedSourceMtimesNs"] = current
+            row["buildInfoPaths"] = current_info
+    receipt["status"] = "baseline-regression-confirmed" if args.mode == "baseline" else "fixed-contract-accepted"
+except Exception as error:
+    receipt["status"] = "failed"
+    receipt["failure"] = f"{type(error).__name__}: {error}"
+    save(output / "receipt.json", receipt)
+    raise
+save(output / "receipt.json", receipt)
+print(json.dumps({"status": receipt["status"], "receipt": str(output / "receipt.json"),
+                  "publicVizeVersion": receipt["publicVizeVersion"], "nativeVersion": receipt["nativeBackend"]["version"],
+                  "freshCheckProcesses": len(receipt["runs"]), "runs": receipt["runs"]}, ensure_ascii=False))
