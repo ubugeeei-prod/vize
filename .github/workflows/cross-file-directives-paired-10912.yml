@@ -1,0 +1,44 @@
+name: Paired authored cross-file directive qualification
+run-name: Cross-file directives authored before and after @ ${{ github.sha }}
+on:
+  push:
+    branches: ["test/cross-file-directives-paired-10912"]
+permissions: { contents: read }
+jobs:
+  paired-functional-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_TERM_COLOR: never
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 16 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Capture functional runner identity
+        shell: bash
+        run: |
+          node --version
+          rustc --version
+          nproc
+          free -h
+          df -h .
+      - name: Build exact combined baseline and source, then verify every whole packet
+        shell: bash
+        run: |
+          echo '87b013e985403e62e1e70c67d38bfd522648aa8096403fa6e0afa45fa49b6967  .github/scripts/cross-file-directives-paired-10912.ts' | sha256sum --check
+          node .github/scripts/cross-file-directives-paired-10912.ts
+      - name: Retain complete paired source receipts and raw native observations
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cross-file-directives-paired-10912-${{ github.run_id }}
+          path: ${{ runner.temp }}/cross-file-directives-paired-10912
+          if-no-files-found: error
+          retention-days: 90
