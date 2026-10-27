@@ -97,3 +97,37 @@ void test(
     assert.equal(result.stdout, "0\n0x1234\nabcd\nprefix,suffix\n, \n0\n");
   },
 );
+
+void test("source links bind the compiled SHA and reject outside or unresolved paths", async () => {
+  const { frozenSourceLocations } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-protocol.ts");
+  const sha = "d16307e5eebffa43277a4fd9e5a471b5312256cc";
+  const row = (source: string) => ({
+    dso: "vize",
+    symbol: "function",
+    source,
+    selfPercent: 1,
+    childrenPercent: null,
+    samples: 1,
+    period: "1",
+  });
+  const locations = frozenSourceLocations(
+    [
+      row("/build/vize/crates/check.rs:12"),
+      row("/rustc/compiler/library/core.rs:44"),
+      row("/build/vize/../outside.rs:1"),
+      row("unresolved+0x12"),
+    ],
+    "/build/vize",
+    sha,
+  );
+  assert.equal(
+    locations[0].url,
+    "https://github.com/ubugeeei-prod/vize/blob/" + sha + "/crates/check.rs#L12",
+  );
+  assert.deepEqual(
+    locations.slice(1).map((entry) => entry.url),
+    [null, null, null],
+  );
+  assert.throws(() => frozenSourceLocations([], "/build/vize", "main"));
+});

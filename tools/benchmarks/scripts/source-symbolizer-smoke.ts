@@ -6,6 +6,7 @@ import { parseArgs } from "node:util";
 import { pathToFileURL } from "node:url";
 import { calibrateSourcePmu } from "./source-pmu-calibration.ts";
 import { captureSourceOperationPerf } from "./source-operation-perf.ts";
+import { frozenSourceLocations } from "./source-symbolizer-protocol.ts";
 import {
   boundedCommand,
   digest,
@@ -185,6 +186,12 @@ export function replayNormal(options: {
     schemaVersion: 1,
     qualified: decoded.qualified,
     compiledSource: build.sourceSha,
+    observerSource: process.env.GITHUB_SHA ?? null,
+    sourceLocations: frozenSourceLocations(
+      decoded.reports.self.rows,
+      build.sourceRoot,
+      build.sourceSha,
+    ),
     actualBinary: basename(binary),
     binarySha256: original.binarySha256,
     originalCapture: original,

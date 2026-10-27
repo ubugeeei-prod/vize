@@ -149,3 +149,37 @@ export function rustSourceCensus(
       "self samples for the named DSO only; inclusive percentages must never be added to self counts",
   };
 }
+
+/** Bind repository locations to the compiled tree, never the observer checkout. */
+export function frozenSourceLocations(rows: SourceCpuRow[], sourceRoot: string, sourceSha: string) {
+  if (!/^[0-9a-f]{40}$/u.test(sourceSha)) throw new Error("exact compiled source SHA required");
+  const prefix = sourceRoot.replace(/\/+$/u, "") + "/";
+  const sources = [...new Set(rows.map((row) => row.source))];
+  return sources.map((source) => {
+    const match = /^(.*):([1-9]\d*)$/u.exec(source);
+    const file = match?.[1],
+      line = match ? Number(match[2]) : null;
+    const path = file?.startsWith(prefix) ? file.slice(prefix.length) : null;
+    const owned =
+      path !== null &&
+      path.length > 0 &&
+      !path.split("/").some((part) => part === "." || part === "..");
+    return {
+      source,
+      line,
+      compiledSourceSha: sourceSha,
+      repositoryPath: owned ? path : null,
+      url: owned
+        ? "https://github.com/ubugeeei-prod/vize/blob/" +
+          sourceSha +
+          "/" +
+          path.split("/").map(encodeURIComponent).join("/") +
+          "#L" +
+          line
+        : null,
+      scope: owned
+        ? "repository at the compiled source SHA"
+        : "external toolchain/dependency or unresolved; no current-checkout source link",
+    };
+  });
+}
