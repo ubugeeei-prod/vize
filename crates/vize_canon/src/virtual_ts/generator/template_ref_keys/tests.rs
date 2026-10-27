@@ -84,7 +84,12 @@ fn helper_names_avoid_authored_bindings_and_unresolved_reads() {
         let usage = usage(&script);
         assert_eq!(usage.helper_name(), "__vize00000001");
         assert_eq!(usage.helper_name().len(), "useTemplateRef".len());
-        assert!(generate(&script).contains("const box = __vize00000001('box')"));
+        assert_eq!(
+            generate(&script),
+            format!(
+                "{prefix}\nvoid __vize00000000;\nvoid (null! as __VizeTemplateRefs[\"box\"]); const box = __vize00000001('box');\n"
+            )
+        );
     }
 }
 
