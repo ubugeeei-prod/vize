@@ -1,0 +1,29 @@
+{
+  "schema": "vize.publicCanonicalSdkInputs.v1",
+  "sourceVersion": "0.602.0",
+  "sourceRevision": "3fa403f8cf4edbd851f7ca91c0f0648200f5777f",
+  "publicCoreSha256": "eb11e7d6783f8d0a4b64ddb9ba8d4c7a10d08771306bcc9a7a220d4b861ce6e8",
+  "publicEntrySha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0",
+  "files": [
+    {
+      "file": "Probe.vue.txt",
+      "bytes": 211,
+      "sha256": "1491a1766174b6b7a9dd974159984f9f2b5fed8951b2f1fc980c676cda107c37"
+    },
+    {
+      "file": "Witness.mts.txt",
+      "bytes": 2130,
+      "sha256": "d92455804d376f11a95e55ba9e2a280af1b957906c49ddd81dd08bdb9350a42a"
+    },
+    {
+      "file": "Witness.cts.txt",
+      "bytes": 2130,
+      "sha256": "d92455804d376f11a95e55ba9e2a280af1b957906c49ddd81dd08bdb9350a42a"
+    },
+    {
+      "file": "core-import.txt",
+      "bytes": 1403,
+      "sha256": "3013f8412ac2a46c5fb98e5e7cf6b618d5f03bd6db51a00972e1836a455f471c"
+    }
+  ]
+}
