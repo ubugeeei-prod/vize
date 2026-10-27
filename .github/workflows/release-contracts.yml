@@ -122,7 +122,7 @@ jobs:
         run: node tools/support/release/public_release_contracts/bootstrap.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof"
       - name: Verify complete packets, runtime controls, and native public custody
         run: node tools/support/release/public_release_contracts/run.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof" "$PUBLIC_CANDIDATE"
-      - name: Qualify independent published icon class packets
+      - name: Prove the candidate contains the required icon source
         if: inputs.additional_observers == true && inputs.phase == 'after'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -136,7 +136,9 @@ jobs:
           assert.equal(comparison.base_commit.sha, process.env.REQUIRED_ICON_SOURCE);
           assert.ok(["ahead", "identical"].includes(comparison.status));
           NODE
-          node tools/support/release/public_icons/verify.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof/icons-10928.json"
+      - name: Qualify independent published icon class packets
+        if: inputs.additional_observers == true && inputs.phase == 'after'
+        run: node tools/support/release/public_icons/verify.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof/icons-10928.json"
       - name: Preserve complete consumer evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

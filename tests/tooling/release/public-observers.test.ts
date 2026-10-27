@@ -21,6 +21,7 @@ type Workflow = {
 };
 const files = ["public-native-events.yml", "release-contracts.yml"] as const;
 const iconStep = "Qualify independent published icon class packets";
+const iconProof = "Prove the candidate contains the required icon source";
 const sdkStep = "Qualify independent published canonical SDK";
 const testPath = "tests/tooling/release/public-observers.test.ts";
 const guardSuffix =
@@ -64,7 +65,9 @@ test("optional observers retain every original core workflow contract", () => {
     assert.ok(standard.if);
     assert.ok(standard.if.endsWith(guardSuffix));
     standard.if = standard.if.slice(0, -guardSuffix.length);
-    standard.steps = standard.steps.filter((step) => step.name !== iconStep);
+    standard.steps = standard.steps.filter(
+      (step) => step.name !== iconStep && step.name !== iconProof,
+    );
     if (file === "release-contracts.yml") {
       delete retained.on.workflow_dispatch.inputs.custom_properties;
       delete retained.jobs["public-custom-properties"];
@@ -105,19 +108,21 @@ test("both independent observers use the existing fresh consumers after core che
     assert.ok(icons > core && core >= 0, file);
     const observer = standard.steps[icons];
     assert.ok(observer?.run);
-    assert.equal(observer.env?.REQUIRED_ICON_SOURCE, "d38ab7e48514566f1776f25439e8777a9856b5a6");
-    assert.ok(observer.run.includes("compare/$REQUIRED_ICON_SOURCE...$PUBLIC_CANDIDATE"));
-    assert.ok(
-      observer.run.includes(
-        "assert.equal(comparison.base_commit.sha, process.env.REQUIRED_ICON_SOURCE)",
-      ),
-    );
-    assert.ok(observer.run.includes('["ahead", "identical"].includes(comparison.status)'));
-    assert.ok(
-      observer.run.includes(
-        'node tools/support/release/public_icons/verify.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof/icons-10928.json"',
-      ),
-    );
+    assert.equal(observer.env?.GH_TOKEN, undefined, "published code receives no proof token");
+    const proofIndex = standard.steps.findIndex((step) => step.name === iconProof);
+    assert.ok(proofIndex > core && proofIndex < icons);
+    const proof = standard.steps[proofIndex];
+    assert.ok(proof?.run);
+    assert.equal(proof.env?.REQUIRED_ICON_SOURCE, "d38ab7e48514566f1776f25439e8777a9856b5a6");
+    assert.equal(proof.env?.GH_TOKEN, "${{ github.token }}");
+    assert.doesNotMatch(proof.run, /tools\/support\/release\//);
+    assert.deepEqual(observer.run.trim().split(/\s+/), [
+      "node",
+      "tools/support/release/public_icons/verify.ts",
+      '"$RUNNER_TEMP/public-release-consumer"',
+      '"$PUBLIC_VERSION"',
+      '"$RUNNER_TEMP/public-release-proof/icons-10928.json"',
+    ]);
     const cpp = job(current, "public-custom-properties");
     const sdk = cpp.steps.findIndex((step) => step.name === sdkStep);
     const restore = cpp.steps.findIndex(
@@ -125,10 +130,13 @@ test("both independent observers use the existing fresh consumers after core che
         step.name === "Qualify fresh public custom properties and authored directive ownership",
     );
     assert.ok(sdk > restore && restore >= 0, file);
-    assert.equal(
-      cpp.steps[sdk]?.run,
-      'node tools/support/release/public_canonical_sdk/verify.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer/public-canonical-sdk.json"',
-    );
+    assert.deepEqual(cpp.steps[sdk]?.run?.trim().split(/\s+/), [
+      "node",
+      "tools/support/release/public_canonical_sdk/verify.ts",
+      '"$RUNNER_TEMP/public-custom-properties-consumer"',
+      '"$PUBLIC_VERSION"',
+      '"$RUNNER_TEMP/public-custom-properties-consumer/public-canonical-sdk.json"',
+    ]);
     for (const step of [observer, cpp.steps[sdk]]) {
       assert.equal(step?.if, "inputs.additional_observers == true && inputs.phase == 'after'");
       assert.doesNotMatch(step?.run ?? "", /npm install|pnpm|cargo|NATIVE_OVERRIDE/);
@@ -169,5 +177,49 @@ test("actual guards retain defaults and fail closed for explicitly selected obse
       validator,
       job(before, "public-release-contracts").steps.find((step) => step.name === validator?.name),
     );
+  }
+});
+
+test("the actual embedded icon-source validator rejects unrelated comparisons", () => {
+  for (const { current } of workflows) {
+    const proof = job(current, "public-release-contracts").steps.find(
+      (step) => step.name === iconProof,
+    );
+    assert.ok(proof?.run);
+    const match = /node --input-type=module <<'NODE'\n([\s\S]+?)\nNODE/.exec(proof.run);
+    assert.ok(match?.[1]);
+    const script = match[1]
+      .replace('import assert from "node:assert/strict";', "")
+      .replace('import { readFileSync } from "node:fs";', "");
+    assert.doesNotMatch(script, /^import /m);
+    const required = proof.env?.REQUIRED_ICON_SOURCE;
+    assert.ok(required);
+    for (const [status, base, accepted] of [
+      ["ahead", required, true],
+      ["identical", required, true],
+      ["behind", required, false],
+      ["diverged", required, false],
+      ["ahead", "0".repeat(40), false],
+    ] as const) {
+      const reads: unknown[] = [];
+      const evaluate = (): unknown =>
+        runInNewContext(
+          script,
+          {
+            assert,
+            process: { env: { RUNNER_TEMP: "/proof", REQUIRED_ICON_SOURCE: required } },
+            readFileSync: (filename: unknown, encoding: unknown): string => {
+              reads.push([filename, encoding]);
+              return JSON.stringify({ status, base_commit: { sha: base } });
+            },
+          },
+          { timeout: 500 },
+        );
+      if (accepted) assert.doesNotThrow(evaluate);
+      else assert.throws(evaluate);
+      assert.deepEqual(reads, [
+        ["/proof/public-release-proof/icons-source-comparison.json", "utf8"],
+      ]);
+    }
   }
 });
