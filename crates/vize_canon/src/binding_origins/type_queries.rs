@@ -1,11 +1,8 @@
 //! Only identity-preserving type queries and aliases establish provenance.
 use super::{BindingRef, BindingTarget, LocalSymbol, Namespace, Usage, collect::Collector};
-use oxc_ast::{
-    AstKind,
-    ast::{
-        Expression, IdentifierReference, TSImportType, TSImportTypeQualifier, TSLiteral, TSType,
-        TSTypeName, TSTypeQueryExprName,
-    },
+use oxc_ast::ast::{
+    Expression, IdentifierReference, TSImportType, TSImportTypeQualifier, TSLiteral, TSType,
+    TSTypeName, TSTypeQueryExprName,
 };
 use vize_carton::String;
 
@@ -65,12 +62,7 @@ impl<'a> Collector<'_, 'a> {
         else {
             return BindingTarget::Opaque;
         };
-        let node = self.semantic.symbol_declaration(symbol);
-        if !matches!(node.kind(), AstKind::ImportNamespaceSpecifier(_)) {
-            return BindingTarget::Opaque;
-        }
-        let AstKind::ImportDeclaration(import) = self.semantic.nodes().parent_kind(node.id())
-        else {
+        let Some(import) = self.declarations.namespaces.get(&symbol) else {
             return BindingTarget::Opaque;
         };
         BindingTarget::Import {

@@ -1,9 +1,9 @@
 //! Revisioned declaration provenance; never infer providers from callable shapes.
 use oxc_syntax::symbol::SymbolId;
-use std::sync::Arc;
 use vize_carton::{FxHashMap, String};
 
 mod collect;
+mod declarations;
 mod graph;
 mod type_queries;
 pub use collect::collect;
@@ -115,14 +115,16 @@ pub enum OriginError {
     DuplicateSourceFacts,
     UnregisteredReferenceProvider,
     StaleProjectRevision,
+    InvalidGraphIndex,
+    UnregisteredSource,
 }
 
-pub struct ProjectFacts {
+pub struct ProjectFacts<'a> {
     revision: ProjectRevision,
     versions: FxHashMap<u32, SourceRevision>,
-    sources: FxHashMap<u32, Arc<SourceFacts>>,
+    sources: FxHashMap<u32, &'a SourceFacts>,
 }
-impl ProjectFacts {
+impl<'a> ProjectFacts<'a> {
     pub fn new(revision: ProjectRevision) -> Self {
         Self {
             revision,
@@ -146,7 +148,7 @@ impl ProjectFacts {
         self.versions.insert(revision.source, revision);
         Ok(())
     }
-    pub fn add_source(&mut self, source: Arc<SourceFacts>) -> Result<(), OriginError> {
+    pub fn add_source(&mut self, source: &'a SourceFacts) -> Result<(), OriginError> {
         self.register_revision(source.revision)?;
         if self.sources.contains_key(&source.revision.source) {
             return Err(OriginError::DuplicateSourceFacts);

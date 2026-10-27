@@ -1,9 +1,14 @@
-use super::*;
+use super::{
+    BindingOrigin, BindingRef, BindingTarget, ImportResolution, LocalSymbol, Namespace,
+    OriginError, ProjectFacts, ProjectRevision, Resolver, SourceFacts, SourceRevision,
+    SymbolIdentity, Usage, collect, seal,
+};
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use vize_carton::String;
 
 fn revision(source: u32) -> SourceRevision {
     SourceRevision {
@@ -25,8 +30,14 @@ fn source_as(
     let parsed = Parser::new(&allocator, text, source_type).parse();
     assert!(!parsed.panicked);
     assert_eq!(parsed.diagnostics.len(), 0);
-    let built = SemanticBuilder::new().build(&parsed.program);
+    let built = SemanticBuilder::new()
+        .with_build_nodes(false)
+        .build(&parsed.program);
     assert_eq!(built.diagnostics.len(), 0);
+    assert!(
+        built.semantic.nodes().is_empty(),
+        "origin collection must not require the optional node store"
+    );
     let symbol = built
         .semantic
         .scoping()
@@ -76,7 +87,7 @@ impl Resolver for Imports {
         ImportResolution::External(self.identity)
     }
 }
-fn project(reference: SymbolIdentity) -> ProjectFacts {
+fn project<'a>(reference: SymbolIdentity) -> ProjectFacts<'a> {
     let mut project = ProjectFacts::new(ProjectRevision {
         owner: 1,
         generation: 10,
@@ -99,7 +110,7 @@ fn source_callable_shape_never_authorizes_vue_identity() {
         calls: AtomicUsize::new(0),
     };
     let mut project = project(reference);
-    project.add_source(Arc::new(facts)).unwrap();
+    project.add_source(&facts).unwrap();
     let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
     assert_eq!(
         snapshot.get(
@@ -129,7 +140,7 @@ fn actual_type_queries_and_type_only_aliases_retain_provider_identity() {
             calls: AtomicUsize::new(0),
         };
         let mut project = project(reference);
-        project.add_source(Arc::new(facts)).unwrap();
+        project.add_source(&facts).unwrap();
         let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
         assert_eq!(
             snapshot.get(
@@ -158,7 +169,7 @@ fn module_spelling_and_stale_provider_revisions_cannot_authorize_identity() {
     };
     let mut project = project(reference);
     project.register_revision(custom.source).unwrap();
-    project.add_source(Arc::new(facts)).unwrap();
+    project.add_source(&facts).unwrap();
     let resolver = Imports {
         identity: custom,
         calls: AtomicUsize::new(0),
@@ -222,7 +233,7 @@ fn alias_cycles_do_not_require_a_recursion_limit_or_fabricate_an_origin() {
         },
     );
     let mut project = project(reference);
-    project.add_source(Arc::new(facts)).unwrap();
+    project.add_source(&facts).unwrap();
     let resolver = Imports {
         identity: reference,
         calls: AtomicUsize::new(0),
@@ -266,7 +277,7 @@ fn cyclic_export_evidence_can_reach_one_provider_without_guessing_missing_edges(
         ]),
     );
     let mut project = project(reference);
-    project.add_source(Arc::new(facts)).unwrap();
+    project.add_source(&facts).unwrap();
     let resolver = Imports {
         identity: reference,
         calls: AtomicUsize::new(0),
@@ -297,7 +308,7 @@ pub(super) fn observe(
         calls: AtomicUsize::new(0),
     };
     let mut project = project(reference);
-    project.add_source(Arc::new(facts)).unwrap();
+    project.add_source(&facts).unwrap();
     let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
     (
         snapshot

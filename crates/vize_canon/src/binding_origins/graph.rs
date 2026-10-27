@@ -1,6 +1,10 @@
 //! Iterative dependency closure and bounded evidence propagation.
-use super::*;
+use super::{
+    BindingOrigin, BindingRef, BindingTarget, ImportResolution, Namespace, OriginError,
+    OriginSnapshot, ProjectFacts, Resolver, SourceRevision, SymbolIdentity, Usage,
+};
 use std::collections::VecDeque;
+use vize_carton::{FxHashMap, String};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum Key {
@@ -53,15 +57,30 @@ struct Node {
     evidence: Evidence,
     dependents: Vec<usize>,
 }
-struct Graph<'a, R> {
-    facts: &'a ProjectFacts,
-    resolver: &'a R,
+struct Graph<'f, 's, R> {
+    facts: &'f ProjectFacts<'s>,
+    resolver: &'f R,
     keys: Vec<Key>,
     indices: FxHashMap<Key, usize>,
     nodes: Vec<Node>,
     globals: FxHashMap<(String, Namespace), Vec<BindingRef>>,
 }
-impl<'a, R: Resolver> Graph<'a, R> {
+impl<R: Resolver> Graph<'_, '_, R> {
+    fn node(&self, index: usize) -> Result<&Node, OriginError> {
+        self.nodes.get(index).ok_or(OriginError::InvalidGraphIndex)
+    }
+    fn node_mut(&mut self, index: usize) -> Result<&mut Node, OriginError> {
+        self.nodes
+            .get_mut(index)
+            .ok_or(OriginError::InvalidGraphIndex)
+    }
+    fn source(&self, id: u32) -> Result<SourceRevision, OriginError> {
+        self.facts
+            .versions
+            .get(&id)
+            .copied()
+            .ok_or(OriginError::UnregisteredSource)
+    }
     fn intern(&mut self, key: Key) -> usize {
         if let Some(index) = self.indices.get(&key) {
             return *index;
@@ -72,37 +91,45 @@ impl<'a, R: Resolver> Graph<'a, R> {
         self.nodes.push(Node::default());
         index
     }
-    fn edge(&mut self, parent: usize, key: Key) {
+    fn edge(&mut self, parent: usize, key: Key) -> Result<(), OriginError> {
         let child = self.intern(key);
-        self.nodes[child].dependents.push(parent);
+        self.node_mut(child)?.dependents.push(parent);
+        Ok(())
     }
-    fn external(&mut self, node: usize, identity: SymbolIdentity) {
+    fn external(&mut self, node: usize, identity: SymbolIdentity) -> Result<(), OriginError> {
         if self.facts.versions.get(&identity.source.source) == Some(&identity.source) {
-            self.nodes[node].evidence.add_symbol(identity);
+            self.node_mut(node)?.evidence.add_symbol(identity);
         } else {
-            self.nodes[node].evidence.missing = true;
+            self.node_mut(node)?.evidence.missing = true;
         }
+        Ok(())
     }
-    fn target(&mut self, node: usize, owner: BindingRef, usage: Usage, target: &BindingTarget) {
+    fn target(
+        &mut self,
+        node: usize,
+        owner: BindingRef,
+        usage: Usage,
+        target: &BindingTarget,
+    ) -> Result<(), OriginError> {
         let mut pending = Vec::new();
         let mut first = Some(target);
         while let Some(target) = first.take().or_else(|| pending.pop()) {
             match target {
                 BindingTarget::Opaque => {
-                    let source = self.facts.versions[&owner.source];
-                    self.nodes[node].evidence.add_symbol(SymbolIdentity {
+                    let source = self.source(owner.source)?;
+                    self.node_mut(node)?.evidence.add_symbol(SymbolIdentity {
                         source,
                         local: owner.local,
                     });
                 }
                 BindingTarget::Alias { binding, usage } => {
-                    self.edge(node, Key::Binding(*binding, *usage))
+                    self.edge(node, Key::Binding(*binding, *usage))?
                 }
                 BindingTarget::Global {
                     name,
                     namespace,
                     usage,
-                } => self.edge(node, Key::Global(name.clone(), *namespace, *usage)),
+                } => self.edge(node, Key::Global(name.clone(), *namespace, *usage))?,
                 BindingTarget::Import {
                     module,
                     exported,
@@ -112,11 +139,11 @@ impl<'a, R: Resolver> Graph<'a, R> {
                 } => {
                     let usage = override_usage.unwrap_or(usage);
                     if *type_only && usage == Usage::Runtime {
-                        self.nodes[node].evidence.missing = true;
+                        self.node_mut(node)?.evidence.missing = true;
                         continue;
                     }
                     match self.resolver.resolve_import(
-                        self.facts.versions[&owner.source],
+                        self.source(owner.source)?,
                         module,
                         exported,
                         *namespace,
@@ -136,27 +163,34 @@ impl<'a, R: Resolver> Graph<'a, R> {
                                     },
                                     usage,
                                 ),
-                            )
+                            )?
                         }
                         ImportResolution::External(identity)
                             if identity.local.namespace == *namespace =>
                         {
-                            self.external(node, identity)
+                            self.external(node, identity)?
                         }
-                        ImportResolution::Binding(_) | ImportResolution::External(_) => {
-                            self.nodes[node].evidence.missing = true
+                        ImportResolution::Binding(_)
+                        | ImportResolution::External(_)
+                        | ImportResolution::Missing => self.node_mut(node)?.evidence.missing = true,
+                        ImportResolution::Ambiguous => {
+                            self.node_mut(node)?.evidence.ambiguous = true
                         }
-                        ImportResolution::Missing => self.nodes[node].evidence.missing = true,
-                        ImportResolution::Ambiguous => self.nodes[node].evidence.ambiguous = true,
                     }
                 }
                 BindingTarget::Candidates(targets) => pending.extend(targets),
-                BindingTarget::Ambiguous => self.nodes[node].evidence.ambiguous = true,
+                BindingTarget::Ambiguous => self.node_mut(node)?.evidence.ambiguous = true,
             }
         }
+        Ok(())
     }
-    fn expand(&mut self, node: usize) {
-        match self.keys[node].clone() {
+    fn expand(&mut self, index: usize) -> Result<(), OriginError> {
+        match self
+            .keys
+            .get(index)
+            .cloned()
+            .ok_or(OriginError::InvalidGraphIndex)?
+        {
             Key::Binding(binding, usage) => {
                 let facts = self.facts;
                 match facts
@@ -164,30 +198,28 @@ impl<'a, R: Resolver> Graph<'a, R> {
                     .get(&binding.source)
                     .and_then(|source| source.bindings.get(&binding.local))
                 {
-                    Some(target) => self.target(node, binding, usage, target),
-                    None => self.nodes[node].evidence.missing = true,
+                    Some(target) => self.target(index, binding, usage, target)?,
+                    None => self.node_mut(index)?.evidence.missing = true,
                 }
             }
             Key::Global(name, namespace, usage) => {
                 if let Some(bindings) = self.globals.get(&(name, namespace)).cloned() {
                     for binding in bindings {
-                        self.edge(node, Key::Binding(binding, usage));
+                        self.edge(index, Key::Binding(binding, usage))?;
                     }
                 } else {
-                    self.nodes[node].evidence.missing = true;
+                    self.node_mut(index)?.evidence.missing = true;
                 }
             }
         }
+        Ok(())
     }
 }
 
-/// Seal one declaration snapshot. Every graph node expands once. Evidence has
-/// at most two distinct symbols plus refusal bits, so reverse propagation is
-/// bounded even for diamonds, long chains and strongly connected aliases.
-/// A cycle alone is unresolved; a cycle with an independently proved provider
-/// reaches that provider without a recursion limit or an "any" fallback.
+/// Expand requested roots once and propagate at most two identities/refusal bits.
+/// This neither traverses unrelated global dependencies nor retains source ASTs.
 pub fn seal<R: Resolver>(
-    facts: ProjectFacts,
+    facts: ProjectFacts<'_>,
     resolver: &R,
     reference: SymbolIdentity,
     requested_globals: &[&str],
@@ -230,27 +262,31 @@ pub fn seal<R: Resolver>(
         .collect::<Vec<_>>();
     let mut cursor = 0;
     while cursor < graph.nodes.len() {
-        graph.expand(cursor);
+        graph.expand(cursor)?;
         cursor += 1;
     }
-    let mut work = (0..graph.nodes.len())
-        .filter(|index| graph.nodes[*index].evidence != Evidence::default())
+    let mut work = graph
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| (node.evidence != Evidence::default()).then_some(index))
         .collect::<VecDeque<_>>();
     while let Some(child) = work.pop_front() {
-        let evidence = graph.nodes[child].evidence;
-        let dependents = std::mem::take(&mut graph.nodes[child].dependents);
+        let node = graph.node_mut(child)?;
+        let evidence = node.evidence;
+        let dependents = std::mem::take(&mut node.dependents);
         for &parent in &dependents {
-            if graph.nodes[parent].evidence.merge(evidence) {
+            if graph.node_mut(parent)?.evidence.merge(evidence) {
                 work.push_back(parent);
             }
         }
-        graph.nodes[child].dependents = dependents;
+        graph.node_mut(child)?.dependents = dependents;
     }
     let origins = names
         .into_iter()
         .zip(roots)
-        .map(|(name, index)| (name, graph.nodes[index].evidence.origin(reference)))
-        .collect();
+        .map(|(name, index)| Ok((name, graph.node(index)?.evidence.origin(reference))))
+        .collect::<Result<FxHashMap<_, _>, OriginError>>()?;
     Ok(OriginSnapshot {
         revision: facts.revision,
         reference,
