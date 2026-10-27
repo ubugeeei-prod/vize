@@ -68,6 +68,7 @@ test("native unused-disable configuration preserves flag precedence and all temp
     assert.equal(report[0].messages.length, 1);
     assert.equal(report[0].messages[0].ruleId, code);
     assert.equal(report[0].messages[0].message, `[vize:${code}] ${message}`);
+    assert.equal(run(["--no-config", "--preset", "essential"]).status, 0);
     const flags = run([
       "--no-config",
       "--preset",
@@ -128,6 +129,31 @@ test("native unused-disable configuration preserves flag precedence and all temp
       report,
       "lint.vue alias projects the same native setting",
     );
+    config({ preset: "essential", reportUnusedDisableDirectives: true });
+    for (const text of [
+      "<!-- eslint-disable vue/no-v-html -->\n" + repaired,
+      "<script setup>\n// eslint-disable-next-line script/no-with-defaults\nconst value=1;\n</script>\n" +
+        repaired,
+      repaired +
+        "<style>\n/* eslint-disable-next-line css/no-important */\n.a {color:red}\n</style>\n",
+      source("<!-- vize-disable-next-line vue/no-v-html -->\n<div />"),
+      source("<!-- @vize:forget vue/no-v-html -->\n<div />"),
+      source("<!-- eslint-enable vue/no-v-html -->\n<div />"),
+      source("<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->\n<div />"),
+    ]) {
+      const configured = run([], text);
+      const flag = run(
+        ["--no-config", "--preset", "essential", "--report-unused-disable-directives"],
+        text,
+      );
+      assert.equal(configured.status, 0, configured.stdout + configured.stderr);
+      assert.equal(flag.status, 0, flag.stdout + flag.stderr);
+      assert.deepEqual(
+        JSON.parse(configured.stdout),
+        JSON.parse(flag.stdout),
+        "existing native pragma scope remains consistent",
+      );
+    }
     config({ ruleOptions: { [code]: { reportUnusedDisableDirectives: true } } });
     const unsupported = run();
     assert.equal(unsupported.status, 2);
