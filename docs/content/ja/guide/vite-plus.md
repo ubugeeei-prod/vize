@@ -38,14 +38,10 @@ const config = defineConfig({
   },
   fmt: { ignorePatterns: ["dist/**"] },
 }).withVue({
-  lint: defineVizeLintConfig(
-    ...flatConfigs.recommended,
-    ...flatConfigs.ecosystem,
-    {
-      ignorePatterns: ["dist/**"],
-      rules: { "no-console": "warn" },
-    },
-  ),
+  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+    ignorePatterns: ["dist/**"],
+    rules: { "no-console": "warn" },
+  }),
   fmt: { singleQuote: true },
   entries: [
     {
@@ -100,16 +96,16 @@ TypeScript 標準の `extends`・`references` は引き続き使えます。
 
 ## 実行するタスク
 
-| コマンド | 実行するもの |
-| --- | --- |
-| `vp dev`, `vp build` | Vize で Vue をコンパイル |
-| `vp run check` | 同梱チェッカー、lint、フォーマット検査 |
-| `vp run typecheck` | 同梱チェッカーのみ |
-| `vp run lint` | Vize と Oxlint の lint |
-| `vp run lint:fix` | 両方の lint 修正 |
-| `vp run fmt` | Vue は Vize、その他は Oxfmt で書き込み |
-| `vp run fmt:check` | 書き込まずフォーマットを検査 |
-| `vp run editor:setup` | 推奨拡張機能と Vue エディター設定 |
+| コマンド              | 実行するもの                           |
+| --------------------- | -------------------------------------- |
+| `vp dev`, `vp build`  | Vize で Vue をコンパイル               |
+| `vp run check`        | 同梱チェッカー、lint、フォーマット検査 |
+| `vp run typecheck`    | 同梱チェッカーのみ                     |
+| `vp run lint`         | Vize と Oxlint の lint                 |
+| `vp run lint:fix`     | 両方の lint 修正                       |
+| `vp run fmt`          | Vue は Vize、その他は Oxfmt で書き込み |
+| `vp run fmt:check`    | 書き込まずフォーマットを検査           |
+| `vp run editor:setup` | 推奨拡張機能と Vue エディター設定      |
 
 推奨の型チェックは [Content Mapper](./content-mapper.md) です。TypeScript 7.1 は `tsc --runExternalCode --noEmit` を実行します。tsrs は同じ `tsconfig` の drop-in で、`tsrs --runExternalCode --noEmit` です。`vp run typecheck` は同梱チェッカーで、`vp run check` はそれを含みます。
 
@@ -130,6 +126,20 @@ export default defineConfig({}, { tasks: { check: "verify", preview: false } });
 ```
 
 `tasks: false` ですべての生成タスクを無効化できます。
+
+生成タスクはデフォルトではキャッシュしません。読み取り専用の `lint`、`fmt:check`、`check`、`typecheck` は
+第2引数の `taskCache: true` で Vite+ のキャッシュを有効にできます。
+
+```ts
+export default defineConfig({}, { taskCache: true });
+```
+
+Vite+ がソース、設定の import、依存関係、ディレクトリ内のファイルを自動追跡します。
+生成される `node_modules/.vize/**` と `**/.vize/**` は入力から除外し、出力ファイルの復元は行いません。
+`fmt` や `lint:fix` などソースを書き換えるタスクはキャッシュしません。チェックに `--fix` を渡した場合も、
+入力が変われば実行し、追跡対象の入力を書き換えた実行は Vite+ が保存しません。
+既存の `run.tasks` のキャッシュ設定を保持し、生成タスクの名前を変えても方針は変わりません。
+Vite+ 0.x と 1.x の両方のキャッシュ API に対応しています。
 
 <span id="lint-and-formatter-ownership"></span>
 

@@ -47,14 +47,10 @@ const config = defineConfig({
   },
   fmt: { ignorePatterns: ["dist/**"] },
 }).withVue({
-  lint: defineVizeLintConfig(
-    ...flatConfigs.recommended,
-    ...flatConfigs.ecosystem,
-    {
-      ignorePatterns: ["dist/**"],
-      rules: { "no-console": "warn" },
-    },
-  ),
+  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+    ignorePatterns: ["dist/**"],
+    rules: { "no-console": "warn" },
+  }),
   fmt: { singleQuote: true },
   entries: [
     {
@@ -78,21 +74,21 @@ the Vue flat lint layer with that root configuration, so the root
 do not specify an alias together with its replacement. See [Shared
 Vue configuration](./vue-configuration.md) for paths and scoped entries.
 
-| Section | Owner |
-| --- | --- |
-| `vue.compile` (`compiler` alias) | Native compiler settings shared with the CLI and editor |
-| `vue.typeCheck` (`typeChecker` alias) | Native checker settings; TypeScript defaults come from `tsconfig.json` |
-| `vue.lint` (`linter` alias) | Host Oxlint settings; `settings.vize`, `vize/*` rules, and overrides project into native Vue lint |
-| `vue.fmt` (`formatter` alias) | Native Vue formatting options |
-| `vue.languageServer` | Shared language-server features |
-| `compiler` | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent |
-| `typecheck` | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
-| `lint.vue` | Native lint task options, including `typecheck`, `locale` and `helpLevel` |
-| Other `lint` fields | The installed Vite+ / Oxlint configuration |
-| `fmt.vue` | Native formatter task options; `false` returns formatting to Oxfmt when `vue.formatter` is absent |
-| Other `fmt` fields | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting |
-| `pack.vue` | Native declaration and map options |
-| Other `pack` fields | The installed Vite+ / tsdown configuration |
+| Section                               | Owner                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `vue.compile` (`compiler` alias)      | Native compiler settings shared with the CLI and editor                                                            |
+| `vue.typeCheck` (`typeChecker` alias) | Native checker settings; TypeScript defaults come from `tsconfig.json`                                             |
+| `vue.lint` (`linter` alias)           | Host Oxlint settings; `settings.vize`, `vize/*` rules, and overrides project into native Vue lint                  |
+| `vue.fmt` (`formatter` alias)         | Native Vue formatting options                                                                                      |
+| `vue.languageServer`                  | Shared language-server features                                                                                    |
+| `compiler`                            | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent              |
+| `typecheck`                           | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
+| `lint.vue`                            | Native lint task options, including `typecheck`, `locale` and `helpLevel`                                          |
+| Other `lint` fields                   | The installed Vite+ / Oxlint configuration                                                                         |
+| `fmt.vue`                             | Native formatter task options; `false` returns formatting to Oxfmt when `vue.formatter` is absent                  |
+| Other `fmt` fields                    | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting                    |
+| `pack.vue`                            | Native declaration and map options                                                                                 |
+| Other `pack` fields                   | The installed Vite+ / tsdown configuration                                                                         |
 
 Canonical `vue` settings take precedence over the corresponding task convenience
 options. Supplying `vue.lint` makes the host Oxlint block own the lint pass and
@@ -138,26 +134,40 @@ API for new configuration.
 
 ## Tasks
 
-| Command | Work |
-| --- | --- |
-| `vp run check` | Packaged typecheck, native lint, Oxlint, and both formatter checks |
-| `vp run check -- --fix` | Packaged typecheck, fix lint, and write formatting |
-| `vp run typecheck` | Packaged checker only |
-| `vp run lint` | Native lint and Oxlint, plus optional native typecheck |
-| `vp run lint:fix` | Fix through both lint engines |
-| `vp run fmt` | Vize writes Vue formatting; Oxfmt writes other files |
-| `vp run fmt:check` | Check both formatters without writing |
-| `vp run build`, `dev` | Vite+ with the Vize compiler |
-| `vp run pack` | Vite+ library bundling and configured native declarations |
-| `vp run preview`, `test` | The corresponding installed Vite+ commands |
-| `vp run editor:setup` | Recommend extensions and Vue editor defaults |
+| Command                  | Work                                                               |
+| ------------------------ | ------------------------------------------------------------------ |
+| `vp run check`           | Packaged typecheck, native lint, Oxlint, and both formatter checks |
+| `vp run check -- --fix`  | Packaged typecheck, fix lint, and write formatting                 |
+| `vp run typecheck`       | Packaged checker only                                              |
+| `vp run lint`            | Native lint and Oxlint, plus optional native typecheck             |
+| `vp run lint:fix`        | Fix through both lint engines                                      |
+| `vp run fmt`             | Vize writes Vue formatting; Oxfmt writes other files               |
+| `vp run fmt:check`       | Check both formatters without writing                              |
+| `vp run build`, `dev`    | Vite+ with the Vize compiler                                       |
+| `vp run pack`            | Vite+ library bundling and configured native declarations          |
+| `vp run preview`, `test` | The corresponding installed Vite+ commands                         |
+| `vp run editor:setup`    | Recommend extensions and Vue editor defaults                       |
 
 The recommended typecheck is the [content mapper](./content-mapper.md). TypeScript 7.1 runs `tsc --runExternalCode --noEmit`. tsrs is a drop-in of the same `tsconfig`: `tsrs --runExternalCode --noEmit`. `vp run typecheck` is the packaged checker, and `vp run check` includes it.
 
 Pass paths after `--` to check, lint, and format tasks. Formatting also accepts
 `--check` or `--write`. Put tool options in the corresponding config section.
 Checks continue after diagnostics so one failing tool does not hide the others.
-Generated tasks are uncached so fixes and configuration changes take effect.
+Generated tasks are uncached by default. Opt in to Vite+ caching for the read-only
+`lint`, `fmt:check`, `check`, and `typecheck` tasks:
+
+```ts
+export default defineConfig({}, { taskCache: true });
+```
+
+Vite+ automatically tracks source files, configuration imports, dependencies, and
+directory entries. Generated `node_modules/.vize/**` and `**/.vize/**` files are
+excluded from cache inputs, and checks never restore output files. Source-writing
+tasks such as `fmt` and `lint:fix` remain uncached. Passing `--fix` to a cached
+check still runs on changed inputs; Vite+ refuses to store a run that modifies its
+tracked inputs. Existing `run.tasks` keep their own cache policy, and renaming a
+generated task preserves its policy. Both the Vite+ 0.x and 1.x cache APIs are
+supported.
 
 > [!WARNING]
 > Custom tasks use `vp run`. Built-in `vp check`, `vp lint`, and `vp fmt` do not
