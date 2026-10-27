@@ -124,7 +124,7 @@ export const rustDifferentialLanes: readonly Lane[] = [
         "--exact",
       ]),
       corpus("vize_atelier_core", ["davinci_l2_transform_vue2"], "legacy"),
-      corpus("vize_atelier_dom", ["v_pre_freezes_its_subtree"]),
+      corpus("vize_atelier_dom", ["v_pre_freezes_its_subtree", "component_v_once"]),
     ],
   },
   {
