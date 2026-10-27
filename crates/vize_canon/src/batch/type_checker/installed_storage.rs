@@ -81,6 +81,10 @@ impl Drop for InstalledStorage {
         } = self
         {
             let _ = clear_except_build_info(path, build_info);
+            // Native sessions need no build info. Keep their original cleanup
+            // contract while retaining directories that hold reusable build info.
+            // The owner lock lives beside this directory and is still held here.
+            let _ = fs::remove_dir(path);
         }
     }
 }
@@ -253,6 +257,27 @@ mod tests {
             std::fs::read_to_string(package.join("index.ts")).unwrap(),
             "export const raw = 1;\n"
         );
+    }
+
+    #[test]
+    fn an_owner_without_build_info_removes_its_storage() {
+        let base = tempfile::tempdir().unwrap();
+        let mut owner = InstalledStorage::claim(base.path(), KEY).unwrap();
+        let storage = owner.path().to_path_buf();
+        let build_info = storage.join("projects/p/.vize-buildinfo");
+        owner.reset(&build_info).unwrap();
+        write(&storage.join("projects/p/src/App.vue.ts"), "mirror\n");
+        assert!(storage.is_dir());
+
+        drop(owner);
+        assert!(!storage.exists());
+
+        let mut next = InstalledStorage::claim(base.path(), KEY).unwrap();
+        assert!(matches!(next, InstalledStorage::Stable { .. }));
+        assert_eq!(next.path(), storage);
+        next.reset(&build_info).unwrap();
+        drop(next);
+        assert!(!storage.exists());
     }
 
     #[test]
