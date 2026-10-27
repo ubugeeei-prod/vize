@@ -28,6 +28,7 @@ export default defineConfig({
       crossFileTree: true,
       crossFileComplexity: true,
       maxWarnings: 0,
+      reportUnusedDisableDirectives: true,
     },
   },
 });

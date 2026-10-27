@@ -7,6 +7,8 @@
 //! focus stays on the element with `aria-activedescendant`, so the listbox it
 //! controls (`aria-controls`, matched against the listbox `id` as static text
 //! or as the same bound expression) and the options inside it are exempt.
+//! A listbox may instead move DOM focus among its owned options. A physical,
+//! focusable option establishes that contract without a second container stop.
 //!
 //! ## Examples
 //!
@@ -25,7 +27,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::TemplateSyntax;
 use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupDocument, MarkupElement, MarkupNode, MarkupRule,
+    MarkupBindingKind, MarkupContext, MarkupDocument, MarkupElement, MarkupElementKind, MarkupNode,
+    MarkupRule,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
@@ -77,8 +80,26 @@ impl InteractiveSupportsFocus {
             return;
         }
 
+        // APG roving tabindex keeps DOM focus on options, rather than adding a
+        // container tab stop. Only an option owned by this listbox can supply it.
+        if role == "listbox" && Self::has_focusable_owned_option(element) {
+            return;
+        }
+
         // Element has interactive role but is not natively interactive
         // Check if it's focusable
+        if !markup_helpers::is_focusable_markup_element(element)
+            && !Self::has_bound_tabindex(element)
+        {
+            ctx.warn_at_with_help(
+                ctx.t_fmt("a11y/interactive-supports-focus.message", &[("role", role)]),
+                element.range(),
+                ctx.t("a11y/interactive-supports-focus.help"),
+            );
+        }
+    }
+
+    fn has_bound_tabindex(element: &MarkupElement<'_>) -> bool {
         let mut bound_tabindex = false;
         element.walk_bindings(&mut |binding| {
             if binding.kind() == MarkupBindingKind::Bind
@@ -87,13 +108,44 @@ impl InteractiveSupportsFocus {
                 bound_tabindex = true;
             }
         });
-        if !markup_helpers::is_focusable_markup_element(element) && !bound_tabindex {
-            ctx.warn_at_with_help(
-                ctx.t_fmt("a11y/interactive-supports-focus.message", &[("role", role)]),
-                element.range(),
-                ctx.t("a11y/interactive-supports-focus.help"),
-            );
-        }
+        bound_tabindex
+    }
+
+    fn has_focusable_owned_option(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_children(&mut |child| {
+            if found {
+                return;
+            }
+            let MarkupNode::Element(child) = child else {
+                return;
+            };
+            // Component/slot placement is unknown. Hidden or inert subtrees
+            // cannot provide a DOM focus target for the owning listbox.
+            if matches!(
+                child.kind(),
+                MarkupElementKind::Component | MarkupElementKind::Slot
+            ) || child.is_unqualified_tag_exact("slot")
+                || markup_helpers::has_static_hidden(&child)
+                || markup_helpers::has_static_inert(&child)
+            {
+                return;
+            }
+            match markup_helpers::get_static_markup_attribute_value(&child, "role") {
+                Some("option") => {
+                    found = !markup_helpers::is_statically_non_focusable(&child)
+                        && (markup_helpers::is_focusable_markup_element(&child)
+                            || Self::has_bound_tabindex(&child));
+                }
+                // Physical wrappers and owned groups may carry options. A
+                // nested listbox or any other widget owns its own descendants.
+                None | Some("group" | "presentation" | "none") => {
+                    found = Self::has_focusable_owned_option(&child);
+                }
+                Some(_) => {}
+            }
+        });
+        found
     }
 
     fn check_document(ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
@@ -223,6 +275,26 @@ mod tests {
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(InteractiveSupportsFocus));
+        Linter::with_registry(registry)
+    }
+
+    pub(super) fn create_legacy_linter() -> Linter {
+        struct Legacy;
+        impl crate::rule::Rule for Legacy {
+            fn meta(&self) -> &'static crate::rule::RuleMeta {
+                crate::rule::Rule::meta(&InteractiveSupportsFocus)
+            }
+
+            fn run_on_template<'a>(
+                &self,
+                ctx: &mut crate::context::LintContext<'a>,
+                root: &vize_relief::RootNode<'a>,
+            ) {
+                crate::rule::Rule::run_on_template(&InteractiveSupportsFocus, ctx, root);
+            }
+        }
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(Legacy));
         Linter::with_registry(registry)
     }
 
@@ -401,3 +473,7 @@ const listId = "fruits";
         assert_eq!(result.warning_count, 0);
     }
 }
+
+#[cfg(test)]
+#[path = "interactive_supports_focus_tests.rs"]
+mod listbox_tests;

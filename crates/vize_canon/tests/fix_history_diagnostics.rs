@@ -957,6 +957,17 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
+fn undeclared_instance_globals_report_at_every_read() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_report_at_every_read",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10617),
+        &["undeclared-dollar-globals"],
+    );
+}
+
+#[test]
 fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
     check_pack(
         "unicode-prop-bindings-10573",
@@ -1170,6 +1181,36 @@ fn custom_properties_resolve_on_the_template_instance() {
             "script-setup-wrong-use-and-unknown-name",
             "options-api-slot-loop-source",
             "options-api-slot-loop-unknown-name",
+        ],
+    );
+}
+
+#[test]
+fn dependency_probe_histories_preserve_complete_diagnostics() {
+    check_pack(
+        "dependency-probe-history-10936",
+        "dependency_probe_histories_preserve_complete_diagnostics",
+        "1266cd3a014654bbdcf3378500b93447411b26d9",
+        Some(10936),
+        &[
+            "valid-precedence-and-alias",
+            "invalid-authored-model",
+            "repaired-authored-model",
+        ],
+    );
+}
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
         ],
     );
 }

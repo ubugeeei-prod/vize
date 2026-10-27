@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { verifyPublicProvider } from "../public-provider.ts";
 import { compileFunction } from "node:vm";
 import { createHash } from "node:crypto";
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
@@ -74,7 +75,10 @@ const cases = [
     id: "native-for-lowercase-control",
     source: '<div><div v-for="i in 3" :key="i" @foobar="pingA">a</div></div>',
   },
-  { id: "native-if-explicit-key", source: '<div v-if="ok" key="native" @fooBar="pingA">x</div>' },
+  {
+    id: "native-if-explicit-key",
+    source: '<div v-if="ok" key="native" @fooBar="pingA">x</div>',
+  },
   {
     id: "component-for-control",
     source: '<div><Comp v-for="i in 3" :key="i" @fooBar="pingA" /></div>',
@@ -83,7 +87,10 @@ const cases = [
     id: "native-if-else",
     source: '<div v-if="ok" @fooBar="pingA">a</div><div v-else @fooBar="pingB">b</div>',
   },
-  { id: "native-for-unkeyed", source: '<div><div v-for="i in 3" @fooBar="pingA">a</div></div>' },
+  {
+    id: "native-for-unkeyed",
+    source: '<div><div v-for="i in 3" @fooBar="pingA">a</div></div>',
+  },
 ] as const;
 const states = [
   { id: "branch-on", ok: true },
@@ -156,12 +163,12 @@ function execute(code: string, preamble: string | null) {
     const render =
       preamble === null
         ? compileFunction(code, ["Vue"])(runtime)
-        : compileFunction(`${preamble}\n${code}\nreturn render;`, ["Vue", "ok", "pingA", "pingB"])(
-            runtime,
-            ctx.ok,
-            ctx.pingA,
-            ctx.pingB,
-          );
+        : compileFunction(`${preamble}\n${code}\nreturn render;`, [
+            "Vue",
+            "ok",
+            "pingA",
+            "pingB",
+          ])(runtime, ctx.ok, ctx.pingA, ctx.pingB);
     return { state, vnode: view(render(ctx, [], {}, {}, {}, {}), ctx) };
   });
 }
@@ -231,15 +238,21 @@ const nativeImages = Object.keys(require.cache)
     const locked = lock.packages[lockKeys[0]];
     for (const key of lockKeys) {
       for (const field of ["version", "integrity", "resolved"]) {
-        assert.equal(lock.packages[key][field], locked[field], "all historical lock aliases agree");
+        assert.equal(
+          lock.packages[key][field],
+          locked[field],
+          "all historical lock aliases agree",
+        );
       }
     }
     assert.equal(locked.version, expectedVersion);
     assert.match(locked.integrity, /^sha512-/);
     assert.match(locked.resolved, /^https:\/\/registry\.npmjs\.org\//);
+    const bytes = readFileSync(name);
     return {
       path: name,
-      sha256: sha256(readFileSync(name)),
+      bytes: bytes.length,
+      sha256: sha256(bytes),
       package: packageMetadata.name,
       version: packageMetadata.version,
       lockKeys,
@@ -248,6 +261,12 @@ const nativeImages = Object.keys(require.cache)
     };
   });
 assert.equal(nativeImages.length, 1);
+const image = nativeImages[0];
+assert.ok(image);
+const publicProvider =
+  phase === "after"
+    ? await verifyPublicProvider(expectedVersion, releaseIdentity.sourceSha, image)
+    : null;
 const failed = results.filter((row) => !row.matchesOfficialOracle).map((row) => row.id);
 const receipt = {
   schema: "vize-public-uppercase-event-acceptance-v1",
@@ -263,6 +282,7 @@ const receipt = {
   platform: process.platform,
   arch: process.arch,
   nativeImages,
+  publicProvider,
   nativeBuildToken: native.getNativeBuildToken(),
   results,
   failed,
@@ -270,6 +290,24 @@ const receipt = {
 };
 writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + "\n", { flag: "wx" });
 if (phase === "before") {
+  const historicalBytes = readFileSync(
+    path.join(directory, "historical-public-0.599.0.json.txt"),
+  );
+  assert.equal(
+    sha256(historicalBytes),
+    "aa05a1b783459b300d83e01e493b3f1fe5e6020832171e856ddf2fd967f1ce47",
+  );
+  const historical = JSON.parse(historicalBytes.toString("utf8"));
+  assert.equal(historical.inputSha256, inputSha256);
+  assert.equal(historical.referenceSha256, sha256(referenceBytes));
+  assert.deepEqual(
+    results.map(({ id, observations }) => ({ id, observations })),
+    historical.results.map((row: { id: string; observations: unknown }) => ({
+      id: row.id,
+      observations: row.observations,
+    })),
+    "all twenty historical case/state observations remain byte-for-byte equivalent",
+  );
   assert.deepEqual(
     failed,
     [
@@ -282,7 +320,11 @@ if (phase === "before") {
     "exact historical failures and all neighboring controls remain frozen",
   );
 } else
-  assert.deepEqual(failed, [], "the public release must satisfy every pinned independent packet");
+  assert.deepEqual(
+    failed,
+    [],
+    "the public release must satisfy every pinned independent packet",
+  );
 console.log(
   JSON.stringify({
     phase,

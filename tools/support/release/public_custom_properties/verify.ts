@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { verifyPublicProvider } from "../public-provider.ts";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -27,8 +28,11 @@ assert.equal(identity.version, version);
 assert.equal(identity.requiredSource, "7c2f6f46172404a8f95335a79ee2b95094f6b7ee");
 assert.equal(identity.containsRequiredSource, true);
 assert.match(asString(identity.sourceSha), /^[0-9a-f]{40}$/);
-const sha256 = (bytes: string | Buffer): string => createHash("sha256").update(bytes).digest("hex");
-const manifest = readJsonRecord(new URL("./immutable-input-manifest.json.txt", import.meta.url));
+const sha256 = (bytes: string | Buffer): string =>
+  createHash("sha256").update(bytes).digest("hex");
+const manifest = readJsonRecord(
+  new URL("./immutable-input-manifest.json.txt", import.meta.url),
+);
 for (const [name, entry] of Object.entries(manifest)) {
   assert.equal(name.includes(".."), false);
   const record = asRecord(entry, name);
@@ -64,7 +68,11 @@ writeFileSync(
     {
       private: true,
       type: "module",
-      dependencies: { vize: version, vue: "3.5.42", "@typescript/typescript-linux-x64": "7.0.2" },
+      dependencies: {
+        vize: version,
+        vue: "3.5.42",
+        "@typescript/typescript-linux-x64": "7.0.2",
+      },
     },
     null,
     2,
@@ -158,6 +166,13 @@ const imageManifest = [asString(nativeIdentity.binary), provider].map((file) => 
   const bytes = readFileSync(file);
   return { file, bytes: bytes.length, sha256: sha256(bytes) };
 });
+const nativeImage = imageManifest[0];
+assert.ok(nativeImage);
+const publicProvider = await verifyPublicProvider(
+  version,
+  asString(identity.sourceSha),
+  nativeImage,
+);
 writeFileSync(
   join(consumer, "installed-image-manifest.json"),
   JSON.stringify(imageManifest, null, 2) + "\n",
@@ -181,6 +196,59 @@ const expected: Record<string, readonly string[]> = {
     "error:10:23 [TS2339] Property 'missing' does not exist on the component instance.",
   ],
 };
+type WholeVirtualTsWitnesses = {
+  files: { file: string; bytes: number; sha256: string; stderrHeader: string }[];
+  sharedHelpers: { bytes: number; sha256: string; stderrHeader: string };
+};
+function requireWholeVirtualTs(
+  files: readonly Record<string, unknown>[],
+  stderr: string,
+  label: string,
+): WholeVirtualTsWitnesses {
+  const headers = [...stderr.matchAll(/^=== (.+) ===\r?$/gm)];
+  const sections = headers.map((header, index) => {
+    const offset = header.index ?? -1;
+    assert.ok(offset >= 0, label + ": virtual source header offset");
+    return {
+      name: asString(header[1]).replaceAll("\\", "/"),
+      header: header[0],
+      body: stderr.slice(offset + header[0].length, headers[index + 1]?.index ?? stderr.length),
+    };
+  });
+  const helperSections = sections.filter((section) => section.name === "__vize_helpers.d.ts");
+  assert.equal(helperSections.length, 1, label + ": shared helper stderr witness");
+  const sharedHelpers = helperSections[0];
+  assert.ok(sharedHelpers.body.trim().length > 0, label + ": nonempty shared helpers");
+  const witnesses = files.map((file) => {
+    const name = asString(file.file);
+    const virtualTs = asString(file.virtualTs);
+    assert.ok(virtualTs.trim().length > 0, label + "/" + name + ": nonempty virtualTs");
+    const matching = sections.filter(
+      (section) => section.name === name || section.name.endsWith("/" + name),
+    );
+    assert.equal(matching.length, 1, label + "/" + name + ": exact stderr source section");
+    assert.equal(
+      matching[0].body.trim(),
+      virtualTs.trim(),
+      label + "/" + name + ": complete JSON/stderr virtual source agreement",
+    );
+    return {
+      file: name,
+      bytes: Buffer.byteLength(virtualTs),
+      sha256: sha256(virtualTs),
+      stderrHeader: matching[0].header,
+    };
+  });
+  return {
+    files: witnesses,
+    sharedHelpers: {
+      bytes: Buffer.byteLength(sharedHelpers.body),
+      sha256: sha256(sharedHelpers.body),
+      stderrHeader: sharedHelpers.header,
+    },
+  };
+}
+const virtualTsWitnesses: Record<string, WholeVirtualTsWitnesses> = {};
 function check(label: string, directive: readonly string[], errorCount: number): void {
   const stdout = run(
     label,
@@ -198,7 +266,10 @@ function check(label: string, directive: readonly string[], errorCount: number):
   );
   const packet = asRecord(parseJson(stdout));
   const files = asArray(packet.files).map((value) => asRecord(value));
-  assert.deepEqual(files.map((file) => asString(file.file)).sort(), Object.keys(expected).sort());
+  assert.deepEqual(
+    files.map((file) => asString(file.file)).sort(),
+    Object.keys(expected).sort(),
+  );
   for (const file of files) {
     const name = asString(file.file);
     const raw = asStringArray(file.diagnostics);
@@ -209,6 +280,11 @@ function check(label: string, directive: readonly string[], errorCount: number):
       label + "/" + name,
     );
   }
+  virtualTsWitnesses[label] = requireWholeVirtualTs(
+    files,
+    readFileSync(join(consumer, label + ".stderr"), "utf8"),
+    label,
+  );
   assert.equal(packet.errorCount, errorCount, label);
   assert.equal(packet.warningCount, 0, label);
 }
@@ -239,6 +315,7 @@ writeFileSync(
       sourceNativeWitness: "10b, not a pre10933 producer",
       nativeIdentity,
       imageManifest,
+      publicProvider,
       originalErrorCount: 8,
       warningCount: 0,
       directive: { original: "clean", unused: "TS2578@7:3", unprotected: "TS2339@8:3" },
@@ -252,6 +329,7 @@ writeFileSync(
         "check-unused-directive.stderr",
         "check-unprotected-missing.stderr",
       ],
+      wholeVirtualTsWitnesses: virtualTsWitnesses,
     },
     null,
     2,

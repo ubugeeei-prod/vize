@@ -95,10 +95,11 @@ jobs:
           path: |
             ${{ runner.temp }}/event-receipts/
             tools/support/release/public_native_events/official-vue-3.5.44-prefix-identifiers-reference.json.txt
+            tools/support/release/public_native_events/historical-public-0.599.0.json.txt
           if-no-files-found: error
           retention-days: 30
   public-release-contracts:
-    if: github.repository == 'ubugeeei-prod/vize' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -112,9 +113,19 @@ jobs:
         with: { node-version: "26.6.0", package-manager-cache: false }
       - name: Validate the explicit public candidate
         run: |
-          [[ "$PUBLIC_VERSION" =~ ^0\.[0-9]+\.0$ ]]
-          [[ "$PUBLIC_CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$PUBLIC_SOURCE_SHA" == "$PUBLIC_CANDIDATE" ]]
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { mkdirSync, writeFileSync } from "node:fs";
+          import path from "node:path";
+          const { PUBLIC_VERSION: version, PUBLIC_CANDIDATE: candidate, PUBLIC_SOURCE_SHA: source } = process.env;
+          const valid = /^0\.[0-9]+\.0$/.test(version ?? "") && /^[0-9a-f]{40}$/.test(candidate ?? "") && source === candidate;
+          const directory = path.join(process.env.RUNNER_TEMP, "public-release-proof");
+          mkdirSync(directory, { recursive: true });
+          writeFileSync(path.join(directory, "candidate-validation.json"), JSON.stringify({
+            version, candidate, source, accepted: valid, workflowSha: process.env.GITHUB_SHA,
+          }, null, 2) + "\n", { flag: "wx" });
+          assert.equal(valid, true, "an exact public version and matching immutable candidate are required");
+          NODE
       - name: Install exact public packages in an independent fresh consumer
         run: node tools/support/release/public_release_contracts/bootstrap.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof"
       - name: Verify complete packets, runtime controls, and native public custody

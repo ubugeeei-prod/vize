@@ -1,0 +1,3 @@
+<template>
+<ul id="outer" role="listbox" ><button role="option" type="button" disabled>A</button></ul>
+</template>
