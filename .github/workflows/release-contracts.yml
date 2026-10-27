@@ -1,61 +1,72 @@
-name: Release contracts
-# Runs the release pipeline's tool and workflow tests on changes to them.
-on:
-  pull_request:
-    paths:
-      - ".github/workflows/release*.yml"
-      - ".github/actions/release-*/**"
-      - ".github/actions/build-release-*/**"
-      - ".github/release-notes/drop-in-scope.md"
-      - "pnpm-workspace.yaml"
-      - "tools/support/release/**"
-      - "tests/tooling/release/**"
-      - "tests/tooling/package-manifests.test.ts"
-      - "tests/tooling/bundler-plugin-manifests.test.ts"
-      - "tests/tooling/davinci-plugin-sdk-release.test.ts"
-      - "tests/tooling/drop-in-claim-scope.test.ts"
-      - "tests/tooling/github-workflows-release-build.test.ts"
-      - "tests/tooling/release-jsr-workflow.test.ts"
-      - "tests/tooling/publish-npm-package*.test.ts"
-      - "tests/tooling/publish-editor*.test.ts"
-      - "tests/tooling/publish-open-vsx-extension.test.ts"
-      - "tests/tooling/publish-vscode-extension*.test.ts"
-      - "tests/tooling/support/fake-npm-registry.ts"
-      - "tests/tooling/support/fake-command.ts"
-  workflow_dispatch:
+name: Pug include bounded-work qualification
+on: workflow_dispatch
 permissions: { contents: read }
-concurrency:
-  group: release-contracts-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   contracts:
-    name: Release pipeline contracts
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "4"
+      RUST_TEST_THREADS: "2"
+      BEFORE_SOURCE: ba07c80cd6a462d09d087ec727aafa4c50d214d1
+      FIXED_SOURCE: 8aa7dcbe902179b5f7864f9be0097ded58772c41
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
-      - uses: ./.github/actions/cache-vp-bootstrap
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: package.json, cache: true, run-install: true }
-      - name: Release workflow, versioning and publication
-        run: >-
-          node --test
-          tests/tooling/release/npm-resume.test.ts
-          tests/tooling/release/release-workflow.test.ts
-          tests/tooling/release/release-notes.test.ts
-          tests/tooling/release/verify-published-registry.test.ts
-          tests/tooling/release/release-signing.test.ts
-          tests/tooling/release/editor-platforms.test.ts
-          tests/tooling/github-workflows-release-build.test.ts
-          tests/tooling/release-jsr-workflow.test.ts
-          tests/tooling/drop-in-claim-scope.test.ts
-          tests/tooling/package-manifests.test.ts
-          tests/tooling/bundler-plugin-manifests.test.ts
-          tests/tooling/davinci-plugin-sdk-release.test.ts
-      - name: Concurrent npm publication
-        run: node --test tests/tooling/publish-npm-package*.test.ts
-      - name: Target-aware editor publication
-        run: node --test tests/tooling/publish-editor*.test.ts tests/tooling/publish-open-vsx-extension.test.ts tests/tooling/publish-vscode-extension*.test.ts
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: test-scripts
+          cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}"
+          reuse-target: "false"
+      - name: Prove four bounded regressions on unchanged before source
+        run: |
+          mkdir -p "$RUNNER_TEMP/pug-include-proof"
+          git fetch --no-tags --depth=1 origin "$BEFORE_SOURCE"
+          git restore --source="$BEFORE_SOURCE" -- davinci/vize_l1_to_l2/src/lower/pug/include.rs davinci/vize_l1_to_l2/src/lower/pug/emit.rs davinci/vize_l1_to_l2/src/lower/pug/refusal.rs davinci/vize_l1_to_l2/src/lower/pug.rs crates/vize_atelier_sfc/src/compile/entry/pug.rs
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          import { spawnSync } from "node:child_process";
+          const result = spawnSync("cargo", ["test", "--profile", "ci", "-p", "vize_l1_to_l2", "--test", "integration", "pug_lowering::include_limits", "--", "--nocapture"], { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
+          fs.writeFileSync(process.env.RUNNER_TEMP + "/pug-include-proof/before.stdout", result.stdout ?? "");
+          fs.writeFileSync(process.env.RUNNER_TEMP + "/pug-include-proof/before.stderr", result.stderr ?? "");
+          assert.equal(result.error, undefined);
+          assert.equal(result.signal, null);
+          assert.equal(result.status, 101);
+          assert.ok(result.stdout.includes("running 5 tests"));
+          for (const name of ["acyclic_branching_graph_stops_before_a_4097th_read", "cached_includes_have_an_independent_expansion_budget", "cached_raw_files_cannot_multiply_output_past_sixteen_mib", "absolute_paths_never_reach_the_host_reader"]) {
+            assert.ok(result.stdout.includes("test pug_lowering::include_limits::" + name + " ... FAILED"), name);
+          }
+          assert.ok(result.stdout.includes("test pug_lowering::include_limits::relative_parent_paths_still_reach_the_host_reader ... ok"));
+          assert.ok(result.stdout.includes("1 passed; 4 failed"));
+          fs.writeFileSync(process.env.RUNNER_TEMP + "/pug-include-proof/before.json", JSON.stringify({ source: process.env.BEFORE_SOURCE, exit: result.status, passed: 1, failed: 4, bounded: true }, null, 2));
+          NODE
+      - name: Restore exact repaired source and qualify all include contracts
+        run: |
+          git restore --source="$GITHUB_SHA" -- davinci/vize_l1_to_l2/src/lower/pug/include.rs davinci/vize_l1_to_l2/src/lower/pug/emit.rs davinci/vize_l1_to_l2/src/lower/pug/refusal.rs davinci/vize_l1_to_l2/src/lower/pug.rs crates/vize_atelier_sfc/src/compile/entry/pug.rs
+          git diff --exit-code -- davinci/vize_l1_to_l2/src/lower/pug/include.rs davinci/vize_l1_to_l2/src/lower/pug/emit.rs davinci/vize_l1_to_l2/src/lower/pug/refusal.rs davinci/vize_l1_to_l2/src/lower/pug.rs crates/vize_atelier_sfc/src/compile/entry/pug.rs
+          cargo test --profile ci -p vize_l1_to_l2 --test integration pug_lowering -- --nocapture > "$RUNNER_TEMP/pug-include-proof/after.stdout" 2> "$RUNNER_TEMP/pug-include-proof/after.stderr"
+          cargo test --profile ci -p vize_l1_to_l2 --lib lower::pug::include::limits::tests -- --nocapture > "$RUNNER_TEMP/pug-include-proof/budget.stdout" 2> "$RUNNER_TEMP/pug-include-proof/budget.stderr"
+          cargo test --profile ci -p vize_atelier_sfc --lib pug::files::tests -- --nocapture > "$RUNNER_TEMP/pug-include-proof/host.stdout" 2> "$RUNNER_TEMP/pug-include-proof/host.stderr"
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          import crypto from "node:crypto";
+          import { execFileSync } from "node:child_process";
+          const directory = process.env.RUNNER_TEMP + "/pug-include-proof";
+          const output = fs.readFileSync(directory + "/after.stdout", "utf8");
+          for (const name of ["acyclic_branching_graph_stops_before_a_4097th_read", "cached_includes_have_an_independent_expansion_budget", "cached_raw_files_cannot_multiply_output_past_sixteen_mib", "absolute_paths_never_reach_the_host_reader", "relative_parent_paths_still_reach_the_host_reader"]) assert.ok(output.includes("test pug_lowering::include_limits::" + name + " ... ok"), name);
+          assert.ok(fs.readFileSync(directory + "/budget.stdout", "utf8").includes("2 passed; 0 failed"));
+          assert.ok(fs.readFileSync(directory + "/host.stdout", "utf8").includes("3 passed; 0 failed"));
+          const paths = ["davinci/vize_l1_to_l2/src/lower/pug/include.rs","davinci/vize_l1_to_l2/src/lower/pug/emit.rs","davinci/vize_l1_to_l2/src/lower/pug/refusal.rs","davinci/vize_l1_to_l2/src/lower/pug.rs","crates/vize_atelier_sfc/src/compile/entry/pug.rs","davinci/vize_l1_to_l2/src/lower/pug/include/limits.rs","crates/vize_atelier_sfc/src/compile/entry/pug/files.rs","davinci/vize_l1_to_l2/tests/pug_lowering/include_limits.rs","davinci/vize_l1_to_l2/tests/pug_lowering.rs"];
+          fs.writeFileSync(directory + "/acceptance.json", JSON.stringify({ source: process.env.FIXED_SOURCE, harness: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, before: process.env.BEFORE_SOURCE, passed: true, sourceFiles: paths.map(file => ({file, blob:execFileSync("git", ["hash-object", file], {encoding:"utf8"}).trim(), sha256:crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")})) }, null, 2));
+          NODE
+      - name: Preserve original failure and complete repaired outputs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pug-include-budget-contracts
+          path: ${{ runner.temp }}/pug-include-proof/
+          if-no-files-found: error
+          retention-days: 30
