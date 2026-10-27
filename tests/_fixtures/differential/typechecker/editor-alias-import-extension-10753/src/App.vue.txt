@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { greet } from '#lib/greet'
+import { greet as greetJs } from '#lib/greet/index.js'
+import { greet as greetTs } from '#lib/greet/index.ts'
+const message: string = greet(greetJs(greetTs('vize')))
+</script>
+
+<template>{{ message }}</template>

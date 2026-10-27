@@ -16,6 +16,7 @@ Vize の改善は、実際のアプリケーションや関連ツールで使い
 - [Mates Inc.](https://eng.mates.education/): 従業員である ubugeeei が勤務時間の一部を OSS に充てることへの理解と、同社の技術サイトのビルドへの Vize の採用。
 - Anthropic: [Claude for Open Source](https://claude.com/contact-sales/claude-for-oss) を通じた、Vize の継続的な OSS 開発への支援。
 - [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/): Vize の OSS 開発への過去の支援。この支援は 2026 年 9 月に終了しました。
+- [dmnlk](https://github.com/dmnlk): Canon の型検査の高速化をはじめとする、継続的なコードの貢献と改善。Vize のコミッターとしてリポジトリへの Write 権限を付与しています。開発と保守を共に進めてくださっていることに感謝します。
 - [かっこかり](https://github.com/kakkokari-gtyih): [Misskey](https://github.com/misskey-dev/misskey) でのコンパイラと Vite Plugin の継続的な検証と、実装の変更に合わせた不具合報告。Misskey は 586 個の SFC に約 10.3 万行の Vue コードを持つアプリケーションです（[報告](https://github.com/ubugeeei-prod/vize/discussions/71)）。
 - [ushironoko](https://github.com/ushironoko): コンパイラ、リンター、CLI の不具合報告に加え、修正の参考実装や、難しい問題の再現用リポジトリの提供。
 - [dannote](https://github.com/dannote): Vize を基盤とする Elixir 向けフロントエンドツールチェーン [Volt](https://hexdocs.pm/volt/readme.html) を通じた、Elixir コミュニティへの紹介。導入中に見つかった不足機能の報告と PR の提供。

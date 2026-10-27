@@ -27,6 +27,8 @@ mod resolution;
 use resolution::{absolutize, is_declaration_file, is_node_modules_path, resolve_relative_import};
 pub(super) use resolution::{resolve_import_base, resolve_import_base_with_inputs};
 mod parallel;
+mod reachability;
+use reachability::ImportReachabilityGraph;
 mod specifiers;
 use specifiers::{extract_module_specifier_occurrences, is_relative_specifier};
 mod session;
@@ -41,78 +43,6 @@ pub(super) use session::LocalImportSession;
 /// resolution for every file. TypeScript still loads reachable `.d.ts` on demand.
 mod options;
 pub(super) use options::{ImportFileOptions, TransitiveLocalImports};
-
-#[derive(Default)]
-struct ImportReachabilityGraph {
-    edges: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
-    direct_materialization: FxHashSet<PathBuf>,
-}
-
-impl ImportReachabilityGraph {
-    fn add_edge(&mut self, importer: &Path, dependency: &Path) {
-        self.edges
-            .entry(importer.to_path_buf())
-            .or_default()
-            .insert(dependency.to_path_buf());
-    }
-
-    fn mark_direct_materialization(&mut self, path: &Path) {
-        self.direct_materialization.insert(path.to_path_buf());
-    }
-
-    fn reaches_materialized_source(&self) -> FxHashSet<PathBuf> {
-        let mut reverse: FxHashMap<&Path, Vec<&Path>> = FxHashMap::default();
-        let mut reached = self.direct_materialization.clone();
-        let mut queue = self
-            .direct_materialization
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>();
-        for (importer, dependencies) in &self.edges {
-            if importer
-                .extension()
-                .is_some_and(|extension| extension == "vue")
-                && reached.insert(importer.clone())
-            {
-                queue.push(importer.clone());
-            }
-            for dependency in dependencies {
-                reverse.entry(dependency).or_default().push(importer);
-                if dependency
-                    .extension()
-                    .is_some_and(|extension| extension == "vue")
-                    && reached.insert(dependency.clone())
-                {
-                    queue.push(dependency.clone());
-                }
-            }
-        }
-        while let Some(path) = queue.pop() {
-            if let Some(importers) = reverse.get(path.as_path()) {
-                for importer in importers {
-                    if reached.insert((*importer).to_path_buf()) {
-                        queue.push((*importer).to_path_buf());
-                    }
-                }
-            }
-        }
-        reached
-    }
-
-    fn reachable_files(&self, roots: impl IntoIterator<Item = PathBuf>) -> FxHashSet<PathBuf> {
-        let mut reached = FxHashSet::default();
-        let mut queue = roots.into_iter().collect::<Vec<_>>();
-        while let Some(path) = queue.pop() {
-            if !reached.insert(path.clone()) {
-                continue;
-            }
-            if let Some(dependencies) = self.edges.get(&path) {
-                queue.extend(dependencies.iter().cloned());
-            }
-        }
-        reached
-    }
-}
 
 struct DeferredWorkspaceRoute {
     importer_path: PathBuf,
@@ -172,12 +102,14 @@ pub(super) fn collect_transitive_local_imports_with_session(
             queue.push((absolute, true, false));
         }
     }
+    let seeded_roots = queue.iter().map(|(root, _, _)| root.clone()).collect();
 
     let mut registrations: Vec<PathBuf> = Vec::new();
     let mut authored: Vec<PathBuf> = Vec::new();
     let mut package_routes = Vec::new();
     let mut reachability_graph = ImportReachabilityGraph::default();
     let mut deferred_workspace_routes = Vec::new();
+    let mut workspace_owners = Vec::new();
 
     // Queue entries below this length were already handed to a frontier.
     // The queue is a stack, so only entries pushed since then are new.
@@ -457,6 +389,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     if is_declaration_file(candidate) {
                         continue;
                     }
+                    workspace_owners.push((file.clone(), candidate.clone()));
                     if visited.insert(candidate.clone()) {
                         if candidate.is_file() {
                             authored.push(candidate.clone());
@@ -493,6 +426,12 @@ pub(super) fn collect_transitive_local_imports_with_session(
         &mut registered,
         &mut registrations,
         &mut package_routes,
+    );
+    reachability_graph.retain_declaration_free(
+        &mut authored,
+        seeded_roots,
+        &package_routes,
+        &workspace_owners,
     );
 
     sort_package_route_bindings(&mut package_routes);

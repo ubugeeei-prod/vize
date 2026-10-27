@@ -11,7 +11,7 @@
  * only the project's own `node_modules`.
  *
  * Nothing here reads the Vize checkout after the tarballs are packed; the
- * isolation assertions in `smoke-release-init-project.mjs` are what keep that
+ * isolation assertions in `smoke-release-init-project.ts` are what keep that
  * true.
  */
 
@@ -19,13 +19,13 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-import { renderOutput, run } from "./smoke-process.mjs";
-import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
-import { withPoisonedVizePath } from "./smoke-release-path-poison.mjs";
+import { renderOutput, run } from "./smoke-process.ts";
+import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.ts";
+import { withPoisonedVizePath } from "./smoke-release-path-poison.ts";
 import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
 import { recordPackedInstallReceipt } from "./smoke-release-init-receipt.ts";
-import { FRESH_INIT_MATRIX } from "./smoke-release-init-shapes.mjs";
-import { CONFIG_FREE_PROJECT_SHAPES as PROJECT_SHAPES } from "./smoke-release-init-config-free.mjs";
+import { FRESH_INIT_MATRIX } from "./smoke-release-init-shapes.ts";
+import { CONFIG_FREE_PROJECT_SHAPES as PROJECT_SHAPES } from "./smoke-release-init-config-free.ts";
 import {
   assertFreshProject,
   assertMissingCorsaGuidance,
@@ -40,7 +40,7 @@ import {
   runManager,
   snapshotFiles,
   writeFiles,
-} from "./smoke-release-init-project.mjs";
+} from "./smoke-release-init-project.ts";
 
 function runInit(context, projectRoot, args) {
   return run(process.execPath, [context.vizeBin, "init", projectRoot, ...args], {

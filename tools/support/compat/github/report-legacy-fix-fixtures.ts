@@ -18,6 +18,7 @@ import {
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -74,6 +75,7 @@ interface Manifest {
   protocolCases?: unknown;
   runtimeCases?: unknown;
   cssApiCases?: unknown;
+  vaporStyleApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -273,13 +275,26 @@ function checkProduct(
       product === "compiler" &&
       cssApi.length > 0 &&
       onlyCompilerCssChanges(paths, compilerCssApiSources(cssApi));
+    const vaporStyle =
+      product === "compiler"
+        ? newVaporStyleApiCases(before?.vaporStyleApiCases, manifest.vaporStyleApiCases, readFile)
+        : { ids: [] as string[], sources: new Set<string>() };
+    const compilerPaths = paths.filter((path) => legacyProducts([path]).includes("compiler"));
+    const vaporIds = compilerPaths.some((path) => vaporStyle.sources.has(path))
+      ? vaporStyle.ids
+      : [];
+    const vaporOnly =
+      product === "compiler" &&
+      vaporIds.length > 0 &&
+      compilerPaths.length > 0 &&
+      compilerPaths.every((path) => vaporStyle.sources.has(path));
     const registered =
-      (cssOnly || !batchRequired || cases.length > 0) &&
+      (cssOnly || vaporOnly || !batchRequired || cases.length > 0) &&
       (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi],
+      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi, ...vaporIds],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };

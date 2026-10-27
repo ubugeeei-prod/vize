@@ -5,8 +5,8 @@
 //! (`vize_l1_to_l2::lower::pug`, byte-identical to the pinned `pug`
 //! rendering) and every template lane — DOM, Vapor, SSR — compiles that
 //! template exactly as it compiles an authored HTML one. Refused pug
-//! (mixins, includes, JavaScript-executing constructs) fails the compile
-//! with the first error diagnostic, located in the SFC.
+//! (includes, code without a build-time value) fails the compile with
+//! the first error diagnostic, located in the SFC.
 
 use std::borrow::Cow;
 

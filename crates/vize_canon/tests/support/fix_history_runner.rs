@@ -108,13 +108,16 @@ pub(crate) fn check_pack(
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
+            | "callback-render-position-10738"
+            | "generic-slot-outlet-10883"
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607"
             | "content-mapper-merged-class-10788"
             | "content-mapper-slot-host-callbacks-10774"
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
-            | "reopen-repaired-diagnostics-10730" => regression,
+            | "reopen-repaired-diagnostics-10730"
+            | "editor-alias-import-extension-10753" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

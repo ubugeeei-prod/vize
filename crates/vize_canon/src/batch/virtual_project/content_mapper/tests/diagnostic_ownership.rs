@@ -168,8 +168,45 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                     &format!(":schema=\"schema\"{callback}"),
                 )
                 .replace('\n', newline);
-            let before = packet("Form.art.vue", &source, false);
+            let mut before = packet("Form.art.vue", &source, false);
             let after = packet("Form.art.vue", &source, true);
+            if !callback.is_empty() {
+                // The old text-based policy hid these three canonical callbacks.
+                // Restore precisely those diagnostic owners before comparing the
+                // remaining complete packet and independently enumerated echoes.
+                for index in 0..3 {
+                    let statement = format!(
+                        "  const __vize_prop_check_{index}_validate_form_field_on: __VizeResolvedProp<typeof __vize_resolved_GenericForm_props_{index}, typeof __vize_selected_GenericForm_props_{index}, 'validateFormFieldOn', __GenericForm_{index}_prop_validate_form_field_on> = (field) => !!field;\n"
+                    );
+                    let start = before["text"].as_str().unwrap().find(&statement).unwrap();
+                    let end = start + statement.len();
+                    let rows = before["diagnosticDirectives"]["directives"]
+                        .as_array_mut()
+                        .unwrap();
+                    let position = rows
+                        .iter()
+                        .position(|row| row[2] == start && row[3] == end)
+                        .expect("one prior canonical callback ignore");
+                    let removed: [usize; 6] =
+                        serde_json::from_value(rows.remove(position)).unwrap();
+                    assert_eq!(removed[4..], [0, 0]);
+                    assert_eq!(
+                        source.get(removed[0]..removed[0] + removed[1]),
+                        Some(callback.trim_start())
+                    );
+                    assert!(
+                        after["diagnosticDirectives"]["directives"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .all(|row| {
+                                row[3].as_u64().unwrap() as usize <= start
+                                    || row[2].as_u64().unwrap() as usize >= end
+                            }),
+                        "canonical callback diagnostics remain visible"
+                    );
+                }
+            }
             let echoes = added_echoes(&before, &after);
             assert!(!echoes.is_empty());
             let fields = [
@@ -193,23 +230,28 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                 ],
             ];
             let mut expected = fields.iter().flatten().copied().collect::<Vec<_>>();
-            expected.extend([
-                "{ role: 'ok', tags: [] }",
-                "schema",
-                "{ role: null, tags: [] }",
-                "schema",
-                "{ role: 'ok', tags: [] }",
-                "schema",
-            ]);
-            // One mapped emit-argument inference literal per usage also reads
-            // these ordinary sibling props before the canonical prop check.
-            expected.extend(fields.iter().flatten().copied());
-            if !callback.is_empty() {
-                for field in fields {
+            if callback.is_empty() {
+                expected.extend([
+                    "{ role: 'ok', tags: [] }",
+                    "schema",
+                    "{ role: null, tags: [] }",
+                    "schema",
+                    "{ role: 'ok', tags: [] }",
+                    "schema",
+                ]);
+            } else {
+                // A callback's canonical packet now precedes the ordinary
+                // source expressions at that exact root usage. Keep both
+                // resolver roles and both bare values for every variant.
+                for field @ [_, value, _, schema] in fields {
                     expected.extend(field);
                     expected.extend(field);
+                    expected.extend([value, schema]);
                 }
             }
+            // The event-handler emit-argument inference phase follows the
+            // authored root stream, still retaining every sibling binding.
+            expected.extend(fields.iter().flatten().copied());
             let actual = echoes
                 .into_iter()
                 .map(|[original, length, _, _, _, _]| {

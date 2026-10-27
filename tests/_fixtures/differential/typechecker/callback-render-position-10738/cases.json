@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10738,
+  "regressionCommit": "78719553cf550bcffbf1d0fb891fda642f42de3a",
+  "sourceRevision": "78719553cf550bcffbf1d0fb891fda642f42de3a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "type-query-before-delete",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Min.vue",
+          "source": "Min.vue.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "Comp.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

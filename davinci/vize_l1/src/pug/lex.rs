@@ -12,10 +12,11 @@
 //!   recovers deterministically — usually by turning the rest of the line
 //!   into an `Unexpected` token — so arbitrary bytes always lex.
 //!
-//! Constructs the Vue lowering refuses (mixins, includes, conditionals,
+//! Keyword constructs (mixin definitions, includes, conditionals,
 //! iteration, filters, unbuffered code, …) are recognised with pug's own
 //! patterns and lexed as one rest-of-line `Keyword` token; their indented
-//! bodies lex as ordinary pug.
+//! bodies lex as ordinary pug. A mixin call is a `Call` head (plus
+//! `CallArgs`) followed by an ordinary tag tail.
 
 mod attrs;
 mod keyword;
@@ -54,6 +55,8 @@ pub(crate) enum Tk {
     Comment,
     CommentText,
     Keyword(PugRefusal),
+    Call,
+    CallArgs,
     Unexpected,
     InterpCloseMissing,
     Newline,

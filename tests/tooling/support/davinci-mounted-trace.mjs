@@ -196,14 +196,16 @@ export async function traceMountedBackend({
               : Object.hasOwn(step, "button")
                 ? window.MouseEvent
                 : window.Event;
-            target.dispatchEvent(
-              new EventClass(step.event, {
-                bubbles: step.bubbles ?? true,
-                cancelable: true,
-                ...(Object.hasOwn(step, "key") ? { key: step.key } : {}),
-                ...(Object.hasOwn(step, "button") ? { button: step.button } : {}),
-              }),
-            );
+            const event = new EventClass(step.event, {
+              bubbles: step.bubbles ?? true,
+              cancelable: true,
+              ...(Object.hasOwn(step, "key") ? { key: step.key } : {}),
+              ...(Object.hasOwn(step, "button") ? { button: step.button } : {}),
+            });
+            const dispatched = target.dispatchEvent(event);
+            if (step.observeEvent) {
+              events.push({ dispatched, defaultPrevented: event.defaultPrevented });
+            }
           } else {
             throw new Error(`unknown interaction step: ${JSON.stringify(step)}`);
           }

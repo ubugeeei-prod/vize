@@ -65,9 +65,14 @@ export const vuetifyApp = componentLibraryApp(
   "tsconfig.json",
 );
 
-export const naiveUiApp = componentLibraryApp(
+const naiveUiLibrary = componentLibraryApp(
   "naive-ui",
   "naive-ui",
   ["src/**/*.vue", "demo/**/*.vue", "generic/**/*.vue"],
   "tsconfig.json",
 );
+
+export const naiveUiApp: AppConfig = {
+  ...naiveUiLibrary,
+  check: { ...naiveUiLibrary.check!, noConfig: true },
+};

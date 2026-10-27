@@ -19,6 +19,7 @@ use super::{ExitFns, TransformContext};
 mod directive_expressions;
 mod frozen;
 mod vapor_runtime_props;
+mod vapor_static_style;
 mod vue_is;
 use directive_expressions::process_directive_expressions;
 /// Transform element node
@@ -167,10 +168,15 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         }
     }
 
-    // Process directive expressions with _ctx prefix if needed
-    if ctx.options.prefix_identifiers || ctx.options.is_ts {
-        process_directive_expressions(ctx, el);
+    // Process directive expressions with _ctx prefix if needed. That pass
+    // drops the retained AST, so it folds literal styles itself; otherwise
+    // the loop below finds the candidate.
+    let prefixed = ctx.options.prefix_identifiers || ctx.options.is_ts;
+    if prefixed {
+        process_directive_expressions(ctx, el, runtime_only.is_some());
     }
+    let fold_style = runtime_only.is_some() && !prefixed;
+    let mut style = None;
 
     // Collect indices of v-model directives to process (skip in vapor mode)
     let mut model_indices: std::vec::Vec<usize> = std::vec::Vec::new();
@@ -190,6 +196,16 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 "model" if !ctx.options.vapor => {
                     model_indices.push(i);
                 }
+                "bind" => {
+                    if fold_style
+                        && style.is_none()
+                        && let Some(css) = vapor_static_style::literal_css(dir)
+                    {
+                        style = Some((i, css));
+                    }
+                }
+                // Built-ins skip the directive-set lookup below.
+                "on" => {}
                 "slot" => {
                     ctx.helper(RuntimeHelper::RenderSlot);
                 }
@@ -205,6 +221,9 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 _ => {}
             }
         }
+    }
+    if let Some((index, css)) = style {
+        vapor_static_style::fold_at(ctx, el, index, &css);
     }
 
     // Collect all v-model data first, then modify props

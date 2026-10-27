@@ -820,6 +820,24 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
 }
 
 #[test]
+fn generic_slot_outlets_check_against_the_setup_parameters() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "generic-slot-outlet-10883",
+        "generic_slot_outlets_check_against_the_setup_parameters",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10883),
+        &[
+            "defaulted-parameter",
+            "constrained-parameter",
+            "wrong-payload",
+        ],
+    );
+}
+
+#[test]
 fn slot_host_guards_preserve_authored_impossible_comparisons() {
     if native_fixture_runtime_disabled() {
         return;
@@ -1002,6 +1020,28 @@ fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
         "9403195279c75693aea30f097bf996cb83dd9729",
         Some(10730),
         &["error", "repaired"],
+    );
+}
+
+#[test]
+fn editor_alias_import_extension_styles_keep_native_diagnostics() {
+    check_pack(
+        "editor-alias-import-extension-10753",
+        "editor_alias_import_extension_styles_keep_native_diagnostics",
+        "377e5df97c4effa786a6426a62f61296ce16c750",
+        Some(10753),
+        &["authored-extension-styles"],
+    );
+}
+
+#[test]
+fn callback_render_position_preserves_complete_authored_diagnostics() {
+    check_pack(
+        "callback-render-position-10738",
+        "callback_render_position_preserves_complete_authored_diagnostics",
+        "78719553cf550bcffbf1d0fb891fda642f42de3a",
+        Some(10738),
+        &["type-query-before-delete"],
     );
 }
 

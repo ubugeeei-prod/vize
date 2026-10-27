@@ -1,0 +1,13 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<!--[-->`)
+  _push(_ssrRenderComponent(_resolveComponent("Box"), { onSubmit: _ctx.submit, onKeydown: _ctx.key }, null, _parent))
+  _push(_ssrRenderComponent(_resolveComponent("Pinger"), { onPing: _ctx.ping }, null, _parent))
+  _push(`<!--]-->`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main
