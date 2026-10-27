@@ -369,8 +369,12 @@ for (const spec of specs) {
       "croquis_cf.dependencies.finalize.calls",
       "croquis_cf.dependencies.finalize.files",
     ]) {
-      const original = row.beforeProfile.counters.find((counter) => counter.key === key);
-      const candidate = row.sourceProfile.counters.find((counter) => counter.key === key);
+      const original: Profile["counters"][number] | undefined = row.beforeProfile.counters.find(
+        (counter) => counter.key === key,
+      );
+      const candidate: Profile["counters"][number] | undefined = row.sourceProfile.counters.find(
+        (counter) => counter.key === key,
+      );
       assert(original && candidate, key + "/actual counter must be present");
       assert.deepEqual(candidate, original, key + "/unchanged existing source-operation count");
     }
