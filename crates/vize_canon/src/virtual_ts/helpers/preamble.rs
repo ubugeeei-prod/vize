@@ -68,7 +68,7 @@ macro_rules! vue_type_helpers_text {
 
 macro_rules! content_mapper_type_helpers_text {
     ($module:expr) => {
-        concat!(vue_type_aliases_text!(), include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
+        concat!(include_str!("declarations/content-mapper-type-imports.d.ts.txt"), include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
     };
 }
 
