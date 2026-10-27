@@ -5,7 +5,12 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { compileFunction } from "node:vm";
 import { pathToFileURL } from "node:url";
-import { transformSync } from "@babel/core";
+import {
+  transformSync,
+  type NodePath,
+  type PluginObj,
+  type types as BabelTypes,
+} from "@babel/core";
 import { Window } from "happy-dom";
 
 const window = new Window();
@@ -22,8 +27,8 @@ for (const key of [
   "SVGElement",
   "Event",
   "ShadowRoot",
-]) {
-  globalThis[key] = key === "window" ? window : window[key];
+] as const) {
+  (globalThis as unknown as Record<string, unknown>)[key] = key === "window" ? window : window[key];
 }
 
 const require = createRequire(import.meta.url);
@@ -32,7 +37,9 @@ const require = createRequire(import.meta.url);
 // the Rust oracle. Production and reference output must share this exact
 // runtime entry so stdout remains a single JSON document.
 const vueVaporEntry = require.resolve("vue/dist/vue.runtime-with-vapor.esm-browser.prod.js");
-const Vue = await import(pathToFileURL(vueVaporEntry));
+const Vue = (await import(pathToFileURL(vueVaporEntry).href)) as typeof import("vue") & {
+  setDynamicProps: (...args: unknown[]) => unknown;
+};
 const { transformVueJsxVapor } = await import("vue-jsx-vapor/api");
 
 // Execute the published vue-jsx-vapor runtime source against the same Vue
@@ -41,13 +48,13 @@ const { transformVueJsxVapor } = await import("vue-jsx-vapor/api");
 const fromJsxVapor = createRequire(require.resolve("vue-jsx-vapor"));
 const runtimeEntry = fromJsxVapor.resolve("@vue-jsx-vapor/runtime");
 const runtimeSource = readFileSync(join(dirname(runtimeEntry), "vapor.js"), "utf8");
-const linkedRuntime = transformSync(runtimeSource, {
+const linkedRuntimeResult = transformSync(runtimeSource, {
   configFile: false,
   babelrc: false,
   plugins: [
-    ({ types: t }) => ({
+    ({ types: t }: { types: typeof import("@babel/core").types }): PluginObj => ({
       visitor: {
-        ImportDeclaration(path) {
+        ImportDeclaration(path: NodePath<BabelTypes.ImportDeclaration>) {
           assert.equal(path.node.source.value, "vue");
           const declarations = path.node.specifiers.map((specifier) => {
             if (specifier.type === "ImportNamespaceSpecifier") {
@@ -65,14 +72,16 @@ const linkedRuntime = transformSync(runtimeSource, {
           });
           path.replaceWithMultiple(declarations);
         },
-        ExportNamedDeclaration(path) {
+        ExportNamedDeclaration(path: NodePath<BabelTypes.ExportNamedDeclaration>) {
           if (path.node.declaration) path.replaceWith(path.node.declaration);
           else path.remove();
         },
       },
     }),
   ],
-}).code;
+});
+assert.ok(linkedRuntimeResult && typeof linkedRuntimeResult.code === "string");
+const linkedRuntime = linkedRuntimeResult.code;
 // Component and slot cohorts import helpers beyond `setNodes`, so expose the
 // pinned runtime's complete public surface to the linked generated modules.
 const JsxVapor = compileFunction(
@@ -118,14 +127,20 @@ const componentFixtures = {
   }),
 };
 
-function linkedFunction(code, functionName, state, reads, observations) {
-  const linked = transformSync(code, {
+function linkedFunction(
+  code: string,
+  functionName: string,
+  state: Record<string, unknown>,
+  reads: string[],
+  observations: { propPublications: number },
+): unknown {
+  const linkedResult = transformSync(code, {
     configFile: false,
     babelrc: false,
     plugins: [
-      ({ types: t }) => ({
+      ({ types: t }: { types: typeof import("@babel/core").types }): PluginObj => ({
         visitor: {
-          ImportDeclaration(path) {
+          ImportDeclaration(path: NodePath<BabelTypes.ImportDeclaration>) {
             const source = path.node.source.value;
             const runtime =
               source === "vue" ? "Vue" : source.includes("vue-jsx-vapor") ? "JsxVapor" : null;
@@ -136,22 +151,20 @@ function linkedFunction(code, functionName, state, reads, observations) {
             });
             path.replaceWith(
               t.variableDeclaration("const", [
-                t.variableDeclarator(t.objectPattern(properties), t.identifier(runtime)),
+                t.variableDeclarator(t.objectPattern(properties), t.identifier(runtime!)),
               ]),
             );
           },
-          ExportNamedDeclaration(path) {
-            assert.notEqual(
-              path.node.declaration,
-              null,
-              "only declaration exports are executable fixtures",
-            );
+          ExportNamedDeclaration(path: NodePath<BabelTypes.ExportNamedDeclaration>) {
+            assert.ok(path.node.declaration, "only declaration exports are executable fixtures");
             path.replaceWith(path.node.declaration);
           },
         },
       }),
     ],
-  }).code;
+  });
+  assert.ok(linkedResult && typeof linkedResult.code === "string");
+  const linked = linkedResult.code;
   return compileFunction(
     `${linked}\nreturn ${functionName};`,
     ["Vue", "JsxVapor", "state", "FixtureCard", "read"],
@@ -159,7 +172,7 @@ function linkedFunction(code, functionName, state, reads, observations) {
   )(
     {
       ...Vue,
-      setDynamicProps(...args) {
+      setDynamicProps(...args: unknown[]) {
         observations.propPublications += 1;
         return Vue.setDynamicProps(...args);
       },
@@ -167,7 +180,7 @@ function linkedFunction(code, functionName, state, reads, observations) {
     JsxVapor,
     state,
     componentFixtures.FixtureCard,
-    (name) => {
+    (name: string) => {
       reads.push(name);
       return state[name];
     },

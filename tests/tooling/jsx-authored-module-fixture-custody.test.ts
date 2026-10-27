@@ -3,6 +3,102 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
+type PacketFacet = "components" | "diagnostics" | "module" | "moduleMap";
+interface ComponentPacket {
+  code: string;
+  map: string | null;
+  mode: string;
+  name: string;
+  preamble: string;
+  setup: string | null;
+  style: string | null;
+}
+interface ModulePacket {
+  components: ComponentPacket[];
+  diagnostics: string;
+  module: string;
+  moduleMap?: string | null;
+  unexpected?: boolean;
+}
+interface SuccessorRow {
+  name: string;
+  input: string;
+  inputSha256: string;
+  mode: string;
+  historicalPacket: string;
+  historicalSha256: string;
+  successorPacket: string;
+  successorSha256: string;
+  allowedChangedFacets: string[];
+  refusal: unknown;
+  qualification: unknown;
+}
+interface RefusalManifest {
+  schemaVersion: number;
+  pullRequest: string;
+  historicalBaseline: unknown;
+  capture: unknown;
+  cases: SuccessorRow[];
+}
+interface RuntimeBaseline {
+  sourceHead: string;
+  productionHead: string;
+  nativeProbeSha256: string;
+  cases: { input: string; inputSha256: string; output: string; outputSha256: string }[];
+}
+interface AdversarialRow {
+  observation: string;
+  observationSha256: string;
+  sourceSha256: string;
+  facet: "summary" | "module";
+  historical: string;
+  historicalSha256: string;
+  successor: string;
+  successorSha256: string;
+  runtime: boolean;
+}
+interface AdversarialPacket {
+  source: string;
+  summary: string;
+  module: string;
+}
+interface AdversarialAuthority {
+  schema: number;
+  issue: number;
+  pullRequest: number;
+  capture: unknown;
+  cases: AdversarialRow[];
+}
+interface StaticAuthority {
+  source: string;
+  sourceSha256: string;
+  historical: string;
+  historicalSha256: string;
+  successor: string;
+  successorSha256: string;
+  allowedChangedPointers: string[];
+  qualification: { module: string; components: string; nativeHandled: number; runtime: boolean };
+}
+interface LegacyRoles {
+  fixedProducer: { entry: string };
+  native: unknown;
+}
+interface RoleManifest {
+  schemaVersion: number;
+  pullRequest: string;
+  historical: LegacyRoles & { packet: string; sha256: string };
+  capture: unknown;
+  producerControl: unknown;
+  runtimeControl: unknown;
+}
+function replaceFacet<K extends PacketFacet>(
+  target: ModulePacket,
+  source: ModulePacket,
+  key: K,
+): void {
+  target[key] = source[key];
+}
+
 const nested = new URL(
   "../_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/",
   import.meta.url,
@@ -10,10 +106,10 @@ const nested = new URL(
 const falsy = new URL("../_fixtures/differential/jsx/", import.meta.url);
 const adversarial = new URL("authored-native-modules-10700/adversarial/", falsy);
 const snapshots = new URL("../../crates/vize_atelier_jsx/tests/snapshots/", import.meta.url);
-const read = (base, path) => readFileSync(new URL(path, base));
-const parse = (base, path) => JSON.parse(read(base, path));
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const manifest = parse(nested, "authored-module-refusal-10701-successor.json");
+const read = (base: URL, path: string) => readFileSync(new URL(path, base));
+const parse = <T>(base: URL, path: string): T => JSON.parse(read(base, path).toString("utf8")) as T;
+const hash = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+const manifest = parse<RefusalManifest>(nested, "authored-module-refusal-10701-successor.json");
 const packetFields = ["components", "diagnostics", "module", "moduleMap"];
 const componentFields = ["code", "map", "mode", "name", "preamble", "setup", "style"];
 const provenance = {
@@ -54,13 +150,19 @@ const specs = [
   },
 ];
 
-function fields(value, expected) {
+function fields(value: unknown, expected: readonly string[]): void {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
-  const compare = (left, right) => left.localeCompare(right);
+  const compare = (left: string, right: string) => left.localeCompare(right);
   assert.deepEqual(Object.keys(value).sort(compare), [...expected].sort(compare));
 }
 
-function verifySuccessor(spec, row, historical, successor, source) {
+function verifySuccessor(
+  spec: (typeof specs)[number],
+  row: SuccessorRow,
+  historical: ModulePacket,
+  successor: ModulePacket,
+  source: Buffer,
+): void {
   fields(row, [
     "name",
     "input",
@@ -111,15 +213,20 @@ function verifySuccessor(spec, row, historical, successor, source) {
     `[JsxDiagnostic { severity: Error, message: "${spec.message}", start: ${spec.start}, end: ${spec.end} }]`,
   );
   const restored = structuredClone(successor);
-  for (const facet of row.allowedChangedFacets) restored[facet] = historical[facet];
+  for (const facet of row.allowedChangedFacets) {
+    assert.ok(packetFields.includes(facet));
+    replaceFacet(restored, historical, facet as PacketFacet);
+  }
   assert.deepEqual(restored, historical, "every unlisted packet facet stays exact");
   assert.deepEqual(
-    packetFields.filter((facet) => !assertSame(historical[facet], successor[facet])),
+    packetFields.filter(
+      (facet) => !assertSame(historical[facet as PacketFacet], successor[facet as PacketFacet]),
+    ),
     spec.allowedChangedFacets,
   );
 }
 
-function assertSame(left, right) {
+function assertSame(left: unknown, right: unknown): boolean {
   try {
     assert.deepEqual(left, right);
     return true;
@@ -140,7 +247,7 @@ void test("native refusal successors preserve literal capture and every historic
     entry: "compile_jsx -> module_code/source_map/components",
     serialization: "verbatim current object from raw capture, followed by LF",
   });
-  const baseline = parse(nested, "runtime-baseline.json");
+  const baseline = parse<RuntimeBaseline>(nested, "runtime-baseline.json");
   assert.deepEqual(manifest.historicalBaseline, {
     packet: "runtime-baseline.json",
     sha256: "526a17e43f403f136849d6560ca25ca330d768d550d3cb4958181c24a94ec9b5",
@@ -163,18 +270,29 @@ void test("native refusal successors preserve literal capture and every historic
     assert.equal(hash(source), row.inputSha256);
     assert.equal(hash(historical), row.historicalSha256);
     assert.equal(hash(successor), row.successorSha256);
-    verifySuccessor(specs[index], row, JSON.parse(historical), JSON.parse(successor), source);
+    verifySuccessor(
+      specs[index],
+      row,
+      JSON.parse(historical.toString("utf8")),
+      JSON.parse(successor.toString("utf8")),
+      source,
+    );
   }
 });
 
-function snapshotBody(bytes) {
+function snapshotBody(bytes: Buffer): string {
   const text = bytes.toString("utf8");
   const boundary = text.indexOf("\n---\n", 4);
   assert.ok(text.startsWith("---\n") && boundary >= 0);
   return text.slice(boundary + 5);
 }
 
-function verifyAdversarial(row, historical, successor, packet) {
+function verifyAdversarial(
+  row: AdversarialRow,
+  historical: string,
+  successor: string,
+  packet: AdversarialPacket,
+): void {
   fields(packet, ["source", "summary", "module"]);
   assert.equal(hash(packet.source), row.sourceSha256);
   assert.equal(row.runtime, false);
@@ -198,7 +316,11 @@ function verifyAdversarial(row, historical, successor, packet) {
 
 void test("adversarial successors retain whole structural observations and frozen originals", () => {
   const stability = new URL("authored-native-modules-10700/", falsy);
-  const stabilityAuthority = parse(stability, "component-stability-custody.json");
+  const stabilityAuthority = parse<{
+    runtime: boolean;
+    rawCaptureSha256: string;
+    goldenSha256: string;
+  }>(stability, "component-stability-custody.json");
   assert.equal(stabilityAuthority.runtime, false);
   assert.equal(
     stabilityAuthority.rawCaptureSha256,
@@ -209,7 +331,7 @@ void test("adversarial successors retain whole structural observations and froze
     hash(read(adversarial, "custody.json")),
     "e5f10f8def638e6b95557ec4dbf55c423e7db8eb0b68e9f697c43ffc78a699e0",
   );
-  const authority = parse(adversarial, "custody.json");
+  const authority = parse<AdversarialAuthority>(adversarial, "custody.json");
   assert.equal(authority.schema, 1);
   assert.equal(authority.issue, 10700);
   assert.equal(authority.pullRequest, 10701);
@@ -241,22 +363,27 @@ void test("adversarial successors retain whole structural observations and froze
     assert.equal(hash(original), row.historicalSha256);
     assert.equal(hash(next), row.successorSha256);
     assert.equal(hash(raw), row.observationSha256);
-    verifyAdversarial(row, snapshotBody(original), snapshotBody(next), JSON.parse(raw));
+    verifyAdversarial(
+      row,
+      snapshotBody(original),
+      snapshotBody(next),
+      JSON.parse(raw.toString("utf8")),
+    );
   }
 });
 
 void test("adversarial custody rejects unrelated code, scope, source and runtime mutations", () => {
-  const authority = parse(adversarial, "custody.json");
+  const authority = parse<AdversarialAuthority>(adversarial, "custody.json");
   let negatives = 0;
   for (const row of authority.cases) {
     const before = snapshotBody(read(snapshots, row.historical));
     const after = snapshotBody(read(snapshots, row.successor));
-    const packet = parse(adversarial, row.observation);
+    const packet = parse<AdversarialPacket>(adversarial, row.observation);
     for (const mutate of [
-      (value) => {
+      (value: AdversarialPacket) => {
         value.source += "// changed";
       },
-      (value) => {
+      (value: AdversarialPacket) => {
         value[row.facet] += "/* foreign code */";
       },
     ]) {
@@ -278,7 +405,11 @@ void test("adversarial custody rejects unrelated code, scope, source and runtime
   assert.equal(negatives, 12);
 });
 
-function verifyStaticSuccessor(authority, previous, current) {
+function verifyStaticSuccessor(
+  authority: StaticAuthority,
+  previous: ModulePacket,
+  current: ModulePacket,
+): void {
   assert.deepEqual(authority.allowedChangedPointers, ["/components/3/code", "/components/4/code"]);
   assert.deepEqual(authority.qualification, {
     module: "refused",
@@ -304,32 +435,32 @@ void test("static-value successor retains every other refusal packet facet and r
     hash(read(nested, "static-values-10701-successor.json")),
     "49042832cef1a015e79b76bc1106dbc6f7833924bcaba8e712df08b8f1f5ab5d",
   );
-  const authority = parse(nested, "static-values-10701-successor.json");
+  const authority = parse<StaticAuthority>(nested, "static-values-10701-successor.json");
   assert.equal(authority.source, "AfsStepperDialog.stories.tsx.txt");
   assert.equal(hash(read(nested, authority.source)), authority.sourceSha256);
   assert.equal(hash(read(nested, authority.historical)), authority.historicalSha256);
   assert.equal(hash(read(nested, authority.successor)), authority.successorSha256);
-  const previous = parse(nested, authority.historical);
-  const current = parse(nested, authority.successor);
+  const previous = parse<ModulePacket>(nested, authority.historical);
+  const current = parse<ModulePacket>(nested, authority.successor);
   verifyStaticSuccessor(authority, previous, current);
   let mutations = 0;
   for (const mutate of [
-    (packet) => {
+    (packet: ModulePacket) => {
       packet.components[0].code += "foreign";
     },
-    (packet) => {
+    (packet: ModulePacket) => {
       packet.components[3].map = "foreign";
     },
-    (packet) => {
+    (packet: ModulePacket) => {
       packet.components[4].setup = "foreign";
     },
-    (packet) => {
+    (packet: ModulePacket) => {
       packet.module = "executable";
     },
-    (packet) => {
+    (packet: ModulePacket) => {
       packet.moduleMap = "foreign";
     },
-    (packet) => {
+    (packet: ModulePacket) => {
       packet.diagnostics = "[]";
     },
   ]) {
@@ -360,7 +491,7 @@ void test("static-value successor retains every other refusal packet facet and r
 });
 
 void test("the same whole-packet custody rejects unreviewed mutations independently of hashes", () => {
-  const mutations = [
+  const mutations: ((packet: ModulePacket) => unknown)[] = [
     (packet) => delete packet.moduleMap,
     (packet) => (packet.unexpected = true),
     (packet) => (packet.components[0].code += "\n// changed producer"),
@@ -373,8 +504,8 @@ void test("the same whole-packet custody rejects unreviewed mutations independen
     (packet) => (packet.module = "export function render() {}"),
   ];
   for (const [index, row] of manifest.cases.entries()) {
-    const historical = parse(nested, row.historicalPacket);
-    const successor = parse(nested, row.successorPacket);
+    const historical = parse<ModulePacket>(nested, row.historicalPacket);
+    const successor = parse<ModulePacket>(nested, row.successorPacket);
     const source = read(nested, row.input);
     for (const mutate of mutations) {
       const changed = structuredClone(successor);
@@ -387,7 +518,7 @@ void test("the same whole-packet custody rejects unreviewed mutations independen
 });
 
 void test("falsy roles preserve historical attribution and distinguish producer and module credit", () => {
-  const roles = parse(falsy, "falsy-and.authored-module-roles-10701.json");
+  const roles = parse<RoleManifest>(falsy, "falsy-and.authored-module-roles-10701.json");
   fields(roles, [
     "schemaVersion",
     "pullRequest",
@@ -398,7 +529,7 @@ void test("falsy roles preserve historical attribution and distinguish producer 
   ]);
   assert.equal(roles.schemaVersion, 1);
   assert.equal(roles.pullRequest, manifest.pullRequest);
-  const legacy = parse(falsy, "falsy-and.fixed-legacy.json");
+  const legacy = parse<LegacyRoles>(falsy, "falsy-and.fixed-legacy.json");
   assert.deepEqual(roles.historical, {
     packet: "falsy-and.fixed-legacy.json",
     sha256: "6407caced54e618f9a17081770e9144cfe3a1b88b6bfc991863d3106f9f81e74",

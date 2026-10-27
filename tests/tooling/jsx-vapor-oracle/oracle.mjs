@@ -12,7 +12,7 @@ import {
   componentFixtures,
   linkedFunction,
   transformVueJsxVapor,
-} from "./runtime.mjs";
+} from "./runtime.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..", "..");
