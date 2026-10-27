@@ -32,6 +32,15 @@ fn required(name: &str) -> PathBuf {
     PathBuf::from(std::env::var_os(name).expect(name))
 }
 
+fn pipe_inode(path: &Path) -> u64 {
+    path.to_str()
+        .and_then(|text| text.strip_prefix("pipe:["))
+        .and_then(|text| text.strip_suffix(']'))
+        .expect("the actual descriptor must be a pipe inode")
+        .parse()
+        .expect("the complete pipe inode must be numeric")
+}
+
 #[test]
 #[ignore = "requires exact public native providers; mandatory in source-law Actions"]
 fn standalone_native_api_retains_one_project_symbol_owner() {
@@ -74,8 +83,8 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     assert_eq!(executable, backend);
     let stdin = fs::read_link(cstr!("/proc/{pid}/fd/0").as_str()).unwrap();
     let stdout = fs::read_link(cstr!("/proc/{pid}/fd/1").as_str()).unwrap();
-    assert!(stdin.to_string_lossy().starts_with("pipe:["));
-    assert!(stdout.to_string_lossy().starts_with("pipe:["));
+    assert_ne!(pipe_inode(&stdin), 0);
+    assert_ne!(pipe_inode(&stdout), 0);
     let mut phases = Vec::new();
     for (index, (name, partial)) in [("valid", false), ("partial", true), ("repaired", false)]
         .into_iter()

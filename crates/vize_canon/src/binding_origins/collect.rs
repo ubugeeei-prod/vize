@@ -2,7 +2,7 @@
 //! A borrowed declaration index avoids requiring Semantic's optional AST-node
 //! store. Only compact owned facts survive this call.
 use super::{
-    BindingTarget, LocalSymbol, SourceFacts, SourceRevision,
+    BindingTarget, LocalSymbol, OriginError, SourceFacts, SourceRevision,
     declarations::{DeclarationIndex, Syntax, SyntaxDeclarations},
 };
 use oxc_ast::ast::{Program, VariableDeclarationKind};
@@ -17,6 +17,7 @@ pub(super) struct Collector<'s, 'a> {
     pub(super) pending: VecDeque<LocalSymbol>,
     pub(super) global_names: Option<FxHashSet<String>>,
     pub(super) global_symbols: FxHashSet<LocalSymbol>,
+    pub(super) missing_semantic_scope: bool,
 }
 
 /// `global_script` is the host's effective module classification, including
@@ -27,7 +28,7 @@ pub fn collect<'s, 'a>(
     revision: SourceRevision,
     global_script: bool,
     requested: &[LocalSymbol],
-) -> SourceFacts {
+) -> Result<SourceFacts, OriginError> {
     collect_impl(program, semantic, revision, global_script, requested, None)
 }
 
@@ -41,7 +42,7 @@ pub fn collect_requested_globals<'s, 'a>(
     global_script: bool,
     requested: &[LocalSymbol],
     global_names: &[&str],
-) -> SourceFacts {
+) -> Result<SourceFacts, OriginError> {
     collect_impl(
         program,
         semantic,
@@ -63,7 +64,10 @@ fn collect_impl<'s, 'a>(
     global_script: bool,
     requested: &[LocalSymbol],
     global_names: Option<FxHashSet<String>>,
-) -> SourceFacts {
+) -> Result<SourceFacts, OriginError> {
+    if program.scope_id.get() != Some(semantic.scoping().root_scope_id()) {
+        return Err(OriginError::MissingSemanticScope);
+    }
     let mut collector = Collector {
         semantic,
         facts: SourceFacts {
@@ -75,6 +79,7 @@ fn collect_impl<'s, 'a>(
         pending: requested.iter().copied().collect(),
         global_names,
         global_symbols: FxHashSet::default(),
+        missing_semantic_scope: false,
     };
     for statement in &program.body {
         collector.statement(
@@ -86,6 +91,9 @@ fn collect_impl<'s, 'a>(
     if global_script {
         collector.global_scope(semantic.scoping().root_scope_id());
     }
+    if collector.missing_semantic_scope {
+        return Err(OriginError::MissingSemanticScope);
+    }
     while let Some(local) = collector.pending.pop_front() {
         if collector.facts.bindings.contains_key(&local) {
             continue;
@@ -94,7 +102,7 @@ fn collect_impl<'s, 'a>(
         collector.retain_aliases(&target);
         collector.facts.bindings.insert(local, target);
     }
-    collector.facts
+    Ok(collector.facts)
 }
 impl<'s, 'a> Collector<'s, 'a> {
     fn retain_aliases(&mut self, target: &BindingTarget) {

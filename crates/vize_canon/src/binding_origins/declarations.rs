@@ -141,7 +141,11 @@ impl<'s, 'a> Collector<'s, 'a> {
                 for statement in &declaration.body.body {
                     self.statement(statement, true, true);
                 }
-                self.global_scope(declaration.scope_id.get().expect("existing semantic scope"));
+                if let Some(scope) = declaration.scope_id.get() {
+                    self.global_scope(scope);
+                } else {
+                    self.missing_semantic_scope = true;
+                }
             }
             Declaration::VariableDeclaration(declaration) => {
                 self.variables(declaration, global, ambient)
@@ -157,7 +161,11 @@ impl<'s, 'a> Collector<'s, 'a> {
                 for statement in &declaration.body.body {
                     self.statement(statement, true, true);
                 }
-                self.global_scope(declaration.scope_id.get().expect("existing semantic scope"));
+                if let Some(scope) = declaration.scope_id.get() {
+                    self.global_scope(scope);
+                } else {
+                    self.missing_semantic_scope = true;
+                }
             }
             Statement::VariableDeclaration(declaration) => {
                 self.variables(declaration, global, ambient)

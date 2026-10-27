@@ -24,7 +24,7 @@ jobs:
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
-      - name: Build one fresh image, run 22 origin laws and two native API carriers
+      - name: Build one fresh image, run 23 origin laws and two native API carriers
         shell: bash
         run: |
           set -euo pipefail
@@ -104,6 +104,7 @@ jobs:
               "binding_origins::tests_requested_globals::existing_global_augmentation_scope_retains_unsupported_values",
               "binding_origins::tests_requested_globals::ambient_runtime_writes_cannot_borrow_provider_identity",
               "binding_origins::tests_requested_globals::requested_global_roots_retain_actual_alias_dependencies",
+              "binding_origins::tests_requested_globals::missing_original_semantic_scopes_refuse_the_whole_source",
           ]
           listing = run([str(binary), "--list"])
           (out / "registered-tests.stdout.txt").write_text(listing.stdout)
@@ -210,12 +211,12 @@ jobs:
               "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
               "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").rglob("*.rs"))},
               "tests":rows,"nativeCarrierRoles":native_rows,
-              "passed":len(rows)==22 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
+              "passed":len(rows)==23 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
           }
           (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")
           shutil.copyfile(out / "acceptance.json", out / "native-metadata/actual-source-acceptance.json")
           print("SOURCE_IMAGE_RECEIPT " + json.dumps({"sourceSha":source,"sourceTree":tree,"binarySha256":image_sha,"binaryBytes":binary.stat().st_size,"nativeRoles":native_rows}), flush=True)
-          assert receipt["passed"], "all 22 source laws and both native carrier roles must pass"
+          assert receipt["passed"], "all 23 source laws and both native carrier roles must pass"
           PY
       - name: Package actual compiler and test receipts
         if: always()
@@ -239,4 +240,3 @@ jobs:
           name: binding-origin-native-metadata-${{ github.sha }}
           path: ${{ runner.temp }}/binding-origin-native-metadata.tgz
           retention-days: 14
-

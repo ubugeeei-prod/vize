@@ -114,6 +114,7 @@ pub enum BindingOrigin {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OriginError {
     ForeignOwner,
+    MissingSemanticScope,
     ConflictingSourceRevision,
     DuplicateSourceFacts,
     UnregisteredReferenceProvider,

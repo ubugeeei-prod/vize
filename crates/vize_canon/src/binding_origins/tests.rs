@@ -55,7 +55,8 @@ fn source_as(
             revision(id),
             global_script,
             &[],
-        ),
+        )
+        .expect("the original Program and semantic snapshot are paired"),
         local,
     )
 }

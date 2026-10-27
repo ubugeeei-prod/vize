@@ -30,6 +30,7 @@ fn capture(text: &str, global_script: bool, names: &[&str]) -> SourceFacts {
         &[],
         names,
     )
+    .expect("the original Program and semantic snapshot are paired")
 }
 
 #[test]
@@ -81,8 +82,16 @@ function nested() { const LocalOnly = 1; }
     let facts = capture(text, true, &wanted);
     assert_eq!(facts.globals.len(), wanted.len());
     assert_eq!(facts.bindings.len(), wanted.len());
-    for (name, local) in &facts.globals {
-        assert!(wanted.contains(&name.as_str()));
+    let mut actual = facts
+        .globals
+        .iter()
+        .map(|(name, _)| name.as_str())
+        .collect::<Vec<_>>();
+    let mut expected = wanted.to_vec();
+    actual.sort_unstable();
+    expected.sort_unstable();
+    assert_eq!(actual, expected);
+    for (_, local) in &facts.globals {
         assert!(matches!(
             facts.bindings.get(local),
             Some(BindingTarget::Opaque)
@@ -153,4 +162,60 @@ fn requested_global_roots_retain_actual_alias_dependencies() {
         facts.bindings.get(&binding.local),
         Some(BindingTarget::Import { .. })
     ));
+}
+
+#[test]
+fn missing_original_semantic_scopes_refuse_the_whole_source() {
+    let allocator = Allocator::default();
+    let parsed = Parser::new(
+        &allocator,
+        "export {}; declare global {const useTemplateRef: typeof import('vue').useTemplateRef;}",
+        SourceType::ts(),
+    )
+    .parse();
+    assert!(!parsed.panicked);
+    assert!(parsed.diagnostics.is_empty());
+    let built = SemanticBuilder::new()
+        .with_build_nodes(false)
+        .build(&parsed.program);
+    assert!(built.diagnostics.is_empty());
+    let declaration = parsed
+        .program
+        .body
+        .iter()
+        .find_map(|statement| {
+            if let oxc_ast::ast::Statement::TSGlobalDeclaration(declaration) = statement {
+                Some(declaration)
+            } else {
+                None
+            }
+        })
+        .unwrap();
+    let original = declaration.scope_id.get();
+    declaration.scope_id.set(None);
+    let capture = || {
+        collect_requested_globals(
+            &parsed.program,
+            &built.semantic,
+            SourceRevision {
+                owner: 1,
+                source: 1,
+                version: 1,
+            },
+            false,
+            &[],
+            &["useTemplateRef"],
+        )
+    };
+    assert_eq!(
+        capture().unwrap_err(),
+        super::OriginError::MissingSemanticScope
+    );
+    declaration.scope_id.set(original);
+    assert_eq!(capture().unwrap().globals.len(), 1);
+    parsed.program.scope_id.set(None);
+    assert_eq!(
+        capture().unwrap_err(),
+        super::OriginError::MissingSemanticScope
+    );
 }

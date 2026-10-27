@@ -217,11 +217,26 @@ pub(super) fn run(
                 .is_some_and(|name| Path::new(name) == file)
         );
         let code = row.get("code").and_then(Value::as_i64).unwrap();
-        assert!(row.to_string().contains(if code == 1361 {
-            "TypeOnly"
+        let (label, token, message) = if code == 1361 {
+            (
+                "type-only",
+                "TypeOnly",
+                "'TypeOnly' cannot be used as a value because it was imported using 'import type'.",
+            )
         } else {
-            "MissingRuntimeRef"
-        }));
+            (
+                "missing",
+                "MissingRuntimeRef",
+                "Cannot find name 'MissingRuntimeRef'.",
+            )
+        };
+        let position = i64::from(fixture::position(label, token));
+        assert_eq!(row.get("text").and_then(Value::as_str), Some(message));
+        assert_eq!(row.get("pos").and_then(Value::as_i64), Some(position));
+        assert_eq!(
+            row.get("end").and_then(Value::as_i64),
+            Some(position + i64::try_from(token.encode_utf16().count()).unwrap())
+        );
     }
     let mut owners = vec![coverage::declaration_path(&real)];
     for value in targets.values() {

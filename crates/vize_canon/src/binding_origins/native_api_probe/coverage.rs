@@ -66,7 +66,10 @@ pub(super) fn declaration_path(symbol: &corsa::api::SymbolResponse) -> std::path
 }
 pub(super) fn package(symbol: &corsa::api::SymbolResponse, provider: &Path) -> Value {
     let declaration = declaration_path(symbol);
-    assert!(declaration.starts_with(provider));
+    let relative = declaration
+        .strip_prefix(provider)
+        .expect("the actual declaration must belong to this provider");
+    assert_ne!(relative, Path::new(""));
     for parent in declaration.ancestors().skip(1) {
         let manifest = parent.join("package.json");
         if !manifest.is_file() {

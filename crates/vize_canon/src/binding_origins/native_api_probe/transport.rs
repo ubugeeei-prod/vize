@@ -151,4 +151,3 @@ impl Drop for NativeTap {
         }
     }
 }
-

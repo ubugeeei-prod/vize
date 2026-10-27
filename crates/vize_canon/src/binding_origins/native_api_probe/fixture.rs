@@ -113,7 +113,7 @@ pub(super) fn position(label: &str, token: &str) -> u32 {
     } else {
         0
     };
-    assert!(PROBE.get(base..).unwrap().starts_with(token));
+    assert_eq!(PROBE.get(base..base + token.len()), Some(token));
     u32::try_from(PROBE.get(..base + extra).unwrap().encode_utf16().count()).unwrap()
 }
 
