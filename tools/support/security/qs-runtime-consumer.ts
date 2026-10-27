@@ -229,6 +229,7 @@ function originalProcesses(directory: string, role: string, vulnerable: boolean)
   }
 }
 async function published(version: string) {
+  assert.match(version, /^6\.\d+\.\d+$/u, "exact public qs version");
   const response = await fetch("https://registry.npmjs.org/qs/" + version);
   assert.equal(response.status, 200);
   const raw = await response.text();
@@ -242,17 +243,15 @@ async function published(version: string) {
   assert.equal(tar.status, 200);
   const bytes = Buffer.from(await tar.arrayBuffer());
   const integrity = "sha512-" + createHash("sha512").update(bytes).digest("base64");
-  assert.equal(
-    integrity,
-    (
-      {
-        "6.16.0":
-          "sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA==",
-        "6.16.1":
-          "sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==",
-      } as Record<string, string>
-    )[version],
-  );
+  const historicalIntegrity = (
+    {
+      "6.16.0":
+        "sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA==",
+      "6.16.1":
+        "sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==",
+    } as Record<string, string>
+  )[version];
+  if (historicalIntegrity) assert.equal(integrity, historicalIntegrity);
   assert.equal(integrity, metadata.dist.integrity);
   assert.equal(hash(bytes, "sha1"), metadata.dist.shasum);
   const archivePath = path.join(output, "qs-" + version + ".tgz");
@@ -338,12 +337,10 @@ async function main() {
   assert.equal(readPackage(path.join(packedMcp, "package.json")).name, "@vizejs/musea-mcp-server");
   const sourceRoutes = routes(path.join(root, "npm/mcp-musea")),
     packedRoutes = routes(packedMcp);
-  const expectedLib = tree(path.join(fixed.installed, "lib")),
-    expectedTests = tree(path.join(fixed.installed, "test"));
-  assert(
-    Object.keys(expectedTests).length > 0,
-    "published complete upstream runtime tests are required",
-  );
+  const publicProducers = new Map<string, Awaited<ReturnType<typeof published>>>([
+    [before.metadata.version, before],
+    [fixed.metadata.version, fixed],
+  ]);
   report.producers.push(
     { role: "source-routes", routes: sourceRoutes },
     {
@@ -355,48 +352,75 @@ async function main() {
   );
   save();
   const instances = [...new Set([...sourceRoutes, ...packedRoutes].map((route) => route.qs))];
-  for (const directory of instances) {
-    assert.equal(readPackage(path.join(directory, "package.json")).version, "6.16.1");
+  for (const [index, directory] of instances.entries()) {
+    const version = readPackage(path.join(directory, "package.json")).version;
+    assert.match(version, /^6\.\d+\.\d+$/u);
+    const [, minor, patch] = version.split(".").map(Number);
+    assert(
+      minor > 16 || (minor === 16 && patch >= 1),
+      "every runtime must exclude the vulnerable range",
+    );
+    if (directory.startsWith(root)) assert.equal(version, "6.16.1", "exact source override");
+    let producer = publicProducers.get(version);
+    if (!producer) {
+      producer = await published(version);
+      publicProducers.set(version, producer);
+    }
+    const expectedLib = tree(path.join(producer.installed, "lib"));
+    const expectedTests = tree(path.join(producer.installed, "test"));
+    assert(
+      Object.keys(expectedTests).length > 0,
+      "the complete published runtime suite is required",
+    );
     assert.deepEqual(
       tree(path.join(directory, "lib")),
       expectedLib,
-      "every actual runtime image matches the integrity-verified fixed tarball",
+      "actual runtime equals its authenticated public version",
     );
     assert.deepEqual(tree(path.join(directory, "test")), expectedTests);
-    const role = directory.startsWith(root) ? "actual-source-runtime" : "actual-packed-runtime";
+    const role =
+      (directory.startsWith(root) ? "actual-source-runtime-" : "actual-packed-runtime-") + index;
     originalProcesses(directory, role, false);
     matrix(directory, role, false, normalBefore);
   }
-  const tools = path.join(path.dirname(output), "qs-upstream-contract-tools");
-  fs.mkdirSync(tools, { recursive: true });
-  assert(fixed.metadata.devDependencies);
-  fs.writeFileSync(
-    path.join(tools, "package.json"),
-    JSON.stringify({ private: true, dependencies: fixed.metadata.devDependencies }) + "\n",
-  );
-  success(
-    run(
-      "install-upstream-test-tools",
-      "npm",
-      ["install", "--ignore-scripts", "--no-audit", "--no-fund"],
-      tools,
-    ),
-    "published upstream test prerequisites",
-  );
-  fs.copyFileSync(
-    path.join(tools, "package-lock.json"),
-    path.join(output, "upstream-test-tools-lock.json"),
-  );
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    NODE_PATH: path.join(tools, "node_modules"),
-    PATH: path.join(tools, "node_modules/.bin") + path.delimiter + (process.env.PATH ?? ""),
-  };
-  for (const [index, directory] of [before.installed, fixed.installed, ...instances].entries())
+  const toolsByVersion = new Map<string, string>();
+  for (const [index, directory] of [before.installed, fixed.installed, ...instances].entries()) {
+    const version = readPackage(path.join(directory, "package.json")).version;
+    const producer = publicProducers.get(version);
+    assert(producer?.metadata.devDependencies);
+    let tools = toolsByVersion.get(version);
+    if (!tools) {
+      tools = path.join(path.dirname(output), "qs-upstream-tools-" + version);
+      fs.mkdirSync(tools, { recursive: true });
+      fs.writeFileSync(
+        path.join(tools, "package.json"),
+        JSON.stringify({ private: true, dependencies: producer.metadata.devDependencies }) + "\n",
+      );
+      success(
+        run(
+          "install-upstream-tools-" + version,
+          "npm",
+          ["install", "--ignore-scripts", "--no-audit", "--no-fund"],
+          tools,
+        ),
+        "published upstream test prerequisites",
+      );
+      fs.copyFileSync(
+        path.join(tools, "package-lock.json"),
+        path.join(output, "upstream-tools-lock-" + version + ".json"),
+      );
+      toolsByVersion.set(version, tools);
+    }
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      NODE_PATH: path.join(tools, "node_modules"),
+      PATH: path.join(tools, "node_modules/.bin") + path.delimiter + (process.env.PATH ?? ""),
+    };
     success(
       run("complete-upstream-tests-" + index, "npm", ["run", "tests-only"], directory, env),
       "complete unchanged published upstream runtime suite",
     );
+  }
   const audit = run("fresh-packed-mcp-audit", "npm", ["audit", "--omit=dev", "--json"], consumer);
   JSON.parse(audit.stdout);
   success(audit, "fresh packed MCP production audit");
