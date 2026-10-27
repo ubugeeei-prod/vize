@@ -231,13 +231,26 @@ async function matrix() {
   const native = identity(nativePath, proof);
   command(
     process.execPath,
-    [fromHost.resolve("playwright/cli"), "install", "--with-deps", "chromium"],
+    [
+      join(
+        dirname(fromHost.resolve("playwright/package.json")),
+        fromHost("playwright/package.json").bin.playwright,
+      ),
+      "install",
+      "--with-deps",
+      "chromium",
+    ],
     host,
     process.env,
     join(proof, "browser-install.json"),
   );
   const originalApp = original.get("src/App.vue")!;
-  const cases = [
+  const cases: {
+    name: string;
+    app: string;
+    files: Record<string, string>;
+    kind: "unknown" | "constant";
+  }[] = [
     { name: "original", app: originalApp, files: {} as Record<string, string>, kind: "unknown" },
     {
       name: "named-alias",
