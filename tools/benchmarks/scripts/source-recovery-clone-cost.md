@@ -17,6 +17,10 @@ Unicode identifiers and literals, and CRLF at at least 128 KiB, 1 MiB and 10 MiB
 An unrelated fatal error at the beginning must keep its original complete
 parser packet, diagnostics and authored source.
 
+An irreparable fatal parse retains its existing empty semantic result. Its
+original ParserReturn, including syntax diagnostics and authored bytes, is
+compared independently rather than interpreting empty bindings as accuracy.
+
 The shared carrier has irreparable, valid and repairable cases. It constructs
 source before the measured window and validates binding counts afterward.
 Normal binaries measure repeated parse and analysis wall time. Separate
@@ -26,7 +30,7 @@ counts. Neither result is a cold whole-project benchmark.
 The 4 KiB carrier must pass before the larger matrix runs:
 
 - Both roles parse the original exactly once per repetition and report equal
-  selected Croquis source calls and bytes.
+  selected Croquis source calls and bytes. Irreparable input enters no semantic\n  analysis; the other cases enter it once per repetition.
 - Irreparable input has no recovery parse. The candidate removes exactly one
   successful allocation request per repetition. Raw requested layout bytes are
   recorded; they are not physical copied bytes, live memory or RSS.
@@ -56,5 +60,5 @@ The original pinned two-to-one receipts are preserved as historical evidence.
 Each role uses a separate target directory that includes the Actions run and
 attempt IDs. The shared carrier, actual source roots, immutable first parent,
 Cargo artifact manifests, features, profiles, lockfile and binary hashes are
-retained. Tiny and matrix summaries are separate small artifacts; full raw
+retained. A small summary artifact holds separate tiny and matrix JSON; full raw
 receipts remain available without uploading generated corpus files.

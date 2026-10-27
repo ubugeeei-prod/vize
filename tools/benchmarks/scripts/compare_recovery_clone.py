@@ -40,6 +40,13 @@ def profile_pair(left, right):
         assert count(row, "croquis.oxc.original.bytes") == (
             iterations, iterations * row["sourceBytes"],
         )
+        assert count(row, "croquis.setup.parse_requests.bytes") == (
+            iterations, iterations * row["sourceBytes"],
+        )
+        expected_analyses = 0 if row["scenario"] == "irreparable" else iterations
+        assert count(row, "croquis.setup.analysis_requests.bytes") == (
+            expected_analyses, expected_analyses * row["sourceBytes"],
+        )
         expected_recoveries = iterations if row["scenario"] == "repairable" else 0
         assert count(row, "croquis.oxc.recovery.bytes") == (
             expected_recoveries, expected_recoveries * row["sourceBytes"],
@@ -65,6 +72,7 @@ def profile_pair(left, right):
         "callsSaved": calls_saved, "requestedBytesSaved": bytes_saved,
         "savedLayoutBytesPerParse": bytes_saved // iterations,
         "originalParsesPerRole": iterations,
+        "setupAnalysesPerRole": 0 if left["scenario"] == "irreparable" else iterations,
         "recoveryParsesPerRole": iterations if left["scenario"] == "repairable" else 0,
         "croquisSourceCountsEqual": True,
     }
@@ -127,6 +135,8 @@ def self_test():
             "micro": [
                 {"name": "croquis.oxc.original.bytes", "calls": 4, "units": 400},
                 {"name": "croquis.oxc.recovery.bytes", "calls": recovery, "units": 100 * recovery},
+                {"name": "croquis.setup.parse_requests.bytes", "calls": 4, "units": 400},
+                {"name": "croquis.setup.analysis_requests.bytes", "calls": 0 if scenario == "irreparable" else 4, "units": 0 if scenario == "irreparable" else 400},
             ],
             "allocation": {"calls": calls, "requestedBytes": allocated},
         }
@@ -141,7 +151,7 @@ def self_test():
         mutate(value)
         cases.append((name, value))
     case("original-call-mismatch", irreparable, lambda value: value[1]["micro"][0].__setitem__("calls", 3))
-    case("repair-not-observed", (fixture("repairable", 10, 1000), fixture("repairable", 10, 1000)), lambda value: value[1]["micro"].pop())
+    case("repair-not-observed", (fixture("repairable", 10, 1000), fixture("repairable", 10, 1000)), lambda value: value[1]["micro"].pop(1))
     case("no-removed-copy", irreparable, lambda value: value[1]["allocation"].__setitem__("calls", 10))
     case("two-removed-copies", irreparable, lambda value: value[1]["allocation"].__setitem__("calls", 2))
     case("too-few-removed-bytes", irreparable, lambda value: value[1]["allocation"].__setitem__("requestedBytes", 999))
