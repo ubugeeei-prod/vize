@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn failure(errors: &mut Vec<Value>, operation: &str, path: &Path, error: impl std::fmt::Display) {
     errors.push(
-        json!({"operation": operation, "path": path.to_string_lossy(), "error": error.to_string()}),
+        json!({"operation": operation, "path": path.to_string_lossy(), "error": vize_l0::cstr!("{error}")}),
     );
 }
 
@@ -68,7 +68,7 @@ fn packet(command: &Command, project_root: &Path, virtual_root: &Path, config: &
             }
         })
         .collect();
-    let packet = json!({
+    json!({
         "schema":"vize.cache-runtime-custody", "version":1, "metadataOnly":true,
         "route":"native-cli", "nativeBinary":native_binary, "nativeSha256":native_sha,
         "actualArgs":arguments, "actualCwd":cwd, "nativePid":null,
@@ -80,8 +80,7 @@ fn packet(command: &Command, project_root: &Path, virtual_root: &Path, config: &
         "authoredConfig":"not read: semantic root can differ from the authored config directory",
         "completion":"PENDING", "errors":errors,
         "unobserved":["native PID", "native engine normalized options", "native engine loaded source-file vector"],
-    });
-    packet
+    })
 }
 
 pub(super) fn requested(
@@ -99,12 +98,14 @@ pub(super) fn requested(
         config,
     );
     let path = directory.join(vize_l0::cstr!("cache-{sequence:03}-native-cli.json").as_str());
-    if let Err(error) = fs::create_dir_all(directory).and_then(|()| {
-        fs::write(
-            &path,
-            serde_json::to_vec_pretty(&packet).expect("JSON Value serialization"),
-        )
-    }) {
+    let bytes = match serde_json::to_vec_pretty(&packet) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            eprintln!("Vize cache custody cannot encode its receipt: {error}");
+            return None;
+        }
+    };
+    if let Err(error) = fs::create_dir_all(directory).and_then(|()| fs::write(&path, bytes)) {
         eprintln!(
             "Vize cache custody unavailable at {}: {error}",
             path.display()
