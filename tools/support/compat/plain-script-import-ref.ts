@@ -173,6 +173,9 @@ function validateMap(packet: Packet, source: string, filename: string, fromHost:
 async function matrix() {
   const mode = process.env.VIZE10903_MODE!;
   const expected = process.env.VIZE10903_EXPECT!;
+  const publicVersion = process.env.VIZE10903_PUBLIC_VERSION ?? "0.589.0";
+  assert(/^0\.\d+\.\d+$/.test(publicVersion));
+  if (mode === "public" && expected === "before") assert.equal(publicVersion, "0.589.0");
   assert(["public", "source"].includes(mode));
   assert(["before", "after"].includes(expected));
   const proof = resolve(process.env.VIZE10903_PROOF!);
@@ -197,7 +200,7 @@ async function matrix() {
       vite: "8.2.0",
       playwright: "1.62.1",
       ...(mode === "public"
-        ? { "@vizejs/vite-plugin": "0.589.0", "@vizejs/native": "0.589.0" }
+        ? { "@vizejs/vite-plugin": publicVersion, "@vizejs/native": publicVersion }
         : {}),
     },
   });
@@ -225,6 +228,14 @@ async function matrix() {
     playwright: "1.62.1",
   })) {
     assert.equal(fromHost(name + "/package.json").version, version);
+  }
+  if (mode === "public") {
+    for (const name of ["@vizejs/native", "@vizejs/vite-plugin"]) {
+      assert.equal(
+        JSON.parse(readFileSync(join(host, "node_modules", name, "package.json"), "utf8")).version,
+        publicVersion,
+      );
+    }
   }
   const nativePath =
     mode === "source" ? join(root, "npm/native/index.js") : fromHost.resolve("@vizejs/native");
@@ -338,7 +349,12 @@ async function matrix() {
           json(join(proof, "full-module-packets.json"), packets);
           assert.deepEqual(result.errors, []);
           if (sourceMap) {
-            if (mode === "public" && result.map === undefined) {
+            if (
+              mode === "public" &&
+              publicVersion === "0.589.0" &&
+              expected === "before" &&
+              result.map === undefined
+            ) {
               historicalMapOmissions.push({
                 case: entry.name,
                 filename,
