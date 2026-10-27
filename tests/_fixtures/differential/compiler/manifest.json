@@ -183,9 +183,7 @@
     {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "asset-import-binding-collision-10710",
         "files": [
@@ -210,13 +208,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -224,10 +216,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -282,11 +271,51 @@
       }
     },
     {
+      "id": "compiler/sfc/component-event-modifiers-10894",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "component-event-modifiers-10894",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "735f1289ee4f281a4d1b761f57a60ed70c741814deb01fc4c92ebf93d570d6fb",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "component-event-modifiers-10894/module.expected.txt",
+        "sha256": "5ecee0b71a3e25eaaf1b164f3f642cea382e618dd25dfa2802ea661c48839958",
+        "source": "Published @vizejs/native@0.587.0 compileSfc with filename Layout.vue and ssr true; unchanged SSR control only. Vapor event behavior is asserted independently in tests_component_event_modifiers.rs and davinci_mounted_behavior/component_events.rs."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "SSR compatibility control for #10894 only; mounted DOM and both Vapor lowering lanes are tested separately, without SSR credit for client guards."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/escaped-for-bindings-10714",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "escaped-for-bindings-10714",
         "files": [
@@ -311,13 +340,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -325,10 +348,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1602,9 +1622,7 @@
       "id": "compiler/vapor/literal-object-styles-10749",
       "state": "active",
       "adapter": "shared-vapor-literal-style-source-v1",
-      "targets": [
-        "vapor-csr"
-      ],
+      "targets": ["vapor-csr"],
       "scope": "source-only; generic SSR CLI unsupported; no whole-product native or browser parity credit",
       "inputs": [
         {
