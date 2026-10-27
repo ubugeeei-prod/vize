@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
+import { newLanguageProjectCases } from "./language-project-fixtures.ts";
 import {
   compilerCssApiSources,
   newCompilerCssApiCases,
@@ -73,6 +74,7 @@ interface Manifest {
   product?: unknown;
   cases?: ManifestCase[];
   protocolCases?: unknown;
+  languageProjectCases?: unknown;
   runtimeCases?: unknown;
   cssApiCases?: unknown;
   vaporStyleApiCases?: unknown;
@@ -246,6 +248,14 @@ function checkProduct(
     const canonPaths = paths.filter((path) => path.startsWith("crates/vize_canon/src/"));
     const protocolRequired =
       product === "typechecker" && canonPaths.some(nativeShutdownProtocolSource);
+    const languageProject =
+      product === "typechecker"
+        ? newLanguageProjectCases(
+            before?.languageProjectCases,
+            manifest.languageProjectCases,
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,
@@ -260,6 +270,7 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !languageProject.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
@@ -294,7 +305,14 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi, ...vaporIds],
+      cases: [
+        ...cases,
+        ...protocols,
+        ...runtime.ids,
+        ...cssApi,
+        ...vaporIds,
+        ...languageProject.ids,
+      ],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };

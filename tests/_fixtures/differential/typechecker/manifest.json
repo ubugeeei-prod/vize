@@ -9246,5 +9246,137 @@
         }
       ]
     }
+  ],
+  "languageProjectCases": [
+    {
+      "id": "typechecker/language-project/inherited-configuration-10740",
+      "state": "active",
+      "adapter": "typescript-project-configuration-v1",
+      "targets": [
+        "typescript-project",
+        "vscode-typescript"
+      ],
+      "inputs": [
+        {
+          "path": "typescript-project-configuration-10740/case.json",
+          "sha256": "96fe793b238e1e5da5061720ad16bfb37ea5c201ee3c3c789cd9cd038a4a46e0"
+        },
+        {
+          "path": "typescript-project-configuration-10740/src/Inherited.vue.txt",
+          "sha256": "bfb407f1299c232f69a428a3b2ebc2548a5015eed88396ae9fb38e03692c495f"
+        },
+        {
+          "path": "typescript-project-configuration-10740/src/control.ts.txt",
+          "sha256": "963d2197898ace3298948205002012b00d31f755d5eaa2ae589a03563befd818"
+        },
+        {
+          "path": "typescript-project-configuration-10740/inherited-before.json.txt",
+          "sha256": "18accd0b731fa5901df2d3c38396d8fa81b496b955e399864c2554a664ff43b2"
+        },
+        {
+          "path": "typescript-project-configuration-10740/inherited-after.json.txt",
+          "sha256": "172ab57682f8e2c73950b879f1d20ea127eaa7224474f32cb14d7098a32dc0df"
+        },
+        {
+          "path": "typescript-project-configuration-10740/tsconfig-6.0.json.txt",
+          "sha256": "981b1be9b5ce25cc1dbe457653945f5fe2fc6189132d64fe054f2aa9a98f1be7"
+        },
+        {
+          "path": "typescript-project-configuration-10740/tsconfig-5.7.json.txt",
+          "sha256": "639f9cca79d3466fc27dbada1a213d26a83ee5f1c497bc3e29b1c56bb881a0d5"
+        },
+        {
+          "path": "typescript-project-configuration-10740/expected.json",
+          "sha256": "97ef6c35cbb6cbb90f099d04ae3a54b851ac17920aece9cfaacac96ff2546242"
+        },
+        {
+          "path": "typescript-project-configuration-10740/before-witness.json",
+          "sha256": "462925989cfc5c1ec84b9ddcdabf175579059df648013acc25b00a5fcc316892"
+        },
+        {
+          "path": "typescript-project-configuration-10740/before-inputs.json",
+          "sha256": "8fedd5da81bb3f78ae01dbe525bfad594702933f5ad3ff05b270a719d70f0e43"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "generate_vue_language_code",
+          "source": "crates/vize_vitrine/src/napi/language_code.rs",
+          "sha256": "7954365cd0a7d91c5c411fb3e56883092f1185d6115f4810973318264ee42864"
+        },
+        {
+          "selector": "init",
+          "source": "npm/typescript-plugin/index.cjs",
+          "sha256": "728bd36e03f2e4c6cb9fe48332c804ac5606102b72c3a07999391b6b1616cdf8"
+        },
+        {
+          "selector": "createProjectConfiguration",
+          "source": "npm/typescript-plugin/virtual-modules.cjs",
+          "sha256": "053dda9154be1c4bf3fa470b3e87226aaaccd100493002228b325baca84665d0"
+        },
+        {
+          "selector": "createMappedLanguageService",
+          "source": "npm/typescript-plugin/language-service.cjs",
+          "sha256": "108028b9cb18a19510ac5b379885adab9e469e9c2b939842762c88a4548c8d57"
+        },
+        {
+          "selector": "readProjectFixture",
+          "source": "tests/typescript-plugin/project-fixture.cjs",
+          "sha256": "f26270cea63f83fcc98fe65c916cdd524138b684dc350cf3db607007cb3fae3e"
+        },
+        {
+          "selector": "checkInheritedConfig",
+          "source": "tests/typescript-plugin/inherited-config.ts",
+          "sha256": "17b8c03fae46c3c3d34e41d27e7901cc3b1969e1c43b13d6c5c1eceb18ec30d0"
+        },
+        {
+          "selector": "createOrdinaryHostFrontier",
+          "source": "tests/typescript-plugin/ordinary-host-frontier.ts",
+          "sha256": "fa16979fe9c0876126b75f233e8934555ea909aefa51ea09466ab3e716bd5e9a"
+        },
+        {
+          "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
+          "source": "tests/typescript-plugin/project-configuration.test.cjs",
+          "sha256": "63a73f74aef8bd472c4c2482240c108725cc4c129374d79da34b84d61e461039"
+        },
+        {
+          "selector": "packed-consumer",
+          "source": "tests/typescript-plugin/packed-consumer.mjs",
+          "sha256": "daf6932d21e43514e02eb41a2b4dd17c04a3396e07482d8c568e6d5e74641d30"
+        },
+        {
+          "selector": "startTsserver",
+          "source": "tests/typescript-plugin/tsserver-client.mjs",
+          "sha256": "03a93ea537ad511f17b6b2ef35030098c3e8f6bdac3ef2657d5cec8e4fb3b2af"
+        },
+        {
+          "selector": "checkInheritedConfiguration",
+          "source": "editors/vscode/test/suite/typescript-provider-host.cjs",
+          "sha256": "90a16b15677f53b78de761d4bd69cddc0c77c7d99ff0052db0bf3ca1bb22bfa3"
+        },
+        {
+          "selector": "runPackagedExtensionHost",
+          "source": "editors/vscode/test/run-typescript-provider-host.mjs",
+          "sha256": "df51b3db29ba4452a6585fe0e6ddf71db69d8f9b53611bbd93a79d4b049f3229"
+        },
+        {
+          "selector": "TypeScript 5.7.3 and 6.0.3",
+          "source": ".github/workflows/typescript-plugin.yml",
+          "sha256": "87a6393c96aa7943cdc88696e0350ea082e4f088146ea4b9305efe03c3455a16"
+        },
+        {
+          "selector": "Linux and Windows physical VSIX",
+          "source": ".github/workflows/typescript-provider-vsix.yml",
+          "sha256": "77c6d8a9aaed31dc5af2069b6d3ccc7b85ffefcd1d55faaeae7621981f59c744"
+        }
+      ],
+      "witness": {
+        "path": "typescript-project-configuration-10740/before-witness.json",
+        "sha256": "462925989cfc5c1ec84b9ddcdabf175579059df648013acc25b00a5fcc316892",
+        "sourceRevision": "085b4753c45997744d477cd2be1a882c43704a79",
+        "run": 40226962544,
+        "artifact": 12610814625
+      }
+    }
   ]
 }

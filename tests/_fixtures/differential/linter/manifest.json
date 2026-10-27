@@ -58,11 +58,40 @@
   },
   "cases": [
     {
+      "id": "linter/a11y-dynamic-role-10926",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "a11y-dynamic-role-10926",
+        "files": [
+          {
+            "path": "ClickableTag.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "7c650bdbb4d3ac5fcdb11890e60924b1eab0a46f737a14e5adb47f8379fe3c3f"
+          },
+          {
+            "path": "StaticControl.vue.txt",
+            "role": "negative-control",
+            "sha256": "1ce4a66e926e5b0038e909e9dc3d5a5270c80c09907c55e06f4417ed5f3f867c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/ambient-macro-declarations-10656",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "ambient-macro-declarations-10656",
         "files": [
@@ -89,12 +118,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -103,9 +127,7 @@
     {
       "id": "linter/attribute-hyphenation-range",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "attribute-hyphenation-range",
         "files": [
@@ -132,12 +154,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -397,9 +414,7 @@
     {
       "id": "linter/corsa-session-waiters-10393",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "corsa-session-waiters-10393",
         "files": [
@@ -421,10 +436,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -522,9 +534,7 @@
     {
       "id": "linter/current-api/conditional-plain-types-10517",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "conditional-plain-types-10517",
         "files": [
@@ -601,11 +611,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "ts",
-              "jsx",
-              "tsx"
-            ],
+            "dialects": ["ts", "jsx", "tsx"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1798,9 +1804,7 @@
     {
       "id": "linter/explicit-type-rule-preset-10717",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "explicit-type-rule-preset-10717",
         "files": [
@@ -1827,10 +1831,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1839,9 +1840,7 @@
     {
       "id": "linter/native-canonical-image-alt-10563",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "native-canonical-image-alt-10563",
         "files": [
@@ -1873,12 +1872,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "jsx",
-              "tsx"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "jsx", "tsx"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1887,9 +1881,7 @@
     {
       "id": "linter/next-tick-vapor-gating-10784",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "next-tick-vapor-gating-10784",
         "files": [
@@ -1916,12 +1908,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2262,9 +2249,7 @@
     {
       "id": "linter/require-explicit-emits-parity-10822",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "require-explicit-emits-parity-10822",
         "files": [
@@ -2301,12 +2286,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2566,9 +2546,7 @@
     {
       "id": "linter/v-on-hyphenation-custom-tags-10822",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "v-on-hyphenation-custom-tags-10822",
         "files": [
@@ -2585,11 +2563,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2598,9 +2572,7 @@
     {
       "id": "linter/v-on-hyphenation-suggestion-10822",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "v-on-hyphenation-suggestion-10822",
         "files": [
@@ -2622,11 +2594,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]

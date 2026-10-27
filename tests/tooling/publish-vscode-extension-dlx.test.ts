@@ -22,19 +22,14 @@ test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing 
       packageJsonPath,
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }, null, 2)}\n`,
     );
+    // The gallery probe never lists the version, so only publish reaches the runner.
+    writeFakeCommand(binDir, "curl", "process.exit(22);");
     writeFakeCommand(
       binDir,
       "corepack",
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
-        "if (args[0] === 'pnpm' && args[1] === 'dlx' && args[8] === 'vsce' && args[9] === 'show') {",
-        "  if (fs.existsSync(process.env.COREPACK_ARGS_LOG)) {",
-        "    process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
         "fs.writeFileSync(process.env.COREPACK_ARGS_LOG, args.join('\\n'));",
         "process.exit(0);",
       ].join("\n"),
@@ -85,19 +80,13 @@ test("publish_vscode_extension can publish with npx without pnpm hydration", () 
       packageJsonPath,
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.58.0" }, null, 2)}\n`,
     );
+    writeFakeCommand(binDir, "curl", "process.exit(22);");
     writeFakeCommand(
       binDir,
       "npx",
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
-        "if (args[0] === '-y' && args[1] === '-p' && args[3] === 'vsce' && args[4] === 'show') {",
-        "  if (fs.existsSync(process.env.NPX_ARGS_LOG)) {",
-        "    process.stdout.write(JSON.stringify({ versions: [{ version: '0.58.0' }] }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
         "fs.writeFileSync(process.env.NPX_ARGS_LOG, args.join('\\n'));",
         "process.exit(0);",
       ].join("\n"),
@@ -145,6 +134,11 @@ test("publish_vscode_extension finishes on a successful publish without waiting 
     // The Marketplace never lists the version; publish itself succeeds.
     writeFakeCommand(
       binDir,
+      "curl",
+      "require('node:fs').appendFileSync(process.env.CALLS_LOG, 'curl\\n'); process.exit(22);",
+    );
+    writeFakeCommand(
+      binDir,
       "vp",
       [
         "const args = process.argv.slice(2);",
@@ -161,7 +155,7 @@ test("publish_vscode_extension finishes on a successful publish without waiting 
       },
     });
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.deepEqual(fs.readFileSync(logPath, "utf8").trim().split("\n"), ["show", "publish"]);
+    assert.deepEqual(fs.readFileSync(logPath, "utf8").trim().split("\n"), ["curl", "publish"]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

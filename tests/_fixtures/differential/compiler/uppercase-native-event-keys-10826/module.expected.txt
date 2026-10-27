@@ -1,0 +1,33 @@
+import { ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[-->`)
+  if ($setup.ok) {
+    _push(`<div>x</div>`)
+  } else {
+    _push(`<!---->`)
+  }
+  _push(`<!--[-->`)
+  _ssrRenderList(3, (i) => {
+    _push(`<div>a</div>`)
+  })
+  _push(`<!--]-->`)
+  _push(`<!--]-->`)
+}
+import { useHandlers } from './useHandlers'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const { onPing: pingA, ok } = useHandlers()
+
+const __returned__ = { ok, useHandlers, pingA }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

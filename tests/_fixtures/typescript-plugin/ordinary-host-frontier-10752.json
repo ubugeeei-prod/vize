@@ -1,0 +1,32 @@
+{
+  "schema": "vize.typescriptHostFrontier.v1",
+  "issue": 10752,
+  "role": "ordinary-typescript-host-frontier",
+  "qualified": false,
+  "status": "known-failure",
+  "contract": "complete-tsserver-diagnostic-body-v1",
+  "witness": {
+    "sdk": "6.0.3",
+    "node": "26.6.0",
+    "plugin": "none",
+    "observationsSha256": "7d2bb79de78baeed2c7fb2d59db4d677f98f0a8fec7a3d50bcef760268cace57"
+  },
+  "expected": {
+    "warm": [],
+    "fresh": [
+      {
+        "start": {
+          "line": 3,
+          "offset": 5
+        },
+        "end": {
+          "line": 3,
+          "offset": 16
+        },
+        "text": "Fallthrough case in switch.",
+        "code": 7029,
+        "category": "error"
+      }
+    ]
+  }
+}

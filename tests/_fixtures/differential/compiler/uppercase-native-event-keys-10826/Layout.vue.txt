@@ -1,0 +1,8 @@
+<script setup>
+import { useHandlers } from './useHandlers'
+const { onPing: pingA, ok } = useHandlers()
+</script>
+<template>
+  <div v-if="ok" @fooBar="pingA">x</div>
+  <div v-for="i in 3" :key="i" @fooBar="pingA">a</div>
+</template>
