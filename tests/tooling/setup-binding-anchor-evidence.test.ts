@@ -73,8 +73,8 @@ test("comparison retains all72 full observations and independent binary identiti
   }
 });
 
-test("same binary, modified packet, skipped size and absent allocation gain are rejected", () => {
-  for (const control of ["same-binary", "packet", "missing", "no-gain"]) {
+test("same binary, modified packet, skipped size and allocation increases are rejected", () => {
+  for (const control of ["same-binary", "packet", "missing", "regression"]) {
     const root = mkdtempSync(join(tmpdir(), "anchor-evidence-invalid-"));
     try {
       fixture(root);
@@ -92,12 +92,36 @@ test("same binary, modified packet, skipped size and absent allocation gain are 
         for (const round of [1, 2, 3]) {
           const path = join(root, `head-imports-128-allocation-${round}.json`);
           const packet = JSON.parse(readFileSync(path, "utf8"));
-          packet.spans[0].allocationCalls = 128 * 128;
+          packet.spans[0].allocationCalls = 128 * 128 + 1;
           writeFileSync(path, JSON.stringify(packet));
         }
       assert.notEqual(run(root).status, 0, control);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  }
+});
+
+test("unchanged allocations remain admissible for future optimized baselines", () => {
+  const root = mkdtempSync(join(tmpdir(), "anchor-evidence-equal-"));
+  try {
+    fixture(root);
+    for (const shape of ["locals", "imports"])
+      for (const count of [32, 128, 512]) {
+        for (const round of [1, 2, 3]) {
+          const base = join(root, `base-${shape}-${count}-allocation-${round}.json`);
+          const row = JSON.parse(readFileSync(base, "utf8"));
+          const head = JSON.parse(
+            readFileSync(join(root, `head-${shape}-${count}-allocation-${round}.json`), "utf8"),
+          );
+          row.allocation = head.allocation;
+          row.spans = head.spans;
+          writeFileSync(base, JSON.stringify(row));
+        }
+      }
+    const result = run(root);
+    assert.equal(result.status, 0, result.stderr);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });

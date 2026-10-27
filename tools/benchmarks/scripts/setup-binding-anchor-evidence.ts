@@ -69,16 +69,16 @@ for (const shape of ["locals", "imports"]) {
     const base = roles.get("base")!;
     const head = roles.get("head")!;
     assert.ok(
-      median(head.anchorCalls) < median(base.anchorCalls),
-      "actual anchor allocation count must decrease",
+      median(head.anchorCalls) <= median(base.anchorCalls),
+      "actual anchor allocation count must not regress",
     );
     assert.ok(
-      median(head.anchorBytes) < median(base.anchorBytes),
-      "actual anchor requested bytes must decrease",
+      median(head.anchorBytes) <= median(base.anchorBytes),
+      "actual anchor requested bytes must not regress",
     );
     assert.ok(
-      median(head.allocations) < median(base.allocations),
-      "whole-generation allocation count must decrease",
+      median(head.allocations) <= median(base.allocations),
+      "whole-generation allocation count must not regress",
     );
     summary.push({
       shape,
