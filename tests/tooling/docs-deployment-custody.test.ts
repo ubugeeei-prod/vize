@@ -44,6 +44,44 @@ test("durable custody is qualified by its exact primary writer log, source run, 
   assert.deepEqual(artifactIdentity({ ...pages, expired: true }), receipt.pagesArtifact);
 });
 
+test("deleted historical artifacts retain the floor authenticated by the original publisher log", async () => {
+  const { api, publisher, job, deployment, values, pages } = custodyFixture();
+  for (const artifact of [...sourceArtifacts(), pages])
+    values.delete("/actions/artifacts/" + artifact.id);
+  assert.equal(
+    (await qualifyDeployment(api, repositoryId, deployment, publisher, job)).sourceSha,
+    sourceSha,
+  );
+  api.jobLog = async () => "The receipt is absent from the original publisher log";
+  await assert.rejects(
+    () => qualifyDeployment(api, repositoryId, deployment, publisher, job),
+    /actual publisher log/,
+  );
+});
+
+test("historical artifact authentication still rejects authorization and service failures", async () => {
+  for (const status of [401, 403, 429, 500]) {
+    const { api, publisher, job, deployment } = custodyFixture();
+    api.response = async () => new Response(null, { status });
+    await assert.rejects(
+      () => qualifyDeployment(api, repositoryId, deployment, publisher, job),
+      new RegExp("GitHub metadata request failed: " + status),
+    );
+  }
+});
+
+test("available historical metadata must still agree with the whole authenticated receipt", async () => {
+  for (const kind of ["build", "pages"]) {
+    const { api, publisher, job, deployment, values, pages } = custodyFixture();
+    const artifact = kind === "pages" ? pages : sourceArtifacts()[0];
+    values.set("/actions/artifacts/" + artifact.id, {
+      ...artifact,
+      digest: "sha256:" + "e".repeat(64),
+    });
+    await assert.rejects(() => qualifyDeployment(api, repositoryId, deployment, publisher, job));
+  }
+});
+
 test("forged or missing receipt custody and unexecuted candidates cannot establish a publication floor", async () => {
   for (const mutation of [
     { creator: { login: "maintainer", type: "User" } },
