@@ -154,6 +154,23 @@ process.exit(2);
       ).qualified,
       false,
     );
+    for (const invalidRoot of [namespace, runtime.evidence.ownedRoot!, root]) {
+      entry.compiledSourceRevision = source;
+      entry.projectRoot = invalidRoot;
+      for (const name of ["first.json", "second.json"])
+        fs.writeFileSync(path.join(metadata, name), JSON.stringify(entry));
+      assert.equal(
+        summarizeColdBackendObserver(
+          observer.calls,
+          runtime.evidence.ownedRoot,
+          corpus,
+          metadata,
+          source,
+        ).qualified,
+        false,
+        "source roots inside or containing the cache namespace must fail",
+      );
+    }
     runtime.cleanup();
     assert.equal(fs.existsSync(project), true);
   } finally {

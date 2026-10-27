@@ -1,4 +1,4 @@
-/** Fresh shipping-profile source CLI with actual Cargo output and compiled-source custody. */
+/** Fresh normal shipping-profile source CLI with actual Cargo/source identity; no root observer. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -75,7 +75,6 @@ const environment = {
   ...process.env,
   CARGO_TARGET_DIR: target,
   CARGO_INCREMENTAL: "0",
-  VIZE_CACHE_OBSERVER_SOURCE_SHA: sourceSha,
 };
 const compilerEnvironment = Object.fromEntries(
   Object.entries(environment).filter(
@@ -86,10 +85,15 @@ const compilerEnvironment = Object.fromEntries(
         "RUSTC",
         "RUSTC_WRAPPER",
         "RUSTC_WORKSPACE_WRAPPER",
+        "RUSTUP_TOOLCHAIN",
+        "CARGO_BUILD_RUSTFLAGS",
+        "CARGO_BUILD_RUSTC",
+        "CARGO_BUILD_RUSTC_WRAPPER",
         "CARGO_BUILD_TARGET",
         "CARGO_INCREMENTAL",
-        "VIZE_CACHE_OBSERVER_SOURCE_SHA",
-      ].includes(key) || key.startsWith("CARGO_PROFILE_RELEASE_"),
+      ].includes(key) ||
+      key.startsWith("CARGO_PROFILE_RELEASE_") ||
+      /^CARGO_TARGET_[A-Z0-9_]+_(RUSTFLAGS|LINKER)$/u.test(key),
   ),
 );
 const tool = (name: string, argv: string[]) => {
@@ -139,12 +143,14 @@ assert.equal(artifact.profile.debuginfo, 0);
 assert.equal(artifact.profile.debug_assertions, false);
 assert.equal(artifact.profile.test, false);
 const built = fs.realpathSync(artifact.executable);
-const relativeBuilt = path.relative(target, built);
+const physicalTarget = fs.realpathSync(target);
+const relativeBuilt = path.relative(physicalTarget, built);
 assert.ok(
   relativeBuilt !== "" &&
     relativeBuilt !== ".." &&
     !relativeBuilt.startsWith(".." + path.sep) &&
     !path.isAbsolute(relativeBuilt),
+  "Cargo executable escaped the physically resolved task target",
 );
 assert.equal(git("rev-parse", "HEAD"), sourceSha);
 assert.equal(

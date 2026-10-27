@@ -41,7 +41,7 @@ if (values.source) {
   assert.equal(receipt.binarySha256, binarySha256);
   build = receipt;
 }
-const projectRoot = path.join(out, "project");
+const projectRoot = path.join(fs.realpathSync(out), "project");
 const corpus = prepareColdScale(projectRoot, provider, sfcs + coldScaleSupportScriptFiles, false);
 assert.equal(corpus.sfcFiles, sfcs);
 const fixtureIdentity = sealFixtureInputs(projectRoot);
@@ -76,6 +76,7 @@ function run(stage: string, count: number, expectedRows: Diagnostic[]) {
   const env: NodeJS.ProcessEnv = { ...process.env, ...command.env, ...runtime.env };
   delete env.VIZE_LEXICAL_DOLLAR_CAPTURE_DIR;
   delete env.VIZE_LEXICAL_DOLLAR_CAPTURE_METADATA_ONLY;
+  delete env.VIZE_CACHE_CUSTODY_CAPTURE_DIR;
   try {
     const result = spawnSync(command.executable, command.args, {
       cwd: command.cwd,

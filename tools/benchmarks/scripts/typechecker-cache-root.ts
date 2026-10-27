@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const inside = (root: string, child: string) => {
+export const cachePathContains = (root: string, child: string) => {
   const tail = path.relative(root, child);
   return (
     tail === "" || (tail !== ".." && !tail.startsWith(".." + path.sep) && !path.isAbsolute(tail))
@@ -73,7 +73,7 @@ export function inferCacheSemanticRoot(options: {
     qualified:
       unambiguous &&
       sfcs.length > 0 &&
-      mappings.every((row) => inside(root, row.original) && row.exists && row.listed),
+      mappings.every((row) => cachePathContains(root, row.original) && row.exists && row.listed),
     sourceFiles: sfcs.length,
     configFiles: files.length,
     mappings,
@@ -81,5 +81,10 @@ export function inferCacheSemanticRoot(options: {
 }
 
 export function rootOutsideOwnedNamespace(root: string, owned: string) {
-  return !inside(fs.realpathSync(root), fs.realpathSync(owned));
+  const physicalRoot = fs.realpathSync(root),
+    physicalOwned = fs.realpathSync(owned);
+  return (
+    !cachePathContains(physicalRoot, physicalOwned) &&
+    !cachePathContains(physicalOwned, physicalRoot)
+  );
 }

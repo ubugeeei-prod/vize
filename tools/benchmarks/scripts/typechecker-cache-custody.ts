@@ -10,21 +10,20 @@ import {
   realpathSync,
   writeFileSync,
 } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import { prepareColdScale, verifyColdDiagnostics } from "./cold-typechecker-scale.ts";
 import { coldScaleCommand } from "./cold-typechecker-scale-command.ts";
 import { createColdScaleRuntime } from "./typechecker-cache-runtime.ts";
-import { inferCacheSemanticRoot, rootOutsideOwnedNamespace } from "./typechecker-cache-root.ts";
+import {
+  cachePathContains,
+  inferCacheSemanticRoot,
+  rootOutsideOwnedNamespace,
+} from "./typechecker-cache-root.ts";
 import { prepareCacheCarrier } from "./typechecker-cache-carrier.ts";
 import { createColdBackendObserver } from "./typechecker-cache-backend.ts";
 import { sealFixtureInputs } from "./typechecker-fixture-identity.ts";
-
-const inside = (parent: string, child: string) => {
-  const tail = relative(parent, child);
-  return tail === "" || (!tail.startsWith("..") && !isAbsolute(tail));
-};
 
 export function summarizeColdBackendObserver(
   calls: string,
@@ -87,14 +86,15 @@ export function summarizeColdBackendObserver(
           entry.projectRoot === explicit?.projectRoot &&
           entry.virtualRoot === explicit?.virtualRoot,
       );
-      const sourceAttested =
+      const sourceRequirementSatisfied =
         !expectedSource ||
         (unambiguousMetadata &&
           explicit?.schema === "vize.cache-runtime-custody" &&
           explicit?.version === 1 &&
           explicit?.metadataOnly === true &&
           explicit?.compiledSourceRevision === expectedSource &&
-          explicit?.errors?.length === 0 &&
+          Array.isArray(explicit?.errors) &&
+          explicit.errors.length === 0 &&
           explicit?.completion === "REAPED" &&
           explicit?.nativeSha256 === wrapperSha256 &&
           typeof explicit.nativeBinary === "string" &&
@@ -108,8 +108,9 @@ export function summarizeColdBackendObserver(
       const semanticRoot = expectedSource ? explicit?.projectRoot : observedRoot?.root;
       const rootQualified =
         !!semanticRoot &&
-        sourceAttested &&
-        (expectedSource ? typeof semanticRoot === "string" : observedRoot?.qualified === true) &&
+        sourceRequirementSatisfied &&
+        observedRoot?.qualified === true &&
+        (!expectedSource || observedRoot.root === semanticRoot) &&
         !!root &&
         rootOutsideOwnedNamespace(semanticRoot, root);
       return {
@@ -118,7 +119,15 @@ export function summarizeColdBackendObserver(
         after,
         observedRoot,
         explicit,
-        sourceAttested,
+        sourceRequirementSatisfied,
+        sourceAttestation: {
+          required: !!expectedSource,
+          kind: expectedSource ? "compiled-observer-metadata" : "not-requested",
+          actualAttested: !!expectedSource && sourceRequirementSatisfied,
+        },
+        rootAuthority: expectedSource
+          ? "compiled-observer-metadata"
+          : "inferred-primary-input-bijection",
         semanticRoot,
         rootQualified,
       };
@@ -144,8 +153,8 @@ export function summarizeColdBackendObserver(
     rows.every(
       (row) =>
         row.before.before?.physicalPath &&
-        inside(root, row.before.before.physicalPath) &&
-        inside(root, row.before.physicalCwd),
+        cachePathContains(root, row.before.before.physicalPath) &&
+        cachePathContains(root, row.before.physicalCwd),
     );
   const primaryBuildInfoAbsent =
     rows.length > 0 &&
@@ -215,14 +224,30 @@ export function auditColdScaleCache(options: {
     const observer = createColdBackendObserver(backend, out);
     const args = [...command.args];
     args[args.indexOf("--corsa-path") + 1] = observer.wrapper;
-    const metadataDirectory = options.source ? join(out, "source-root") : undefined;
+    let sourceBuildIdentity: Record<string, unknown> | null = null;
+    if (options.source) {
+      assert.match(options.source, /^[a-f0-9]{40}$/u);
+      const receipt = JSON.parse(
+        readFileSync(command.executable + ".differential-build.json", "utf8"),
+      );
+      assert.equal(receipt.schema, "vize.differential.build");
+      assert.equal(receipt.version, 1);
+      assert.equal(receipt.recipe, "cargo build --release -p vize");
+      assert.equal(receipt.sourceRevision, options.source);
+      assert.equal(receipt.binarySha256, executableSha256);
+      const version = spawnSync(command.executable, ["--version"], {
+        encoding: "utf8",
+        timeout: 30_000,
+      });
+      assert.equal(version.error, undefined);
+      assert.equal(version.status, 0);
+      assert.equal(version.stdout.trim(), receipt.cliVersion);
+      sourceBuildIdentity = receipt;
+    }
     const env: NodeJS.ProcessEnv = { ...process.env, ...command.env };
     delete env.VIZE_LEXICAL_DOLLAR_CAPTURE_DIR;
     delete env.VIZE_LEXICAL_DOLLAR_CAPTURE_METADATA_ONLY;
-    if (metadataDirectory) {
-      env.VIZE_LEXICAL_DOLLAR_CAPTURE_DIR = metadataDirectory;
-      env.VIZE_LEXICAL_DOLLAR_CAPTURE_METADATA_ONLY = "1";
-    }
+    delete env.VIZE_CACHE_CUSTODY_CAPTURE_DIR;
     const result = spawnSync(command.executable, args, {
       cwd: command.cwd,
       env,
@@ -243,8 +268,8 @@ export function auditColdScaleCache(options: {
       observer.calls,
       runtime.evidence.ownedRoot,
       { projectRoot, entries: corpus.entries },
-      metadataDirectory,
-      options.source,
+      undefined,
+      undefined,
     );
     assert.equal(
       sha(command.executable),
@@ -260,6 +285,9 @@ export function auditColdScaleCache(options: {
         "separate untimed public-corpus invocation; Node observer copies config and stats build-info before backend start",
       executableSha256,
       backendSha256,
+      sourceBuildIdentity,
+      semanticRootAuthority: "inferred-primary-input-bijection",
+      directSourceRootAttested: false,
       corpusSha256: corpus.corpusSha256,
       providerRootPhysical: realpathSync(provider),
       fixtureIdentity,

@@ -100,6 +100,7 @@ for (let round = 1; round <= rounds; round++) {
   const environment: NodeJS.ProcessEnv = { ...process.env, ...command.env, ...runtime.env };
   delete environment.VIZE_LEXICAL_DOLLAR_CAPTURE_DIR;
   delete environment.VIZE_LEXICAL_DOLLAR_CAPTURE_METADATA_ONLY;
+  delete environment.VIZE_CACHE_CUSTODY_CAPTURE_DIR;
   const resource = path.join(directory, "resource.txt");
   try {
     const start = performance.now();
@@ -186,7 +187,10 @@ const result = {
   profile: values.source ? "source release fat-LTO/cgu1" : "genuine public release",
   sfcs,
   rounds,
-  medianMs: walls[Math.floor(walls.length / 2)],
+  medianMs:
+    walls.length % 2
+      ? walls[Math.floor(walls.length / 2)]
+      : (walls[walls.length / 2 - 1] + walls[walls.length / 2]) / 2,
   maxMs: walls.at(-1),
   passed: samples.every((s) => s.correctness.passed && s.cache.qualified),
   meetsFixture500ms: samples.every((s) => s.meetsTarget),
