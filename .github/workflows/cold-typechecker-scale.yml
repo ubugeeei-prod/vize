@@ -34,13 +34,16 @@ jobs:
     timeout-minutes: 90
     env:
       VIZE_BENCH_SFCS: ${{ inputs.sfcs || '2500' }}
-      BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      BASE_SHA: ${{ inputs.base_sha }}
+      BENCH_EVENT: ${{ github.event_name }}
+      PR_EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       GOMAXPROCS: "8"
       RAYON_NUM_THREADS: "8"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { persist-credentials: false }
+        with: { persist-credentials: false, fetch-depth: 2 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -50,8 +53,9 @@ jobs:
       - name: Validate the full SFC cohort
         run: |
           [[ "$VIZE_BENCH_SFCS" =~ ^(2500|10000|50000)$ ]]
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$BASE_SHA" != "$(git rev-parse HEAD)"
+          baseline_selection=$(node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --select-baseline --receipt "$RUNNER_TEMP/cold-scale/baseline-selection.json")
+          [[ "$baseline_selection" =~ ^BASE_SHA=[0-9a-f]{40}$ ]]
+          printf '%s\n' "$baseline_selection" >> "$GITHUB_ENV"
           bench_support_scripts=$(node --input-type=module -e 'import {coldScaleSupportScriptFiles} from "./tools/benchmarks/scripts/cold-typechecker-scale.ts"; console.log(coldScaleSupportScriptFiles);')
           printf 'VIZE_BENCH_FILES=%s\n' "$((VIZE_BENCH_SFCS + bench_support_scripts))" >> "$GITHUB_ENV"
       - name: Install fixed comparison providers

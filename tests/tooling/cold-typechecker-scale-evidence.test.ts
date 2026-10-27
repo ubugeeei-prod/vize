@@ -100,6 +100,14 @@ console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}
     assert.equal(report.status, 0);
     assert.equal(report.correctness.passed, true);
     assert.equal(report.meetsColdTarget, false, "177 SFCs cannot satisfy the 2500-SFC target");
+    assert.equal(report.meetsFixtureLatencyThreshold, false);
+    assert.equal(report.cold.sourceConfigIncremental, false);
+    assert.equal(report.cold.effectiveBackendIncremental, true);
+    assert.equal(
+      report.cold.cacheQualified,
+      false,
+      "source config alone does not qualify the native cache",
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -130,13 +138,20 @@ test("manual Actions comparisons reject absent, mutable or identical baseline id
       writeFileSync(envFile, "");
       const result = spawnSync("bash", ["-euc", script], {
         cwd,
-        env: { ...process.env, BASE_SHA: base, VIZE_BENCH_SFCS: "2500", GITHUB_ENV: envFile },
+        env: {
+          ...process.env,
+          BASE_SHA: base,
+          BENCH_EVENT: "workflow_dispatch",
+          RUNNER_TEMP: root,
+          VIZE_BENCH_SFCS: "2500",
+          GITHUB_ENV: envFile,
+        },
         encoding: "utf8",
       });
       assert.equal(result.status === 0, base === "a".repeat(40), result.stderr);
       assert.equal(
         readFileSync(envFile, "utf8"),
-        base === "a".repeat(40) ? "VIZE_BENCH_FILES=4323\n" : "",
+        base === "a".repeat(40) ? "BASE_SHA=" + base + "\nVIZE_BENCH_FILES=4323\n" : "",
       );
     }
   } finally {

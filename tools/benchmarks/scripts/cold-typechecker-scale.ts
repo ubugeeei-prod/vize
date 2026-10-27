@@ -237,7 +237,7 @@ export function captureColdScale(options: {
   }
   const report = {
     schema: "vize.cold-scale",
-    version: 1,
+    version: 2,
     tool,
     invalid,
     platform: process.platform,
@@ -248,7 +248,10 @@ export function captureColdScale(options: {
     corpusSha256: corpus.corpusSha256,
     wallMs,
     targetColdWallMs: 500,
-    meetsColdTarget: corpus.sfcFiles >= 2500 && wallMs <= 500,
+    meetsFixtureLatencyThreshold: corpus.sfcFiles >= 2500 && wallMs <= 500 && correctness.passed,
+    // Fresh project paths do not prove the native cache namespace was empty.
+    // An untimed backend observer must qualify that separately first.
+    meetsColdTarget: false,
     hardware: {
       cpu: cpus()[0]?.model,
       availableCpus: availableParallelism(),
@@ -264,8 +267,10 @@ export function captureColdScale(options: {
     cold: {
       newProcess: true,
       uniqueProject: true,
-      incremental: false,
-      vizeCache: "empty per invocation",
+      sourceConfigIncremental: false,
+      effectiveBackendIncremental: tool === "cli" || tool === "profile",
+      cacheQualified: false,
+      vizeCache: "XDG/TMP isolated; native cache namespace requires separate untimed audit",
       osPageCache: "not flushed",
     },
     peakRss: "recorded in stderr.txt; process-tree simultaneous RSS is not claimed",

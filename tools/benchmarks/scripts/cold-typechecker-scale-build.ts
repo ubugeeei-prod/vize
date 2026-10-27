@@ -211,6 +211,35 @@ export function verifyColdScaleBuildPair(basePath: string, headPath: string, rep
   };
 }
 
+/** A queued PR event's base SHA may be older than the actual test merge's base. */
+export function selectColdScaleBaseline(options: {
+  repository: string;
+  event: string;
+  requestedBase?: string;
+  eventBase?: string;
+  prHead?: string;
+}) {
+  const sourceSha = output("git", ["rev-parse", "HEAD"], options.repository);
+  let baselineSha = options.requestedBase ?? "";
+  if (options.event === "pull_request") {
+    const commit = output("git", ["cat-file", "commit", "HEAD"], options.repository);
+    const parents = [...commit.matchAll(/^parent ([a-f0-9]{40})$/gm)].map((match) => match[1]);
+    assert.equal(parents.length, 2, "PR source must be the actual two-parent test merge");
+    assert.equal(parents[1], options.prHead, "test merge second parent must match the PR head");
+    baselineSha = parents[0];
+  } else assert.equal(options.event, "workflow_dispatch");
+  assert.match(baselineSha, /^[a-f0-9]{40}$/u, "baseline must be an immutable commit identity");
+  assert.notEqual(baselineSha, sourceSha, "baseline and source must differ");
+  return {
+    sourceSha,
+    baselineSha,
+    strategy:
+      options.event === "pull_request" ? "actual-test-merge-first-parent" : "explicit-dispatch",
+    eventBaseSha: options.eventBase || null,
+    prHeadSha: options.prHead || null,
+  };
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const { values } = parseArgs({
     options: {
@@ -223,9 +252,23 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       "base-receipt": { type: "string" },
       "head-receipt": { type: "string" },
       repository: { type: "string" },
+      "select-baseline": { type: "boolean", default: false },
     },
   });
-  if (values["base-receipt"] && values["head-receipt"]) {
+  if (values["select-baseline"]) {
+    const selection = selectColdScaleBaseline({
+      repository: values.repository ?? process.cwd(),
+      event: process.env.BENCH_EVENT ?? "workflow_dispatch",
+      requestedBase: process.env.BASE_SHA,
+      eventBase: process.env.PR_EVENT_BASE_SHA,
+      prHead: process.env.PR_HEAD_SHA,
+    });
+    if (values.receipt) {
+      mkdirSync(dirname(values.receipt), { recursive: true });
+      writeFileSync(values.receipt, JSON.stringify(selection, null, 2) + "\n");
+    }
+    console.log("BASE_SHA=" + selection.baselineSha);
+  } else if (values["base-receipt"] && values["head-receipt"]) {
     const pair = verifyColdScaleBuildPair(
       values["base-receipt"],
       values["head-receipt"],
