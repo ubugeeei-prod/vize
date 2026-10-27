@@ -1,0 +1,1 @@
+const App = () => (<><div role="tablist"><button type="button" role="tab">A</button></div><div role="grid"><div role="row"><div role="gridcell" tabindex="0">A</div></div></div><div role="radiogroup"><div role="radio" tabindex="0">A</div></div><div role="menu"><div role="menuitem" tabindex="0">A</div></div><div role="tree"><div role="treeitem" tabindex="0">A</div></div></>);

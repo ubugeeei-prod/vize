@@ -250,6 +250,10 @@
           "type": "integer",
           "minimum": 0
         },
+        "reportUnusedDisableDirectives": {
+          "description": "Report template eslint/oxlint disable comments that suppress no active rule; defaults to false",
+          "type": "boolean"
+        },
         "rules": {
           "description": "Rules to enable/disable",
           "type": "object",

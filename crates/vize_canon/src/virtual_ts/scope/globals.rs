@@ -66,10 +66,7 @@ pub(super) fn generate_undefined_refs(
     {
         return;
     }
-    let resolve_on_instance = options.options_api
-        && options.has_default_alias
-        && !options.legacy_vue2
-        && !has_script_setup(summary);
+    let resolve_on_instance = resolves_on_authored_instance(summary, options);
     // Every other Vue 3 template reads an unknown name off the public instance
     // its context is typed as (`__Ctx`, Vue's `ComponentPublicInstance`), the
     // way `vue-tsc` reads it off its template context. A member a global mixin
@@ -357,6 +354,18 @@ pub(super) fn emit_strict_template_context_ref(
         *ts,
         "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
     );
+}
+
+/// Whether template names resolve on the authored default export's instance:
+/// the Vue 3 Options API shape described on `generate_undefined_refs`.
+pub(super) fn resolves_on_authored_instance(
+    summary: &Croquis,
+    options: &ScopeGenerationOptions<'_, '_>,
+) -> bool {
+    options.options_api
+        && options.has_default_alias
+        && !options.legacy_vue2
+        && !has_script_setup(summary)
 }
 
 /// Whether the SFC authored a `<script setup>` block: its bindings are the
