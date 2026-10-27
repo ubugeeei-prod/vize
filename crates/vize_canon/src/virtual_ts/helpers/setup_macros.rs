@@ -73,9 +73,15 @@ setup_helpers!(
     ),
     (
         "useTemplateRef",
-        r#"  function useTemplateRef<_T = unknown, _K extends string = string>(_key: _K): Readonly<__ShallowRef<_T | null>> { void _key; return undefined as unknown as Readonly<__ShallowRef<_T | null>>; }
+        r#"  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
 "#,
         r#"  const useTemplateRef = __vize_useTemplateRef;
 "#
     ),
 );
+
+// Active calls always receive the Vue contract, including parser recovery and
+// auto-imported globals. The catalog's inactive declaration keeps unrelated
+// documents byte-stable; it is never emitted for a possible composable call.
+pub(crate) const ACTIVE_TEMPLATE_REF_HELPER: &str = r#"  function useTemplateRef<_T = unknown, _K extends string = string>(_key: _K): Readonly<__ShallowRef<_T | null>> { void _key; return undefined as unknown as Readonly<__ShallowRef<_T | null>>; }
+"#;

@@ -41,8 +41,9 @@ impl TemplateRefKeyChecks<'_> {
     ) -> Vec<VizeSubSpan> {
         let end = start + line.len();
         let first = self.calls.partition_point(|call| call.callee.start < start);
-        let last = first + self.calls[first..].partition_point(|call| call.callee.end <= end);
-        let calls = &self.calls[first..last];
+        let remaining = self.calls.get(first..).unwrap_or_default();
+        let last = remaining.partition_point(|call| call.callee.end <= end);
+        let calls = remaining.get(..last).unwrap_or_default();
         if calls.is_empty() {
             return Vec::new();
         }
@@ -64,22 +65,19 @@ impl TemplateRefKeyChecks<'_> {
         if selected.clone().next().is_none() {
             return Vec::new();
         }
-        let mut output =
-            std::string::String::with_capacity(line.len() + calls.len() * self.helper.len());
+        let mut output = String::with_capacity(line.len() + calls.len() * self.helper.len());
         let mut spans = Vec::with_capacity(calls.len() * 2 + 1);
         let mut cursor = 0;
         for call in selected {
             let range = call.callee.start - start..call.callee.end - start;
-            if let Some(prefix) = line.get(cursor..range.start) {
-                if !prefix.is_empty() {
-                    spans.push(VizeSubSpan {
-                        gen_range: gen_start + output.len()
-                            ..gen_start + output.len() + prefix.len(),
-                        src_range: source_offset(start + cursor)
-                            ..source_offset(start + range.start),
-                    });
-                    output.push_str(prefix);
-                }
+            if let Some(prefix) = line.get(cursor..range.start)
+                && !prefix.is_empty()
+            {
+                spans.push(VizeSubSpan {
+                    gen_range: gen_start + output.len()..gen_start + output.len() + prefix.len(),
+                    src_range: source_offset(start + cursor)..source_offset(start + range.start),
+                });
+                output.push_str(prefix);
             }
             spans.push(VizeSubSpan {
                 gen_range: gen_start + output.len()..gen_start + output.len() + self.helper.len(),
@@ -97,7 +95,7 @@ impl TemplateRefKeyChecks<'_> {
             });
             output.push_str(tail);
         }
-        *line = Cow::Owned(output);
+        *line = Cow::Owned(output.into());
         spans
     }
 }

@@ -1,5 +1,6 @@
 /** Original, public accuracy probes. Never substitute diagnostic agreement for type evidence. */
 export const typeProofs = `export type Assert<T extends true> = T;
+declare global { const useTemplateRef: typeof import("vue").useTemplateRef; }
 export type Exact<A, B> =
   (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2)
     ? (<T>() => T extends B ? 1 : 2) extends (<T>() => T extends A ? 1 : 2) ? true : false
@@ -35,7 +36,8 @@ type ${name}Exact = Assert<Exact<${name}Value, ${expected}>>;
 type ${name}Any = Assert<Exact<IsAny<${name}Value>, false>>;
 type ${name}Unknown = Assert<Exact<IsUnknown<${name}Value>, false>>;
 type ${name}Never = Assert<Exact<IsNever<${name}Value>, false>>;
-type ${name}Readonly = Assert<Exact<IsReadonly<typeof ${name}, 'value'>, ${readonly}>>;`;
+type ${name}Readonly = Assert<Exact<IsReadonly<typeof ${name}, 'value'>, ${readonly}>>;
+void (null as unknown as [${name}Exact, ${name}Any, ${name}Unknown, ${name}Never, ${name}Readonly]);`;
 }
 
 export function sfc(script: string, template: string, crlf = false): string {
@@ -45,6 +47,7 @@ ${imports}
 const unicode = '🌱'; void unicode;
 ${script}
 type AuthoredProofIsChecked = Assert<true>;
+void (null as unknown as AuthoredProofIsChecked);
 </script>
 <template>${template}</template>
 `;
@@ -182,6 +185,7 @@ type FocusArguments = Assert<Exact<Parameters<ChildValue['focus']>, [mode: 'soft
 type FocusResult = Assert<Exact<ReturnType<ChildValue['focus']>, 'focused'>>;
 type StateCount = Assert<Exact<ChildValue['state']['count'], number>>;
 type StateReady = Assert<Exact<ChildValue['state']['ready'], boolean>>;
+void (null as unknown as [ChildAny, ChildUnknown, ChildNever, ChildNullable, ChildReadonly, FocusArguments, FocusResult, StateCount, StateReady]);
 child.value?.focus('soft');
 child.value?.state.count.toFixed();`,
       '<Child ref="child" />',
@@ -308,6 +312,8 @@ type GenericExact = Assert<Exact<GenericValue, typeof payload>>;
 type GenericAny = Assert<Exact<IsAny<GenericValue>, false>>;
 type GenericUnknown = Assert<Exact<IsUnknown<GenericValue>, false>>;
 type GenericNever = Assert<Exact<IsNever<GenericValue>, false>>;
+type GenericReadonly = Assert<Exact<IsReadonly<typeof generic, 'value'>, true>>;
+void (null as unknown as [GenericExact, GenericAny, GenericUnknown, GenericNever, GenericReadonly]);
 generic.value?.value.extra.valueOf();
 generic.value?.value.id.toFixed();`,
       '<Generic ref="generic" :value="payload" />',
@@ -329,18 +335,4 @@ generic.value?.value.id.toFixed();`,
   },
 ];
 
-/** UTF-16 source coordinate, independently derived from the authored mutation. */
-export function mutatedAdmission(source: string, mutation: AdmissionMutation) {
-  if (source.split(mutation.before).length !== 2) throw new Error("mutation anchor must be unique");
-  const offset = source.indexOf(mutation.before);
-  const mutated = source.replace(mutation.before, mutation.after);
-  const tokenOffset = mutation.after.indexOf(mutation.token);
-  if (tokenOffset < 0) throw new Error("diagnostic token is missing from mutation");
-  const prefix = mutated.slice(0, offset + tokenOffset).split("\n");
-  return {
-    source: mutated,
-    line: prefix.length,
-    column: prefix.at(-1)!.length + 1,
-    code: mutation.code,
-  };
-}
+export { mutatedAdmission } from "./type-admission-mutation.ts";

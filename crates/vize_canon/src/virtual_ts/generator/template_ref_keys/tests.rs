@@ -140,3 +140,12 @@ fn rewritten_aliases_keep_only_their_used_imports_live() {
     usage("const first = useTemplateRef('first');").emit_import_anchors(&mut implicit);
     assert!(implicit.is_empty());
 }
+
+#[test]
+fn escaped_composable_callees_preserve_authored_spelling() {
+    let script = "const target = useTemplateRe\\u0066('target');\n";
+    assert_eq!(
+        generate(script),
+        "void (null! as __VizeTemplateRefs[\"target\"]); const target = __vizeInferRef('target');\n"
+    );
+}

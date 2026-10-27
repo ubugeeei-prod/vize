@@ -264,7 +264,11 @@ impl<'a> Visit<'a> for Collector<'_> {
                 .flatten();
             self.calls.push(InferredCall {
                 callee: callee.span.start as usize..callee.span.end as usize,
-                name: String::from(callee.name.as_str()),
+                name: String::from(
+                    self.script
+                        .get(callee.span.start as usize..callee.span.end as usize)
+                        .unwrap_or(callee.name.as_str()),
+                ),
                 imported: callee.reference_id.get().is_some_and(|reference| {
                     self.scoping.get_reference(reference).symbol_id().is_some()
                 }),

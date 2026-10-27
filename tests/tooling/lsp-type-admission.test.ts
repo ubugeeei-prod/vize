@@ -111,15 +111,19 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
     for (const [index, row] of rows.entries()) {
       const actual = broken[index].diagnostics;
       assert.deepEqual(
-        actual.map((diagnostic) => ({
-          code: Number(diagnostic.code),
-          line: diagnostic.range.start.line + 1,
-          column: diagnostic.range.start.character + 1,
-        })),
+        actual.map((diagnostic) => {
+          const start = diagnostic.range?.start;
+          assert.ok(start && typeof start.line === "number" && typeof start.character === "number");
+          return {
+            code: Number(diagnostic.code),
+            line: start.line + 1,
+            column: start.character + 1,
+          };
+        }),
         [{ code: row.code, line: row.line, column: row.column }],
         row.file,
       );
-      assert.ok(actual[0].message.length > 0);
+      assert.ok(actual[0]?.message && actual[0].message.length > 0);
     }
     for (const row of rows) {
       fs.writeFileSync(path.join(directory, row.file), valid.files[row.file]);

@@ -2,7 +2,7 @@
 
 use super::super::template_ref_keys::TemplateRefUsage;
 use crate::virtual_ts::helpers::setup_macros::{
-    SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
+    ACTIVE_TEMPLATE_REF_HELPER, SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -16,6 +16,7 @@ pub(crate) struct SetupHelperPlan {
     pub(crate) macro_results: Vec<CompactString>,
     pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
     pub(in crate::virtual_ts::generator) template_refs: TemplateRefUsage,
+    active_template_ref: bool,
 }
 
 impl SetupHelperPlan {
@@ -84,7 +85,7 @@ pub(super) fn emit(
     typed_refs: bool,
 ) {
     let shadowed = &plan.shadowed;
-    if shadowed.is_empty() && !generic_props && !typed_refs {
+    if shadowed.is_empty() && !generic_props && !typed_refs && !plan.active_template_ref {
         ts.push_str(if hoisted {
             VUE_SETUP_HELPERS_HOISTED
         } else {
@@ -108,7 +109,9 @@ pub(super) fn emit(
         if shadowed.contains(helper.name) {
             continue;
         }
-        if helper.name == "defineProps" && generic_props {
+        if helper.name == "useTemplateRef" && plan.active_template_ref {
+            ts.push_str(ACTIVE_TEMPLATE_REF_HELPER);
+        } else if helper.name == "defineProps" && generic_props {
             ts.push_str(if hoisted {
                 GENERIC_PROPS_HOISTED
             } else {
@@ -146,13 +149,18 @@ fn shadowed_helpers(
         macro_results: Vec::new(),
         emit_calls: Vec::new(),
         template_refs: TemplateRefUsage::default(),
+        // Escapes may spell the identifier or imported name without its literal
+        // bytes. Keep this conservative even when recovery cannot build an AST.
+        active_template_ref: source.is_some_and(|source| {
+            source.contains("useTemplateRef") || source.as_bytes().contains(&b'\\')
+        }),
     };
     if !SETUP_MACRO_HELPERS
         .iter()
         .any(|helper| crate::virtual_ts::script_facts::contains_binding(summary, helper.name))
         && summary.macros.define_props().is_none()
         && summary.macros.define_emits().is_none()
-        && !source.is_some_and(|source| source.contains("useTemplateRef"))
+        && !plan.active_template_ref
     {
         return plan;
     }
@@ -182,7 +190,7 @@ fn shadowed_helpers(
                 .insert(CompactString::from(scoping.symbol_name(symbol)));
         }
     }
-    if source.contains("useTemplateRef") {
+    if plan.active_template_ref {
         plan.template_refs = TemplateRefUsage::collect(&parsed.program, scoping, source);
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
@@ -209,3 +217,51 @@ const GENERIC_PROPS_EMBEDDED: &str = r#"  function defineProps<_T = unknown>(): 
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
 "#;
+
+#[cfg(test)]
+mod template_ref_fallback_tests {
+    use super::{ACTIVE_TEMPLATE_REF_HELPER, SetupHelperPlan, VUE_SETUP_HELPERS, emit};
+    use vize_carton::String;
+
+    #[test]
+    fn possible_global_ref_calls_never_receive_the_inactive_any_contract() {
+        for source in [
+            "function nested() { useTemplateRef<unknown>('missing'); }",
+            "function nested() { useTemplateRef<never>('missing'); }",
+            "function nested() { useTemplateRe\\u0066<unknown>('missing'); }",
+            "const target = useTemplateRef<unknown>(",
+        ] {
+            let plan =
+                SetupHelperPlan::collect(&vize_croquis::Croquis::default(), Some(source), false);
+            for hoisted in [false, true] {
+                let mut generated = String::default();
+                emit(&mut generated, &plan, hoisted, false, false);
+                assert_eq!(generated.matches(ACTIVE_TEMPLATE_REF_HELPER).count(), 1);
+                assert_eq!(
+                    generated
+                        .matches("function useTemplateRef<_T = any")
+                        .count(),
+                    0
+                );
+                assert_eq!(
+                    generated
+                        .matches("const useTemplateRef = __vize_useTemplateRef")
+                        .count(),
+                    0
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn unrelated_document_helper_packets_remain_byte_identical() {
+        let plan = SetupHelperPlan::collect(
+            &vize_croquis::Croquis::default(),
+            Some("const count = 1;"),
+            false,
+        );
+        let mut generated = String::default();
+        emit(&mut generated, &plan, false, false, false);
+        assert_eq!(generated, VUE_SETUP_HELPERS);
+    }
+}
