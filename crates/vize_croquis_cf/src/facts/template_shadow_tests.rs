@@ -86,18 +86,20 @@ fn template_shadowed_async_and_static_sites_do_not_revive_name_fallbacks() {
         ] {
             let project = project(script, template, "", "NoticeLink.vue");
             if template.starts_with("<lazy ") {
-                // The existing default caller has no concrete component site
-                // for a one-word lowercase tag. Keep that domain separate.
-                assert!(
-                    vize_croquis::facts::component_usage_list(
-                        &project
-                            .registry()
-                            .get(crate::FileId::new(1))
-                            .expect("parent")
-                            .analysis
-                    )
-                    .is_empty()
+                let entry = project
+                    .registry()
+                    .get(crate::FileId::new(1))
+                    .expect("parent");
+                let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+                assert_eq!(
+                    usages.len(),
+                    1,
+                    "the lowercase component site must be captured"
                 );
+                assert!(super::template_usage_is_shadowed(
+                    &entry.analysis,
+                    &usages[0]
+                ));
             }
             assert_eq!(edge_packet(&project), vec![], "{script} {template}");
             assert_eq!(
