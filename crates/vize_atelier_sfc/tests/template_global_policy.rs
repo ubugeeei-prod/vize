@@ -133,7 +133,7 @@ fn every_sfc_backend_keeps_host_globals_on_the_component_proxy() {
                 } else {
                     assert_eq!(
                         denied,
-                        [],
+                        Vec::<&str>::new(),
                         "{id}/{target}/{inline}: {roots:?}\n{}",
                         result.code
                     );
