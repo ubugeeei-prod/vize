@@ -1,0 +1,115 @@
+name: Provide type assertion whole packets
+run-name: Provide type assertion complete packets @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/provide-type-assertion.yml
+      - crates/vize/tests/provide_type_assertion_cli.rs
+      - crates/vize/tests/provide_type_assertion_expected.json
+      - crates/vize_croquis/src/script_parser/extract/provide.rs
+      - crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs
+      - crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs
+permissions:
+  contents: read
+concurrency:
+  group: provide-type-assertion-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  whole-before:
+    name: Native and actual CLI complete packets (${{ matrix.role }})
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [baseline, source]
+    env:
+      ROLE: ${{ matrix.role }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ matrix.role == 'baseline' && '98ff4d1ca1ccc2c6ac9ca869177913b90c0da6a1' || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: provide-type-assertion
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Preserve exact product source identity
+        env:
+          VIZE_PROVIDE_ASSERTION_ARTIFACTS: ${{ runner.temp }}/provide-assertion-packets
+        run: |
+          mkdir -p "$VIZE_PROVIDE_ASSERTION_ARTIFACTS"
+          git rev-parse HEAD > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-sha.txt"
+          git rev-parse 'HEAD^{tree}' > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-tree.txt"
+          git status --porcelain > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-status.txt"
+          git hash-object crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/helper-blob.txt"
+          git diff db5c35c12124086f034563b6800dbdab8605cdc0 -- crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs crates/vize_croquis_cf/src/rules/provide_inject/index.rs crates/vize_croquis/src/script_parser/extract/provide.rs > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"
+          if [[ "$ROLE" == baseline ]]; then test ! -s "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"; fi
+      - name: Verify source producer metadata and all classifier controls
+        if: ${{ matrix.role == 'source' }}
+        run: |
+          packets="$RUNNER_TEMP/provide-assertion-packets"
+          cargo test --locked --profile ci -p vize_croquis --lib typed_assertion_value_keeps_exact_provider_source_and_metadata -- --nocapture > "$packets/producer-unit.stdout" 2> "$packets/producer-unit.stderr"
+          cargo test --locked --profile ci -p vize_croquis_cf --lib provided_value_wrappers_preserve_runtime_kinds_and_plain_negatives -- --nocapture > "$packets/classifier-unit.stdout" 2> "$packets/classifier-unit.stderr"
+          python3 - <<'PY'
+          import os, pathlib, re
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / "provide-assertion-packets"
+          for name in ["producer-unit", "classifier-unit"]:
+              assert re.search(r"test result: ok\. 1 passed; 0 failed;", (root / (name + ".stdout")).read_text()), name
+          PY
+      - name: Capture whole original and positive negative destructuring controls
+        env:
+          VIZE_PROVIDE_ASSERTION_ARTIFACTS: ${{ runner.temp }}/provide-assertion-packets
+        run: |
+          options=()
+          if [[ "$ROLE" == baseline ]]; then options+=(--ignored); fi
+          cargo test --locked --profile ci -p vize --test integration provide_type_assertion_cli::observe_complete_provide_assertion_packets -- "${options[@]}" --nocapture
+      - name: Require all twenty seven executed complete packet controls
+        env:
+          PACKETS: ${{ runner.temp }}/provide-assertion-packets
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ["PACKETS"])
+          rows = json.loads((root / "manifest.json").read_text())
+          assert len(rows) == 27 and len({row["id"] for row in rows}) == 27
+          for row in rows:
+              case = root / row["id"]
+              for name in ["native.raw.txt","native.complete.txt","native.registry.txt","native.graph.txt","doctor.stdout","doctor.stderr","doctor.json","lint.stdout","lint.stderr","lint.json","processes.json"]:
+                  assert (case / name).is_file(), (row["id"], name)
+              assert len(row["processes"]) == 2
+              assert [p["command"] for p in row["processes"]] == ["doctor","lint"]
+          if os.environ["ROLE"] == "source":
+              observed = json.loads((root / "complete-observations.json").read_text())
+              expected = json.loads(pathlib.Path("crates/vize/tests/provide_type_assertion_expected.json").read_text())
+              assert observed == expected
+          PY
+      - name: Preserve actual executable identity
+        if: ${{ always() }}
+        run: |
+          binary="${CARGO_TARGET_DIR:-target}/ci/vize"
+          test -f "$binary"
+          if [[ -f "$binary" ]]; then
+            sha256sum "$binary" > "$RUNNER_TEMP/provide-assertion-packets/binary-sha256.txt"
+            "$binary" --version > "$RUNNER_TEMP/provide-assertion-packets/binary-version.txt"
+          fi
+      - name: Preserve every raw report and complete native result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provide-assertion-whole-${{ matrix.role }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/provide-assertion-packets
+          if-no-files-found: error
+          retention-days: 14

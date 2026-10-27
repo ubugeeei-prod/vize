@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {join,resolve} from 'node:path';
+import {writeFileSync} from 'node:fs';
+const [workspace,out,mode='assert']=process.argv.slice(2);
+const require=createRequire(join(resolve(workspace),'package.json'));
+const native=require('@vizejs/native'),Vue=require('vue');
+function render(template){const x=native.compile(template,{mode:'function',prefixIdentifiers:true});assert.deepEqual(x.errors??[],[]);return new Function('Vue',x.preamble+'\n'+x.code+'\nreturn render;')(Vue);}
+function component(source){const x=native.compileSfc(source,{filename:'Private.vue',inlineTemplate:false});assert.deepEqual(x.errors??[],[]);const code=x.code.replace(/import\s*\{([^}]+)\}\s*from\s*['"]vue['"];?/g,(_,names)=>`const {${names.replace(/\bas\b/g,':')}} = Vue;`).replace('export default','return');return new Function('Vue',code)(Vue);}
+const node=(type,text='')=>({type,text,children:[],parent:null,props:{}});
+const renderer=Vue.createRenderer({
+ patchProp(el,k,old,v){el.props[k]=v},insert(el,parent,anchor=null){if(el.parent){const old=el.parent.children;old.splice(old.indexOf(el),1)}el.parent=parent;const i=anchor?parent.children.indexOf(anchor):-1;parent.children.splice(i<0?parent.children.length:i,0,el)},
+ remove(el){if(el.parent){el.parent.children.splice(el.parent.children.indexOf(el),1);el.parent=null}},
+ createElement:t=>node(t),createText:t=>node('#text',t),createComment:t=>node('#comment',t),setText(el,t){el.text=t},setElementText(el,t){el.children=[];el.text=t},parentNode:el=>el.parent,nextSibling:el=>el.parent?.children[el.parent.children.indexOf(el)+1]??null,
+});
+function find(root,type){if(root.type===type)return root;for(const x of root.children){const found=find(x,type);if(found)return found}}
+function text(root){return root.text+root.children.map(text).join('')}
+const rows=[];
+{
+ const root=node('root'),app=renderer.createApp({data:()=>({n:0}),methods:{inc(){this.n++}},render:render('<button v-once :title="String(n)" @click="inc">{{n}}</button><output>{{n}}</output>')});app.mount(root);const button=find(root,'button');for(let i=0;i<2;i++){button.props.onClick?.();await Vue.nextTick()}
+ const observed={handler:typeof button.props.onClick,button:text(button),title:button.props.title,output:text(find(root,'output'))};rows.push({id:'10875-native-once-click',observed,passed:observed.handler==='function'&&observed.button==='0'&&observed.title==='0'&&observed.output==='2'});app.unmount();
+}
+{
+ const root=node('root');const Child={props:['label'],emits:['ping'],render(){return Vue.h('button',{onClick:()=>this.$emit('ping')},[String(this.label)+':',...(this.$slots.default?.()??[])])}};
+ const app=renderer.createApp({components:{Child},data:()=>({n:0}),methods:{inc(){this.n++}},render:render('<Child v-once :label="n" @ping="inc"><span>{{n}}</span></Child><output>{{n}}</output>')});app.mount(root);const button=find(root,'button');for(let i=0;i<2;i++){button.props.onClick();await Vue.nextTick()}
+ const observed={button:text(button),output:text(find(root,'output'))};rows.push({id:'10815-component-once-props-events-slots',observed,passed:observed.button==='0:2'&&observed.output==='2'});app.unmount();
+}
+for(const exposed of [false,true]){
+ const source=`<script setup>const msg = 1;${exposed?'defineExpose({msg});':''}</script><template><span>{{msg}}</span></template>`;
+ const root=node('root'),Child=component(source);let ref;
+ const app=renderer.createApp({render(){return Vue.h(Child,{ref:x=>{ref=x}})}});app.mount(root);const observed={text:text(find(root,'span')),publicMsg:ref?.msg??null,exposed:ref?.$?.exposed??null};
+ rows.push({id:exposed?'10891-explicit-expose':'10891-private-default',observed,passed:observed.text==='1'&&(exposed?observed.publicMsg===1:observed.publicMsg===null&&observed.exposed!==null)});app.unmount();
+}
+const result={vue:Vue.version,native:require('@vizejs/native/package.json').version,rows};writeFileSync(out,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));if(mode==='assert')assert.ok(rows.every(x=>x.passed));

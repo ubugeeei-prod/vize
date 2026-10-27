@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vize": "0.600.0",
+    "vue": "3.5.42"
+  }
+}

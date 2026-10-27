@@ -1,0 +1,14 @@
+<template>
+  <Heading as="h2" title="Orders" />
+  <Heading :as="level" :title="label" />
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+import Heading from './Heading.vue'
+
+export default defineComponent({
+  components: { Heading },
+  data: () => ({ level: 'h1' as const, label: 'Items' }),
+})
+</script>

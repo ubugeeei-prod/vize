@@ -1,0 +1,266 @@
+{
+  "native": "0.600.0",
+  "rows": [
+    {
+      "pack": "empty-v-slot-expression",
+      "id": "empty-expression",
+      "syntax": null,
+      "exit": 0,
+      "expected": [],
+      "report": {
+        "files": [
+          {
+            "file": "src/Box.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "src/EmptySlotProps.vue",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "strict": true,
+              "target": "ES2022"
+            },
+            "files": [
+              "src/Box.vue",
+              "src/EmptySlotProps.vue"
+            ]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "actual": []
+    },
+    {
+      "pack": "empty-v-slot-expression",
+      "id": "blank-expression",
+      "syntax": null,
+      "exit": 0,
+      "expected": [],
+      "report": {
+        "files": [
+          {
+            "file": "src/BlankSlotProps.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "src/Box.vue",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "strict": true,
+              "target": "ES2022"
+            },
+            "files": [
+              "src/BlankSlotProps.vue",
+              "src/Box.vue"
+            ]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "actual": []
+    },
+    {
+      "pack": "empty-v-slot-expression",
+      "id": "empty-expression-unknown-slot",
+      "syntax": null,
+      "exit": 1,
+      "expected": [
+        {
+          "file": "src/EmptySlotPropsWrongName.vue",
+          "line": 3,
+          "column": 16,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'body' does not exist on type 'Partial<{ text?: ((props: {}) => any) | undefined; }>'."
+        }
+      ],
+      "report": {
+        "files": [
+          {
+            "file": "src/Box.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "src/EmptySlotPropsWrongName.vue",
+            "diagnostics": [
+              "error:3:16 [TS2339] Property 'body' does not exist on type 'Partial<{ text?: ((props: {}) => any) | undefined; }>'. (source: <template #body=\"\">; binding: #body)"
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "strict": true,
+              "target": "ES2022"
+            },
+            "files": [
+              "src/Box.vue",
+              "src/EmptySlotPropsWrongName.vue"
+            ]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "actual": [
+        "error:3:16 [TS2339] Property 'body' does not exist on type 'Partial<{ text?: ((props: {}) => any) | undefined; }>'. (source: <template #body=\"\">; binding: #body)"
+      ]
+    },
+    {
+      "pack": "options-api-reserved-component-reference",
+      "id": "reserved-prop-dynamic-component",
+      "syntax": null,
+      "exit": 0,
+      "expected": [],
+      "report": {
+        "files": [
+          {
+            "file": "src/Heading.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "src/Page.vue",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "strict": true,
+              "target": "ES2022"
+            },
+            "files": [
+              "src/Heading.vue",
+              "src/Page.vue"
+            ]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "actual": []
+    },
+    {
+      "pack": "options-api-reserved-component-reference",
+      "id": "reserved-prop-dynamic-component-wrong-member",
+      "syntax": null,
+      "exit": 1,
+      "expected": [
+        {
+          "file": "src/Heading.vue",
+          "line": 2,
+          "column": 32,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'string'."
+        }
+      ],
+      "report": {
+        "files": [
+          {
+            "file": "src/Heading.vue",
+            "diagnostics": [
+              "error:2:32 [TS2339] Property 'nope' does not exist on type 'string'. (source: <component :is=\"as\">{{ title.nope }}</component>)"
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "strict": true,
+              "target": "ES2022"
+            },
+            "files": [
+              "src/Heading.vue"
+            ]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 1
+      },
+      "actual": [
+        "error:2:32 [TS2339] Property 'nope' does not exist on type 'string'. (source: <component :is=\"as\">{{ title.nope }}</component>)"
+      ]
+    },
+    {
+      "pack": "options-api-reserved-component-reference",
+      "id": "reserved-prop-authored-local-collision",
+      "syntax": null,
+      "exit": 0,
+      "expected": [],
+      "report": {
+        "files": [
+          {
+            "file": "src/Heading.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "src/Page.vue",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "strict": true,
+              "target": "ES2022"
+            },
+            "files": [
+              "src/Heading.vue",
+              "src/Page.vue"
+            ]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "actual": []
+    }
+  ]
+}
