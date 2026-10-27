@@ -1,0 +1,13 @@
+<template>
+  <div>
+    <span>{{ appName.toUpperCase() }}</span>
+    <Box><template #text><i v-for="i in (isSP ? 5 : 4)" :key="i">x</i></template></Box>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+import Box from './Box.vue'
+
+export default defineComponent({ components: { Box } })
+</script>
