@@ -1,0 +1,109 @@
+{
+  "files": [
+    {
+      "name": "bootstrap.mjs",
+      "bytes": 1387,
+      "sha256": "f035ebda0859d4711bbdf6d68b54d9b9420e47275783406bdca8a2bfbc0320af"
+    },
+    {
+      "name": "diagnostic-reference-0.600.json",
+      "bytes": 6851,
+      "sha256": "c0bc78179f9d0fa1b06b608862f7dd6298f272c6cbc769b7fef304f98d4fc41b"
+    },
+    {
+      "name": "fixtures/empty-v-slot-expression/cases.json",
+      "bytes": 2016,
+      "sha256": "b6661e26301be0ad20fc3736afaf735acdbeae45118525313e52e27f897042e3"
+    },
+    {
+      "name": "fixtures/empty-v-slot-expression/src/BlankSlotProps.vue.txt",
+      "bytes": 208,
+      "sha256": "f362e9149bb47efa66d2762ed496fb1f387305d1a01785d56d7494207d9752e5"
+    },
+    {
+      "name": "fixtures/empty-v-slot-expression/src/Box.vue.txt",
+      "bytes": 173,
+      "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6"
+    },
+    {
+      "name": "fixtures/empty-v-slot-expression/src/EmptySlotProps.vue.txt",
+      "bytes": 193,
+      "sha256": "686aed65d8f40003516ccc43a520f60afd855b009829d7814b98b31dab70839a"
+    },
+    {
+      "name": "fixtures/empty-v-slot-expression/src/EmptySlotPropsWrongName.vue.txt",
+      "bytes": 193,
+      "sha256": "1464e0809943a078e56f91e29dd74001cd895dfac99a9e1d9135bc14ad26e7ba"
+    },
+    {
+      "name": "fixtures/empty-v-slot-expression/tsconfig.json.txt",
+      "bytes": 231,
+      "sha256": "e6f26dd6bc1929582d982162d78514fb7d0df8c238748dc209017c566293ed20"
+    },
+    {
+      "name": "fixtures/options-api-reserved-component-reference/cases.json",
+      "bytes": 1921,
+      "sha256": "a4682d2de6f99c3e27b86364e9780b554b5365fb1d9dac1cfbdb05f102c6a12b"
+    },
+    {
+      "name": "fixtures/options-api-reserved-component-reference/src/Heading.vue.txt",
+      "bytes": 335,
+      "sha256": "191228d56df91990fe87893b890218069cf24c2c120095992d6fdfb7b70af48a"
+    },
+    {
+      "name": "fixtures/options-api-reserved-component-reference/src/HeadingCollision.vue.txt",
+      "bytes": 420,
+      "sha256": "37d957d7044cbfdc26bef362b7d11b2f5da17ac958098026171932c237f62a1d"
+    },
+    {
+      "name": "fixtures/options-api-reserved-component-reference/src/HeadingWrong.vue.txt",
+      "bytes": 340,
+      "sha256": "d78da8e1973b1b3078f36031310745cd07882a9e0501c93c4f73d2969c5181e9"
+    },
+    {
+      "name": "fixtures/options-api-reserved-component-reference/src/Page.vue.txt",
+      "bytes": 327,
+      "sha256": "f030edba4e98e93d8eb6637bbb0ec69f736ac903c2b4b71db2be6cc26e1fff82"
+    },
+    {
+      "name": "fixtures/options-api-reserved-component-reference/tsconfig.json.txt",
+      "bytes": 230,
+      "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+    },
+    {
+      "name": "public-before-0.596.json",
+      "bytes": 1560,
+      "sha256": "6ca13af2ce200795ce72823a60741edf62b3da36cf22c84f71fca09b12860495"
+    },
+    {
+      "name": "public-compiler-contracts-admitted.mjs",
+      "bytes": 4093,
+      "sha256": "e6c3d5304b8af962b0b1d257165fcb6423c723642519418d9845dc631bfe3cc5"
+    },
+    {
+      "name": "public-config-recovery.mjs",
+      "bytes": 3938,
+      "sha256": "0f065b5c7b456e54e975d07357091f7083159e794d7e1997a0210e62b16d4fcc"
+    },
+    {
+      "name": "public-contribution-contracts.mjs",
+      "bytes": 2441,
+      "sha256": "d5ce906e78f084774502bb3a4ec10b4cfe3a66c9e8800024592119eca99fb9bd"
+    },
+    {
+      "name": "public-dynamic-role.mjs",
+      "bytes": 1165,
+      "sha256": "0d4b6fee342be9bd918be72f8a1d8252fef9418bd9333c4f12a65c14d23a6dcf"
+    },
+    {
+      "name": "public-wasm-compiler-contracts.mjs",
+      "bytes": 4282,
+      "sha256": "cdb53465c971f8eabe3be5b90327ff4924c3817f3ee50763f6660619ebf5b652"
+    },
+    {
+      "name": "run.mjs",
+      "bytes": 4926,
+      "sha256": "36dd22ca0babd9bb2d9cb262cad653a7ea0574fbdf89bd407774a8fbcdde4544"
+    }
+  ]
+}

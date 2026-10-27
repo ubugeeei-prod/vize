@@ -8,6 +8,9 @@ on:
       - "crates/vize_atelier_vapor/**"
       - "crates/vize_atelier_jsx/**"
       - ".github/workflows/vapor-literal-object-styles.yml"
+      - "tests/_helpers/vapor-ssr-expose-successor.ts"
+      - "tests/tooling/vapor-ssr-expose-successor.test.ts"
+      - "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/ssr-expose-successor-10923/**"
 permissions: { contents: read }
 concurrency:
   group: vapor-literal-object-styles-${{ github.event.pull_request.number || github.ref }}
@@ -49,7 +52,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/vapor-literal-styles"
           test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
           git diff --exit-code
-          node --test tests/tooling/vapor-style-api-fixtures.test.mjs
+          node --test tests/tooling/vapor-style-api-fixtures.test.ts tests/tooling/vapor-ssr-expose-successor.test.ts
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/vapor-literal-styles/head-source.txt"
           cargo test --locked --profile ci -p vize_atelier_jsx --test literal_object_styles --test literal_style_source --test literal_style_sfc --test literal_style_maps -- --nocapture --test-threads=1
       - name: Observe the same inputs against the actual unchanged baseline
@@ -74,6 +77,7 @@ jobs:
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import fs from 'node:fs';
+          import { assertVaporSfcExposeTransition } from './tests/_helpers/vapor-ssr-expose-successor.ts';
           const directory = `${process.env.RUNNER_TEMP}/vapor-literal-styles`;
           const base = JSON.parse(fs.readFileSync(`${directory}/base.json`));
           const head = JSON.parse(fs.readFileSync(`${directory}/head.json`));
@@ -110,7 +114,7 @@ jobs:
           const beforeSfc=JSON.parse(fs.readFileSync(`${directory}/base-sfc.json`));
           const afterSfc=JSON.parse(fs.readFileSync(`${directory}/head-sfc.json`));
           assert.equal(beforeSfc.length,4);assert.equal(afterSfc.length,4);
-          afterSfc.forEach((row,index)=>{const previous=beforeSfc[index];for(const key of ['source','vapor','ssr','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assert.deepEqual(row.output,previous.output);});
+          assertVaporSfcExposeTransition(beforeSfc,afterSfc);
           const beforeProfile=JSON.parse(fs.readFileSync(`${directory}/base-profile.json`));
           const afterProfile=JSON.parse(fs.readFileSync(`${directory}/head-profile.json`));
           assert.equal(beforeProfile.length,24); assert.equal(afterProfile.length,24);

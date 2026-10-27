@@ -1,0 +1,106 @@
+{
+  "fixtures/Box.vue.txt": {
+    "bytes": 173,
+    "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6"
+  },
+  "fixtures/Directive.vue.txt": {
+    "bytes": 118,
+    "sha256": "3459508328f318ba27310e2f219d184fd160b26c41d847dcd47ba5e3f984f3aa"
+  },
+  "fixtures/Loop.vue.txt": {
+    "bytes": 211,
+    "sha256": "a30bbd0693f5c4596da7a9dbe8a798a3f6627fa83aeb5f398453f05e9f5adcb1"
+  },
+  "fixtures/Options.vue.txt": {
+    "bytes": 326,
+    "sha256": "81639aa722178f2bb27774da0477b7a60a742f1438279a2a1248b13b31787412"
+  },
+  "fixtures/Setup.vue.txt": {
+    "bytes": 141,
+    "sha256": "104589f1f28b1ced1199853cc7c8be75c9d5e92c337499616ed106d0f9384734"
+  },
+  "fixtures/Wrong.vue.txt": {
+    "bytes": 286,
+    "sha256": "f17383216e739cc064ce8f96beb1c836530b453f178bf61bebbf392998ca0f15"
+  },
+  "fixtures/mixin.d.ts.txt": {
+    "bytes": 200,
+    "sha256": "7d66552e9aa17f17ef7c884f497123a596e94f1753ee151410173f9649d330c8"
+  },
+  "fixtures/tsconfig.json.txt": {
+    "bytes": 237,
+    "sha256": "a2625fdba7096d9d02ca5cab09396db5b40a591f0125018d6a37bbd7020155bd"
+  },
+  "historical-public-0.600.0/commands.json.txt": {
+    "bytes": 955,
+    "sha256": "bf1e844b6a04845da7a2a1e4398912dd9eaad1ba507cebf02653d817229dae0b"
+  },
+  "historical-public-0.600.0/diagnostics.stderr.txt": {
+    "bytes": 42723,
+    "sha256": "e4608271ad1c4ddfc1cf0a8ab1aee3873c3c45fd1c000a5489fdce6d750b5467"
+  },
+  "historical-public-0.600.0/diagnostics.stdout.txt": {
+    "bytes": 16000,
+    "sha256": "d8b57fc17e3bfa1218324bbcb84730ac2590d65b8b98f211259e87949d8ebdf3"
+  },
+  "historical-public-0.600.0/package-lock.json.txt": {
+    "bytes": 36451,
+    "sha256": "c39f30776171d4e7583ef4b6602ada2387dc34cebce2fccf0dd643f5a66096ad"
+  },
+  "historical-public-0.600.0/package.json.txt": {
+    "bytes": 110,
+    "sha256": "52b5777c1eb13fec479200164310f30165ed7a6b748f4bdf1faf293f0b236280"
+  },
+  "historical-public-0.600.0/src/Loop.vue.txt": {
+    "bytes": 211,
+    "sha256": "a30bbd0693f5c4596da7a9dbe8a798a3f6627fa83aeb5f398453f05e9f5adcb1"
+  },
+  "historical-public-0.600.0/src/Setup.vue.txt": {
+    "bytes": 141,
+    "sha256": "104589f1f28b1ced1199853cc7c8be75c9d5e92c337499616ed106d0f9384734"
+  },
+  "historical-public-0.600.0/src/Wrong.vue.txt": {
+    "bytes": 286,
+    "sha256": "f17383216e739cc064ce8f96beb1c836530b453f178bf61bebbf392998ca0f15"
+  },
+  "historical-public-0.600.0/src/mixin.d.ts.txt": {
+    "bytes": 200,
+    "sha256": "7d66552e9aa17f17ef7c884f497123a596e94f1753ee151410173f9649d330c8"
+  },
+  "historical-public-0.600.0/tsconfig.json.txt": {
+    "bytes": 237,
+    "sha256": "a2625fdba7096d9d02ca5cab09396db5b40a591f0125018d6a37bbd7020155bd"
+  },
+  "historical-public-0.600.0/version.stderr.txt": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "historical-public-0.600.0/version.stdout.txt": {
+    "bytes": 13,
+    "sha256": "cad5917bca6f9d3aeab6fbf6f53acf1978efc71390de227bb7d832b5aadfd7bd"
+  },
+  "source-native-10b/before-type-queries.json.txt": {
+    "bytes": 9637,
+    "sha256": "b82744f24db8a46c9aaa52a69adeb6c236c7dca079eaca2e6798353b2e4d25ce"
+  },
+  "source-native-10b/mutation-any.json.txt": {
+    "bytes": 690,
+    "sha256": "f2979c3307815624c0a212699b982697c9da6702458a368d32f9e7c5479f3111"
+  },
+  "source-native-10b/mutation-boolean.json.txt": {
+    "bytes": 835,
+    "sha256": "dded713079f6e3e4179b01305958808b3ddffa5611a816e6f27eef59cc961400"
+  },
+  "source-native-10b/mutation-string.json.txt": {
+    "bytes": 834,
+    "sha256": "4cfbce25e7b6d0133d57e086938513ebc16a92f00c8ffa1f268b9f4b4535ef0c"
+  },
+  "source-native-10b/mutation-unknown.json.txt": {
+    "bytes": 977,
+    "sha256": "1b078fb48bcafdb99537de4e47a8926b02ae5f4e777aa30ea504bc7593dc9ddf"
+  },
+  "source-native-10b/type-queries.json.txt": {
+    "bytes": 5339,
+    "sha256": "cebaafd395258c34bbeac6f786c37257f45f9ffbc9f9bae0a9e782f939a8bdf6"
+  }
+}

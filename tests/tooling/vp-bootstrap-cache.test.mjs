@@ -172,8 +172,21 @@ const dependencyConsumers = [
   ["rust-pr-target-seed.yml", "rust-differential-target-seed"],
 ];
 
-function assertDependencyConsumer(job, runtime = "manifest") {
-  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+const frontendConsumerRunners = new Map([
+  [
+    "check.yml/check-js",
+    "${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && 'ubuntu-24.04' || 'blacksmith-32vcpu-ubuntu-2404' }}",
+  ],
+  ["check.yml/security-audit", "ubuntu-24.04"],
+  ["check.yml/node-engine-compat", "ubuntu-24.04"],
+]);
+
+function assertDependencyConsumer(
+  job,
+  runtime = "manifest",
+  runner = "blacksmith-32vcpu-ubuntu-2404",
+) {
+  assert.equal(job["runs-on"], runner);
   const steps = job.steps.filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
   assert.equal(steps.length, 1);
   const setup = steps[0];
@@ -207,7 +220,9 @@ void test("Linux source consumers retain the same dependency identity without ca
   assert.equal(dependencyConsumers.length, 11, "ten ordinary jobs plus the differential seed");
   for (const [file, name, runtime] of dependencyConsumers) {
     const job = workflow(`.github/workflows/${file}`).jobs[name];
-    const setup = assertDependencyConsumer(job, runtime);
+    const runner =
+      frontendConsumerRunners.get(file + "/" + name) ?? "blacksmith-32vcpu-ubuntu-2404";
+    const setup = assertDependencyConsumer(job, runtime, runner);
     assert.equal(
       setup.with["run-install"],
       ["pr-rust-shard", "rust-differential-target-seed"].includes(name),
@@ -227,9 +242,24 @@ void test("Linux source consumers retain the same dependency identity without ca
         ...setup.with,
         ...change,
       };
-      assert.throws(() => assertDependencyConsumer(invalid, runtime));
+      assert.throws(() => assertDependencyConsumer(invalid, runtime, runner));
     }
   }
+});
+
+void test("frontend consumers keep exact resources for all five event modes", () => {
+  assert.equal(frontendConsumerRunners.size, 3);
+  const job = workflow(".github/workflows/check.yml").jobs["check-js"];
+  const selector = frontendConsumerRunners.get("check.yml/check-js");
+  assert.equal(job["runs-on"], selector);
+  for (const [event_name, expected] of [
+    ["pull_request", "ubuntu-24.04"],
+    ["merge_group", "ubuntu-24.04"],
+    ["push", "ubuntu-24.04"],
+    ["schedule", "blacksmith-32vcpu-ubuntu-2404"],
+    ["workflow_dispatch", "blacksmith-32vcpu-ubuntu-2404"],
+  ])
+    assert.equal(runInNewContext(selector.slice(3, -2), { github: { event_name } }), expected);
 });
 
 void test("one trusted main producer owns the selected Linux source dependency-store writes", () => {
