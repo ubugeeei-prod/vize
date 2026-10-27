@@ -1,0 +1,135 @@
+{
+  "schema": "vize.compiler-fix-history.import-binding-successor",
+  "version": 1,
+  "issue": 10903,
+  "historicalFix": "92adfb692",
+  "original": {
+    "input": {
+      "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports.input.txt",
+      "gitBlob": "92e10c4411502a796d46c528985c8ad9e086be64",
+      "sha256": "65e5e9f66c9233584dc6998ab21548cca17615784f3c116af4395c872aaa0709"
+    },
+    "options": {
+      "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports.options.json",
+      "gitBlob": "07b6a946b9420ed40aca54a49a4f666519110f97",
+      "sha256": "d997c0356cc59ba01063744b99fe7ecaeede27fb5d94a703300a47c0f6123403"
+    },
+    "completeResult": {
+      "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports.expected.json",
+      "gitBlob": "60f002af8c9b73de3f592d76acd29168ea509fe8",
+      "sha256": "089a7afd83b8e69b95867d2fdd2c23785a06a5856ffe1a12608d4d4adff03478"
+    }
+  },
+  "before": {
+    "requestedHead": "8192402bb522bffccefef2ead52776cd883d25a2",
+    "actualSource": "9350d748960f26d362b8c53f44dbca6525d3ef4e",
+    "tree": "35d3d3ed173c6588fda3bda92ff18dec7484a1a4",
+    "run": 40557790972,
+    "job": 122380613060,
+    "conclusion": "success",
+    "case": "compiler_fix_history::dual_script_type_imports_keep_complete_module_result",
+    "wholeResult": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports.expected.json",
+    "rawLog": {
+      "bytes": 1591121,
+      "sha256": "82dc14ef1827b69bbda51b2b0d05e995184a458477a15b90fdb7fcdd721c97c3"
+    }
+  },
+  "candidate": {
+    "requestedHead": "01775187e97a99382367b7c833b825749185eaae",
+    "actualSource": "8afb96781e1a37c15640b7ebdb56f446a6cdc6a6",
+    "tree": "d0b523647888110f736eb6e10cb66ce4f322edfb",
+    "run": 40563010852,
+    "job": 122398111344,
+    "conclusion": "failure against original binding metadata",
+    "wholeResult": {
+      "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-import-bindings-10903.expected.json",
+      "sha256": "856c0adaf0ae01447d3dcedce0a52f515fac782dc78d7accbca25df682480955"
+    },
+    "rawLog": {
+      "bytes": 1619642,
+      "sha256": "b26cf9f31b22c645b22301ea7e06105289032bfe552f73914c9157776b706a4c",
+      "completeAssertionLines": [
+        {
+          "byteOffset": 1532632,
+          "bytes": 797,
+          "base64": "MjAyNi0xMC0yN1QyMDozMzoxOC44ODEwMjA3WiAgICAgICBsZWZ0OiBPYmplY3QgeyJPayI6IE9iamVjdCB7ImJpbmRpbmdzIjogT2JqZWN0IHsiYmluZGluZ3MiOiBPYmplY3QgeyJtYWtlIjogU3RyaW5nKCJzZXR1cC1jb25zdCIpLCAicnVudGltZVZhbHVlIjogU3RyaW5nKCJzZXR1cC1tYXliZS1yZWYiKSwgInZhbHVlIjogU3RyaW5nKCJzZXR1cC1tYXliZS1yZWYiKX0sICJpc1NjcmlwdFNldHVwIjogQm9vbCh0cnVlKSwgInByb3BzQWxpYXNlcyI6IE9iamVjdCB7fX0sICJjb2RlIjogU3RyaW5nKCJpbXBvcnQgeyB0b0Rpc3BsYXlTdHJpbmcgYXMgX3RvRGlzcGxheVN0cmluZywgdW5yZWYgYXMgX3VucmVmIH0gZnJvbSBcInZ1ZVwiO1xuaW1wb3J0IHsgcnVudGltZVZhbHVlIH0gZnJvbSBcIi4vbWl4ZWRcIjtcbmltcG9ydCBcIi4vZW1wdHktaW1wb3J0XCI7XG5pbXBvcnQgXCIuL3NpZGUtZWZmZWN0XCI7XG5jb25zdCBtYWtlID0gKCkgPT4gKHsgaWQ6IHJ1bnRpbWVWYWx1ZSB9KTtcbmV4cG9ydCBkZWZhdWx0IHtcbiAgX19uYW1lOiBcImFub255bW91c1wiLFxuICBzZXR1cChfX3Byb3BzKSB7XG4gICAgY29uc3QgdmFsdWUgPSBtYWtlKCk7XG4gICAgcmV0dXJuIChfY3R4LCBfY2FjaGUpID0+IHtcbiAgICAgIHJldHVybiBfdG9EaXNwbGF5U3RyaW5nKF91bnJlZih2YWx1ZSkuaWQpO1xuICAgIH07XG4gIH1cbn07IiksICJjc3MiOiBOdWxsLCAiZXJyb3JzIjogQXJyYXkgW10sICJtYWNyb0FydGlmYWN0cyI6IEFycmF5IFtdLCAibWFwIjogTnVsbCwgIndhcm5pbmdzIjogQXJyYXkgW119fQo=",
+          "sha256": "76bb13a594387666570906ccb5b7110cbe2ed22a3873d2ab8702b996e92dad42"
+        },
+        {
+          "byteOffset": 1533429,
+          "bytes": 793,
+          "base64": "MjAyNi0xMC0yN1QyMDozMzoxOC44ODEzMDc1WiAgICAgIHJpZ2h0OiBPYmplY3QgeyJPayI6IE9iamVjdCB7ImJpbmRpbmdzIjogT2JqZWN0IHsiYmluZGluZ3MiOiBPYmplY3QgeyJtYWtlIjogU3RyaW5nKCJzZXR1cC1jb25zdCIpLCAicnVudGltZVZhbHVlIjogU3RyaW5nKCJzZXR1cC1jb25zdCIpLCAidmFsdWUiOiBTdHJpbmcoInNldHVwLW1heWJlLXJlZiIpfSwgImlzU2NyaXB0U2V0dXAiOiBCb29sKHRydWUpLCAicHJvcHNBbGlhc2VzIjogT2JqZWN0IHt9fSwgImNvZGUiOiBTdHJpbmcoImltcG9ydCB7IHRvRGlzcGxheVN0cmluZyBhcyBfdG9EaXNwbGF5U3RyaW5nLCB1bnJlZiBhcyBfdW5yZWYgfSBmcm9tIFwidnVlXCI7XG5pbXBvcnQgeyBydW50aW1lVmFsdWUgfSBmcm9tIFwiLi9taXhlZFwiO1xuaW1wb3J0IFwiLi9lbXB0eS1pbXBvcnRcIjtcbmltcG9ydCBcIi4vc2lkZS1lZmZlY3RcIjtcbmNvbnN0IG1ha2UgPSAoKSA9PiAoeyBpZDogcnVudGltZVZhbHVlIH0pO1xuZXhwb3J0IGRlZmF1bHQge1xuICBfX25hbWU6IFwiYW5vbnltb3VzXCIsXG4gIHNldHVwKF9fcHJvcHMpIHtcbiAgICBjb25zdCB2YWx1ZSA9IG1ha2UoKTtcbiAgICByZXR1cm4gKF9jdHgsIF9jYWNoZSkgPT4ge1xuICAgICAgcmV0dXJuIF90b0Rpc3BsYXlTdHJpbmcoX3VucmVmKHZhbHVlKS5pZCk7XG4gICAgfTtcbiAgfVxufTsiKSwgImNzcyI6IE51bGwsICJlcnJvcnMiOiBBcnJheSBbXSwgIm1hY3JvQXJ0aWZhY3RzIjogQXJyYXkgW10sICJtYXAiOiBOdWxsLCAid2FybmluZ3MiOiBBcnJheSBbXX19Cg==",
+          "sha256": "372ed51791a4fee88cb0e66554697ed471bb2a04569d66167d31e8d4205688d8"
+        }
+      ]
+    }
+  },
+  "official": {
+    "version": "3.5.41",
+    "run": 40590049309,
+    "job": 122491635851,
+    "recipe": "d62a46c8372daae654edccd99f662dac3725124a",
+    "fixtureSource": "01775187e97a99382367b7c833b825749185eaae",
+    "packet": {
+      "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-import-bindings-10903.official.json.txt",
+      "sha256": "24505afd85164c33f069f2f69c2682580d7df84eefabbab09adfaef85a65c490",
+      "bytes": 49349
+    },
+    "dependencyLockArtifact": {
+      "id": 12773925777,
+      "name": "plain-script-history-official-40590049309",
+      "size_in_bytes": 9573,
+      "digest": "sha256:9ba61bf1d19c82e7bcc399d01ac96cc832cd057cea389903595d0bd5711165e0",
+      "expires_at": "2027-01-25T21:50:15Z"
+    },
+    "rawLog": {
+      "bytes": 36008,
+      "sha256": "ea67b5c6034be80c519da41c39317c5948e2aea219ede10d4336d1b989f0bc6a"
+    },
+    "apiOptions": [
+      {
+        "id": "",
+        "inlineTemplate": false,
+        "sourceMap": false,
+        "isProd": false,
+        "propsDestructure": false
+      },
+      {
+        "id": "",
+        "inlineTemplate": true,
+        "sourceMap": false,
+        "isProd": false,
+        "propsDestructure": false
+      }
+    ],
+    "packetExtraction": {
+      "method": "Only ZIP central directory, local header and this one compressed member were read by HTTP Range; CRC, length and logged SHA256 were verified.",
+      "ranges": [
+        [
+          8549,
+          9572
+        ],
+        [
+          9211,
+          9550
+        ],
+        [
+          2334,
+          2363
+        ],
+        [
+          2391,
+          7254
+        ]
+      ]
+    }
+  },
+  "admission": {
+    "pointer": "/Ok/bindings/bindings/runtimeValue",
+    "before": "setup-const",
+    "after": "setup-maybe-ref",
+    "otherFields": "Every other complete Result field, including emitted module bytes, remains equal to the original archive.",
+    "normative": "The entire three-name binding map equals both actual official Vue 3.5.41 executions of the identical input and authored/effective options.",
+    "capture": "The successor is parsed from the actual failed assertion's serde_json::Value Debug left. Its right was decoded independently and verified equal to the unchanged original archive. No payload was generated by changing the original reference."
+  }
+}
