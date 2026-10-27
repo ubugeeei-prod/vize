@@ -1,3 +1,10 @@
+export interface RuntimeMetrics {
+  setup: { App: number; Counter: number };
+  childEvents: number;
+  parentEvents: number;
+  events: { owner: "App" | "Counter"; type: string; trusted: boolean }[];
+}
+
 // One authored TSX program is compiled independently for every host/format/target.
 export const source = `import { ref } from "vue";
 export const controls: { update?: () => void; restore?: () => void; resetCounter?: () => void } = {};
@@ -32,7 +39,7 @@ export const counterTemplate =
   '<button type="button" class="counter-own" style="font-weight:700" @click="increment">{{ props.label + ":" + count }}</button>';
 export const appTemplate =
   '<section id="fixture" :data-state="label"><Counter :label="label" :id="buttonId" :class="tone" :style="{ color }" :data-probe="label" @click="parentPress"/></section>';
-export const freshMetrics = () => ({
+export const freshMetrics = (): RuntimeMetrics => ({
   setup: { App: 0, Counter: 0 },
   childEvents: 0,
   parentEvents: 0,
@@ -65,7 +72,7 @@ function appSetup() {
   return { label, tone, color, buttonId, parentPress };
 }
 `;
-export function referenceModule(target, phase) {
+export function referenceModule(target: "vdom" | "vapor", phase: "client" | "server") {
   if (target === "vdom")
     return `import * as Vue from "vue";\n${setupSource}
 export const Counter = Vue.defineComponent({ props: ["label"], setup(props) {

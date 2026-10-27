@@ -4,48 +4,68 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { hash, json, packageIdentity } from "../hosts/environment.mjs";
+import { hash, json, packageIdentity, type HostSpec } from "../hosts/environment.ts";
+
+export interface RuntimeSpec {
+  id: "stable" | "rc9" | "rc11";
+  fixture: string;
+  version: string;
+  target: "vdom" | "vapor";
+}
+interface RuntimeSettings {
+  source: string;
+  tarball: string;
+  nativeRoot: string;
+  output: string;
+  tarballSha256: string;
+}
+interface PackageManifest {
+  name: string;
+  version: string;
+  dependencies: Record<string, string>;
+  exports: Record<string, { import: { default: string }; require: { default: string } }>;
+}
 
 export { hash, json };
 export const here = path.dirname(fileURLToPath(import.meta.url));
-export const runtimeSpecs = [
+export const runtimeSpecs: RuntimeSpec[] = [
   { id: "stable", fixture: "vdom", version: "3.5.44", target: "vdom" },
   { id: "rc9", fixture: "vapor-rc9", version: "3.6.0-rc.9", target: "vapor" },
   { id: "rc11", fixture: "vapor-rc11", version: "3.6.0-rc.11", target: "vapor" },
 ];
-export const hostSpecs = [
+export const hostSpecs: HostSpec[] = [
   { major: 7, version: "7.29.7" },
   { major: 8, version: "8.0.9" },
 ];
-export function exists(file) {
+export function exists(file: string) {
   try {
     fs.lstatSync(file);
     return true;
   } catch (error) {
-    if (error.code === "ENOENT") return false;
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
   }
 }
-export function settings() {
+export function settings(): RuntimeSettings {
   assert.match(process.env.SOURCE_SHA ?? "", /^[a-f0-9]{40}$/, "actual source revision required");
   assert(process.env.VIZE_BABEL_PACKED_PLUGIN, "real packed Babel artifact required");
   assert(process.env.VIZE_BABEL_NATIVE_ROOT, "explicit genuine source-native preparation required");
   const tarball = fs.realpathSync(process.env.VIZE_BABEL_PACKED_PLUGIN);
   const nativeRoot = fs.realpathSync(process.env.VIZE_BABEL_NATIVE_ROOT);
   const output = path.resolve(
-    process.env.VIZE_BABEL_RUNTIME_OUTPUT ?? path.join(here, ".artifacts", process.env.SOURCE_SHA),
+    process.env.VIZE_BABEL_RUNTIME_OUTPUT ?? path.join(here, ".artifacts", process.env.SOURCE_SHA!),
   );
   assert(!exists(output), "fresh runtime output preserves earlier whole packets");
   fs.mkdirSync(output, { recursive: true });
   return {
-    source: process.env.SOURCE_SHA,
+    source: process.env.SOURCE_SHA!,
     tarball,
     nativeRoot,
     output,
     tarballSha256: hash(fs.readFileSync(tarball)),
   };
 }
-export function runtimeIdentity(spec) {
+export function runtimeIdentity(spec: RuntimeSpec) {
   const root = path.join(here, "fixtures", spec.fixture);
   const requireRuntime = createRequire(path.join(root, "package.json"));
   const vue = packageIdentity(requireRuntime, "vue");
@@ -81,10 +101,12 @@ export function runtimeIdentity(spec) {
     lockSha256: hash(fs.readFileSync(path.join(root, "package-lock.json"))),
   };
 }
-export function prepareCompiler(spec, config) {
+export function prepareCompiler(spec: HostSpec, config: RuntimeSettings) {
   const sourceHost = path.resolve(here, "../hosts/fixtures/babel" + spec.major);
   const fromHost = createRequire(path.join(sourceHost, "package.json"));
-  const hostManifest = JSON.parse(fs.readFileSync(path.join(sourceHost, "package.json")));
+  const hostManifest = JSON.parse(
+    fs.readFileSync(path.join(sourceHost, "package.json"), "utf8"),
+  ) as PackageManifest;
   const root = path.join(config.output, "compiler" + spec.major);
   const modules = path.join(root, "node_modules");
   fs.mkdirSync(modules, { recursive: true });
@@ -123,7 +145,7 @@ export function prepareCompiler(spec, config) {
   try {
     execFileSync("tar", ["-xzf", config.tarball, "-C", temporary]);
     const original = path.join(temporary, "package");
-    const inspect = (directory) => {
+    const inspect = (directory: string): void => {
       for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
         assert(!entry.isSymbolicLink(), "no source symlink in packed runtime");
         if (entry.isDirectory()) inspect(path.join(directory, entry.name));
@@ -135,8 +157,12 @@ export function prepareCompiler(spec, config) {
   } finally {
     fs.rmSync(temporary, { recursive: true });
   }
-  const pkg = JSON.parse(fs.readFileSync(path.join(plugin, "package.json")));
-  const native = JSON.parse(fs.readFileSync(path.join(config.nativeRoot, "package.json")));
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(plugin, "package.json"), "utf8"),
+  ) as PackageManifest;
+  const native = JSON.parse(
+    fs.readFileSync(path.join(config.nativeRoot, "package.json"), "utf8"),
+  ) as PackageManifest;
   assert.equal(pkg.name, "@vizejs/babel-plugin");
   assert.equal(native.name, "@vizejs/native");
   assert.equal(pkg.version, native.version);

@@ -12,10 +12,10 @@ import {
   runtimeIdentity,
   prepareCompiler,
   json,
-} from "./runtime/environment.mjs";
+} from "./runtime/environment.ts";
 
-let configured;
-const compilers = new Map();
+let configured: ReturnType<typeof settings> | undefined;
+const compilers = new Map<number, ReturnType<typeof prepareCompiler>>();
 function settings() {
   assert.match(process.env.SOURCE_SHA ?? "", /^[a-f0-9]{40}$/);
   assert(process.env.VIZE_BABEL_PACKED_PLUGIN && process.env.VIZE_BABEL_NATIVE_ROOT);
@@ -25,7 +25,7 @@ function settings() {
   fs.mkdirSync(output, { recursive: true });
   const tarball = fs.realpathSync(process.env.VIZE_BABEL_PACKED_PLUGIN);
   return {
-    source: process.env.SOURCE_SHA,
+    source: process.env.SOURCE_SHA!,
     output,
     tarball,
     tarballSha256: hash(fs.readFileSync(tarball)),
@@ -33,12 +33,12 @@ function settings() {
   };
 }
 for (const spec of hostSpecs)
-  for (const format of ["esm", "cjs"]) {
+  for (const format of ["esm", "cjs"] as const) {
     void test(`actual packed Babel ${spec.major}/${format} independent literal-style guards`, () => {
       configured ??= settings();
       if (!compilers.has(spec.major)) compilers.set(spec.major, prepareCompiler(spec, configured));
-      const compiler = compilers.get(spec.major),
-        runtime = runtimeIdentity(runtimeSpecs.find((row) => row.id === "rc11"));
+      const compiler = compilers.get(spec.major)!,
+        runtime = runtimeIdentity(runtimeSpecs.find((row) => row.id === "rc11")!);
       const id = `babel${spec.major}-${format}`,
         report = path.join(configured.output, id + ".json");
       const input = {
@@ -52,7 +52,7 @@ for (const spec of hostSpecs)
       };
       const file = path.join(configured.output, id + ".input.json");
       json(file, input);
-      const runner = pathToFileURL(path.resolve(import.meta.dirname, "style-guards/run.mjs")).href;
+      const runner = pathToFileURL(path.resolve(import.meta.dirname, "style-guards/run.ts")).href;
       const loading =
         "{requireHost,core:()=>import('@babel/core'),typescript:()=>import('@babel/plugin-transform-typescript'),plugin:()=>" +
         (format === "esm"
@@ -95,6 +95,6 @@ for (const spec of hostSpecs)
       assert.equal(child.status, 0, report + "\n" + String(child.stderr));
       assert.equal(child.signal, null);
       assert.equal(child.stderr.length, 0);
-      assert.equal(JSON.parse(fs.readFileSync(report)).error, null);
+      assert.equal(JSON.parse(fs.readFileSync(report, "utf8")).error, null);
     });
   }

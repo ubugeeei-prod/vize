@@ -3,18 +3,31 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { freshMetrics } from "./fixtures.mjs";
-import { wholeError } from "../hosts/contracts.mjs";
-import { json } from "./environment.mjs";
+import { freshMetrics } from "./fixtures.ts";
+import { wholeError } from "../hosts/contracts.ts";
+import { json } from "./environment.ts";
+import type { RuntimeIdentity, RuntimeModule, ServerReport, ServerObservation } from "./types.ts";
 
-const input = JSON.parse(fs.readFileSync(process.argv[2]));
+const input = JSON.parse(fs.readFileSync(process.argv[2], "utf8")) as {
+  runtime: RuntimeIdentity;
+  directory: string;
+  report: string;
+};
 const requireRuntime = createRequire(path.join(input.runtime.root, "package.json"));
-const Vue = await import(pathToFileURL(requireRuntime.resolve("vue")).href);
-const renderer = await import(pathToFileURL(requireRuntime.resolve("@vue/server-renderer")).href);
+const Vue: typeof import("vue") = await import(pathToFileURL(requireRuntime.resolve("vue")).href);
+const renderer: { renderToString(app: ReturnType<typeof Vue.createSSRApp>): Promise<string> } =
+  await import(pathToFileURL(requireRuntime.resolve("@vue/server-renderer")).href);
 assert.equal(Vue.version, input.runtime.version);
-const report = { runtime: input.runtime, observations: [], fatal: null };
-for (const kind of ["candidate", "reference"]) {
-  const row = { kind, html: null, metrics: null, warnings: [], errors: [], failure: null };
+const report: ServerReport = { runtime: input.runtime, observations: [], fatal: null };
+for (const kind of ["candidate", "reference"] as const) {
+  const row: ServerObservation = {
+    kind,
+    html: null,
+    metrics: null,
+    warnings: [],
+    errors: [],
+    failure: null,
+  };
   report.observations.push(row);
   const warn = console.warn,
     error = console.error;
@@ -26,7 +39,7 @@ for (const kind of ["candidate", "reference"]) {
       input.directory,
       kind === "candidate" ? "server.mjs" : "reference-server.mjs",
     );
-    const module = await import(pathToFileURL(file).href);
+    const module: RuntimeModule = await import(pathToFileURL(file).href);
     assert(
       module.App && typeof module.App === "object",
       "block component has actual component-object ownership",

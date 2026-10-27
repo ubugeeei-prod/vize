@@ -3,8 +3,31 @@ import fs from "node:fs";
 import { registerHooks } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { activeNative, hash, json } from "./environment.mjs";
-import { coldFixtures, positiveFixtures } from "./fixtures.mjs";
+import { activeNative, hash, json } from "./environment.ts";
+import { coldFixtures, positiveFixtures } from "./fixtures.ts";
+import type {
+  InputOptions,
+  PluginAPI,
+  PluginItem,
+  PluginObject,
+  PluginPass,
+  PluginTarget,
+  types as t,
+} from "@babel/core";
+import type {
+  BabelResult,
+  HostLoader,
+  HostWorkerInput,
+  HostObservation,
+  HostReport,
+} from "../host-types.ts";
+type DeferredPass = PluginPass & { deferred: t.Identifier };
+type HostOptions = InputOptions & {
+  plugins: PluginItem[];
+  parserOpts: NonNullable<InputOptions["parserOpts"]> & {
+    plugins: NonNullable<NonNullable<InputOptions["parserOpts"]>["plugins"]>;
+  };
+};
 import {
   assertCompiled,
   assertUpstream,
@@ -13,13 +36,14 @@ import {
   removeJsx,
   upstreamMap,
   wholeError,
-} from "./contracts.mjs";
+} from "./contracts.ts";
 
-const factory = (module) => (typeof module === "function" ? module : module.default);
-const astPacket = (value) =>
+const factory = (module: PluginTarget | { default: PluginTarget }): PluginTarget =>
+  typeof module === "function" ? module : (module as { default: PluginTarget }).default;
+const astPacket = (value: unknown) =>
   JSON.stringify(value, (_, item) => (typeof item === "bigint" ? { bigint: String(item) } : item));
 // Syntax plugins may append parser entries; each actual host invocation owns its options.
-const freshParserOptions = (options) => ({
+const freshParserOptions = (options: HostOptions): HostOptions => ({
   ...options,
   parserOpts: {
     ...options.parserOpts,
@@ -28,13 +52,14 @@ const freshParserOptions = (options) => ({
     ),
   },
 });
-function outputPayload(result) {
+function outputPayload(result: import("@babel/core").FileResult | null) {
   // Babel also returns its input configuration. That contains the deliberately different
   // plugin list and hook functions; retain it in the raw report, compare every output field.
+  assert(result);
   const { options: _configuration, ...output } = result;
   return output;
 }
-function addonImages(requireHost) {
+function addonImages(requireHost: NodeJS.Require) {
   return Object.keys(requireHost.cache)
     .filter((file) => file.endsWith(".node"))
     .map((file) => {
@@ -43,8 +68,8 @@ function addonImages(requireHost) {
     });
 }
 
-export async function runHost(input, load) {
-  const report = {
+export async function runHost(input: HostWorkerInput, load: HostLoader) {
+  const report: HostReport = {
     schema: "vize.babel.packed-host",
     version: 1,
     source: input.source,
@@ -60,7 +85,7 @@ export async function runHost(input, load) {
     resolutions: [],
     fatal: null,
   };
-  let hook;
+  let hook: ReturnType<typeof registerHooks> | undefined;
   try {
     assert.equal(addonImages(load.requireHost).length, 0, "the worker must begin without an addon");
     hook = registerHooks({
@@ -89,7 +114,13 @@ export async function runHost(input, load) {
     report.preparation = preparation;
     const cases = input.phase === "cold" ? coldFixtures : positiveFixtures;
     for (const fixture of cases) {
-      const item = { id: fixture.id, input: fixture, result: null, error: null, assertion: null };
+      const item: HostObservation = {
+        id: fixture.id,
+        input: fixture,
+        result: null,
+        error: null,
+        assertion: null,
+      };
       report.observations.push(item);
       try {
         if (preparation)
@@ -103,8 +134,10 @@ export async function runHost(input, load) {
           "src",
           fixture.id + (fixture.filenameSuffix ?? (fixture.typescript ? ".tsx" : ".jsx")),
         );
-        const parserOpts = { plugins: fixture.typescript ? ["jsx", "typescript"] : ["jsx"] };
-        const options = {
+        const parserOpts: HostOptions["parserOpts"] = {
+          plugins: fixture.typescript ? ["jsx", "typescript"] : ["jsx"],
+        };
+        const options: HostOptions = {
           filename,
           babelrc: false,
           configFile: false,
@@ -112,8 +145,9 @@ export async function runHost(input, load) {
           sourceMaps: Boolean(fixture.upstream),
           comments: fixture.comments ?? true,
           parserOpts,
+          plugins: [],
         };
-        const prePlugin = () => ({
+        const prePlugin = (): PluginObject => ({
           name: "authored-host-pre-" + fixture.id,
           pre(file) {
             if (fixture.pre === "remove") removeJsx(core, file.ast);
@@ -124,18 +158,18 @@ export async function runHost(input, load) {
                 babelrc: false,
                 configFile: false,
               });
-              file.path.pushContainer("body", extra.program.body);
+              file.path.pushContainer("body", extra!.program.body);
             }
             if (fixture.pre === "create") {
               const extra = core.parseSync(
                 "export const render = () => <p>created-before-native</p>;",
                 { babelrc: false, configFile: false, parserOpts: { plugins: ["jsx"] } },
               );
-              file.path.pushContainer("body", extra.program.body);
+              file.path.pushContainer("body", extra!.program.body);
             }
           },
         });
-        const latePlugin = () => ({
+        const latePlugin = (): PluginObject => ({
           name: "late-jsx-host-pre",
           pre(file) {
             const extra = core.parseSync("<aside />;", {
@@ -143,10 +177,10 @@ export async function runHost(input, load) {
               configFile: false,
               parserOpts: { plugins: ["jsx"] },
             });
-            file.path.pushContainer("body", extra.program.body);
+            file.path.pushContainer("body", extra!.program.body);
           },
         });
-        const ordinary = () => ({
+        const ordinary = (): PluginObject => ({
           name: "ordinary-host-number-edit",
           visitor: {
             NumericLiteral(p) {
@@ -154,7 +188,7 @@ export async function runHost(input, load) {
             },
           },
         });
-        const normal = [];
+        const normal: PluginItem[] = [];
         if (fixture.latePost)
           normal.push(() => ({
             name: "late-jsx-host-post",
@@ -164,7 +198,7 @@ export async function runHost(input, load) {
                 configFile: false,
                 parserOpts: { plugins: ["jsx"] },
               });
-              file.path.pushContainer("body", extra.program.body);
+              file.path.pushContainer("body", extra!.program.body);
             },
           }));
         if (fixture.generatorOverrides) {
@@ -173,7 +207,7 @@ export async function runHost(input, load) {
             normal.push(() => ({
               name: "real-host-generator-" + index,
               generatorOverride(ast, generatorOptions, code, generate) {
-                item.generatorCalls.push(index);
+                item.generatorCalls!.push(index);
                 return generate(ast, generatorOptions, code);
               },
             }));
@@ -184,7 +218,7 @@ export async function runHost(input, load) {
         if (fixture.ordinaryEdit) normal.push(ordinary);
         if (fixture.reactTransform) normal.push([react, { runtime: "automatic" }]);
         if (input.phase === "positive" && fixture.modules !== false) normal.push(modules);
-        const plugin = [vize, { jsxMode: "vdom", jsxCompat: "native" }];
+        const plugin: PluginItem = [vize, { jsxMode: "vdom", jsxCompat: "native" }];
         options.plugins = fixture.order === "last" ? [...normal, plugin] : [plugin, ...normal];
         if (fixture.overrideScope) {
           options.plugins = normal;
@@ -195,43 +229,45 @@ export async function runHost(input, load) {
         }
         if (fixture.uidReservation) {
           item.reservations = [];
-          const allocator = (label) => (api) => ({
-            name: "deferred-host-uid-" + label,
-            pre(file) {
-              this.deferred = file.scope.generateUidIdentifier("openBlock");
-              assert(
-                !item.reservations.some((r) => r.name === this.deferred.name),
-                "two actual pre allocators must receive distinct UIDs",
-              );
-              item.reservations.push({ label, name: this.deferred.name });
-            },
-            visitor: {
-              Program: {
-                exit(p) {
-                  p.pushContainer(
-                    "body",
-                    api.types.variableDeclaration("const", [
-                      api.types.variableDeclarator(
-                        api.types.cloneNode(this.deferred),
-                        api.types.stringLiteral("mine" + label),
-                      ),
-                    ]),
-                  );
-                  p.pushContainer(
-                    "body",
-                    api.types.exportNamedDeclaration(
+          const allocator =
+            (label: string) =>
+            (api: PluginAPI): PluginObject => ({
+              name: "deferred-host-uid-" + label,
+              pre(file) {
+                (this as DeferredPass).deferred = file.scope.generateUidIdentifier("openBlock");
+                assert(
+                  !item.reservations!.some((r) => r.name === (this as DeferredPass).deferred.name),
+                  "two actual pre allocators must receive distinct UIDs",
+                );
+                item.reservations!.push({ label, name: (this as DeferredPass).deferred.name });
+              },
+              visitor: {
+                Program: {
+                  exit(p) {
+                    p.pushContainer(
+                      "body",
                       api.types.variableDeclaration("const", [
                         api.types.variableDeclarator(
-                          api.types.identifier("reserved" + label),
-                          api.types.cloneNode(this.deferred),
+                          api.types.cloneNode((this as DeferredPass).deferred),
+                          api.types.stringLiteral("mine" + label),
                         ),
                       ]),
-                    ),
-                  );
+                    );
+                    p.pushContainer(
+                      "body",
+                      api.types.exportNamedDeclaration(
+                        api.types.variableDeclaration("const", [
+                          api.types.variableDeclarator(
+                            api.types.identifier("reserved" + label),
+                            api.types.cloneNode((this as DeferredPass).deferred),
+                          ),
+                        ]),
+                      ),
+                    );
+                  },
                 },
               },
-            },
-          });
+            });
           const a = allocator("A"),
             b = allocator("B");
           options.plugins =
@@ -248,21 +284,23 @@ export async function runHost(input, load) {
           options.inputSourceMap = upstream.map;
           item.upstream = upstream;
         }
-        let ast;
+        let ast: ReturnType<typeof core.parseSync> | undefined;
         if (fixture.fromAst) {
           ast = core.parseSync(fixture.source, { ...freshParserOptions(options), plugins: [] });
           if (fixture.fromAst === "remove") removeJsx(core, ast);
           else if (fixture.fromAst === "edit") editJsx(ast, "ast-edited");
         }
         const beforeAst = ast ? astPacket(ast) : null;
-        let actualError;
+        let actualError: unknown;
         try {
-          item.result = ast
-            ? core.transformFromAstSync(ast, fixture.source, {
-                ...freshParserOptions(options),
-                cloneInputAst: fixture.cloneInputAst ?? true,
-              })
-            : core.transformSync(fixture.source, freshParserOptions(options));
+          item.result = (
+            ast
+              ? core.transformFromAstSync(ast, fixture.source, {
+                  ...freshParserOptions(options),
+                  cloneInputAst: fixture.cloneInputAst ?? true,
+                })
+              : core.transformSync(fixture.source, freshParserOptions(options))
+          ) as BabelResult | null;
         } catch (error) {
           actualError = error;
           item.error = wholeError(error);
@@ -270,7 +308,7 @@ export async function runHost(input, load) {
         if (fixture.error) {
           assert(actualError, "the declared invalid host combination must fail");
           assert.equal(
-            actualError.message,
+            (actualError as Error).message,
             filename + ": " + fixture.error,
             "complete host error message",
           );
@@ -299,9 +337,9 @@ export async function runHost(input, load) {
           };
           if (options.overrides)
             baselineOptions.overrides = options.overrides.filter(
-              (entry) => !entry.plugins.includes(plugin),
+              (entry) => !entry.plugins!.includes(plugin),
             );
-          let baselineAst;
+          let baselineAst: ReturnType<typeof core.parseSync> | undefined;
           if (beforeAst) {
             baselineAst = core.parseSync(fixture.source, {
               ...freshParserOptions(options),
@@ -311,7 +349,7 @@ export async function runHost(input, load) {
             else if (fixture.fromAst === "edit") editJsx(baselineAst, "ast-edited");
           }
           const baseline = beforeAst
-            ? core.transformFromAstSync(baselineAst, fixture.source, {
+            ? core.transformFromAstSync(baselineAst!, fixture.source, {
                 ...freshParserOptions(baselineOptions),
                 cloneInputAst: fixture.cloneInputAst ?? true,
               })
@@ -333,13 +371,13 @@ export async function runHost(input, load) {
           sourceType: "unambiguous",
         });
         if (fixture.uidReservation) {
-          assert.equal(item.reservations.length, 2);
+          assert.equal(item.reservations!.length, 2);
           assert.equal(
-            item.reservations[0].name,
+            item.reservations![0].name,
             "_openBlock",
             "the original pre reservation creates the real compiler-alias collision",
           );
-          assert.equal(new Set(item.reservations.map((r) => r.name)).size, 2);
+          assert.equal(new Set(item.reservations!.map((r) => r.name)).size, 2);
         }
         const runtimeDir = path.join(input.host.root, "node_modules/.vize-babel-runtime");
         fs.mkdirSync(runtimeDir, { recursive: true });

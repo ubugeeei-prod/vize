@@ -12,10 +12,10 @@ import {
   prepareCompiler,
   json,
   here,
-} from "./runtime/environment.mjs";
+} from "./runtime/environment.ts";
 
-let configured;
-const compilers = new Map();
+let configured: ReturnType<typeof settings> | undefined;
+const compilers = new Map<number, ReturnType<typeof prepareCompiler>>();
 const role = process.env.VIZE_BABEL_RUNTIME_ROLE ?? "supported";
 assert(
   ["supported", "frontier", "all"].includes(role),
@@ -27,13 +27,13 @@ const selected = runtimeSpecs.filter(
 assert.equal(selected.length, role === "all" ? 3 : role === "frontier" ? 1 : 2);
 for (const runtimeSpec of selected)
   for (const hostSpec of hostSpecs)
-    for (const format of ["esm", "cjs"]) {
+    for (const format of ["esm", "cjs"] as const) {
       const id = runtimeSpec.id + "-babel" + hostSpec.major + "-" + format;
       void test("actual packed Babel " + id + " mount, SSR and hydration", () => {
         configured ??= settings();
         if (!compilers.has(hostSpec.major))
           compilers.set(hostSpec.major, prepareCompiler(hostSpec, configured));
-        const compiler = compilers.get(hostSpec.major),
+        const compiler = compilers.get(hostSpec.major)!,
           runtime = runtimeIdentity(runtimeSpec);
         const input = {
           ...configured,
@@ -46,7 +46,7 @@ for (const runtimeSpec of selected)
         };
         const inputFile = path.join(configured.output, id + ".input.json");
         json(inputFile, input);
-        const runner = pathToFileURL(path.join(here, "run.mjs")).href;
+        const runner = pathToFileURL(path.join(here, "run.ts")).href;
         const loading =
           "{requireHost,core:()=>import('@babel/core'),typescript:()=>import('@babel/plugin-transform-typescript'),plugin:()=>" +
           (format === "esm"
@@ -95,7 +95,7 @@ for (const runtimeSpec of selected)
         assert.equal(result.status, 0, input.report + "\n" + String(result.stderr));
         assert.equal(result.signal, null);
         assert.equal(result.stderr.length, 0);
-        const report = JSON.parse(fs.readFileSync(input.report));
+        const report = JSON.parse(fs.readFileSync(input.report, "utf8"));
         assert.equal(report.error, null);
       });
     }

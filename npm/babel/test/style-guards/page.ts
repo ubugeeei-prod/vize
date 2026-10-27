@@ -1,27 +1,33 @@
 import * as Vue from "vue";
+import type { StyleDiagnostics, StyleDomTree, StyleRuntimeModule } from "./types.ts";
 const input = globalThis.__styleGuardInput;
-const diagnostics = { warnings: [], errors: [] };
+const diagnostics: StyleDiagnostics = { warnings: [], errors: [] };
 const metrics = (globalThis.__styleGuardMetrics = { setup: 0, clicks: 0, events: [] });
 try {
-  const module = await import(input.module);
+  const module: StyleRuntimeModule = await import(input.module);
   const app = Vue.createVaporApp(module.App);
   app.config.warnHandler = (message, _instance, trace) =>
     diagnostics.warnings.push({ message, trace });
   app.config.errorHandler = (error, _instance, info) =>
-    diagnostics.errors.push({ name: error.name, message: error.message, info });
-  const host = document.querySelector("#app");
+    diagnostics.errors.push({
+      name: (error as Error).name,
+      message: (error as Error).message,
+      info,
+    });
+  const host = document.querySelector<HTMLElement>("#app")!;
   app.mount(host);
   await Vue.nextTick();
-  const allNodes = (node) => [...node.childNodes].flatMap((child) => [child, ...allNodes(child)]);
+  const allNodes = (node: Node): Node[] =>
+    [...node.childNodes].flatMap((child) => [child, ...allNodes(child)]);
   const original = allNodes(host);
-  const tree = (node) => ({
+  const tree = (node: Node): StyleDomTree => ({
     nodeType: node.nodeType,
     nodeName: node.nodeName,
-    data: node.nodeType === 3 || node.nodeType === 8 ? node.data : null,
+    data: node.nodeType === 3 || node.nodeType === 8 ? (node as CharacterData).data : null,
     attributes:
       node.nodeType === 1
-        ? [...node.attributes]
-            .map((a) => [a.name, a.value])
+        ? [...(node as Element).attributes]
+            .map((a): [string, string] => [a.name, a.value])
             .sort((a, b) => a[0].localeCompare(b[0]))
         : [],
     children: [...node.childNodes].map(tree),
@@ -29,7 +35,7 @@ try {
   globalThis.__styleGuard = {
     ready: true,
     snapshot() {
-      const button = host.querySelector("button"),
+      const button = host.querySelector("button")!,
         computed = getComputedStyle(button);
       return {
         html: host.innerHTML,
@@ -63,5 +69,9 @@ try {
     },
   };
 } catch (error) {
-  globalThis.__styleGuardFailure = { name: error.name, message: error.message, stack: error.stack };
+  globalThis.__styleGuardFailure = {
+    name: (error as Error).name,
+    message: (error as Error).message,
+    stack: (error as Error).stack,
+  };
 }

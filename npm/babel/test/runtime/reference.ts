@@ -2,22 +2,23 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { appTemplate, counterTemplate, referenceModule } from "./fixtures.mjs";
-import { hash, json } from "./environment.mjs";
+import { appTemplate, counterTemplate, referenceModule } from "./fixtures.ts";
+import { hash, json } from "./environment.ts";
+import type { RuntimeIdentity, GeneratedFile, TemplateCompiler } from "./types.ts";
 
-export function prepareReference(runtime, directory) {
-  const generated = [];
-  for (const phase of ["client", "server"]) {
+export function prepareReference(runtime: RuntimeIdentity, directory: string) {
+  const generated: GeneratedFile[] = [];
+  for (const phase of ["client", "server"] as const) {
     if (runtime.target === "vapor") {
       const identity = phase === "server" ? runtime.compilerSsr : runtime.compilerVapor;
-      const requireCompiler = createRequire(path.join(identity.root, "package.json"));
-      const compiler = requireCompiler(identity.entry);
+      const requireCompiler = createRequire(path.join(identity!.root, "package.json"));
+      const compiler: TemplateCompiler = requireCompiler(identity!.entry);
       for (const [name, source] of [
         ["counter", counterTemplate],
         ["app", appTemplate],
       ]) {
-        const errors = [],
-          warnings = [];
+        const errors: string[] = [],
+          warnings: string[] = [];
         const result = compiler.compile(source, {
           mode: "module",
           prefixIdentifiers: true,

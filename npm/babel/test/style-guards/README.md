@@ -28,5 +28,5 @@ Run inside the active source preparation with the usual packed-plugin/native
 inputs and a fresh `VIZE_BABEL_STYLE_GUARD_OUTPUT`:
 
 ```sh
-node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/style-guards.test.mjs
+node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/style-guards.test.ts
 ```

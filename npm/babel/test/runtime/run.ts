@@ -2,13 +2,21 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { wholeError } from "../hosts/contracts.mjs";
-import { hash, json, here, exists } from "./environment.mjs";
-import { compilePair } from "./compile.mjs";
-import { prepareReference } from "./reference.mjs";
-import { observeBrowser } from "./browser.mjs";
-
-function assertSnapshot(snapshot, index) {
+import { wholeError } from "../hosts/contracts.ts";
+import { hash, json, here, exists } from "./environment.ts";
+import { compilePair } from "./compile.ts";
+import { prepareReference } from "./reference.ts";
+import { observeBrowser } from "./browser.ts";
+import type {
+  BrowserObservation,
+  RuntimeSnapshot,
+  DomTree,
+  RuntimeInput,
+  RuntimeLoader,
+  RuntimeReport,
+  ServerReport,
+} from "./types.ts";
+function assertSnapshot(snapshot: RuntimeSnapshot, index: number) {
   assert.deepEqual(
     snapshot.metrics.setup,
     { App: 1, Counter: 1 },
@@ -26,16 +34,16 @@ function assertSnapshot(snapshot, index) {
       : [],
   );
   assert.deepEqual(snapshot.diagnostics, { warnings: [], errors: [] });
-  const nodes = [],
+  const nodes: DomTree[] = [],
     pending = [...snapshot.tree];
   while (pending.length) {
-    const node = pending.shift();
+    const node = pending.shift()!;
     nodes.push(node);
     pending.push(...node.children);
   }
   const button = nodes.filter((node) => node.nodeName === "BUTTON");
   assert.equal(button.length, 1);
-  const attrs = Object.fromEntries(button[0].attributes);
+  const attrs = Object.fromEntries(button[0].attributes!);
   assert.equal(attrs.type, "button");
   assert.equal(attrs.id, index === 1 || index === 2 ? "counter-updated" : "counter-initial");
   assert.equal(attrs["data-probe"], index === 1 || index === 2 ? "更新 café" : "雪 🧭");
@@ -51,8 +59,8 @@ function assertSnapshot(snapshot, index) {
   const text = button[0].children.map((node) => node.data ?? "").join("");
   assert.equal(text, ["雪 🧭:0", "更新 café:0", "更新 café:1", "雪 🧭:0"][index]);
 }
-export async function runRuntime(input, load) {
-  const report = {
+export async function runRuntime(input: RuntimeInput, load: RuntimeLoader) {
+  const report: RuntimeReport = {
     input,
     compiled: null,
     reference: null,
@@ -79,7 +87,7 @@ export async function runRuntime(input, load) {
     const serverInput = path.join(directory, "server.input.json"),
       serverReport = path.join(directory, "server.json");
     json(serverInput, { runtime: input.runtime, directory, report: serverReport });
-    const server = spawnSync(process.execPath, [path.join(here, "node-ssr.mjs"), serverInput], {
+    const server = spawnSync(process.execPath, [path.join(here, "node-ssr.ts"), serverInput], {
       maxBuffer: 64 * 1024 * 1024,
       timeout: 60000,
     });
@@ -90,7 +98,9 @@ export async function runRuntime(input, load) {
       signal: server.signal,
       error: server.error ? wholeError(server.error) : null,
     });
-    report.server = fs.existsSync(serverReport) ? JSON.parse(fs.readFileSync(serverReport)) : null;
+    report.server = fs.existsSync(serverReport)
+      ? (JSON.parse(fs.readFileSync(serverReport, "utf8")) as ServerReport)
+      : null;
     assert(report.server, "whole actual Node SSR report is mandatory");
     // Collect all browser counterparts before comparing complete raw output.
     report.browser = await observeBrowser(input, directory, report.server);
@@ -117,27 +127,27 @@ export async function runRuntime(input, load) {
         ["initial", "updated", "clicked", "restored"],
       );
       row.snapshots.forEach(assertSnapshot);
-      assert.equal(row.dispose.html, "", "real app unmount releases the whole rendered block");
-      assert.deepEqual(row.dispose.diagnostics, { warnings: [], errors: [] });
+      assert.equal(row.dispose!.html, "", "real app unmount releases the whole rendered block");
+      assert.deepEqual(row.dispose!.diagnostics, { warnings: [], errors: [] });
       if (row.mode === "hydrate") {
-        assert(row.hydration.originalCount > 0);
-        assert.equal(row.hydration.sameCount, true);
+        assert(row.hydration!.originalCount > 0);
+        assert.equal(row.hydration!.sameCount, true);
         assert(
-          row.hydration.retainedInOrder.every(Boolean),
+          row.hydration!.retainedInOrder.every(Boolean),
           "all original SSR nodes, including comments/text, retain identity",
         );
       }
     }
     for (const mode of ["mount", "hydrate"]) {
-      const candidate = report.browser.observations.find(
+      const candidate: BrowserObservation | undefined = report.browser.observations.find(
         (row) => row.mode === mode && row.kind === "candidate",
       );
-      const reference = report.browser.observations.find(
+      const reference: BrowserObservation | undefined = report.browser.observations.find(
         (row) => row.mode === mode && row.kind === "reference",
       );
       assert.deepEqual(
-        candidate.snapshots,
-        reference.snapshots,
+        candidate!.snapshots,
+        reference!.snapshots,
         "every raw HTML, complete DOM, authored effect and diagnostic packet matches the real Vue control",
       );
     }

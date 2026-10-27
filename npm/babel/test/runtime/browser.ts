@@ -3,23 +3,34 @@ import fs from "node:fs";
 import http from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { here, json } from "./environment.mjs";
-import { wholeError } from "../hosts/contracts.mjs";
-
-export async function observeBrowser(input, directory, serverReport) {
+import { here, json } from "./environment.ts";
+import { wholeError } from "../hosts/contracts.ts";
+import { prepareBrowserSource } from "./browser-source.ts";
+import type { Browser } from "playwright";
+import type { RuntimeInput, ServerReport, BrowserInput, BrowserObservation } from "./types.ts";
+export async function observeBrowser(
+  input: RuntimeInput,
+  directory: string,
+  serverReport: ServerReport,
+) {
   const requireRuntime = createRequire(path.join(input.runtime.root, "package.json"));
-  const { chromium } = requireRuntime("playwright");
+  const { chromium }: typeof import("playwright") = requireRuntime("playwright");
   assert.equal(typeof chromium?.launch, "function", "the actual Playwright host exposes Chromium");
+  const browserSource = prepareBrowserSource(
+    path.join(here, "browser-page.ts"),
+    directory,
+    "runtime-browser",
+  );
   const routes = new Map([
     ["/runtime.js", input.runtime.browserEntry],
-    ["/browser-page.mjs", path.join(here, "browser-page.mjs")],
+    ["/browser-page.mjs", path.join(here, "browser-page.ts")],
   ]);
   for (const name of fs.readdirSync(directory))
     if (name.endsWith(".mjs")) routes.set("/generated/" + name, path.join(directory, name));
-  let current;
-  const requests = [];
+  let current: BrowserInput | undefined;
+  const requests: { pathname: string; method: string | undefined }[] = [];
   const server = http.createServer((request, response) => {
-    const url = new URL(request.url, "http://127.0.0.1/");
+    const url = new URL(request.url!, "http://127.0.0.1/");
     requests.push({ pathname: url.pathname, method: request.method });
     if (url.pathname === "/favicon.ico") {
       response.writeHead(204);
@@ -43,21 +54,21 @@ export async function observeBrowser(input, directory, serverReport) {
       return;
     }
     response.writeHead(200, { "content-type": "text/javascript; charset=utf-8" });
-    response.end(fs.readFileSync(file));
+    response.end(url.pathname === "/browser-page.mjs" ? browserSource : fs.readFileSync(file));
   });
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
   });
-  const address = server.address();
+  const address = server.address() as import("node:net").AddressInfo;
   const origin = "http://127.0.0.1:" + address.port;
-  const observations = [];
-  let browser;
+  const observations: BrowserObservation[] = [];
+  let browser: Browser | undefined;
   try {
     browser = await chromium.launch({ headless: true });
-    for (const mode of ["mount", "hydrate"])
-      for (const kind of ["candidate", "reference"]) {
-        const row = {
+    for (const mode of ["mount", "hydrate"] as const)
+      for (const kind of ["candidate", "reference"] as const) {
+        const row: BrowserObservation = {
           kind,
           mode,
           snapshots: [],
@@ -106,8 +117,8 @@ export async function observeBrowser(input, directory, serverReport) {
             null,
             "whole browser bootstrap succeeds",
           );
-          const snapshot = async (name) => {
-            const packet = await page.evaluate(() => globalThis.__vizeRuntime.snapshot());
+          const snapshot = async (name: string) => {
+            const packet = await page.evaluate(() => globalThis.__vizeRuntime!.snapshot());
             row.snapshots.push({ name, ...packet });
             await page.screenshot({
               path: path.join(directory, kind + "-" + mode + "-" + name + ".png"),
@@ -115,14 +126,14 @@ export async function observeBrowser(input, directory, serverReport) {
             });
           };
           await snapshot("initial");
-          await page.evaluate(() => globalThis.__vizeRuntime.update());
+          await page.evaluate(() => globalThis.__vizeRuntime!.update());
           await snapshot("updated");
           assert.equal(await page.locator("button").count(), 1);
           await page.locator("button").click();
           await snapshot("clicked");
-          await page.evaluate(() => globalThis.__vizeRuntime.restore());
+          await page.evaluate(() => globalThis.__vizeRuntime!.restore());
           await snapshot("restored");
-          row.dispose = await page.evaluate(() => globalThis.__vizeRuntime.dispose());
+          row.dispose = await page.evaluate(() => globalThis.__vizeRuntime!.dispose());
         } catch (error) {
           row.failure = wholeError(error);
         } finally {
@@ -132,7 +143,7 @@ export async function observeBrowser(input, directory, serverReport) {
       }
   } finally {
     await browser?.close();
-    await new Promise((resolve) => server.close(resolve));
+    await new Promise<void>((resolve) => server.close(() => resolve()));
   }
   const report = {
     chromiumVersion: browser?.version(),

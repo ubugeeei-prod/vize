@@ -4,7 +4,7 @@ This strict matrix runs one authored CRLF/Unicode `Counter`/`App` TSX program th
 
 Install the existing `../hosts/fixtures/babel7` and `babel8` locks, then each of `fixtures/vdom`, `fixtures/vapor-rc9`, and `fixtures/vapor-rc11` with `npm ci --ignore-scripts`. The source Actions owner installs Chromium explicitly; this suite never downloads a browser implicitly. `infrastructure.mjs` checks only actual runtime exports, exact compiler graphs, independent reference SSR and real Babel TypeScript parsing. It loads no packed plugin/native addon or browser and grants no runtime producer credit.
 
-The supported functional command is `node --test npm/babel/test/runtime-renderers.test.mjs`, while the genuine source-native preparation owner is active, with:
+The supported functional command is `node --test npm/babel/test/runtime-renderers.test.ts`, while the genuine source-native preparation owner is active, with:
 
 - `SOURCE_SHA`: full actual integration revision.
 - `VIZE_BABEL_PACKED_PLUGIN`: actual built dual-export npm tarball.

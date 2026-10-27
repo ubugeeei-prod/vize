@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { wholeError, nodes } from "../hosts/contracts.mjs";
+import { wholeError, nodes } from "../hosts/contracts.ts";
 import {
   runtimeSpecs,
   runtimeIdentity,
@@ -13,9 +13,30 @@ import {
   json,
   hash,
   exists,
-} from "./environment.mjs";
-import { freshMetrics, source } from "./fixtures.mjs";
-import { prepareReference } from "./reference.mjs";
+} from "./environment.ts";
+import { freshMetrics, source } from "./fixtures.ts";
+import { prepareReference } from "./reference.ts";
+import type { FileResult, PluginTarget } from "@babel/core";
+import type { BabelAst, BabelCore, WholeError } from "../host-types.ts";
+import type { RuntimeMetrics } from "./fixtures.ts";
+import type { RuntimeIdentity, RuntimeModule, GeneratedFile } from "./types.ts";
+interface InfrastructureRuntime {
+  id: string;
+  identity: RuntimeIdentity | null;
+  exports: { version: string; functions: Record<string, string> } | null;
+  reference: GeneratedFile[] | null;
+  html: string | null;
+  metrics: RuntimeMetrics | null;
+  logs: { type: string; args?: string[]; error?: WholeError }[];
+  failure: WholeError | null;
+  playwright?: { chromiumLaunch: string };
+}
+interface InfrastructureHost {
+  host: (typeof hostSpecs)[number];
+  source: string;
+  stripped: FileResult | null;
+  failure: WholeError | null;
+}
 
 const output = path.resolve(
   process.env.VIZE_BABEL_RUNTIME_INFRA_OUTPUT ??
@@ -26,11 +47,11 @@ fs.mkdirSync(output, { recursive: true });
 const report = {
   scope:
     "actual runtime API/reference/compiler/TSX-parser infrastructure only; zero packed-plugin, source-native or Chromium execution",
-  runtime: [],
-  hosts: [],
+  runtime: [] as InfrastructureRuntime[],
+  hosts: [] as InfrastructureHost[],
 };
 for (const spec of runtimeSpecs) {
-  const row = {
+  const row: InfrastructureRuntime = {
     id: spec.id,
     identity: null,
     exports: null,
@@ -49,7 +70,9 @@ for (const spec of runtimeSpecs) {
     console.warn = (...args) => row.logs.push({ type: "warning", args: args.map(String) });
     console.error = (...args) => row.logs.push({ type: "error", args: args.map(String) });
     console.info = (...args) => row.logs.push({ type: "info", args: args.map(String) });
-    const browserApi = await import(pathToFileURL(row.identity.browserEntry).href);
+    const browserApi: typeof import("vue") & Record<string, unknown> = await import(
+      pathToFileURL(row.identity.browserEntry).href
+    );
     const names =
       spec.target === "vapor"
         ? [
@@ -75,12 +98,15 @@ for (const spec of runtimeSpecs) {
     const playwright = requireRuntime("playwright");
     row.playwright = { chromiumLaunch: typeof playwright.chromium?.launch };
     assert.equal(row.playwright.chromiumLaunch, "function", "public CommonJS Playwright host API");
-    const Vue = await import(pathToFileURL(requireRuntime.resolve("vue")).href);
-    const renderer = await import(
-      pathToFileURL(requireRuntime.resolve("@vue/server-renderer")).href
+    const Vue: typeof import("vue") = await import(
+      pathToFileURL(requireRuntime.resolve("vue")).href
     );
+    const renderer: { renderToString(app: ReturnType<typeof Vue.createSSRApp>): Promise<string> } =
+      await import(pathToFileURL(requireRuntime.resolve("@vue/server-renderer")).href);
     globalThis.__vizeBabelRuntime = freshMetrics();
-    const module = await import(pathToFileURL(path.join(directory, "reference-server.mjs")).href);
+    const module: RuntimeModule = await import(
+      pathToFileURL(path.join(directory, "reference-server.mjs")).href
+    );
     const app = Vue.createSSRApp(module.App);
     app.config.warnHandler = (message) => row.logs.push({ type: "warning", args: [message] });
     app.config.errorHandler = (error) => row.logs.push({ type: "error", error: wholeError(error) });
@@ -105,14 +131,14 @@ for (const spec of runtimeSpecs) {
   }
 }
 for (const spec of hostSpecs) {
-  const row = { host: spec, source, stripped: null, failure: null };
+  const row: InfrastructureHost = { host: spec, source, stripped: null, failure: null };
   report.hosts.push(row);
   try {
     const requireHost = createRequire(
       path.resolve(here, "../hosts/fixtures/babel" + spec.major + "/package.json"),
     );
-    const core = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
-    const typescript = (
+    const core: BabelCore = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
+    const typescript: PluginTarget = (
       await import(pathToFileURL(requireHost.resolve("@babel/plugin-transform-typescript")).href)
     ).default;
     assert.equal(core.version, spec.version);
@@ -124,15 +150,19 @@ for (const spec of hostSpecs) {
       parserOpts: { plugins: ["jsx", "typescript"] },
       plugins: [[typescript, { isTSX: true }]],
     });
+    assert(result);
     assert(!nodes(result.ast).some((node) => node.type.startsWith("TS")));
     for (const name of ["Counter", "App"]) {
-      const declaration = nodes(result.ast).find(
+      const declaration: BabelAst | undefined = nodes(result.ast).find(
         (node) =>
           node.type === "VariableDeclarator" &&
           node.id.type === "Identifier" &&
           node.id.name === name,
       );
-      assert.equal(declaration.init.type, "ArrowFunctionExpression");
+      assert(
+        declaration?.type === "VariableDeclarator" &&
+          declaration.init?.type === "ArrowFunctionExpression",
+      );
       assert.equal(declaration.init.body.type, "BlockStatement");
     }
     row.stripped = result;

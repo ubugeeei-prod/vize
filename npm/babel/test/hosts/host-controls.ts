@@ -3,17 +3,26 @@ import assert from "node:assert/strict";
 import { createRequire, registerHooks } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { hostSpecs, json } from "./environment.mjs";
-import { positiveFixtures } from "./fixtures.mjs";
-import { nodes, wholeError } from "./contracts.mjs";
+import { hostSpecs, json } from "./environment.ts";
+import { positiveFixtures } from "./fixtures.ts";
+import { nodes, wholeError } from "./contracts.ts";
+import type { BabelCore, WholeError } from "../host-types.ts";
+import type { InputOptions, PluginAPI, PluginItem, PluginObject, PluginTarget } from "@babel/core";
+
+interface HostControl {
+  version: string;
+  id: string;
+  code: string | null;
+  error: WholeError | null;
+}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const observations = [];
-const nativeGuardControls = [];
+const observations: HostControl[] = [];
+const nativeGuardControls: { version: string; loader: string; nativeExecution: boolean }[] = [];
 for (const spec of hostSpecs) {
   const root = path.join(here, "fixtures", "babel" + spec.major),
     requireHost = createRequire(path.join(root, "package.json"));
-  const core = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
+  const core: BabelCore = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
   assert.equal(core.version, spec.version);
   let guardAttempts = 0;
   const hook = registerHooks({
@@ -39,17 +48,17 @@ for (const spec of hostSpecs) {
   } finally {
     hook.deregister();
   }
-  const load = async (name) =>
+  const load = async (name: string): Promise<PluginTarget> =>
     (await import(pathToFileURL(requireHost.resolve(name)).href)).default;
   const typescript = await load("@babel/plugin-transform-typescript");
   const modules = await load("@babel/plugin-transform-modules-commonjs");
   const decorators = await load("@babel/plugin-proposal-decorators");
   const properties = await load("@babel/plugin-transform-class-properties");
   for (const fixture of positiveFixtures.filter((f) => !f.error)) {
-    const row = { version: core.version, id: fixture.id, code: null, error: null };
+    const row: HostControl = { version: core.version, id: fixture.id, code: null, error: null };
     observations.push(row);
     try {
-      const remove = (api) => ({
+      const remove = (api: PluginAPI): PluginObject => ({
         pre(file) {
           assert.equal(typeof api.parseSync, "function");
           assert.equal(typeof api.transformFromAstSync, "function");
@@ -62,12 +71,14 @@ for (const spec of hostSpecs) {
           }
         },
       });
-      const plugins = [remove];
+      const plugins: PluginItem[] = [remove];
       if (fixture.typescript) plugins.push([typescript, { isTSX: true }]);
       if (fixture.decorators) plugins.push([decorators, { version: "2023-11" }]);
       if (fixture.classProperties) plugins.push(properties);
       plugins.push(modules);
-      const parserOpts = { plugins: fixture.typescript ? ["jsx", "typescript"] : ["jsx"] };
+      const parserOpts: InputOptions["parserOpts"] = {
+        plugins: fixture.typescript ? ["jsx", "typescript"] : ["jsx"],
+      };
       const result = core.transformSync(fixture.source, {
         filename: path.join(root, fixture.id + ".tsx"),
         babelrc: false,
@@ -76,6 +87,7 @@ for (const spec of hostSpecs) {
         parserOpts,
         plugins,
       });
+      assert(result && typeof result.code === "string");
       assert(!nodes(result.ast).some((n) => n.type === "JSXElement"));
       if (fixture.typescript) assert(!nodes(result.ast).some((n) => n.type.startsWith("TS")));
       if (fixture.decorators) assert(!nodes(result.ast).some((n) => n.type === "Decorator"));

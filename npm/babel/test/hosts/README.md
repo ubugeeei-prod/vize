@@ -2,9 +2,9 @@
 
 These isolated consumers use actual Babel 7.29.7 and 8.0.9, their matching major plugin releases, and an actual `npm pack --ignore-scripts` artifact. They never import the plugin's source files or resolve a registry native fallback.
 
-Install each fixture with `npm ci --ignore-scripts --prefix npm/babel/test/hosts/fixtures/babel7` and the corresponding `babel8` path. The lockfiles pin the actual host/runtime graph. Run `host-controls.mjs` to check only the real host API/parser/ordinary-plugin infrastructure; that command grants no packed-plugin or native credit.
+Install each fixture with `npm ci --ignore-scripts --prefix npm/babel/test/hosts/fixtures/babel7` and the corresponding `babel8` path. The lockfiles pin the actual host/runtime graph. Run `host-controls.ts` to check only the real host API/parser/ordinary-plugin infrastructure; that command grants no packed-plugin or native credit.
 
-The full command is `node --test npm/babel/test/packed-hosts.test.mjs` with:
+The full command is `node --test npm/babel/test/packed-hosts.test.ts` with:
 
 - `VIZE_BABEL_PACKED_PLUGIN`: the real built plugin `.tgz` containing both public runtime and declaration entrypoints.
 - `VIZE_BABEL_NATIVE_ROOT`: the explicit source `npm/native` directory, with the matching package version and a genuinely built local addon.

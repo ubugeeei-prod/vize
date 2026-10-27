@@ -1,21 +1,22 @@
 import * as Vue from "vue";
+import type { DomTree, RuntimeModule, Diagnostics } from "./types.ts";
 
 const input = globalThis.__vizeRuntimeInput;
-const check = (value, message) => {
+const check: (value: unknown, message: string) => asserts value = (value, message) => {
   if (!value) throw new Error(message);
 };
-function allNodes(host) {
+function allNodes(host: Node): Node[] {
   const walker = document.createTreeWalker(host, NodeFilter.SHOW_ALL),
-    result = [];
+    result: Node[] = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) result.push(node);
   return result;
 }
-function tree(node) {
-  const result = { nodeType: node.nodeType, nodeName: node.nodeName };
+function tree(node: Node): DomTree {
+  const result = { nodeType: node.nodeType, nodeName: node.nodeName } as DomTree;
   if (node.nodeType === Node.ELEMENT_NODE) {
-    result.namespace = node.namespaceURI;
-    result.attributes = [...node.attributes]
-      .map((attribute) => [attribute.name, attribute.value])
+    result.namespace = (node as Element).namespaceURI;
+    result.attributes = [...(node as Element).attributes]
+      .map((attribute): [string, string] => [attribute.name, attribute.value])
       .sort(([a], [b]) => a.localeCompare(b));
     if (node instanceof HTMLButtonElement) {
       result.disabled = node.disabled;
@@ -23,7 +24,7 @@ function tree(node) {
     }
   }
   if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.COMMENT_NODE)
-    result.data = node.data;
+    result.data = (node as CharacterData).data;
   result.children = [...node.childNodes].map(tree);
   return result;
 }
@@ -35,9 +36,9 @@ async function boot() {
     parentEvents: 0,
     events: [],
   };
-  const module = await import(input.module);
+  const module: RuntimeModule = await import(input.module);
   check(module.App && typeof module.App === "object", "actual block component object required");
-  const host = document.querySelector("#app");
+  const host = document.querySelector<HTMLElement>("#app")!;
   if (input.mode === "hydrate") host.innerHTML = input.html;
   const before = input.mode === "hydrate" ? allNodes(host) : [];
   const beforeHtml = host.innerHTML,
@@ -51,11 +52,15 @@ async function boot() {
         ? Vue.createSSRApp
         : Vue.createApp;
   check(typeof create === "function", "the selected real mount/hydration API exists");
-  const diagnostics = { warnings: [], errors: [] };
-  const app = create(module.App);
+  const diagnostics: Diagnostics = { warnings: [], errors: [] };
+  const app = (create as typeof Vue.createApp)(module.App);
   app.config.warnHandler = (message) => diagnostics.warnings.push(message);
   app.config.errorHandler = (error) =>
-    diagnostics.errors.push({ name: error.name, message: error.message, stack: error.stack });
+    diagnostics.errors.push({
+      name: (error as Error).name,
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+    });
   app.mount(host);
   await Vue.nextTick();
   const after = allNodes(host);
@@ -110,8 +115,8 @@ async function boot() {
 }
 boot().catch((error) => {
   globalThis.__vizeRuntimeFailure = {
-    name: error.name,
-    message: error.message,
-    stack: error.stack,
+    name: (error as Error).name,
+    message: (error as Error).message,
+    stack: (error as Error).stack,
   };
 });

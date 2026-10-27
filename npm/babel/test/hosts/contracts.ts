@@ -1,14 +1,23 @@
 import assert from "node:assert/strict";
+import type {
+  BabelAst,
+  BabelCore,
+  BabelResult,
+  MappingModule,
+  TraceModule,
+  WholeError,
+} from "../host-types.ts";
+import type { HostFixture } from "./fixtures.ts";
 
-export function nodes(ast) {
-  const found = [],
-    pending = [ast],
-    seen = new Set();
+export function nodes(ast: unknown): BabelAst[] {
+  const found: BabelAst[] = [],
+    pending: unknown[] = [ast],
+    seen = new Set<object>();
   while (pending.length) {
     const value = pending.pop();
     if (!value || typeof value !== "object" || seen.has(value)) continue;
     seen.add(value);
-    if (typeof value.type === "string") found.push(value);
+    if (typeof (value as { type?: unknown }).type === "string") found.push(value as BabelAst);
     for (const child of Object.values(value)) {
       if (Array.isArray(child)) pending.push(...child);
       else if (child && typeof child === "object") pending.push(child);
@@ -16,45 +25,52 @@ export function nodes(ast) {
   }
   return found;
 }
-export function hasJsx(ast) {
+export function hasJsx(ast: unknown) {
   return nodes(ast).some((node) => node.type === "JSXElement" || node.type === "JSXFragment");
 }
-export function editJsx(ast, value) {
+export function editJsx(ast: unknown, value: string) {
   const attributes = nodes(ast).filter(
-    (node) => node.type === "JSXAttribute" && node.name.name === "data-probe",
+    (node) =>
+      node.type === "JSXAttribute" &&
+      node.name.type === "JSXIdentifier" &&
+      node.name.name === "data-probe",
   );
   assert.equal(attributes.length, 1, "the authored attribute edit must be unambiguous");
-  assert.equal(attributes[0].value.type, "StringLiteral");
+  assert(attributes[0].type === "JSXAttribute" && attributes[0].value?.type === "StringLiteral");
   attributes[0].value.value = value;
 }
-export function removeJsx(core, ast) {
+export function removeJsx(core: BabelCore, ast: unknown) {
   const arrow = nodes(ast).find((node) => node.type === "ArrowFunctionExpression");
   assert(arrow && hasJsx(arrow.body));
   arrow.body = core.types.numericLiteral(42);
 }
-export function wholeError(error) {
+export function wholeError(error: unknown): WholeError {
+  const value = error as { name: unknown; constructor: { name: string }; [key: string]: unknown };
   return {
-    name: error.name,
-    constructor: error.constructor.name,
+    name: value.name,
+    constructor: value.constructor.name,
     ownProperties: Object.fromEntries(
       Object.getOwnPropertyNames(error).map((key) => [
         key,
-        error[key] === undefined ? { type: "undefined" } : error[key],
+        value[key] === undefined ? { type: "undefined" } : value[key],
       ]),
     ),
   };
 }
-export function assertCompiled(result, fixture) {
+export function assertCompiled(
+  result: BabelResult | null,
+  fixture: HostFixture,
+): asserts result is BabelResult & { code: string; ast: Extract<BabelAst, { type: "File" }> } {
   assert(result && typeof result.code === "string" && result.ast);
   assert.equal(hasJsx(result.ast), false, "the complete returned AST has no remaining JSX");
-  assert.deepEqual(result.metadata.vize.jsx, {
+  assert.deepEqual(result.metadata.vize!.jsx, {
     defaultMode: "vdom",
     ssr: false,
     nativePasses: 1,
     warnings: [],
     scopedStyles: [],
   });
-  if (fixture.pre === "edit") assert.equal(result.metadata.vize.predecessor, "preserved");
+  if (fixture.pre === "edit") assert.equal(result.metadata.vize!.predecessor, "preserved");
   if (fixture.typescript)
     assert.equal(
       nodes(result.ast).filter((node) => node.type.startsWith("TS")).length,
@@ -74,14 +90,14 @@ export function assertCompiled(result, fixture) {
       "the actual host class transform must run",
     );
   if (fixture.prologue) {
-    assert.equal(result.ast.program.interpreter.value, "/usr/bin/env node");
+    assert.equal(result.ast.program.interpreter!.value, "/usr/bin/env node");
     assert.equal(
       result.ast.program.directives.filter((d) => d.value.value === "use client").length,
       1,
     );
     for (const marker of ["authored-leading 🧭", "authored-trailing"]) {
       assert.equal(
-        result.ast.comments.filter((c) => c.value.trim() === marker).length,
+        result.ast.comments!.filter((c) => c.value.trim() === marker).length,
         1,
         "the complete comment survives exactly once",
       );
@@ -92,7 +108,7 @@ export function assertCompiled(result, fixture) {
     assert(!result.code.includes("authored-trailing"));
   }
 }
-export function position(text, token) {
+export function position(text: string, token: string) {
   assert.equal(text.split(token).length, 2, "unique authored source-map anchor");
   const at = text.indexOf(token),
     prefix = text.slice(0, at);
@@ -101,7 +117,7 @@ export function position(text, token) {
     column: prefix.slice(prefix.lastIndexOf("\n") + 1).length,
   };
 }
-export function upstreamMap(mapping, source, sourceName) {
+export function upstreamMap(mapping: MappingModule, source: string, sourceName: string) {
   const map = new mapping.GenMapping({ file: sourceName });
   const lines = source.split(/\r\n|\n|\r/);
   const authored =
@@ -118,7 +134,8 @@ export function upstreamMap(mapping, source, sourceName) {
   }
   return { map: mapping.toEncodedMap(map), authored };
 }
-export function assertUpstream(trace, result, source) {
+export function assertUpstream(trace: TraceModule, result: BabelResult, source: string) {
+  assert(result.code && result.map);
   const generated = position(result.code, "authoredToken =");
   const original = position(source, "authoredToken =");
   const map = new trace.TraceMap(result.map);
@@ -129,7 +146,7 @@ export function assertUpstream(trace, result, source) {
   );
   if (actual.name !== null) assert.equal(actual.name, "authoredToken");
   assert.equal(
-    result.map.sourcesContent[result.map.sources.indexOf(actual.source)],
+    result.map.sourcesContent![result.map.sources.indexOf(actual.source!)],
     "// upstream header\n// second authored line\n" +
       source
         .split(/\r\n|\n|\r/)

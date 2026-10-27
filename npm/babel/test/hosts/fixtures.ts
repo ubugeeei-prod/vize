@@ -1,5 +1,33 @@
+export interface HostFixture {
+  id: string;
+  source: string;
+  typescript?: boolean;
+  fromAst?: "remove" | "edit" | "unchanged";
+  pre?: "remove" | "edit" | "create";
+  order?: "first" | "last";
+  html?: string;
+  ordinaryEdit?: boolean;
+  exported?: Record<string, string | number>;
+  cloneInputAst?: boolean;
+  renderProps?: Record<string, string>;
+  decorators?: boolean;
+  classProperties?: boolean;
+  comments?: boolean;
+  prologue?: boolean;
+  upstream?: boolean;
+  error?: string;
+  latePre?: boolean;
+  latePost?: boolean;
+  reactTransform?: boolean;
+  overrideScope?: "react" | "vue";
+  filenameSuffix?: string;
+  generatorOverrides?: number;
+  uidReservation?: "split" | "before";
+  modules?: boolean;
+}
+
 const basic = 'export const render = () => <div data-probe="original">hello</div>;\n';
-export const coldFixtures = [
+export const coldFixtures: HostFixture[] = [
   { id: "ordinary-module", source: "export const answer = 42;\n" },
   { id: "jsx-looking-text", source: '// <Fake /> is a comment\nexport const note = "<Fake />";\n' },
   {
@@ -15,7 +43,7 @@ export const coldFixtures = [
   { id: "from-ast-jsx-removed", fromAst: "remove", source: basic },
   { id: "pre-hook-jsx-removed", pre: "remove", source: basic },
 ];
-export const positiveFixtures = [
+export const positiveFixtures: HostFixture[] = [
   {
     id: "vize-before-module-transform",
     source: basic,
@@ -146,7 +174,7 @@ coldFixtures.push(
     filenameSuffix: ".react.jsx",
   },
 );
-for (const order of ["first", "last"])
+for (const order of ["first", "last"] as const)
   coldFixtures.push({
     id: "late-post-introduces-jsx-" + order,
     source: "export const existing = 1;\n",
@@ -171,7 +199,7 @@ positiveFixtures.push(
     error: "More than one plugin attempted to override codegen.",
   },
 );
-for (const order of ["first", "last"])
+for (const order of ["first", "last"] as const)
   for (const cloneInputAst of [false, true]) {
     coldFixtures.push({
       id: `real-host-generator-plain-${order}-clone-${cloneInputAst}`,

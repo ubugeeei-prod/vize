@@ -5,13 +5,46 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import type { BinaryLike } from "node:crypto";
 
-export const hostSpecs = [
+export interface HostSpec {
+  major: 7 | 8;
+  version: string;
+}
+export interface HostSettings {
+  source: string;
+  tarball: string;
+  output: string;
+  tarballSha256: string;
+  nativeRoot: string | null;
+}
+export interface PackageIdentity {
+  name: string;
+  version: string;
+  root: string;
+  entry: string;
+  manifestSha256: string;
+  entrySha256: string;
+}
+interface PackageManifest {
+  name: string;
+  version: string;
+  dependencies: Record<string, string>;
+  exports: Record<string, { import: { default: string }; require: { default: string } }>;
+}
+interface NativePreparation {
+  head: string;
+  binding: string;
+  sha256: string;
+  [key: string]: unknown;
+}
+
+export const hostSpecs: HostSpec[] = [
   { major: 7, version: "7.29.7" },
   { major: 8, version: "8.0.9" },
 ];
-export const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-export const json = (file, value) => {
+export const hash = (bytes: BinaryLike) => createHash("sha256").update(bytes).digest("hex");
+export const json = (file: string, value: unknown) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(
     file,
@@ -19,17 +52,17 @@ export const json = (file, value) => {
   );
 };
 const directory = path.dirname(fileURLToPath(import.meta.url));
-function entryExists(file) {
+function entryExists(file: string) {
   try {
     fs.lstatSync(file);
     return true;
   } catch (error) {
-    if (error.code === "ENOENT") return false;
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
   }
 }
 
-export function settings() {
+export function settings(): HostSettings {
   const source = process.env.SOURCE_SHA;
   assert.match(
     source ?? "",
@@ -43,12 +76,12 @@ export function settings() {
   const tarball = fs.realpathSync(process.env.VIZE_BABEL_PACKED_PLUGIN);
   assert(fs.statSync(tarball).isFile(), "VIZE_BABEL_PACKED_PLUGIN must be an actual npm tarball");
   const output = path.resolve(
-    process.env.VIZE_BABEL_HOST_OUTPUT ?? path.join(directory, ".artifacts", source),
+    process.env.VIZE_BABEL_HOST_OUTPUT ?? path.join(directory, ".artifacts", source!),
   );
   assert(!entryExists(output), "the output must be fresh so earlier raw observations are retained");
   fs.mkdirSync(output, { recursive: true });
   return {
-    source,
+    source: source!,
     tarball,
     output,
     tarballSha256: hash(fs.readFileSync(tarball)),
@@ -58,14 +91,14 @@ export function settings() {
   };
 }
 
-export function packageIdentity(requireHost, name) {
+export function packageIdentity(requireHost: NodeJS.Require, name: string): PackageIdentity {
   const entry = requireHost.resolve(name);
   let directory = path.dirname(entry);
   for (;;) {
     const manifest = path.join(directory, "package.json");
     if (fs.existsSync(manifest)) {
       const bytes = fs.readFileSync(manifest);
-      const pkg = JSON.parse(bytes);
+      const pkg = JSON.parse(bytes.toString("utf8")) as PackageManifest;
       if (pkg.name === name)
         return {
           name,
@@ -82,9 +115,11 @@ export function packageIdentity(requireHost, name) {
   }
 }
 
-export function prepareHost(spec, config) {
+export function prepareHost(spec: HostSpec, config: HostSettings) {
   const root = path.join(directory, "fixtures", "babel" + spec.major);
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "package.json")));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(root, "package.json"), "utf8"),
+  ) as PackageManifest;
   assert.equal(manifest.dependencies["@babel/core"], spec.version);
   const requireHost = createRequire(path.join(root, "package.json"));
   const core = packageIdentity(requireHost, "@babel/core");
@@ -133,7 +168,7 @@ export function prepareHost(spec, config) {
   try {
     execFileSync("tar", ["-xzf", config.tarball, "-C", temporary]);
     const original = path.join(temporary, "package");
-    const check = (directory) => {
+    const check = (directory: string): void => {
       for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
         assert(!entry.isSymbolicLink(), "packed runtime files must not be source symlinks");
         if (entry.isDirectory()) check(path.join(directory, entry.name));
@@ -144,7 +179,9 @@ export function prepareHost(spec, config) {
   } finally {
     fs.rmSync(temporary, { recursive: true });
   }
-  const pkg = JSON.parse(fs.readFileSync(path.join(target, "package.json")));
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(target, "package.json"), "utf8"),
+  ) as PackageManifest;
   assert.equal(pkg.name, "@vizejs/babel-plugin");
   assert.equal(pkg.exports["."].import.default, "./dist/index.mjs");
   assert.equal(pkg.exports["."].require.default, "./dist/index.cjs");
@@ -153,7 +190,9 @@ export function prepareHost(spec, config) {
     "the packed native dependency must match its explicit source workspace",
   );
   if (config.nativeRoot) {
-    const native = JSON.parse(fs.readFileSync(path.join(config.nativeRoot, "package.json")));
+    const native = JSON.parse(
+      fs.readFileSync(path.join(config.nativeRoot, "package.json"), "utf8"),
+    ) as PackageManifest;
     assert.equal(native.name, "@vizejs/native");
     assert.equal(native.version, pkg.version, "packed plugin and source native package versions");
     const link = path.join(scope, "native");
@@ -179,11 +218,11 @@ export function prepareHost(spec, config) {
   return { ...spec, root, identity };
 }
 
-export async function activeNative(config) {
+export async function activeNative(config: Pick<HostSettings, "nativeRoot" | "source">) {
   assert(config.nativeRoot, "VIZE_BABEL_NATIVE_ROOT must be an explicitly prepared source package");
   const helper = path.join(config.nativeRoot, "scripts/test-preparation.mjs");
   const { readActiveNativePreparation } = await import(pathToFileURL(helper).href);
-  const preparation = readActiveNativePreparation(config.nativeRoot);
+  const preparation = readActiveNativePreparation(config.nativeRoot) as NativePreparation | null;
   assert(preparation, "an active source-native preparation owner and unchanged image are required");
   assert.equal(preparation.head, config.source, "actual prepared native source head");
   const image = fs.realpathSync(path.join(config.nativeRoot, preparation.binding));

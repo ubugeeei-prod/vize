@@ -1,21 +1,25 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { activeNative } from "../hosts/environment.mjs";
-import { hasJsx, wholeError } from "../hosts/contracts.mjs";
-import { source } from "./fixtures.mjs";
-import { hash, json } from "./environment.mjs";
+import { activeNative } from "../hosts/environment.ts";
+import { hasJsx, wholeError } from "../hosts/contracts.ts";
+import { source } from "./fixtures.ts";
+import { hash, json } from "./environment.ts";
+import type { PluginTarget } from "@babel/core";
+import type { BabelResult } from "../host-types.ts";
+import type { RuntimeInput, RuntimeLoader, CompilePacket } from "./types.ts";
 
-const factory = (module) => (typeof module === "function" ? module : module.default);
-export async function compilePair(input, load, directory) {
+const factory = (module: PluginTarget | { default: PluginTarget }): PluginTarget =>
+  typeof module === "function" ? module : (module as { default: PluginTarget }).default;
+export async function compilePair(input: RuntimeInput, load: RuntimeLoader, directory: string) {
   const core = await load.core();
   const plugin = factory(await load.plugin());
   const typescript = factory(await load.typescript());
   assert.equal(core.version, input.compiler.version);
   const preparation = await activeNative(input);
-  const packets = [];
-  for (const phase of ["client", "server"]) {
-    const packet = {
+  const packets: CompilePacket[] = [];
+  for (const phase of ["client", "server"] as const) {
+    const packet: CompilePacket = {
       source,
       phase,
       target: input.runtime.target,
@@ -40,7 +44,7 @@ export async function compilePair(input, load, directory) {
           [plugin, { jsxMode: input.runtime.target, jsxCompat: "native", ssr: phase === "server" }],
           [typescript, { isTSX: true }],
         ],
-      });
+      }) as BabelResult | null;
       assert(packet.result && typeof packet.result.code === "string");
       fs.writeFileSync(path.join(directory, phase + ".mjs"), packet.result.code);
       packet.codeSha256 = hash(Buffer.from(packet.result.code));
@@ -52,7 +56,7 @@ export async function compilePair(input, load, directory) {
       ]);
       assert.deepEqual(await activeNative(input), preparation);
       assert.equal(hasJsx(packet.result.ast), false);
-      assert.deepEqual(packet.result.metadata.vize.jsx, {
+      assert.deepEqual(packet.result.metadata.vize!.jsx, {
         defaultMode: input.runtime.target,
         ssr: phase === "server",
         nativePasses: 1,
@@ -60,7 +64,7 @@ export async function compilePair(input, load, directory) {
         scopedStyles: [],
       });
       assert(
-        packet.result.map && packet.result.map.sourcesContent.includes(source),
+        packet.result.map && packet.result.map.sourcesContent!.includes(source),
         "actual emitted map retains authored CRLF/Unicode source",
       );
     } catch (error) {

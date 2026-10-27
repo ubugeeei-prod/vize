@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/packed-hosts.test.mjs
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/packed-hosts.test.ts
       - name: Measure complete host transforms and the real native-call boundary
         if: always()
         env:
@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.mjs
+          node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.ts
       - name: Qualify eight supported client SSR and hydration rows
         if: always()
         env:
@@ -89,7 +89,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/runtime-renderers.test.mjs
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/runtime-renderers.test.ts
       - name: Qualify additive actual native CSSOM and HTML style guards
         if: always()
         env:
@@ -98,7 +98,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/style-guards.test.mjs
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/style-guards.test.ts
       - name: Check package source and declarations
         if: always()
         run: vp run --filter './npm/babel' check

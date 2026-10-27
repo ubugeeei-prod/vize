@@ -3,23 +3,36 @@ import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { json } from "../runtime/environment.mjs";
-import { wholeError } from "../hosts/contracts.mjs";
-
-export async function browserCases(input, directory, cases) {
+import { json } from "../runtime/environment.ts";
+import { wholeError } from "../hosts/contracts.ts";
+import { prepareBrowserSource } from "../runtime/browser-source.ts";
+import type { Browser } from "playwright";
+import type { RuntimeInput } from "../runtime/types.ts";
+import type { StyleCase } from "./cases.ts";
+import type { StyleBrowserRow, StyleObservation } from "./types.ts";
+export async function browserCases(
+  input: RuntimeInput,
+  directory: string,
+  cases: readonly StyleCase[],
+) {
   const requireRuntime = createRequire(path.join(input.runtime.root, "package.json"));
-  const { chromium } = requireRuntime("playwright");
+  const { chromium }: typeof import("playwright") = requireRuntime("playwright");
+  const browserSource = prepareBrowserSource(
+    path.join(import.meta.dirname, "page.ts"),
+    directory,
+    "style-browser",
+  );
   const files = new Map([
     ["/runtime.js", input.runtime.browserEntry],
-    ["/page.mjs", path.join(import.meta.dirname, "page.mjs")],
+    ["/page.mjs", path.join(import.meta.dirname, "page.ts")],
   ]);
   for (const name of fs.readdirSync(directory))
     if (name.endsWith(".mjs")) files.set("/generated/" + name, path.join(directory, name));
-  let selected;
-  const requests = [],
-    rows = [];
+  let selected: { module: string } | undefined;
+  const requests: { pathname: string; method: string | undefined }[] = [],
+    rows: StyleBrowserRow[] = [];
   const server = http.createServer((request, response) => {
-    const pathname = new URL(request.url, "http://127.0.0.1").pathname;
+    const pathname = new URL(request.url!, "http://127.0.0.1").pathname;
     requests.push({ pathname, method: request.method });
     if (pathname === "/favicon.ico") {
       response.writeHead(204);
@@ -42,18 +55,18 @@ export async function browserCases(input, directory, cases) {
       return;
     }
     response.writeHead(200, { "content-type": "text/javascript;charset=utf-8" });
-    response.end(fs.readFileSync(file));
+    response.end(pathname === "/page.mjs" ? browserSource : fs.readFileSync(file));
   });
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
   });
-  let browser;
+  let browser: Browser | undefined;
   try {
     browser = await chromium.launch({ headless: true });
     for (const item of cases) {
-      const observations = [];
-      const row = {
+      const observations: StyleObservation[] = [];
+      const row: StyleBrowserRow = {
         id: item.id,
         role: item.spelling
           ? "html-source-refusal"
@@ -65,9 +78,9 @@ export async function browserCases(input, directory, cases) {
       };
       rows.push(row);
       for (const kind of item.fold
-        ? ["candidate", "dynamic", "static"]
-        : ["candidate", "dynamic"]) {
-        const observation = {
+        ? (["candidate", "dynamic", "static"] as const)
+        : (["candidate", "dynamic"] as const)) {
+        const observation: StyleObservation = {
           kind,
           snapshots: [],
           console: [],
@@ -91,15 +104,17 @@ export async function browserCases(input, directory, cases) {
         );
         try {
           selected = { module: "/generated/" + item.id + "-" + kind + ".mjs" };
-          await page.goto("http://127.0.0.1:" + server.address().port + "/");
+          await page.goto(
+            "http://127.0.0.1:" + (server.address() as import("node:net").AddressInfo).port + "/",
+          );
           await page.waitForFunction(
             () => globalThis.__styleGuard?.ready || globalThis.__styleGuardFailure,
           );
           assert.equal(await page.evaluate(() => globalThis.__styleGuardFailure ?? null), null);
-          const snapshot = async (name) => {
+          const snapshot = async (name: string) => {
             observation.snapshots.push({
               name,
-              ...(await page.evaluate(() => globalThis.__styleGuard.snapshot())),
+              ...(await page.evaluate(() => globalThis.__styleGuard!.snapshot())),
             });
             await page.screenshot({
               path: path.join(directory, item.id + "-" + kind + "-" + name + ".png"),
@@ -109,9 +124,9 @@ export async function browserCases(input, directory, cases) {
           await snapshot("initial");
           await page.locator("button").click();
           await snapshot("clicked");
-          await page.evaluate(() => globalThis.__styleGuard.restore());
+          await page.evaluate(() => globalThis.__styleGuard!.restore());
           await snapshot("restored");
-          observation.dispose = await page.evaluate(() => globalThis.__styleGuard.dispose());
+          observation.dispose = await page.evaluate(() => globalThis.__styleGuard!.dispose());
         } catch (error) {
           observation.error = wholeError(error);
         } finally {
@@ -173,7 +188,7 @@ export async function browserCases(input, directory, cases) {
     }
   } finally {
     await browser?.close();
-    await new Promise((resolve) => server.close(resolve));
+    await new Promise<void>((resolve) => server.close(() => resolve()));
   }
   const result = {
     runtime: input.runtime,
