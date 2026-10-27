@@ -51,6 +51,7 @@ let packageLock: unknown;
 let sourceArchive: { filename: string; sha256: string } | undefined;
 let sourceCliReceipt: unknown;
 let privateStorage: { root: string; files: { path: string; bytes: number }[] } | undefined;
+let privateStorageInspection: { root: string; entries: string[] } | undefined;
 const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" };
 if (privateCache) env.XDG_CACHE_HOME = privateCache;
 const write = (file: string, contents: string): void => {
@@ -173,7 +174,7 @@ try {
     // Rust CLI. Its original arguments, environment and all streams pass through.
     fs.writeFileSync(
       launcher,
-      `#!/usr/bin/env node\nimport { spawnSync } from "node:child_process";\nconst result = spawnSync(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nif (result.error) throw result.error;\nif (result.signal) process.kill(process.pid, result.signal);\nelse process.exitCode = result.status ?? 1;\n`,
+      `#!/usr/bin/env node\nimport { spawnSync } from "node:child_process";\nconsole.error("VIZE_TASK_CACHE_SOURCE_ENV " + JSON.stringify({ cwd: process.cwd(), xdgCacheHome: process.env.XDG_CACHE_HOME, tmpdir: process.env.TMPDIR, argv: process.argv.slice(2) }));\nconst result = spawnSync(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nif (result.error) throw result.error;\nif (result.signal) process.kill(process.pid, result.signal);\nelse process.exitCode = result.status ?? 1;\n`,
     );
     sourceCliReceipt = {
       verified: JSON.parse(fs.readFileSync(receipt, "utf8")) as unknown,
@@ -256,6 +257,7 @@ try {
   for (const task of ["verify:lint", "fmt:check", "typecheck", "vize:check"]) {
     run(`${task}-cold`, task, { hit: false });
     if (task === "typecheck" && privateCache) {
+      privateStorageInspection = { root: privateCache, entries: fs.readdirSync(privateCache, { recursive: true, encoding: "utf8" }) };
       const storage = path.join(privateCache, "vize/canon/private-batch-v1");
       const files: { path: string; bytes: number }[] = [];
       const visit = (selected: string): void => {
@@ -371,6 +373,7 @@ try {
         sourceArchive,
         sourceCliReceipt,
         privateStorage,
+        privateStorageInspection,
         packageLock,
         rows,
       },
