@@ -124,6 +124,8 @@ pub(crate) use tsconfig_paths::{parse_jsonc_value, resolve_extended_tsconfig_pat
 mod vue_codegen;
 mod vue_compiler_comments;
 
+#[cfg(test)]
+mod content_mapper_config_tests;
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]

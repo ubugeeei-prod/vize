@@ -80,14 +80,9 @@ impl BatchTypeChecker {
             .parent()
             .ok_or_else(|| std::io::Error::other("Batch virtual root has no storage parent"))?;
         std::fs::create_dir_all(base)?;
-        let storage = tempfile::Builder::new()
-            .prefix("batch-installed-")
-            .tempdir_in(base)?;
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(storage.path(), std::fs::Permissions::from_mode(0o700))?;
-        }
+        let key = self.project.installed_storage_key();
+        let mut storage = super::installed_storage::InstalledStorage::claim(base, &key)?;
+        storage.reset(&self.project.batch_build_info_dir(storage.path()))?;
         self.project.scope_batch_namespace(storage.path());
         self.owned_storage = Some(storage);
         Ok(())
@@ -160,7 +155,8 @@ mod tests {
         clippy::disallowed_types,
         reason = "fixture assertions use std strings"
     )]
-    //! Private batch storage must remain alive with its owner and disappear on drop.
+    //! Installed-source storage must remain alive with its owner, and only build
+    //! info may outlive it.
 
     use super::{BatchTypeChecker, BatchTypeCheckerOptions, contains_node_modules};
     use std::path::{Path, PathBuf};
@@ -174,6 +170,19 @@ mod tests {
             Some(&binary),
         )
         .unwrap()
+    }
+
+    /// Only plain build info outlives an owner; none exists before a check.
+    fn assert_mirror_removed(storage: &Path) {
+        let left = std::fs::read_dir(storage)
+            .map(|entries| {
+                entries
+                    .flatten()
+                    .map(|entry| entry.path())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        assert_eq!(left, Vec::<PathBuf>::new());
     }
 
     fn source(root: &Path, relative: &str) -> PathBuf {
@@ -260,7 +269,7 @@ mod tests {
         );
         assert!(namespace.is_dir());
         drop(owner);
-        assert!(!storage.exists());
+        assert_mirror_removed(&storage);
         assert_eq!(std::fs::read(&selected).unwrap(), raw);
     }
 
@@ -276,7 +285,7 @@ mod tests {
         let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
         assert!(storage.is_dir());
         drop(owner);
-        assert!(!storage.exists());
+        assert_mirror_removed(&storage);
     }
 
     #[test]
@@ -292,7 +301,7 @@ mod tests {
             panic!("exercise batch owner unwind");
         }));
         assert!(result.is_err());
-        assert!(!storage.unwrap().exists());
+        assert_mirror_removed(&storage.unwrap());
     }
 
     #[cfg(unix)]
@@ -310,7 +319,7 @@ mod tests {
             .unwrap();
         let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
         drop(owner);
-        assert!(!storage.exists());
+        assert_mirror_removed(&storage);
         assert_eq!(
             std::fs::read_link(root.path().join("node_modules/selected")).unwrap(),
             external.path()
@@ -440,7 +449,7 @@ mod tests {
         owner.scan_paths(std::slice::from_ref(&logical)).unwrap();
         let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
         drop(owner);
-        assert!(!storage.exists());
+        assert_mirror_removed(&storage);
         assert_eq!(std::fs::read_link(logical).unwrap(), installed);
     }
 }

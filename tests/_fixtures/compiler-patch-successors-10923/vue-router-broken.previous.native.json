@@ -1,0 +1,23 @@
+{
+  "code": "import { START_LOCATION, useLink, useRoute } from \"vue-router\";\nimport { computed, useAttrs } from \"vue\";\nexport default {\n  __name: \"AppLink\",\n  props: { disabled: {\n    type: Boolean,\n    required: false\n  } },\n  setup(__props) {\n    const attrs = useAttrs();\n    const isExternalLink = computed(() => typeof __props.to === \"string\" && __props.to.startsWith(\"http\"));\n    const currentRoute = useRoute();\n    const { route, href, isActive, isExactActive, navigate } = useLink({\n      to: computed(() => isExternalLink.value ? START_LOCATION : __props.to),\n      replace: __props.replace\n    });\n    const classes = computed(() => ({\n      // allow link to be active for unrelated routes\n      \"router-link-active\": isActive.value || currentRoute.path.startsWith(route.value.path),\n      \"router-link-exact-active\": isExactActive.value || currentRoute.path === route.value.path\n    }));\n    return {\n      useAttrs,\n      currentRoute,\n      navigate,\n      START_LOCATION,\n      useLink,\n      useRoute,\n      isActive,\n      isExternalLink,\n      classes,\n      computed,\n      route,\n      isExactActive,\n      attrs,\n      href\n    };\n  }\n};",
+  "errors": [
+    "Template compilation errors: [CompilerError { code: InvalidExpression, message: \"Error parsing JavaScript expression: mismatched expression delimiters\", loc: Some(SourceLocation { start: Position { offset: 157, line: 9, column: 12 }, end: Position { offset: 166, line: 9, column: 21 }, source: \"String(to\" }) }]"
+  ],
+  "warnings": [],
+  "hasScoped": false,
+  "styles": [],
+  "customBlocks": [],
+  "macroArtifacts": [],
+  "templateHash": "1b1f33405551c310",
+  "scriptHash": "e7c076b2609648ec",
+  "moduleShape": {
+    "hasDefaultExport": true,
+    "hasSfcMainDefined": false,
+    "hasNamedRenderExport": false,
+    "hasNamedSsrRenderExport": false,
+    "defaultExportIsSfcMain": false,
+    "defaultExportStart": 106,
+    "defaultExportKeywordEnd": 120,
+    "defaultExportEnd": 1146
+  }
+}

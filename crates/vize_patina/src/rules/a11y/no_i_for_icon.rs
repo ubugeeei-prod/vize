@@ -89,6 +89,11 @@ fn is_icon_class(class: &str) -> bool {
         return true;
     }
 
+    // Material Design Icons (@mdi/font) and Remix Icon.
+    if class == "mdi" || class.starts_with("mdi-") || class.starts_with("ri-") {
+        return true;
+    }
+
     // Iconify
     if class == "iconify" {
         return true;
@@ -312,10 +317,58 @@ mod tests {
         assert!(is_icon_class("material-symbols-outlined"));
         assert!(is_icon_class("bi"));
         assert!(is_icon_class("bi-heart"));
+        assert!(is_icon_class("mdi"));
+        assert!(is_icon_class("mdi-close"));
+        assert!(is_icon_class("ri-home-line"));
         assert!(is_icon_class("iconify"));
         assert!(is_icon_class("my-icon"));
         assert!(!is_icon_class("emphasis"));
         assert!(!is_icon_class("bold"));
         assert!(!is_icon_class("text-red"));
+        assert!(!is_icon_class("mdiary"));
+        assert!(!is_icon_class("rich"));
+        assert!(!is_icon_class("ri"));
+        assert!(!is_icon_class("MDI"));
+    }
+
+    #[test]
+    fn original_icon_framework_sfc_preserves_all_diagnostics_and_adds_missing_icons() {
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/mdi-remix-icons-10928/Icons.vue.txt"
+        ));
+        let expected: serde_json::Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/mdi-remix-icons-10928/expected.json"
+        )))
+        .unwrap();
+        let result = create_linter().lint_sfc(source, "Icons.vue");
+        let diagnostics = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| {
+                let labels = diagnostic
+                    .labels
+                    .iter()
+                    .map(|label| {
+                        serde_json::json!({
+                            "message": label.message.as_str(), "start": label.start, "end": label.end,
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                serde_json::json!({
+                    "rule_name": diagnostic.rule_name, "severity": diagnostic.severity,
+                    "message": diagnostic.message.as_str(), "start": diagnostic.start, "end": diagnostic.end,
+                    "help": diagnostic.help.as_ref().map(|help| help.as_str()), "labels": labels, "fix": diagnostic.fix,
+                })
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            serde_json::json!({
+                "filename": result.filename.as_str(), "error_count": result.error_count,
+                "warning_count": result.warning_count, "diagnostics": diagnostics,
+            }),
+            expected
+        );
     }
 }

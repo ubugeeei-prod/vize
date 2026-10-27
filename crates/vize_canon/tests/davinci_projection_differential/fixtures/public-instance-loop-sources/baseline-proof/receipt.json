@@ -1,0 +1,16 @@
+{
+  "before": "481c94bd55a7276339adc277edd93e30313f6ea9",
+  "driver": "45ac0a89859360f45f466b8f1178d15ac26be286",
+  "run": "40494413713",
+  "attempt": "1",
+  "comparisons": 64,
+  "beforeStdoutSha256": "7d81581b279c153b3e62ec8898777043b13a81efdbdeea4349c3311ceac61a94",
+  "beforeStderrSha256": "3d8942561bba6e18cc226738b0c7a50fec3b1f7543769c6c74fbb114211b3c09",
+  "comparisonSha256": "87bd054f8932b0c25ae0841b9db61707e9f680cdd06c1436e923e634498f9583",
+  "artifact": 12730062824,
+  "job": 122157096840,
+  "prHead": "b119591e6c63d7b344d1877c5f4d5f8d29894932",
+  "sourceIndexSha256": "934f0a24548cd31ef74f6b01370e482a123ce39fd5c2f58e78a717c5bb37de11",
+  "observerPatchSha256": "c2f6d5b7218473531f0d4a51a8ee63245d7c995c3747489e465fd1599330b94c",
+  "scope": "The immutable before producer compiled with only the retained capture observer; all64 complete observations equal original-comparisons.json. Fullsource index remains in the public Actions artifact; stdout, stderr and observer-only patch retained here."
+}

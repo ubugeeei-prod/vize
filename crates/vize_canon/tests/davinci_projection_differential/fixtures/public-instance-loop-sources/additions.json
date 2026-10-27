@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "authoredSpan": [347, 359],
+      "authoredText": "visibleTasks",
+      "diagnostic": {
+        "code": "undefined-binding",
+        "end": 2486,
+        "help": "Make sure 'visibleTasks' is defined in script setup or imported",
+        "message": "Undefined reference 'visibleTasks' in template expression",
+        "severity": "error",
+        "start": 2474
+      },
+      "path": "_projects/ecosystem-products/src/NaiveUiOptionsApi.vue",
+      "templateBase": 2127,
+      "source": "<script lang=\"ts\">\nimport type {} from \"./vue-global-components\";\nimport { defineComponent } from \"vue\";\nimport { NButton, NCard, NSelect, NTag } from \"naive-ui\";\nimport type { SelectOption } from \"naive-ui\";\n\ninterface LibraryOption extends SelectOption {\n  label: string;\n  value: string;\n}\n\ninterface ReviewTask {\n  id: string;\n  title: string;\n  owner: string;\n  done: boolean;\n}\n\nconst libraryOptions: LibraryOption[] = [\n  { label: \"Naive UI\", value: \"naive-ui\" },\n  { label: \"PrimeVue\", value: \"primevue\" },\n  { label: \"Element Plus\", value: \"element-plus\" },\n];\n\nconst reviewTasks: ReviewTask[] = [\n  { id: \"select\", title: \"Check v-model:value\", owner: \"typechecker\", done: true },\n  { id: \"button\", title: \"Check button listener\", owner: \"linter\", done: false },\n  { id: \"tag\", title: \"Check tag props\", owner: \"compiler\", done: false },\n];\n\nexport default defineComponent({\n  name: \"NaiveUiOptionsApi\",\n  components: {\n    NButton,\n    NCard,\n    NSelect,\n    NTag,\n  },\n  data() {\n    return {\n      selectedLibrary: \"naive-ui\",\n      libraryOptions,\n      reviewTasks,\n      lastReviewed: \"\",\n    };\n  },\n  computed: {\n    selectedLabel(): string {\n      const option = this.libraryOptions.find((item) => item.value === this.selectedLibrary);\n      return option?.label ?? \"Unknown library\";\n    },\n    visibleTasks(): ReviewTask[] {\n      return this.reviewTasks.filter((task) => task.owner !== \"compiler\" || !task.done);\n    },\n    completedCount(): number {\n      return this.reviewTasks.filter((task) => task.done).length;\n    },\n    statusTagType(): \"success\" | \"warning\" {\n      return this.completedCount === this.reviewTasks.length ? \"success\" : \"warning\";\n    },\n    statusMessage(): string {\n      return `${this.completedCount}/${this.reviewTasks.length} reviewed for ${this.selectedLabel}`;\n    },\n  },\n  methods: {\n    markReviewed(value: string): void {\n      this.lastReviewed = value;\n    },\n    toggleTask(taskId: string): void {\n      const task = this.reviewTasks.find((item) => item.id === taskId);\n      if (task) {\n        task.done = !task.done;\n      }\n    },\n  },\n});\n</script>\n\n<template>\n  <NCard title=\"Naive UI Options API\" size=\"small\">\n    <NSelect v-model:value=\"selectedLibrary\" :options=\"libraryOptions\" filterable />\n    <NButton type=\"primary\" @click=\"markReviewed(selectedLibrary)\">\n      Review {{ selectedLabel }}\n    </NButton>\n    <NTag :type=\"statusTagType\">{{ statusMessage }}</NTag>\n    <ul>\n      <li v-for=\"task in visibleTasks\" :key=\"task.id\">\n        <span>{{ task.title }} by {{ task.owner }}</span>\n        <NButton quaternary size=\"small\" @click=\"toggleTask(task.id)\">\n          {{ task.done ? \"Reopen\" : \"Done\" }}\n        </NButton>\n      </li>\n    </ul>\n    <p v-if=\"lastReviewed\">Last reviewed: {{ lastReviewed }}</p>\n  </NCard>\n</template>\n\n<style scoped>\nul {\n  display: grid;\n  gap: 6px;\n  padding-left: 18px;\n}\n\nli {\n  align-items: center;\n  display: flex;\n  gap: 8px;\n}\n</style>\n",
+      "sourceBytes": 2951,
+      "sourceSha256": "c7965480f191466ff7378c7fd3c68a65f89a2d3cb0a833ef089532649479253c"
+    },
+    {
+      "authoredSpan": [43, 54],
+      "authoredText": "slotFilters",
+      "diagnostic": {
+        "code": "undefined-binding",
+        "end": 64,
+        "help": "Make sure 'slotFilters' is defined in script setup or imported",
+        "message": "Undefined reference 'slotFilters' in template expression",
+        "severity": "error",
+        "start": 53
+      },
+      "path": "vue-language-tools/upstream/test-workspace/tsc/#3121/main.vue",
+      "templateBase": 10,
+      "source": "<template>\n  <Foo>\n    <template\n      v-for=\"col in slotFilters\"\n      :key=\"col\"\n      #[`filter-cell-${col}`]=\"{ column }\"\n    ></template>\n  </Foo>\n</template>\n\n<script setup></script>\n",
+      "sourceBytes": 189,
+      "sourceSha256": "9774e4e226f4efb45c47a972e3d9b9b1a9c6e191f1d68b728ea9ea9900f75e2d"
+    }
+  ]
+}

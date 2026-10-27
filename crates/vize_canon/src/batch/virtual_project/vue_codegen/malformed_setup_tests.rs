@@ -30,7 +30,7 @@ fn options() -> VueCodegenOptions<'static> {
     VueCodegenOptions {
         diagnostic_ownership: None,
         check_options: Default::default(),
-        typed_router_root: None,
+        typed_router: None,
         preserve_unused_diagnostics: false,
         options_api: false,
         preserve_authored_component: false,

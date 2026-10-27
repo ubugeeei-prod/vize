@@ -74,6 +74,17 @@ impl Rule for NoStaticElementInteractions {
             return;
         }
 
+        // A bound role is chosen at runtime and is outside this rule's
+        // static-attribute domain. Do not infer that it has no role (#10926).
+        if element.props.iter().any(|prop| {
+            matches!(prop, PropNode::Directive(dir)
+                if dir.name == "bind"
+                    && matches!(&dir.arg, Some(ExpressionNode::Simple(arg))
+                        if arg.is_static && arg.content == "role"))
+        }) {
+            return;
+        }
+
         if is_aria_hidden_true(element) || is_presentation_role(element) {
             return;
         }
@@ -140,6 +151,81 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn bound_roles_stay_outside_the_static_role_domain() {
+        let linter = create_linter();
+        for binding in [
+            r#":role="clickable ? 'button' : undefined""#,
+            r#"v-bind:role="role""#,
+            r#":role="'button'""#,
+            r#":role="'article'""#,
+            r#":role="undefined""#,
+            ":role",
+        ] {
+            let source = format!(r#"<span {binding} @click="press" @keydown.enter="press" />"#);
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(result.error_count, 0, "{source}");
+            assert_eq!(result.warning_count, 0, "{source}");
+            assert!(result.diagnostics.is_empty(), "{source}: {result:?}");
+        }
+    }
+
+    #[test]
+    fn other_bindings_do_not_hide_static_element_diagnostics() {
+        let linter = create_linter();
+        for binding in [
+            r#":id="id""#,
+            r#":tabindex="0""#,
+            r#"v-role="role""#,
+            r#":[role]="value""#,
+            r#"role="article""#,
+        ] {
+            let source = format!(r#"<span {binding} @click="press" />"#);
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(result.error_count, 0, "{source}");
+            assert_eq!(result.warning_count, 1, "{source}");
+            assert_eq!(result.diagnostics.len(), 1, "{source}");
+            let diagnostic = &result.diagnostics[0];
+            assert_eq!(diagnostic.rule_name, "a11y/no-static-element-interactions");
+            assert_eq!(diagnostic.severity, crate::diagnostic::Severity::Warning);
+            assert_eq!(
+                diagnostic.message,
+                "<span> is a static element and should not have interactive event handlers"
+            );
+            assert_eq!((diagnostic.start, diagnostic.end), (0, source.len() as u32));
+            assert!(diagnostic.help.is_some());
+            assert!(diagnostic.labels.is_empty());
+            assert!(diagnostic.fix.is_none());
+        }
+    }
+
+    #[test]
+    fn clickable_tag_sfc_with_runtime_role_does_not_report() {
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/a11y-dynamic-role-10926/ClickableTag.vue.txt"
+        ));
+        for newline in ["\n", "\r\n"] {
+            let result =
+                create_linter().lint_sfc(&source.replace('\n', newline), "ClickableTag.vue");
+            assert_eq!(result.error_count, 0);
+            assert_eq!(result.warning_count, 0);
+            assert!(result.diagnostics.is_empty(), "{newline:?}: {result:?}");
+        }
+        let control = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/a11y-dynamic-role-10926/StaticControl.vue.txt"
+        ));
+        let result = create_linter().lint_sfc(control, "StaticControl.vue");
+        assert_eq!(result.error_count, 0);
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(
+            result.diagnostics[0].rule_name,
+            "a11y/no-static-element-interactions"
+        );
     }
 
     #[test]

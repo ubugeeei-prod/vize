@@ -1,0 +1,147 @@
+name: Published TypeScript provider acceptance
+run-name: Published TypeScript provider @ ${{ inputs.release_tag }}
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Published release tag containing the platform VSIXs
+        required: true
+        type: string
+      required_source:
+        description: Optional full commit that the published provider must contain
+        required: false
+        type: string
+permissions: { contents: read }
+concurrency:
+  group: typescript-provider-public-${{ inputs.release_tag }}
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  installed-extension:
+    name: Published installed platform VSIX (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2404, platform: linux-x64 }
+          - { os: Windows, runner: blacksmith-32vcpu-windows-2025, platform: win32-x64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0" }
+      - name: Download and verify the published bytes and original producer receipt
+        id: public
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          REQUIRED_SOURCE: ${{ inputs.required_source }}
+          TARGET_PLATFORM: ${{ matrix.platform }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const { RELEASE_TAG: tag, REQUIRED_SOURCE: required, TARGET_PLATFORM: target } = process.env;
+          assert(/^v\d+\.\d+\.\d+$/.test(tag), 'Use an exact release tag');
+          assert(!required || /^[a-f0-9]{40}$/.test(required), 'Use a full required commit');
+          const directory = path.join(process.env.RUNNER_TEMP, 'typescript-provider-public');
+          fs.mkdirSync(directory, { recursive: true });
+          const vsix = `vize-${target}.vsix`;
+          const base = `https://github.com/ubugeeei-prod/vize/releases/download/${tag}/`;
+          const assets = [];
+          for (const name of [vsix, `${vsix}.receipt.json`, `${vsix}.sha256`, `${vsix}.receipt.json.sha256`]) {
+            const url = base + name;
+            const response = await fetch(url, { signal: AbortSignal.timeout(120_000) });
+            assert(response.ok, `${url}: HTTP ${response.status}`);
+            const bytes = Buffer.from(await response.arrayBuffer());
+            fs.writeFileSync(path.join(directory, name), bytes);
+            assets.push({ name, url, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+          }
+          for (const name of [vsix, `${vsix}.receipt.json`]) {
+            const checksum = fs.readFileSync(path.join(directory, `${name}.sha256`), 'utf8').trim();
+            const [digest, filename] = checksum.split(/\s+/);
+            assert.equal(filename, name);
+            assert.equal(assets.find((asset) => asset.name === name).sha256, digest);
+          }
+          const producer = JSON.parse(fs.readFileSync(path.join(directory, `${vsix}.receipt.json`), 'utf8'));
+          assert.equal(producer.schema, 'vize.platformVsix.v1');
+          assert(/^[a-f0-9]{40}$/.test(producer.source));
+          assert.equal(producer.version, tag.slice(1));
+          assert.equal(producer.target, target);
+          assert.equal(producer.vsix, vsix);
+          assert.equal(producer.sha256, assets[0].sha256);
+          assert.equal(producer.bytes, assets[0].bytes);
+          assert.equal(producer.provider.schema, 'vize.vscodeNativeProvider.v1');
+          assert.equal(producer.provider.source, producer.source);
+          assert.equal(producer.provider.releaseVersion, producer.version);
+          assert.equal(producer.provider.targetPlatform, target);
+          // Preserve the public sidecar verbatim. The source checkout below follows its
+          // genuine identity even when a release tag points to a later prepared commit.
+          fs.writeFileSync(path.join(directory, 'public-download.json'), JSON.stringify({
+            tag, workflowSource: process.env.GITHUB_SHA, requiredSource: required || null,
+            producerSource: producer.source, assets,
+          }, null, 2));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `source=${producer.source}\nvsix=${path.join(directory, vsix).replaceAll('\\', '/')}\n`);
+          JS
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ steps.public.outputs.source }}
+          fetch-depth: 0
+      - name: Verify tag ancestry and retain both release identities
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          REQUIRED_SOURCE: ${{ inputs.required_source }}
+          PRODUCER_SOURCE: ${{ steps.public.outputs.source }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+          const source = git('rev-parse', 'HEAD');
+          assert.equal(source, process.env.PRODUCER_SOURCE);
+          const tagCommit = git('rev-parse', `refs/tags/${process.env.RELEASE_TAG}^{commit}`);
+          git('merge-base', '--is-ancestor', source, tagCommit);
+          if (process.env.REQUIRED_SOURCE) git('merge-base', '--is-ancestor', process.env.REQUIRED_SOURCE, source);
+          const file = path.join(process.env.RUNNER_TEMP, 'typescript-provider-public/public-download.json');
+          const receipt = JSON.parse(fs.readFileSync(file, 'utf8'));
+          fs.writeFileSync(file, JSON.stringify({ ...receipt, tagCommit, checkedOutSource: source }, null, 2));
+          JS
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { version: latest, node-version-file: package.json, run-install: false, cache: true }
+      - name: Install only the source harness dependencies
+        run: vp install --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Ensure the Linux virtual display
+        if: runner.os == 'Linux'
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+      - name: Run the published extension in an actual VS Code host
+        shell: bash
+        env:
+          VIZE_TYPESCRIPT_PROVIDER_VSIX: ${{ steps.public.outputs.vsix }}
+          VIZE_TYPESCRIPT_PROVIDER_CAPTURE: ${{ runner.temp }}/typescript-provider-public/host
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            xvfb-run -a vp node editors/vscode/test/run-typescript-provider-host.mjs
+          else
+            vp node editors/vscode/test/run-typescript-provider-host.mjs
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typescript-provider-public-${{ inputs.release_tag }}-${{ matrix.os }}
+          path: ${{ runner.temp }}/typescript-provider-public
+          if-no-files-found: error
+          retention-days: 14

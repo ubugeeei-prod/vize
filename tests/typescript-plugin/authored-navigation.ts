@@ -3,8 +3,11 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { position } from "./tsserver-client.mjs";
+import type { TsserverClient } from "./project-metadata.ts";
 
-export function createNavigationFixtures(src, output) {
+type CallItem = Record<"from" | "to", { file: string; name: string }>;
+
+export function createNavigationFixtures(src: string, output: string) {
   const directory = path.join(src, "navigation");
   fs.mkdirSync(directory);
   const importer = path.join(directory, "imports.ts");
@@ -57,9 +60,23 @@ export function createNavigationFixtures(src, output) {
   return { importer, one, two, source, calls, callsSource, caller, callerSource };
 }
 
-export async function checkNavigation(client, fixture, results, vue, vueText, util) {
+export async function checkNavigation(
+  client: TsserverClient,
+  fixture: ReturnType<typeof createNavigationFixtures>,
+  results: Record<string, unknown>,
+  vue: string,
+  vueText: string,
+  util: string,
+) {
   const { importer, one, two, source, calls, callsSource, caller, callerSource } = fixture;
-  const request = async (name, command, file, text, marker, delta = 1) => {
+  const request = async (
+    name: string,
+    command: string,
+    file: string,
+    text?: string,
+    marker?: string,
+    delta = 1,
+  ) => {
     const response = await client.send(command, {
       file,
       ...(marker ? position(text, marker, delta) : {}),
@@ -68,14 +85,14 @@ export async function checkNavigation(client, fixture, results, vue, vueText, ut
     assert.equal(response.success, true, JSON.stringify(response));
     return response;
   };
-  const change = (file, old, text) => {
+  const change = (file: string, old: string, text: string) => {
     const lines = old.split("\n");
     return client.send("change", {
       file,
       line: 1,
       offset: 1,
       endLine: lines.length,
-      endOffset: lines.at(-1).length + 1,
+      endOffset: (lines.at(-1) ?? "").length + 1,
       insertString: text,
     });
   };
@@ -154,7 +171,7 @@ export async function checkNavigation(client, fixture, results, vue, vueText, ut
 
   await client.send("open", { file: util, fileContent: fs.readFileSync(util, "utf8") }, false);
   const fileReferences = await request("authored-file-references", "fileReferences", util);
-  const authored = fileReferences.body.refs.find((entry) => entry.file === vue);
+  const authored = fileReferences.body.refs.find((entry: { file: string }) => entry.file === vue);
   assert(authored, JSON.stringify(fileReferences));
   assert.deepEqual(authored.start, position(vueText, "./util", 0));
   assert.deepEqual(authored.end, position(vueText, "./util", "./util".length));
@@ -174,11 +191,11 @@ export async function checkNavigation(client, fixture, results, vue, vueText, ut
     "shared",
   );
   assert(
-    incoming.body.some((call) => call.from.file === calls && call.from.name === "plain"),
+    incoming.body.some((call: CallItem) => call.from.file === calls && call.from.name === "plain"),
     JSON.stringify(incoming),
   );
   assert(
-    incoming.body.every((call) => call.from.file !== caller),
+    incoming.body.every((call: CallItem) => call.from.file !== caller),
     JSON.stringify(incoming),
   );
   const outgoing = await request(
@@ -189,7 +206,7 @@ export async function checkNavigation(client, fixture, results, vue, vueText, ut
     "plain",
   );
   assert(
-    outgoing.body.some((call) => call.to.file === calls && call.to.name === "shared"),
+    outgoing.body.some((call: CallItem) => call.to.file === calls && call.to.name === "shared"),
     JSON.stringify(outgoing),
   );
   const refused = await request(
