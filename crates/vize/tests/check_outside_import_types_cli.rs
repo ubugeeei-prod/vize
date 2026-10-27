@@ -83,7 +83,7 @@ fn oracle(app: &Path, corsa: &Path, expected: &str) {
     );
 }
 
-fn capture(app: &Path, corsa: &Path, phase: &str, extra: &[&str], output: &Output) {
+pub(super) fn capture(app: &Path, corsa: &Path, phase: &str, extra: &[&str], output: &Output) {
     let Some(root) = std::env::var_os("VIZE_TYPECHECK_REGRESSION_CAPTURE") else {
         return;
     };
