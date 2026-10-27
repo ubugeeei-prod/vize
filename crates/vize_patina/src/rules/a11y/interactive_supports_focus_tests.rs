@@ -13,7 +13,7 @@ const CASES: &str = include_str!(concat!(
 
 fn linter(legacy: bool) -> Linter {
     if legacy {
-        return super::tests::create_legacy_linter();
+        return super::interactive_supports_focus::create_legacy_linter_for_test();
     }
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(InteractiveSupportsFocus));

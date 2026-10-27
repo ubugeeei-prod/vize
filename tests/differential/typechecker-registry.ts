@@ -100,6 +100,8 @@ export const TYPECHECKER_TESTS = {
   "quoted-generic-parameters-10540":
     "quoted_generic_parameters_preserve_complete_batch_diagnostics",
   "reactive-props-destructure-10008": "reactive_props_destructure_preserves_unused_diagnostics",
+  "relative-sibling-storage-10934":
+    "relative_sibling_imports_preserve_complete_package_diagnostics",
   "reopen-repaired-diagnostics-10730": "repaired_dependency_buffer_keeps_its_own_diagnostics",
   "required-props-edges": "required_props_keep_exact_unicode_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
@@ -200,6 +202,7 @@ export const sourceRevisions = {
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "quoted-generic-parameters-10540": "711b56b2499b9136d8965a59c65713a2b78540f4",
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
+  "relative-sibling-storage-10934": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
   "reopen-repaired-diagnostics-10730": "9403195279c75693aea30f097bf996cb83dd9729",
   "required-props-edges": originalFixtureRevision,
   "reserved-expression-shapes": originalFixtureRevision,
