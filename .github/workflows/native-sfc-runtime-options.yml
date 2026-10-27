@@ -47,9 +47,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: qualification
           persist-credentials: false
-          sparse-checkout: tests/tooling/native-sfc-runtime-options.test.mjs
+          sparse-checkout: |
+            tests/tooling/native-sfc-runtime-options.test.mjs
+            tests/tooling/support/script-setup-default-expose.ts
           sparse-checkout-cone-mode: false
-      - run: cp qualification/tests/tooling/native-sfc-runtime-options.test.mjs tests/tooling/native-sfc-runtime-options.test.mjs
+      - run: |
+          cp qualification/tests/tooling/native-sfc-runtime-options.test.mjs tests/tooling/native-sfc-runtime-options.test.mjs
+          mkdir -p tests/tooling/support
+          cp qualification/tests/tooling/support/script-setup-default-expose.ts tests/tooling/support/script-setup-default-expose.ts
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
