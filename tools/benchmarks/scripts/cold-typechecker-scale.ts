@@ -19,6 +19,7 @@ import { DEFAULT_SHAPE, generateWorkspace } from "./check-workspace.ts";
 
 const hash = (text: string | Buffer) => createHash("sha256").update(text).digest("hex");
 const packages = 130;
+export const coldScaleSupportScriptFiles = packages * 14 + 3;
 const dependencyFiles = packages * 14 + 10;
 const model = `export type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
 export type Entity<K extends string> = { id: string & { readonly kind: K }; label: string; children: readonly Entity<K>[] };
@@ -283,7 +284,7 @@ export function captureColdScale(options: {
     corpusSha256: corpus.corpusSha256,
     wallMs,
     targetColdWallMs: 500,
-    meetsColdTarget: wallMs <= 500,
+    meetsColdTarget: corpus.sfcFiles >= 2500 && wallMs <= 500,
     hardware: {
       cpu: cpus()[0]?.model,
       availableCpus: availableParallelism(),

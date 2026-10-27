@@ -2,8 +2,8 @@ name: Cold typechecker scale
 on:
   workflow_dispatch:
     inputs:
-      files:
-        description: Authored source files including the complete package dependency graph
+      sfcs:
+        description: Vue SFC count plus the complete authored package dependency graph
         type: choice
         options: ["2500", "10000", "50000"]
         default: "2500"
@@ -22,7 +22,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
-      FILES: ${{ inputs.files || '2500' }}
+      VIZE_BENCH_SFCS: ${{ inputs.sfcs || '2500' }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       GOMAXPROCS: "8"
@@ -40,6 +40,11 @@ jobs:
         with:
           key: cold-typechecker-scale-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Validate the full SFC cohort
+        run: |
+          [[ "$VIZE_BENCH_SFCS" =~ ^(2500|10000|50000)$ ]]
+          bench_support_scripts=$(node --input-type=module -e 'import {coldScaleSupportScriptFiles} from "./tools/benchmarks/scripts/cold-typechecker-scale.ts"; console.log(coldScaleSupportScriptFiles);')
+          printf 'VIZE_BENCH_FILES=%s\n' "$((VIZE_BENCH_SFCS + bench_support_scripts))" >> "$GITHUB_ENV"
       - name: Install fixed comparison providers
         run: |
           mkdir "$RUNNER_TEMP/provider"
@@ -70,16 +75,16 @@ jobs:
             order='base head'
             if [[ "$round" == 2 ]]; then order='head base'; fi
             for source in $order; do
-              taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool cli --binary "$RUNNER_TEMP/vize-$source" --out "$RUNNER_TEMP/cold-scale/$source-$round"
+              taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --binary "$RUNNER_TEMP/vize-$source" --out "$RUNNER_TEMP/cold-scale/$source-$round"
             done
           done
           for tool in mapper vue-tsc; do
-            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool "$tool" --out "$RUNNER_TEMP/cold-scale/$tool"
+            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool "$tool" --out "$RUNNER_TEMP/cold-scale/$tool"
           done
           for tool in cli mapper vue-tsc; do
             args=()
             if [[ "$tool" == cli ]]; then args+=(--binary "$RUNNER_TEMP/vize-head"); fi
-            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool "$tool" --invalid "${args[@]}" --out "$RUNNER_TEMP/cold-scale/control-$tool"
+            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool "$tool" --invalid "${args[@]}" --out "$RUNNER_TEMP/cold-scale/control-$tool"
           done
       - name: Build allocation instrumentation separately from timing binaries
         run: |
@@ -96,12 +101,17 @@ jobs:
             if [[ -x "$bench_perf_candidate" ]]; then perf_bin="$bench_perf_candidate"; break; fi
           done
           test -n "$perf_bin"
-          sudo "$perf_bin" record -F 997 --call-graph dwarf --output "$RUNNER_TEMP/cold-scale/perf.data" -- taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool profile --binary "$RUNNER_TEMP/vize-profile" --out "$RUNNER_TEMP/cold-scale/profile"
+          sudo "$perf_bin" record -F 997 --call-graph dwarf --output "$RUNNER_TEMP/cold-scale/perf.data" -- taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool profile --binary "$RUNNER_TEMP/vize-profile" --out "$RUNNER_TEMP/cold-scale/profile"
           sudo "$perf_bin" report --stdio --inline --sort comm,dso,symbol,srcline --input "$RUNNER_TEMP/cold-scale/perf.data" > "$RUNNER_TEMP/cold-scale/cpu-source.txt"
           node --input-type=module -e 'import fs from "node:fs"; const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/cold-scale/profile/profile.json")); if(!x.allocation)throw Error("allocation instrumentation missing");'
+      - name: Package evidence without traversing workspace links
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/cold-scale"
+          tar --exclude='*/project' --exclude='*/xdg-cache' --exclude='*/tmp' -czf "$RUNNER_TEMP/cold-scale-evidence.tgz" -C "$RUNNER_TEMP" cold-scale
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: cold-typechecker-scale-${{ github.sha }}
-          path: ${{ runner.temp }}/cold-scale
+          path: ${{ runner.temp }}/cold-scale-evidence.tgz
           retention-days: 14
