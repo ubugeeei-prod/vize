@@ -9,12 +9,17 @@ import {
   fatalPerfCapability,
   hardwareCalibration,
   optionalText,
+  parsePerfEventStats,
   parsePerfStat,
   softwareEvents,
   sourcePerfEnvironment,
   symbolizationErrors,
 } from "./source-operation-perf-evidence.ts";
-export { parsePerfStat, sourcePerfEnvironment } from "./source-operation-perf-evidence.ts";
+export {
+  parsePerfEventStats,
+  parsePerfStat,
+  sourcePerfEnvironment,
+} from "./source-operation-perf-evidence.ts";
 
 export interface SourceOperationCommand {
   executable: string;
@@ -117,11 +122,37 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
       : [];
   const sanity = counterSanity(counters, group);
   const stderr = result.stderr ?? "";
-  const sampleCount =
-    mode === "record" ? Number(/\((\d+) samples\)/u.exec(stderr)?.[1] ?? 0) : null;
+  const recordSampleText = /\((\d+) samples\)/u.exec(stderr)?.[1];
+  const recordSampleCount = recordSampleText === undefined ? null : Number(recordSampleText);
   const dataBytes = existsSync(rawPath) ? statSync(rawPath).size : 0;
+  let sampleCount: number | null = null;
+  let eventCensus: null | { status: number | null; signal: string | null; error: string | null } =
+    null;
+  if (
+    mode === "record" &&
+    dataBytes > 0 &&
+    !result.error &&
+    !result.signal &&
+    result.status === 0
+  ) {
+    // The count-only handlers of report --stats do not resolve symbols or unwind DWARF.
+    const counted = runBounded(
+      request.perfExecutable,
+      ["report", "--stdio", "--stats", "--input", rawPath],
+      30_000,
+      command,
+    );
+    writeFileSync(join(out, "event-stats.txt"), counted.stdout ?? "");
+    writeFileSync(join(out, "event-stats.stderr.txt"), counted.stderr ?? "");
+    if (counted.status === 0) sampleCount = parsePerfEventStats(counted.stdout ?? "");
+    eventCensus = {
+      status: counted.status,
+      signal: counted.signal,
+      error: counted.error?.message ?? null,
+    };
+  }
   const evidencePresent =
-    mode === "stat" ? missingEvents.length === 0 : dataBytes > 0 && (sampleCount ?? 0) > 0;
+    mode === "stat" ? missingEvents.length === 0 : dataBytes > 0 && result.status === 0;
   const capabilityFailure = fatalPerfCapability(stderr) && !evidencePresent;
   const collection =
     result.error ||
@@ -131,7 +162,7 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
       ? "failed"
       : capabilityFailure || (mode === "stat" && (missingEvents.length > 0 || !sanity.plausible))
         ? "unavailable"
-        : mode === "record" && (!dataBytes || !sampleCount)
+        : mode === "record" && !dataBytes
           ? "unavailable"
           : "collected";
   let report: null | {
@@ -141,7 +172,7 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
     sourceRows: number;
     qualified: boolean;
   } = null;
-  if (mode === "record" && collection === "collected") {
+  if (mode === "record" && collection === "collected" && (sampleCount ?? 0) > 0) {
     const rendered = runBounded(
       request.perfExecutable,
       [
@@ -213,6 +244,8 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
     schedulingQualified,
     calibration,
     sampleCount,
+    recordSampleCount,
+    eventCensus,
     dataBytes,
     startedAt,
     captureFinishedAt,

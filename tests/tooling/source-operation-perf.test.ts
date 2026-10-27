@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import {
   captureSourceOperationPerf,
+  parsePerfEventStats,
   parsePerfStat,
   sourcePerfEnvironment,
 } from "../../tools/benchmarks/scripts/source-operation-perf.ts";
@@ -197,6 +198,7 @@ test("kernel-symbol permission warnings preserve samples while source errors and
 const fs=require('node:fs'),a=process.argv.slice(2);
 if(a[0]==='--version'){console.log('fixture-perf');process.exit(0);}
 if(process.env.PERF_CONFIG!=='/dev/null')throw Error('ambient perf config must not be inherited');
+if(a[0]==='report'&&a.includes('--stats')){console.log(process.env.NO_CENSUS?'Aggregated stats: TOTAL events: 1':'Aggregated stats:\\n SAMPLE events: 12 (100.0%)');process.exit(0);}
 if(a[0]==='report'){
  if(process.env.SLOW_REPORT){setTimeout(()=>{},10000);}
  else {console.log('100.0% fixture_function fixture.rs:'+(process.env.ZERO_LINE?'0':'42')); if(process.env.BAD_REPORT)console.error('addr2line fixture: could not read first record');}
@@ -205,7 +207,7 @@ if(a[0]==='report'){
  fs.writeFileSync(a[a.indexOf('--output')+1],'retained trace');
  console.error('WARNING: Kernel address maps are restricted. Check /proc/kallsyms permission or run as root.');
  console.error('workload note: optional feature not supported');
- console.error('[ perf record: Captured and wrote 1.0 MB trace (12 samples) ]');
+ console.error('[ perf record: Captured and wrote 1.0 MB trace ]');
 }\n`,
       { mode: 0o755 },
     );
@@ -218,8 +220,19 @@ if(a[0]==='report'){
     const good = captureSourceOperationPerf({ ...request, outputDir: join(root, "good") });
     assert.equal(good.collection, "collected");
     assert.equal(good.sampleCount, 12);
+    assert.equal(good.recordSampleCount, null, "no-buildid record does not print a count");
+    assert.equal(good.eventCensus?.status, 0);
     assert.equal(good.qualified, true);
     assert.equal(good.report?.sourceRows, 1);
+    const noCensus = captureSourceOperationPerf({
+      ...request,
+      outputDir: join(root, "no-census"),
+      command: { ...request.command, env: { NO_CENSUS: "1" } },
+    });
+    assert.equal(noCensus.collection, "collected");
+    assert.equal(noCensus.sampleCount, null);
+    assert.equal(noCensus.qualified, false, "unobserved counts are not fabricated zero or success");
+
     const bad = captureSourceOperationPerf({
       ...request,
       outputDir: join(root, "bad"),
@@ -280,4 +293,11 @@ test("a missing perf executable or invalid perf invocation is an infrastructure 
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("count-only event statistics retain exact counts without abbreviated report units", () => {
+  assert.equal(parsePerfEventStats("Aggregated stats:\n SAMPLE events: 2205 (90.5%)\n"), 2205);
+  assert.equal(parsePerfEventStats("PERF_RECORD_SAMPLE: 12\n"), 12);
+  assert.equal(parsePerfEventStats("SAMPLE events: 2K\n"), null);
+  assert.equal(parsePerfEventStats("TOTAL events: 12\n"), null);
 });

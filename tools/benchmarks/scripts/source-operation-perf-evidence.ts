@@ -120,3 +120,10 @@ export function symbolizationErrors(stderr: string) {
     stderr,
   );
 }
+
+/** --no-buildid deliberately omits record's post-pass sample-count message. */
+export function parsePerfEventStats(text: string) {
+  const raw = /^\s*(?:PERF_RECORD_)?SAMPLE(?:\s+events)?\s*:\s*(\d+)(?:\s|$)/m.exec(text)?.[1];
+  const value = raw === undefined ? null : Number(raw);
+  return value !== null && Number.isSafeInteger(value) ? value : null;
+}
