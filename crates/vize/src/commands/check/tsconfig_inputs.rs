@@ -63,7 +63,7 @@ use collect::{
     collect_supported_files_for_include_roots, collect_supported_files_with_options,
     explicit_hidden_include_roots, explicit_hidden_pattern_roots,
 };
-use glob::normalize_input_path;
+pub(super) use glob::normalize_input_path;
 use matching::{
     SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
     is_nuxt_import_manifest_path, is_supported_check_file_with_options,
