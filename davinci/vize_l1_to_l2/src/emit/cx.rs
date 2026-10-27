@@ -163,7 +163,7 @@ impl EmitCx<'_> {
     /// capture the first scoped value. The default lane stores aliases as
     /// raw patterns, so the gate has to read both param stacks.
     pub(super) fn caches_handlers(&self) -> bool {
-        self.cache_handlers && !self.once_component && !self.scope.has_codegen_scope_params()
+        self.cache_handlers && !self.scope.has_codegen_scope_params()
     }
 
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the

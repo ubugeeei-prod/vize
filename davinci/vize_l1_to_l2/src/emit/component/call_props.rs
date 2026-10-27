@@ -83,9 +83,7 @@ pub(super) fn can_hoist_static_props(
     };
     // The once cache owns this vnode's props. The shipped hoist walk only
     // visits its children, so do not introduce a separate props hoist here.
-    if cx.conditional_v_for_item
-        || (cx.once_component && super::super::once::has(&component.bindings))
-    {
+    if cx.conditional_v_for_item || super::super::once::has(&component.bindings) {
         return Ok(false);
     }
     let text_only_default = slots::has_text_only_implicit_default(&component.children);

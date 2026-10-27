@@ -181,8 +181,6 @@ struct EmitCx<'facts> {
     once_depth: u32,
     /// Element child-list depth inside the current `v-once` owner.
     once_element_depth: u32,
-    /// Inside a cached `v-once` component, where Vue caches no handlers.
-    once_component: bool,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
     /// Emission is inside a `v-for` render-list item that was lowered from

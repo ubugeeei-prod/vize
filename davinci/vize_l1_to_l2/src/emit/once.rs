@@ -70,9 +70,9 @@ pub(super) fn emit_component(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     emit_cached(cx, |cx| {
-        let once_component = core::mem::replace(&mut cx.once_component, true);
+        let cache_handlers = core::mem::replace(&mut cx.cache_handlers, false);
         let result = super::component::emit_once(cx, component, id);
-        cx.once_component = once_component;
+        cx.cache_handlers = cache_handlers;
         result
     })
 }
