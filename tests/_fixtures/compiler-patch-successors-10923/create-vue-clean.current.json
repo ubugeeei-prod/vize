@@ -1,0 +1,9 @@
+{
+  "filename": "App.vue",
+  "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode } from \"vue\";\nexport default {\n  __name: \"App\",\n  setup(__props) {\n    return (_ctx, _cache) => {\n      return _openBlock(), _createElementBlock(\n        _Fragment,\n        null,\n        [_createElementVNode(\"h1\", null, \"You did it!\"), _createElementVNode(\"p\", null, [\n          _createTextVNode(\" Visit \"),\n          _cache[0] || (_cache[0] = _createElementVNode(\n            \"a\",\n            {\n              href: \"https://vuejs.org/\",\n              target: \"_blank\",\n              rel: \"noopener\"\n            },\n            \"vuejs.org\",\n            -1\n            /* CACHED */\n          )),\n          _createTextVNode(\" to read the documentation \")\n        ])],\n        64\n        /* STABLE_FRAGMENT */\n      );\n    };\n  }\n};",
+  "css": null,
+  "errors": [],
+  "warnings": [],
+  "script_lang": "ts",
+  "macro_artifacts": []
+}
