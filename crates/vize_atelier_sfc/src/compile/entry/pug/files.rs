@@ -101,7 +101,9 @@ mod tests {
         let mut reader = io::Cursor::new([b'x'; 128]);
         assert!(read_bounded(&mut reader, 8).is_err());
         assert_eq!(reader.position(), 9);
-        assert!(matches!(read_bounded(io::Cursor::new(b"small"), 8), Ok(value) if value == "small"));
+        assert!(
+            matches!(read_bounded(io::Cursor::new(b"small"), 8), Ok(value) if value == "small")
+        );
     }
 
     #[test]
