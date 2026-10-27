@@ -61,8 +61,6 @@ fn literal_nonleading_and_malformed_comments_have_no_authority() {
         "'// @ts-expect-error' + missing",
         "known +\n// @ts-expect-error\nmissing",
         "// prose @ts-expect-error\nmissing",
-        "// @ts-expect-error_more\nmissing",
-        "// @ts-expect-error-more\nmissing",
         "/* @ts-expect-error */ missing",
         "// @ts-expect-error\nmissing(",
         "/* @ts-expect-error\nmissing",
@@ -122,7 +120,7 @@ fn complete_block_comment_uses_its_exact_next_line() {
 
 #[test]
 fn blank_and_explanatory_comment_lines_preserve_native_directive_ownership() {
-    for gap in ["\n", "// explanation\n", "/* explanation */\n"] {
+    for gap in ["\n", "// explanation\n"] {
         let source = format!("<template>{{{{\n// @ts-expect-error\n{gap}missing\n}}}}</template>");
         let mut diagnostics = vec![
             diagnostic(&source, "// @ts-expect-error", 2578),
@@ -169,5 +167,38 @@ fn javascript_line_terminators_and_unicode_indentation_match_native_directives()
             filter(&AuthoredSource::vue(&source), &mut diagnostics);
             assert!(diagnostics.is_empty(), "{source:?}");
         }
+    }
+}
+
+#[test]
+fn ordinary_block_comments_and_first_line_block_tokens_do_not_suppress() {
+    for expression in [
+        "// @ts-expect-error\n/* explanation */\nmissing",
+        "/* @ts-expect-error\n explanation */\nmissing",
+    ] {
+        let source = format!("<template>{{{{\n{expression}\n}}}}</template>");
+        let original = vec![diagnostic(&source, "missing", 2339)];
+        let mut diagnostics = original.clone();
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert_eq!(diagnostics, original, "{source}");
+    }
+}
+
+#[test]
+fn native_directive_prefix_and_final_block_line_grammar_are_preserved() {
+    for comment in [
+        "// @ts-expect-error-more",
+        "// @ts-expect-error_more",
+        "/// @ts-expect-error",
+        "/* explanation\n @ts-expect-error */",
+        "/* explanation\n * @ts-expect-error */",
+    ] {
+        let source = format!("<template>{{{{\n{comment}\nmissing\n}}}}</template>");
+        let mut diagnostics = vec![
+            diagnostic(&source, comment, 2578),
+            diagnostic(&source, "missing", 2339),
+        ];
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert!(diagnostics.is_empty(), "{source}");
     }
 }

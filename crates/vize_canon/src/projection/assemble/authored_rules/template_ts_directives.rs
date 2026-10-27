@@ -116,25 +116,38 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
         let rest = expression.get(cursor..)?;
         let trimmed = rest.trim_start_matches(is_js_whitespace);
         cursor += rest.len() - trimmed.len();
-        let (body, end) = if let Some(after) = trimmed.strip_prefix("//") {
+        let (body, end, block) = if let Some(after) = trimmed.strip_prefix("//") {
             let length = after.find(is_line_terminator).unwrap_or(after.len());
-            (after.get(..length)?, cursor + 2 + length)
+            (after.get(..length)?, cursor + 2 + length, false)
         } else if let Some(after) = trimmed.strip_prefix("/*") {
             let length = after.find("*/")?;
-            (after.get(..length)?, cursor + 2 + length + 2)
+            (after.get(..length)?, cursor + 2 + length + 2, true)
         } else {
             break;
         };
-        let body = body.trim_start_matches(is_js_whitespace);
-        let expect = if directive_token(body, "@ts-expect-error") {
-            Some(true)
-        } else if directive_token(body, "@ts-ignore") {
-            Some(false)
+        let recognized = if block {
+            // The native scanner recognizes directives only on the comment's
+            // final physical line, after optional slash/star prefix characters.
+            let last_line = body.rsplit(is_line_terminator).next()?;
+            directive_kind(
+                last_line
+                    .trim_start_matches(is_js_whitespace)
+                    .trim_start_matches(['/', '*'])
+                    .trim_start_matches(is_js_whitespace),
+            )
         } else {
-            None
+            directive_kind(
+                body.strip_prefix('/')
+                    .unwrap_or(body)
+                    .trim_start_matches(is_js_whitespace),
+            )
         };
-        if let Some(expect) = expect {
+        if let Some(expect) = recognized {
             owner = Some((cursor..end, expect));
+        } else if block {
+            // Native lookup crosses blank and // lines, but a non-directive
+            // block comment between an expectation and code stops ownership.
+            owner = None;
         }
         cursor = end;
     }
@@ -180,12 +193,14 @@ fn is_js_whitespace(c: char) -> bool {
         )
 }
 
-fn directive_token(text: &str, token: &str) -> bool {
-    text.strip_prefix(token).is_some_and(|tail| {
-        tail.chars()
-            .next()
-            .is_none_or(|c| !c.is_alphanumeric() && c != '_' && c != '-')
-    })
+fn directive_kind(text: &str) -> Option<bool> {
+    if text.starts_with("@ts-expect-error") {
+        Some(true)
+    } else if text.starts_with("@ts-ignore") {
+        Some(false)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
