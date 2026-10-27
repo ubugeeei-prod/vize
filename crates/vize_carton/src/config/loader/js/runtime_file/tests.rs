@@ -117,9 +117,9 @@ process.stdin.destroy();
 fn temporary_module_is_removed_after_success_or_child_failure() {
     let project = tempfile::tempdir().unwrap();
     let config = project.path().join("vite.config.ts");
-    for script in [
-        "process.stdout.write('ok');",
-        "throw new Error('expected runtime failure');",
+    for (script, expected_exit) in [
+        ("process.stdout.write('ok');", 0),
+        ("throw new Error('expected runtime failure');", 1),
     ] {
         let path;
         {
@@ -130,7 +130,7 @@ fn temporary_module_is_removed_after_success_or_child_failure() {
                 .command(&config)
                 .output()
                 .expect("Node must be installed");
-            assert_eq!(output.status.success(), script.starts_with("process."));
+            assert_eq!(output.status.code(), Some(expected_exit));
         }
         assert!(!path.exists(), "scoped runtime file must not leak");
     }
