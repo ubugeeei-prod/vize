@@ -1,0 +1,70 @@
+name: Provide type assertion whole packets
+run-name: Provide type assertion complete packets @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/provide-type-assertion.yml
+      - crates/vize/tests/provide_type_assertion_cli.rs
+      - crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs
+      - crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs
+permissions:
+  contents: read
+concurrency:
+  group: provide-type-assertion-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  whole-before:
+    name: Native and actual CLI complete packets
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: provide-type-assertion
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Preserve untouched product source identity
+        env:
+          VIZE_PROVIDE_ASSERTION_ARTIFACTS: ${{ runner.temp }}/provide-assertion-packets
+        run: |
+          mkdir -p "$VIZE_PROVIDE_ASSERTION_ARTIFACTS"
+          git rev-parse HEAD > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-sha.txt"
+          git rev-parse 'HEAD^{tree}' > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-tree.txt"
+          git status --porcelain > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-status.txt"
+          git hash-object crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/helper-blob.txt"
+          git diff db5c35c12124086f034563b6800dbdab8605cdc0 -- crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs crates/vize_croquis_cf/src/rules/provide_inject/index.rs > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"
+          test ! -s "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"
+      - name: Capture whole original and positive negative destructuring controls
+        env:
+          VIZE_PROVIDE_ASSERTION_ARTIFACTS: ${{ runner.temp }}/provide-assertion-packets
+        run: cargo test --locked --profile ci -p vize --test integration provide_type_assertion_cli::observe_complete_provide_assertion_packets -- --nocapture
+      - name: Preserve actual executable identity
+        if: ${{ always() }}
+        run: |
+          if [[ -f "$CARGO_TARGET_DIR/ci/vize" ]]; then
+            sha256sum "$CARGO_TARGET_DIR/ci/vize" > "$RUNNER_TEMP/provide-assertion-packets/binary-sha256.txt"
+            "$CARGO_TARGET_DIR/ci/vize" --version > "$RUNNER_TEMP/provide-assertion-packets/binary-version.txt"
+          fi
+      - name: Preserve every raw report and complete native result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provide-assertion-whole-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/provide-assertion-packets
+          if-no-files-found: error
+          retention-days: 14
