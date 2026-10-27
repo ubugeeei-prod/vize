@@ -222,16 +222,19 @@ try {
     task: string,
     { hit, status = 0, diagnostic, args = [], unchanged = true }: TaskRunOptions = {},
   ): string {
+    // Explicit source globs exercise the CLI's installed ambient-input closure.
+    const taskArgs =
+      sourceCli && (task === "typecheck" || task === "vize:check") ? [...args, "src/**/*"] : args;
     const before = snapshot();
     const start = performance.now();
-    const result = command(process.execPath, [vp, "run", task, ...args]);
+    const result = command(process.execPath, [vp, "run", task, ...taskArgs]);
     const details = command(process.execPath, [vp, "run", "--last-details"]);
     const after = snapshot();
     const output = result.stdout + result.stderr;
     rows.push({
       label,
       task,
-      args,
+      args: taskArgs,
       status: result.status,
       stdout: result.stdout,
       stderr: result.stderr,
