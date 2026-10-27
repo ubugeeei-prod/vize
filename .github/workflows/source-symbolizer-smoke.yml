@@ -1,0 +1,171 @@
+name: Source symbolizer smoke
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/source-symbolizer-smoke.yml
+      - tools/benchmarks/scripts/source-symbolizer-*.ts
+      - tests/tooling/source-symbolizer-protocol.test.ts
+  workflow_dispatch:
+    inputs:
+      symbols_only:
+        description: Decode retained ELF symbols only without new captures or corpus execution
+        type: boolean
+        default: false
+      replay_run_id:
+        description: Optional existing public cold-scale run for normal CPU replay
+        type: string
+        required: false
+      replay_artifact_id:
+        description: Optional immutable cold-scale artifact from the specified run
+        type: string
+        required: false
+permissions: { contents: read, actions: read }
+concurrency:
+  group: source-symbolizer-smoke-${{ github.event.pull_request.number || github.ref }}-${{ inputs.symbols_only && 'symbols' || 'source' }}
+  cancel-in-progress: true
+jobs:
+  software-source:
+    if: ${{ !inputs.symbols_only }}
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - name: Install bounded symbolizer tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y linux-tools-generic binutils llvm elfutils
+          sudo sysctl kernel.perf_event_paranoid=0
+          shopt -s nullglob
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then
+              echo "SMOKE_PERF=$candidate" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+      - name: Validate exact count and source ownership admission
+        run: node --test tests/tooling/source-symbolizer-protocol.test.ts
+      - name: Prove the small original Rust carrier before decoding normal captures
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          node tools/benchmarks/scripts/source-symbolizer-smoke.ts \
+            --perf "$SMOKE_PERF" --out "$out/carrier"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
+        with:
+          artifact-ids: ${{ inputs.replay_artifact_id }}
+          run-id: ${{ inputs.replay_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/source-symbolizer-replay-download
+      - name: Restore the sealed normal binary and prepare bounded public controls
+        if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mapfile -t archives < <(find "$RUNNER_TEMP/source-symbolizer-replay-download" -type f -name '*.tgz')
+          [[ "${#archives[@]}" == 1 ]]
+          tar -xzf "${archives[0]}" -C "$RUNNER_TEMP" \
+            cold-scale/record-head/direct-process/perf.data \
+            cold-scale/record-head/direct-process/receipt.json \
+            cold-scale/binaries/normal-head/vize \
+            cold-scale/builds/normal-head.json
+          provider="$RUNNER_TEMP/source-symbolizer-provider"
+          mkdir "$provider"
+          node -e 'process.stdout.write(JSON.stringify({private:true,dependencies:{vue:"3.6.0-rc.13",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}))' > "$provider/package.json"
+          npm install --prefix "$provider" --ignore-scripts --no-audit --no-fund
+          node tools/benchmarks/scripts/source-symbolizer-stages.ts --perf "$SMOKE_PERF" \
+            --out "$out/bounded" --root "$RUNNER_TEMP/cold-scale" --provider "$provider" \
+            --carrier "$out/carrier/result.json"
+      - name: Decode retained full software capture after bounded controls
+        if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          node tools/benchmarks/scripts/source-symbolizer-smoke.ts --perf "$SMOKE_PERF" \
+            --out "$out/normal" --replay-root "$RUNNER_TEMP/cold-scale" \
+            --carrier-result "$out/carrier/result.json" --bounded-result "$out/bounded/result.json"
+      - name: Package bounded evidence without traversing project dependencies
+        if: always()
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          if [[ -d "$out" ]]; then
+            tar -czf "$RUNNER_TEMP/source-symbolizer-evidence.tgz" \
+              --exclude='*/project/node_modules' --exclude='*/tmp' --exclude='*/xdg-cache' \
+              -C "$out" .
+          fi
+      - name: Preserve raw protocols, exact sample census, and separate self/inclusive reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: source-symbolizer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-symbolizer-evidence.tgz
+          if-no-files-found: warn
+          retention-days: 14
+
+  symbol-replay:
+    if: ${{ inputs.symbols_only }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - name: Install offline symbol tools and validate the immutable request
+        env:
+          REPLAY_RUN_ID: ${{ inputs.replay_run_id }}
+          REPLAY_ARTIFACT_ID: ${{ inputs.replay_artifact_id }}
+        run: |
+          set -euo pipefail
+          [[ "$REPLAY_RUN_ID" =~ ^[0-9]+$ && "$REPLAY_ARTIFACT_ID" =~ ^[0-9]+$ ]]
+          sudo apt-get update -qq
+          sudo apt-get install -y linux-tools-generic binutils
+          shopt -s nullglob
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then
+              echo "SMOKE_PERF=$candidate" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ inputs.replay_artifact_id }}
+          run-id: ${{ inputs.replay_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/symbol-replay-download
+      - name: Restore the exact recorded DSO and decode all self samples without addr2line
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find "$RUNNER_TEMP/symbol-replay-download" -type f -name '*.tgz')
+          [[ "${#archives[@]}" == 1 ]]
+          restore=/home/runner/_work/_temp
+          [[ ! -e "$restore/cold-scale" ]]
+          mkdir -p "$restore"
+          tar -xzf "${archives[0]}" -C "$restore" \
+            cold-scale/record-head/direct-process/perf.data \
+            cold-scale/record-head/direct-process/receipt.json \
+            cold-scale/binaries/normal-head/vize \
+            cold-scale/builds/normal-head.json
+          node tools/benchmarks/scripts/source-symbolizer-symbol-cli.ts \
+            --perf "$SMOKE_PERF" --root "$restore/cold-scale" \
+            --out "$RUNNER_TEMP/symbol-replay"
+      - name: Preserve qualified symbols and explicit unresolved counts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: source-symbols-${{ github.run_id }}
+          path: ${{ runner.temp }}/symbol-replay
+          if-no-files-found: warn
+          retention-days: 14

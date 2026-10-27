@@ -1,0 +1,28 @@
+[
+  {
+    "label": "version",
+    "argv": [
+      "/tmp/vize-p0-goal-20261027-511rot8h/10933-public-before-0.600.0/node_modules/.bin/vize",
+      "--version"
+    ],
+    "status": 0,
+    "stdoutSha256": "cad5917bca6f9d3aeab6fbf6f53acf1978efc71390de227bb7d832b5aadfd7bd",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "diagnostics",
+    "argv": [
+      "/tmp/vize-p0-goal-20261027-511rot8h/10933-public-before-0.600.0/node_modules/.bin/vize",
+      "check",
+      "--no-config",
+      "--format",
+      "json",
+      "--show-virtual-ts",
+      "--corsa-path",
+      "/tmp/vize-p0-goal-20261027-511rot8h/10933-public-before-0.600.0/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"
+    ],
+    "status": 1,
+    "stdoutSha256": "d8b57fc17e3bfa1218324bbcb84730ac2590d65b8b98f211259e87949d8ebdf3",
+    "stderrSha256": "e4608271ad1c4ddfc1cf0a8ab1aee3873c3c45fd1c000a5489fdce6d750b5467"
+  }
+]

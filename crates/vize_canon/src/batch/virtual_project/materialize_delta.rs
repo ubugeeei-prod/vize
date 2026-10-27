@@ -114,6 +114,9 @@ impl VirtualProject {
             .map(|path| Ok((path.clone(), revision_if_file(path)?)))
             .collect::<CorsaResult<FxHashMap<_, _>>>()?;
 
+        if self.private_batch_namespace {
+            self.prepare_owned_batch_writes(&self.expected_materialized_files())?;
+        }
         ensure_materialize_root(&self.virtual_root)?;
         if let Some(desired) = desired_links.as_ref() {
             remove_stale_package_links(&self.materialized_package_links, desired)?;

@@ -1,0 +1,1 @@
+<ul id="outer" role="listbox" aria-activedescendant="active"><li id="active" role="option">A</li></ul>

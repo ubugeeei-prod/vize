@@ -26,13 +26,15 @@ const deterministic = (row: Row) =>
 export function assertAuthoredStylePackets(group: StylePacketGroup, actual: readonly Row[]): void {
   const expected: Row[] = read(packetFile(group, "head"));
   assert.equal(actual.length, expected.length, `${group}: no missing or extra packets`);
-  actual.forEach((row, index) =>
+  actual.forEach((row, index) => {
+    const expectedRow = expected[index];
+    assert.ok(expectedRow, `${group}:${index}: registered complete packet`);
     assert.deepEqual(
       deterministic(row),
-      deterministic(expected[index]),
+      deterministic(expectedRow),
       `${group}:${index}: complete input and output packet`,
-    ),
-  );
+    );
+  });
 }
 
 /** Permit only the explicitly archived authored-module boundary transition. */
@@ -49,16 +51,15 @@ export function assertPreservedStylePacket(
   }
   const historical: Row[] = read(packetFile(group, "base"));
   const successor: Row[] = read(packetFile(group, "head"));
+  const previous = historical[index],
+    current = successor[index];
+  assert.ok(previous && current, `${group}:${index}: registered complete transition pair`);
   assert.deepEqual(
     before,
-    historical[index].output,
+    previous.output,
     `${group}:${index}: immutable complete previous output`,
   );
-  assert.deepEqual(
-    after,
-    successor[index].output,
-    `${group}:${index}: immutable complete successor output`,
-  );
+  assert.deepEqual(after, current.output, `${group}:${index}: immutable complete successor output`);
   assert.deepEqual(Object.keys(after).sort(), Object.keys(before).sort());
   for (const key of Object.keys(before)) {
     if (transition.facets.includes(key))
