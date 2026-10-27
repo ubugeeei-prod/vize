@@ -14,6 +14,7 @@ import { pathToFileURL } from "node:url";
 import { retainedNormalIdentity } from "./source-symbolizer-smoke.ts";
 import { boundedCommand, digest } from "./source-symbolizer-render.ts";
 import { renderSymbolCpu } from "./source-symbolizer-symbols.ts";
+import { decodeNativeCheckerCpu } from "./native-checker-cpu-decode.ts";
 export const nativeCheckerImage = {
   sha256: "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
   path: "/home/runner/_work/_temp/provider/node_modules/@typescript/typescript-linux-x64/lib/tsc",
@@ -200,11 +201,36 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     },
   });
   assert.ok(values.root && values.out && values.provider && values.perf);
-  inspectNativeChecker({
+  const metadata = inspectNativeChecker({
     root: resolve(values.root),
     out: resolve(values.out),
     provider: resolve(values.provider),
     perf: values.perf,
     go: values.go!,
   });
+  const decoded = decodeNativeCheckerCpu({
+    sdk: nativeCheckerImage.path,
+    sdkSha256: nativeCheckerImage.sha256,
+    data: join(resolve(values.root), "record-head/direct-process/perf.data"),
+    dataSha256: nativeCheckerImage.dataSha256,
+    trace: join(resolve(values.out), "runtime-addresses/stdout.txt"),
+    elf: join(resolve(values.out), "sdk-elf/stdout.txt"),
+    out: join(resolve(values.out), "go-attribution"),
+    go: values.go!,
+    identity: {
+      compiledSource: metadata.compiledSource,
+      observerSource: metadata.observerSource,
+      normalBinarySha256: metadata.normalBinarySha256,
+      sdk: metadata.sdk,
+    },
+  });
+  console.log(
+    JSON.stringify({
+      qualified: decoded.qualified,
+      checkerSampleCount: decoded.checkerSampleCount,
+      resolvedFunctionSamples: decoded.resolvedFunctionSamples,
+      unresolvedFunctionSamples: decoded.unresolvedFunctionSamples,
+      hardwareInstructions: null,
+    }),
+  );
 }

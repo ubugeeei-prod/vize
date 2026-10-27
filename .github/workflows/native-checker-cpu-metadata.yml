@@ -1,4 +1,4 @@
-name: Native checker CPU image custody
+name: Native checker CPU attribution
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -65,7 +65,7 @@ jobs:
           run-id: ${{ inputs.capture_run_id }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/checker-capture
-      - name: Inspect the byte-matched SDK and recorded virtual addresses
+      - name: Resolve recorded checker CPU through the byte-matched SDK
         run: |
           set -euo pipefail
           mapfile -t archives < <(find "$RUNNER_TEMP/checker-capture" -type f -name '*.tgz')
@@ -81,7 +81,7 @@ jobs:
           node tools/benchmarks/scripts/native-checker-cpu-metadata.ts \
             --root "$restore/cold-scale" --out "$RUNNER_TEMP/checker-metadata" \
             --provider "$RUNNER_TEMP/checker-sdk" --perf "$NATIVE_PERF" --go "$(command -v go)"
-      - name: Preserve SDK build IDs, ELF segments, module metadata, and raw addresses
+      - name: Preserve SDK build IDs, verified PC conversion, and function self samples
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
