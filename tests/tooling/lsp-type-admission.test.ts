@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { admissionFiles } from "./support/type-admission-project.ts";
 import { templateRefAdmission } from "./support/type-admission-fixtures.ts";
+import { templateRefEdgeAdmission } from "./support/type-admission-ref-edges.ts";
 import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { root } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
@@ -131,7 +132,10 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
     for (const packet of repaired) assert.deepEqual(packet.diagnostics, [], packet.uri);
     assert.equal(
       rows.length,
-      templateRefAdmission.reduce((sum, row) => sum + row.mutations.length, 0),
+      [...templateRefAdmission, ...templateRefEdgeAdmission].reduce(
+        (sum, row) => sum + row.mutations.length,
+        0,
+      ),
     );
   } finally {
     await session.shutdown();

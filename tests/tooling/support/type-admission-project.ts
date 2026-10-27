@@ -5,6 +5,7 @@ import {
   templateRefAdmission,
   mutatedAdmission,
 } from "./type-admission-fixtures.ts";
+import { templateRefEdgeAdmission } from "./type-admission-ref-edges.ts";
 
 export function admissionFiles(stage: "valid" | "invalid" | "poisoned") {
   const files: Record<string, string> = {
@@ -13,7 +14,7 @@ export function admissionFiles(stage: "valid" | "invalid" | "poisoned") {
     "Generic.vue": genericChild,
   };
   const expected: { file: string; line: number; column: number; code: number }[] = [];
-  for (const row of templateRefAdmission) {
+  for (const row of [...templateRefAdmission, ...templateRefEdgeAdmission]) {
     for (const [index, mutation] of row.mutations.entries()) {
       const file = `${row.name}-${index + 1}.vue`;
       const probe =

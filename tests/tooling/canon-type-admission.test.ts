@@ -88,7 +88,7 @@ test("template refs preserve exact types and reject every unique mutation before
         [...expected].sort(compareIdentity),
         `${name}: independent Vue oracle`,
       );
-      if (stage !== "valid") assert.equal(actual.length, 18);
+      if (stage !== "valid") assert.equal(actual.length, 24);
     }
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
