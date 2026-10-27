@@ -61,6 +61,7 @@ void test("configured hosts refresh package-selected options once without replac
   const watches = new Map();
   const host = {
     ...ts.sys,
+    useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
     getCompilationSettings: () => currentOptions,
     getScriptFileNames: () => roots,
     getProjectReferences: () => references,

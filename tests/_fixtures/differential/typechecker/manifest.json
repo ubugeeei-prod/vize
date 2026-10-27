@@ -9196,7 +9196,7 @@
         {
           "selector": "configured hosts refresh package-selected options once without replacing roots or descriptors",
           "source": "tests/typescript-plugin/package-options.test.cjs",
-          "sha256": "e90c718cb4ae1ea44aa3e3ccf898d1d450676bc1c0972bf15a9c1ca63a74c678"
+          "sha256": "d801aa72f4f053b3ff45cc1fbc9cdc99077f8c126a4bed4ae2d993bbaf40d721"
         }
       ],
       "witness": {
