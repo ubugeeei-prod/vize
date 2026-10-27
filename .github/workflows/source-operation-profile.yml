@@ -1,81 +1,150 @@
-name: Source operation profile
+name: Recovery line-break normal preflight
 on:
-  pull_request:
-    paths:
-      - .github/workflows/source-operation-profile.yml
-      - davinci/vize_l0/src/profiler/**
-      - davinci/vize_l0/src/profiler.rs
-      - davinci/vize_l0/tests/source_operations_profile.rs
-      - davinci/vize_l0/tests/source_probes/**
-      - crates/vize_croquis/src/script_parser/parse.rs
-      - crates/vize_croquis/src/script_parser/recovery.rs
-      - crates/vize_croquis/src/script_parser/recovery/**
-      - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/fingerprint.rs
-      - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/namespace.rs
-      - davinci/vize_l0/examples/source_operation_overhead.rs
-      - davinci/vize_l0/Cargo.toml
-      - crates/vize_carton/src/profile_export/**
-      - crates/vize_carton/src/profile_export.rs
-      - crates/vize_carton/Cargo.toml
-  workflow_dispatch: {}
-permissions:
-  contents: read
-concurrency:
-  group: source-operation-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  workflow_dispatch:
+permissions: { contents: read }
 jobs:
-  scopes:
+  compare:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
+    timeout-minutes: 40
     env:
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
+      PINNED_BASE: 21dbb3573d46655954de79ac90df14d24d657be9
+      PINNED_HEAD: 81ec28e7d04c6da602d376c0747e196470beed46
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
       - run: rustup toolchain install 1.99.1 --profile minimal
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: source-operation-v1
+          key: recovery-line-break-normal-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Check disabled and instrumented collector laws
+      - name: Pin the normal source pair and common carrier
         run: |
           set -euo pipefail
-          mkdir -p evidence
-          git rev-parse HEAD > evidence/source.sha
-          rustc +1.99.1 -vV > evidence/rustc.txt
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --lib profiler::micro_hash --features micro-profiling 2>&1 | tee evidence/hash-digest-parity.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
-          test "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
-          test -z "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"
-      - name: Measure instrumentation overhead separately from product speed
-        run: |
-          set -euo pipefail
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead
-          cp target/ci-opt/examples/source_operation_overhead evidence/normal
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead --features micro-profiling
-          cp target/ci-opt/examples/source_operation_overhead evidence/instrumented
-          sha256sum evidence/normal evidence/instrumented > evidence/binaries.sha256
-          wc -c evidence/normal evidence/instrumented > evidence/binary-bytes.txt
-          cpus=$(python3 -c 'import os;print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
-          printf '%s\n' "$cpus" > evidence/measurement-cpus.txt
-          lscpu > evidence/cpu.txt
-          for round in 1 2 3; do
-            taskset -c "$cpus" evidence/normal disabled 8 500000 > "evidence/normal-$round.json"
-            taskset -c "$cpus" evidence/instrumented disabled 8 500000 > "evidence/feature-disabled-$round.json"
-            taskset -c "$cpus" evidence/instrumented enabled 8 500000 > "evidence/feature-enabled-$round.json"
+          mkdir -p normal
+          for role in base head; do
+            sha="$PINNED_HEAD"
+            if [[ "$role" == base ]]; then sha="$PINNED_BASE"; fi
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/line-break-normal-$role" "$sha"
+            git -C "$RUNNER_TEMP/line-break-normal-$role" rev-parse HEAD > "normal/$role.sha"
+            cp davinci/vize_l0/examples/recovery_line_break_normal.rs "$RUNNER_TEMP/line-break-normal-$role/davinci/vize_l0/examples/"
           done
-          rm evidence/normal evidence/instrumented
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          rustc +1.99.1 -vV > normal/rustc.txt
+          lscpu > normal/cpu.txt
+          objdump --version > normal/objdump.txt
+          nm --version > normal/nm.txt
+          python3 -c 'import json,os,pathlib; p=sorted(os.sched_getaffinity(0))[:8]; assert len(p)==8; pathlib.Path("normal/affinity.txt").write_text(",".join(map(str,p))+"\n"); pathlib.Path("normal/resources.json").write_text(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","CARGO_INCREMENTAL")},"allowed":sorted(os.sched_getaffinity(0)),"selected":p,"scope":"normal Rust parse+analysis microbenchmark; no backend, project cold or allocation comparison"},indent=2)+"\n")'
+      - name: Build fresh normal roles with independent targets and equal flags
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            source="$RUNNER_TEMP/line-break-normal-$role"
+            target="$GITHUB_WORKSPACE/target/line-break-normal-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$target" -p vize_l0 --example recovery_line_break_normal --message-format=json-render-diagnostics > "normal/build-$role.jsonl"
+            cp "$target/ci-opt/examples/recovery_line_break_normal" "normal/binary-$role"
+            nm -n --defined-only "normal/binary-$role" > "normal/symbols-$role.txt"
+          done
+          python3 - <<'PYBUILD'
+          import hashlib,json,os,pathlib,subprocess
+          root=pathlib.Path("normal"); sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+          identity={"base":os.environ["PINNED_BASE"],"head":os.environ["PINNED_HEAD"],"roles":{}}
+          for role in ("base","head"):
+              source=pathlib.Path(os.environ["RUNNER_TEMP"])/("line-break-normal-"+role)
+              records=[json.loads(x) for x in (root/("build-"+role+".jsonl")).read_text().splitlines()]
+              selected=[r for r in records if r.get("reason")=="compiler-artifact" and r["target"]["name"] in ("vize_croquis","recovery_line_break_normal")]
+              assert len(selected)==2
+              for a in selected:
+                  assert not a["fresh"] and a["profile"]["opt_level"]=="3" and a["profile"]["debuginfo"]==0
+                  assert a["features"]==([] if a["target"]["name"]=="vize_croquis" else ["default"])
+                  assert pathlib.Path(a["manifest_path"]).is_relative_to(source)
+              binary=root/("binary-"+role)
+              symbols=[]
+              for line in (root/("symbols-"+role+".txt")).read_text().splitlines():
+                  p=line.split()
+                  if len(p)==3: symbols.append((int(p[0],16),p[2]))
+              found=[s for s in symbols if s[1].endswith("___rust_alloc")]
+              assert len(found)==1
+              start,symbol=found[0]; stop=min(a for a,n in symbols if a>start)
+              dump=subprocess.run(["objdump","-d","-C","--start-address="+str(start),"--stop-address="+str(stop),str(binary)],capture_output=True,text=True)
+              assert dump.returncode==0
+              assert "malloc@GLIBC" in dump.stdout and "posix_memalign@GLIBC" in dump.stdout
+              (root/("allocator-"+role+".txt")).write_text(dump.stdout)
+              identity["roles"][role]={"allocatorShimSymbol":symbol,"allocatorSystemQualified":True,"allocatorShimSha256":hashlib.sha256(dump.stdout.encode()).hexdigest(),"source":(root/(role+".sha")).read_text().strip(),"sourceRoot":str(source),"artifacts":selected,"binarySha256":sha(binary),"binaryBytes":binary.stat().st_size,"carrierSha256":sha(source/"davinci/vize_l0/examples/recovery_line_break_normal.rs"),"recoverySha256":sha(source/"crates/vize_croquis/src/script_parser/recovery.rs"),"lockSha256":sha(source/"Cargo.lock"),"manifestSha256":sha(source/"Cargo.toml")}
+          a,b=identity["roles"].values()
+          assert a["binarySha256"]!=b["binarySha256"]
+          assert a["carrierSha256"]==b["carrierSha256"] and a["lockSha256"]==b["lockSha256"] and a["manifestSha256"]==b["manifestSha256"]
+          assert a["recoverySha256"]=="7c45cf385a6cb75d149f8c8f22a3901499eb64dc2292e295b635a89a5879fb9b"
+          assert b["recoverySha256"]=="c696925a842e5e3a56f40e1aaa9b52f4151ad96dde4112bd518ee08a6f95c815"
+          (root/"identity.json").write_text(json.dumps(identity,indent=2)+"\n")
+          PYBUILD
+      - name: Measure nine 128KiB cases in alternating normal rounds
+        run: |
+          set -euo pipefail
+          cpus="$(cat normal/affinity.txt)"
+          for scenario in irreparable valid repairable; do
+            for encoding in ascii unicode e2-dense; do
+              for round in 1 2 3; do
+                roles="base head"
+                if [[ "$round" == 2 ]]; then roles="head base"; fi
+                for role in $roles; do
+                  RAYON_NUM_THREADS=8 GOMAXPROCS=8 /usr/bin/time -v -o "normal/time-$scenario-$encoding-$role-$round.txt" taskset -c "$cpus" "normal/binary-$role" 20 131072 "$scenario" "$encoding" > "normal/sample-$scenario-$encoding-$role-$round.json"
+                done
+              done
+            done
+          done
+      - name: Compare exact inputs and report normal medians without a project cold claim
+        run: |
+          set -euo pipefail
+          python3 - <<'PYCOMPARE'
+          import hashlib,json,pathlib,re,statistics
+          root=pathlib.Path("normal"); cases=[]
+          fields=("iterations","minimumSourceBytes","sourceBytes","sourceHash","rows","scenario","encoding","e2LeadBytesInInput","checksum","instrumented")
+          for scenario in ("irreparable","valid","repairable"):
+              for encoding in ("ascii","unicode","e2-dense"):
+                  roles={r:[] for r in ("base","head")}; identity=None
+                  for role in roles:
+                      for n in (1,2,3):
+                          p=root/f"sample-{scenario}-{encoding}-{role}-{n}.json"
+                          row=json.loads(p.read_text())
+                          assert row["iterations"]==20 and row["minimumSourceBytes"]==131072 and row["sourceBytes"]>=131072 and row["rows"]>0
+                          assert row["scenario"]==scenario and row["encoding"]==encoding and row["instrumented"] is False and row["elapsedNs"]>0
+                          current={k:row[k] for k in fields}
+                          if identity is None: identity=current
+                          assert current==identity
+                          time=(root/f"time-{scenario}-{encoding}-{role}-{n}.txt").read_text()
+                          m=re.search(r"Maximum resident set size \(kbytes\): (\d+)",time); assert m
+                          roles[role].append({"round":n,"elapsedNs":row["elapsedNs"],"maxProcessRssKiB":int(m[1]),"rawSha256":hashlib.sha256(p.read_bytes()).hexdigest()})
+                  medians={r:statistics.median(x["elapsedNs"] for x in roles[r]) for r in roles}
+                  identity["sourceHash"]=str(identity["sourceHash"])
+                  cases.append({"input":identity,"normalSamples":roles,"medianElapsedNs":medians,"headChangePercent":100*(medians["head"]/medians["base"]-1)})
+          receipt={"scope":"nine 128KiB normal source parse+analysis cases; 20 repeated parses per fresh process, generation/report excluded from elapsedNs","identity":json.loads((root/"identity.json").read_text()),"resources":json.loads((root/"resources.json").read_text()),"cases":cases,"qualifiedNormalPairedInputs":True,"qualifiedProjectCold":False,"qualifiedAllocationComparison":False,"rssScope":"per-process maximum includes generation, parse windows, report, and allocator retention; not process-tree RSS or Rust live allocations","sourceHashEncoding":"exact decimal u64 string; raw Rust samples retain numeric tokens","hardwareInstructions":None,"peakLiveBytes":None}
+          data=(json.dumps(receipt,indent=2)+"\n").encode(); assert len(data)<=95000
+          (root/"receipt.json").write_bytes(data)
+          print(data.decode())
+          PYCOMPARE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: source-operation-${{ github.sha }}
-          path: evidence/
+          name: recovery-line-break-normal-receipt-${{ github.run_id }}
+          path: |
+            normal/receipt.json
+            normal/rustc.txt
+            normal/cpu.txt
+            normal/allocator-*.txt
+            normal/objdump.txt
+            normal/nm.txt
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: recovery-line-break-normal-raw-${{ github.run_id }}
+          path: |
+            normal/*.json
+            normal/*.jsonl
+            normal/*.txt
+            normal/*.sha
           if-no-files-found: error
