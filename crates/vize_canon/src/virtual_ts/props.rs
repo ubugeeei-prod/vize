@@ -24,8 +24,16 @@ use vize_croquis::Croquis;
 
 /// Use the same local/shadow decision and emitted spelling as prop declarations.
 /// Authored setup locals, imports and reactive destructures keep their own names.
-pub(crate) fn setup_anchor_identifier(summary: &Croquis, name: String) -> String {
-    if template_bindings::should_skip_template_prop_binding(summary, name.as_str()) {
+pub(crate) fn setup_anchor_identifier(
+    summary: &Croquis,
+    name: String,
+    binding_type: Option<vize_croquis::BindingType>,
+) -> String {
+    if template_bindings::should_skip_template_prop_binding_with_type(
+        summary,
+        name.as_str(),
+        binding_type,
+    ) {
         name
     } else {
         mappings::prop_binding_identifier(name.as_str())

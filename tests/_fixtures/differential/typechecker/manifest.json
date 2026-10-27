@@ -9557,7 +9557,7 @@
         {
           "selector": "createProjectConfiguration",
           "source": "npm/typescript-plugin/virtual-modules.cjs",
-          "sha256": "053dda9154be1c4bf3fa470b3e87226aaaccd100493002228b325baca84665d0"
+          "sha256": "cbd6352f2bc709a5edf6c93463cc4e02718c6e2d5454b2b762c2d79b6e42bbf4"
         },
         {
           "selector": "createMappedLanguageService",
@@ -9577,7 +9577,7 @@
         {
           "selector": "createOrdinaryHostFrontier",
           "source": "tests/typescript-plugin/ordinary-host-frontier.ts",
-          "sha256": "fa16979fe9c0876126b75f233e8934555ea909aefa51ea09466ab3e716bd5e9a"
+          "sha256": "d05c9afd2e0f0db0f1818f4ee4bd65790ebb38bdf352212fcba2e193faa7dc76"
         },
         {
           "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
@@ -9597,7 +9597,7 @@
         {
           "selector": "checkInheritedConfiguration",
           "source": "editors/vscode/test/suite/typescript-provider-host.cjs",
-          "sha256": "90a16b15677f53b78de761d4bd69cddc0c77c7d99ff0052db0bf3ca1bb22bfa3"
+          "sha256": "f3b0e86688733e8867f1ed67ef8e33dfe467ad4d3cc695c091da2768bf9de3ec"
         },
         {
           "selector": "runPackagedExtensionHost",
@@ -9607,12 +9607,17 @@
         {
           "selector": "TypeScript 5.7.3 and 6.0.3",
           "source": ".github/workflows/typescript-plugin.yml",
-          "sha256": "87a6393c96aa7943cdc88696e0350ea082e4f088146ea4b9305efe03c3455a16"
+          "sha256": "d4ea39e3bd3a68224bce2303304d7b82cf872cef559894d6b882d56d1f262905"
         },
         {
           "selector": "Linux and Windows physical VSIX",
           "source": ".github/workflows/typescript-provider-vsix.yml",
           "sha256": "77c6d8a9aaed31dc5af2069b6d3ccc7b85ffefcd1d55faaeae7621981f59c744"
+        },
+        {
+          "selector": "configured hosts refresh package-selected options once without replacing roots or descriptors",
+          "source": "tests/typescript-plugin/package-options.test.cjs",
+          "sha256": "d801aa72f4f053b3ff45cc1fbc9cdc99077f8c126a4bed4ae2d993bbaf40d721"
         }
       ],
       "witness": {
