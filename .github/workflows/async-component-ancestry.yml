@@ -69,6 +69,7 @@ jobs:
           from pathlib import Path
           text = Path('target/vize-tests/async-component/units.stdout').read_text()
           names = [
+            'own_slot_scope_does_not_shadow_its_host_component',
             'template_shadowed_async_and_static_sites_do_not_revive_name_fallbacks',
             'mixed_template_sites_keep_only_the_unshadowed_root_site',
             'shadowed_prop_sites_do_not_reuse_the_root_component_contract',

@@ -17,7 +17,7 @@ struct Edge {
 fn analysis(script: &str, template: &str) -> vize_croquis::Croquis {
     let allocator = Allocator::default();
     let (root, errors) = vize_armature::Parser::new(&allocator, template).parse();
-    assert!(errors.is_empty());
+    assert!(errors.is_empty(), "{template}: {errors:?}");
     let mut drawer = Analyzer::with_options(AnalyzerOptions::full());
     drawer.analyze_script_setup(script);
     drawer.analyze_template(&root);
@@ -38,7 +38,7 @@ fn project(
     project.add_file_with_analysis(
         Path::new(child_name),
         child_script,
-        analysis(child_script, "<p/>"),
+        analysis(child_script, "<p></p>"),
     );
     let mut source = String::from("<script setup>");
     source.push_str(script);
@@ -179,5 +179,30 @@ fn shadowed_global_component_sites_do_not_create_provide_ancestry() {
             })
             .collect();
         assert_eq!(missing, expected_unmatched, "{template}");
+    }
+}
+
+#[test]
+fn own_slot_scope_does_not_shadow_its_host_component() {
+    let template = "<Lazy v-slot=\"{ Lazy }\"><Lazy/></Lazy>";
+    for script in [
+        "import Lazy from './NoticeLink.vue';",
+        "import { defineAsyncComponent as dac } from 'vue'; const Lazy = dac(() => import('./NoticeLink.vue'));",
+    ] {
+        let project = project(script, template, "", "NoticeLink.vue");
+        assert_eq!(
+            edge_packet(&project),
+            vec![Edge {
+                caller: 1,
+                target: 0,
+                export: "default".into(),
+                sites: vec![(0, template.len() as u32)],
+            }],
+            "{script}"
+        );
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            vec![crate::FileId::new(0)]
+        );
     }
 }
