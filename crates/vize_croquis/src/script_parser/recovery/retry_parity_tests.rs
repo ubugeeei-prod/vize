@@ -142,3 +142,69 @@ fn retry_budget_and_nested_independent_holes_remain_exact() {
         assert_eq!(same_packet(&nested, SourceType::ts()), holes > 3);
     }
 }
+
+#[test]
+fn vector_line_breaks_keep_scalar_byte_offsets_for_every_unicode_scalar() {
+    let mut source = String::default();
+    for character in (0..=0x10ffff).filter_map(char::from_u32) {
+        source.push(character);
+    }
+    let expected = source
+        .char_indices()
+        .filter_map(|(offset, character)| {
+            matches!(character, '\n' | '\r' | '\u{2028}' | '\u{2029}').then_some(offset)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(expected.len(), 4);
+    assert_eq!(
+        super::line_break_offsets(&source).collect::<Vec<_>>(),
+        expected
+    );
+    assert_eq!(
+        super::line_break_offsets("a\r\nb\u{2028}c\u{2029}d\re\n").collect::<Vec<_>>(),
+        [1, 2, 4, 8, 12, 14]
+    );
+    assert_eq!(
+        super::line_break_offsets("\u{2000}\u{2027}\u{202a}\u{20ac}\u{2603}\u{27ff}").count(),
+        0
+    );
+}
+
+#[test]
+fn vector_line_breaks_keep_authored_repair_ranges_and_complete_packets() {
+    for separator in ["\n", "\r", "\r\n", "\u{2028}", "\u{2029}"] {
+        for padding in ["", " \t", "\u{2000}\u{3000}"] {
+            let source = format!(
+                "const 雪 = '日本☃😀';{separator}consume({padding}{separator}const done = 1;{separator}"
+            );
+            let previous = incomplete_call_before_declaration(&source);
+            let candidate = super::incomplete_call_before_declaration(&source);
+            assert_eq!(candidate, previous);
+            assert!(candidate.is_some());
+            if let Some(range) = candidate {
+                assert_eq!(&source[range], "(");
+            }
+            for kind in [SourceType::ts(), SourceType::tsx(), SourceType::mjs()] {
+                same_packet(&source, kind);
+            }
+        }
+    }
+}
+
+#[test]
+fn vector_line_breaks_keep_huge_irreparable_authored_programs() {
+    for minimum_bytes in [131_072, 1_048_576, 10_485_760] {
+        let mut source = String::from("const broken = ;\r\n");
+        let mut declarations = 0;
+        while source.len() < minimum_bytes {
+            use std::fmt::Write;
+            assert!(writeln!(source, "const 雪_{declarations}: string = \"日本☃😀\";\r").is_ok());
+            declarations += 1;
+        }
+        assert!(source.len() >= minimum_bytes);
+        assert!(declarations > 0);
+        assert_eq!(super::incomplete_call_before_declaration(&source), None);
+        assert_eq!(incomplete_call_before_declaration(&source), None);
+        assert!(same_packet(&source, SourceType::ts()));
+    }
+}

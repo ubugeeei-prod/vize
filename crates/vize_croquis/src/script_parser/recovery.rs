@@ -87,11 +87,18 @@ pub fn parse_program_for_analysis<'a>(
 /// so no diagnostic label necessarily remains beside the authored `(`. The
 /// line boundary is still deterministic: a declaration cannot continue an
 /// unfinished call whose preceding line ends at its opening parenthesis.
+// Preserve the existing four-scalar break set while searching encoded bytes.
+// Non-break E2 sequences remain ordinary source text.
+fn line_break_offsets(source: &str) -> impl Iterator<Item = usize> + '_ {
+    let bytes = source.as_bytes();
+    memchr::memchr3_iter(b'\n', b'\r', 0xe2, bytes).filter(move |&offset| {
+        bytes[offset] != 0xe2
+            || matches!(bytes.get(offset + 1..offset + 3), Some([0x80, 0xa8 | 0xa9]))
+    })
+}
+
 fn incomplete_call_before_declaration(source: &str) -> Option<Range<usize>> {
-    source.char_indices().find_map(|(line_break, character)| {
-        if !matches!(character, '\n' | '\r' | '\u{2028}' | '\u{2029}') {
-            return None;
-        }
+    line_break_offsets(source).find_map(|line_break| {
         let end = source.get(..line_break)?.trim_end().len();
         let before = source.get(..end)?.strip_suffix('(')?.trim_end();
         if before.is_empty()
