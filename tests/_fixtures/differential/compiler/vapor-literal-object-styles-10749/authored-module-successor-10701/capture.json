@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "pullRequest": 10701,
+  "scope": "complete raw source packets; authored module assembly plus released default script-setup expose transition; no additional runtime or native product parity claim",
+  "sourceHead": "6fc192271eafbccaac463104ca27af61b205f58f",
+  "sourceTree": "afe2befecf8c9375dd4edfd3fca300608646cfec",
+  "runId": 40494324373,
+  "artifactId": 12729352671,
+  "artifactName": "vapor-literal-object-styles-40494324373-1",
+  "artifactDigest": "sha256:973096b09f9d3fb0f589c4258127a381498a44d41d1f441bba3d802950647c00",
+  "rawFiles": {
+    "head.json": "fe0e35484a54d401a9e6453111ef547e670cb1beebaf3aa6e93d5d02762fa6d3",
+    "base-attribute-case.json": "4d3c5cf9f54a183f0092673c93202280a4d32d6519a15a07da40687d1266ffbf",
+    "head-attribute-case.json": "ccb691bb118733cdb3e60370e981c56e6f5aa1c57d369277b17e04d6352313c9",
+    "base-review.json": "bede8a8e268028e427473bd25f91c71a634c04ba8e70e2ac75c4387b08234562",
+    "head-review.json": "08d221bf844b0af0f7672af5539bc527084a3e315cab72f082b5a5d77fa20ac0",
+    "base-priority.json": "b6625e1b3d4539f4100dd7abc24eec1f65d6752ab4cfa1f9111a1c0ef6e0acae",
+    "head-priority.json": "2a89407fe728cd7a39bd9edebd758086897c01383209959f585c22e2ddef4e82",
+    "base-sfc.json": "20994c4313510adca6da6dcdde30e2cee352dba2bc96632c2a3c1721ea1ff846",
+    "head-sfc.json": "ef34fdaa2b41bfb1252ce06fb25fdec77f5527758463a3c72db21f15ecb59277"
+  },
+  "transitions": {
+    "main": {
+      "indices": [
+        8,
+        10,
+        20,
+        22,
+        32,
+        34,
+        44,
+        46,
+        56,
+        58,
+        68,
+        70,
+        80,
+        82,
+        92,
+        94,
+        104,
+        106,
+        116,
+        118,
+        128,
+        130,
+        140,
+        142,
+        172,
+        174,
+        176,
+        178
+      ],
+      "facets": [
+        "module"
+      ]
+    },
+    "attribute-case": {
+      "indices": [
+        4,
+        10,
+        16,
+        22,
+        28,
+        34,
+        40,
+        46
+      ],
+      "facets": [
+        "errors",
+        "module"
+      ]
+    },
+    "review": {
+      "indices": [
+        0,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        42
+      ],
+      "facets": [
+        "errors",
+        "module"
+      ]
+    },
+    "priority": {
+      "indices": [
+        0,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        42
+      ],
+      "facets": [
+        "errors",
+        "module"
+      ]
+    },
+    "sfc": {
+      "indices": [
+        1,
+        3
+      ],
+      "facets": [
+        "code"
+      ],
+      "sourcePullRequest": 10923,
+      "sourceMerge": "9157b9fa83dbdc98100be084be288f21d0d1bc18"
+    }
+  }
+}
