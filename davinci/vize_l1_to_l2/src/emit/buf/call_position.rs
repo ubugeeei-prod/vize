@@ -9,20 +9,16 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
     let alias = alias.as_bytes();
     let mut position = 0;
     while let Some(&byte) = bytes.get(position) {
-        let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
-            b'/' if rest.first() == Some(&b'/') => {
-                position = rest
+            b'/' if bytes.get(position + 1) == Some(&b'/') => {
+                position = bytes[position + 2..]
                     .iter()
-                    .skip(1)
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |end| position + 2 + end);
             }
-            b'/' if rest.first() == Some(&b'*') => {
-                position = rest
-                    .get(1..)
-                    .unwrap_or_default()
+            b'/' if bytes.get(position + 1) == Some(&b'*') => {
+                position = bytes[position + 2..]
                     .windows(2)
                     .position(|pair| pair == b"*/")
                     .map_or(bytes.len(), |end| position + 4 + end);
@@ -64,20 +60,16 @@ pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &st
     let bytes = text.as_bytes();
     let mut position = 0;
     while let Some(&byte) = bytes.get(position) {
-        let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
-            b'/' if rest.first() == Some(&b'/') => {
-                position = rest
+            b'/' if bytes.get(position + 1) == Some(&b'/') => {
+                position = bytes[position + 2..]
                     .iter()
-                    .skip(1)
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |end| position + 2 + end);
             }
-            b'/' if rest.first() == Some(&b'*') => {
-                position = rest
-                    .get(1..)
-                    .unwrap_or_default()
+            b'/' if bytes.get(position + 1) == Some(&b'*') => {
+                position = bytes[position + 2..]
                     .windows(2)
                     .position(|pair| pair == b"*/")
                     .map_or(bytes.len(), |end| position + 4 + end);
@@ -89,6 +81,7 @@ pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &st
                     .is_none_or(|ch| !is_identifier_part(ch) && ch != '.')
             }) =>
             {
+                let rest = &bytes[position + 1..];
                 let len = rest
                     .iter()
                     .position(|byte| !(byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')))
@@ -130,7 +123,7 @@ fn quoted_end(bytes: &[u8], start: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::helper_call_position;
+    use super::{helper_call_position, underscore_call_sites};
 
     #[test]
     fn scans_helper_calls_without_picking_up_strings_comments_or_members() {
@@ -148,6 +141,30 @@ mod tests {
                 helper_call_position(code, "_createVNode"),
                 expected,
                 "{code}"
+            );
+        }
+    }
+
+    #[test]
+    fn batched_and_scalar_scans_agree_across_ascii_and_unicode_prefixes() {
+        for ch in (0u8..=127)
+            .map(char::from)
+            .chain(['é', '中', '\u{200c}', '😀', '\u{a0}'])
+        {
+            let mut text = String::new();
+            text.push(ch);
+            text.push_str("_createVNode()");
+            let mut selected = None;
+            underscore_call_sites(&text, |position, alias| {
+                if alias == "_createVNode" {
+                    selected = Some(position);
+                }
+                false
+            });
+            assert_eq!(
+                selected,
+                helper_call_position(&text, "_createVNode"),
+                "{ch:?}"
             );
         }
     }
