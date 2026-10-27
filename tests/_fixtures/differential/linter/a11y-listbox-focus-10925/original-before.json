@@ -1,0 +1,39 @@
+{
+  "version": "vize 0.600.0",
+  "argv": [
+    "lint",
+    "--no-config",
+    "--preset",
+    "opinionated",
+    "CompositeWidgets.vue",
+    "--format",
+    "json",
+    "--locale",
+    "en",
+    "--quiet"
+  ],
+  "status": 0,
+  "stdout": "[\n  {\n    \"file\": \"CompositeWidgets.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"a11y/interactive-supports-focus\",\n        \"ruleDocsPath\": \"docs/content/rules/accessibility.md\",\n        \"severity\": 1,\n        \"message\": \"[vize:a11y/interactive-supports-focus] Element with role=\\\"listbox\\\" must be focusable (add tabindex=\\\"0\\\")\",\n        \"line\": 9,\n        \"column\": 3,\n        \"endLine\": 9,\n        \"endColumn\": 43,\n        \"help\": \"Why: Interactive roles imply the element can be activated by keyboard users.\\nFix:\\n  <div role=\\\"button\\\" tabindex=\\\"0\\\" @click=\\\"handle\\\">\\n  Click me\\n  </div>\\nBetter: Use native interactive elements:\\n  <button @click=\\\"handle\\\">Click me</button>\"\n      }\n    ],\n    \"errorCount\": 0,\n    \"warningCount\": 1\n  }\n]",
+  "stderr": "",
+  "packet": [
+    {
+      "file": "CompositeWidgets.vue",
+      "messages": [
+        {
+          "ruleId": "a11y/interactive-supports-focus",
+          "ruleDocsPath": "docs/content/rules/accessibility.md",
+          "severity": 1,
+          "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+          "line": 9,
+          "column": 3,
+          "endLine": 9,
+          "endColumn": 43,
+          "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 1
+    }
+  ],
+  "stdoutSha256": "ddd43f4b97820d48384f2c56ef9b117051697ceb690cd7b81df5fe63c16d0b0a"
+}
