@@ -72,3 +72,6 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
         registry.register(Box::new(ImgAlt));
     }
 }
+
+#[cfg(test)]
+mod interactive_supports_focus_tests;
