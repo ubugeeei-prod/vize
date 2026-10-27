@@ -251,7 +251,10 @@ nested().value?.focus();
 const missing = r('absent'); void missing;`),
     );
     const oracle = vueTscDiagnostics(directory).sort(compareIdentity);
-    assert.deepEqual(oracle.map((diagnostic) => diagnostic.code).sort(), [2339, 2339, 2339, 2540]);
+    assert.deepEqual(
+      oracle.map((diagnostic) => diagnostic.code).sort((a, b) => a - b),
+      [2339, 2339, 2339, 2540],
+    );
     assert.deepEqual(
       (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
       oracle,
