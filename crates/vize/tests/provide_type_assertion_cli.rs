@@ -16,6 +16,7 @@ const CHILD: &str = "import { inject } from \"vue\";\nimport { CastKey, PlainKey
 const SETUP: &str = "import { computed, provide, ref, reactive, readonly } from 'vue';\nimport type { Ref } from 'vue';\nimport MyChild from './components/MyChild.vue';\nimport { CastKey, PlainKey } from './composables/keys';\nconst source = ref('a');\nconst value = computed(() => source.value);\nconst state = reactive({ count: 1 });\nconst plainValue = 'a';\nconst snapshot = source.value;\nfunction getValue() { return 'a'; }\nfunction useService() { return { value: source }; }\nprovide(PlainKey, value);\n";
 
 #[test]
+#[ignore = "explicit Actions observer retains whole reports"]
 fn observe_complete_provide_assertion_packets() {
     let artifacts = std::env::var_os("VIZE_PROVIDE_ASSERTION_ARTIFACTS")
         .expect("observer requires artifact directory");

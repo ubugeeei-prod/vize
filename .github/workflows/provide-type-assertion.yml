@@ -52,7 +52,7 @@ jobs:
       - name: Capture whole original and positive negative destructuring controls
         env:
           VIZE_PROVIDE_ASSERTION_ARTIFACTS: ${{ runner.temp }}/provide-assertion-packets
-        run: cargo test --locked --profile ci -p vize --test integration provide_type_assertion_cli::observe_complete_provide_assertion_packets -- --nocapture
+        run: cargo test --locked --profile ci -p vize --test integration provide_type_assertion_cli::observe_complete_provide_assertion_packets -- --ignored --nocapture
       - name: Preserve actual executable identity
         if: ${{ always() }}
         run: |
