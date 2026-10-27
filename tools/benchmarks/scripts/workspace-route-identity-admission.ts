@@ -24,7 +24,7 @@ const git = (...args: string[]) => {
 };
 const sourceSha = git("rev-parse", "HEAD"),
   sourceTree = git("rev-parse", "HEAD^{tree}");
-assert.equal(git("status", "--porcelain", "--untracked-files=no"), "");
+assert.equal(git("status", "--porcelain", "--untracked-files=all"), "");
 const env = {
   ...process.env,
   CARGO_TARGET_DIR: target,
@@ -36,6 +36,10 @@ const tool = (name: string, args: string[]) => {
   assert.equal(r.status, 0, r.stderr);
   return r.stdout.trim();
 };
+for (const config of [".cargo/config", ".cargo/config.toml"]) {
+  if (fs.existsSync(path.join(sourceRoot, config)))
+    git("ls-files", "--error-unmatch", "--", config);
+}
 const compiler = { cargo: tool("cargo", ["-Vv"]), rustc: tool("rustc", ["-Vv"]) };
 const args = [
   "test",
@@ -151,7 +155,7 @@ for (const [index, [purpose, name]] of tests.entries()) {
   console.log(JSON.stringify(row));
 }
 assert.equal(git("rev-parse", "HEAD"), sourceSha);
-assert.equal(git("status", "--porcelain", "--untracked-files=no"), "");
+assert.equal(git("status", "--porcelain", "--untracked-files=all"), "");
 assert.equal(hash(executable), binarySha256);
 const receipt = {
   schema: "vize.workspace-identity.admission",
