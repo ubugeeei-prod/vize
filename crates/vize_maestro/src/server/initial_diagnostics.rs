@@ -20,6 +20,10 @@ use super::MaestroServer;
 mod api_read;
 mod importers;
 use importers::refresh_initial_importers;
+#[cfg(all(test, feature = "micro-profiling"))]
+mod cost_carrier;
+#[cfg(all(test, feature = "micro-profiling"))]
+mod cost_census;
 mod pending;
 use super::state::{CorsaRequestStamp, ServerState};
 use pending::{DiagnosticsJobCause, PendingInitialDiagnostics};

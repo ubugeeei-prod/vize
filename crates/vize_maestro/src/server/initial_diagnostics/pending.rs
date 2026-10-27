@@ -104,12 +104,27 @@ impl PendingInitialDiagnostics {
     }
 
     pub(super) fn take_sync(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| job.sync_pending)
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let (mut visited, mut eligible) = (0_u64, 0_u64);
+        let entries = self.jobs.iter();
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| visited += 1);
+        let entries = entries.filter(|(_, job)| job.sync_pending);
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| eligible += 1);
+        let uri = entries
             .min_by_key(|(_, job)| job.sequence)
-            .map(|(uri, _)| uri.clone())?;
+            .map(|(uri, _)| uri.clone());
+        #[cfg(all(test, feature = "micro-profiling"))]
+        super::cost_census::record(
+            0,
+            visited,
+            eligible,
+            self.jobs.len(),
+            self.jobs.capacity(),
+            uri.is_some(),
+        );
+        let uri = uri?;
         let job = self.jobs.get_mut(&uri)?;
         job.sync_pending = false;
         job.sync_running = true;
@@ -127,32 +142,78 @@ impl PendingInitialDiagnostics {
     }
 
     pub(super) fn take_preparation(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.preparation_pending)
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let (mut visited, mut eligible) = (0_u64, 0_u64);
+        let entries = self.jobs.iter();
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| visited += 1);
+        let entries = entries
+            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.preparation_pending);
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| eligible += 1);
+        let uri = entries
             .min_by_key(|(_, job)| job.sequence)
-            .map(|(uri, _)| uri.clone())?;
+            .map(|(uri, _)| uri.clone());
+        #[cfg(all(test, feature = "micro-profiling"))]
+        super::cost_census::record(
+            1,
+            visited,
+            eligible,
+            self.jobs.len(),
+            self.jobs.capacity(),
+            uri.is_some(),
+        );
+        let uri = uri?;
         let job = self.jobs.get_mut(&uri)?;
         job.preparation_pending = false;
         Some((uri, job.clone()))
     }
 
     pub(super) fn next_not_before(&self) -> Option<Instant> {
-        self.jobs
-            .values()
-            .filter(|job| !job.sync_pending && !job.sync_running)
-            .map(|job| job.not_before)
-            .min()
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let (mut visited, mut eligible) = (0_u64, 0_u64);
+        let entries = self.jobs.values();
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| visited += 1);
+        let entries = entries.filter(|job| !job.sync_pending && !job.sync_running);
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| eligible += 1);
+        let not_before = entries.map(|job| job.not_before).min();
+        #[cfg(all(test, feature = "micro-profiling"))]
+        super::cost_census::record(
+            2,
+            visited,
+            eligible,
+            self.jobs.len(),
+            self.jobs.capacity(),
+            not_before.is_some(),
+        );
+        not_before
     }
 
     pub(super) fn take_ready(&mut self, now: Instant) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.not_before <= now)
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let (mut visited, mut eligible) = (0_u64, 0_u64);
+        let entries = self.jobs.iter();
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| visited += 1);
+        let entries = entries
+            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.not_before <= now);
+        #[cfg(all(test, feature = "micro-profiling"))]
+        let entries = entries.inspect(|_| eligible += 1);
+        let uri = entries
             .min_by_key(|(_, job)| job.not_before)
-            .map(|(uri, _)| uri.clone())?;
+            .map(|(uri, _)| uri.clone());
+        #[cfg(all(test, feature = "micro-profiling"))]
+        super::cost_census::record(
+            3,
+            visited,
+            eligible,
+            self.jobs.len(),
+            self.jobs.capacity(),
+            uri.is_some(),
+        );
+        let uri = uri?;
         self.jobs.remove(&uri).map(|job| (uri, job))
     }
 }
