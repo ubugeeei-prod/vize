@@ -17,6 +17,8 @@ use vize_carton::FxHashSet;
 
 use super::{AssembledDiagnostic, AuthoredSource};
 
+mod template_ts_directives;
+
 const UNUSED_TS_EXPECT_ERROR: u32 = 2578;
 
 /// Drop diagnostics an authored suppression comment covers.
@@ -24,6 +26,7 @@ pub(super) fn filter<P>(
     authored: &AuthoredSource<'_>,
     diagnostics: &mut Vec<AssembledDiagnostic<P>>,
 ) {
+    template_ts_directives::filter(authored, diagnostics);
     // Both rules need an authored `@ts-ignore`/`@ts-expect-error`; without one
     // the pass never computes the template range.
     if !authored.is_vue

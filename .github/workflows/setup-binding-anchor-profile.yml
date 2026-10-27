@@ -1,0 +1,108 @@
+name: Setup binding anchor allocation profile
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/virtual_ts/generator/anchors.rs
+      - crates/vize_canon/src/virtual_ts/generator/imports.rs
+      - crates/vize_canon/src/virtual_ts/props.rs
+      - crates/vize_canon/src/virtual_ts/props/template_bindings.rs
+      - tools/benchmarks/crates/vize/tests/setup_binding_anchor_profile.rs
+      - tools/benchmarks/scripts/setup-binding-anchor-evidence.ts
+      - tests/tooling/setup-binding-anchor-evidence.test.ts
+      - .github/workflows/setup-binding-anchor-profile.yml
+permissions: { contents: read }
+concurrency:
+  group: setup-binding-anchor-profile-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RAYON_NUM_THREADS: "8"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          {
+            ref: "${{ github.event.pull_request.head.sha }}",
+            fetch-depth: 0,
+            persist-credentials: false,
+          }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build role-isolated exact source observers
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          mkdir "$RUNNER_TEMP/binding-evidence"
+          base_revision=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git worktree add --detach "$RUNNER_TEMP/binding-base" "$base_revision"
+          printf '%s\n' "$BASE_SHA" > "$RUNNER_TEMP/binding-evidence/pull-request-base.sha"
+          observer=tools/benchmarks/crates/vize/tests/setup_binding_anchor_profile.rs
+          cp "$observer" "$RUNNER_TEMP/binding-base/$observer"
+          for role in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/binding-base"; fi
+            git -C "$source_root" rev-parse HEAD > "$RUNNER_TEMP/binding-evidence/$role.source"
+            cmp "$observer" "$source_root/$observer"
+            (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/binding-$role-target" cargo test --locked --profile ci-opt -p vize_benchmarks --test setup_binding_anchor_profile --no-run --message-format=json) > "$RUNNER_TEMP/binding-evidence/$role-build.jsonl"
+            python3 - "$role" <<'PY'
+          import json, pathlib, os, sys, hashlib
+          role=sys.argv[1]; root=pathlib.Path(os.environ['RUNNER_TEMP'])/'binding-evidence'
+          rows=[json.loads(line) for line in (root/(role+'-build.jsonl')).read_text().splitlines()]
+          executables=[row['executable'] for row in rows if row.get('reason')=='compiler-artifact' and row.get('target',{}).get('name')=='setup_binding_anchor_profile' and row.get('executable')]
+          assert len(executables)==1
+          binary=pathlib.Path(executables[0]); (root/(role+'.binary')).write_text(str(binary))
+          metadata={'source':(root/(role+'.source')).read_text().strip(),'binary':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'bytes':binary.stat().st_size,'targetDirectory':str(pathlib.Path(os.environ['RUNNER_TEMP'])/('binding-'+role+'-target')),'profile':'ci-opt; profiling allocator compiled; runtime-off and allocation windows separate'}
+          (root/(role+'-binary.json')).write_text(json.dumps(metadata,indent=2)+'\n')
+          PY
+          done
+          node --input-type=module -e 'import fs from "node:fs"; const p=process.env.RUNNER_TEMP+"/binding-evidence/";const x=Object.fromEntries(["base","head"].map(k=>[k,JSON.parse(fs.readFileSync(p+k+"-binary.json"))]));if(x.base.sha256===x.head.sha256)throw Error("identical binaries");fs.writeFileSync(p+"binaries.json",JSON.stringify(x,null,2));'
+          rustc -Vv > "$RUNNER_TEMP/binding-evidence/rustc.txt"
+      - name: Compare fresh generation packets and allocation pressure
+        run: |
+          set -euo pipefail
+          affinity=$(python3 -c 'import os; print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
+          for round in 1 2 3; do
+            order='base head'
+            if [[ "$round" == 2 ]]; then order='head base'; fi
+            for shape in locals imports; do
+              for count in 32 128 512; do
+                for role in $order; do
+                  binary=$(cat "$RUNNER_TEMP/binding-evidence/$role.binary")
+                  export VIZE_BINDING_PROFILE_SOURCE=$(cat "$RUNNER_TEMP/binding-evidence/$role.source")
+                  export VIZE_BINDING_PROFILE_SHAPE="$shape" VIZE_BINDING_PROFILE_COUNT="$count"
+                  for mode in runtime-off allocation; do
+                    name="$role-$shape-$count-$mode-$round"
+                    export VIZE_BINDING_PROFILE_MODE="$mode" VIZE_BINDING_PROFILE_OUTPUT="$RUNNER_TEMP/binding-evidence/$name.json"
+                    taskset -c "$affinity" "$binary" --exact complete_binding_anchor_generation_profile --nocapture > "$RUNNER_TEMP/binding-evidence/$name.stdout" 2> "$RUNNER_TEMP/binding-evidence/$name.stderr"
+                  done
+                done
+              done
+            done
+          done
+          node tools/benchmarks/scripts/setup-binding-anchor-evidence.ts "$RUNNER_TEMP/binding-evidence"
+      - name: Require complete constructor projection byte parity
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/binding-base"; fi
+            (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/binding-$role-target" VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$RUNNER_TEMP/binding-evidence/$role-constructor.json" cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$RUNNER_TEMP/binding-evidence/$role-constructor.stdout" 2> "$RUNNER_TEMP/binding-evidence/$role-constructor.stderr"
+          done
+          cmp "$RUNNER_TEMP/binding-evidence/base-constructor.json" "$RUNNER_TEMP/binding-evidence/head-constructor.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: setup-binding-anchor-profile-${{ github.sha }}
+          path: ${{ runner.temp }}/binding-evidence
+          retention-days: 14

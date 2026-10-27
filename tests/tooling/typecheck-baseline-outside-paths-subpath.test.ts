@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { rewriteOutsidePackagePaths } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+import { rewriteOutsidePackagePaths } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.ts";
 
 /**
  * Package overlay used to retarget `vue` onto the fixture package root and

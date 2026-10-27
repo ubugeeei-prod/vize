@@ -4,22 +4,18 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import {
+  retiredToolingLanguage,
+  retiredToolingLanguages as languages,
+  retiredToolingLedger as ledgerPath,
+  type RetiredToolingLanguage as Language,
+} from "../../tools/support/retired-tooling-languages.ts";
 
 // Python, Lean, MoonBit and `.mjs` tooling were retired by the maintainer on
 // 2026-10-13 (#8840). Python, MoonBit and `.mjs` tooling are rewritten in strictly
 // typed TypeScript and Lean proofs become Rust Kani harnesses. The ledger lists
 // every file that still waits for its port, and this test makes the ledger a ratchet.
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const ledgerPath = "tools/config/retired-tooling-languages.json";
-const languages = ["py", "lean", "mbt", "mjs"] as const;
-type Language = (typeof languages)[number];
-
-const trackedPatterns: Readonly<Record<Language, readonly string[]>> = {
-  py: ["*.py"],
-  lean: ["*.lean", "lean-toolchain", "*/lean-toolchain"],
-  mbt: ["*.mbt"],
-  mjs: ["*.mjs"],
-};
 const replacement: Readonly<Record<Language, string>> = {
   py: "write TypeScript instead",
   lean: "write a Rust Kani harness instead",
@@ -83,7 +79,7 @@ function parseLedger(text: string): Ledger {
 }
 
 function git(args: readonly string[]): { readonly status: number | null; readonly stdout: string } {
-  const run = spawnSync("git", [...args], { cwd: repoRoot, encoding: "utf8" });
+  const run = spawnSync("git", [...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 1 << 26 });
   return { status: run.status, stdout: run.stdout };
 }
 
@@ -91,23 +87,28 @@ function comparePaths(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function retiringFiles(ledger: Ledger, language: Language): readonly string[] {
-  const listed = git(["ls-files", "-z", "--", ...trackedPatterns[language]]);
-  assert.equal(listed.status, 0, "git ls-files must succeed");
+// The tooling planner selects this test with the same language rule.
+function retiringFiles(ledger: Ledger, language: Language, tracked: readonly string[]) {
   const prefixes = ledger.permanent
     .filter((entry) => entry.language === language)
     .map((entry) => entry.prefix);
-  return listed.stdout
-    .split("\0")
-    .filter((file) => file.length > 0 && !prefixes.some((prefix) => file.startsWith(prefix)))
+  return tracked
+    .filter(
+      (file) =>
+        retiredToolingLanguage(file) === language &&
+        !prefixes.some((prefix) => file.startsWith(prefix)),
+    )
     .sort(comparePaths);
 }
 
 const ledger = parseLedger(readFileSync(path.join(repoRoot, ledgerPath), "utf8"));
 
 void test("every Python, Lean, MoonBit and .mjs tooling file is listed for retirement", () => {
+  const listing = git(["ls-files", "-z"]);
+  assert.equal(listing.status, 0, "git ls-files must succeed");
+  const files = listing.stdout.split("\0").filter((file) => file.length > 0);
   for (const language of languages) {
-    const tracked = retiringFiles(ledger, language);
+    const tracked = retiringFiles(ledger, language, files);
     const listed = ledger.retiring[language];
     assert.deepEqual(
       [...listed].sort(comparePaths),

@@ -4,9 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
-import { rewriteLocalVueRuntimePaths } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-vue-runtime-paths.mjs";
-import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
+import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.ts";
+import { rewriteLocalVueRuntimePaths } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-vue-runtime-paths.ts";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.ts";
 
 /**
  * vue-tsc language-core still resolves `@vue/runtime-dom` from Vize's store
@@ -151,7 +151,7 @@ test("alias overlay writes Vue runtime paths and keeps hash aliases", () => {
       })}\n`,
     );
     const overlay = applyIsolatedAliasOverlay(fixtureRoot, sourcePath, null);
-    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay!.path, "utf8")), {
       extends: "./tsconfig.json",
       compilerOptions: {
         paths: {
