@@ -219,6 +219,9 @@ Special thanks to:
   for supporting Vize's ongoing open-source development.
 - [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) for past support of
   Vize's open-source development. That support ended in September 2026.
+- [dmnlk](https://github.com/dmnlk) for sustained code contributions and performance improvements,
+  especially to Canon's type checker. As a Vize committer, dmnlk is entrusted with write access to
+  the repository. Thank you for helping develop and maintain Vize.
 - [かっこかり](https://github.com/kakkokari-gtyih) for continuously testing Vize's compiler and
   Vite Plugin on [Misskey](https://github.com/misskey-dev/misskey) (~103k lines of Vue across 586
   SFCs), with timely reports as the implementation changed

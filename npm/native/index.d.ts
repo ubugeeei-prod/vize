@@ -190,7 +190,7 @@ export interface BatchFileResultNapi {
   macroArtifacts: Array<MacroArtifactNapi>;
   moduleShape?: ModuleShapeNapi;
   /** Files the compile read besides the SFC (pug `include`s). */
-  dependencies: Array<string>;
+  dependencies?: Array<string>;
 }
 
 /** Batch type check result for NAPI */
@@ -1381,7 +1381,7 @@ export interface SfcCompileResultNapi {
   macroArtifacts: Array<MacroArtifactNapi>;
   moduleShape?: ModuleShapeNapi;
   /** Files the compile read besides the SFC (pug `include`s). */
-  dependencies: Array<string>;
+  dependencies?: Array<string>;
 }
 
 /** SFC element order options for NAPI */

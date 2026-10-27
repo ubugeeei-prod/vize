@@ -58,7 +58,7 @@ pub fn compile_sfc(
                 styles: vec![],
                 custom_blocks: vec![],
                 macro_artifacts: vec![],
-                dependencies: vec![],
+                dependencies: None,
                 module_shape: None,
             });
         }
@@ -220,7 +220,7 @@ pub fn compile_sfc(
             styles,
             custom_blocks,
             macro_artifacts: vec![],
-            dependencies: vec![],
+            dependencies: None,
             module_shape: None,
         }),
     }

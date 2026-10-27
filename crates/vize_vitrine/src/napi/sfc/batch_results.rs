@@ -126,7 +126,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles: vec![],
                         custom_blocks: vec![],
                         macro_artifacts: vec![],
-                        dependencies: vec![],
+                        dependencies: None,
                         module_shape: None,
                     };
                 }
@@ -293,7 +293,7 @@ fn compile_sfc_batch_with_results_inner(
                     styles,
                     custom_blocks,
                     macro_artifacts: vec![],
-                    dependencies: vec![],
+                    dependencies: None,
                     module_shape: None,
                 },
             }

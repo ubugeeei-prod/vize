@@ -1,0 +1,6 @@
+export function fallthrough(kind: string) {
+  switch (kind) {
+    case "one": kind.trim();
+    case "two": break;
+  }
+}

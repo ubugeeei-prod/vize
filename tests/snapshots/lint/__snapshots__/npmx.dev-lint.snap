@@ -11,7 +11,7 @@
         "column": 1,
         "endLine": 182,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -95,9 +95,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 195,
-        "column": 8,
+        "column": 7,
         "endLine": 195,
-        "endColumn": 18,
+        "endColumn": 52,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -113,9 +113,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 296,
-        "column": 12,
+        "column": 11,
         "endLine": 296,
-        "endColumn": 22,
+        "endColumn": 57,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -612,7 +612,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 224,
-        "column": 12,
+        "column": 11,
         "endLine": 224,
         "endColumn": 25,
         "help": "Use kebab-case for attribute names"
@@ -766,7 +766,7 @@
         "column": 1,
         "endLine": 16,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -843,9 +843,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 292,
-        "column": 8,
+        "column": 7,
         "endLine": 292,
-        "endColumn": 18,
+        "endColumn": 48,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -854,9 +854,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 293,
-        "column": 8,
+        "column": 7,
         "endLine": 293,
-        "endColumn": 21,
+        "endColumn": 41,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -892,7 +892,7 @@
         "column": 1,
         "endLine": 364,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -1447,9 +1447,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 74,
-        "column": 6,
+        "column": 5,
         "endLine": 74,
-        "endColumn": 16,
+        "endColumn": 41,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -1487,9 +1487,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 70,
-        "column": 6,
+        "column": 5,
         "endLine": 70,
-        "endColumn": 16,
+        "endColumn": 46,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -1962,9 +1962,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 3,
-        "column": 52,
+        "column": 51,
         "endLine": 3,
-        "endColumn": 61,
+        "endColumn": 73,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -1973,9 +1973,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 4,
-        "column": 25,
+        "column": 24,
         "endLine": 4,
-        "endColumn": 34,
+        "endColumn": 47,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -1994,7 +1994,7 @@
         "column": 1,
         "endLine": 5,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       },
       {
         "ruleId": "vue/sfc-element-order",
@@ -2513,9 +2513,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 47,
-        "column": 37,
+        "column": 36,
         "endLine": 47,
-        "endColumn": 49,
+        "endColumn": 64,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2564,9 +2564,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 149,
-        "column": 6,
+        "column": 5,
         "endLine": 149,
-        "endColumn": 16,
+        "endColumn": 42,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2703,7 +2703,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 261,
-        "column": 24,
+        "column": 23,
         "endLine": 261,
         "endColumn": 35,
         "help": "Use kebab-case for attribute names"
@@ -2899,7 +2899,7 @@
         "column": 1,
         "endLine": 255,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -3099,7 +3099,7 @@
         "column": 1,
         "endLine": 184,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -3453,7 +3453,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 950,
-        "column": 14,
+        "column": 13,
         "endLine": 950,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -3464,7 +3464,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 954,
-        "column": 14,
+        "column": 13,
         "endLine": 954,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -3475,9 +3475,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 955,
-        "column": 14,
-        "endLine": 955,
-        "endColumn": 23,
+        "column": 13,
+        "endLine": 957,
+        "endColumn": 14,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3486,9 +3486,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 958,
-        "column": 14,
-        "endLine": 958,
-        "endColumn": 29,
+        "column": 13,
+        "endLine": 962,
+        "endColumn": 14,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3497,9 +3497,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 982,
-        "column": 14,
+        "column": 13,
         "endLine": 982,
-        "endColumn": 31,
+        "endColumn": 94,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3508,9 +3508,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 990,
-        "column": 14,
+        "column": 13,
         "endLine": 990,
-        "endColumn": 29,
+        "endColumn": 88,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3519,9 +3519,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 991,
-        "column": 14,
+        "column": 13,
         "endLine": 991,
-        "endColumn": 29,
+        "endColumn": 88,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3530,9 +3530,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 993,
-        "column": 14,
+        "column": 13,
         "endLine": 993,
-        "endColumn": 28,
+        "endColumn": 51,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3541,9 +3541,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 994,
-        "column": 14,
+        "column": 13,
         "endLine": 994,
-        "endColumn": 29,
+        "endColumn": 69,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3552,7 +3552,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 995,
-        "column": 14,
+        "column": 13,
         "endLine": 995,
         "endColumn": 26,
         "help": "Use kebab-case for attribute names"
@@ -3574,9 +3574,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1091,
-        "column": 14,
+        "column": 13,
         "endLine": 1091,
-        "endColumn": 31,
+        "endColumn": 86,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3585,9 +3585,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1093,
-        "column": 14,
+        "column": 13,
         "endLine": 1093,
-        "endColumn": 29,
+        "endColumn": 69,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3596,7 +3596,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1094,
-        "column": 14,
+        "column": 13,
         "endLine": 1094,
         "endColumn": 26,
         "help": "Use kebab-case for attribute names"
@@ -3607,7 +3607,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1102,
-        "column": 14,
+        "column": 13,
         "endLine": 1102,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -3750,7 +3750,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1681,
-        "column": 14,
+        "column": 13,
         "endLine": 1681,
         "endColumn": 38,
         "help": "Use kebab-case for attribute names"
@@ -3761,9 +3761,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1682,
-        "column": 14,
+        "column": 13,
         "endLine": 1682,
-        "endColumn": 41,
+        "endColumn": 98,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3940,7 +3940,7 @@
         "column": 1,
         "endLine": 2063,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 1,
@@ -4101,7 +4101,7 @@
         "column": 1,
         "endLine": 705,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -4177,7 +4177,7 @@
         "column": 1,
         "endLine": 407,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -4518,9 +4518,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 15,
-        "column": 14,
+        "column": 13,
         "endLine": 15,
-        "endColumn": 26,
+        "endColumn": 41,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -4929,7 +4929,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 13,
-        "column": 23,
+        "column": 22,
         "endLine": 13,
         "endColumn": 32,
         "help": "Use kebab-case for attribute names"
@@ -4947,7 +4947,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 55,
-        "column": 6,
+        "column": 5,
         "endLine": 55,
         "endColumn": 15,
         "help": "Use kebab-case for attribute names"
@@ -5538,7 +5538,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 112,
-        "column": 8,
+        "column": 7,
         "endLine": 112,
         "endColumn": 25,
         "help": "Use kebab-case for attribute names"
@@ -5549,7 +5549,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 114,
-        "column": 8,
+        "column": 7,
         "endLine": 114,
         "endColumn": 21,
         "help": "Use kebab-case for attribute names"
@@ -5560,9 +5560,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 145,
-        "column": 10,
+        "column": 9,
         "endLine": 145,
-        "endColumn": 21,
+        "endColumn": 51,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5571,9 +5571,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 146,
-        "column": 10,
+        "column": 9,
         "endLine": 146,
-        "endColumn": 31,
+        "endColumn": 50,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5604,9 +5604,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 150,
-        "column": 12,
+        "column": 11,
         "endLine": 150,
-        "endColumn": 19,
+        "endColumn": 31,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5615,9 +5615,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 152,
-        "column": 12,
+        "column": 11,
         "endLine": 152,
-        "endColumn": 21,
+        "endColumn": 38,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5626,9 +5626,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 158,
-        "column": 10,
+        "column": 9,
         "endLine": 158,
-        "endColumn": 18,
+        "endColumn": 26,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5637,9 +5637,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 159,
-        "column": 10,
+        "column": 9,
         "endLine": 159,
-        "endColumn": 21,
+        "endColumn": 51,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5648,9 +5648,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 160,
-        "column": 10,
+        "column": 9,
         "endLine": 160,
-        "endColumn": 31,
+        "endColumn": 50,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5681,9 +5681,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 164,
-        "column": 12,
+        "column": 11,
         "endLine": 164,
-        "endColumn": 19,
+        "endColumn": 31,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5692,9 +5692,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 166,
-        "column": 12,
+        "column": 11,
         "endLine": 166,
-        "endColumn": 21,
+        "endColumn": 38,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5769,7 +5769,7 @@
         "column": 1,
         "endLine": 621,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -5787,7 +5787,7 @@
         "column": 1,
         "endLine": 211,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -5808,7 +5808,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 358,
-        "column": 14,
+        "column": 13,
         "endLine": 358,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -5819,7 +5819,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 359,
-        "column": 14,
+        "column": 13,
         "endLine": 359,
         "endColumn": 30,
         "help": "Use kebab-case for attribute names"
@@ -5830,7 +5830,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 360,
-        "column": 14,
+        "column": 13,
         "endLine": 360,
         "endColumn": 29,
         "help": "Use kebab-case for attribute names"
@@ -5841,7 +5841,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 361,
-        "column": 14,
+        "column": 13,
         "endLine": 361,
         "endColumn": 29,
         "help": "Use kebab-case for attribute names"
@@ -5892,7 +5892,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 575,
-        "column": 41,
+        "column": 40,
         "endLine": 575,
         "endColumn": 48,
         "help": "Use kebab-case for attribute names"
@@ -5914,9 +5914,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 967,
-        "column": 16,
+        "column": 15,
         "endLine": 967,
-        "endColumn": 27,
+        "endColumn": 38,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5925,9 +5925,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 969,
-        "column": 16,
+        "column": 15,
         "endLine": 969,
-        "endColumn": 26,
+        "endColumn": 55,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5936,9 +5936,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 970,
-        "column": 16,
+        "column": 15,
         "endLine": 970,
-        "endColumn": 23,
+        "endColumn": 33,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -6183,9 +6183,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 280,
-        "column": 31,
+        "column": 30,
         "endLine": 280,
-        "endColumn": 41,
+        "endColumn": 48,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -6346,9 +6346,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 172,
-        "column": 16,
+        "column": 15,
         "endLine": 172,
-        "endColumn": 26,
+        "endColumn": 51,
         "help": "Use kebab-case for attribute names"
       },
       {

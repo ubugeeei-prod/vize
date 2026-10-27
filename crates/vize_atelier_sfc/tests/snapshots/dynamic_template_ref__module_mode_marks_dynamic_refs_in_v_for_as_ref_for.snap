@@ -24,7 +24,8 @@ import { ref } from "vue";
 export default {
   __name: "anonymous",
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const menus = ref([[{ id: 1 }]]);
     const menuList = ref([]);
     const __returned__ = {

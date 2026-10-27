@@ -21,7 +21,7 @@ path = "src/lib.rs"
 default = ["glyph", "maestro"]
 glyph = ["dep:vize_glyph", "vize_maestro?/glyph"]
 maestro = ["dep:vize_maestro"]
-profiling = []
+profiling = ["vize_l0/micro-profiling", "vize_carton/micro-profiling"]
 # Opt-in legacy Vue (v0 / v1 / v2) support. Off by default so the Vue 3 binary
 # never activates or compiles it; turns on the legacy feature across the stack.
 legacy = ["vize_atelier_core/legacy", "vize_canon/legacy", "vize_maestro?/legacy"]

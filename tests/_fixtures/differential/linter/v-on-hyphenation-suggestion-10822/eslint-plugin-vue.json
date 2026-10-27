@@ -1,0 +1,80 @@
+{
+  "upstream": {
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2"
+  },
+  "rule": "vue/v-on-event-hyphenation",
+  "options": [
+    "always",
+    {
+      "autofix": true
+    }
+  ],
+  "files": {
+    "LocaleMenu.vue.txt": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 3,
+        "column": 15,
+        "endLine": 3,
+        "endColumn": 33,
+        "message": "v-on event '@Change' must be hyphenated.",
+        "fix": "change"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 3,
+        "column": 34,
+        "endLine": 3,
+        "endColumn": 65,
+        "message": "v-on event '@dropdownVisibleChange' must be hyphenated.",
+        "fix": "dropdown-visible-change"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 4,
+        "column": 14,
+        "endLine": 4,
+        "endColumn": 42,
+        "message": "v-on event '@update:modelValue' must be hyphenated.",
+        "fix": "update:model-value"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 4,
+        "column": 43,
+        "endLine": 4,
+        "endColumn": 65,
+        "message": "v-on event '@pressEnter' must be hyphenated.",
+        "fix": "press-enter"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 5,
+        "column": 13,
+        "endLine": 5,
+        "endColumn": 40,
+        "message": "v-on event 'v-on:node_Expand' must be hyphenated.",
+        "fix": null
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 5,
+        "column": 41,
+        "endLine": 5,
+        "endColumn": 62,
+        "message": "v-on event '@XMLParsed' must be hyphenated.",
+        "fix": "x-m-l-parsed"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "line": 6,
+        "column": 14,
+        "endLine": 6,
+        "endColumn": 40,
+        "message": "v-on event '@vue:beforeMount' must be hyphenated.",
+        "fix": "vue:before-mount"
+      }
+    ]
+  }
+}

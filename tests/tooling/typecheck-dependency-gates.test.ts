@@ -20,7 +20,7 @@ test("test:scripts requires its typecheck dependencies", () => {
   );
   assert.match(
     readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
-    /git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue tests\/_fixtures\/_git\/vue-select tests\/_fixtures\/_git\/vue-router && vp install --frozen-lockfile --prefer-offline/,
+    /git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue tests\/_fixtures\/_git\/layoutit-grid tests\/_fixtures\/_git\/vue-select tests\/_fixtures\/_git\/vue-router && vp install --frozen-lockfile --prefer-offline/,
   );
 });
 test("typecheck and LSP gates do not carry raw dependency skips", () => {

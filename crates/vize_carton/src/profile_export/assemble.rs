@@ -64,6 +64,8 @@ pub(super) fn report(
     options: &ProfileExportOptions,
 ) -> ProfileExport {
     ProfileExport {
+        #[cfg(feature = "micro-profiling")]
+        micro: None,
         schema_version: PROFILE_EXPORT_SCHEMA_VERSION,
         tool: "vize",
         tool_version: env!("CARGO_PKG_VERSION"),
@@ -76,6 +78,8 @@ pub(super) fn report(
         spans,
         counters,
         allocation: options.allocation.map(|snapshot| ProfileExportAllocation {
+            #[cfg(feature = "micro-profiling")]
+            operations: None,
             calls: snapshot.allocation_calls(),
             requested_bytes: snapshot.requested_bytes(),
             released_bytes: snapshot.released_bytes(),

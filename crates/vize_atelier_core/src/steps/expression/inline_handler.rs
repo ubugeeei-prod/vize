@@ -129,9 +129,13 @@ fn process_inline_handler_role<'a>(
 
     // Check if it's an identifier/member-expression handler reference.
     // Vue passes these directly without wrapping them in `$event => (...)`.
+    // Codegen relies on this: a handler leaving this pass is either a function
+    // expression or a reference, never a bare statement.
     if is_simple_identifier(content) || is_event_handler_reference_node(&normalized) {
         let new_content: String = if ctx.options.prefix_identifiers {
-            if is_simple_identifier(content) {
+            // Inline render functions read setup bindings directly, so an
+            // identifier still needs its `_unref` / `.value` access.
+            if is_simple_identifier(content) && !ctx.options.inline {
                 if let Some(prefix) = get_identifier_prefix(content, ctx) {
                     let mut s = String::with_capacity(prefix.len() + content.len());
                     s.push_str(prefix);

@@ -19,7 +19,8 @@ pub use directives::{
 };
 pub use events::von_event_key_for;
 pub(crate) use events::{
-    duplicate_von_event_keys, generate_merged_event_handlers, get_von_event_key,
+    bypasses_component_cache, duplicate_von_event_keys, generate_merged_event_handlers,
+    get_von_event_key,
 };
 pub use generate::generate_props;
 pub use static_merge::StaticMerge;

@@ -5,7 +5,8 @@ expression: output.as_str()
 import { ref, computed } from "vue";
 export default {
   __name: "TestComponent",
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const count = ref(0);
     const doubled = computed(() => count.value * 2);
     return {

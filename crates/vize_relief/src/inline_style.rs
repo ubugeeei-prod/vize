@@ -4,6 +4,9 @@ use std::borrow::Cow;
 
 use vize_l0::{FxHashMap, String};
 
+mod literal;
+pub use literal::literal_object_style;
+
 /// Parse the object produced by Vue's `parseStringStyle`: comments are removed,
 /// semicolons before a closing parenthesis are kept in the value, and a repeated
 /// property replaces its value without changing its first insertion position.

@@ -67,8 +67,8 @@ macro_rules! vue_type_helpers_text {
 }
 
 macro_rules! content_mapper_type_helpers_text {
-    ($module:expr) => {
-        concat!(vue_type_aliases_text!(), include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
+    ($types:expr, $module:expr) => {
+        concat!($types, include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
     };
 }
 
@@ -81,9 +81,12 @@ macro_rules! emit_overload_helpers_text {
 }
 
 pub const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
-pub(crate) const CONTENT_MAPPER_HELPERS_MODULE: &str = "vize/content-mapper-helpers";
-pub(crate) const CONTENT_MAPPER_TYPE_HELPERS: &str =
-    content_mapper_type_helpers_text!("vize/content-mapper-helpers");
+pub(crate) const CONTENT_MAPPER_TYPE_HELPERS: &str = content_mapper_type_helpers_text!(
+    include_str!("declarations/content-mapper-type-imports.d.ts.txt"),
+    "vize/content-mapper-helpers"
+);
+pub(crate) const LEGACY_CONTENT_MAPPER_TYPE_HELPERS: &str =
+    content_mapper_type_helpers_text!(vue_type_aliases_text!(), "vize/content-mapper-helpers");
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
 /// Vue's `EmitsToProps` keys handlers as `on${Capitalize<K>}` (`onScroll-top`);
 /// the camelized key is the spelling templates bind, so both are accepted.

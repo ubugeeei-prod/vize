@@ -1,6 +1,81 @@
 use super::{FormatOptions, format_template_content};
 
 #[test]
+fn pinned_zy_player_sfc_is_idempotent_in_every_profile() {
+    // Complete upstream source, license and revision/hash provenance are kept
+    // together so PR library tests cover the real failure without hydration.
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/zy-player-10908/Play.vue.txt"
+    ));
+    for preset in [
+        crate::FormatPreset::Vize,
+        crate::FormatPreset::Prettier,
+        crate::FormatPreset::Compact,
+        crate::FormatPreset::Documentation,
+    ] {
+        let options = FormatOptions::from_preset(preset);
+        let first = crate::format_sfc(source, &options).unwrap();
+        let second = crate::format_sfc(&first.code, &options).unwrap();
+        assert_eq!(
+            second.code, first.code,
+            "{preset:?} must reach a fixed point"
+        );
+        assert!(
+            !second.changed,
+            "{preset:?} must report an unchanged second pass"
+        );
+    }
+}
+
+#[test]
+fn adjacent_interpolation_expansion_is_included_in_closing_tag_width() {
+    // #10908: minimized from ZY Player's Play.vue. The first pass used the
+    // shorter authored {{name}} width, while the second saw {{ name }}.
+    let source = r#"<template>
+<div>
+<div>
+<div>
+<span v-if="this.right.list.length > 1">『第 {{(video.info.index + 1)}} 集』</span>{{name}}
+</div>
+</div>
+</div>
+</template>
+"#;
+    let expected = r#"<template>
+  <div>
+    <div>
+      <div>
+        <span v-if="this.right.list.length > 1">『第 {{ video.info.index + 1 }} 集』</span
+        >{{ name }}
+      </div>
+    </div>
+  </div>
+</template>
+"#;
+    let spaced = source.replace("{{(video.info.index + 1)}}", "{{ video.info.index + 1 }}");
+    for source in [source, spaced.as_str()] {
+        for print_width in [100, 104] {
+            let options = FormatOptions {
+                print_width,
+                ..FormatOptions::default()
+            };
+            let formatted = crate::format_sfc(source, &options).unwrap().code;
+            let expected = if print_width == 100 {
+                expected.to_owned()
+            } else {
+                expected.replace("</span\n        >", "</span>")
+            };
+            assert_eq!(formatted.as_str(), expected);
+            assert_eq!(
+                crate::format_sfc(&formatted, &options).unwrap().code,
+                formatted
+            );
+        }
+    }
+}
+
+#[test]
 fn test_print_width_triggers_multiline() {
     // Very narrow print_width should trigger multiline
     let source = r#"<div class="container" id="main" title="tooltip"></div>"#;

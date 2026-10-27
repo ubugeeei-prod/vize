@@ -315,3 +315,5 @@ fn includes_without_a_reader_stay_refused() {
          links other pug files at build time\n"
     );
 }
+
+mod include_cycles;

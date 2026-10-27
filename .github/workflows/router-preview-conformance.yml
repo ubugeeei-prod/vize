@@ -7,6 +7,9 @@ on:
       - tests/fixtures/typechecker/experimental-router-preview-593d7ad/**
       - tests/tooling/router-preview-*.ts
       - tests/tooling/support/router-preview/**
+      - tests/tooling/support/router-experimental-provider.ts
+      - crates/vize_canon/src/batch/virtual_project/typed_router/**
+      - crates/vize_canon/src/batch/virtual_project/typed_router.rs
   workflow_dispatch:
     inputs:
       expected-source-sha:
@@ -114,6 +117,12 @@ jobs:
         env:
           VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
         run: vp node tests/tooling/router-preview-probe.ts
+      - name: Compare automatic route props with vue-tsc and both real plugins
+        id: automatic
+        continue-on-error: true
+        env:
+          VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
+        run: vp node tests/tooling/router-preview-automatic.ts
       - name: Retain complete provider, input, process, and source custody
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -128,9 +137,11 @@ jobs:
           retention-days: 7
       - name: Refuse discovery as qualification credit
         if: always()
-        env: { PROBE_OUTCOME: "${{ steps.probe.outcome }}" }
+        env:
+          PROBE_OUTCOME: ${{ steps.probe.outcome }}
+          AUTOMATIC_OUTCOME: ${{ steps.automatic.outcome }}
         run: |
-          if [[ "$PROBE_OUTCOME" != success ]]; then
+          if [[ "$PROBE_OUTCOME" != success || "$AUTOMATIC_OUTCOME" != success ]]; then
             echo 'Preview discovery or a failed control cannot qualify source support.' >&2
             exit 1
           fi

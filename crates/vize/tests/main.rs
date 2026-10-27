@@ -39,6 +39,7 @@ mod check_canon_slot_contracts_cli;
 mod check_checker_count_cli;
 mod check_cli;
 mod check_config_change_invalidation_cli;
+mod check_config_recovery_cli;
 mod check_declaration_emit_cli;
 mod check_declaration_emit_vue_floor_cli;
 mod check_default_imports_cli;

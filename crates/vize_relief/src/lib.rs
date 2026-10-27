@@ -28,7 +28,7 @@ mod relief;
 pub use errors::*;
 pub use expression_scope::ExpressionScope;
 pub use function_vars::for_each_function_var;
-pub use inline_style::parse_inline_style;
+pub use inline_style::{literal_object_style, parse_inline_style};
 pub use options::*;
 pub use relief::*;
 

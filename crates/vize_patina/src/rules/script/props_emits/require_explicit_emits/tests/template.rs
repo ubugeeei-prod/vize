@@ -160,19 +160,49 @@ const name = 'cancel'
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
-// --- The soundness guard: no declaration means no report ------------------
+// --- No declaration declares nothing; an unenumerable one, everything -----
 
 #[test]
-fn ignores_a_dollar_emit_when_nothing_is_declared() {
-    // The rule reports only when a declaration exists and is fully known;
-    // otherwise the events may be declared elsewhere, or intentionally not at
-    // all, and flagging would be a false positive.
+fn reports_a_dollar_emit_when_script_setup_declares_nothing() {
     let sfc = r#"<script setup lang="ts">
 const a = 1;
 </script>
 
 <template>
   <button @click="$emit('cancel')">{{ a }}</button>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "'cancel'", "cancel")]
+    );
+}
+
+#[test]
+fn reports_a_dollar_emit_when_the_component_has_no_emits_option() {
+    let sfc = r#"<script>
+export default { name: 'Probe' };
+</script>
+
+<template>
+  <button @click="$emit(`cancel`)">x</button>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "`cancel`", "cancel")]
+    );
+}
+
+#[test]
+fn ignores_a_template_without_a_component_object() {
+    let sfc = r#"<script>
+import options from './options';
+export default options;
+</script>
+
+<template>
+  <button @click="$emit('cancel')">x</button>
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
@@ -287,8 +317,9 @@ const emit = defineEmits(['save'])
 }
 
 #[test]
-fn ignores_a_template_dollar_emit_when_a_sibling_script_block_exists() {
-    // Each block is linted separately, so neither sees the whole declared set.
+fn checks_the_template_against_script_setup_when_both_blocks_exist() {
+    // As upstream: `<script setup>` owns the template, so the `<script>`
+    // option does not declare the event.
     let sfc = r#"<script>
 export default { emits: ['cancel'] };
 </script>
@@ -301,7 +332,10 @@ const emit = defineEmits(['save'])
   <button @click="$emit('cancel')">x</button>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "'cancel'", "cancel")]
+    );
 }
 
 // --- The pre-existing script-only subset must keep working -----------------

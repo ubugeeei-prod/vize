@@ -19,6 +19,9 @@ use vize_l1::pug::{
 
 use super::emit::Emitter;
 
+mod head;
+use head::head;
+
 /// Reads the files a pug template includes.
 pub trait PugIncludes {
     /// The file `path` names, as written in the file `from`: its resolved
@@ -26,7 +29,7 @@ pub trait PugIncludes {
     fn read(&mut self, from: &str, path: &str) -> Result<(String, String), String>;
 }
 
-/// Nested includes deeper than this are refused (an include cycle).
+/// Keep an independent depth backstop for non-cyclic include chains.
 const MAX_DEPTH: usize = 32;
 
 enum Loaded<'t> {
@@ -54,6 +57,8 @@ pub(super) struct Includes<'t> {
     loaded: StdVec<(&'t PugRefused<'t>, Loaded<'t>)>,
     /// `yield` keywords, or default node lists, and the block they emit.
     yields: StdVec<(usize, &'t [PugNode<'t>])>,
+    /// Resolved files on this recursive chain; siblings may include a file again.
+    active: StdVec<String>,
     pub(super) dependencies: StdVec<String>,
 }
 
@@ -62,6 +67,7 @@ impl<'t> Includes<'t> {
         Self {
             reads,
             filename: filename.map(String::from),
+            active: filename.into_iter().map(String::from).collect(),
             arena,
             files: StdVec::new(),
             loaded: StdVec::new(),
@@ -76,24 +82,6 @@ impl<'t> Includes<'t> {
             .iter()
             .find(|file| (file.start..=file.end).contains(&at))
     }
-}
-
-/// `include(:filter)* path`, split as `pug-lexer` splits it.
-fn head(text: &str) -> Result<(&str, bool), &'static str> {
-    let rest = text.strip_prefix("include").unwrap_or(text);
-    if !(rest.is_empty() || rest.starts_with([':', ' '])) {
-        return Err("malformed include");
-    }
-    let filtered = rest.starts_with(':');
-    let path = match rest.find(' ') {
-        Some(at) if !filtered || at > 0 => rest.get(at..).unwrap_or_default(),
-        _ => "",
-    };
-    let path = path.trim_matches(super::literal::is_js_space);
-    if path.is_empty() {
-        return Err("missing path for include");
-    }
-    Ok((path, filtered))
 }
 
 /// `pug-linker`'s `defaultYieldLocation`: the block of the last node with
@@ -234,6 +222,9 @@ impl<'t> Emitter<'t> {
             Ok(read) => read,
             Err(reason) => return self.error(span, super::refusal::include(path, &reason)),
         };
+        if self.includes.active.contains(&name) {
+            return self.error(span, String::from(super::refusal::INCLUDE_DEPTH));
+        }
         if !self.includes.dependencies.contains(&name) {
             self.includes.dependencies.push(name.clone());
         }
@@ -251,6 +242,7 @@ impl<'t> Emitter<'t> {
         let source = arena.alloc_str(&content);
         let (tree, errors) = parse_pug(arena, source);
         let tree: &'t PugTree<'t> = arena.as_oxc().alloc(tree);
+        self.includes.active.push(name.clone());
         self.includes.files.push(File {
             start: source.as_ptr() as usize,
             end: source.as_ptr() as usize + source.len(),
@@ -282,6 +274,7 @@ impl<'t> Emitter<'t> {
         }
         self.includes.loaded.push((directive, Loaded::Pug(tree)));
         self.load_includes(&tree.nodes, depth + 1, reader);
+        self.includes.active.pop();
     }
 
     /// Emit an include where it stands.
@@ -331,18 +324,5 @@ impl<'t> Emitter<'t> {
             return None;
         }
         self.includes.file(at).map(|file| file.origin)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::head;
-
-    #[test]
-    fn heads_split_like_pugs_lexer() {
-        assert_eq!(head("include a/b.pug "), Ok(("a/b.pug", false)));
-        assert_eq!(head("include:markdown-it doc.md"), Ok(("doc.md", true)));
-        assert_eq!(head("include"), Err("missing path for include"));
-        assert_eq!(head("includes x"), Err("malformed include"));
     }
 }
