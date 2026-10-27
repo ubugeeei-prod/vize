@@ -40,7 +40,8 @@ function point(source: string, offset: number): Point {
     .subarray(0, Math.min(offset, bytes(source)))
     .toString("utf8");
   const lines = prefix.split("\n");
-  return { line: lines.length, column: [...(lines.at(-1) ?? "")].length + 1 };
+  // Match the CLI's Unicode scalar columns, including UTF-8 authored prefixes.
+  return { line: lines.length, column: Array.from(lines.at(-1) ?? "").length + 1 };
 }
 function span(source: string, start: number, end: number): Span {
   return { start: point(source, start), end: point(source, end) };
@@ -51,7 +52,7 @@ function location(message: Message): Span {
     end: { line: message.endLine, column: message.endColumn },
   };
 }
-function anchors(source: string): Anchor[] {
+function anchors(source: string, width = bytes(call)): Anchor[] {
   const blocks: Block[] = [...source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].map(
     (match) => ({
       start: bytes(source.slice(0, match.index + match[0].indexOf(">") + 1)),
@@ -71,8 +72,8 @@ function anchors(source: string): Anchor[] {
     const local = bytes(block.content.slice(0, at));
     const virtual = block.setup && plain ? bytes(plain.content) + 1 + local : local;
     result.push({
-      before: span(source, first.start + virtual, first.start + virtual + bytes(call)),
-      after: span(source, block.start + local, block.start + local + bytes(call)),
+      before: span(source, first.start + virtual, first.start + virtual + width),
+      after: span(source, block.start + local, block.start + local + width),
     });
   }
   return result;
@@ -142,6 +143,15 @@ function scriptProvide(message: Message): boolean {
     )
   );
 }
+// Preserve the diagnostic's existing range law: the reactivity finding has no
+// end offset and the CLI renders one byte; key/unused findings cover the call.
+function diagnosticAnchors(source: string, message: Message): Anchor[] {
+  const kind = message.message.match(
+    /vize:croquis\/cf\/(non-reactive-provide|provide-without-symbol|unused-provide):/,
+  )?.[1];
+  assert(kind, "the script-span oracle must classify this exact finding");
+  return anchors(source, kind === "non-reactive-provide" ? 1 : bytes(call));
+}
 function canonical(packets: Packet[]): Packet[] {
   return structuredClone(packets)
     .map((packet) => ({
@@ -160,7 +170,7 @@ function appPacket(packets: Packet[]): Packet {
 function expectedFromBefore(packets: Packet[], input: Input): Packet[] {
   const expected = structuredClone(packets);
   for (const message of appPacket(expected).messages.filter(scriptProvide)) {
-    const anchor = anchors(input.app).find(
+    const anchor = diagnosticAnchors(input.app, message).find(
       (entry) => JSON.stringify(entry.before) === JSON.stringify(location(message)),
     );
     assert(
@@ -274,6 +284,14 @@ test("cross-file split-script coordinates preserve complete public packets and a
       validate(entry.afterPlain);
       validate(entry.afterDoctor);
       const after = JSON.parse(entry.after.stdout) as Packet[];
+      for (const message of appPacket(after).messages.filter(scriptProvide)) {
+        assert(
+          diagnosticAnchors(input.app, message).some(
+            (anchor) => JSON.stringify(anchor.after) === JSON.stringify(location(message)),
+          ),
+          input.name + ": every script finding retains its exact authored range law",
+        );
+      }
       const provides = appPacket(after).messages.filter(
         (message) =>
           message.ruleId === "cross-file" &&
