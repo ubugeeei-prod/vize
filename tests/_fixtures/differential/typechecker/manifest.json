@@ -7682,6 +7682,158 @@
       }
     },
     {
+      "id": "typechecker/relative-sibling-storage-10934/typed-sibling-error",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "relative-sibling-storage-10934",
+      "case": "typed-sibling-error",
+      "test": "relative_sibling_imports_preserve_complete_package_diagnostics",
+      "regressionCommit": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+      "sourceRevision": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+      "packReference": {
+        "path": "relative-sibling-storage-10934/cases.json",
+        "sha256": "ff839bd685eeb59cd674a0ef537946aa85e72a8c6fe4986c71ae03bdb2e33371"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.shared.json",
+          "path": "relative-sibling-storage-10934/tsconfig.shared.json.txt",
+          "sha256": "7f54235882ffe0c86ded8bc558d459607a892063426d4638f2f900ce04c4445c"
+        },
+        {
+          "file": "apps/app/package.json",
+          "path": "relative-sibling-storage-10934/apps/app/package.json.txt",
+          "sha256": "09a205493ab13482c41446fda7f6f4ad616b5aec3d0a755a9dd5ce90b06b4f08"
+        },
+        {
+          "file": "apps/app/tsconfig.json",
+          "path": "relative-sibling-storage-10934/apps/app/tsconfig.json.txt",
+          "sha256": "1f3fdec4145b3822e86b70710c3112a04dca8db56b8f181bf55a489d3da396ad"
+        },
+        {
+          "file": "apps/app/src/model.ts",
+          "path": "relative-sibling-storage-10934/apps/app/src/model.ts.txt",
+          "sha256": "028042d8908c1a438da61ed1b722172fd22d5efb861c981630f72b97a9658d08"
+        },
+        {
+          "file": "packages/ui/src/data.json",
+          "path": "relative-sibling-storage-10934/packages/ui/src/data.json.txt",
+          "sha256": "51bc513113548e062ada62b03efea153cae2abdf46b051c551c3e62a4dfb88cf"
+        },
+        {
+          "file": "packages/ui/src/Shared.vue",
+          "path": "relative-sibling-storage-10934/packages/ui/src/Shared.vue.txt",
+          "sha256": "a24c21f67d2354c2080b9734688a24e95c9320452654d10dde71b6b2f5e4ab43"
+        },
+        {
+          "file": "node_modules/.pnpm/vue@3.4.23/node_modules/vue/jsx.d.ts",
+          "path": "relative-sibling-storage-10934/hoisted/jsx.d.ts.txt",
+          "sha256": "a6af7b4cbf1ad2cadbc3eb54f1bcd8ecd919240f6f50e669b03f9ee50a95186e"
+        },
+        {
+          "file": "apps/app/src/entry.ts",
+          "path": "relative-sibling-storage-10934/invalid/entry.ts.txt",
+          "sha256": "4e355204eec74a00aa04aac2939b723b7092bb37bfc94661b957e410f2c91fa5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/relative-sibling-storage-10934/repaired-sibling-import",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "relative-sibling-storage-10934",
+      "case": "repaired-sibling-import",
+      "test": "relative_sibling_imports_preserve_complete_package_diagnostics",
+      "regressionCommit": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+      "sourceRevision": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+      "packReference": {
+        "path": "relative-sibling-storage-10934/cases.json",
+        "sha256": "ff839bd685eeb59cd674a0ef537946aa85e72a8c6fe4986c71ae03bdb2e33371"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.shared.json",
+          "path": "relative-sibling-storage-10934/tsconfig.shared.json.txt",
+          "sha256": "7f54235882ffe0c86ded8bc558d459607a892063426d4638f2f900ce04c4445c"
+        },
+        {
+          "file": "apps/app/package.json",
+          "path": "relative-sibling-storage-10934/apps/app/package.json.txt",
+          "sha256": "09a205493ab13482c41446fda7f6f4ad616b5aec3d0a755a9dd5ce90b06b4f08"
+        },
+        {
+          "file": "apps/app/tsconfig.json",
+          "path": "relative-sibling-storage-10934/apps/app/tsconfig.json.txt",
+          "sha256": "1f3fdec4145b3822e86b70710c3112a04dca8db56b8f181bf55a489d3da396ad"
+        },
+        {
+          "file": "apps/app/src/model.ts",
+          "path": "relative-sibling-storage-10934/apps/app/src/model.ts.txt",
+          "sha256": "028042d8908c1a438da61ed1b722172fd22d5efb861c981630f72b97a9658d08"
+        },
+        {
+          "file": "packages/ui/src/data.json",
+          "path": "relative-sibling-storage-10934/packages/ui/src/data.json.txt",
+          "sha256": "51bc513113548e062ada62b03efea153cae2abdf46b051c551c3e62a4dfb88cf"
+        },
+        {
+          "file": "packages/ui/src/Shared.vue",
+          "path": "relative-sibling-storage-10934/packages/ui/src/Shared.vue.txt",
+          "sha256": "a24c21f67d2354c2080b9734688a24e95c9320452654d10dde71b6b2f5e4ab43"
+        },
+        {
+          "file": "node_modules/.pnpm/vue@3.4.23/node_modules/vue/jsx.d.ts",
+          "path": "relative-sibling-storage-10934/hoisted/jsx.d.ts.txt",
+          "sha256": "a6af7b4cbf1ad2cadbc3eb54f1bcd8ecd919240f6f50e669b03f9ee50a95186e"
+        },
+        {
+          "file": "apps/app/src/entry.ts",
+          "path": "relative-sibling-storage-10934/repaired/entry.ts.txt",
+          "sha256": "8ed2abdc06e51b69950a4208b2cabca1f6efee25286a5864caaa32063da569da"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/reopen-repaired-diagnostics-10730/error",
       "state": "active",
       "targets": [

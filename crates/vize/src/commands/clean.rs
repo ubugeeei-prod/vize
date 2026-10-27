@@ -197,7 +197,10 @@ fn node_modules_vize_artifact_paths(root: &Path) -> Vec<PathBuf> {
 }
 
 fn current_canon_artifact_paths(root: &Path) -> Vec<PathBuf> {
-    let mut paths = vec![vize_canon::project_virtual_root(root)];
+    let mut paths = vec![
+        vize_canon::project_virtual_root(root),
+        vize_canon::persistent_batch_storage_root(root),
+    ];
     paths.push(vize_canon::project_virtual_access_path(root));
     paths.extend(vize_canon::project_virtual_lock_paths(root));
     for legacy in vize_canon::legacy_project_virtual_roots(root) {

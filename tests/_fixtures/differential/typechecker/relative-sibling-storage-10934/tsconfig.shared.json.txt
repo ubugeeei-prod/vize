@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "strict": true, "target": "ES2022", "module": "ESNext",
+    "moduleResolution": "bundler", "skipLibCheck": true, "noEmit": true,
+    "resolveJsonModule": true
+  },
+  "files": ["node_modules/.pnpm/vue@3.4.23/node_modules/vue/jsx.d.ts"]
+}
