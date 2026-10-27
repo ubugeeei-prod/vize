@@ -26,7 +26,7 @@ on:
       - tests/tooling/typechecker-cache*.test.ts
 permissions: { contents: read, actions: read }
 concurrency:
-  group: typechecker-cache-custody-${{ github.event.pull_request.number || github.ref }}
+  group: typechecker-cache-custody-${{ github.event.pull_request.number || github.ref }}${{ inputs.coverage_only && '-untimed-coverage' || '' }}
   cancel-in-progress: false
 jobs:
   observe:
