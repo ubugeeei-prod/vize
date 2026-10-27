@@ -66,10 +66,14 @@ jobs:
         run: |
           cargo nextest run -p vize_canon --lib --test fix_history_diagnostics --cargo-profile ci --profile full -E 'test(relative_sibling_imports_preserve_complete_package_diagnostics) | test(persistent_namespace) | test(installed_sources) | test(replacing_a_hardlinked_cache_leaf)' --no-tests=fail
           cp target/nextest/full/junit.xml target/persistent-storage-evidence/canon.junit.xml
+      - name: Preserve exact native evidence paths in one portable archive
+        if: always()
+        run: tar -czf target/persistent-storage-evidence.tgz -C target persistent-storage-evidence
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: persistent-batch-storage-${{ github.sha }}
-          path: target/persistent-storage-evidence/
+          path: target/persistent-storage-evidence.tgz
+          compression-level: 0
           if-no-files-found: error
           retention-days: 14
