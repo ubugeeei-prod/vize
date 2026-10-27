@@ -1,0 +1,3 @@
+<template>
+<input role="combobox" aria-activedescendant="a" aria-controls="lb" /><ul id="lb" role="listbox"><li id="a" role="option">A</li><li role="option">B</li></ul>
+</template>
