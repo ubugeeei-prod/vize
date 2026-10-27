@@ -22,10 +22,10 @@ const flags: [] = [];
 const cases = [
   { name: "required", run: () => vue.inject("state"), warns: true, value: undefined },
   {
-    name: "empty-literal-spread",
-    run: () => vue.inject("state", ...[]),
-    warns: true,
-    value: undefined,
+    name: "explicit-factory-default",
+    run: () => vue.inject("state", () => false, true),
+    warns: false,
+    value: false,
   },
   {
     name: "empty-tuple-spread",
