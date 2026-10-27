@@ -21,7 +21,6 @@ use crate::{
     Context, ParserConfig as Config, ParserImpl, diagnostics,
     lexer::{Kind, parse_big_int, parse_float, parse_int},
     modifiers::Modifiers,
-    speculation::SpeculativeProduction,
 };
 
 fn is_import_expression_or_member_access_on_import_expression(callee: &Expression<'_>) -> bool {
@@ -1484,20 +1483,6 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     }
 
     pub(crate) fn parse_assignment_expression_or_higher_impl(
-        &mut self,
-        allow_return_type_in_arrow_function: bool,
-    ) -> Expression<'a> {
-        self.memoize_failed_speculative_subproblem(
-            SpeculativeProduction::Assignment { allow_return_type_in_arrow_function },
-            |parser| {
-                parser.parse_assignment_expression_or_higher_uncached(
-                    allow_return_type_in_arrow_function,
-                )
-            },
-        )
-    }
-
-    fn parse_assignment_expression_or_higher_uncached(
         &mut self,
         allow_return_type_in_arrow_function: bool,
     ) -> Expression<'a> {

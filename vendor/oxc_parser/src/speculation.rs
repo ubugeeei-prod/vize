@@ -17,7 +17,6 @@ use crate::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum SpeculativeProduction {
     Type,
-    Assignment { allow_return_type_in_arrow_function: bool },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
