@@ -8,8 +8,8 @@ import {
   applyIsolatedJsxBaseline,
   applyIsolatedJsxOverlay,
   rewriteOutsideJsxImportSource,
-} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-jsx.mjs";
-import { applyIsolatedTypecheckOverlays } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-overlays.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-jsx.ts";
+import { applyIsolatedTypecheckOverlays } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-overlays.ts";
 
 /**
  * Unique isolation cannot retarget `jsxImportSource: "../../node_modules/vue"`
@@ -148,7 +148,7 @@ test("overlay write keeps existing compilerOptions and vueCompilerOptions", () =
       })}\n`,
     );
     const overlay = applyIsolatedJsxOverlay(fixtureRoot, sourcePath, { path: overlayPath });
-    assert.equal(overlay.path, overlayPath);
+    assert.equal(overlay!.path, overlayPath);
     assert.deepEqual(JSON.parse(fs.readFileSync(overlayPath, "utf8")), {
       extends: "./tsconfig.json",
       compilerOptions: {
@@ -174,8 +174,8 @@ test("shared overlay helper writes jsxImportSource with the Vue runtime path", (
       })}\n`,
     );
     const overlay = applyIsolatedTypecheckOverlays(fixtureRoot, sourcePath);
-    assert.equal(overlay.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.json"));
-    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+    assert.equal(overlay!.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.json"));
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay!.path, "utf8")), {
       extends: "./tsconfig.json",
       compilerOptions: {
         paths: { vue: ["./node_modules/vue"] },

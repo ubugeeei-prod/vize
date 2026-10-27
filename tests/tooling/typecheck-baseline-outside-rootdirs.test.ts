@@ -4,11 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.ts";
 import {
   rewriteOutsideRootDirs,
   writeIsolatedTsconfigOverlay,
-} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.ts";
 
 /**
  * Unique isolation cannot retarget `compilerOptions.rootDirs`. An outside

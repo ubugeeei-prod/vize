@@ -1,7 +1,10 @@
 //! Input options and generated output shared by canonical Vue projections.
 
 use super::super::{DiagnosticRoute, setup_props::RuntimePropResolveCache};
-use crate::{batch::Diagnostic, virtual_ts::VirtualTsCheckOptions};
+use crate::{
+    batch::Diagnostic,
+    virtual_ts::{ComponentHelperModule, VirtualTsCheckOptions},
+};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{String as CompactString, config::VueVersion};
 
@@ -42,7 +45,8 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     pub(in crate::batch::virtual_project) component_name: Option<&'a str>,
     /// Type-only module that owns expensive component-attribute aliases for
     /// standalone Content Mapper output.
-    pub(in crate::batch::virtual_project) external_component_attrs_module: Option<&'a str>,
+    pub(in crate::batch::virtual_project) external_component_attrs_module:
+        Option<ComponentHelperModule>,
     pub(in crate::batch::virtual_project) preserve_event_navigation: bool,
     pub(in crate::batch::virtual_project) legacy_vue2: bool,
     pub(in crate::batch::virtual_project) dialect: VueVersion,

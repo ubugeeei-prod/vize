@@ -1,5 +1,5 @@
 name: Published TypeScript provider acceptance
-run-name: Published TypeScript provider @ ${{ inputs.release_tag }}
+run-name: Published TypeScript provider @ ${{ inputs.release_tag }} (${{ inputs.channel || 'github-release' }})
 on:
   workflow_dispatch:
     inputs:
@@ -11,9 +11,19 @@ on:
         description: Optional full commit that the published provider must contain
         required: false
         type: string
-permissions: { contents: read }
+      channel:
+        description: Public VSIX channel to exercise
+        required: true
+        type: choice
+        default: github-release
+        options: [github-release, open-vsx]
+      producer_run:
+        description: Original release Actions run containing genuine sidecars (Open VSX only)
+        required: false
+        type: string
+permissions: { contents: read, actions: read }
 concurrency:
-  group: typescript-provider-public-${{ inputs.release_tag }}
+  group: typescript-provider-public-${{ inputs.release_tag }}-${{ inputs.channel || 'github-release' }}
   cancel-in-progress: false
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -31,6 +41,14 @@ jobs:
     steps:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0" }
+      - name: Retain the original producer sidecar for the Open VSX channel
+        if: inputs.channel == 'open-vsx'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.producer_run }}
+          name: editor-extension-platform-${{ matrix.platform }}
+          path: ${{ runner.temp }}/typescript-provider-producer
       - name: Download and verify the published bytes and original producer receipt
         id: public
         shell: bash
@@ -38,6 +56,9 @@ jobs:
           RELEASE_TAG: ${{ inputs.release_tag }}
           REQUIRED_SOURCE: ${{ inputs.required_source }}
           TARGET_PLATFORM: ${{ matrix.platform }}
+          PUBLIC_CHANNEL: ${{ inputs.channel || 'github-release' }}
+          PRODUCER_RUN: ${{ inputs.producer_run }}
+          GITHUB_READ_TOKEN: ${{ github.token }}
         run: |
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
@@ -45,26 +66,69 @@ jobs:
           import fs from 'node:fs';
           import path from 'node:path';
           const { RELEASE_TAG: tag, REQUIRED_SOURCE: required, TARGET_PLATFORM: target } = process.env;
+          const channel = process.env.PUBLIC_CHANNEL;
           assert(/^v\d+\.\d+\.\d+$/.test(tag), 'Use an exact release tag');
           assert(!required || /^[a-f0-9]{40}$/.test(required), 'Use a full required commit');
+          assert(['github-release', 'open-vsx'].includes(channel));
           const directory = path.join(process.env.RUNNER_TEMP, 'typescript-provider-public');
           fs.mkdirSync(directory, { recursive: true });
           const vsix = `vize-${target}.vsix`;
-          const base = `https://github.com/ubugeeei-prod/vize/releases/download/${tag}/`;
           const assets = [];
-          for (const name of [vsix, `${vsix}.receipt.json`, `${vsix}.sha256`, `${vsix}.receipt.json.sha256`]) {
-            const url = base + name;
-            const response = await fetch(url, { signal: AbortSignal.timeout(120_000) });
+          let producerWorkflow = null;
+          async function download(name, url, headers = {}) {
+            const response = await fetch(url, { headers, signal: AbortSignal.timeout(120_000) });
             assert(response.ok, `${url}: HTTP ${response.status}`);
             const bytes = Buffer.from(await response.arrayBuffer());
             fs.writeFileSync(path.join(directory, name), bytes);
             assets.push({ name, url, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+            return bytes;
           }
-          for (const name of [vsix, `${vsix}.receipt.json`]) {
-            const checksum = fs.readFileSync(path.join(directory, `${name}.sha256`), 'utf8').trim();
-            const [digest, filename] = checksum.split(/\s+/);
-            assert.equal(filename, name);
-            assert.equal(assets.find((asset) => asset.name === name).sha256, digest);
+          if (channel === 'github-release') {
+            const base = `https://github.com/ubugeeei-prod/vize/releases/download/${tag}/`;
+            for (const name of [vsix, `${vsix}.receipt.json`, `${vsix}.sha256`, `${vsix}.receipt.json.sha256`])
+              await download(name, base + name);
+            for (const name of [vsix, `${vsix}.receipt.json`]) {
+              const checksum = fs.readFileSync(path.join(directory, `${name}.sha256`), 'utf8').trim();
+              const [digest, filename] = checksum.split(/\s+/);
+              assert.equal(filename, name);
+              assert.equal(assets.find((asset) => asset.name === name).sha256, digest);
+            }
+          } else {
+            assert(/^[1-9]\d*$/.test(process.env.PRODUCER_RUN), 'Open VSX requires the original producer run');
+            const runUrl = `https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/${process.env.PRODUCER_RUN}`;
+            const run = JSON.parse((await download('producer-run.json', runUrl, {
+              Authorization: `Bearer ${process.env.GITHUB_READ_TOKEN}`,
+              Accept: 'application/vnd.github+json',
+            })).toString('utf8'));
+            assert.equal(run.repository.full_name, 'ubugeeei-prod/vize');
+            assert.equal(run.path, '.github/workflows/release.yml');
+            producerWorkflow = { run: run.id, workflowHead: run.head_sha, path: run.path, url: run.html_url };
+            const base = `https://open-vsx.org/api/ubugeeei/vize/${target}/${tag.slice(1)}`;
+            const metadata = JSON.parse((await download('openvsx-metadata.json', base)).toString('utf8'));
+            assert.equal(metadata.namespace, 'ubugeeei');
+            assert.equal(metadata.name, 'vize');
+            assert.equal(metadata.version, tag.slice(1));
+            assert.equal(metadata.targetPlatform, target);
+            assert.equal(metadata.downloadable, true);
+            const downloadUrl = new URL(metadata.files.download);
+            const checksumUrl = new URL(metadata.files.sha256);
+            for (const url of [downloadUrl, checksumUrl]) {
+              assert.equal(url.origin, 'https://open-vsx.org');
+              assert(url.pathname.startsWith(`${new URL(base).pathname}/file/`));
+            }
+            // Only the public registry response supplies the installed VSIX bytes.
+            await download(vsix, downloadUrl.href);
+            const checksum = (await download(`${vsix}.openvsx.sha256`, checksumUrl.href)).toString('utf8').trim();
+            assert.equal(assets.find((asset) => asset.name === vsix).sha256, checksum);
+            const sidecar = `${vsix}.receipt.json`;
+            const original = path.join(process.env.RUNNER_TEMP, 'typescript-provider-producer', sidecar);
+            const bytes = fs.readFileSync(original);
+            fs.writeFileSync(path.join(directory, sidecar), bytes);
+            // This is the genuine Actions producer sidecar, not a registry sidecar.
+            // Copy its original bytes and record that distinct provenance explicitly.
+            assets.push({ name: sidecar, origin: 'original-actions-producer-artifact',
+              run: Number(process.env.PRODUCER_RUN), artifact: `editor-extension-platform-${target}`,
+              bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
           }
           const producer = JSON.parse(fs.readFileSync(path.join(directory, `${vsix}.receipt.json`), 'utf8'));
           assert.equal(producer.schema, 'vize.platformVsix.v1');
@@ -72,17 +136,18 @@ jobs:
           assert.equal(producer.version, tag.slice(1));
           assert.equal(producer.target, target);
           assert.equal(producer.vsix, vsix);
-          assert.equal(producer.sha256, assets[0].sha256);
-          assert.equal(producer.bytes, assets[0].bytes);
+          const archive = assets.find((asset) => asset.name === vsix);
+          assert.equal(producer.sha256, archive.sha256);
+          assert.equal(producer.bytes, archive.bytes);
           assert.equal(producer.provider.schema, 'vize.vscodeNativeProvider.v1');
           assert.equal(producer.provider.source, producer.source);
           assert.equal(producer.provider.releaseVersion, producer.version);
           assert.equal(producer.provider.targetPlatform, target);
-          // Preserve the public sidecar verbatim. The source checkout below follows its
-          // genuine identity even when a release tag points to a later prepared commit.
+          // The source checkout follows the genuine producer identity. Tag, source,
+          // public channel and producer-sidecar provenance remain distinct evidence.
           fs.writeFileSync(path.join(directory, 'public-download.json'), JSON.stringify({
-            tag, workflowSource: process.env.GITHUB_SHA, requiredSource: required || null,
-            producerSource: producer.source, assets,
+            tag, channel, workflowSource: process.env.GITHUB_SHA, requiredSource: required || null,
+            producerSource: producer.source, producerWorkflow, assets,
           }, null, 2));
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `source=${producer.source}\nvsix=${path.join(directory, vsix).replaceAll('\\', '/')}\n`);
           JS
@@ -118,8 +183,36 @@ jobs:
           JS
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { version: latest, node-version-file: package.json, run-install: false, cache: true }
-      - name: Install only the source harness dependencies
-        run: vp install --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Install the exact editor harness dependency without a source build
+        shell: bash
+        run: |
+          vp node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          // editors/vscode is deliberately outside the root pnpm workspace.
+          // Its test runner needs only this declared package, not an editor build.
+          const manifest = JSON.parse(fs.readFileSync('editors/vscode/package.json', 'utf8'));
+          const version = manifest.devDependencies['@vscode/test-electron'];
+          assert(/^\d+\.\d+\.\d+$/.test(version));
+          const npm = [process.env.npm_execpath,
+            path.resolve(path.dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js'),
+            path.resolve(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'),
+          ].find((file) => file && fs.existsSync(file));
+          assert(npm, 'Managed Node must provide npm');
+          const temporary = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP, 'typescript-provider-harness-'));
+          fs.writeFileSync(path.join(temporary, 'package.json'), '{"private":true}');
+          execFileSync(process.execPath, [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund',
+            `@vscode/test-electron@${version}`], { cwd: temporary, stdio: 'inherit' });
+          const installed = path.join(temporary, 'node_modules/@vscode/test-electron');
+          assert.equal(JSON.parse(fs.readFileSync(path.join(installed, 'package.json'), 'utf8')).version, version);
+          const scope = path.resolve('editors/vscode/node_modules/@vscode');
+          fs.mkdirSync(scope, { recursive: true });
+          fs.symlinkSync(installed, path.join(scope, 'test-electron'), process.platform === 'win32' ? 'junction' : 'dir');
+          fs.copyFileSync(path.join(temporary, 'package-lock.json'),
+            path.join(process.env.RUNNER_TEMP, 'typescript-provider-public/harness-package-lock.json'));
+          JS
       - name: Ensure the Linux virtual display
         if: runner.os == 'Linux'
         run: |
@@ -141,7 +234,18 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: typescript-provider-public-${{ inputs.release_tag }}-${{ matrix.os }}
+          name: typescript-provider-public-${{ inputs.release_tag }}-${{ inputs.channel || 'github-release' }}-${{ matrix.os }}
           path: ${{ runner.temp }}/typescript-provider-public
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain small proof packets separately from the public archive
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typescript-provider-public-proof-${{ inputs.release_tag }}-${{ inputs.channel || 'github-release' }}-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/typescript-provider-public/**/*.json
+            ${{ runner.temp }}/typescript-provider-public/**/*.sha256
+            ${{ runner.temp }}/typescript-provider-public/host/vscode-logs/**
           if-no-files-found: error
           retention-days: 14

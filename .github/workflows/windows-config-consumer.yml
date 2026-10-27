@@ -1,0 +1,223 @@
+name: Windows dynamic config consumer
+on:
+  pull_request:
+    paths:
+      - crates/vize_carton/src/config/loader/**
+      - tools/support/config/windows_consumer/**
+      - .github/workflows/windows-config-consumer.yml
+  workflow_dispatch:
+    inputs:
+      phase:
+        type: choice
+        options: [source, public]
+        default: source
+      version:
+        description: Exact public version; required for public phase
+        type: string
+        default: "0.602.0"
+      source_sha:
+        description: Exact immutable public tag commit
+        type: string
+      authority_blob:
+        description: Git blob of unchanged genuine receipt bytes and separate public SRI origins
+        type: string
+permissions: { contents: read }
+concurrency:
+  group: windows-config-consumer-${{ github.event.pull_request.number || github.ref }}-${{ inputs.phase || 'source' }}
+  cancel-in-progress: false
+env:
+  CARGO_BUILD_JOBS: "8"
+  CARGO_INCREMENTAL: "0"
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+defaults:
+  run: { shell: bash }
+jobs:
+  public-before:
+    if: github.event_name != 'workflow_dispatch' || inputs.phase == 'source'
+    name: Published 0.601 control (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - { os: Windows, runner: windows-2025-vs2026 }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
+          - { os: macOS, runner: macos-15 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Keep the original Git bytes on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: kazupon/ox-jsdoc
+          ref: 86005b1a5d1266148e61b8969edaaaa73a7bfe53
+          path: consumer
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.22.1", package-manager-cache: false }
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          version: "1.4.0"
+          node-manager: false
+          working-directory: consumer
+          run-install: false
+          cache: true
+          cache-save: false
+      - name: Install the immutable original lock
+        working-directory: consumer
+        run: vp install --frozen-lockfile
+      - name: Require actual public Windows 206 and Linux/macOS dynamic evaluation
+        run: node tools/support/config/windows_consumer/verify.ts "$GITHUB_WORKSPACE/consumer" "$RUNNER_TEMP/config-consumer-before" before 0.601.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: windows-config-before-${{ matrix.os }}-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/config-consumer-before/
+          if-no-files-found: error
+  source-sdk:
+    if: github.event_name != 'workflow_dispatch' || inputs.phase == 'source'
+    name: Required source-image npm SDK (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - { os: Windows, runner: windows-2025-vs2026, target: win32-x64-msvc }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404, target: linux-x64-gnu }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - name: Preserve source bytes on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.22.1", package-manager-cache: false }
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        if: runner.os == 'Windows'
+        with: { arch: amd64 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with: { wild-version: "0.9.0" }
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: config-sdk-${{ matrix.target }}
+          cache-workspace-crates: "true"
+      - name: Require all config loader tests and package the exact source NAPI image
+        run: node tools/support/config/windows_consumer/build-sdk.ts "$GITHUB_WORKSPACE" "$RUNNER_TEMP/config-sdk" "$RUNNER_TEMP/config-sdk-build"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: kazupon/ox-jsdoc
+          ref: 86005b1a5d1266148e61b8969edaaaa73a7bfe53
+          path: consumer
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          version: "1.4.0"
+          node-manager: false
+          working-directory: consumer
+          run-install: false
+          cache: true
+          cache-save: false
+      - name: Install the original consumer lock
+        working-directory: consumer
+        run: vp install --frozen-lockfile
+      - name: Require the original command and imported settings through the actual npm NAPI route
+        run: node tools/support/config/windows_consumer/verify.ts "$GITHUB_WORKSPACE/consumer" "$RUNNER_TEMP/config-consumer-source" candidate 0.601.0 "$RUNNER_TEMP/config-sdk/source-image-sdk.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: windows-config-source-${{ matrix.os }}-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/config-sdk-build/
+            ${{ runner.temp }}/config-sdk/source-image-sdk.json
+            ${{ runner.temp }}/config-consumer-source/
+          if-no-files-found: error
+  mac-source-protocol:
+    if: github.event_name != 'workflow_dispatch' || inputs.phase == 'source'
+    name: Required macOS source protocol smoke
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.22.1", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with: { shared-key: config-loader-macos, cache-workspace-crates: "true" }
+      - name: Require real Node argv, stdin handshake, Unicode paths and cleanup on macOS
+        run: node tools/support/config/windows_consumer/units.ts "$GITHUB_WORKSPACE" "$RUNNER_TEMP/config-macos-units"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: windows-config-macos-protocol-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/config-macos-units/
+          if-no-files-found: error
+  public-after:
+    if: github.event_name == 'workflow_dispatch' && inputs.phase == 'public'
+    name: Required fresh public npm (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - { os: Windows, runner: windows-2025-vs2026 }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
+          - { os: macOS, runner: macos-15 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+    steps:
+      - name: Keep exact checkout bytes
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.22.1", package-manager-cache: false }
+      - name: Authenticate the real merged source, immutable tag and unchanged producer receipts
+        env:
+          PUBLIC_VERSION: ${{ inputs.version }}
+          AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+        run: node tools/support/config/windows_consumer/authority.ts "$PUBLIC_VERSION" "$PUBLIC_SOURCE_SHA" "$AUTHORITY_BLOB" "$RUNNER_TEMP/config-authority.json" "$RUNNER_TEMP/config-authority"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: kazupon/ox-jsdoc
+          ref: 86005b1a5d1266148e61b8969edaaaa73a7bfe53
+          path: consumer
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          version: "1.4.0"
+          node-manager: false
+          working-directory: consumer
+          run-install: false
+          cache: true
+          cache-save: false
+      - name: Install the immutable original consumer graph
+        working-directory: consumer
+        run: vp install --frozen-lockfile
+      - name: Require the published full SDK to run the original command and every negative control
+        env:
+          PUBLIC_VERSION: ${{ inputs.version }}
+        run: node tools/support/config/windows_consumer/verify.ts "$GITHUB_WORKSPACE/consumer" "$RUNNER_TEMP/config-consumer-public" public "$PUBLIC_VERSION" "$RUNNER_TEMP/config-authority.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: windows-config-public-${{ matrix.os }}-${{ inputs.version }}
+          path: |
+            ${{ runner.temp }}/config-authority/
+            ${{ runner.temp }}/config-authority.json
+            ${{ runner.temp }}/config-consumer-public/
+          if-no-files-found: error
