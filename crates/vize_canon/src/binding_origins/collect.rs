@@ -76,7 +76,7 @@ impl<'s, 'a> Collector<'s, 'a> {
             Some(SyntaxDeclarations::Many(syntax)) => BindingTarget::Candidates(
                 syntax
                     .iter()
-                    .map(|syntax| self.syntax_target(*syntax))
+                    .map(|syntax| self.syntax_target(local, *syntax))
                     .collect(),
             ),
         }

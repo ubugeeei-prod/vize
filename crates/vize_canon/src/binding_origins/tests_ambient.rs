@@ -57,3 +57,11 @@ fn actual_ambient_declarations_and_immutable_value_aliases_keep_provider_identit
         assert_eq!(resolutions, 1);
     }
 }
+
+#[test]
+fn merged_overload_declarations_preserve_custom_symbol_identity() {
+    let text = "declare function useTemplateRef(key: string): {value:string}; declare function useTemplateRef(key: number): {value:number};";
+    let (origin, resolutions) = observe(text, SourceType::d_ts(), true);
+    assert!(matches!(origin, BindingOrigin::Custom(_)));
+    assert_eq!(resolutions, 0);
+}
