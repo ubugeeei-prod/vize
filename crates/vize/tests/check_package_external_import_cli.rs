@@ -239,6 +239,7 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
             },
             "run {run}:\n{stdout}\n{stderr}"
         );
+        assert_eq!(report["errorCount"], usize::from(run != 2));
         assert_eq!(report["warningCount"], 0);
         assert_eq!(report["programs"][0]["root"], ".", "{stdout}");
         assert!(
