@@ -71,14 +71,16 @@ fn packet(parsed: &ParserReturn<'_>) -> Packet {
     }
 }
 
-fn same_packet(source: &str, kind: SourceType) {
+fn same_packet(source: &str, kind: SourceType) -> bool {
     let old_allocator = Allocator::default();
     let new_allocator = Allocator::default();
+    let current = parse_program_for_analysis(&new_allocator, source, kind);
     assert_eq!(
-        packet(&parse_program_for_analysis(&new_allocator, source, kind)),
+        packet(&current),
         packet(&previous(&old_allocator, source, kind)),
         "all public parser observations must match for {source:?}"
     );
+    current.panicked
 }
 
 #[test]
@@ -106,13 +108,15 @@ fn recovery_reuses_original_errors_without_changing_any_public_parser_field() {
 #[test]
 fn retry_budget_and_nested_independent_holes_remain_exact() {
     for holes in 0..=6 {
-        let mut source = std::string::String::from("import { ref } from 'vue';\n");
+        let mut body = std::string::String::new();
         for index in 0..holes {
-            source.push_str(&format!("const item_{index} = missing_{index}.;\n"));
+            body.push_str(&format!("const item_{index} = missing_{index}.;\n"));
         }
-        source.push_str("const done = 1;\n");
-        same_packet(&source, SourceType::ts());
-        let nested = format!("function outer() {{\n{source}\nreturn done;\n}}");
-        same_packet(&nested, SourceType::ts());
+        body.push_str("const done = 1;\n");
+        let source = format!("import {{ ref }} from 'vue';\n{body}");
+        assert_eq!(same_packet(&source, SourceType::ts()), holes > 3);
+        let nested =
+            format!("import {{ ref }} from 'vue';\nfunction outer() {{\n{body}\nreturn done;\n}}");
+        assert_eq!(same_packet(&nested, SourceType::ts()), holes > 3);
     }
 }
