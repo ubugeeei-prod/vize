@@ -5,7 +5,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { createHash } from "node:crypto";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
@@ -14,6 +13,7 @@ import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
 import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
+import { finalizeLspResources } from "./lib/lsp-resource-finalize.ts";
 
 interface RunResult {
   run: number;
@@ -40,6 +40,7 @@ interface RunResult {
   peak_processes?: ProcessEntry[];
   resource_samples?: number;
   profile_json?: { path: string; bytes: number; sha256: string };
+  finalization_error?: string;
 }
 
 interface Measurement {
@@ -247,25 +248,17 @@ async function measure() {
       result.resource_samples = samples;
       measurement.per_run.push(result);
       delete measurement.active_run;
-      save();
-      await session.shutdown().catch(async () => session.kill());
-      if (profilePath) {
-        await session.waitForClosed();
-        const bytes = fs.readFileSync(profilePath);
-        const report: unknown = JSON.parse(bytes.toString("utf8"));
-        assert.ok(
-          isRecord(report) && report.command === "lsp",
-          "the actual LSP exports its session",
-        );
-        result.profile_json = {
-          path: profilePath,
-          bytes: bytes.byteLength,
-          sha256: createHash("sha256").update(bytes).digest("hex"),
-        };
-        save();
-      }
-      process.env.VIZE_LSP_BIN = server;
-      fs.rmSync(workspace, { force: true, recursive: true });
+      await finalizeLspResources({
+        session,
+        profilePath,
+        workloadFailed: result.error !== undefined,
+        result,
+        cleanup() {
+          process.env.VIZE_LSP_BIN = server;
+          fs.rmSync(workspace, { force: true, recursive: true });
+        },
+        persist: save,
+      });
     }
     measurement.completed_runs++;
     save();
