@@ -14,11 +14,15 @@ use std::time::{Duration, Instant};
 
 use parking_lot::Mutex;
 use tower_lsp::lsp_types::Url;
-use vize_l0::FxHashMap;
 
 use super::MaestroServer;
 
 mod api_read;
+mod importers;
+use importers::refresh_initial_importers;
+mod pending;
+use super::state::{CorsaRequestStamp, ServerState};
+use pending::{DiagnosticsJobCause, PendingInitialDiagnostics};
 mod preparation;
 mod retry;
 pub(super) use retry::RetainedDiagnostics;
@@ -33,163 +37,6 @@ const INTERACTIVE_GRACE: Duration = Duration::from_secs(1);
 /// An edit skips it when nothing is queued for its document and the last pass
 /// finished within it: that pass cannot hold Corsa longer than waiting would.
 const EDIT_DIAGNOSTIC_DEBOUNCE: Duration = Duration::from_millis(150);
-const MAX_PENDING_DOCUMENTS: usize = 64;
-
-#[derive(Clone)]
-struct InitialDiagnosticsJob {
-    cause: DiagnosticsJobCause,
-    version: i32,
-    not_before: Instant,
-    sequence: u64,
-    sync_pending: bool,
-    sync_running: bool,
-    preparation_pending: bool,
-    sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
-    continuation: Option<super::state::InitialConfigurationContinuation>,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum DiagnosticsJobCause {
-    Open,
-    Edit,
-}
-
-#[derive(Default)]
-struct PendingInitialDiagnostics {
-    jobs: FxHashMap<Url, InitialDiagnosticsJob>,
-    next_sequence: u64,
-    /// Lane occupancy of the last native pass; unknown until one finishes.
-    last_pass: Option<Duration>,
-}
-
-impl PendingInitialDiagnostics {
-    fn complete(&mut self, uri: &Url, version: i32) {
-        if self.jobs.get(uri).is_some_and(|job| job.version <= version) {
-            self.jobs.remove(uri);
-        }
-    }
-
-    fn edit_not_before(&self, uri: &Url, now: Instant) -> Instant {
-        let cheap = self
-            .last_pass
-            .is_some_and(|pass| pass < EDIT_DIAGNOSTIC_DEBOUNCE);
-        if cheap && !self.jobs.contains_key(uri) {
-            now
-        } else {
-            now + EDIT_DIAGNOSTIC_DEBOUNCE
-        }
-    }
-
-    fn insert(&mut self, uri: Url, version: i32, not_before: Instant) {
-        self.insert_with_continuation(
-            uri,
-            version,
-            not_before,
-            DiagnosticsJobCause::Open,
-            None,
-            None,
-        );
-    }
-
-    fn insert_with_continuation(
-        &mut self,
-        uri: Url,
-        version: i32,
-        not_before: Instant,
-        cause: DiagnosticsJobCause,
-        sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
-        continuation: Option<super::state::InitialConfigurationContinuation>,
-    ) {
-        if self
-            .jobs
-            .get(&uri)
-            .is_some_and(|pending| pending.version > version)
-        {
-            return;
-        }
-
-        if !self.jobs.contains_key(&uri) && self.jobs.len() == MAX_PENDING_DOCUMENTS {
-            let oldest = self
-                .jobs
-                .iter()
-                .min_by_key(|(_, job)| job.sequence)
-                .map(|(uri, _)| uri.clone());
-            if let Some(oldest) = oldest {
-                self.jobs.remove(&oldest);
-            }
-        }
-
-        let sequence = self.next_sequence;
-        self.next_sequence = self.next_sequence.wrapping_add(1);
-        self.jobs.insert(
-            uri,
-            InitialDiagnosticsJob {
-                cause,
-                version,
-                not_before,
-                sequence,
-                sync_pending: cause == DiagnosticsJobCause::Open,
-                sync_running: false,
-                preparation_pending: cause == DiagnosticsJobCause::Open,
-                sync,
-                continuation,
-            },
-        );
-    }
-
-    fn take_sync(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| job.sync_pending)
-            .min_by_key(|(_, job)| job.sequence)
-            .map(|(uri, _)| uri.clone())?;
-        let job = self.jobs.get_mut(&uri)?;
-        job.sync_pending = false;
-        job.sync_running = true;
-        Some((uri, job.clone()))
-    }
-
-    fn complete_sync(&mut self, uri: &Url, sequence: u64) {
-        if let Some(job) = self
-            .jobs
-            .get_mut(uri)
-            .filter(|job| job.sequence == sequence)
-        {
-            job.sync_running = false;
-        }
-    }
-
-    fn take_preparation(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.preparation_pending)
-            .min_by_key(|(_, job)| job.sequence)
-            .map(|(uri, _)| uri.clone())?;
-        let job = self.jobs.get_mut(&uri)?;
-        job.preparation_pending = false;
-        Some((uri, job.clone()))
-    }
-
-    fn next_not_before(&self) -> Option<Instant> {
-        self.jobs
-            .values()
-            .filter(|job| !job.sync_pending && !job.sync_running)
-            .map(|job| job.not_before)
-            .min()
-    }
-
-    fn take_ready(&mut self, now: Instant) -> Option<(Url, InitialDiagnosticsJob)> {
-        let uri = self
-            .jobs
-            .iter()
-            .filter(|(_, job)| !job.sync_pending && !job.sync_running && job.not_before <= now)
-            .min_by_key(|(_, job)| job.not_before)
-            .map(|(uri, _)| uri.clone())?;
-        self.jobs.remove(&uri).map(|job| (uri, job))
-    }
-}
 
 #[derive(Clone)]
 pub(super) struct InitialDiagnosticsScheduler {
@@ -303,8 +150,23 @@ impl InitialDiagnosticsScheduler {
         }
     }
 
-    pub(super) fn complete(&self, uri: &Url, version: i32) {
-        self.pending.lock().complete(uri, version);
+    pub(super) fn complete_if_current(
+        &self,
+        uri: &Url,
+        version: i32,
+        stamp: CorsaRequestStamp,
+        state: &ServerState,
+    ) {
+        let mut pending = self.pending.lock();
+        // Only atomic revision reads occur under this lock. A new open cannot
+        // enqueue until it is released, so an old pass cannot consume its job.
+        if stamp.is_current(state) {
+            pending.complete(uri, version);
+        }
+    }
+
+    pub(super) fn discard_closed(&self, uri: &Url, documents: &crate::document::DocumentStore) {
+        self.pending.lock().discard_closed(uri, documents);
     }
 
     pub(super) fn retry(&self, uri: Url, version: i32) -> bool {
@@ -449,14 +311,6 @@ fn run_worker(
             pending.lock().last_pass = Some(started.elapsed());
         }
     }
-}
-
-async fn refresh_initial_importers(project: &MaestroServer, uri: &Url, version: i32) -> Vec<Url> {
-    // didOpen/didChange or the event that retained this pass prepared its
-    // current owner already. Only other importer owners still need marking.
-    project
-        .publish_importer_diagnostics_with_current_owner(uri, Some(version), true)
-        .await
 }
 
 impl MaestroServer {
