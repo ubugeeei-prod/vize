@@ -223,7 +223,10 @@ function checkEditorSetupPolicy(directory: string, write: (name: string, value: 
     );
     write(".vscode/extensions.json", extensions);
     write(".vscode/settings.json", settings);
-    assert.match(run(directory, ["run", "editor:setup"], 1), /TypeError: vue: unknown option "lsp"/);
+    assert.match(
+      run(directory, ["run", "editor:setup"], 1),
+      /TypeError: vue: unknown option "lsp"/,
+    );
     assert.equal(
       fs.readFileSync(path.join(directory, ".vscode/extensions.json"), "utf8"),
       extensions,
