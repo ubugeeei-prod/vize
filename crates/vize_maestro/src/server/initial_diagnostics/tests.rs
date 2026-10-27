@@ -220,3 +220,51 @@ fn did_change_after_a_cheap_settled_pass_validates_without_the_quiet_period() {
         (fixture.uri.clone(), 2, super::DiagnosticsJobCause::Edit)
     );
 }
+
+#[test]
+fn work_observed_before_close_cannot_reinsert_closed_metadata() {
+    let fixture = super::open_importer_tests::queued_open();
+    let server = fixture.service.inner();
+    let scheduler = server.initial_diagnostics.as_ref().unwrap();
+    let version = server.state.documents.version(&fixture.uri).unwrap();
+    server.state.documents.close(&fixture.uri);
+    scheduler.discard_closed(&fixture.uri, &server.state.documents);
+    assert!(!scheduler.retry(fixture.uri.clone(), version, &server.state.documents));
+    assert!(server.schedule_initial_diagnostics(fixture.uri.clone(), version));
+    assert!(fixture.pending.lock().jobs.is_empty());
+}
+
+#[test]
+fn a_reopened_lower_version_supersedes_a_prior_lifetime_for_schedule_and_retry() {
+    for retry in [false, true] {
+        let fixture = super::open_importer_tests::queued_open();
+        let server = fixture.service.inner();
+        server.state.documents.open(
+            fixture.uri.clone(),
+            "<template>old</template>".into(),
+            5,
+            "vue".into(),
+        );
+        fixture
+            .pending
+            .lock()
+            .insert(fixture.uri.clone(), 5, Instant::now());
+        server.state.documents.close(&fixture.uri);
+        server.state.documents.open(
+            fixture.uri.clone(),
+            "<template>reopened</template>".into(),
+            1,
+            "vue".into(),
+        );
+        let scheduler = server.initial_diagnostics.as_ref().unwrap();
+        if retry {
+            assert!(scheduler.retry(fixture.uri.clone(), 1, &server.state.documents));
+        } else {
+            assert!(server.schedule_initial_diagnostics(fixture.uri.clone(), 1));
+        }
+        let mut pending = fixture.pending.lock();
+        pending.discard_closed(&fixture.uri, &server.state.documents);
+        assert_eq!(pending.jobs.len(), 1);
+        assert_eq!(pending.jobs[&fixture.uri].version, 1);
+    }
+}

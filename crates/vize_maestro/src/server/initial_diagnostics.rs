@@ -25,7 +25,9 @@ use super::state::{CorsaRequestStamp, ServerState};
 use pending::{DiagnosticsJobCause, PendingInitialDiagnostics};
 mod preparation;
 mod retry;
+mod worker;
 pub(super) use retry::RetainedDiagnostics;
+use worker::run_worker;
 
 /// Let the editor's first interactive request claim Corsa before validation.
 /// Initial diagnostics remain prompt, while completion/hover no longer queue
@@ -124,12 +126,26 @@ impl InitialDiagnosticsScheduler {
         cause: DiagnosticsJobCause,
         sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
         continuation: Option<super::state::InitialConfigurationContinuation>,
+        documents: &crate::document::DocumentStore,
     ) -> bool {
         let Some(sender) = &self.sender else {
             return false;
         };
         {
             let mut pending = self.pending.lock();
+            if documents.version(&uri) != Some(version) {
+                // Superseded or closed work needs no stale inline fallback.
+                return true;
+            }
+            // Versions may restart after a close/reopen. The store, rather
+            // than an older queued lifetime, owns the current version.
+            if pending
+                .jobs
+                .get(&uri)
+                .is_some_and(|job| job.version > version)
+            {
+                pending.jobs.remove(&uri);
+            }
             let now = Instant::now();
             let not_before = match cause {
                 DiagnosticsJobCause::Open => now + INTERACTIVE_GRACE,
@@ -169,12 +185,27 @@ impl InitialDiagnosticsScheduler {
         self.pending.lock().discard_closed(uri, documents);
     }
 
-    pub(super) fn retry(&self, uri: Url, version: i32) -> bool {
+    pub(super) fn retry(
+        &self,
+        uri: Url,
+        version: i32,
+        documents: &crate::document::DocumentStore,
+    ) -> bool {
         if self.sender.is_none() && !self.worker_owned {
             return false;
         }
         {
             let mut pending = self.pending.lock();
+            if documents.version(&uri) != Some(version) {
+                return false;
+            }
+            if pending
+                .jobs
+                .get(&uri)
+                .is_some_and(|job| job.version > version)
+            {
+                pending.jobs.remove(&uri);
+            }
             if !pending
                 .jobs
                 .get(&uri)
@@ -231,88 +262,6 @@ fn run_sync_worker(
     }
 }
 
-fn run_worker(
-    worker: &MaestroServer,
-    receiver: mpsc::Receiver<()>,
-    pending: &Mutex<PendingInitialDiagnostics>,
-) {
-    while receiver.recv().is_ok() {
-        loop {
-            let preparation = { pending.lock().take_preparation() };
-            if let Some((uri, job)) = preparation {
-                crate::runtime::block_on(async {
-                    let project = worker
-                        .for_initial_document(&uri, job.version, job.continuation.as_ref())
-                        .await;
-                    project
-                        .prepare_initial_native_document(&uri, job.version)
-                        .await;
-                });
-                continue;
-            }
-            let Some(not_before) = pending.lock().next_not_before() else {
-                break;
-            };
-            let delay = not_before.saturating_duration_since(Instant::now());
-            if !delay.is_zero() {
-                match receiver.recv_timeout(delay) {
-                    Ok(()) => continue,
-                    Err(mpsc::RecvTimeoutError::Timeout) => {}
-                    Err(mpsc::RecvTimeoutError::Disconnected) => return,
-                }
-            }
-            let Some((uri, job)) = pending.lock().take_ready(Instant::now()) else {
-                continue;
-            };
-            tracing::info!(
-                "starting initial type diagnostics for {} version {}",
-                uri,
-                job.version
-            );
-            let started = Instant::now();
-            crate::runtime::block_on(async {
-                let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
-                    "initial_type_configuration_admission",
-                    1,
-                );
-                let project = match job.cause {
-                    DiagnosticsJobCause::Open => {
-                        worker
-                            .for_initial_document(&uri, job.version, job.continuation.as_ref())
-                            .await
-                    }
-                    DiagnosticsJobCause::Edit => worker.for_document(&uri).await,
-                };
-                phase.finish();
-                match job.cause {
-                    DiagnosticsJobCause::Open => {
-                        project
-                            .publish_initial_api_diagnostics_if_version(
-                                &uri,
-                                job.version,
-                                job.continuation.as_ref(),
-                            )
-                            .await;
-                    }
-                    DiagnosticsJobCause::Edit => {
-                        project
-                            .publish_changed_diagnostics_if_version(&uri, job.version, job.sync)
-                            .await;
-                    }
-                }
-                tracing::info!(
-                    "finished initial type diagnostics for {} version {}",
-                    uri,
-                    job.version
-                );
-                // Opening an unsaved dependency changes its importers too.
-                refresh_initial_importers(&project, &uri, job.version).await;
-            });
-            pending.lock().last_pass = Some(started.elapsed());
-        }
-    }
-}
-
 impl MaestroServer {
     pub(super) fn schedule_initial_diagnostics(&self, uri: Url, version: i32) -> bool {
         self.initial_diagnostics.as_ref().is_some_and(|scheduler| {
@@ -322,6 +271,7 @@ impl MaestroServer {
                 DiagnosticsJobCause::Open,
                 None,
                 self.state.initial_configuration_continuation(&uri, version),
+                &self.state.documents,
             )
         })
     }
@@ -333,7 +283,14 @@ impl MaestroServer {
         sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
     ) -> bool {
         self.initial_diagnostics.as_ref().is_some_and(|scheduler| {
-            scheduler.schedule(uri.clone(), version, DiagnosticsJobCause::Edit, sync, None)
+            scheduler.schedule(
+                uri.clone(),
+                version,
+                DiagnosticsJobCause::Edit,
+                sync,
+                None,
+                &self.state.documents,
+            )
         })
     }
 }
