@@ -1,0 +1,3 @@
+<template>
+<ul id="outer" role="listbox" ><slot><li role="option" tabindex="0">A</li></slot></ul>
+</template>

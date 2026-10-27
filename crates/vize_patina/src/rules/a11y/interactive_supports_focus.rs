@@ -401,3 +401,7 @@ const listId = "fruits";
         assert_eq!(result.warning_count, 0);
     }
 }
+
+#[cfg(test)]
+#[path = "interactive_supports_focus/listbox_tests.rs"]
+mod listbox_tests;
