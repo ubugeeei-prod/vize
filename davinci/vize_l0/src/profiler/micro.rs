@@ -90,7 +90,7 @@ impl Site {
 }
 
 fn saturating_add(counter: &AtomicU64, value: u64) {
-    let _ = counter.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |previous| {
+    let _ = counter.try_update(Ordering::Relaxed, Ordering::Relaxed, |previous| {
         Some(previous.saturating_add(value))
     });
 }

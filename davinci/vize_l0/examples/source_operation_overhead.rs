@@ -45,7 +45,23 @@ fn main() {
     let wall_ns = start.elapsed().as_nanos();
     profiler.disable();
     #[cfg(feature = "micro-profiling")]
-    let counters = vize_l0::profiler::micro::snapshot();
+    let counters = {
+        let counters = vize_l0::profiler::micro::snapshot();
+        if enabled {
+            assert_eq!(counters.len(), 1);
+            assert_eq!(
+                counters.first().map(|entry| entry.calls),
+                Some(workers as u64 * iterations)
+            );
+            assert_eq!(
+                counters.first().map(|entry| entry.units),
+                Some(workers as u64 * 3 * iterations * (iterations - 1) / 2)
+            );
+        } else {
+            assert!(counters.is_empty());
+        }
+        counters
+    };
     #[cfg(not(feature = "micro-profiling"))]
     let counters: [u64; 0] = [];
     println!(
