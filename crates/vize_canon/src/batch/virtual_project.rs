@@ -104,6 +104,7 @@ mod package_shadow_runtime;
 mod package_shadow_scope;
 mod package_source_index;
 mod passthrough;
+pub(in crate::batch) use passthrough::resolve_relative_passthrough_module;
 mod paths;
 pub(in crate::batch) use paths::script_virtual_path;
 mod project;

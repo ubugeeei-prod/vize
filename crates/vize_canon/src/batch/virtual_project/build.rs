@@ -228,7 +228,7 @@ pub(super) fn build_vue_registered_file(
             )
     );
     let star_projection = super::star_exports::StarProjection::from_rewrite(&rewritten, stars);
-    let preserve_module_source = !context.allow_javascript
+    let preserve_module_source = (!context.allow_javascript || context.has_external_sources)
         && rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
     let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
     projection.restore_row_metadata(mapping_meta);

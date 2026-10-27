@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashSet, String, cstr};
 
 use super::{authored_vue_ts, rewrite_relative_vue_specifier, virtual_rewrite};
-use crate::batch::virtual_project::{dependency_scan::resolve_dependency, mirrored_virtual_path};
+use crate::batch::virtual_project::{
+    dependency_scan::resolve_dependency, mirrored_virtual_path, resolve_relative_passthrough_module,
+};
 
 pub(super) fn rewrite(
     has_external_sources: bool,
@@ -28,8 +30,13 @@ pub(super) fn rewrite(
     let authored_resolved = resolved;
     let resolved = vize_carton::path::canonicalize_non_verbatim(&authored_resolved);
     if source_dir.starts_with(roots.0) == resolved.starts_with(roots.0)
-        || mirrorable.is_some_and(|files| !files.contains(&resolved))
         || crate::batch::declaration_path::is_declaration_file(&resolved)
+    {
+        return None;
+    }
+    if mirrorable.is_some_and(|files| !files.contains(&resolved))
+        && !resolve_relative_passthrough_module(source_dir, specifier)
+            .is_some_and(|path| vize_carton::path::canonicalize_non_verbatim(&path) == resolved)
     {
         return None;
     }
