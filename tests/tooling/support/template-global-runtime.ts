@@ -88,6 +88,7 @@ function providerUrl(provider: Record<string, unknown>): string {
 export async function loadWholeComponent(
   packet: WholePacket,
   target: Target,
+  authoredModules: Readonly<Record<string, string>> = {},
 ): Promise<LoadedComponent> {
   const runtime = target === "vapor" ? vapor : target === "ssr" ? serverVue : stable;
   const owners = new Map([
@@ -95,6 +96,13 @@ export async function loadWholeComponent(
     ["vue/server-renderer", providerUrl(renderer)],
     ["@vue/server-renderer", providerUrl(renderer)],
   ]);
+  for (const [id, code] of Object.entries(authoredModules)) {
+    assert.ok(
+      id.startsWith("./") && !owners.has(id),
+      "authored module keeps its own relative owner",
+    );
+    owners.set(id, dataUrl(resolveModuleOwners(code, owners)));
+  }
   if (packet.helperCode) owners.set("\0plugin-vue:export-helper", dataUrl(packet.helperCode));
   for (const virtual of packet.virtualModules ?? []) {
     owners.set(virtual.id, dataUrl(resolveModuleOwners(virtual.transformed.code, owners)));

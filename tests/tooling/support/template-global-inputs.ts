@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 export type InputCase = {
   id: string;
   source: string;
@@ -6,6 +7,7 @@ export type InputCase = {
   emits?: number;
   render?: boolean;
   html?: string;
+  authoredModules?: Readonly<Record<string, string>>;
 };
 const script = `const emit = defineEmits<{ press: [] }>();`;
 const component = (setup: string, template: string): string =>
@@ -76,5 +78,21 @@ export const templateGlobalCases: InputCase[] = [
     emits: 0,
     render: true,
     html: "<p>setup2</p>",
+  },
+  {
+    id: "import",
+    source:
+      '<script setup lang="ts">\nconst emit = defineEmits<{ press: [] }>();\nimport { document } from \'./host\';\n</script>\n<template><button :data-from="document.tag" @click="(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit(\'press\'); }">press</button></template>',
+    authoredModules: {
+      "./host": readFileSync(
+        new URL(
+          "../../_fixtures/differential/compiler/template-global-policy/import-host.js.txt",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    },
+    emits: 0,
+    html: '<button data-from="imported">press</button>',
   },
 ];

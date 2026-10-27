@@ -4,7 +4,14 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
-import { asArray, asRecord, asString, readJsonRecord } from "../../tools/support/json-value.ts";
+import { gunzipSync } from "node:zlib";
+import {
+  asArray,
+  asRecord,
+  asString,
+  parseJson,
+  readJsonRecord,
+} from "../../tools/support/json-value.ts";
 import type { Target, WholePacket } from "./support/template-global-stock.ts";
 import type { RuntimeResult } from "./support/template-global-runtime.ts";
 import type { SfcCompileOptionsNapi } from "../../npm/native/index.js";
@@ -17,6 +24,7 @@ type Row = {
   target: Target;
   inlineTemplate: boolean;
   options: SfcCompileOptionsNapi;
+  authoredModules?: Readonly<Record<string, string>>;
   producers: Partial<Record<ProducerName, ProducerResult>>;
 };
 import { templateGlobalCases as cases } from "./support/template-global-inputs.ts";
@@ -128,15 +136,51 @@ await test(
     );
     assert.equal(vaporOracle.compiler, "3.6.0-rc.9");
     assert.equal(vaporOracle.plugin, "6.0.7");
-    const vaporObservations = asArray(vaporOracle.observations).map((value) => {
+    const originalVaporObservations = asArray(vaporOracle.observations).map((value) => {
       const record = asRecord(value);
       assert.ok(typeof record.inline === "boolean");
       return { ...record, id: asString(record.id), inline: record.inline };
     });
-    assert.equal(vaporObservations.length, 16);
+    assert.equal(originalVaporObservations.length, 16);
+    assert.equal(
+      new Set(originalVaporObservations.map((value) => value.id + "/" + String(value.inline))).size,
+      16,
+    );
+    const importOracle = readJsonRecord(
+      new URL(
+        "../_fixtures/differential/compiler/template-global-policy/stock-vapor-rc9-import-runtime.json",
+        import.meta.url,
+      ),
+    );
+    assert.equal(importOracle.compiler, "3.6.0-rc.9");
+    assert.equal(importOracle.plugin, "6.0.7");
+    const importObservations = asArray(importOracle.observations).map((value) => {
+      const record = asRecord(value);
+      assert.ok(typeof record.inline === "boolean");
+      return { ...record, id: asString(record.id), inline: record.inline };
+    });
+    assert.equal(importObservations.length, 2);
+    const rawImport = gunzipSync(
+      Buffer.from(
+        readFileSync(
+          new URL(
+            "../_fixtures/differential/compiler/template-global-policy/stock-import-reference.json.gz.b64.txt",
+            import.meta.url,
+          ),
+          "utf8",
+        ).trim(),
+        "base64",
+      ),
+    );
+    assert.equal(
+      createHash("sha256").update(rawImport).digest("hex"),
+      asString(asRecord(importOracle.archive).rawSha256),
+    );
+    assert.equal(asArray(asRecord(parseJson(rawImport.toString("utf8"))).rows).length, 6);
+    const vaporObservations = [...originalVaporObservations, ...importObservations];
     assert.equal(
       new Set(vaporObservations.map((value) => value.id + "/" + String(value.inline))).size,
-      16,
+      18,
     );
     const rows: Row[] = [];
     const persist = () =>
@@ -160,6 +204,7 @@ await test(
               target,
               inlineTemplate,
               options,
+              authoredModules: input.authoredModules,
               producers: {},
             };
             rows.push(row);
@@ -184,7 +229,7 @@ await test(
                   `${input.id}/${target}/${inlineTemplate}/${name} compiles`,
                 );
               try {
-                const loaded = await loadWholeComponent(packet, target);
+                const loaded = await loadWholeComponent(packet, target, input.authoredModules);
                 observation.resolvedWholeCode = loaded.resolvedCode;
                 observation.runtime = await executeWholeComponent(
                   loaded,
@@ -273,7 +318,7 @@ await test(
               assert.equal(row.producers.before!.runtime!.emitted, input.beforeEmits);
             }
           }
-      assert.equal(rows.length, 48);
+      assert.equal(rows.length, 54);
       assert.ok(
         rows.every(
           (row) =>
