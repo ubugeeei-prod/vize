@@ -12,7 +12,6 @@ import {
   type SuccessorRow,
   type RefusalManifest,
   type RuntimeBaseline,
-  type AdversarialRow,
   type AdversarialPacket,
   type AdversarialAuthority,
   type StaticAuthority,
