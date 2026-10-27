@@ -7,19 +7,29 @@ import {
   VAPOR_STYLE_API_CASE_ID,
 } from "../../tools/support/compat/github/vapor-style-api-fixtures.ts";
 
+import type compilerManifest from "../_fixtures/differential/compiler/manifest.json";
+import type styleAuthority from "../_fixtures/differential/compiler/vapor-literal-object-styles-10749/authority.json";
+import type admissionSourcePairs from "../_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json";
+
+type StyleRows = typeof compilerManifest.vaporStyleApiCases;
+type MutableStyleRows = Array<StyleRows[number] & { nativeParity?: boolean }>;
+type ReadFile = Parameters<typeof newVaporStyleApiCases>[2];
+
 const root = "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/";
-const manifest = JSON.parse(
+const manifest: typeof compilerManifest = JSON.parse(
   readFileSync("tests/_fixtures/differential/compiler/manifest.json", "utf8"),
 );
 const row = manifest.vaporStyleApiCases;
-const authority = JSON.parse(readFileSync(root + "authority.json", "utf8"));
+const authority: typeof styleAuthority = JSON.parse(readFileSync(root + "authority.json", "utf8"));
 // The refined producer closure; `authority.json` keeps the original campaign.
-const admission = JSON.parse(readFileSync(root + "admission-source-pairs.json", "utf8"));
+const admission: typeof admissionSourcePairs = JSON.parse(
+  readFileSync(root + "admission-source-pairs.json", "utf8"),
+);
 // This is the immutable source pair admitted by #10751. Later compiler
 // changes execute the full packet/runtime workflows; they cannot inherit this
 // closed historical source permission by replacing the approved hashes.
 const admittedRevision = "b09ac660cd0684396c21d24249c4b1e2193e965a";
-const files = new Map();
+const files = new Map<string, Buffer | null>();
 for (const source of admission.sourceFiles) {
   const old = spawnSync("git", ["show", `${authority.beforeRevision}:${source.path}`], {
     maxBuffer: 8 * 1024 * 1024,
@@ -33,7 +43,7 @@ for (const source of admission.sourceFiles) {
 }
 for (const pin of [...row[0].inputs, ...row[0].witnesses])
   files.set(`head:${pin.path}`, readFileSync(pin.path));
-const read = (side, path) => files.get(`${side}:${path}`) ?? null;
+const read: ReadFile = (side, path) => files.get(`${side}:${path}`) ?? null;
 
 await test("the admitted finite Vapor CSR source witness grants exactly its historical source closure", () => {
   const result = newVaporStyleApiCases(undefined, row, read);
@@ -46,7 +56,7 @@ await test("the admitted finite Vapor CSR source witness grants exactly its hist
 });
 
 await test("current producer edits receive no privilege from the historical admission", () => {
-  const current = (side, file) =>
+  const current: ReadFile = (side, file) =>
     side === "head" && admission.sourceFiles.some((source) => source.path === file)
       ? readFileSync(file)
       : read(side, file);
@@ -63,7 +73,7 @@ await test("missing registration cannot be appeased by a generic SSR filler", ()
 await test("every actual producer byte and its absence observation is pinned", () => {
   for (const source of admission.sourceFiles) {
     for (const side of ["base", "head"]) {
-      const changed = (which, path) =>
+      const changed: ReadFile = (which, path) =>
         which === side && path === source.path
           ? Buffer.from("changed actual source")
           : read(which, path);
@@ -75,7 +85,7 @@ await test("every actual producer byte and its absence observation is pinned", (
 await test("every input, raw packet and executable witness rejects missing or mutated bytes", () => {
   for (const pin of [...row[0].inputs, ...row[0].witnesses]) {
     for (const mutation of [null, Buffer.from("changed bytes")]) {
-      const changed = (side, path) =>
+      const changed: ReadFile = (side, path) =>
         side === "head" && path === pin.path ? mutation : read(side, path);
       assert.throws(() => newVaporStyleApiCases(undefined, row, changed), pin.path);
     }
@@ -121,7 +131,7 @@ await test("schema broadening, native credit, fake selectors and future APIs are
     (value) => {
       value.push(structuredClone(value[0]));
     },
-  ]) {
+  ] satisfies Array<(value: MutableStyleRows) => void>) {
     const changed = structuredClone(row);
     mutate(changed);
     assert.throws(() => newVaporStyleApiCases(undefined, changed, read));
@@ -129,7 +139,8 @@ await test("schema broadening, native credit, fake selectors and future APIs are
 });
 
 await test("historical rows provide no source privilege to a future source pair", () => {
-  const future = (side, path) => (side === "base" ? read("head", path) : read(side, path));
+  const future: ReadFile = (side, path) =>
+    side === "base" ? read("head", path) : read(side, path);
   const result = newVaporStyleApiCases(row, row, future);
   assert.deepEqual(result.ids, []);
   assert.equal(result.sources.size, 0);
@@ -137,8 +148,12 @@ await test("historical rows provide no source privilege to a future source pair"
 });
 
 await test("the frozen180 source inputs are identical to all original actual packets", () => {
-  const inputs = JSON.parse(readFileSync(root + "inputs.json", "utf8"));
-  const original = JSON.parse(readFileSync(root + "observed-head.json", "utf8"));
+  const inputs: Array<Record<string, unknown>> = JSON.parse(
+    readFileSync(root + "inputs.json", "utf8"),
+  );
+  const original: Array<Record<string, unknown>> = JSON.parse(
+    readFileSync(root + "observed-head.json", "utf8"),
+  );
   assert.equal(inputs.length, 180);
   assert.equal(original.length, 180);
   inputs.forEach((input, index) => {
