@@ -30,6 +30,8 @@ jobs:
         with: { ref: "${{ env.DRIVER_SHA }}", path: driver, persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", path: source, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "driver/package.json", package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
         with: { toolchain: nightly-2026-10-23 }
       - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -44,7 +46,7 @@ jobs:
           mkdir evidence
           test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
           test "$(git -C driver rev-parse HEAD)" = "$DRIVER_SHA"
-          python3 driver/tools/support/compat/parser/expression-overlap-cases.py driver "$GITHUB_WORKSPACE/evidence/cases"
+          node driver/tools/support/compat/parser/expression-overlap-cases.ts driver "$GITHUB_WORKSPACE/evidence/cases"
           cp driver/vendor/oxc_parser/examples/failed_speculation_profile.rs source/vendor/oxc_parser/examples/
           cp driver/tools/support/compat/parser/frozen-private-facts.rs source/vendor/oxc_parser/src/expression_overlap_private_facts.rs
           printf '\n#[cfg(test)]\nmod expression_overlap_private_facts;\n' >> source/vendor/oxc_parser/src/lib.rs
