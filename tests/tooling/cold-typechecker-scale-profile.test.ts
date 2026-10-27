@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { captureColdScalePerf } from "../../tools/benchmarks/scripts/cold-typechecker-scale-profile.ts";
+import { sourcePerfEnvironment } from "../../tools/benchmarks/scripts/source-operation-perf.ts";
 
 test("source counters execute the direct checker after preparation and retain unavailable PMU evidence", () => {
   const root = mkdtempSync(join(tmpdir(), "cold-scale-direct-perf-"));
@@ -35,10 +36,20 @@ console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}
       `#!${process.execPath}
 const fs = require("node:fs"), cp = require("node:child_process");
 const args = process.argv.slice(2), split = args.indexOf("--");
+if (args.includes("--version")) { console.log("fixture-perf"); process.exit(0); }
 if (args[split+1] !== ${JSON.stringify(binary)}) throw Error("must measure direct checker");
 fs.writeFileSync(args[args.indexOf("--output")+1], args[args.indexOf("-e")+1].split(",").map(e=>"7,,"+e+",100,100").join("\\n"));
 process.exit(cp.spawnSync(args[split+1], args.slice(split+2), {stdio:"inherit",env:process.env}).status);\n`,
       { mode: 0o755 },
+    );
+    const calibration = join(root, "calibration.json");
+    writeFileSync(
+      calibration,
+      JSON.stringify({
+        schemaVersion: 1,
+        environmentFingerprint: sourcePerfEnvironment().fingerprint,
+        groups: { core: { qualified: true, reasons: [] }, cache: { qualified: true, reasons: [] } },
+      }),
     );
     const options = {
       provider,
@@ -48,6 +59,7 @@ process.exit(cp.spawnSync(args[split+1], args.slice(split+2), {stdio:"inherit",e
       perf,
       source: "integration fixture",
       binary,
+      calibration,
     };
     const out = join(root, "collected");
     const report = captureColdScalePerf({ ...options, out });
@@ -59,6 +71,18 @@ process.exit(cp.spawnSync(args[split+1], args.slice(split+2), {stdio:"inherit",e
     assert.equal(receipt.identity.backendSha256.length, 64);
     assert.equal(receipt.identity.providerLockSha256.length, 64);
     assert.equal(readFileSync(join(out, "tmp", "checker-ran"), "utf8"), "yes");
+    const uncalibrated = captureColdScalePerf({
+      ...options,
+      calibration: undefined,
+      out: join(root, "uncalibrated"),
+    });
+    assert.equal(uncalibrated.collection, "collected");
+    assert.equal(uncalibrated.correctness.passed, true);
+    assert.equal(
+      uncalibrated.qualified,
+      false,
+      "raw collection alone does not establish a qualified counter",
+    );
     writeFileSync(
       perf,
       `#!${process.execPath}\nconsole.error("No permission to enable instructions event.");process.exit(255);\n`,

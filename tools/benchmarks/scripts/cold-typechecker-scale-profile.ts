@@ -19,6 +19,8 @@ export function captureColdScalePerf(options: {
   source: string;
   binary?: string;
   addr2line?: string;
+  events?: "core" | "cache";
+  calibration?: string;
 }) {
   const { out, provider, files, tool } = options;
   assert.ok(!existsSync(out), "refuse to overwrite profiling evidence");
@@ -33,6 +35,8 @@ export function captureColdScalePerf(options: {
     mode: options.mode,
     perfExecutable: options.perf,
     addr2lineExecutable: options.addr2line,
+    eventGroup: options.events,
+    calibrationPath: options.calibration,
     outputDir: evidence,
     command,
     identity: {
@@ -72,16 +76,15 @@ export function captureColdScalePerf(options: {
   const report = {
     collection: receipt.collection,
     correctness,
-    qualified:
-      receipt.collection === "collected" &&
-      correctness.passed &&
-      (options.mode === "stat" || receipt.report?.status === 0),
+    qualified: receipt.qualified && correctness.passed,
     receipt: "direct-process/receipt.json",
   };
   writeFileSync(join(out, "acceptance.json"), JSON.stringify(report, null, 2) + "\n");
   console.log(JSON.stringify(report));
-  if (receipt.collection !== "unavailable")
-    assert.ok(report.qualified, "source profiling evidence did not qualify");
+  assert.notEqual(receipt.collection, "failed", "source profiling collection failed");
+  if (receipt.collection === "collected") assert.ok(correctness.passed, correctness.error);
+  if (!report.qualified)
+    console.warn("Profiling evidence is UNQUALIFIED; inspect direct-process/receipt.json.");
   return report;
 }
 
@@ -97,11 +100,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       source: { type: "string" },
       binary: { type: "string" },
       addr2line: { type: "string" },
+      events: { type: "string", default: "core" },
+      calibration: { type: "string" },
     },
   });
   assert.ok(values.provider && values.out && values.perf && values.source);
   assert.ok(values.tool === "cli" || values.tool === "mapper");
   assert.ok(values.mode === "stat" || values.mode === "record");
+  assert.ok(values.events === "core" || values.events === "cache");
   captureColdScalePerf({
     provider: resolve(values.provider),
     out: resolve(values.out),
@@ -112,5 +118,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     source: values.source,
     binary: values.binary,
     addr2line: values.addr2line,
+    events: values.events,
+    calibration: values.calibration,
   });
 }

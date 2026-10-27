@@ -15,12 +15,15 @@ on:
     paths:
       - .github/workflows/cold-typechecker-scale.yml
       - tools/benchmarks/scripts/cold-typechecker-scale*.ts
-      - tools/benchmarks/scripts/source-operation-perf.ts
+      - tools/benchmarks/scripts/source-operation-perf*.ts
+      - tools/benchmarks/scripts/source-pmu-calibration.ts
+      - tools/benchmarks/src/pmu_calibration.rs
       - crates/vize/src/commands/check/runner/default_imports.rs
       - crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs
       - crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution/input_history_tests.rs
       - tests/tooling/cold-typechecker-scale*.test.ts
       - tests/tooling/source-operation-perf.test.ts
+      - tests/tooling/source-pmu-calibration.test.ts
 permissions: { contents: read }
 concurrency:
   group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}
@@ -121,14 +124,20 @@ jobs:
           done
           test -n "$perf_bin"
           llvm-addr2line --version > "$RUNNER_TEMP/cold-scale/addr2line-version.txt"
+          rustc --edition=2024 -O -g tools/benchmarks/src/pmu_calibration.rs -o "$RUNNER_TEMP/cold-scale/pmu-calibration"
+          taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/source-pmu-calibration.ts --binary "$RUNNER_TEMP/cold-scale/pmu-calibration" --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/pmu-controls"
+          calibration="$RUNNER_TEMP/cold-scale/pmu-controls/calibration.json"
           for source in base head; do
             source_sha=$(cat "$RUNNER_TEMP/cold-scale/$source.sha")
-            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode stat --binary "$RUNNER_TEMP/cold-scale/binaries/normal-$source/vize" --source "$source_sha" --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/stat-$source"
+            for events in core cache; do
+              taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode stat --events "$events" --calibration "$calibration" --binary "$RUNNER_TEMP/cold-scale/binaries/normal-$source/vize" --source "$source_sha" --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/stat-$events-$source"
+            done
           done
+          for events in core cache; do
+            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool mapper --mode stat --events "$events" --calibration "$calibration" --source 'public-vize-0.596.0' --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/stat-$events-mapper"
+          done
+          taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool mapper --mode record --source 'public-vize-0.596.0' --perf "$perf_bin" --addr2line /usr/bin/llvm-addr2line --out "$RUNNER_TEMP/cold-scale/record-mapper"
           source_sha=$(cat "$RUNNER_TEMP/cold-scale/head.sha")
-          for mode in stat record; do
-            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool mapper --mode "$mode" --source 'public-vize-0.596.0' --perf "$perf_bin" --addr2line /usr/bin/llvm-addr2line --out "$RUNNER_TEMP/cold-scale/$mode-mapper"
-          done
           taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode record --binary "$RUNNER_TEMP/cold-scale/binaries/normal-head/vize" --source "$source_sha" --perf "$perf_bin" --addr2line /usr/bin/llvm-addr2line --out "$RUNNER_TEMP/cold-scale/record-head"
       - name: Package evidence without traversing workspace links
         if: always()
