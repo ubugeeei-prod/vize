@@ -57,7 +57,7 @@ pub(super) fn transform_component<'a>(
         _ => ComponentKind::Regular,
     };
 
-    let mut props = Vec::new_in(&ctx.allocator);
+    let mut props = Vec::with_capacity_in(el.props.len(), &ctx.allocator);
     let mut slots = Vec::new_in(&ctx.allocator);
     let mut v_show_exp: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut is_expr: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
