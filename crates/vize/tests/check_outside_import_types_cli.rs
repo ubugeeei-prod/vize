@@ -230,3 +230,50 @@ fn type_config_anchor_does_not_expose_app_modules_to_sibling_sources() {
         ]
     );
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+fn expanded_program_cache_redirect_stays_outside_authored_workspace() {
+    let Some(corsa) = corsa_requirement::required_or_skip::<std::path::PathBuf>(None) else {
+        return;
+    };
+    let case = tempfile::tempdir().unwrap();
+    let outside_temporary = tempfile::tempdir().unwrap();
+    let input = fixture(case.path());
+    let app = case.path().join("app");
+    let redirected_cache = case.path().join("redirected-cache");
+    oracle(
+        &app,
+        &corsa,
+        input["expected"]["nativeStdout"].as_str().unwrap(),
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&app)
+        .env("CORSA_PATH", &corsa)
+        .env("XDG_CACHE_HOME", &redirected_cache)
+        .env("TMPDIR", outside_temporary.path())
+        .args(["check", "--no-config", "--format", "json"])
+        .output()
+        .unwrap();
+    capture(&app, &corsa, "redirected-cache", &[], &output);
+    assert_eq!(output.status.code(), Some(1));
+    let result: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let diagnostics = result["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|file| !file["diagnostics"].as_array().unwrap().is_empty())
+        .map(|file| json!([file["file"], file["diagnostics"]]))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        diagnostics,
+        vec![json!(["src/b.ts", input["expected"]["diagnostics"]])]
+    );
+    assert_eq!(result["errorCount"], 1);
+    assert!(
+        !redirected_cache
+            .join("vize/canon/private-batch-v1")
+            .exists(),
+        "the redirected owner cache must not create new authored workspace inputs"
+    );
+}

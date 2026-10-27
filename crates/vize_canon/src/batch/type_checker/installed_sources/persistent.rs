@@ -57,6 +57,12 @@ impl BatchTypeChecker {
             &owner.root,
             owner.config.as_deref(),
         );
+        // An owner-specific cache redirect can still sit inside the expanded
+        // semantic workspace. Keep the existing isolated lifetime in that
+        // case, rather than minting new source-glob inputs inside the program.
+        if root.starts_with(self.project.project_root()) || root.starts_with(&owner.root) {
+            return Ok(false);
+        }
         let lease = prepare_persistent_batch_root(&owner.root)?;
         let context_lease = self.project.scope_persistent_batch_namespace(root)?;
         self._persistent_storage_leases = Some((lease, context_lease));

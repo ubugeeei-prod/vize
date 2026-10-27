@@ -12,6 +12,8 @@ semantic root and original config. Ordinary single-root namespaces are unchanged
 embedding callers retain the existing installed-source lifetime unless they opt
 in. Their plain build info may survive, while their generated mirror is cleared.
 
+If a cache redirect would put the private namespace inside the semantic source
+tree, the existing isolated installed-source lifetime is retained instead.
 Persistent namespaces never reuse ordinary project mirrors. Their parent is
 private to one owner, their context entries use the existing bounded Canon cache
 maintenance, and clean removes only the selected owner's storage. MaterializeLock
