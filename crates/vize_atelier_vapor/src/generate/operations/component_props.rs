@@ -14,6 +14,16 @@ pub(super) fn generate_component_props_str(
     ctx: &mut GenerateContext,
     component: &CreateComponentIRNode<'_>,
 ) -> String {
+    for prop in &component.props {
+        if let Some(modifiers) = prop.handler_modifiers {
+            if !modifiers.non_keys.is_empty() {
+                ctx.use_helper("withModifiers");
+            }
+            if !modifiers.keys.is_empty() {
+                ctx.use_helper("withKeys");
+            }
+        }
+    }
     if component
         .props
         .iter()
@@ -145,6 +155,12 @@ fn generate_component_spread_props<'a>(
             } else {
                 key
             };
+            let suffix = handler_option_suffix(prop);
+            let key = if suffix.is_empty() {
+                key
+            } else {
+                cstr!("{key} + \"{suffix}\"")
+            };
             let value = component_prop_expression_value(ctx, prop);
             // Function sources return direct values, unlike static prop
             // groups whose values are getters. Their keys stay reactive.
@@ -225,6 +241,30 @@ fn generate_component_prop_entries(
 
     for (i, prop) in props.iter().enumerate() {
         let key = prop.key.content;
+        if crate::ir::is_on(key) {
+            let name = component_prop_key(prop);
+            if props
+                .iter()
+                .take(i)
+                .any(|earlier| component_prop_key(earlier) == name)
+            {
+                continue;
+            }
+            let handlers = props
+                .iter()
+                .filter(|other| component_prop_key(other) == name)
+                .map(|other| component_prop_expression_value(ctx, other))
+                .collect::<std::vec::Vec<_>>();
+            entries.push(format_component_prop_entry(
+                prop,
+                if handlers.len() > 1 {
+                    cstr!("() => ([{}])", handlers.join(", "))
+                } else {
+                    component_prop_getter_value(ctx, prop)
+                },
+            ));
+            continue;
+        }
         if key == "class" {
             if Some(i) == first_class_index {
                 entries.push(format_component_prop_entry(
@@ -273,19 +313,20 @@ fn merge_component_prop_values(values: &[String]) -> String {
 }
 
 fn format_component_prop_entry(prop: &IRProp<'_>, value: String) -> String {
-    let key = prop.key.content;
+    let key = component_prop_key(prop);
     if !prop.key.is_static {
         return cstr!("[{}]: {}", key, value);
     }
-    if should_quote_component_prop_key(key) {
-        cstr!("\"{}\": {}", escape_js_string_literal(key), value)
+    if should_quote_component_prop_key(&key) {
+        cstr!("\"{}\": {}", escape_js_string_literal(&key), value)
     } else {
         cstr!("{}: {}", key, value)
     }
 }
 
 fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
-    if let Some(first) = prop.values.first()
+    if prop.handler_modifiers.is_none()
+        && let Some(first) = prop.values.first()
         && let Some(raw) = first.content.strip_prefix("__RAW__")
     {
         return String::from(raw);
@@ -294,7 +335,7 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
 }
 
 fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
-    if let Some(first) = prop.values.first() {
+    let value = if let Some(first) = prop.values.first() {
         match prop.value_kind {
             PropValueKind::ModelUpdate => {
                 return super::super::expression_retained::resolve_model_update_node(ctx, first);
@@ -306,12 +347,10 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
             PropValueKind::Expression | PropValueKind::ForwardedSlots => {}
         }
         if let Some(raw) = first.content.strip_prefix("__RAW__") {
-            return cstr!("({})()", raw);
-        }
-        if first.is_static {
-            return cstr!("\"{}\"", escape_js_string_literal(first.content));
-        }
-        if prop.key.is_handler_key
+            cstr!("({})()", raw)
+        } else if first.is_static {
+            cstr!("\"{}\"", escape_js_string_literal(first.content))
+        } else if prop.key.is_handler_key
             && !is_typescript_function_expression_node(first)
             && !is_event_handler_reference_node(first)
         {
@@ -319,9 +358,49 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
         } else {
             ctx.resolve_expression_node(first)
         }
+    } else if prop.handler_modifiers.is_some() {
+        cstr!("() => {{}}")
     } else {
         cstr!("\"\"")
+    };
+    let Some(modifiers) = prop.handler_modifiers else {
+        return value;
+    };
+    let mut value = value;
+    for (helper, names) in [
+        ("withModifiers", &modifiers.non_keys),
+        ("withKeys", &modifiers.keys),
+    ] {
+        if !names.is_empty() {
+            let names = names
+                .iter()
+                .map(|name| cstr!("\"{}\"", escape_js_string_literal(name)))
+                .collect::<std::vec::Vec<_>>()
+                .join(", ");
+            value = cstr!("_{helper}({value}, [{names}])");
+        }
     }
+    value
+}
+
+fn component_prop_key(prop: &IRProp<'_>) -> String {
+    cstr!("{}{}", prop.key.content, handler_option_suffix(prop))
+}
+
+fn handler_option_suffix(prop: &IRProp<'_>) -> String {
+    let mut suffix = String::from("");
+    if let Some(modifiers) = prop.handler_modifiers {
+        for (enabled, name) in [
+            (modifiers.options.once, "Once"),
+            (modifiers.options.capture, "Capture"),
+            (modifiers.options.passive, "Passive"),
+        ] {
+            if enabled {
+                suffix.push_str(name);
+            }
+        }
+    }
+    suffix
 }
 
 fn should_quote_component_prop_key(key: &str) -> bool {
