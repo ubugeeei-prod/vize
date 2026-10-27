@@ -11,6 +11,7 @@ on:
       - "tests/_fixtures/differential/jsx/**"
       - "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
       - "tests/tooling/jsx-authored-module-fixture-custody.test.ts"
+      - "tests/tooling/support/jsx-authored-custody.ts"
       - "tests/tooling/jsx-vapor-oracle/**"
       - "tests/tooling/support/jsx-falsy-and-runtime.mjs"
       - ".github/workflows/jsx-authored-native-modules.yml"

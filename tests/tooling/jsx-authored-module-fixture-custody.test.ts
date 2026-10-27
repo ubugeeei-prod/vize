@@ -1,96 +1,25 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import {
+  fields,
+  hash,
+  snapshotBody,
+  verifyAdversarial,
+  verifyStaticSuccessor,
+  type PacketFacet,
+  type ModulePacket,
+  type SuccessorRow,
+  type RefusalManifest,
+  type RuntimeBaseline,
+  type AdversarialRow,
+  type AdversarialPacket,
+  type AdversarialAuthority,
+  type StaticAuthority,
+  type LegacyRoles,
+  type RoleManifest,
+} from "./support/jsx-authored-custody.ts";
 
-type PacketFacet = "components" | "diagnostics" | "module" | "moduleMap";
-interface ComponentPacket {
-  code: string;
-  map: string | null;
-  mode: string;
-  name: string;
-  preamble: string;
-  setup: string | null;
-  style: string | null;
-}
-interface ModulePacket {
-  components: ComponentPacket[];
-  diagnostics: string;
-  module: string;
-  moduleMap?: string | null;
-  unexpected?: boolean;
-}
-interface SuccessorRow {
-  name: string;
-  input: string;
-  inputSha256: string;
-  mode: string;
-  historicalPacket: string;
-  historicalSha256: string;
-  successorPacket: string;
-  successorSha256: string;
-  allowedChangedFacets: string[];
-  refusal: unknown;
-  qualification: unknown;
-}
-interface RefusalManifest {
-  schemaVersion: number;
-  pullRequest: string;
-  historicalBaseline: unknown;
-  capture: unknown;
-  cases: SuccessorRow[];
-}
-interface RuntimeBaseline {
-  sourceHead: string;
-  productionHead: string;
-  nativeProbeSha256: string;
-  cases: { input: string; inputSha256: string; output: string; outputSha256: string }[];
-}
-interface AdversarialRow {
-  observation: string;
-  observationSha256: string;
-  sourceSha256: string;
-  facet: "summary" | "module";
-  historical: string;
-  historicalSha256: string;
-  successor: string;
-  successorSha256: string;
-  runtime: boolean;
-}
-interface AdversarialPacket {
-  source: string;
-  summary: string;
-  module: string;
-}
-interface AdversarialAuthority {
-  schema: number;
-  issue: number;
-  pullRequest: number;
-  capture: unknown;
-  cases: AdversarialRow[];
-}
-interface StaticAuthority {
-  source: string;
-  sourceSha256: string;
-  historical: string;
-  historicalSha256: string;
-  successor: string;
-  successorSha256: string;
-  allowedChangedPointers: string[];
-  qualification: { module: string; components: string; nativeHandled: number; runtime: boolean };
-}
-interface LegacyRoles {
-  fixedProducer: { entry: string };
-  native: unknown;
-}
-interface RoleManifest {
-  schemaVersion: number;
-  pullRequest: string;
-  historical: LegacyRoles & { packet: string; sha256: string };
-  capture: unknown;
-  producerControl: unknown;
-  runtimeControl: unknown;
-}
 function replaceFacet<K extends PacketFacet>(
   target: ModulePacket,
   source: ModulePacket,
@@ -108,7 +37,6 @@ const adversarial = new URL("authored-native-modules-10700/adversarial/", falsy)
 const snapshots = new URL("../../crates/vize_atelier_jsx/tests/snapshots/", import.meta.url);
 const read = (base: URL, path: string) => readFileSync(new URL(path, base));
 const parse = <T>(base: URL, path: string): T => JSON.parse(read(base, path).toString("utf8")) as T;
-const hash = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const manifest = parse<RefusalManifest>(nested, "authored-module-refusal-10701-successor.json");
 const packetFields = ["components", "diagnostics", "module", "moduleMap"];
 const componentFields = ["code", "map", "mode", "name", "preamble", "setup", "style"];
@@ -149,12 +77,6 @@ const specs = [
     componentCount: 1,
   },
 ];
-
-function fields(value: unknown, expected: readonly string[]): void {
-  assert.ok(value && typeof value === "object" && !Array.isArray(value));
-  const compare = (left: string, right: string) => left.localeCompare(right);
-  assert.deepEqual(Object.keys(value).sort(compare), [...expected].sort(compare));
-}
 
 function verifySuccessor(
   spec: (typeof specs)[number],
@@ -280,40 +202,6 @@ void test("native refusal successors preserve literal capture and every historic
   }
 });
 
-function snapshotBody(bytes: Buffer): string {
-  const text = bytes.toString("utf8");
-  const boundary = text.indexOf("\n---\n", 4);
-  assert.ok(text.startsWith("---\n") && boundary >= 0);
-  return text.slice(boundary + 5);
-}
-
-function verifyAdversarial(
-  row: AdversarialRow,
-  historical: string,
-  successor: string,
-  packet: AdversarialPacket,
-): void {
-  fields(packet, ["source", "summary", "module"]);
-  assert.equal(hash(packet.source), row.sourceSha256);
-  assert.equal(row.runtime, false);
-  assert.equal(successor, packet[row.facet].replace(/\n*$/, "\n"));
-  if (row.observation === "scoped_style_extraction.json") {
-    assert.equal(row.facet, "summary");
-    const scoped = "<p data-v-2216d773>";
-    assert.equal(successor.split(scoped).length - 1, 2);
-    assert.equal(successor.replaceAll(scoped, "<p>"), historical);
-  } else if (row.facet === "summary") {
-    const oldDiagnostic =
-      '    diagnostics: [\n        DiagnosticSummary {\n            severity: "Error",\n            message: "Vapor/SSR authored module preservation is not supported for imports, exports or captured setup bindings; use VDOM output or consume the per-component renderer",\n            source: "export const DefaultMode = () => <main>default</main>;",\n            range: 1..55,\n        },\n    ],';
-    assert.equal(historical.split(oldDiagnostic).length - 1, 1);
-    assert.equal(historical.replace(oldDiagnostic, "    diagnostics: [],"), successor);
-  } else {
-    assert.equal(row.facet, "module");
-    assert.equal(historical, "");
-    assert.equal(packet.module.length, 1016);
-  }
-}
-
 void test("adversarial successors retain whole structural observations and frozen originals", () => {
   const stability = new URL("authored-native-modules-10700/", falsy);
   const stabilityAuthority = parse<{
@@ -404,31 +292,6 @@ void test("adversarial custody rejects unrelated code, scope, source and runtime
   }
   assert.equal(negatives, 12);
 });
-
-function verifyStaticSuccessor(
-  authority: StaticAuthority,
-  previous: ModulePacket,
-  current: ModulePacket,
-): void {
-  assert.deepEqual(authority.allowedChangedPointers, ["/components/3/code", "/components/4/code"]);
-  assert.deepEqual(authority.qualification, {
-    module: "refused",
-    components: "inspectable-producer-only",
-    nativeHandled: 0,
-    runtime: false,
-  });
-  fields(previous, packetFields);
-  fields(current, packetFields);
-  assert.equal(current.module, "");
-  assert.equal(current.moduleMap, null);
-  assert.equal(current.components.length, 5);
-  const restored = structuredClone(current);
-  for (const index of [3, 4]) {
-    assert.notEqual(current.components[index].code, previous.components[index].code);
-    restored.components[index].code = previous.components[index].code;
-  }
-  assert.deepEqual(restored, previous, "only two exact component code pointers may change");
-}
 
 void test("static-value successor retains every other refusal packet facet and rejects mutations", () => {
   assert.equal(
