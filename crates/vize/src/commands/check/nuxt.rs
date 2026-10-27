@@ -21,6 +21,8 @@ mod virtual_modules;
 #[cfg(test)]
 mod generated_ast_tests;
 #[cfg(test)]
+mod generated_membership_tests;
+#[cfg(test)]
 mod generated_tests;
 #[cfg(test)]
 mod legacy_template_globals_tests;
@@ -49,7 +51,7 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, false, VueVersion::V3)
+    detect(options, cwd, None, None, false, VueVersion::V3)
 }
 
 #[cfg(test)]
@@ -57,13 +59,14 @@ pub(in crate::commands::check) fn detect_legacy_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, true, VueVersion::V2_7)
+    detect(options, cwd, None, None, true, VueVersion::V2_7)
 }
 
 pub(in crate::commands::check) fn detect(
     options: &mut VirtualTsOptions,
     cwd: &Path,
     tsconfig_path: Option<&Path>,
+    configured_files: Option<&[std::path::PathBuf]>,
     legacy_vue2: bool,
     dialect: VueVersion,
 ) -> Vec<NuxtPathAlias> {
@@ -88,9 +91,16 @@ pub(in crate::commands::check) fn detect(
 
     let mut collected = Vec::new();
     let generated_dir = resolve_nuxt_generated_dir(cwd);
+    let declaration_graph = configured_files.map(|files| {
+        vize_l0::profile!(
+            "cli.check.nuxt.declaration_graph",
+            super::tsconfig_inputs::collect_declaration_reference_graph(cwd, files)
+        )
+    });
     let has_generated_imports = collect_generated_stubs(
         cwd,
         &generated_dir,
+        declaration_graph.as_ref(),
         &mut collected,
         &mut seen_names,
         &mut external_template_bindings,
@@ -136,6 +146,7 @@ pub(in crate::commands::check) fn detect(
     options.strict_instance_globals = has_generated_imports && !vue2_dialect;
     collect_generated_template_globals(
         &generated_dir,
+        declaration_graph.as_ref(),
         options,
         &seen_names,
         !options.strict_instance_globals,

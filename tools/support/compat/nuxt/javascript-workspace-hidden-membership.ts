@@ -14,6 +14,24 @@ export const HIDDEN_NUXT_DECLARATIONS = [
   ".nuxt/types/vue-shim.d.ts",
 ];
 
+/**
+ * The immutable public contract records the former wildcard traversal. Only
+ * these three program roots change: two unreferenced siblings and the pure
+ * nitro path manifest. Referenced ambient declarations remain program roots.
+ * Callers must qualify the six real stock/native mutations before using this
+ * transition; the historical whole packets are retained alongside the result.
+ */
+export function configuredHiddenMembership(original: CheckReport): CheckReport {
+  const expected = structuredClone(original);
+  assert.equal(expected.programs.length, 1);
+  const program = expected.programs[0] as { tsconfig: string; files: string[] };
+  assert.equal(program.tsconfig, "tsconfig.json");
+  for (const name of HIDDEN_NUXT_DECLARATIONS)
+    assert.equal(program.files.filter((file) => file === name).length, 1);
+  program.files = program.files.filter((file) => !HIDDEN_NUXT_DECLARATIONS.includes(file));
+  return expected;
+}
+
 export function probeHiddenMembership(options: {
   app: string;
   main: string;
@@ -74,12 +92,9 @@ export function probeHiddenMembership(options: {
             artifacts,
             id,
           );
-          const expected = structuredClone(original);
+          const expected = configuredHiddenMembership(original);
           for (const value of expected.programs) {
             const program = value as { files: string[] };
-            program.files = program.files.filter(
-              (input) => !HIDDEN_NUXT_DECLARATIONS.includes(input),
-            );
             if (visible) program.files.push(name);
             program.files.sort(lexical);
           }

@@ -1,6 +1,6 @@
 //! Detection driven by Nuxt's generated type artifacts.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use ignore::WalkBuilder;
 use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
@@ -24,6 +24,7 @@ use super::stubs::{push_declared_const, tracked_read_to_string};
 pub(super) fn collect_generated_stubs(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
+    declaration_graph: Option<&FxHashSet<PathBuf>>,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
@@ -49,6 +50,9 @@ pub(super) fn collect_generated_stubs(
             }
             if is_imports_declaration(path) {
                 found_import_manifest = true;
+            }
+            if !is_configured_declaration(path, declaration_graph) {
+                continue;
             }
 
             if let Ok(values) = parse_declared_global_values(path) {
@@ -78,6 +82,7 @@ pub(super) fn collect_generated_stubs(
     collect_root_generated_global_stubs(
         cwd,
         generated_dir,
+        declaration_graph,
         stubs,
         seen_names,
         external_template_bindings,
@@ -85,6 +90,7 @@ pub(super) fn collect_generated_stubs(
     collect_root_generated_component_stubs(
         cwd,
         generated_dir,
+        declaration_graph,
         stubs,
         seen_names,
         external_template_bindings,
@@ -99,6 +105,9 @@ pub(super) fn collect_generated_stubs(
         return false;
     }
     found_import_manifest = true;
+    if !is_configured_declaration(&imports_path, declaration_graph) {
+        return found_import_manifest;
+    }
 
     if let Ok(content) = tracked_read_to_string(&imports_path) {
         let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
@@ -125,11 +134,15 @@ pub(super) fn collect_generated_stubs(
 fn collect_root_generated_global_stubs(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
+    declaration_graph: Option<&FxHashSet<PathBuf>>,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
     for path in generated_dir.root_dts_files() {
+        if !is_configured_declaration(&path, declaration_graph) {
+            continue;
+        }
         if let Ok(values) = parse_declared_global_values(path.as_path()) {
             for (name, type_annotation) in values {
                 push_generated_declared_global_const(
@@ -149,11 +162,15 @@ fn collect_root_generated_global_stubs(
 fn collect_root_generated_component_stubs(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
+    declaration_graph: Option<&FxHashSet<PathBuf>>,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
     for path in generated_dir.root_dts_files() {
+        if !is_configured_declaration(&path, declaration_graph) {
+            continue;
+        }
         collect_global_component_stubs(
             cwd,
             path.as_path(),
@@ -197,6 +214,7 @@ fn collect_global_component_stubs(
 /// the `TS2339` the Vue toolchain reports for every authored use.
 pub(super) fn collect_generated_template_globals(
     generated_dir: &NuxtGeneratedDir,
+    declaration_graph: Option<&FxHashSet<PathBuf>>,
     options: &mut VirtualTsOptions,
     seen_auto_imports: &FxHashSet<String>,
     infer_i18n_globals: bool,
@@ -208,6 +226,9 @@ pub(super) fn collect_generated_template_globals(
         .collect::<FxHashSet<_>>();
 
     for path in generated_dir.dts_files() {
+        if !is_configured_declaration(&path, declaration_graph) {
+            continue;
+        }
         let Ok(members) = parse_interface_members_with_rewritten_imports(
             path.as_path(),
             "interface ComponentCustomProperties",
@@ -234,6 +255,10 @@ pub(super) fn collect_generated_template_globals(
     if !infer_i18n_globals {
         collect_router_template_globals(options, &mut seen_globals, seen_auto_imports);
     }
+}
+
+fn is_configured_declaration(path: &Path, graph: Option<&FxHashSet<PathBuf>>) -> bool {
+    graph.is_none_or(|files| files.contains(&vize_carton::path::canonicalize_non_verbatim(path)))
 }
 
 fn collect_i18n_template_globals(

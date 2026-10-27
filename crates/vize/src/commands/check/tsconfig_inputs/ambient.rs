@@ -109,27 +109,7 @@ fn collect_ambient_declaration_files_from(
             files.push(path.clone());
         }
     }
-    let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
-    let mut index = 0;
-    while let Some(path) = files.get(index).cloned() {
-        index += 1;
-        if !is_declaration_file(&path) {
-            continue;
-        }
-        let Ok(content) = fs::read_to_string(&path) else {
-            continue;
-        };
-        for referenced in reference_path_declaration_files(&path, &content, &project_root) {
-            if seen.insert(referenced.clone()) {
-                files.push(referenced);
-            }
-        }
-        for referenced in reference_type_declaration_files(&path, &content) {
-            if seen.insert(referenced.clone()) {
-                files.push(referenced);
-            }
-        }
-    }
+    follow_declaration_references(&project_root, &mut files);
 
     files
         .into_iter()
@@ -147,6 +127,47 @@ fn collect_ambient_declaration_files_from(
             Err(_) => false,
         })
         .collect()
+}
+
+/// Configured declaration membership before ambient-only filtering. Nuxt's
+/// generated stubs must not invent globals from unrelated hidden siblings.
+pub(crate) fn collect_declaration_reference_graph(
+    project_root: &Path,
+    configured_files: &[PathBuf],
+) -> FxHashSet<PathBuf> {
+    let project_root = normalize_input_path(project_root);
+    // Reuse the program's already collected roots. Do not walk the workspace
+    // or parse its configuration again for generated-stub discovery.
+    let mut files = configured_files.to_vec();
+    follow_declaration_references(&project_root, &mut files);
+    files
+        .into_iter()
+        .filter(|path| is_declaration_file(path))
+        .collect()
+}
+
+fn follow_declaration_references(project_root: &Path, files: &mut Vec<PathBuf>) {
+    let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
+    let mut index = 0;
+    while let Some(path) = files.get(index).cloned() {
+        index += 1;
+        if !is_declaration_file(&path) {
+            continue;
+        }
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        for referenced in reference_path_declaration_files(&path, &content, project_root) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
+        for referenced in reference_type_declaration_files(&path, &content) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
+    }
 }
 
 pub(crate) fn collect_tsconfig_type_declaration_files(
