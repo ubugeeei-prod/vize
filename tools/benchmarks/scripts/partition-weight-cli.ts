@@ -51,8 +51,8 @@ export function partitionWeightInputs(root: string) {
       '<script setup lang="ts">\nimport { value } from "@/g' +
         index +
         '/barrel";\n' +
-        'import { n } from "./leaf";\nimport type { SharedWeight } from "../shared";\n' +
-        "const row: SharedWeight = { id: value + n };\n</script><template><p>{{ row.id }}</p></template>\n",
+        'import { n } from "./leaf";\n' +
+        "const row: { id: number } = { id: value + n };\n</script><template><p>{{ row.id }}</p></template>\n",
       2,
     );
   }

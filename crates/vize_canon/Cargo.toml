@@ -113,5 +113,9 @@ required-features = ["native"]
 name = "package_route"
 harness = false
 
+[[bench]]
+name = "partition_weight"
+harness = false
+
 [lints]
 workspace = true
