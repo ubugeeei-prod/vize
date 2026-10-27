@@ -104,6 +104,51 @@ fn compiler_options_snapshot_records_absence_and_rejects_later_config() {
         vec![candidates[1].clone()]
     );
     assert!(CompilerOptionsSnapshot::capture(&root, None, &candidates).is_err());
+
+    #[cfg(unix)]
+    {
+        let linked_root = root.join("linked");
+        std::fs::create_dir(&linked_root).unwrap();
+        let missing_target = root.join("future.json");
+        let config_link = linked_root.join("tsconfig.json");
+        std::os::unix::fs::symlink(&missing_target, &config_link).unwrap();
+        assert!(
+            CompilerOptionsSnapshot::capture(
+                &linked_root,
+                None,
+                std::slice::from_ref(&config_link)
+            )
+            .is_err(),
+            "a dangling config entry is unreadable, not absent"
+        );
+        std::fs::write(&missing_target, "{}").unwrap();
+        assert!(
+            CompilerOptionsSnapshot::capture(
+                &linked_root,
+                None,
+                std::slice::from_ref(&config_link)
+            )
+            .is_err()
+        );
+        let selected =
+            CompilerOptionsSnapshot::capture(&linked_root, Some(&config_link), &[]).unwrap();
+        assert!(selected.options().is_empty());
+        assert!(selected.observations().changed_paths().is_empty());
+        std::fs::write(&missing_target, r#"{"compilerOptions":{"strict":true}}"#).unwrap();
+        assert!(
+            selected
+                .observations()
+                .changed_paths()
+                .contains(&config_link)
+        );
+        let repaired =
+            CompilerOptionsSnapshot::capture(&linked_root, Some(&config_link), &[]).unwrap();
+        assert_eq!(
+            repaired.options(),
+            serde_json::json!({"strict":true}).as_object().unwrap()
+        );
+        assert!(selected.options().is_empty());
+    }
 }
 
 #[test]
@@ -215,6 +260,13 @@ fn compiler_options_snapshot_requires_absolute_host_identity() {
         CompilerOptionsSnapshot::capture(&root, None, &[PathBuf::from("jsconfig.json")]).is_err()
     );
     assert!(CompilerOptionsSnapshot::capture(&root, Some(&config), &[]).is_ok());
+    let logical = root.join("missing-parent/../tsconfig.json");
+    let normalized = CompilerOptionsSnapshot::capture(&root, Some(&logical), &[]).unwrap();
+    assert_eq!(normalized.tsconfig_path(), Some(config.as_path()));
+    assert!(
+        CompilerOptionsSnapshot::capture(&root, None, std::slice::from_ref(&logical)).is_err(),
+        "absence and the loader must observe the same normalized path"
+    );
 }
 
 #[test]

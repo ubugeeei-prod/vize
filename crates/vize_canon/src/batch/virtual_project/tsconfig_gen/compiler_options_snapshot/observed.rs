@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
 
+use super::super::super::tsconfig_paths::normalize_path_lexically;
 use super::super::compiler_inputs::{CompilerInputs, ConfigurationObservations};
 use super::super::compiler_options::{CompilerOptionsContext, UnresolvedExtends};
 use crate::batch::error::{CorsaError, CorsaResult};
@@ -30,6 +31,8 @@ pub struct CompilerOptionsSnapshot {
 impl CompilerOptionsSnapshot {
     /// Capture one selected config through the existing chain loader.
     /// All host-supplied paths must be absolute; process cwd is not authority.
+    /// The same lexical normalization as the chain loader fixes their identity.
+    /// An existing dangling config link is unreadable, not proven absence.
     ///
     /// The host supplies all higher-priority absent config candidates that
     /// influenced its selection. Their absence is checked even when a config
@@ -59,11 +62,15 @@ impl CompilerOptionsSnapshot {
                 "configuration absence requires the host's consulted candidates"
             )));
         }
-        for path in absent_candidates {
-            inputs.observe(path);
-            match path.try_exists() {
-                Ok(false) => {}
-                Ok(true) => {
+        let tsconfig_path = tsconfig_path.map(normalize_path_lexically);
+        for path in absent_candidates
+            .iter()
+            .map(|path| normalize_path_lexically(path))
+        {
+            inputs.observe(&path);
+            match std::fs::symlink_metadata(&path) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Ok(_) => {
                     return Err(CorsaError::Configuration(vize_carton::cstr!(
                         "configuration {} exists where the host selected absence",
                         path.display()
@@ -77,17 +84,17 @@ impl CompilerOptionsSnapshot {
                 }
             }
         }
-        if let Some(path) = tsconfig_path {
+        if let Some(path) = tsconfig_path.as_deref() {
             inputs.observe(path);
         }
         let flattened = CompilerOptionsContext::observed(&project_root)
-            .load_flattened(tsconfig_path, Some(&inputs))?;
+            .load_flattened(tsconfig_path.as_deref(), Some(&inputs))?;
         let unresolved_extends = flattened.unresolved_extends.clone();
         let options = super::absolute_options(&project_root, flattened);
         inputs.validate()?;
         Ok(Self {
             project_root,
-            tsconfig_path: tsconfig_path.map(Path::to_path_buf),
+            tsconfig_path,
             options,
             unresolved_extends,
             observations: inputs.observations(),
