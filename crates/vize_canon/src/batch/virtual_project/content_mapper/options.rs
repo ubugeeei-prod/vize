@@ -1,6 +1,6 @@
 //! Content mapper generation options and installed-helper capabilities.
 
-use vize_carton::config::VueVersion;
+use vize_l0::config::VueVersion;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]

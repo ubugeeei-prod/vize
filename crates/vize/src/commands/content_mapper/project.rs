@@ -166,19 +166,12 @@ pub(super) fn resolve_open_project(
 
 /// `Some(false)` retains the legacy attribute-only package surface.
 fn content_mapper_helper_capability(config_file_name: &Path) -> Option<bool> {
-    let Some(project_directory) = config_file_name.parent() else {
-        return None;
-    };
-    let Some(helper) = project_directory
+    let project_directory = config_file_name.parent()?;
+    let helper = project_directory
         .ancestors()
         .map(|directory| directory.join("node_modules/vize/content-mapper-helpers.d.ts"))
-        .find(|candidate| candidate.is_file())
-    else {
-        return None;
-    };
-    let Some(helper_directory) = helper.parent() else {
-        return None;
-    };
+        .find(|candidate| candidate.is_file())?;
+    let helper_directory = helper.parent()?;
     let same_vue = resolve_node_package(project_directory, "vue")
         .zip(resolve_node_package(helper_directory, "vue"))
         .is_some_and(|(project_vue, helper_vue)| project_vue == helper_vue);

@@ -120,7 +120,11 @@ test("every semantic, diagnostic, feature and byte difference remains observable
   for (const mutate of mutations) {
     const { source, base, head } = fixture();
     mutate(head);
-    assert.throws(() => relocatePacket(base, head, source, assets), undefined, mutate.toString());
+    assert.throws(
+      () => relocatePacket(base, head, source, assets),
+      { name: "AssertionError" },
+      mutate.toString(),
+    );
   }
 });
 
