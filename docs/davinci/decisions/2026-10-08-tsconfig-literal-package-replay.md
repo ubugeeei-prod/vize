@@ -117,3 +117,16 @@ custody before the first link validation, atomic persistence and lifecycle
 cleanup, while keeping raw-parent, retargeted-link, retired-shadow, editor-union
 and overlap refusal laws. Do not infer ownership from a current desired plan
 or a matching raw link target.
+
+## Follow-up: keep native build info (#10620)
+
+The throwaway directory also discarded Corsa's `--incremental` state, so a
+repeat check of a Nuxt app program checked every file again. Each program now
+owns one stable directory instead, keyed by its project root and governing
+config and named like a project cache entry, so cache maintenance evicts it
+when idle. An exclusive owner lock guards it; a concurrent owner falls back to
+a private temporary directory as before. The directory is emptied when it is
+claimed and again when its owner drops. Only regular `.tsbuildinfo` files
+directly in the build info directory survive: no mirror file or package link
+outlives its run, links are removed without being followed, and the
+installed-source write that #8274 refused cannot meet an earlier link.

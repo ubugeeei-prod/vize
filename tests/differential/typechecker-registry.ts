@@ -63,6 +63,7 @@ export const TYPECHECKER_TESTS = {
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
+  "experimental-router-props-10579": "experimental_route_props_follow_the_admitted_project_types",
   "generic-constructor-slots-10416": "generic_constructor_intersections_preserve_slot_payloads",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "generic-slot-outlet-10883": "generic_slot_outlets_check_against_the_setup_parameters",
@@ -163,6 +164,7 @@ export const sourceRevisions = {
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
+  "experimental-router-props-10579": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "generic-slot-outlet-10883": "42ca747027a86da7f94b473cff737cb330134d8c",
