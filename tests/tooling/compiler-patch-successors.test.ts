@@ -84,6 +84,18 @@ test("full current output and original authority reject unrelated and missing pa
         }),
       );
     }
+    for (const field of Object.keys(packet.current) as (keyof CompilerOutput)[]) {
+      const missing: Partial<CompilerOutput> = structuredClone(packet.current);
+      delete missing[field];
+      assert.throws(() => verifyCompilerPatchPair(id, packet.previous, missing as CompilerOutput));
+      assert.throws(() =>
+        assertCompilerPatchSuccessor(id, JSON.stringify(missing, null, 2), {
+          previousPacket: packet.previous,
+        }),
+      );
+    }
+    const extra = { ...packet.current, unknownFacet: true };
+    assert.throws(() => verifyCompilerPatchPair(id, packet.previous, extra));
     assert.throws(() =>
       assertCompilerPatchSuccessor(id, packet.currentRaw, { packetSha256: "0".repeat(64) }),
     );
