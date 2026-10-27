@@ -6,7 +6,7 @@ on:
       - pnpm-workspace.yaml
       - pnpm-lock.yaml
       - npm/mcp-musea/**
-      - tools/support/security/qs-runtime-consumer.ts
+      - tools/support/security/qs-runtime-*.ts
       - .github/workflows/qs-runtime-security.yml
   push:
     branches: [main]
@@ -14,7 +14,7 @@ on:
       - pnpm-workspace.yaml
       - pnpm-lock.yaml
       - npm/mcp-musea/**
-      - tools/support/security/qs-runtime-consumer.ts
+      - tools/support/security/qs-runtime-*.ts
       - .github/workflows/qs-runtime-security.yml
   workflow_dispatch:
 permissions:
