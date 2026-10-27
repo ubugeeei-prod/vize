@@ -39,6 +39,7 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "component-tag-aliases-11020" => regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }

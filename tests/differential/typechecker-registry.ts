@@ -13,6 +13,7 @@ export const TYPECHECKER_TESTS = {
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
   "component-listener-prop-duplicate-10397": "required_prop_reports_once_with_or_without_listener",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
+  "component-tag-aliases-11020": "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
@@ -139,6 +140,7 @@ export const sourceRevisions = {
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
   "component-listener-prop-duplicate-10397": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+  "component-tag-aliases-11020": "d653e04143051768a96ba51a35fe64c055caf0c5",
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
   "content-mapper-define-slots-typeof-10197": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",

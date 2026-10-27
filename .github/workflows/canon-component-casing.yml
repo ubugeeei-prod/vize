@@ -58,6 +58,14 @@ jobs:
           cd "$RUNNER_TEMP/component-casing-provider"
           node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"},overrides:{"@vue/compiler-dom":"3.5.42","@vue/compiler-core":"3.5.42","@vue/compiler-sfc":"3.5.42","@vue/shared":"3.5.42"}}));'
           npm install --ignore-scripts --no-audit --no-fund
+      - name: Check the pinned complete batch-diagnostic fixture with the same native compiler
+        run: |
+          set -euo pipefail
+          [[ -z "${VIZE_TEST_DISABLE_TSGO+x}" ]]
+          mkdir -p tests/node_modules
+          ln -s "$RUNNER_TEMP/component-casing-provider/node_modules/vue" tests/node_modules/vue
+          checker=$(node --input-type=module -e 'import {pathToFileURL} from "node:url";const {default:get}=await import(pathToFileURL(process.argv[1]).href);console.log(get());' "$RUNNER_TEMP/component-casing-provider/node_modules/typescript-native/lib/getExePath.js")
+          CARGO_TARGET_DIR="$RUNNER_TEMP/component-casing-target" CORSA_PATH="$checker" cargo test --locked --profile ci-opt -p vize_canon --test fix_history_diagnostics imported_component_tag_aliases_preserve_batch_prop_diagnostics -- --exact --nocapture > "$RUNNER_TEMP/component-casing/pinned-batch.stdout" 2> "$RUNNER_TEMP/component-casing/pinned-batch.stderr"
       - name: Preserve published false negatives and prove source invalid poison repair
         run: |
           set -euo pipefail

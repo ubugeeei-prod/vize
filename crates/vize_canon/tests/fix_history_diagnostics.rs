@@ -1225,3 +1225,17 @@ fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
         ],
     );
 }
+
+#[test]
+fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-tag-aliases-11020",
+        "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
+        "d653e04143051768a96ba51a35fe64c055caf0c5",
+        Some(11020),
+        &["valid", "invalid", "repaired"],
+    );
+}
