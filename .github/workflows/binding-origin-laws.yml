@@ -56,6 +56,15 @@ jobs:
           built = run(argv, 1200)
           (out / "cargo.stdout.jsonl").write_text(built.stdout)
           (out / "cargo.stderr.txt").write_text(built.stderr)
+          if built.returncode != 0:
+              print(built.stderr, flush=True)
+              for line in built.stdout.splitlines():
+                  try:
+                      message = json.loads(line).get("message", {})
+                  except json.JSONDecodeError:
+                      continue
+                  if message.get("level") == "error":
+                      print(message.get("rendered", message), flush=True)
           assert built.returncode == 0, "inspect retained actual compiler output"
           artifacts = []
           for line in built.stdout.splitlines():
@@ -118,6 +127,9 @@ jobs:
               install = subprocess.run(["npm","install","--ignore-scripts","--no-audit","--no-fund","--registry=https://registry.npmjs.org"], cwd=provider, env=env, capture_output=True, text=True, timeout=300)
               (out / f"{version}.npm.stdout.txt").write_text(install.stdout)
               (out / f"{version}.npm.stderr.txt").write_text(install.stderr)
+              if install.returncode != 0:
+                  print(install.stdout, flush=True)
+                  print(install.stderr, flush=True)
               assert install.returncode == 0, "inspect retained exact public provider install"
               lock = (provider / "package-lock.json").read_bytes()
               (out / f"{version}.package-lock.json.txt").write_bytes(lock)
@@ -138,6 +150,9 @@ jobs:
               row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
               native_rows.append(row)
               print(json.dumps(row), flush=True)
+              if not qualified:
+                  print(result.stdout, flush=True)
+                  print(result.stderr, flush=True)
               for line in result.stdout.splitlines():
                   if line.startswith("NATIVE_ORIGIN_API_RECEIPT "):
                       print(line, flush=True)

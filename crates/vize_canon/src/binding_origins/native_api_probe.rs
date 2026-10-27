@@ -11,10 +11,14 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-use vize_carton::{String, cstr};
+use vize_carton::{String, append, cstr};
 
 fn hash(bytes: &[u8]) -> String {
-    cstr!("{:x}", Sha256::digest(bytes))
+    let mut output = String::with_capacity(64);
+    for byte in Sha256::digest(bytes).iter() {
+        append!(output, "{byte:02x}");
+    }
+    output
 }
 fn write(path: &Path, value: &Value) {
     fs::write(path, serde_json::to_vec_pretty(value).unwrap()).unwrap();
@@ -188,4 +192,3 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     block_on(session.close()).unwrap();
     assert!(!Path::new(cstr!("/proc/{pid}").as_str()).exists());
 }
-
