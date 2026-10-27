@@ -51,6 +51,7 @@ let packageLock: unknown;
 let sourceArchive: { filename: string; sha256: string } | undefined;
 let sourceCliReceipt: unknown;
 let privateStorage: { root: string; files: { path: string; bytes: number }[] } | undefined;
+let privateStorageInspection: { root: string; entries: string[] } | undefined;
 const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" };
 if (privateCache) env.XDG_CACHE_HOME = privateCache;
 const write = (file: string, contents: string): void => {
@@ -173,7 +174,7 @@ try {
     // Rust CLI. Its original arguments, environment and all streams pass through.
     fs.writeFileSync(
       launcher,
-      `#!/usr/bin/env node\nimport { spawnSync } from "node:child_process";\nconst result = spawnSync(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nif (result.error) throw result.error;\nif (result.signal) process.kill(process.pid, result.signal);\nelse process.exitCode = result.status ?? 1;\n`,
+      `#!/usr/bin/env node\nimport { spawnSync } from "node:child_process";\nconsole.error("VIZE_TASK_CACHE_SOURCE_ENV " + JSON.stringify({ cwd: process.cwd(), xdgCacheHome: process.env.XDG_CACHE_HOME, tmpdir: process.env.TMPDIR, argv: process.argv.slice(2) }));\nconst result = spawnSync(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nif (result.error) throw result.error;\nif (result.signal) process.kill(process.pid, result.signal);\nelse process.exitCode = result.status ?? 1;\n`,
     );
     sourceCliReceipt = {
       verified: JSON.parse(fs.readFileSync(receipt, "utf8")) as unknown,
@@ -214,7 +215,22 @@ try {
   write("lint-policy.ts", 'export const debuggerRule = "off";\n');
   const config = (taskCache = true) =>
     `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";\nimport { debuggerRule } from "./lint-policy";\nexport default defineConfig({ lint: { rules: { "no-debugger": debuggerRule } }, fmt: { ignorePatterns: ["vite.config.ts", "lint-policy.ts", "package*.json", "tsconfig.json"] }, run: { tasks: { warmup: { command: "node --version", cache: false }, owned: { command: "node --version", cache: false } } } }, { plugin: false, taskCache: ${taskCache}, tasks: { lint: "verify:lint" } }).withVue({});\n`;
-  write("vite.config.ts", config());
+  const sourceConfig = (taskCache = true): string => {
+    const original = config(taskCache);
+    if (!sourceCli) return original;
+    // Vite+ filters non-system environment for cached tasks. Declare the owned
+    // cache redirect as a tracked input using the installed provider's API.
+    return (
+      original.replace("export default ", "const config = ") +
+      "for (const task of Object.values(config.run.tasks)) {\n" +
+      '  if (task && typeof task === "object" && task.cache) {\n' +
+      '    if (typeof task.cache === "object") task.cache.env = ["XDG_CACHE_HOME"];\n' +
+      '    else task.env = ["XDG_CACHE_HOME"];\n' +
+      "  }\n" +
+      "}\nexport default config;\n"
+    );
+  };
+  write("vite.config.ts", sourceConfig());
   // Initialize the provider's summary before checks enumerate the project.
   requireSuccess(process.execPath, [vp, "run", "warmup"]);
   function run(
@@ -256,6 +272,20 @@ try {
   for (const task of ["verify:lint", "fmt:check", "typecheck", "vize:check"]) {
     run(`${task}-cold`, task, { hit: false });
     if (task === "typecheck" && privateCache) {
+      const row = rows.find((selected) => selected.label === "typecheck-cold");
+      assert.ok(row);
+      const delegatedEnvironment = /^VIZE_TASK_CACHE_SOURCE_ENV (.+)$/mu.exec(row.stderr);
+      assert.ok(delegatedEnvironment, "retain the actual delegated process environment");
+      const actualEnvironment = JSON.parse(delegatedEnvironment[1]) as {
+        cwd: string;
+        xdgCacheHome: string;
+      };
+      assert.equal(actualEnvironment.cwd, directory);
+      assert.equal(actualEnvironment.xdgCacheHome, privateCache);
+      privateStorageInspection = {
+        root: privateCache,
+        entries: fs.readdirSync(privateCache, { recursive: true, encoding: "utf8" }),
+      };
       const storage = path.join(privateCache, "vize/canon/private-batch-v1");
       const files: { path: string; bytes: number }[] = [];
       const visit = (selected: string): void => {
@@ -285,14 +315,14 @@ try {
   run("imported-config-clean", "verify:lint");
   write(
     "vite.config.ts",
-    config().replace('"no-debugger": debuggerRule', '"no-debugger": "error"'),
+    sourceConfig().replace('"no-debugger": debuggerRule', '"no-debugger": "error"'),
   );
   run("direct-config-diagnostic", "verify:lint", {
     hit: false,
     status: 1,
     diagnostic: /no-debugger/u,
   });
-  write("vite.config.ts", config());
+  write("vite.config.ts", sourceConfig());
   write("src/value.ts", 'export const value: string = "hello";\n');
   run("typecheck-before-transitive-change", "typecheck");
   write("src/value.ts", "export const value: string = 42;\n");
@@ -355,7 +385,7 @@ try {
     formatted,
     "cache must not restore an earlier fixed source",
   );
-  write("vite.config.ts", config(false));
+  write("vite.config.ts", sourceConfig(false));
   run("opt-out-first", "verify:lint", { hit: false });
   run("opt-out-second", "verify:lint", { hit: false });
 } finally {
@@ -371,6 +401,7 @@ try {
         sourceArchive,
         sourceCliReceipt,
         privateStorage,
+        privateStorageInspection,
         packageLock,
         rows,
       },
