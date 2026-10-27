@@ -1,0 +1,8 @@
+{
+  "observerSource": "626b4f2b25437ec9d4b2cff46181586babec0105",
+  "observerPath": "crates/vize_canon/tests/davinci_projection_differential/main.rs",
+  "observerBytes": 11188,
+  "observerSha256": "a973e915ed4a453491ca0ce4c3d1bcacbef0e45f3a728854f773abaec300788b",
+  "baselineSource": "481c94bd55a7276339adc277edd93e30313f6ea9",
+  "expectedComparisons": 64
+}
