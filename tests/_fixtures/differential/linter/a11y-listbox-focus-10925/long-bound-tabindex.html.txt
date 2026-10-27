@@ -1,0 +1,1 @@
+<ul id="outer" role="listbox" ><li role="option" v-bind:tabindex="selected ? 0 : -1">A</li></ul>

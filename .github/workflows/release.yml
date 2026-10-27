@@ -90,11 +90,43 @@ jobs:
           [[ "$status" == ahead || "$status" == identical ]]
           git fetch --depth=1 origin "$RELEASE_SOURCE"
           git checkout --detach FETCH_HEAD
+      - name: Admit the requested source with current workflow tooling
+        id: admission
+        if: inputs.npm_resume_run == ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/prepare-quota/report.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
+          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
+          quota_main="$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts"
+          version="$RELEASE_VERSION"
+          if [[ -z "$version" ]]; then
+            version="$(node "$quota_main" next)"
+          fi
+          node "$quota_main" quota-prepare "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Stamp, commit and push the release candidate
         id: cut
         if: inputs.npm_resume_run == ''
-        env: { RELEASE_VERSION: "${{ inputs.version }}" }
+        env: { RELEASE_VERSION: "${{ steps.admission.outputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
+      - name: Emit the actual created candidate's original producer attestation
+        if: steps.cut.outputs.sha != ''
+        env:
+          RELEASE_VERSION: ${{ steps.cut.outputs.version }}
+          RELEASE_SHA: ${{ steps.cut.outputs.sha }}
+        run: node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/producer_identity.ts" "$RELEASE_VERSION" "$RELEASE_SHA" "$RUNNER_TEMP/release-producer-source/producer-candidate.json"
+      - name: Retain the original producer candidate artifact
+        if: steps.cut.outputs.sha != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-producer-source-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-producer-source/producer-candidate.json
+          archive: true
+          if-no-files-found: error
+          retention-days: 90
       - name: Select release platforms
         id: platforms
         if: steps.cut.outputs.ref != ''
@@ -324,10 +356,42 @@ jobs:
           git push origin "HEAD:refs/tags/$RELEASE_TAG"
           git push origin ":$RELEASE_CANDIDATE"
 
-  publish-npm:
-    name: Publish npm packages
+  # Re-read complete registry histories after the long builds, before any registry write.
+  # The pre-stamp check is not reused as admission evidence.
+  publication-quota:
+    name: Admit the immutable release publication
     needs: [version, tag]
     if: ${{ always() && needs.version.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions: { contents: read, actions: read }
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+      RELEASE_SHA: ${{ needs.version.outputs.sha }}
+      RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Require a fresh rolling crate budget for the original producer
+        env:
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/publication-quota/report.json
+        run: node tools/support/release/release/main.ts quota "$RELEASE_VERSION"
+      - name: Retain the publication admission receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: publication-quota-${{ needs.version.outputs.tag }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/publication-quota
+          if-no-files-found: error
+          retention-days: 90
+
+  publish-npm:
+    name: Publish npm packages
+    needs: [version, tag, publication-quota]
+    if: ${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     environment: npm
@@ -378,11 +442,11 @@ jobs:
 
   publish-crates:
     name: Publish crates
-    needs: [version, tag]
+    needs: [version, tag, publication-quota]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     environment: crates-io
-    permissions: { contents: read, id-token: write }
+    permissions: { contents: read, actions: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -396,15 +460,35 @@ jobs:
           restore-trusted: "true"
           key: release-crates
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Recheck quota before any new crate write, including failed-job recovery
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_SHA: ${{ needs.version.outputs.sha }}
+          RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/crate-quota/report.json
+        run: |
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
+          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
+          node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota "$RELEASE_VERSION"
       - uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
         id: crates-io-auth
       - name: Publish to crates.io
         env: { CARGO_REGISTRY_TOKEN: "${{ steps.crates-io-auth.outputs.token }}" }
         run: node tools/support/release/publish_crates/main.ts
+      - name: Retain the crate write admission receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: crate-quota-${{ needs.version.outputs.tag }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/crate-quota
+          if-no-files-found: error
+          retention-days: 90
 
   publish-vscode:
     name: Publish VS Code extension
-    needs: [version, tag]
+    needs: [version, tag, publication-quota]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: vscode-marketplace
@@ -423,7 +507,7 @@ jobs:
 
   publish-open-vsx:
     name: Publish Open VSX extension
-    needs: [version, tag]
+    needs: [version, tag, publication-quota]
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     environment: open-vsx-registry
@@ -449,7 +533,7 @@ jobs:
   publish-vscode-platforms:
     if: needs.version.outputs.ref != ''
     name: Publish VS Code extension - ${{ matrix.settings.target }}
-    needs: [version, tag, build-editor-platforms]
+    needs: [version, tag, build-editor-platforms, publication-quota]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: vscode-marketplace
@@ -478,7 +562,7 @@ jobs:
   publish-open-vsx-platforms:
     if: needs.version.outputs.ref != ''
     name: Publish Open VSX extension - ${{ matrix.settings.target }}
-    needs: [version, tag, build-editor-platforms]
+    needs: [version, tag, build-editor-platforms, publication-quota]
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     environment: open-vsx-registry
@@ -507,8 +591,8 @@ jobs:
 
   github-release:
     name: Create GitHub Release
-    needs: [version, tag, publish-npm, build-editor-platforms]
-    if: ${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
+    needs: [version, tag, publish-npm, build-editor-platforms, publication-quota]
+    if: ${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # id-token mints the keyless cosign certificate.

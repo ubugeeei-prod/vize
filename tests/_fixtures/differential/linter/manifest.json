@@ -89,6 +89,52 @@
       }
     },
     {
+      "id": "linter/a11y-listbox-focus-10925",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "a11y-listbox-focus-10925",
+        "files": [
+          {
+            "path": "originalCompositeWidgets.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "9f61c927374f84a706d50699f073ed7f552e5ccc57e4ca5fe8dfb90df4f244d7"
+          },
+          {
+            "path": "cases.json",
+            "role": "whole-packet-host-controls",
+            "sha256": "32d2271b3a748f1eeb06adc3755c791bf625a2b10202fde6bad9ae4528d20e73"
+          },
+          {
+            "path": "empty-listbox.vue.txt",
+            "role": "negative-control",
+            "sha256": "3a0012cff6d95b586550eed28d8fbc1692bb8cb9e4c26cf0b9aeeecc75ecbe08"
+          },
+          {
+            "path": "option-zero.jsx.txt",
+            "role": "jsx-native-control",
+            "sha256": "6c8817a6b037e1a3fed20ea459eef485975d7d65e592960eace09d571a6b9961"
+          },
+          {
+            "path": "option-zero.tsx.txt",
+            "role": "tsx-native-control",
+            "sha256": "6c8817a6b037e1a3fed20ea459eef485975d7d65e592960eace09d571a6b9961"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts", "jsx", "tsx"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/ambient-macro-declarations-10656",
       "state": "active",
       "targets": ["lint"],

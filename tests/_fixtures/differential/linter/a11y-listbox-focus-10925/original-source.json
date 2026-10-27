@@ -1,0 +1,21 @@
+{
+  "title": "a11y/interactive-supports-focus reports a `role=\"listbox\"` container whose options take focus (roving tabindex), but no other composite widget",
+  "url": "https://github.com/ubugeeei-prod/vize/issues/10925",
+  "createdAt": "2026-10-27T09:18:20Z",
+  "updatedAt": "2026-10-27T10:49:24Z",
+  "author": {
+    "id": "MDQ6VXNlcjcxMjAxMzA4",
+    "is_bot": false,
+    "login": "ubugeeei",
+    "name": "ubugeeei"
+  },
+  "sourceFile": "originalCompositeWidgets.vue.txt",
+  "sourceSha256": "9f61c927374f84a706d50699f073ed7f552e5ccc57e4ca5fe8dfb90df4f244d7",
+  "issueBodySha256": "35fcac8ce9c6b0ec3eb3d5597eebe632fe578fffc6550ff98e1b9737e4dcba3e",
+  "sourcePin": "issue10925-updated-2026-10-27T10:49:24Z",
+  "referencePolicy": [
+    "https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex",
+    "https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_focus_activedescendant",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/"
+  ]
+}
