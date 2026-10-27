@@ -1,0 +1,59 @@
+# Add workflow_dispatch.inputs.custom_properties: { type: boolean, default: false }.
+# Merge this job into public-native-events.yml without overwriting sibling jobs.
+public-custom-properties:
+  if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.custom_properties
+  runs-on: ubuntu-24.04
+  timeout-minutes: 20
+  env:
+    PUBLIC_VERSION: ${{ inputs.version }}
+    PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+    REQUIRED_CPP_SOURCE: 7c2f6f46172404a8f95335a79ee2b95094f6b7ee
+  steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with: { persist-credentials: false }
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with: { node-version: "24.14.0", package-manager-cache: false }
+    - name: Prove the immutable tag contains the merged public-instance change
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        [[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+        [[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+        git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
+        [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
+        gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_CPP_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/cpp-source-comparison.json"
+        node --input-type=module <<'NODE'
+        import assert from "node:assert/strict";
+        import { readFileSync, writeFileSync } from "node:fs";
+        const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/cpp-source-comparison.json", "utf8"));
+        assert.equal(comparison.base_commit.sha, process.env.REQUIRED_CPP_SOURCE);
+        assert.ok(["ahead", "identical"].includes(comparison.status));
+        writeFileSync(process.env.RUNNER_TEMP + "/cpp-release-identity.json", JSON.stringify({
+          version: process.env.PUBLIC_VERSION, sourceSha: process.env.PUBLIC_SOURCE_SHA,
+          requiredSource: process.env.REQUIRED_CPP_SOURCE, containsRequiredSource: true,
+          comparisonStatus: comparison.status, workflowSha: process.env.GITHUB_SHA,
+          runId: process.env.GITHUB_RUN_ID,
+        }, null, 2) + "\n", { flag: "wx" });
+        NODE
+    - name: Qualify fresh public custom properties and authored directive ownership
+      run: |
+        node tools/support/release/public_custom_properties/verify.ts \
+          "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer" \
+          "$RUNNER_TEMP/cpp-release-identity.json"
+    - name: Preserve complete public packets and immutable original witnesses
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: public-custom-properties-${{ inputs.version }}
+        retention-days: 30
+        if-no-files-found: error
+        path: |
+          ${{ runner.temp }}/cpp-source-comparison.json
+          ${{ runner.temp }}/cpp-release-identity.json
+          ${{ runner.temp }}/public-custom-properties-consumer/*.json
+          ${{ runner.temp }}/public-custom-properties-consumer/*.stdout
+          ${{ runner.temp }}/public-custom-properties-consumer/*.stderr
+          ${{ runner.temp }}/public-custom-properties-consumer/*.status
+          ${{ runner.temp }}/public-custom-properties-consumer/*.txt
+          ${{ runner.temp }}/public-custom-properties-consumer/src/
+          tools/support/release/public_custom_properties/
