@@ -130,9 +130,19 @@
   },
   {
     "case": "globals-permissive",
-    "exitCode": 0,
-    "success": true,
-    "diagnostics": []
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 4,
+        "column": 17,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'.",
+        "blockType": "template"
+      }
+    ]
   },
   {
     "case": "repaired-strict",
