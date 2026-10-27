@@ -30,6 +30,7 @@
 
 pub mod alpha;
 mod bindings;
+mod debug;
 mod merge;
 mod model;
 mod options_descriptor;
@@ -84,7 +85,7 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet};
 ///
 /// This struct aggregates all drawn semantic facts and provides a unified
 /// interface for downstream consumers (linter, transformer).
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Croquis {
     /// Scope chain for template expressions
     pub scopes: ScopeChain,

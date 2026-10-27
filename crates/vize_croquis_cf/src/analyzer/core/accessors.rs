@@ -10,6 +10,17 @@ use vize_croquis::EffectGraphSummary;
 mod clear_tests;
 
 impl CrossFileAnalyzer {
+    /// Check potential original source facts without granting host authority.
+    /// This performs no IO and does not suppress a diagnostic.
+    #[doc(hidden)]
+    pub fn has_closed_nuxt_render_facts(&self) -> bool {
+        crate::rules::has_closed_nuxt_render_facts(
+            &self.registry,
+            &self.graph,
+            self.nuxt_dirs.as_ref(),
+        )
+    }
+
     /// Get the module registry.
     #[inline]
     pub fn registry(&self) -> &ModuleRegistry {
@@ -39,6 +50,7 @@ impl CrossFileAnalyzer {
 
     /// Clear all data and reset.
     pub fn clear(&mut self) {
+        self.nuxt_scope_once = false;
         self.registry.clear();
         self.graph = DependencyGraph::new();
         self.effect_graph_summaries.clear();

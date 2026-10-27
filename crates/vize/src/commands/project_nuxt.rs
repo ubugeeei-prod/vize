@@ -264,7 +264,7 @@ pub(super) fn render_dirs(root: &Path) -> Option<NuxtRenderDirs> {
         layouts: relative(src.join(layouts.as_deref().unwrap_or("layouts")))?,
         src: relative(src)?,
         pages_enabled,
-        static_render_config,
+        static_render_config: static_render_config && config.dir.as_path() == root,
     })
 }
 

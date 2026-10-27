@@ -13,7 +13,7 @@ use vize_carton::{CompactString, SmallVec};
 pub struct NuxtTemplateRenderFacts {
     /// Number of authored slot outlets visited, saturating on overflow.
     pub slot_outlets: u32,
-    /// A directive or recovered structural arm prevents an invocation proof.
+    /// A directive, active native carrier, or recovered arm prevents an invocation proof.
     pub opaque_structure: bool,
     /// The original full inline template was successfully analyzed.
     pub admitted: bool,

@@ -56,6 +56,7 @@ impl CrossFileAnalyzer {
         analysis: Croquis,
         effect_summary: EffectGraphSummary,
     ) -> FileId {
+        self.nuxt_scope_once = false;
         let path = path.as_ref();
 
         // Register in module registry (takes ownership of analysis)
@@ -106,6 +107,7 @@ impl CrossFileAnalyzer {
     /// add files in an arbitrary order. A parent may be added before the file
     /// referenced by `./Child.vue`; the first pass cannot resolve that target.
     pub fn rebuild_import_edges(&mut self) {
+        self.nuxt_scope_once = false;
         let profiler = vize_l0::profiler::global_profiler();
         let _phase = profiler.global_span("croquis_cf.dependencies.finalize");
         profiler.record_counter("croquis_cf.dependencies.finalize.calls", 1);

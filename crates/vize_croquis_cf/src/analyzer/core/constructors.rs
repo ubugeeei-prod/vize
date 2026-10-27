@@ -12,6 +12,7 @@ impl CrossFileAnalyzer {
             options,
             ssr_enabled: true,
             nuxt_dirs: None,
+            nuxt_scope_once: false,
             registry: ModuleRegistry::new(),
             graph: DependencyGraph::new(),
             effect_graph_summaries: Default::default(),
@@ -26,6 +27,7 @@ impl CrossFileAnalyzer {
             options,
             ssr_enabled: true,
             nuxt_dirs: None,
+            nuxt_scope_once: false,
             registry: ModuleRegistry::with_project_root(root.as_ref()),
             graph: DependencyGraph::new(),
             effect_graph_summaries: Default::default(),
@@ -44,7 +46,17 @@ impl CrossFileAnalyzer {
     /// Use the host's Nuxt directories for framework render edges.
     #[doc(hidden)]
     pub fn set_nuxt_render_dirs(&mut self, dirs: Option<NuxtRenderDirs>) {
+        self.nuxt_scope_once = false;
         self.nuxt_dirs = dirs;
+    }
+
+    /// Admit one ID-analysis invocation after the host has authenticated its
+    /// actual runtime, config inputs, and complete original source inventory.
+    /// Unknown or failed qualification must pass false. Analysis consumes the
+    /// witness; mutations invalidate it before the next invocation.
+    #[doc(hidden)]
+    pub fn admit_nuxt_render_scope_once(&mut self, proven: bool) {
+        self.nuxt_scope_once = proven;
     }
 
     /// Set single-file analyzer options.
