@@ -6,10 +6,14 @@ on:
       - .github/workflows/source-symbolizer-retained.yml
       - tools/benchmarks/scripts/source-symbolizer-*.ts
       - tests/tooling/source-symbolizer-protocol.test.ts
+      - tools/benchmarks/scripts/cold-evidence-thin.py
   workflow_dispatch:
+    inputs:
+      metadata_run_id: { type: string, default: "" }
+      metadata_artifact_id: { type: string, default: "" }
 permissions: { contents: read, actions: read }
 concurrency:
-  group: retained-source-replay-${{ github.event.pull_request.number || github.ref }}
+  group: retained-source-replay-${{ github.event.pull_request.number || github.ref }}-${{ inputs.metadata_artifact_id != '' && 'metadata' || 'source' }}
   cancel-in-progress: true
 jobs:
   controls:
@@ -22,8 +26,9 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with: { node-version-file: package.json, run-install: false }
       - run: node --test tests/tooling/source-symbolizer-protocol.test.ts
+      - run: python3 tools/benchmarks/scripts/cold-evidence-thin.py --self-test
   offline:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id == '' }}
     needs: controls
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -83,5 +88,51 @@ jobs:
         with:
           name: retained-source-${{ github.run_id }}
           path: ${{ runner.temp }}/retained-source
+          if-no-files-found: warn
+          retention-days: 14
+
+  thin-metadata:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id != '' }}
+    needs: controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind the requested completed artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.metadata_run_id }}
+          SOURCE_ARTIFACT: ${{ inputs.metadata_artifact_id }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_RUN" =~ ^[0-9]+$ && "$SOURCE_ARTIFACT" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$SOURCE_ARTIFACT" > "$RUNNER_TEMP/source-artifact-api.json"
+          python3 -c 'import json,os; p=json.load(open(os.environ["RUNNER_TEMP"]+"/source-artifact-api.json")); assert str(p["workflow_run"]["id"])==os.environ["SOURCE_RUN"] and str(p["id"])==os.environ["SOURCE_ARTIFACT"] and not p["expired"] and p["size_in_bytes"] <= 300*1024*1024'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ inputs.metadata_artifact_id }}
+          run-id: ${{ inputs.metadata_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/thin-download
+      - name: Copy allowlisted text from one archive without executing it
+        env:
+          SOURCE_RUN: ${{ inputs.metadata_run_id }}
+          SOURCE_ARTIFACT: ${{ inputs.metadata_artifact_id }}
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find "$RUNNER_TEMP/thin-download" -type f -name '*.tgz')
+          [[ "${#archives[@]}" == 1 ]]
+          python3 tools/benchmarks/scripts/cold-evidence-thin.py "${archives[0]}" \
+            "$RUNNER_TEMP/thin-metadata" "$SOURCE_RUN" "$SOURCE_ARTIFACT" \
+            "$RUNNER_TEMP/source-artifact-api.json"
+      - name: Preserve metadata and extraction custody
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cold-metadata-${{ github.run_id }}
+          path: ${{ runner.temp }}/thin-metadata
           if-no-files-found: warn
           retention-days: 14
