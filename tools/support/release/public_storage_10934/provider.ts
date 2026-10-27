@@ -20,7 +20,8 @@ interface RegistryRecord {
   metadataSha256: string;
 }
 async function registry(name: string, version: string, evidence: string): Promise<RegistryRecord> {
-  const metadataUrl = "https://registry.npmjs.org/" + encodeURIComponent(name) + "/" + version;
+  const metadataUrl = "https://registry.npmjs.org/" + encodeURIComponent(name) + "/" + version
+    + "?vize_storage_10934=" + encodeURIComponent(process.env.GITHUB_RUN_ID ?? "schema-audit");
   const response = await fetch(metadataUrl);
   assert.equal(response.status, 200, metadataUrl);
   const bytes = new Uint8Array(await response.arrayBuffer());

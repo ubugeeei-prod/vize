@@ -78,12 +78,16 @@ export async function loadAuthority(
   const componentRaw = await blob(componentBlob);
   fs.writeFileSync(path.join(evidence, "producer-component.raw.json"), componentRaw);
   const component = asRecord(parse(componentRaw));
-  assert.equal(component.schema, "vize.originalActionsReleaseProducerReceipts.v1");
+  assert.equal(component.schema, "vize.originalActionsProviderReceipts.v1");
   assert.equal(component.version, version);
-  assert.equal(component.producerRun, producerRun);
+  assert.equal(component.tagSourceSha, candidate);
   assert.equal(component.producerSource, source);
-  assert.equal(component.workflowHead, workflowHead);
-  assert.equal(component.candidate, candidate);
+  const componentProducer = asRecord(component.producerEvidence);
+  assert.equal(componentProducer.runId, producerRun);
+  assert.equal(componentProducer.workflowHead, workflowHead);
+  assert.equal(componentProducer.origin, producer.origin);
+  assert.equal(component.notStandaloneConsumerAuthority, true);
+  assert.equal(typeof component.publicNpmReadinessPending, "boolean");
   const originals = asArray(component.receipts).map((value) => asRecord(value));
   assert.equal(originals.length, 8);
   const receipts = asArray(authority.receipts).map((value) => asRecord(value));
@@ -99,6 +103,7 @@ export async function loadAuthority(
     const originalItem = original[0];
     assert.ok(originalItem);
     assert.equal(originalItem.rawBase64, record.rawBase64);
+    assert.equal(originalItem.rawBytes, bytes.length);
     assert.deepEqual(originalItem.origin, record.origin);
     const receipt = asRecord(parse(bytes));
     assert.equal(receipt.schema, "vize.platformVsix.v1");
@@ -128,6 +133,7 @@ export async function loadAuthority(
     assert.equal(origin.artifactApi, "https://api.github.com/repos/" + REPO + "/actions/artifacts/" + artifactId);
     const artifact = asRecord(await github("actions/artifacts/" + artifactId));
     assert.equal(artifact.expired, false);
+    assert.equal(artifact.name, origin.artifactName);
     const producerIdentity = asRecord(artifact.workflow_run);
     assert.equal(producerIdentity.id, producerRun);
     assert.equal(producerIdentity.head_sha, workflowHead);
@@ -141,6 +147,25 @@ export async function loadAuthority(
       buildToken: asString(provider.nativeBuildToken),
     });
   }
+  const npmSRI = asRecord(authority.npmSRI);
+  const readiness = asRecord(authority.publicNpmEvidence);
+  const readyRecords = asArray(readiness.records).map((value) => asRecord(value));
+  assert.equal(readyRecords.length, 10);
+  assert.equal(new Set(readyRecords.map((item) => item.name)).size, 10);
+  assert.equal(Object.keys(npmSRI).length, 10);
+  for (const [name, expectedValue] of Object.entries(npmSRI)) {
+    const expected = asRecord(expectedValue);
+    const observed = readyRecords.find((item) => item.name === name);
+    assert.ok(observed, name);
+    assert.equal(observed.version, version);
+    assert.equal(observed.ready, true);
+    assert.equal(observed.status, 200);
+    assert.equal(observed.canonicalPackumentStatus, 200);
+    assert.equal(observed.canonicalPackumentContainsVersion, true);
+    assert.equal(observed.tarballHeadStatus, 200);
+    assert.equal(observed.integrity, expected.integrity);
+    assert.equal(observed.tarball, expected.tarball);
+  }
   assert.equal(targets.size, 8);
   assert.equal(providers.filter((item) => item.target === "linux-x64").length, 1);
   save(path.join(evidence, "authority-validation.json"), {
@@ -148,9 +173,14 @@ export async function loadAuthority(
     componentSha256: sha256(componentRaw), version, candidate, source,
     workflowHead, producerRun, requiredMerge: REQUIRED_MERGE,
     targets: [...targets], rawReceiptsUnchanged: true,
+    componentAtCollection: {
+      schema: component.schema, notStandaloneConsumerAuthority: true,
+      publicNpmReadinessPending: component.publicNpmReadinessPending,
+    },
+    finalAuthorityNpmRecordsReady: readyRecords.length,
   });
   return {
     version, candidate, source, workflowHead, producerRun, providers,
-    npmSRI: asRecord(authority.npmSRI), authorityBlob, authoritySha256: sha256(raw),
+    npmSRI, authorityBlob, authoritySha256: sha256(raw),
   };
 }
