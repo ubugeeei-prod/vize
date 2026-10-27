@@ -4,6 +4,7 @@ use super::CollectedDiagnostics;
 use crate::server::MaestroServer;
 #[cfg(feature = "native")]
 use std::future::Future;
+use tower_lsp::lsp_types::Url;
 
 impl MaestroServer {
     pub(in crate::server) async fn publish_collected_diagnostics(
