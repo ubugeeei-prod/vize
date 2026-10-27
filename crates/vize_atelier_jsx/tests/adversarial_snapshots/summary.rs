@@ -11,7 +11,7 @@ use vize_relief::{
     expressions::CompoundExpressionChild,
 };
 
-pub(super) fn lower_summary<'a>(source: &'a str, output: &'a LowerOutput<'a>) -> LowerSummary<'a> {
+pub(crate) fn lower_summary<'a>(source: &'a str, output: &'a LowerOutput<'a>) -> LowerSummary<'a> {
     LowerSummary {
         diagnostics: diagnostics_summary(source, &output.diagnostics),
         roots: output
@@ -177,7 +177,7 @@ fn compound_summary(compound: &vize_relief::CompoundExpressionNode<'_>) -> Strin
     out
 }
 
-pub(super) fn vdom_output_summary<'a>(
+pub(crate) fn vdom_output_summary<'a>(
     source: &'a str,
     output: &'a VdomOutput,
 ) -> VdomOutputSummary<'a> {
@@ -201,7 +201,7 @@ pub(super) fn vdom_output_summary<'a>(
     }
 }
 
-pub(super) fn vapor_output_summary<'a>(
+pub(crate) fn vapor_output_summary<'a>(
     source: &'a str,
     output: &'a VaporOutput,
 ) -> VaporOutputSummary<'a> {
@@ -229,7 +229,7 @@ pub(super) fn vapor_output_summary<'a>(
     }
 }
 
-pub(super) fn compile_output_summary<'a>(
+pub(crate) fn compile_output_summary<'a>(
     source: &'a str,
     output: &'a JsxCompileOutput,
 ) -> CompileOutputSummary<'a> {
@@ -266,7 +266,7 @@ pub(super) fn compile_output_summary<'a>(
     }
 }
 
-pub(super) fn diagnostics_summary(
+pub(crate) fn diagnostics_summary(
     source: &str,
     diagnostics: &[JsxDiagnostic],
 ) -> Vec<DiagnosticSummary> {
@@ -299,14 +299,14 @@ impl<'a> From<&'a vize_atelier_jsx::ScopedStyle> for ScopedStyleSummary<'a> {
 
 #[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
-pub(super) struct NamedDiagnostics<'a> {
-    pub(super) name: &'a str,
-    pub(super) diagnostics: Vec<DiagnosticSummary>,
+pub(crate) struct NamedDiagnostics<'a> {
+    pub(crate) name: &'a str,
+    pub(crate) diagnostics: Vec<DiagnosticSummary>,
 }
 
 #[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
-pub(super) struct LowerSummary<'a> {
+pub(crate) struct LowerSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     roots: Vec<RootSummary<'a>>,
 }
@@ -399,7 +399,7 @@ enum PropSummary {
 
 #[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
-pub(super) struct DiagnosticSummary {
+pub(crate) struct DiagnosticSummary {
     severity: String,
     message: String,
     source: String,
@@ -408,21 +408,21 @@ pub(super) struct DiagnosticSummary {
 
 #[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
-pub(super) struct VdomOutputSummary<'a> {
+pub(crate) struct VdomOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }
 
 #[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
-pub(super) struct VaporOutputSummary<'a> {
+pub(crate) struct VaporOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }
 
 #[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
-pub(super) struct CompileOutputSummary<'a> {
+pub(crate) struct CompileOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }

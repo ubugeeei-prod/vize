@@ -13,8 +13,10 @@ use vize_atelier_jsx::{
     compile_to_vapor, compile_to_vdom, lower_source,
 };
 use vize_l0::Allocator;
-mod summary;
-use summary::{
+mod adversarial_snapshots {
+    pub(super) mod summary;
+}
+use adversarial_snapshots::summary::{
     NamedDiagnostics, compile_output_summary, diagnostics_summary, lower_summary,
     vapor_output_summary, vdom_output_summary,
 };

@@ -1,6 +1,6 @@
 //! Whole-module and diagnostic custody for equivalent slot spellings.
 
-use super::*;
+use crate::*;
 
 fn assert_camel_alias(source: &str, config: &JsxCompileConfig, errors: usize) {
     let camel = source.replace("v-slots", "vSlots");

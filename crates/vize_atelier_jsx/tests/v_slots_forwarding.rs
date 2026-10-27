@@ -327,4 +327,6 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
 /// Compare complete authored modules and diagnostics. The hyphenated forms are
 /// independently pinned by the existing exact render tests and Babel recording.
 /// Diagnostic source slices also prove the shorter alias retains correct ranges.
-mod aliases;
+mod v_slots_forwarding {
+    mod aliases;
+}
