@@ -124,11 +124,10 @@ fn untracked_path_mode_retains_complete_alias_probe_histories() {
             "alias proof paths must remain exact: {specifier}"
         );
         if specifier == "@/component" {
-            assert!(
-                legacy
-                    .1
-                    .iter()
-                    .any(|path| path.starts_with(root.join("missing")))
+            assert_eq!(
+                legacy.1.first(),
+                Some(&root.join("missing/component")),
+                "the first fallback target is the exact missing candidate"
             );
         }
     }
