@@ -1,7 +1,13 @@
 name: Vite+ task cache consumers
+run-name: Vite+ task cache ${{ inputs.version && format('public {0}', inputs.version) || 'source' }}
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Published Vize version to verify; omit to test the source integration
+        required: false
+        type: string
   pull_request:
     paths:
       - "npm/builder/vite/src/**"
@@ -13,7 +19,7 @@ on:
 permissions: { contents: read }
 
 concurrency:
-  group: viteplus-task-cache-${{ github.event.pull_request.number || github.ref }}
+  group: viteplus-task-cache-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'source' }}
   cancel-in-progress: true
 
 jobs:
@@ -31,7 +37,13 @@ jobs:
       - name: Check real installed tasks and cache invalidation
         env:
           VIZE_TASK_CACHE_PROVIDER: ${{ matrix.provider }}
-        run: node npm/builder/vite/scripts/check-task-cache.ts
+          VIZE_TASK_CACHE_PUBLIC_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$VIZE_TASK_CACHE_PUBLIC_VERSION" ]; then
+            node npm/builder/vite/scripts/check-task-cache.ts "$VIZE_TASK_CACHE_PUBLIC_VERSION"
+          else
+            node npm/builder/vite/scripts/check-task-cache.ts
+          fi
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

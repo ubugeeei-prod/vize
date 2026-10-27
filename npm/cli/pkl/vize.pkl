@@ -220,6 +220,9 @@ class LinterConfig {
   /// Fail when warnings exceed this non-negative limit; absent means unlimited.
   maxWarnings: Int(isBetween(0, 9007199254740991))? = null
 
+  /// Report template eslint/oxlint disable comments that suppress no active rule
+  reportUnusedDisableDirectives: Boolean? = null
+
   rules: Mapping<String, RuleSeverity>? = null
   ruleOptions: LintRuleOptions? = null
   categories: Mapping<String, RuleSeverity>? = null
