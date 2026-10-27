@@ -113,7 +113,7 @@ fn component_event_modifiers_cancel_default_actions_without_a_handler() {
         let trace = mounted_trace_with_components(
             backend,
             r#"<Box @submit.prevent />"#,
-            &[("Box", "<form />", &[], &[])],
+            &[("Box", "<form></form>", &[], &[])],
             json!({}),
             json!([{"event": "submit", "selector": "form", "observeEvent": true}]),
             false,
