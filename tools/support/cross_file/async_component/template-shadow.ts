@@ -91,10 +91,27 @@ const Provider = (_props, { slots }) => slots.default({ Lazy: Inner });
       calls: 0,
       reference: "loop",
     },
+    {
+      id: "hyphenated-for",
+      template: '<lazy-link v-for="LazyLink in items"/>',
+      calls: 0,
+      reference: "loop",
+    },
+    {
+      id: "own-slot",
+      template: '<Lazy v-slot="{ Lazy }"><Lazy/></Lazy>',
+      calls: 1,
+      reference: "root",
+    },
   ];
   const sources: Record<string, string> = { "Outer.vue": outer };
-  for (const test of cases)
-    sources[test.id + ".vue"] = header + "<template>" + test.template + "</template>";
+  for (const test of cases) {
+    const caseHeader =
+      test.id === "hyphenated-for"
+        ? header.replace("</script>", "const LazyLink = Lazy;\n</script>")
+        : header;
+    sources[test.id + ".vue"] = caseHeader + "<template>" + test.template + "</template>";
+  }
   const compiled: Record<string, string> = {};
   const modules = new Map<string, string>();
   for (const [name, source] of Object.entries(sources)) {

@@ -81,10 +81,24 @@ fn template_shadowed_async_and_static_sites_do_not_revive_name_fallbacks() {
             "<Lazy v-for=\"Lazy in items\"/>",
             "<template v-for=\"Lazy in items\"><Lazy/></template>",
             "<Provider v-slot=\"{ Lazy }\"><Lazy/></Provider>",
-            "<component :is=\"Lazy\" v-for=\"Lazy in items\"/>",
-            "<lazy v-for=\"Lazy in items\"/>",
+            "<component :is=\"Lazy\" v-for=\"Lazy in items\"></component>",
+            "<lazy v-for=\"Lazy in items\"></lazy>",
         ] {
             let project = project(script, template, "", "NoticeLink.vue");
+            if template.starts_with("<lazy ") {
+                // The existing default caller has no concrete component site
+                // for a one-word lowercase tag. Keep that domain separate.
+                assert!(
+                    vize_croquis::facts::component_usage_list(
+                        &project
+                            .registry()
+                            .get(crate::FileId::new(1))
+                            .expect("parent")
+                            .analysis
+                    )
+                    .is_empty()
+                );
+            }
             assert_eq!(edge_packet(&project), vec![], "{script} {template}");
             assert_eq!(
                 component_usage_targets(project.registry(), crate::FileId::new(1)),
@@ -92,6 +106,28 @@ fn template_shadowed_async_and_static_sites_do_not_revive_name_fallbacks() {
                 "{script} {template}"
             );
         }
+    }
+    for script in [
+        "import LazyLink from './NoticeLink.vue'; const items = [];",
+        "import { defineAsyncComponent as dac } from 'vue'; const LazyLink = dac(() => import('./NoticeLink.vue')); const items = [];",
+    ] {
+        let template = "<lazy-link v-for=\"LazyLink in items\"></lazy-link>";
+        let project = project(script, template, "", "NoticeLink.vue");
+        let entry = project
+            .registry()
+            .get(crate::FileId::new(1))
+            .expect("parent");
+        let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+        assert_eq!(usages.len(), 1, "the hyphenated site must be captured");
+        assert!(super::template_usage_is_shadowed(
+            &entry.analysis,
+            &usages[0]
+        ));
+        assert_eq!(edge_packet(&project), vec![]);
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            vec![]
+        );
     }
 }
 
@@ -196,7 +232,8 @@ fn own_slot_scope_does_not_shadow_its_host_component() {
                 caller: 1,
                 target: 0,
                 export: "default".into(),
-                sites: vec![(0, template.len() as u32)],
+                // Existing ComponentUsage ranges cover the opening tag; subtree bounds are separate.
+                sites: vec![(0, 24)],
             }],
             "{script}"
         );
