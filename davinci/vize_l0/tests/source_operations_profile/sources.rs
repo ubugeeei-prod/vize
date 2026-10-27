@@ -30,6 +30,11 @@ pub(super) fn run() {
         ]
     );
 
+    println!(
+        "hash_control_counts={}",
+        serde_json::to_string(&sites).expect("counts serialize")
+    );
+
     profiler.clear();
     profiler.enable();
     let setup = "const value = 1;";
@@ -41,6 +46,8 @@ pub(super) fn run() {
         Some(vize_croquis::BindingType::LiteralConst)
     );
     let _plain = vize_croquis::script_parser::parse_script(plain);
+    // The current fatal path retries the original view before blanking its dot.
+    // Count both actual recovery parses; a request count must not hide this work.
     let _recovered = vize_croquis::script_parser::parse_script_setup(incomplete);
     profiler.disable();
     let sites = micro::snapshot();
@@ -58,7 +65,11 @@ pub(super) fn run() {
                 3,
                 (setup.len() + plain.len() + incomplete.len()) as u64
             ),
-            ("croquis.oxc.recovery.bytes", 1, incomplete.len() as u64),
+            (
+                "croquis.oxc.recovery.bytes",
+                2,
+                (incomplete.len() * 2) as u64
+            ),
             ("croquis.plain.parse_requests.bytes", 1, plain.len() as u64),
             (
                 "croquis.setup.analysis_requests.bytes",
@@ -79,7 +90,11 @@ pub(super) fn run() {
         .collect::<Vec<_>>();
     assert_eq!(
         spans,
-        [("croquis.oxc.original", 3), ("croquis.oxc.recovery", 1)]
+        [("croquis.oxc.original", 3), ("croquis.oxc.recovery", 2)]
+    );
+    println!(
+        "parser_control_counts={}",
+        serde_json::to_string(&sites).expect("counts serialize")
     );
     println!("selected std hash writes and actual parser attempts passed");
 }
