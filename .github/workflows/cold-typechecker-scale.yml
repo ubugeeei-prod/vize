@@ -1,0 +1,100 @@
+name: Cold typechecker scale
+on:
+  workflow_dispatch:
+    inputs:
+      files:
+        description: Authored source files including the complete package dependency graph
+        type: choice
+        options: ["2500", "10000", "50000"]
+        default: "2500"
+  pull_request:
+    paths:
+      - .github/workflows/cold-typechecker-scale.yml
+      - tools/benchmarks/scripts/cold-typechecker-scale.ts
+      - crates/vize/src/commands/check/runner/default_imports.rs
+      - tests/tooling/cold-typechecker-scale-evidence.test.ts
+permissions: { contents: read }
+concurrency:
+  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  profile:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    env:
+      FILES: ${{ inputs.files || '2500' }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: cold-typechecker-scale-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install fixed comparison providers
+        run: |
+          mkdir "$RUNNER_TEMP/provider"
+          cd "$RUNNER_TEMP/provider"
+          cat > package.json <<'JSON'
+          {"private":true,"dependencies":{"vize":"0.596.0","@vizejs/native":"0.596.0","vue":"3.6.0-rc.13","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"}}
+          JSON
+          npm install --ignore-scripts --no-audit --no-fund
+          mkdir -p "$RUNNER_TEMP/cold-scale"
+          cp package.json package-lock.json "$RUNNER_TEMP/cold-scale/"
+      - name: Build the exact base and head with equal symbol settings
+        run: |
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/base" "$BASE_SHA"
+          mkdir -p "$RUNNER_TEMP/cold-scale"
+          git rev-parse HEAD > "$RUNNER_TEMP/cold-scale/head.sha"
+          git -C "$RUNNER_TEMP/base" rev-parse HEAD > "$RUNNER_TEMP/cold-scale/base.sha"
+          cd "$RUNNER_TEMP/base"
+          CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo build --locked --profile ci-opt -p vize --config 'profile.ci-opt.debug="line-tables-only"' --config 'profile.ci-opt.package.vize.strip="none"'
+          cp "$GITHUB_WORKSPACE/target/ci-opt/vize" "$RUNNER_TEMP/vize-base"
+          cd "$GITHUB_WORKSPACE"
+          cargo build --locked --profile ci-opt -p vize --config 'profile.ci-opt.debug="line-tables-only"' --config 'profile.ci-opt.package.vize.strip="none"'
+          cp target/ci-opt/vize "$RUNNER_TEMP/vize-head"
+      - name: Compare fresh processes and independent authored diagnostic controls
+        run: |
+          for round in 1 2 3; do
+            order='base head'
+            if [[ "$round" == 2 ]]; then order='head base'; fi
+            for source in $order; do
+              node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool cli --binary "$RUNNER_TEMP/vize-$source" --out "$RUNNER_TEMP/cold-scale/$source-$round"
+            done
+          done
+          for tool in mapper vue-tsc; do
+            node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool "$tool" --out "$RUNNER_TEMP/cold-scale/$tool"
+          done
+          for tool in cli mapper vue-tsc; do
+            args=()
+            if [[ "$tool" == cli ]]; then args+=(--binary "$RUNNER_TEMP/vize-head"); fi
+            node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool "$tool" --invalid "${args[@]}" --out "$RUNNER_TEMP/cold-scale/control-$tool"
+          done
+      - name: Build allocation instrumentation separately from timing binaries
+        run: |
+          cargo build --locked --profile ci-opt -p vize --features profiling --config 'profile.ci-opt.debug="line-tables-only"' --config 'profile.ci-opt.package.vize.strip="none"'
+          cp target/ci-opt/vize "$RUNNER_TEMP/vize-profile"
+      - name: Capture Rust allocation spans and native CPU source stacks
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends linux-tools-generic
+          sudo sysctl -w kernel.perf_event_paranoid=0
+          perf_bin=$(rg --files /usr/lib/linux-tools | rg '/perf$' | head -n 1)
+          test -n "$perf_bin"
+          sudo "$perf_bin" record -F 997 --call-graph dwarf --output "$RUNNER_TEMP/cold-scale/perf.data" -- node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$FILES" --tool profile --binary "$RUNNER_TEMP/vize-profile" --out "$RUNNER_TEMP/cold-scale/profile"
+          sudo "$perf_bin" report --stdio --inline --sort comm,dso,symbol,srcline --input "$RUNNER_TEMP/cold-scale/perf.data" > "$RUNNER_TEMP/cold-scale/cpu-source.txt"
+          node --input-type=module -e 'import fs from "node:fs"; const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/cold-scale/profile/profile.json")); if(!x.allocation)throw Error("allocation instrumentation missing");'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-typechecker-scale-${{ github.sha }}
+          path: ${{ runner.temp }}/cold-scale
+          retention-days: 14
