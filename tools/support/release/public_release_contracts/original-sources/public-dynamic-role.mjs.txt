@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+const [workspace,version,out]=process.argv.slice(2);
+const require=createRequire(join(resolve(workspace),'package.json'));
+const actualVersion=require('@vizejs/native/package.json').version;
+assert.equal(actualVersion,version);
+const before=JSON.parse(readFileSync(new URL('./public-before-0.596.json', import.meta.url),'utf8'));
+const native=require('@vizejs/native');
+const positive=native.lintPatinaSfc(before.source,before.options);
+const negative=native.lintPatinaSfc(before.source.replace(':role=',':data='),before.options);
+const evidence={version:actualVersion,source:before.source,options:before.options,positive,negative,negativeExpected:before.result};
+writeFileSync(out,JSON.stringify(evidence,null,2)+'\n');
+assert.deepEqual(positive,{filename:'ClickableTag.vue',errorCount:0,warningCount:0,diagnostics:[]});
+assert.deepEqual(negative,before.result);
+console.log(JSON.stringify({version:actualVersion,boundRole:positive.warningCount,unrelatedBinding:negative.warningCount}));

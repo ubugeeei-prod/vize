@@ -4,6 +4,9 @@ use std::{fs, io::ErrorKind};
 
 use vize_carton::{FxHashSet, profiler::global_profiler};
 
+mod owned_write;
+pub(super) use owned_write::{must_replace, replace as replace_file};
+
 pub(super) fn ensure_dir(path: &Path) -> io::Result<()> {
     match fs::create_dir_all(path) {
         Ok(()) => {
@@ -50,6 +53,9 @@ pub(super) fn write_if_changed(path: &Path, content: &[u8]) -> io::Result<()> {
             profiler.record_counter("io.write.skipped.calls", 1);
             profiler.record_counter("io.write.skipped.bytes", content.len() as u64);
             return Ok(());
+        }
+        Ok(metadata) if owned_write::must_replace(&metadata) => {
+            return owned_write::replace(path, content);
         }
         Ok(_) => {}
         Err(error) if error.kind() == ErrorKind::NotFound => {}

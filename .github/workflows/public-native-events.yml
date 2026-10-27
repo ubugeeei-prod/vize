@@ -1,0 +1,198 @@
+name: Public native event casing
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published npm version (X.Y.Z)
+        required: true
+        type: string
+      source_sha:
+        description: Exact commit of the matching immutable release tag
+        required: true
+        type: string
+      phase:
+        description: Historical control or fixed public release
+        required: true
+        type: choice
+        options: [before, after, release-contracts]
+      candidate:
+        description: Optional exact released candidate for complete public contracts
+        required: false
+        type: string
+      custom_properties:
+        description: Qualify the after-only public custom-property and authored directive contracts
+        required: false
+        type: boolean
+        default: false
+run-name: Public native events ${{ inputs.version }} (${{ inputs.phase }})
+permissions: { contents: read }
+concurrency:
+  group: public-native-events-${{ inputs.version }}-${{ inputs.phase }}
+  cancel-in-progress: false
+jobs:
+  public-consumer:
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase != 'release-contracts'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+      PUBLIC_PHASE: ${{ inputs.phase }}
+      REQUIRED_SOURCE: 3fa5cf66c8f5d12e7d2f286df5050933cb0daf47
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Prove tag identity and source inclusion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$PUBLIC_PHASE" == before || "$PUBLIC_PHASE" == after ]]
+          mkdir -p "$RUNNER_TEMP/event-receipts"
+          git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
+          [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
+          gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/event-receipts/source-comparison.json"
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync, writeFileSync } from "node:fs";
+          const directory = `${process.env.RUNNER_TEMP}/event-receipts`;
+          const comparison = JSON.parse(readFileSync(`${directory}/source-comparison.json`, "utf8"));
+          assert.equal(comparison.base_commit.sha, process.env.REQUIRED_SOURCE);
+          const containsRequiredSource = ["ahead", "identical"].includes(comparison.status);
+          assert.equal(containsRequiredSource, process.env.PUBLIC_PHASE === "after");
+          if (process.env.PUBLIC_PHASE === "before") assert.equal(process.env.PUBLIC_VERSION, "0.599.0");
+          writeFileSync(`${directory}/release-identity.json`, JSON.stringify({
+            version: process.env.PUBLIC_VERSION, tag: `v${process.env.PUBLIC_VERSION}`,
+            sourceSha: process.env.PUBLIC_SOURCE_SHA, requiredSource: process.env.REQUIRED_SOURCE,
+            containsRequiredSource, comparisonStatus: comparison.status,
+            workflowSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
+          }, null, 2) + "\n", { flag: "wx" });
+          NODE
+      - name: Install only exact public packages in a fresh consumer
+        working-directory: ${{ runner.temp }}
+        env:
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+        run: |
+          mkdir public-event-consumer
+          cd public-event-consumer
+          npm init -y
+          npm install --ignore-scripts --no-audit --no-fund --save-exact "@vizejs/native@$PUBLIC_VERSION" @vue/compiler-dom@3.5.44 vue@3.5.44
+          cp package-lock.json "$RUNNER_TEMP/event-receipts/package-lock.json"
+          npm view "@vizejs/native@$PUBLIC_VERSION" --json > "$RUNNER_TEMP/event-receipts/npm-native-metadata.json"
+      - name: Compare every complete VNode packet to the frozen official oracle
+        run: |
+          node tools/support/release/public_native_events/verify.ts \
+            "$RUNNER_TEMP/public-event-consumer" "$PUBLIC_VERSION" "$PUBLIC_PHASE" \
+            "$RUNNER_TEMP/event-receipts/consumer.json" "$RUNNER_TEMP/event-receipts/release-identity.json"
+      - name: Preserve full evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-native-events-${{ inputs.version }}-${{ inputs.phase }}
+          path: |
+            ${{ runner.temp }}/event-receipts/
+            tools/support/release/public_native_events/official-vue-3.5.44-prefix-identifiers-reference.json.txt
+            tools/support/release/public_native_events/historical-public-0.599.0.json.txt
+          if-no-files-found: error
+          retention-days: 30
+  public-release-contracts:
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+      PUBLIC_CANDIDATE: ${{ inputs.candidate }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - name: Validate the explicit public candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { mkdirSync, writeFileSync } from "node:fs";
+          import path from "node:path";
+          const { PUBLIC_VERSION: version, PUBLIC_CANDIDATE: candidate, PUBLIC_SOURCE_SHA: source } = process.env;
+          const valid = /^0\.[0-9]+\.0$/.test(version ?? "") && /^[0-9a-f]{40}$/.test(candidate ?? "") && source === candidate;
+          const directory = path.join(process.env.RUNNER_TEMP, "public-release-proof");
+          mkdirSync(directory, { recursive: true });
+          writeFileSync(path.join(directory, "candidate-validation.json"), JSON.stringify({
+            version, candidate, source, accepted: valid, workflowSha: process.env.GITHUB_SHA,
+          }, null, 2) + "\n", { flag: "wx" });
+          assert.equal(valid, true, "an exact public version and matching immutable candidate are required");
+          NODE
+      - name: Install exact public packages in an independent fresh consumer
+        run: node tools/support/release/public_release_contracts/bootstrap.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof"
+      - name: Verify complete packets, runtime controls, and native public custody
+        run: node tools/support/release/public_release_contracts/run.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof" "$PUBLIC_CANDIDATE"
+      - name: Preserve complete consumer evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-release-consumer-${{ inputs.version }}
+          path: ${{ runner.temp }}/public-release-proof/
+          if-no-files-found: error
+          retention-days: 30
+
+  public-custom-properties:
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.custom_properties
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+      REQUIRED_CPP_SOURCE: 7c2f6f46172404a8f95335a79ee2b95094f6b7ee
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Prove the immutable tag contains the merged public-instance change
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
+          [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
+          gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_CPP_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/cpp-source-comparison.json"
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync, writeFileSync } from "node:fs";
+          const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/cpp-source-comparison.json", "utf8"));
+          assert.equal(comparison.base_commit.sha, process.env.REQUIRED_CPP_SOURCE);
+          assert.ok(["ahead", "identical"].includes(comparison.status));
+          writeFileSync(process.env.RUNNER_TEMP + "/cpp-release-identity.json", JSON.stringify({
+            version: process.env.PUBLIC_VERSION, sourceSha: process.env.PUBLIC_SOURCE_SHA,
+            requiredSource: process.env.REQUIRED_CPP_SOURCE, containsRequiredSource: true,
+            comparisonStatus: comparison.status, workflowSha: process.env.GITHUB_SHA,
+            runId: process.env.GITHUB_RUN_ID,
+          }, null, 2) + "\n", { flag: "wx" });
+          NODE
+      - name: Qualify fresh public custom properties and authored directive ownership
+        run: |
+          node tools/support/release/public_custom_properties/verify.ts \
+            "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer" \
+            "$RUNNER_TEMP/cpp-release-identity.json"
+      - name: Preserve complete public packets and immutable original witnesses
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-custom-properties-${{ inputs.version }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/cpp-source-comparison.json
+            ${{ runner.temp }}/cpp-release-identity.json
+            ${{ runner.temp }}/public-custom-properties-consumer/*.json
+            ${{ runner.temp }}/public-custom-properties-consumer/*.stdout
+            ${{ runner.temp }}/public-custom-properties-consumer/*.stderr
+            ${{ runner.temp }}/public-custom-properties-consumer/*.status
+            ${{ runner.temp }}/public-custom-properties-consumer/*.txt
+            ${{ runner.temp }}/public-custom-properties-consumer/src/
+            tools/support/release/public_custom_properties/

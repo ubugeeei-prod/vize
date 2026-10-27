@@ -1,0 +1,162 @@
+name: PR performance observation
+
+# Measurements only. This workflow is deliberately independent of Check,
+# merge_group, release gates, and the existing historical benchmark budgets.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Exact base commit to compare
+        required: true
+        type: string
+      head_sha:
+        description: Exact authored head commit; independent of the measurement driver
+        required: true
+        type: string
+
+permissions: { contents: read }
+concurrency:
+  group: pr-performance-observation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
+  DRIVER_SHA: ${{ github.workflow_sha }}
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "8"
+  GOMAXPROCS: "8"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  observe:
+    name: Performance observations (optional)
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: driver
+          ref: ${{ env.DRIVER_SHA }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: head
+          ref: ${{ env.HEAD_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: base
+          ref: ${{ env.BASE_SHA }}
+          persist-credentials: false
+      - name: Record exact comparison sources
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          OBSERVATION_PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
+          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git -C driver rev-parse HEAD)" == "$DRIVER_SHA" ]]
+          git -C head fetch --no-tags "$GITHUB_WORKSPACE/base" "$BASE_SHA"
+          mkdir -p performance-observation/build
+          node --input-type=module <<'JS'
+          import { execFileSync } from 'node:child_process';
+          import { writeFileSync } from 'node:fs';
+          const git = (...args) => execFileSync('git', ['-C', 'head', ...args], { encoding: 'utf8' }).trim();
+          writeFileSync('performance-observation/source-pair.json', JSON.stringify({
+            schema: 1, event: process.env.EVENT_NAME, pullRequest: process.env.OBSERVATION_PR || null,
+            base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
+            driver: process.env.DRIVER_SHA, driverTree: execFileSync('git', ['-C', 'driver', 'rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim(), mergeBase: git('merge-base', process.env.BASE_SHA, process.env.HEAD_SHA),
+            comparison: process.env.EVENT_NAME === 'pull_request' ? 'exact PR base and authored head, independent measurement driver' : 'explicit immutable source pair, independent measurement driver',
+            changedPaths: git('diff', '--name-only', '-z', process.env.BASE_SHA, process.env.HEAD_SHA).split('\0').filter(Boolean),
+          }, null, 2) + '\n');
+          JS
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: driver/package.json
+          run-install: false
+      - name: Install one pinned physical dependency provider
+        working-directory: driver
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Validate measurement and source custody controls
+        working-directory: driver
+        run: node --test tests/tooling/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts
+      - name: Build normal source binaries in independent fresh targets
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            target="$RUNNER_TEMP/pr-performance-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            node driver/tools/benchmarks/scripts/pr-performance-build.ts \
+              --source-root "$GITHUB_WORKSPACE/$role" --target-dir "$target" \
+              --binary "$target/ci-opt/vize" --role "$role" \
+              --receipt "$GITHUB_WORKSPACE/performance-observation/build/$role.json"
+          done
+      - name: Validate identical normal build recipes
+        run: |
+          node --input-type=module <<'JS'
+          import { writeFileSync } from 'node:fs';
+          import { verifyPrPerformanceBuildPair } from './driver/tools/benchmarks/scripts/pr-performance-build.ts';
+          const pair = verifyPrPerformanceBuildPair('performance-observation/build/base.json', 'performance-observation/build/head.json');
+          writeFileSync('performance-observation/build/pair.json', JSON.stringify(pair, null, 2) + '\n');
+          JS
+      - name: Generate identical public inputs and pin the native runtime
+        working-directory: driver
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+          import { createRequire } from 'node:module';
+          import { dirname, join, resolve } from 'node:path';
+          import { generateCorpus } from './tools/benchmarks/scripts/generate.mjs';
+          const require = createRequire(resolve('tests/package.json'));
+          const vue = dirname(realpathSync(require.resolve('vue/package.json')));
+          const corsa = realpathSync('node_modules/@typescript/typescript-linux-x64/lib/tsc');
+          const dir = join(process.env.RUNNER_TEMP, 'pr-performance-inputs');
+          generateCorpus({ fileCount: 1000, benchDir: dir });
+          const config = JSON.parse(readFileSync(join(dir, 'tsconfig.json'), 'utf8'));
+          config.compilerOptions.paths.vue = [vue];
+          writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(config, null, 2) + '\n');
+          appendFileSync(process.env.GITHUB_ENV, `OBSERVATION_INPUT=${dir}\nOBSERVATION_VUE=${vue}\nOBSERVATION_CORSA=${corsa}\n`);
+          JS
+      - name: Observe alternating latency, separate memory, and binary sizes
+        run: |
+          node driver/tools/benchmarks/scripts/pr-performance-observation.ts \
+            --base-bin "$RUNNER_TEMP/pr-performance-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
+            --head-bin "$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
+            --base-source "$BASE_SHA" --head-source "$HEAD_SHA" \
+            --input-dir "$OBSERVATION_INPUT" --vue-dir "$OBSERVATION_VUE" \
+            --corsa-path "$OBSERVATION_CORSA" --runs 5 --warmups 1 \
+            --out "$GITHUB_WORKSPACE/performance-observation/measurements" \
+            --build-receipts "$GITHUB_WORKSPACE/performance-observation/build"
+      - name: Publish the observation summary
+        if: always()
+        run: |
+          if [[ -f performance-observation/measurements/summary.md ]]; then
+            cat performance-observation/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s\n' '### PR performance observation' '' 'No qualified comparison was produced. Inspect the failed measurement/build step and retained evidence; this is not a performance improvement.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Package evidence without traversing dependency symlinks
+        if: always()
+        run: |
+          if [[ -d performance-observation ]]; then
+            tar --exclude=node_modules --exclude=.vize --exclude=__out__ \
+              -czf performance-observation.tgz performance-observation
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: pr-performance-${{ github.event.pull_request.number || 'manual' }}-${{ env.HEAD_SHA }}-${{ github.run_attempt }}
+          path: |
+            performance-observation.tgz
+            performance-observation/measurements/summary.md
+            performance-observation/measurements/report.json
+          if-no-files-found: warn
+          retention-days: 90
