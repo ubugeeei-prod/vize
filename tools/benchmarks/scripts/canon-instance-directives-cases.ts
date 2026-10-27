@@ -1,14 +1,23 @@
 import assert from "node:assert/strict";
-export function cases(original) {
+export type ExpectedError = { code: number; token: string; last?: boolean };
+export type DirectiveCase = {
+  id: string;
+  source: string;
+  errors: ExpectedError[];
+  original?: boolean;
+  local?: boolean;
+  augmented?: boolean;
+};
+export function cases(original: string): DirectiveCase[] {
   const target = "\t\tx\n",
     directive = "\t\t// @ts-expect-error\n";
   assert.equal(original.split(target).length, 2);
   assert.equal(original.split(directive).length, 2);
-  const unused = [{ code: 2578, token: "// @ts-expect-error" }];
-  const missing = [{ code: 2339, token: "x\n", last: true }];
+  const unused: ExpectedError[] = [{ code: 2578, token: "// @ts-expect-error" }];
+  const missing: ExpectedError[] = [{ code: 2339, token: "x\n", last: true }];
   const typed = original.replace(target, "\t\tpluginMethod(123)\n");
   const sibling = original.replace("\t}}\n", "\t}}\n\t{{ missingSibling }}\n");
-  const rows = [
+  const rows: DirectiveCase[] = [
     { id: "original", source: original, errors: [], original: true },
     {
       id: "valid-local",
@@ -69,10 +78,11 @@ export function cases(original) {
       errors: unused,
     },
   ];
-  for (const [id, trivia] of [
+  const triviaRows: Array<[string, string]> = [
     ["blank", "\n"],
     ["comment", "\t\t// legitimate trivia\n"],
-  ]) {
+  ];
+  for (const [id, trivia] of triviaRows) {
     const source = original.replace(directive, directive + trivia);
     rows.push({ id: id + "-consumed", source, errors: [] });
     rows.push({ id: id + "-repaired", source, augmented: true, errors: unused });
@@ -89,10 +99,14 @@ export function cases(original) {
   assert.equal(rows.length, 25);
   return rows;
 }
-export function referenceSource(row) {
-  const expressions = [...row.source.matchAll(/\{\{([\s\S]*?)\}\}/gu)].map((m) =>
-    row.local ? m[1] : m[1].replace(/\b(x|pluginMethod|missingSibling)\b/gu, "context.$1"),
-  );
+export function referenceSource(row: DirectiveCase): string {
+  const expressions = [...row.source.matchAll(/\{\{([\s\S]*?)\}\}/gu)].map((match) => {
+    const expression = match[1];
+    assert.ok(expression !== undefined);
+    return row.local
+      ? expression
+      : expression.replace(/\b(x|pluginMethod|missingSibling)\b/gu, "context.$1");
+  });
   const prefix = row.local
     ? "const x: number = 3;\n"
     : 'import type { ComponentPublicInstance } from "vue";\ndeclare const context: ComponentPublicInstance;\n';

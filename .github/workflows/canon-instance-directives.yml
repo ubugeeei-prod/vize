@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/canon-instance-directives.yml
-      - tools/benchmarks/scripts/canon-instance-directives*.mjs
+      - tools/benchmarks/scripts/canon-instance-directives*.ts
       - crates/vize_canon/src/projection/assemble/authored_rules.rs
       - crates/vize_canon/src/projection/assemble/authored_rules/**
       - tests/tooling/canon-upstream-diagnostics.test.ts
@@ -121,9 +121,10 @@ jobs:
         timeout-minutes: 12
         run: |
           set -euo pipefail
-          node --check tools/benchmarks/scripts/canon-instance-directives.mjs
-          node --check tools/benchmarks/scripts/canon-instance-directives-cases.mjs
-          node tools/benchmarks/scripts/canon-instance-directives.mjs "$GITHUB_WORKSPACE" "$RUNNER_TEMP/instance-directive-provider" "$RUNNER_TEMP/instance-directives/binaries/base/vize" "$RUNNER_TEMP/instance-directives/binaries/head/vize" "$RUNNER_TEMP/instance-directives/packets"
+          for source in tools/benchmarks/scripts/canon-instance-directives*.ts; do
+            node --check "$source"
+          done
+          node tools/benchmarks/scripts/canon-instance-directives.ts "$GITHUB_WORKSPACE" "$RUNNER_TEMP/instance-directive-provider" "$RUNNER_TEMP/instance-directives/binaries/base/vize" "$RUNNER_TEMP/instance-directives/binaries/head/vize" "$RUNNER_TEMP/instance-directives/packets"
       - name: Run the unchanged 230-project authored upstream oracle
         shell: bash
         timeout-minutes: 12

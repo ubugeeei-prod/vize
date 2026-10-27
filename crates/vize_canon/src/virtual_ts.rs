@@ -77,7 +77,6 @@ pub use generator::{
     generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
-pub(crate) use helpers::CONTENT_MAPPER_HELPERS_MODULE;
 #[cfg(feature = "native")]
 pub(crate) use helpers::ERROR_COMPONENT_STUB;
 pub use helpers::{
@@ -145,7 +144,7 @@ pub(crate) use types::AuthoredScriptMetadata;
 pub(crate) use types::ResolveStyleClassNames;
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::VirtualTsCheckOptions;
-pub(crate) use types::VirtualTsGenerationOptions;
+pub(crate) use types::{ComponentHelperModule, VirtualTsGenerationOptions};
 
 pub fn generate_virtual_ts_with_offsets_and_lib_references(
     summary: &vize_croquis::Croquis,

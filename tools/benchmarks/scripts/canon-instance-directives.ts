@@ -1,122 +1,52 @@
-import { cases, referenceSource } from "./canon-instance-directives-cases.mjs";
 /** Actual source CLI/native directive receipts; no performance claim. */
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const save = (file, value) => {
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
+import { cases, referenceSource } from "./canon-instance-directives-cases.ts";
+import {
+  assertErrors,
+  isExecutableFactory,
+  jsonValue,
+  manifest,
+  packet,
+  request,
+  type PacketObservation,
+} from "./canon-instance-directives-model.ts";
+import {
+  hash,
+  identify,
+  run,
+  save,
+  wrapperSource,
+  type Identity,
+} from "./canon-instance-directives-io.ts";
+export { packet } from "./canon-instance-directives-model.ts";
+export { cases } from "./canon-instance-directives-cases.ts";
+
+type Role = "base" | "head";
+type Provider = { version: string; manifest: Identity };
+type Observation = {
+  id: string;
+  sourceSha256: string;
+  base: PacketObservation["diagnostics"];
+  head: PacketObservation["diagnostics"];
+  virtualTsUnchanged: boolean;
 };
-const identify = (file) => {
-  const actual = fs.realpathSync(file),
-    bytes = fs.readFileSync(actual);
-  return { path: actual, bytes: bytes.length, sha256: hash(bytes) };
-};
-const point = (source, token, last = false) => {
-  const at = last ? source.lastIndexOf(token) : source.indexOf(token);
-  assert.ok(at >= 0, "missing owned token: " + token);
-  const lines = source.slice(0, at).split(/\r\n|[\r\n\u2028\u2029]/u);
-  return { line: lines.length, column: lines.at(-1).length + 1 };
-};
-export function packet(stdout, status, directory) {
-  const result = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(stdout));
-  assert.ok(Array.isArray(result.files));
-  const diagnostics = result.files.flatMap((file) => {
-    assert.ok(Array.isArray(file.diagnostics));
-    return file.diagnostics.map((text) => {
-      const m = /^(error|warning):(\d+):(\d+) (?:\[TS(\d+)\] )?([\s\S]+)$/u.exec(text);
-      assert.ok(m, "unrecognized complete diagnostic: " + text);
-      return {
-        file: path.relative(directory, path.resolve(directory, file.file)),
-        severity: m[1],
-        line: +m[2],
-        column: +m[3],
-        code: m[4] ? +m[4] : null,
-        message: m[5],
-        raw: text,
-      };
-    });
-  });
-  assert.equal(result.errorCount, diagnostics.filter((d) => d.severity === "error").length);
-  assert.ok(status === 0 || status === 1);
-  assert.equal(status === 0, result.errorCount === 0);
-  return { result, diagnostics };
-}
-function run(output, name, executable, argv, cwd, env = process.env) {
-  const r = spawnSync(executable, argv, { cwd, env, timeout: 90_000, maxBuffer: 64 * 1024 * 1024 });
-  const prefix = path.join(output, name),
-    stdout = r.stdout ?? Buffer.alloc(0),
-    stderr = r.stderr ?? Buffer.alloc(0);
-  fs.mkdirSync(path.dirname(prefix), { recursive: true });
-  fs.writeFileSync(prefix + ".stdout.bin", stdout);
-  fs.writeFileSync(prefix + ".stderr.bin", stderr);
-  save(prefix + ".process.json", {
-    executable: identify(executable),
-    argv,
-    cwd,
-    status: r.status,
-    signal: r.signal,
-    error: r.error?.message ?? null,
-    stdoutSha256: hash(stdout),
-    stderrSha256: hash(stderr),
-    environment: Object.fromEntries(
-      ["CORSA_PATH", "PATH", "GOMAXPROCS", "RAYON_NUM_THREADS", "NODE_OPTIONS", "NODE_PATH"].map(
-        (key) => [key, env[key] ?? null],
-      ),
-    ),
-  });
-  assert.equal(r.error, undefined, r.error?.message);
-  assert.equal(r.signal, null);
-  return { ...r, stdout, stderr };
-}
 const augmentation =
   'import "vue";\ndeclare module "vue" {\n  interface ComponentCustomProperties {\n    x: number;\n    pluginMethod(value: string): string;\n  }\n}\nexport {};\n';
-const wrapperSource = [
-  "#!/usr/bin/env node",
-  "import fs from 'node:fs'; import path from 'node:path'; import {spawnSync} from 'node:child_process';",
-  "const root=process.env.VIZE_DIRECTIVE_NATIVE_CAPTURE; fs.mkdirSync(root,{recursive:true});",
-  "const out=fs.mkdtempSync(path.join(root,'call-')),argv=process.argv.slice(2);",
-  "fs.writeFileSync(path.join(out,'request.json'),JSON.stringify({executable:process.env.VIZE_DIRECTIVE_NATIVE,argv,cwd:process.cwd()}));",
-  "const pi=argv.indexOf('--project'); if(pi>=0){const cfg=path.resolve(process.cwd(),argv[pi+1]);fs.copyFileSync(cfg,path.join(out,'tsconfig.json'));}",
-  "const r=spawnSync(process.env.VIZE_DIRECTIVE_NATIVE,argv,{env:process.env,cwd:process.cwd(),maxBuffer:64*1024*1024,timeout:85000});",
-  "fs.writeFileSync(path.join(out,'stdout.bin'),r.stdout??Buffer.alloc(0));fs.writeFileSync(path.join(out,'stderr.bin'),r.stderr??Buffer.alloc(0));",
-  "fs.writeFileSync(path.join(out,'response.json'),JSON.stringify({status:r.status,signal:r.signal,error:r.error?.message??null}));",
-  "if(r.stdout?.length)await new Promise(resolve=>process.stdout.write(r.stdout,resolve));",
-  "if(r.stderr?.length)await new Promise(resolve=>process.stderr.write(r.stderr,resolve));",
-  "if(r.signal)process.kill(process.pid,r.signal);else process.exitCode=r.status??1;",
-  "",
-].join("\n");
-function assertErrors(row, observed) {
-  const expected = row.errors.map(({ code, token, last }) => ({
-    file: "main.vue",
-    severity: "error",
-    code,
-    ...point(row.source, token, last),
-  }));
-  const order = (a, b) => a.line - b.line || a.column - b.column || a.code - b.code;
-  assert.deepEqual(
-    observed.map(({ message, raw, ...rest }) => rest).sort(order),
-    expected.sort(order),
-    row.id,
-  );
-  for (const d of observed) {
-    if (d.code === 2578) assert.match(d.message, /^Unused '@ts-expect-error' directive\./u);
-    if (d.code === 2339)
-      assert.match(
-        d.message,
-        /^Property '[^']+' does not exist on (?:type |the component instance\.)/u,
-      );
-    if (d.code === 2345) assert.match(d.message, /^Argument of type /u);
-  }
-}
-export async function main(argv) {
+
+export async function main(argv: string[]): Promise<void> {
   assert.equal(argv.length, 5, "sourceRoot providerRoot baseCli headCli captureRoot");
   const [sourceRoot, providerRoot, baseCli, headCli, output] = argv.map((file) =>
     path.resolve(file),
+  );
+  assert.ok(
+    sourceRoot !== undefined &&
+      providerRoot !== undefined &&
+      baseCli !== undefined &&
+      headCli !== undefined &&
+      output !== undefined,
   );
   fs.mkdirSync(output, { recursive: true });
   const fixture = path.join(
@@ -126,28 +56,32 @@ export async function main(argv) {
   const original = fs.readFileSync(path.join(fixture, "tsc/#3488/main.vue"), "utf8");
   const baseConfig = fs.readFileSync(path.join(fixture, "tsconfig.base.json")),
     config = fs.readFileSync(path.join(fixture, "tsc/#3488/tsconfig.json"));
-  const providers = {};
-  for (const [name, version] of [
+  const providers: Record<string, Provider> = {};
+  const versions: Array<[string, string]> = [
     ["vue", "3.6.0-rc.6"],
     ["typescript", "6.0.3"],
     ["native-typescript", "7.1.0-beta"],
-  ]) {
+  ];
+  for (const [name, version] of versions) {
     const file = path.join(providerRoot, "node_modules", name, "package.json"),
-      manifest = JSON.parse(fs.readFileSync(file));
-    assert.equal(manifest.version, version);
+      actual = manifest(jsonValue(fs.readFileSync(file, "utf8")));
+    assert.equal(actual.version, version);
     providers[name] = { version, manifest: identify(file) };
-    save(path.join(output, "providers", name + ".manifest.json"), manifest);
+    save(path.join(output, "providers", name + ".manifest.json"), actual);
   }
-  const getExe = (
-    await import(
-      pathToFileURL(path.join(providerRoot, "node_modules/native-typescript/lib/getExePath.js"))
-        .href
-    )
-  ).default;
-  const native = fs.realpathSync(getExe());
+  const loader: unknown = await import(
+    pathToFileURL(path.join(providerRoot, "node_modules/native-typescript/lib/getExePath.js")).href
+  );
+  assert.ok(isExecutableFactory(loader), "invalid native executable factory");
+  const candidate = loader.default();
+  assert.ok(typeof candidate === "string", "native executable path must be a string");
+  const native = fs.realpathSync(candidate);
   assert.ok(native.startsWith(fs.realpathSync(providerRoot) + path.sep));
   const platformManifest = path.resolve(path.dirname(native), "../package.json");
-  assert.equal(JSON.parse(fs.readFileSync(platformManifest)).version, "7.1.0-beta");
+  assert.equal(
+    manifest(jsonValue(fs.readFileSync(platformManifest, "utf8"))).version,
+    "7.1.0-beta",
+  );
   const jsCompiler = path.join(providerRoot, "node_modules/typescript/bin/tsc");
   const version = run(output, "providers/native-version", native, ["--version"], providerRoot);
   assert.equal(version.status, 0);
@@ -178,7 +112,7 @@ export async function main(argv) {
   });
   const wrapper = path.join(output, "native-observer.mjs");
   fs.writeFileSync(wrapper, wrapperSource, { mode: 0o755 });
-  const observations = [];
+  const observations: Observation[] = [];
   for (const row of cases(original)) {
     const directory = path.join(output, "projects", row.id, "test-workspace/tsc/#3488"),
       workspace = path.resolve(directory, "../..");
@@ -200,12 +134,13 @@ export async function main(argv) {
     ];
     const inputs = inputPaths.map(identify);
     save(path.join(output, "cases", row.id, "input.json"), { ...row, inputs });
-    const roles = {};
-    for (const [role, binary] of [
+    const roles: Partial<Record<Role, PacketObservation>> = {};
+    const products: Array<[Role, string]> = [
       ["base", baseCli],
       ["head", headCli],
-    ]) {
-      const env = {
+    ];
+    for (const [role, binary] of products) {
+      const env: NodeJS.ProcessEnv = {
         ...process.env,
         NO_COLOR: "1",
         CORSA_PATH: wrapper,
@@ -230,47 +165,52 @@ export async function main(argv) {
         directory,
         env,
       );
-      roles[role] = packet(result.stdout, result.status, directory);
+      const parsed = packet(result.stdout, result.status, directory);
+      roles[role] = parsed;
       assert.ok(
-        roles[role].result.files.some(
+        parsed.result.files.some(
           (file) => path.basename(file.file) === "main.vue" && typeof file.virtualTs === "string",
         ),
       );
-      save(path.join(output, "cases", row.id, role, "packet.json"), roles[role]);
+      save(path.join(output, "cases", row.id, role, "packet.json"), parsed);
       assert.deepEqual(
         inputPaths.map(identify),
         inputs,
         "source/config must remain byte-identical",
       );
-      const nativeCalls = fs
-        .readdirSync(env.VIZE_DIRECTIVE_NATIVE_CAPTURE)
-        .filter((name) => name.startsWith("call-"));
+      const nativeCapture = env.VIZE_DIRECTIVE_NATIVE_CAPTURE;
+      assert.ok(typeof nativeCapture === "string");
+      const nativeCalls = fs.readdirSync(nativeCapture).filter((name) => name.startsWith("call-"));
       assert.ok(
         nativeCalls.some((name) =>
-          JSON.parse(
-            fs.readFileSync(path.join(env.VIZE_DIRECTIVE_NATIVE_CAPTURE, name, "request.json")),
+          request(
+            jsonValue(fs.readFileSync(path.join(nativeCapture, name, "request.json"), "utf8")),
           ).argv.includes("--project"),
         ),
         "real native checking must occur",
       );
     }
-    const virtual = (role) =>
-      roles[role].result.files
+    const base = roles.base,
+      head = roles.head;
+    assert.ok(base && head, "both source roles must return complete packets");
+    const virtual = (value: PacketObservation) =>
+      value.result.files
         .map(({ file, virtualTs }) => ({ file, virtualTs }))
-        .sort((a, b) => a.file.localeCompare(b.file));
-    assert.deepEqual(
-      virtual("base"),
-      virtual("head"),
-      row.id + ": complete production VTS unchanged",
-    );
-    assertErrors(row, roles.head.diagnostics);
-    for (const d of roles.head.diagnostics)
+        .sort((left, right) => left.file.localeCompare(right.file));
+    assert.deepEqual(virtual(base), virtual(head), row.id + ": complete production VTS unchanged");
+    assertErrors(row, head.diagnostics);
+    for (const diagnostic of head.diagnostics)
       assert.ok(
-        roles.base.diagnostics.some((before) => JSON.stringify(before) === JSON.stringify(d)),
+        base.diagnostics.some((before) => JSON.stringify(before) === JSON.stringify(diagnostic)),
         row.id + ": retained complete diagnostic changed",
       );
     if (row.original)
-      assert.deepEqual(roles.base.diagnostics.map((d) => d.code).sort(), [2339, 2578]);
+      assert.deepEqual(
+        base.diagnostics
+          .map((diagnostic) => diagnostic.code)
+          .sort((left, right) => (left ?? 0) - (right ?? 0)),
+        [2339, 2578],
+      );
     const reference = path.join(output, "references", row.id);
     fs.mkdirSync(reference, { recursive: true });
     fs.symlinkSync(
@@ -308,11 +248,15 @@ export async function main(argv) {
         reference,
       );
       const codes = [...result.stdout.toString().matchAll(/^.+\(\d+,\d+\): error TS(\d+):/gmu)]
-        .map((m) => +m[1])
-        .sort();
+        .map((match) => {
+          const code = match[1];
+          assert.ok(code !== undefined);
+          return +code;
+        })
+        .sort((left, right) => left - right);
       assert.deepEqual(
         codes,
-        row.errors.map((d) => d.code).sort(),
+        row.errors.map((diagnostic) => diagnostic.code).sort((left, right) => left - right),
         row.id + ": independent " + kind + " reference",
       );
       assert.equal(result.status === 0, codes.length === 0);
@@ -320,8 +264,8 @@ export async function main(argv) {
     observations.push({
       id: row.id,
       sourceSha256: hash(row.source),
-      base: roles.base.diagnostics,
-      head: roles.head.diagnostics,
+      base: base.diagnostics,
+      head: head.diagnostics,
       virtualTsUnchanged: true,
     });
   }
