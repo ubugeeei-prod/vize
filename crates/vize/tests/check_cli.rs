@@ -604,13 +604,13 @@ export {}
         .output()
         .unwrap();
 
+    capture_nuxt_computed_membership_process(&project_root, "referenced-native", &output);
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let stderr = std::string::String::from_utf8(output.stderr).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
         panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
     });
 
-    capture_nuxt_computed_membership_process(&project_root, "referenced-native", &output);
     let mut expected_positive = expected_negative;
     expected_positive["files"][1]["diagnostics"] = serde_json::json!([]);
     expected_positive["programs"][0]["files"] =
