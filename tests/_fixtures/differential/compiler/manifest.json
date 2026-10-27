@@ -1657,10 +1657,10 @@
         "source": "Authenticated CLI 3bfe310301328e45bb33ffa56cc3d2fbfe7f3945; https://github.com/ubugeeei-prod/vize/actions/runs/40558736347/job/122381720310; two identical executions; complete raw CLI packet and producer/replay custody retained in ssr.source-output.json.txt and ssr-reference.json."
       },
       "adapters": {
-        "legacy": "compiler-cli-ssr-template-v1",
+        "legacy": "compiler-cli-ssr-v1",
         "native": null,
         "reasons": {
-          "native": "Whole-product native quirks compilation remains unavailable; this row records the source-built compatibility adapter result only."
+          "native": "Whole-product native SFC and Vue markup paths remain unavailable; this row records the authenticated source-built compatibility adapter result."
         }
       },
       "comparison": {
@@ -1675,15 +1675,16 @@
         "scriptLang": "ts"
       },
       "dialectCoverage": {
-        "state": "verified",
-        "registryRef": "tests/_fixtures/differential/dialect-inputs/inventory.json",
+        "state": "source-inspected",
+        "registryRef": null,
         "evidence": [
           {
-            "kind": "adapter-execution",
+            "kind": "source-inspection",
             "dialects": [
-              "vue-quirks"
+              "vue3-sfc",
+              "html-template"
             ],
-            "selector": "compiler-cli-ssr-template-v1 default Vue 3; --template-syntax quirks; parser quirks"
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
       }
