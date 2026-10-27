@@ -65,9 +65,11 @@ jobs:
       - name: Preserve actual executable and providers
         if: ${{ always() }}
         run: |
-          if [[ -f "$CARGO_TARGET_DIR/ci/vize" ]]; then
-            sha256sum "$CARGO_TARGET_DIR/ci/vize" > "$RUNNER_TEMP/nuxt-membership-packets/binary-sha256.txt"
-            "$CARGO_TARGET_DIR/ci/vize" --version > "$RUNNER_TEMP/nuxt-membership-packets/binary-version.txt"
+          binary="${CARGO_TARGET_DIR:-target}/ci/vize"
+          test -f "$binary"
+          if [[ -f "$binary" ]]; then
+            sha256sum "$binary" > "$RUNNER_TEMP/nuxt-membership-packets/binary-sha256.txt"
+            "$binary" --version > "$RUNNER_TEMP/nuxt-membership-packets/binary-version.txt"
           fi
           node -e 'const fs=require("node:fs"); for(const p of ["tests/node_modules/vue-tsc/package.json","tests/node_modules/typescript/package.json","node_modules/@typescript/typescript-linux-x64/package.json"]) if(fs.existsSync(p)) console.log(p,fs.readFileSync(p,"utf8"));' > "$RUNNER_TEMP/nuxt-membership-packets/providers.txt"
       - name: Preserve every complete packet and original input
