@@ -1,6 +1,34 @@
 use super::{FormatOptions, format_template_content};
 
 #[test]
+fn pinned_zy_player_sfc_is_idempotent_in_every_profile() {
+    // Complete upstream source, license and revision/hash provenance are kept
+    // together so PR library tests cover the real failure without hydration.
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/zy-player-10908/Play.vue.txt"
+    ));
+    for preset in [
+        crate::FormatPreset::Vize,
+        crate::FormatPreset::Prettier,
+        crate::FormatPreset::Compact,
+        crate::FormatPreset::Documentation,
+    ] {
+        let options = FormatOptions::from_preset(preset);
+        let first = crate::format_sfc(source, &options).unwrap();
+        let second = crate::format_sfc(&first.code, &options).unwrap();
+        assert_eq!(
+            second.code, first.code,
+            "{preset:?} must reach a fixed point"
+        );
+        assert!(
+            !second.changed,
+            "{preset:?} must report an unchanged second pass"
+        );
+    }
+}
+
+#[test]
 fn adjacent_interpolation_expansion_is_included_in_closing_tag_width() {
     // #10908: minimized from ZY Player's Play.vue. The first pass used the
     // shorter authored {{name}} width, while the second saw {{ name }}.
