@@ -12,7 +12,7 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
         let mut package_root = None;
         let mut vite_root: Option<PathBuf> = None;
         while directory.starts_with(workspace) {
-            vize_l0::micro_count!("fs.read_dir.calls", 1);
+            vize_l0::micro_count!("fs.directory_scan.calls", 1);
             let markers = directory_markers(directory);
             if markers.typescript {
                 if package_root.is_some()
@@ -78,7 +78,7 @@ fn directory_markers(directory: &Path) -> DirectoryMarkers {
 }
 
 fn standard_directory_markers(directory: &Path) -> DirectoryMarkers {
-    vize_l0::micro_count!("fs.read_dir.standard.calls", 1);
+    vize_l0::micro_count!("fs.read_dir.calls", 1);
     let mut markers = DirectoryMarkers::default();
     if let Ok(entries) = std::fs::read_dir(directory) {
         for entry in entries.flatten() {

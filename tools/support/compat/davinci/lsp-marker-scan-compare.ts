@@ -122,7 +122,18 @@ export function compareLspMarkerScans(directory: string) {
   }
   const profiles = {} as Record<
     "base" | "head",
-    { root: SourceSpan; allocation: unknown; calls: number; entries: number }
+    {
+      root: SourceSpan;
+      allocation: unknown;
+      calls: number;
+      entries: number;
+      operations: {
+        directoryScanCounter: string;
+        standardReadDirCalls: number;
+        getdents64Calls: number;
+        getdents64Bytes: number;
+      };
+    }
   >;
   let profileBuild: Identity["build"] | undefined;
   for (const role of ["base", "head"] as const) {
@@ -150,12 +161,32 @@ export function compareLspMarkerScans(directory: string) {
     );
     assert.ok(root && root.count > 0 && root.alloc.self_calls > 0 && root.alloc.self_bytes > 0);
     const entryCounter = profile.micro.filter((counter) => counter.name === "fs.read_dir.entries");
-    const calls = profile.micro
-      .filter((counter) => counter.name === "fs.read_dir.calls")
-      .reduce((sum, counter) => sum + counter.units, 0);
+    const sum = (name: string) =>
+      profile.micro
+        .filter((counter) => counter.name === name)
+        .reduce((total, counter) => total + counter.units, 0);
+    // Earlier sources always called std::fs::read_dir for every scan. New
+    // sources distinguish that real API call from a native scan attempt.
+    const directoryScanCounter = profile.micro.some(
+      (counter) => counter.name === "fs.directory_scan.calls",
+    )
+      ? "fs.directory_scan.calls"
+      : "fs.read_dir.calls";
+    const calls = sum(directoryScanCounter);
     const entries = entryCounter.reduce((sum, counter) => sum + counter.units, 0);
     assert.ok(calls > 0 && entries > baseline.workspace_files);
-    profiles[role] = { root, allocation: profile.allocation, calls, entries };
+    profiles[role] = {
+      root,
+      allocation: profile.allocation,
+      calls,
+      entries,
+      operations: {
+        directoryScanCounter,
+        standardReadDirCalls: sum("fs.read_dir.calls"),
+        getdents64Calls: sum("fs.getdents64.calls"),
+        getdents64Bytes: sum("fs.getdents64.bytes"),
+      },
+    };
   }
   assert.ok(
     profiles.head.root.alloc.self_calls < profiles.base.root.alloc.self_calls,
