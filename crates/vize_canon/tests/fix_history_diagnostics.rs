@@ -1143,3 +1143,18 @@ fn empty_v_slot_expressions_keep_slot_scopes_checked() {
         ],
     );
 }
+
+#[test]
+fn template_ref_signatures_preserve_readonly_unknown_and_repairs() {
+    check_pack(
+        "template-ref-signatures-10948",
+        "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+        "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+        Some(10948),
+        &[
+            "valid-imported-signatures",
+            "invalid-original-operations",
+            "repaired-imported-signatures",
+        ],
+    );
+}

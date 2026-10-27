@@ -7920,6 +7920,182 @@
       }
     },
     {
+      "id": "typechecker/template-ref-signatures-10948/valid-imported-signatures",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-ref-signatures-10948",
+      "case": "valid-imported-signatures",
+      "test": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+      "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "packReference": {
+        "path": "template-ref-signatures-10948/cases.json",
+        "sha256": "c317cd1ab3ed8c9ed33136e8850b5f147eb69bf81ebbcda4eaa867efaa6daec3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-signatures-10948/tsconfig.json.txt",
+          "sha256": "f799251cc94f1c9a82b8bfdead1e08bf9c5f7f2a7a32f86da3bf0bf1952044ff"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "path": "template-ref-signatures-10948/NestedReadonly-valid.vue.txt",
+          "sha256": "cd805ea2c70e49a3ad41a42c3d50495cbde9a74c4cc48fa2d43f2ad7841a885a"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "path": "template-ref-signatures-10948/NestedUnknown-valid.vue.txt",
+          "sha256": "0610a48ab03c071a5eece860fb5aacedf3e5978aae7cb480a899c88442eab8a3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/template-ref-signatures-10948/invalid-original-operations",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-ref-signatures-10948",
+      "case": "invalid-original-operations",
+      "test": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+      "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "packReference": {
+        "path": "template-ref-signatures-10948/cases.json",
+        "sha256": "c317cd1ab3ed8c9ed33136e8850b5f147eb69bf81ebbcda4eaa867efaa6daec3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-signatures-10948/tsconfig.json.txt",
+          "sha256": "f799251cc94f1c9a82b8bfdead1e08bf9c5f7f2a7a32f86da3bf0bf1952044ff"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "path": "template-ref-signatures-10948/NestedReadonly.vue.txt",
+          "sha256": "1634fe69ef6cbe73db588afbe6b3e1af40734003e5f141e40959f183585e1906"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "path": "template-ref-signatures-10948/NestedUnknown.vue.txt",
+          "sha256": "31dc7ebacec99b1e3e7ce1a13f76c22d037ce09ece193e258706014023e9cdfa"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/NestedReadonly.vue",
+          "line": 5,
+          "column": 11,
+          "severity": 1,
+          "code": 2540,
+          "message": "Cannot assign to 'value' because it is a read-only property."
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "line": 5,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingNestedUnknown' does not exist on type '{}'."
+        }
+      ]
+    },
+    {
+      "id": "typechecker/template-ref-signatures-10948/repaired-imported-signatures",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-ref-signatures-10948",
+      "case": "repaired-imported-signatures",
+      "test": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+      "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "packReference": {
+        "path": "template-ref-signatures-10948/cases.json",
+        "sha256": "c317cd1ab3ed8c9ed33136e8850b5f147eb69bf81ebbcda4eaa867efaa6daec3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-signatures-10948/tsconfig.json.txt",
+          "sha256": "f799251cc94f1c9a82b8bfdead1e08bf9c5f7f2a7a32f86da3bf0bf1952044ff"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "path": "template-ref-signatures-10948/NestedReadonly-valid.vue.txt",
+          "sha256": "cd805ea2c70e49a3ad41a42c3d50495cbde9a74c4cc48fa2d43f2ad7841a885a"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "path": "template-ref-signatures-10948/NestedUnknown-valid.vue.txt",
+          "sha256": "0610a48ab03c071a5eece860fb5aacedf3e5978aae7cb480a899c88442eab8a3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
       "id": "typechecker/template-suppression-original/complete-original-template-suppression",
       "state": "active",
       "targets": ["batch"],
