@@ -1,0 +1,15 @@
+<template>
+  <component :is="as">{{ title }}</component>
+</template>
+
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
+export default defineComponent({
+  name: 'Heading',
+  props: {
+    title: { type: String, required: true },
+    as: { type: String as PropType<'h1' | 'h2'>, default: 'h1' },
+  },
+})
+</script>
