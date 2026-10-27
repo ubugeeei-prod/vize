@@ -190,6 +190,10 @@ impl<'a, C: Config> Lexer<'a, C> {
         (self.source.offset(), self.token)
     }
 
+    pub(crate) fn restore_failed_speculative_token(&mut self, token: Token) {
+        self.token = token;
+    }
+
     /// Remaining string from `Source`
     pub fn remaining(&self) -> &'a str {
         self.source.remaining()

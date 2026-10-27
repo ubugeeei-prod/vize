@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/expression-overlap-audit.yml
-      - tools/support/compat/parser/expression-overlap-cases.py
+      - tools/support/compat/parser/**
       - vendor/oxc_parser/**
       - tests/fuzz/regressions/js_ts_expression/issue-10845*
   workflow_dispatch: {}
@@ -20,16 +20,16 @@ jobs:
       fail-fast: false
       matrix: { role: [baseline, candidate] }
     env:
-      CARGO_INCREMENTAL: '0'
+      CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
       ROLE: ${{ matrix.role }}
       DRIVER_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       SOURCE_SHA: ${{ matrix.role == 'baseline' && '9157b9fa83dbdc98100be084be288f21d0d1bc18' || github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: '${{ env.DRIVER_SHA }}', path: driver, persist-credentials: false }
+        with: { ref: "${{ env.DRIVER_SHA }}", path: driver, persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: '${{ env.SOURCE_SHA }}', path: source, persist-credentials: false }
+        with: { ref: "${{ env.SOURCE_SHA }}", path: source, persist-credentials: false }
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
         with: { toolchain: nightly-2026-10-23 }
       - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -46,12 +46,16 @@ jobs:
           test "$(git -C driver rev-parse HEAD)" = "$DRIVER_SHA"
           python3 driver/tools/support/compat/parser/expression-overlap-cases.py driver "$GITHUB_WORKSPACE/evidence/cases"
           cp driver/vendor/oxc_parser/examples/failed_speculation_profile.rs source/vendor/oxc_parser/examples/
+          cp driver/tools/support/compat/parser/frozen-private-facts.rs source/vendor/oxc_parser/src/expression_overlap_private_facts.rs
+          printf '\n#[cfg(test)]\nmod expression_overlap_private_facts;\n' >> source/vendor/oxc_parser/src/lib.rs
+          cp driver/tools/support/compat/parser/frozen-10682-observer.rs source/crates/vize_atelier_core/examples/fuzz_expression_raw_close_observe.rs
           cp driver/crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs source/crates/vize_atelier_core/examples/
           {
             printf 'source_sha=%s\ndriver_sha=%s\nrole=%s\n' "$SOURCE_SHA" "$DRIVER_SHA" "$ROLE"
             rustc +nightly-2026-10-23 -Vv
             uname -a
-            sha256sum driver/vendor/oxc_parser/examples/failed_speculation_profile.rs
+            sha256sum driver/vendor/oxc_parser/examples/failed_speculation_profile.rs driver/tools/support/compat/parser/frozen-private-facts.rs driver/tools/support/compat/parser/frozen-10682-observer.rs driver/tools/support/compat/parser/historical-10682.tar.gz
+            git -C source diff -- src/lib.rs vendor/oxc_parser/src/lib.rs
             git -C source status --short
             echo 'No compiled target restored. Fresh process per timing sample; each sample creates and drops a fresh allocator/parser. OS cache is not flushed.'
           } > evidence/provenance.txt
@@ -61,15 +65,16 @@ jobs:
       - name: Build immutable optimized source and frozen drivers
         id: build
         working-directory: source
-        env: { CARGO_PROFILE_CI_OPT_DEBUG: '1' }
+        env: { CARGO_PROFILE_CI_OPT_DEBUG: "1" }
         run: |
           set -euo pipefail
-          cargo +nightly-2026-10-23 build --locked --profile ci-opt -p vize_oxc_parser --example failed_speculation_profile -p vize_atelier_core --example fuzz_expression_10401_profile 2>&1 | tee ../evidence/optimized-build.log
+          cargo +nightly-2026-10-23 build --locked --profile ci-opt -p vize_oxc_parser --example failed_speculation_profile -p vize_atelier_core --example fuzz_expression_10401_profile --example fuzz_expression_raw_close_observe 2>&1 | tee ../evidence/optimized-build.log
       - name: Compare complete observable packets and separate admission from parser work
         run: |
           set -euo pipefail
           export PROFILE_BINARY="$CARGO_TARGET_DIR/ci-opt/examples/failed_speculation_profile"
           export GUARD_BINARY="$CARGO_TARGET_DIR/ci-opt/examples/fuzz_expression_10401_profile"
+          export HISTORICAL_OBSERVER="$CARGO_TARGET_DIR/ci-opt/examples/fuzz_expression_raw_close_observe"
           sha256sum "$PROFILE_BINARY" "$GUARD_BINARY" > evidence/optimized-binaries.sha256
           python3 - <<'PY'
           import json, os, subprocess
@@ -84,6 +89,16 @@ jobs:
                   assert json.loads(inspection)['safe'], f'{name} no longer reaches parser'
               with (root/f'{name}.packets.txt').open('wb') as output:
                   subprocess.run([os.environ['PROFILE_BINARY'], 'packets', str(path)], stdout=output, check=True, timeout=90)
+              if 'historical_id' in case:
+                  historical_id = case['historical_id']
+                  for kind, command in [
+                      ('controls', [os.environ['GUARD_BINARY'], 'controls', str(path)]),
+                      ('program-observer', [os.environ['HISTORICAL_OBSERVER'], str(path)]),
+                  ]:
+                      actual = subprocess.check_output(command, timeout=90)
+                      expected = (root/f'cases/historical-packets/{historical_id}.{kind}.json').read_bytes()
+                      assert json.loads(actual) == json.loads(expected), f'{historical_id}: historical complete {kind} changed'
+                      (root/f'{name}.historical-{kind}.json').write_bytes(actual)
               timings = []
               for _ in range(5):
                   timings.append(json.loads(subprocess.check_output([os.environ['PROFILE_BINARY'], 'time', str(path), '1'], timeout=30)))
@@ -99,14 +114,18 @@ jobs:
             timeout 180 valgrind --tool=callgrind --callgrind-out-file="evidence/$name.callgrind" "$binary" time "evidence/cases/$name" 1 > "evidence/$name.profile.json" 2> "evidence/$name.profile.log"
             callgrind_annotate --inclusive=yes --tree=both --auto=yes "evidence/$name.callgrind" > "evidence/$name.source-profile.txt"
           done
-      - name: Require full private parser correctness and causal work reduction
-        if: matrix.role == 'candidate'
+      - name: Observe all private source facts and require candidate parser regressions
         working-directory: source
+        env:
+          VIZE_EXPRESSION_OVERLAP_CASES: ${{ github.workspace }}/evidence/cases
+          VIZE_EXPRESSION_OVERLAP_FACTS: ${{ github.workspace }}/evidence/private-source-facts.txt
         run: |
           set -euo pipefail
           target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-tests"
           test ! -e "$target"
-          CARGO_TARGET_DIR="$target" cargo +nightly-2026-10-23 test --locked -p vize_oxc_parser --profile ci -- --nocapture 2>&1 | tee ../evidence/private-parser-tests.log
+          filter=()
+          if [[ "$ROLE" == baseline ]]; then filter=(expression_overlap_private_facts::observe_private_source_facts); fi
+          CARGO_TARGET_DIR="$target" cargo +nightly-2026-10-23 test --locked -p vize_oxc_parser --profile ci "${filter[@]}" -- --nocapture 2>&1 | tee ../evidence/private-parser-tests.log
       - name: Replay original libFuzzer address sanitizer resource regime
         working-directory: source
         run: |
@@ -150,6 +169,7 @@ jobs:
           baseline, = root.glob('expression-overlap-baseline-*')
           candidate, = root.glob('expression-overlap-candidate-*')
           assert (baseline/'cases/manifest.json').read_bytes() == (candidate/'cases/manifest.json').read_bytes()
+          assert (baseline/'private-source-facts.txt').read_bytes() == (candidate/'private-source-facts.txt').read_bytes(), 'private raw source-fact observations changed'
           cases = json.loads((baseline/'cases/manifest.json').read_text())
           for case in cases:
               name = case['name']

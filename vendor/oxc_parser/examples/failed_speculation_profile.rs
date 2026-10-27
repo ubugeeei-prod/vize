@@ -61,13 +61,17 @@ fn packets(source: &str) {
                     result.tokens,
                     result.module_record,
                     result.irregular_whitespaces,
-                    (
-                        result.panicked,
-                        result.is_flow_language,
-                        result.has_legacy_literals,
-                        result.has_jsdoc_comments
-                    ),
+                    (result.panicked, result.is_flow_language),
                 );
+                let allocator = Allocator::default();
+                let observation = Parser::new(&allocator, source, source_type)
+                    .with_config(RuntimeParserConfig::new(tokens))
+                    .with_options(options)
+                    .parse_observed();
+                let facts = observation.admitted().map(|admitted| {
+                    (admitted.has_legacy_literals(), admitted.has_jsdoc_comments())
+                });
+                println!("original admitted source facts: {facts:?}");
                 let allocator = Allocator::default();
                 let result = Parser::new(&allocator, source, source_type)
                     .with_config(RuntimeParserConfig::new(tokens))

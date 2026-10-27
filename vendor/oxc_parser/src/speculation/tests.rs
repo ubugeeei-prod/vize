@@ -150,7 +150,7 @@ fn irreversible_side_effects_are_fenced_even_when_collection_lengths_match() {
     use super::SpeculativeProduction;
     use oxc_allocator::{Dummy, GetAllocator};
     use oxc_ast::ast::Expression;
-    for writer in 0..4 {
+    for writer in 0..5 {
         let allocator = Allocator::default();
         let mut parser = parser(&allocator, "[x]", SourceType::ts(), true);
         parser.bump_any();
@@ -163,6 +163,7 @@ fn irreversible_side_effects_are_fenced_even_when_collection_lengths_match() {
                     1 => p.module_record_builder.speculation_effects_revision += 1,
                     2 => p.lexer.trivia_builder.speculation_effects_revision += 1,
                     3 => p.state.encountered_await_identifier = true,
+                    4 => p.ctx.toggle(crate::Context::Decorator),
                     _ => unreachable!(),
                 }
                 p.set_unexpected();

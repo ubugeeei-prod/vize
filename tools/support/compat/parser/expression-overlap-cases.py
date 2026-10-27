@@ -1,6 +1,8 @@
 """Materialize immutable #10845/#10682 audit cases; no corpus mutation."""
 import hashlib
 import json
+import re
+import tarfile
 import sys
 from pathlib import Path
 
@@ -31,6 +33,34 @@ for label, suffix in [('x', b'\n// x'), ('greater', b'\n// >')]:
 for size in [4096, 8192, 16384]:
     # Historical #10682 raw size controls: admission rejects these prefixes.
     emit(f'10401-prefix-{size}.input', original[:size] + b'\n// >', False)
+for name, source in [
+    ('source-fact-jsdoc.input', b'/** @type {number} */ const x = 1;'),
+    ('source-fact-legacy.input', b'077'),
+    ('source-fact-generics.input', b'const result = f<Map<string, Array<number>>>(value);'),
+]:
+    emit(name, source, True)
 for count in [64, 128, 256]:
     emit(f'minimal-overlap-{count}.input', ('a < [a < [' * count + '>').encode(), False)
+archive = root / 'tools/support/compat/parser/historical-10682.tar.gz'
+assert hashlib.sha256(archive.read_bytes()).hexdigest() == '780df7dfa9517de9155d5dffa8ec167a1f9c98391f1dd107f735be80d361185a'
+observer = root / 'tools/support/compat/parser/frozen-10682-observer.rs'
+assert hashlib.sha256(observer.read_bytes()).hexdigest() == '9d095b94ec587d9f22cfa696a1bb5c6bd23813eced6a633d2989c6a270f05238'
+packets = destination / 'historical-packets'
+packets.mkdir()
+with tarfile.open(archive, 'r:gz') as retained:
+    def read(name):
+        return retained.extractfile(name).read()
+    index = json.loads(read('index.json'))
+    (packets / 'index.json').write_bytes(read('index.json'))
+    for case in index['cases']:
+        name = case['id']
+        assert re.fullmatch(r'[a-z0-9-]+', name), name
+        data = read(f'cases/{name}.input')
+        assert hashlib.sha256(data).hexdigest() == case['input_sha256']
+        emit(f'historical-10682-{name}.input', data, case['require_admission'])
+        manifest[-1]['historical_id'] = name
+        for kind in ['controls', 'program-observer']:
+            data = read(f'packets/{name}.{kind}.json')
+            assert hashlib.sha256(data).hexdigest() == case[kind+'_sha256']
+            (packets/f'{name}.{kind}.json').write_bytes(data)
 (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
