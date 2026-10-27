@@ -7,7 +7,9 @@ on:
       - crates/vize_croquis/src/script_parser/recovery/**
       - davinci/vize_l0/examples/source_recovery_benchmark.rs
       - davinci/vize_l0/tests/source_probes/mod.rs
-      - tools/benchmarks/scripts/recovery_cost_contract.py
+      - tools/benchmarks/scripts/recovery_cost_contract.ts
+      - tools/benchmarks/scripts/compare_recovery_cost.ts
+      - tools/benchmarks/scripts/profile-evidence-json.ts
   workflow_dispatch:
     inputs:
       base_sha:
@@ -31,7 +33,9 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
       - name: Reject invalid pinned recovery comparisons before building
-        run: python3 tools/benchmarks/scripts/recovery_cost_contract.py
+        run: node tools/benchmarks/scripts/recovery_cost_contract.ts
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0" }
       - run: rustup toolchain install 1.99.1 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
@@ -123,26 +127,7 @@ jobs:
             cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --features micro-profiling
             taskset -c "$cpus" "target/recovery-$role/ci-opt/examples/source_recovery_benchmark" 100 256 profile > "evidence/profile-$role.json"
           done
-          python3 - <<'PY'
-          import json, pathlib, statistics
-          root = pathlib.Path('evidence')
-          summary = {'scope': 'repeated source parse+analysis, not cold whole-project time', 'normal': {}}
-          for scenario in ('valid', 'incomplete-member'):
-              summary['normal'][scenario] = {}
-              for rows in (32, 256, 2048):
-                  data = {role: [json.loads((root/f'normal-{scenario}-{role}-{rows}-{n}.json').read_text()) for n in (1,2,3)] for role in ('base','head')}
-                  assert len({(x['sourceHash'], x['sourceBytes'], x['checksum'], x['iterations'], x['scenario']) for samples in data.values() for x in samples}) == 1
-                  summary['normal'][scenario][rows] = {role: {'samplesNs': [x['elapsedNs'] for x in samples], 'medianNs': statistics.median(x['elapsedNs'] for x in samples)} for role,samples in data.items()}
-          profiles = {role: json.loads((root/f'profile-{role}.json').read_text()) for role in ('base','head')}
-          assert profiles['base']['sourceHash'] == profiles['head']['sourceHash']
-          import sys
-          sys.path.insert(0, 'tools/benchmarks/scripts')
-          from recovery_cost_contract import validate
-          summary['recoveryComparison'] = validate(profiles)
-          summary['allocation'] = {role: x['allocation'] for role,x in profiles.items()}
-          (root/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
-          print('comparisonReceipt='+json.dumps({'identity': json.loads((root/'identity.json').read_text()), 'comparison': summary}, separators=(',', ':')))
-          PY
+          node tools/benchmarks/scripts/compare_recovery_cost.ts evidence
           rm evidence/normal-base evidence/normal-head
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: success()

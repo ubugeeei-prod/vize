@@ -7,7 +7,9 @@ on:
       - crates/vize_croquis/src/script_parser/recovery/**
       - davinci/vize_l0/examples/source_recovery_clone_benchmark.rs
       - davinci/vize_l0/tests/source_probes/mod.rs
-      - tools/benchmarks/scripts/compare_recovery_clone.py
+      - tools/benchmarks/scripts/compare_recovery_clone.ts
+      - tools/benchmarks/scripts/recovery_clone_contract.ts
+      - tools/benchmarks/scripts/profile-evidence-json.ts
   workflow_dispatch:
     inputs:
       base_sha:
@@ -29,6 +31,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0" }
       - run: rustup toolchain install 1.99.1 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
@@ -44,8 +48,8 @@ jobs:
           rustc +1.99.1 -vV > functional-evidence/rustc.txt
           lscpu > functional-evidence/cpu.txt
           python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed parser packets and counter laws; no throughput comparison"}))' > functional-evidence/resources.json
-          python3 tools/benchmarks/scripts/recovery_cost_contract.py | tee functional-evidence/recovery-class-controls.log
-          python3 tools/benchmarks/scripts/compare_recovery_clone.py --self-test | tee functional-evidence/clone-class-controls.log
+          node tools/benchmarks/scripts/recovery_cost_contract.ts | tee functional-evidence/recovery-class-controls.log
+          node tools/benchmarks/scripts/compare_recovery_clone.ts --self-test | tee functional-evidence/clone-class-controls.log
           cargo +1.99.1 test --locked --profile ci -p vize_croquis script_parser::recovery --message-format json -- --nocapture 2>&1 | tee functional-evidence/parser-packets.log
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling --message-format json 2>&1 | tee functional-evidence/source-counter-laws.log
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -66,6 +70,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0" }
       - run: rustup toolchain install 1.99.1 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
@@ -115,7 +121,7 @@ jobs:
               "allocation-evidence/instrumented-$role" 8 4096 profile "$scenario" > "allocation-evidence/profile-$scenario-$role-4096.json"
             done
           done
-          python3 tools/benchmarks/scripts/compare_recovery_clone.py allocation-tiny allocation-evidence
+          node tools/benchmarks/scripts/compare_recovery_clone.ts allocation-tiny allocation-evidence
       - name: Enforce allocation and parse-call laws on huge authored sources
         run: |
           set -euo pipefail
@@ -126,7 +132,7 @@ jobs:
               done
             done
           done
-          python3 tools/benchmarks/scripts/compare_recovery_clone.py allocation-matrix allocation-evidence
+          node tools/benchmarks/scripts/compare_recovery_clone.ts allocation-matrix allocation-evidence
           rm allocation-evidence/instrumented-base allocation-evidence/instrumented-head
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: success()
@@ -160,7 +166,9 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
       - name: Reject invalid clone comparisons before building
-        run: python3 tools/benchmarks/scripts/compare_recovery_clone.py --self-test
+        run: node tools/benchmarks/scripts/compare_recovery_clone.ts --self-test
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0" }
       - run: rustup toolchain install 1.99.1 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
@@ -250,7 +258,7 @@ jobs:
             done
           done
           sha256sum evidence/instrumented-base evidence/instrumented-head > evidence/instrumented-binaries.sha256
-          python3 tools/benchmarks/scripts/compare_recovery_clone.py tiny evidence
+          node tools/benchmarks/scripts/compare_recovery_clone.ts tiny evidence
       - name: Measure actual-code Unicode and CRLF sources on each size axis
         run: |
           set -euo pipefail
@@ -269,7 +277,7 @@ jobs:
               done
             done
           done
-          python3 tools/benchmarks/scripts/compare_recovery_clone.py matrix evidence
+          node tools/benchmarks/scripts/compare_recovery_clone.ts matrix evidence
           rm evidence/normal-base evidence/normal-head evidence/instrumented-base evidence/instrumented-head
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: success()

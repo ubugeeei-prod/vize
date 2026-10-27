@@ -66,3 +66,7 @@ attempt IDs. The shared carrier, actual source roots, immutable first parent,
 Cargo artifact manifests, features, profiles, lockfile and binary hashes are
 retained. A small summary artifact holds separate tiny and matrix JSON; full raw
 receipts remain available without uploading generated corpus files.
+
+The TypeScript evidence readers preserve JSON integer tokens with BigInt.
+Values beyond JavaScript's safe integer range are reported as exact decimal
+strings; raw Rust receipts retain their original integer tokens.
