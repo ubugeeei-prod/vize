@@ -84,14 +84,10 @@ fn computed_component_modifiers_are_admitted() {
 
 #[test]
 fn computed_once_element_events_remain_explicitly_unsupported() {
-    for source in [r#"<button v-once @[name]="save">go</button>"#] {
-        let allocator = Allocator::new();
-        assert!(
-            matches!(
-                lower_source_for_vapor(&allocator, source, options()),
-                VaporL3BridgeStatus::Legacy(_)
-            ),
-            "{source}"
-        );
-    }
+    let source = r#"<button v-once @[name]="save">go</button>"#;
+    let allocator = Allocator::new();
+    assert!(matches!(
+        lower_source_for_vapor(&allocator, source, options()),
+        VaporL3BridgeStatus::Legacy(_)
+    ));
 }

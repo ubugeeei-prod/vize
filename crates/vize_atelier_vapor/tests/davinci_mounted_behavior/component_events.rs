@@ -50,7 +50,12 @@ fn component_event_modifiers_deliver_emitted_and_fallthrough_once_listeners_once
         ("Box", "<button>click</button>", &[][..], "click"),
     ] {
         for backend in BACKENDS {
-            let source = format!(r#"<{name} @{event}.once="save" />"#);
+            let options = if name == "Box" {
+                ".capture.passive"
+            } else {
+                ""
+            };
+            let source = format!(r#"<{name} @{event}.once{options}="save" />"#);
             let trace = mounted_trace_with_components(
                 backend,
                 &source,
@@ -65,6 +70,59 @@ fn component_event_modifiers_deliver_emitted_and_fallthrough_once_listeners_once
             assert_eq!(trace[1]["events"], json!(["save"]), "{backend}: {name}");
             assert_eq!(trace[2]["events"], json!(["save"]), "{backend}: {name}");
         }
+    }
+}
+
+#[test]
+fn component_event_modifiers_rebind_dynamic_names_and_observe_cancellation() {
+    for backend in BACKENDS {
+        let trace = mounted_trace_with_components(
+            backend,
+            r#"<Box @[event].enter.prevent="record($event.defaultPrevented)" />"#,
+            &[("Box", "<input />", &[], &[])],
+            json!({"event": "keydown"}),
+            json!([
+                {"event": "keydown", "selector": "input", "key": "a", "observeEvent": true},
+                {"event": "keydown", "selector": "input", "key": "Enter", "observeEvent": true},
+                {"patch": {"event": "keyup"}},
+                {"event": "keydown", "selector": "input", "key": "Enter", "observeEvent": true},
+                {"event": "keyup", "selector": "input", "key": "Escape", "observeEvent": true},
+                {"event": "keyup", "selector": "input", "key": "Enter", "observeEvent": true}
+            ]),
+            false,
+        );
+        let accepted = json!({"dispatched": false, "defaultPrevented": true});
+        let rejected = json!({"dispatched": true, "defaultPrevented": false});
+        assert_eq!(trace[1]["events"], json!([rejected]), "{backend}");
+        assert_eq!(
+            trace[2]["events"],
+            json!([rejected, true, accepted]),
+            "{backend}"
+        );
+        assert_eq!(
+            trace[6]["events"],
+            json!([rejected, true, accepted, rejected, rejected, true, accepted]),
+            "{backend}"
+        );
+    }
+}
+
+#[test]
+fn component_event_modifiers_cancel_default_actions_without_a_handler() {
+    for backend in BACKENDS {
+        let trace = mounted_trace_with_components(
+            backend,
+            r#"<Box @submit.prevent />"#,
+            &[("Box", "<form />", &[], &[])],
+            json!({}),
+            json!([{"event": "submit", "selector": "form", "observeEvent": true}]),
+            false,
+        );
+        assert_eq!(
+            trace[1]["events"],
+            json!([{"dispatched": false, "defaultPrevented": true}]),
+            "{backend}"
+        );
     }
 }
 
