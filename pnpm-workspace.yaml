@@ -225,10 +225,10 @@ catalogs:
     "@nuxt/kit": "4.5.2"
     "@ox-content/vite-plugin": "2.88.0"
 
-  # Runtime kit loaded by @vizejs/nuxt. Keep this aligned with Nuxt 2 Bridge's
-  # kit line so Nuxt 2's module loader does not pull in Nuxt 4-only syntax.
+  # Runtime Kit stays on the Nuxt 2-compatible v3 line. The CJS entry loads it
+  # through native dynamic import; do not restore the vulnerable c12 v1/tar v6 graph.
   nuxt-module:
-    "@nuxt/kit": "3.11.2"
+    "@nuxt/kit": "3.21.8"
 
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:

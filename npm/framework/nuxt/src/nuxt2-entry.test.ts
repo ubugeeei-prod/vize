@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-const NUXT2_SAFE_KIT_VERSION = "3.11.2";
+const NUXT2_SAFE_KIT_VERSION = "3.21.8";
 const SUBPROCESS_TIMEOUT_MS = 120_000;
 
 void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM entry", async () => {
