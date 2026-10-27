@@ -34,6 +34,30 @@ jobs:
           cargo test --locked --profile ci -p vize_croquis_cf --lib analyzer::tests_provide_inject -- --nocapture 2>&1 | tee "$RUNNER_TEMP/optional-inject-native/controls.log"
           cargo test --locked --profile ci -p vize_croquis_cf --lib analyzer::tests_snapshots::provide_inject -- --nocapture 2>&1 | tee "$RUNNER_TEMP/optional-inject-native/snapshots.log"
           git diff --exit-code
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24.14.0"
+      - name: Build and attest one fresh CLI for this single-job functional replay
+        run: |
+          set -o pipefail
+          cargo build --profile ci -p vize 2>&1 | tee "$RUNNER_TEMP/optional-inject-native/cli-build.log"
+          node tests/differential/build-receipt.ts
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/optional-inject-native/candidate-build.json"
+          target/ci/vize --version > "$RUNNER_TEMP/optional-inject-native/candidate-version.txt"
+          sha256sum target/ci/vize > "$RUNNER_TEMP/optional-inject-native/candidate-sha256.txt"
+      - name: Install the genuine pinned public before CLI and preserve its lock
+        run: |
+          npm view --registry=https://registry.npmjs.org vize@0.602.0 --json > "$RUNNER_TEMP/optional-inject-native/before-registry.json"
+          npm install --registry=https://registry.npmjs.org --prefix "$RUNNER_TEMP/defaulted-inject-before" --ignore-scripts --no-audit --no-fund vize@0.602.0 > "$RUNNER_TEMP/optional-inject-native/install.stdout" 2> "$RUNNER_TEMP/optional-inject-native/install.stderr"
+          cp "$RUNNER_TEMP/defaulted-inject-before/package-lock.json" "$RUNNER_TEMP/optional-inject-native/before-lock.json"
+      - name: Preserve original and mutation whole packets and exact history transitions
+        env:
+          VIZE_DEFAULTED_INJECT_PROOF: ${{ runner.temp }}/optional-inject-native/packets.json
+          VIZE_DEFAULTED_INJECT_BEFORE_CLI: ${{ runner.temp }}/defaulted-inject-before/node_modules/.bin/vize
+        run: |
+          node --test tests/tooling/defaulted-inject-snapshot-transition.test.ts
+          node tools/support/compat/defaulted-inject/verify.ts
+          git diff --exit-code
       - name: Preserve all execution and source evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
