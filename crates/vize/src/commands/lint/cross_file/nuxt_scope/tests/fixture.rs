@@ -84,6 +84,11 @@ impl Fixture {
             "name": name, "version": version, "type": "module",
             "exports": crate::commands::project_nuxt::host_authority::authority::published_exports(name).unwrap(),
         });
+        if let Some(imports) =
+            crate::commands::project_nuxt::host_authority::authority::published_imports(name)
+        {
+            manifest["imports"] = imports;
+        }
         if name == "@nuxt/kit" {
             manifest["inlinedDependencies"] = json!({
                 "c12": "4.0.0-rc.3", "pkg-types": "2.4.0", "untyped": "2.0.0",

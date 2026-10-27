@@ -19,6 +19,7 @@ pub(crate) struct ManifestEvidence {
     pub(crate) module: bool,
     pub(crate) exports: Option<Value>,
     pub(crate) has_imports: bool,
+    pub(crate) imports: Option<Value>,
     pub(crate) manager_overrides: bool,
     pub(crate) inlined_dependencies: FxHashMap<String, String>,
     pub(crate) bytes: u64,
@@ -242,6 +243,7 @@ impl ProbeIo {
             module: object.get("type").and_then(Value::as_str) == Some("module"),
             exports: object.get("exports").cloned(),
             has_imports: object.contains_key("imports"),
+            imports: object.get("imports").cloned(),
             manager_overrides: ["pnpm", "overrides", "resolutions"]
                 .iter()
                 .any(|key| object.contains_key(*key)),

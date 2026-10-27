@@ -283,3 +283,16 @@ fn a_shared_probe_cannot_open_more_than_six_distinct_manifests() {
     assert_eq!(io.counts.manifest_reads, 6);
     assert_eq!(io.counts.manifest_parses, 6);
 }
+
+#[test]
+fn unreviewed_internal_import_aliases_refuse_even_a_supported_package_version() {
+    let fixture = Fixture::new();
+    let path = fixture.root.join("node_modules/nuxt/package.json");
+    let mut value: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    value["imports"]["#app"] = "./different-app.mjs".into();
+    std::fs::write(path, serde_json::to_vec(&value).unwrap()).unwrap();
+    let mut analyzer = fixture.analyzer(&[]);
+    assert!(!fixture.prove(&mut analyzer).0);
+    assert_eq!(Fixture::ids(&mut analyzer).len(), 2);
+}

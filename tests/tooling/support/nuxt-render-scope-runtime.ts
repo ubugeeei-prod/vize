@@ -161,10 +161,12 @@ export function verifyRegistryAuthority(
       version: string;
       dist: { integrity: string; tarball: string };
       exports: unknown;
+      imports?: unknown;
     };
     assert.equal(metadata.name, pkg.name);
     assert.equal(metadata.version, pkg.version);
     assert.deepEqual(pkg.body.exports, metadata.exports);
+    assert.deepEqual(pkg.body.imports, metadata.imports);
     const relative = path.relative(runtime, pkg.root).split(path.sep).join("/");
     assert(!relative.startsWith("../") && !path.isAbsolute(relative));
     const installed = lock.packages[relative];

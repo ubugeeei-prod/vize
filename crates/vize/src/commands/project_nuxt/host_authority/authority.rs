@@ -96,7 +96,7 @@ fn reviewed(manifest: &ManifestEvidence, name: &str, version: &str, io: &mut Pro
     if manifest.name.as_deref() != Some(name)
         || manifest.version.as_deref() != Some(version)
         || !manifest.module
-        || manifest.has_imports
+        || manifest.imports != published_imports(name)
     {
         return false;
     }
@@ -116,6 +116,17 @@ fn reviewed(manifest: &ManifestEvidence, name: &str, version: &str, io: &mut Pro
     io.canonical_directory(&dist, false)
         .is_some_and(|physical| physical == dist)
         && io.regular_file(&dist.join("index.mjs"))
+}
+
+pub(crate) fn published_imports(name: &str) -> Option<Value> {
+    (name == "nuxt").then(|| {
+        serde_json::json!({
+            "#app": "./dist/app/index.js",
+            "#app/nuxt": "./dist/app/nuxt.js",
+            "#pages/composables": "./dist/pages/runtime/composables.js",
+            "#unhead/composables": "./dist/head/runtime/composables.js"
+        })
+    })
 }
 
 pub(crate) fn published_exports(name: &str) -> Option<Value> {
