@@ -3,7 +3,6 @@ on:
   pull_request:
     paths:
       - crates/vize_canon/src/virtual_ts/scope/component_props.rs
-      - crates/vize_canon/tests/component_tag_case.rs
       - tools/benchmarks/scripts/canon-component-casing*.ts
       - .github/workflows/canon-component-casing.yml
 permissions: { contents: read }
@@ -50,7 +49,7 @@ jobs:
           (root/'source-build.json').write_text(json.dumps(receipt,indent=2)+'\n')
           (root/'source-binary.path').write_text(str(binary))
           PY
-          cargo test --locked --profile ci-opt -p vize_canon --test component_tag_case --test constructor_emission_projection -- --nocapture > "$EVIDENCE/rust.stdout" 2> "$EVIDENCE/rust.stderr"
+          cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection -- --nocapture > "$EVIDENCE/rust.stdout" 2> "$EVIDENCE/rust.stderr"
       - name: Install one pinned independent public framework provider
         run: |
           set -euo pipefail
@@ -66,6 +65,19 @@ jobs:
           ln -s "$RUNNER_TEMP/component-casing-provider/node_modules/vue" tests/node_modules/vue
           checker=$(node --input-type=module -e 'import {pathToFileURL} from "node:url";const {default:get}=await import(pathToFileURL(process.argv[1]).href);console.log(get());' "$RUNNER_TEMP/component-casing-provider/node_modules/typescript-native/lib/getExePath.js")
           CARGO_TARGET_DIR="$RUNNER_TEMP/component-casing-target" CORSA_PATH="$checker" cargo test --locked --profile ci-opt -p vize_canon --test fix_history_diagnostics imported_component_tag_aliases_preserve_batch_prop_diagnostics -- --exact --nocapture > "$RUNNER_TEMP/component-casing/pinned-batch.stdout" 2> "$RUNNER_TEMP/component-casing/pinned-batch.stderr"
+          python3 - <<'PY'
+          import os, pathlib, json, hashlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'component-casing'
+          stdout=(root/'pinned-batch.stdout').read_bytes()
+          stderr=(root/'pinned-batch.stderr').read_bytes()
+          assert b'running 1 test' in stdout and b'1 passed; 0 failed; 0 ignored;' in stdout
+          assert 'VIZE_TEST_DISABLE_TSGO' not in os.environ
+          pack=pathlib.Path('tests/_fixtures/differential/typechecker/component-tag-aliases-11020/cases.json').read_bytes()
+          case_ids=[case['id'] for case in json.loads(pack)['cases']]
+          assert case_ids==['valid','invalid','repaired']
+          receipt={'test':'imported_component_tag_aliases_preserve_batch_prop_diagnostics','passed':1,'failed':0,'ignored':0,'caseIds':case_ids,'packSha256':hashlib.sha256(pack).hexdigest(),'stdoutSha256':hashlib.sha256(stdout).hexdigest(),'stderrSha256':hashlib.sha256(stderr).hexdigest(),'nativeDisablePresent':False,'timingUsable':False}
+          (root/'pinned-batch.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
       - name: Preserve published false negatives and prove source invalid poison repair
         run: |
           set -euo pipefail
@@ -88,6 +100,7 @@ jobs:
           name: component-casing-summary-${{ github.sha }}
           path: |
             ${{ runner.temp }}/component-casing/source-build.json
+            ${{ runner.temp }}/component-casing/pinned-batch.json
             ${{ runner.temp }}/component-casing/proof/summary.json
             ${{ runner.temp }}/component-casing/proof/failures.json
           retention-days: 14
