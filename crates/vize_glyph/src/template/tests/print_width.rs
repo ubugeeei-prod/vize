@@ -1,6 +1,50 @@
 use super::{FormatOptions, format_template_content};
 
 #[test]
+fn adjacent_interpolation_expansion_is_included_in_closing_tag_width() {
+    // #10908: minimized from ZY Player's Play.vue. The first pass used the
+    // shorter authored {{name}} width, while the second saw {{ name }}.
+    let source = r#"<template>
+<div>
+<div>
+<div>
+<span v-if="this.right.list.length > 1">『第 {{(video.info.index + 1)}} 集』</span>{{name}}
+</div>
+</div>
+</div>
+</template>
+"#;
+    let expected = r#"<template>
+  <div>
+    <div>
+      <div>
+        <span v-if="this.right.list.length > 1">『第 {{ video.info.index + 1 }} 集』</span
+        >{{ name }}
+      </div>
+    </div>
+  </div>
+</template>
+"#;
+    let spaced = source.replace("{{(video.info.index + 1)}}", "{{ video.info.index + 1 }}");
+    for source in [source, spaced.as_str()] {
+        for print_width in [100, 104] {
+            let options = FormatOptions {
+                print_width,
+                ..FormatOptions::default()
+            };
+            let formatted = crate::format_sfc(source, &options).unwrap().code;
+            let expected = if print_width == 100 {
+                expected.to_owned()
+            } else {
+                expected.replace("</span\n        >", "</span>")
+            };
+            assert_eq!(formatted.as_str(), expected);
+            assert_eq!(crate::format_sfc(&formatted, &options).unwrap().code, formatted);
+        }
+    }
+}
+
+#[test]
 fn test_print_width_triggers_multiline() {
     // Very narrow print_width should trigger multiline
     let source = r#"<div class="container" id="main" title="tooltip"></div>"#;
