@@ -5,6 +5,7 @@ import path from "node:path";
 import { test, type TestContext } from "node:test";
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
+import { galleryWith } from "./support/marketplace-gallery.ts";
 
 const targets = [
   "darwin-x64",
@@ -35,14 +36,16 @@ function observe(t: TestContext, script: string, target: string, mode = "publish
       "const file=process.env.STATE;const state=fs.existsSync(file)?JSON.parse(fs.readFileSync(file)): {calls:[],published:false};",
       `state.calls.push([${JSON.stringify(tool)},...args]);`,
       "const expected=process.env.TARGET,mode=process.env.MODE;",
-      `const probe=${tool === "curl" ? "true" : "args[4]==='show'"};`,
+      `const probe=${tool === "curl"};`,
       "if(probe){",
       " const other=expected==='darwin-x64'?'linux-x64':'darwin-x64';",
       " const selected=mode==='exact'||(state.published&&mode!=='wrong-after')?expected:other;",
       " const version=!state.published&&mode==='wrong-version'?'0.56.0':'0.57.0';",
-      " const row={version,targetPlatform:selected};",
+      " const row={version,targetPlatform:selected,flags:'validated'};",
       " if(!state.published&&mode==='universal')delete row.targetPlatform;",
-      ` process.stdout.write(JSON.stringify(${tool === "curl" ? "row" : "{versions:[row]}"}));`,
+      // Marketplace probes POST to the gallery; Open VSX GETs one version.
+      ` const gallery=${JSON.stringify(galleryWith([]))};gallery.results[0].extensions[0].versions=[row];`,
+      " process.stdout.write(JSON.stringify(args.at(-1).includes('marketplace')?gallery:row));",
       "}else if(args[4]==='publish'){state.published=true;}else if(args[4]!=='create-namespace'){process.exitCode=19;}",
       "fs.writeFileSync(file,JSON.stringify(state));",
     ].join("\n");

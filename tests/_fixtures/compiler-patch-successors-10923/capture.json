@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "scope": "published before/after compiler observations; source-only snapshot successor admission; no replacement of original compiler hashes or runtime parity claim",
+  "producers": [
+    {
+      "side": "previous",
+      "native": {
+        "name": "@vizejs/native",
+        "version": "0.443.0",
+        "entrySha256": "af8e44fa9881a610b800cc559fa332d00947fe59f6a24001954adf288c12e4b8",
+        "loadedImages": [
+          {
+            "filename": "vize-vitrine.darwin-arm64.node",
+            "bytes": 59677088,
+            "sha256": "f0876a35609dc8e645ae758ddf1cc97ec1552b34e809902b190f3982be11c2b0"
+          }
+        ]
+      },
+      "cli": {
+        "name": "vize",
+        "version": "0.443.0",
+        "entrySha256": "42f7aa7cfb3d6ef9bbfe2dc25e3c223a2d6aa10331935d5424bef0b1b70e02d7",
+        "nativeVersion": "0.443.0"
+      }
+    },
+    {
+      "side": "current",
+      "native": {
+        "name": "@vizejs/native",
+        "version": "0.600.0",
+        "entrySha256": "609cfb6924275f7055c57df84178bd597741b2d3d5ac8f3429ecfe88fad8cac3",
+        "loadedImages": [
+          {
+            "filename": "vize-vitrine.darwin-arm64.node",
+            "bytes": 67184240,
+            "sha256": "a9f4ad744b931840296dda848b6dfbf5951dd341b424bb38e17be0d52cc71353"
+          }
+        ]
+      },
+      "cli": {
+        "name": "vize",
+        "version": "0.600.0",
+        "entrySha256": "2cf2a78af08bcdb6580b6bfe2751230e10a2acbcd1e3e9b88bdfc86087146e85",
+        "nativeVersion": "0.600.0"
+      }
+    }
+  ],
+  "upstream": [
+    {
+      "id": "create-vue",
+      "repository": "https://github.com/vuejs/create-vue",
+      "revision": "3ee62adffdcdfa4a37b2ed4e9c30636655d5fcd1",
+      "path": "template/bare/typescript/src/App.vue"
+    },
+    {
+      "id": "vue-router",
+      "repository": "https://github.com/vuejs/router",
+      "revision": "feed382f2fbfe38b3892ea780f5aea3d5459986a",
+      "path": "packages/playground/src/AppLink.vue"
+    }
+  ],
+  "rows": [
+    {
+      "id": "create-vue-clean",
+      "input": "create-vue.clean.vue.txt",
+      "inputSha256": "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a",
+      "previous": "create-vue-clean.previous.json",
+      "previousSha256": "fccdc563078a16e31591a5414510d1b894353e52b1544478cfaad5d9702ac286",
+      "previousCodeSha256": "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7",
+      "current": "create-vue-clean.current.json",
+      "currentSha256": "fccdc563078a16e31591a5414510d1b894353e52b1544478cfaad5d9702ac286",
+      "currentCodeSha256": "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7",
+      "changedFacets": [],
+      "observation": "verbatim actual published CLI JSON output"
+    },
+    {
+      "id": "create-vue-broken",
+      "input": "create-vue.broken.vue.txt",
+      "inputSha256": "c7eada5bbe18d933da51d550a26ee1e4c6c496d31d47dc80a373ffc3622de611",
+      "previous": "create-vue-broken.previous.json",
+      "previousSha256": "bf6a1940c6dbfd8faea47d747ab4163212b5570d1196aee72b1ee8c839bf7629",
+      "previousCodeSha256": "417b26aaa9b8a10ad1939061a2e61913ec58dd37f575dd2a432e58e624d7d9df",
+      "current": "create-vue-broken.current.json",
+      "currentSha256": "4ff08367baeec9209c5bdb7eddf6a8029de4f659770118cba4e6958d85382da6",
+      "currentCodeSha256": "57b73e3acc0a9d254f43e5af9208f5741407f4e464390b9425699e29198d2614",
+      "changedFacets": [
+        "code"
+      ],
+      "observation": "actual published compileSfc result projected into the unchanged CLI oracle DTO; filename and language come from the byte-pinned input"
+    },
+    {
+      "id": "vue-router-clean",
+      "input": "vue-router.clean.vue.txt",
+      "inputSha256": "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96",
+      "previous": "vue-router-clean.previous.json",
+      "previousSha256": "84e9feaa14017c1c0e27a6b8955bd4a591b3b61e8708f3ead335aaa0c7c96013",
+      "previousCodeSha256": "2e99ba339b7fb47f5788a990245b0292ede267d6bdfcb6c80cbe4c76da9cdebc",
+      "current": "vue-router-clean.current.json",
+      "currentSha256": "13ec9ece0094ccf3e507aa98f260d0f5bde41437865f68f852ad817e4714ad54",
+      "currentCodeSha256": "afbab8ce354d4a0555d8fc7cca9ff18404a8ccf1a8b98c898311da0aedc734bf",
+      "changedFacets": [
+        "code"
+      ],
+      "observation": "verbatim actual published CLI JSON output"
+    },
+    {
+      "id": "vue-router-broken",
+      "input": "vue-router.broken.vue.txt",
+      "inputSha256": "6ddb0231e81f4e6fae7d241c911e1b5141ca63e8c72546717cc05d796d95547a",
+      "previous": "vue-router-broken.previous.json",
+      "previousSha256": "0914134eb2d13c322402dcf94b608ac904f9ff2ed021c69cd414d5eed84f5654",
+      "previousCodeSha256": "eed24c03d97029fca5d3d13f81ac416099d3876e7f36572d113acc0768872679",
+      "current": "vue-router-broken.current.json",
+      "currentSha256": "24220e428ae03bc3fe7e2b11ff6d016a85fabce414d422a208b6ac10aafdf98b",
+      "currentCodeSha256": "89bf6eac921f4915f2d520cc391297eee5dccb0fc903a93e1bffaf53181604c7",
+      "changedFacets": [
+        "code"
+      ],
+      "observation": "actual published compileSfc result projected into the unchanged CLI oracle DTO; filename and language come from the byte-pinned input"
+    }
+  ],
+  "files": [
+    {
+      "path": "create-vue-broken.current.json",
+      "sha256": "4ff08367baeec9209c5bdb7eddf6a8029de4f659770118cba4e6958d85382da6",
+      "bytes": 733
+    },
+    {
+      "path": "create-vue-broken.current.native.json",
+      "sha256": "6a4081437f73a3f3d08cd40577bd630498a1c61411e86e05c6457633f6dc4a27",
+      "bytes": 1223
+    },
+    {
+      "path": "create-vue-broken.previous.json",
+      "sha256": "bf6a1940c6dbfd8faea47d747ab4163212b5570d1196aee72b1ee8c839bf7629",
+      "bytes": 690
+    },
+    {
+      "path": "create-vue-broken.previous.native.json",
+      "sha256": "095eac796297a9def8319f37c83dc50fe5a974c11cd4cd5a57cb0c72ea46de27",
+      "bytes": 1180
+    },
+    {
+      "path": "create-vue-clean.current.json",
+      "sha256": "fccdc563078a16e31591a5414510d1b894353e52b1544478cfaad5d9702ac286",
+      "bytes": 1097
+    },
+    {
+      "path": "create-vue-clean.previous.json",
+      "sha256": "fccdc563078a16e31591a5414510d1b894353e52b1544478cfaad5d9702ac286",
+      "bytes": 1097
+    },
+    {
+      "path": "create-vue.broken.vue.txt",
+      "sha256": "c7eada5bbe18d933da51d550a26ee1e4c6c496d31d47dc80a373ffc3622de611",
+      "bytes": 232
+    },
+    {
+      "path": "create-vue.clean.vue.txt",
+      "sha256": "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a",
+      "bytes": 232
+    },
+    {
+      "path": "vue-router-broken.current.json",
+      "sha256": "24220e428ae03bc3fe7e2b11ff6d016a85fabce414d422a208b6ac10aafdf98b",
+      "bytes": 1704
+    },
+    {
+      "path": "vue-router-broken.current.native.json",
+      "sha256": "50bdda7bd91e6b5ac0ed74a38da940bbbf5f17b6b35139d942a88870ad8ffdd8",
+      "bytes": 2063
+    },
+    {
+      "path": "vue-router-broken.previous.json",
+      "sha256": "0914134eb2d13c322402dcf94b608ac904f9ff2ed021c69cd414d5eed84f5654",
+      "bytes": 1665
+    },
+    {
+      "path": "vue-router-broken.previous.native.json",
+      "sha256": "34bc71d62cbcd248d01223dac0205c56a07251405a129e3657ad3b780442e7a3",
+      "bytes": 2024
+    },
+    {
+      "path": "vue-router-clean.current.json",
+      "sha256": "13ec9ece0094ccf3e507aa98f260d0f5bde41437865f68f852ad817e4714ad54",
+      "bytes": 2293
+    },
+    {
+      "path": "vue-router-clean.previous.json",
+      "sha256": "84e9feaa14017c1c0e27a6b8955bd4a591b3b61e8708f3ead335aaa0c7c96013",
+      "bytes": 2277
+    },
+    {
+      "path": "vue-router.broken.vue.txt",
+      "sha256": "6ddb0231e81f4e6fae7d241c911e1b5141ca63e8c72546717cc05d796d95547a",
+      "bytes": 1368
+    },
+    {
+      "path": "vue-router.clean.vue.txt",
+      "sha256": "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96",
+      "bytes": 1369
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "root": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ES2022\",\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"noEmit\":true,\"skipLibCheck\":true,\"baseUrl\":\".\",\"paths\":{\"@/*\":[\"src/*\"]},\"ignoreDeprecations\":\"6.0\",\"plugins\":[{\"name\":\"@vizejs/typescript-vue-plugin\"}]},\"include\":[\"src\"],\"extends\":\"./inherited.json\"}",
+  "source": "<script setup lang=\"ts\">\nconst known = 1;\n</script>\n<template><UnknownClosureProbe :n=\"known\"/></template>\n",
+  "controlSource": "export function fallthrough(kind: string) {\n  switch (kind) {\n    case \"one\": kind.trim();\n    case \"two\": break;\n  }\n}\n",
+  "before": {
+    "compilerOptions": {
+      "noFallthroughCasesInSwitch": false
+    },
+    "vueCompilerOptions": {
+      "strictTemplates": false
+    }
+  },
+  "after": {
+    "compilerOptions": {
+      "noFallthroughCasesInSwitch": true
+    },
+    "vueCompilerOptions": {
+      "strictTemplates": true
+    }
+  },
+  "fixed": [
+    {
+      "file": "/tmp/vize-tsserver-consumer-ypHq34/consumer/tsconfig.json",
+      "sha256": "981b1be9b5ce25cc1dbe457653945f5fe2fc6189132d64fe054f2aa9a98f1be7"
+    },
+    {
+      "file": "/tmp/vize-tsserver-consumer-ypHq34/consumer/src/Inherited.vue",
+      "sha256": "bfb407f1299c232f69a428a3b2ebc2548a5015eed88396ae9fb38e03692c495f"
+    },
+    {
+      "file": "/tmp/vize-tsserver-consumer-ypHq34/consumer/src/inherited-control.ts",
+      "sha256": "963d2197898ace3298948205002012b00d31f755d5eaa2ae589a03563befd818"
+    }
+  ]
+}

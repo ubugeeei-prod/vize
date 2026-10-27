@@ -2,13 +2,27 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+/** The installed native editor bindings these checks call. */
+export interface NativeApi {
+  getVueLanguageProjectMetadata(configFileName: string): {
+    configIdentity: string;
+    watchedFiles: string[];
+  };
+  generateVueLanguageCode(source: string, options: Record<string, unknown>): string;
+}
+/** The tsserver client from tsserver-client.mjs. */
+export interface TsserverClient {
+  send(command: string, args?: unknown, expectResponse?: boolean): Promise<any>;
+  stop(): Promise<unknown>;
+}
+
 // This consumes the installed, exact-source native package. The inherited
 // configuration fixture is independent of every existing protocol oracle.
-const compareNames = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+const compareNames = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
 
 // Rust's path ordering compares components, so `preferred/tsconfig.json`
 // precedes the sibling `preferred.json` even though whole-string order differs.
-const comparePaths = (left, right) => {
+const comparePaths = (left: string, right: string) => {
   const a = left.split(path.sep),
     b = right.split(path.sep);
   for (let index = 0; index < Math.min(a.length, b.length); index++) {
@@ -18,20 +32,20 @@ const comparePaths = (left, right) => {
   return a.length - b.length;
 };
 
-export function checkProjectMetadata(native, consumer, output) {
+export function checkProjectMetadata(native: NativeApi, consumer: string, output: string) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(consumer, "metadata-")));
   const config = path.join(root, "tsconfig.json");
   const base = path.join(root, "base.json");
   const source =
     '<script setup lang="ts">const n = 1;</script><template><Unknown :n="n"/></template>';
-  const packets = [];
-  const inputs = [];
-  const write = (file, text) => {
+  const packets: { name: string; metadata: unknown }[] = [];
+  const inputs: { file: string; text: string }[] = [];
+  const write = (file: string, text: string) => {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, text);
     inputs.push({ file, text });
   };
-  const capture = (name, file = config) => {
+  const capture = (name: string, file = config) => {
     const metadata = native.getVueLanguageProjectMetadata(file);
     packets.push({ name, metadata });
     assert.deepEqual(Object.keys(metadata).sort(), ["configIdentity", "watchedFiles"]);

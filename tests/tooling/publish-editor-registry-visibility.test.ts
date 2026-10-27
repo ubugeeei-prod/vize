@@ -5,13 +5,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
+import { marketplaceQueryUrl } from "../../tools/support/release/marketplace_query.ts";
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const scenarios = [
   {
     script: "publish_vscode_extension",
-    metadataCommand: "show",
+    metadataCommand: "curl",
     registry: "VS Code Marketplace",
   },
   {
@@ -88,8 +89,8 @@ for (const scenario of scenarios) {
           (args) => args[4] === scenario.metadataCommand || args[0] === scenario.metadataCommand,
         );
         assert.equal(metadataCalls.length, trustsExit ? 1 : 2);
-        if (scenario.script === "publish_open_vsx_extension") {
-          for (const call of metadataCalls) {
+        for (const call of metadataCalls) {
+          if (scenario.script === "publish_open_vsx_extension") {
             assert.deepEqual(call, [
               "curl",
               "--fail",
@@ -97,6 +98,8 @@ for (const scenario of scenarios) {
               "--show-error",
               "https://open-vsx.org/api/ubugeeei/vize/universal/0.57.0",
             ]);
+          } else {
+            assert.equal(call.at(-1), marketplaceQueryUrl);
           }
         }
         assert.equal(calls.filter((args) => args[4] === "publish").length, 1);

@@ -30,7 +30,7 @@ pub(super) fn is_plain_inline_type_literal(type_name: &str) -> bool {
     false
 }
 
-pub(super) fn has_top_level_type_operator(type_name: &str) -> bool {
+pub(in crate::virtual_ts::props) fn has_top_level_type_operator(type_name: &str) -> bool {
     let mut angle_depth = 0i32;
     let mut brace_depth = 0i32;
     let mut paren_depth = 0i32;
