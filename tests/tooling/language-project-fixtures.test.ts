@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -99,4 +100,44 @@ void test("different or future Canon edits retain the ordinary requirement and r
     ids: [],
     sources: new Set(),
   });
+});
+
+void test("typed producer admission retains whole originals and rejects a manifest-only repin", () => {
+  const custody = "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/custody.json.txt";
+  const snapshot =
+    "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/before/inherited-config.ts.txt";
+  for (const file of [custody, snapshot]) {
+    assert.throws(
+      () =>
+        newLanguageProjectCases(undefined, rows, (side, source) =>
+          side === "head" && source === file ? null : read(side, source),
+        ),
+      /producer port/,
+    );
+    assert.throws(
+      () =>
+        newLanguageProjectCases(undefined, rows, (side, source) => {
+          const bytes = read(side, source);
+          return side === "head" && source === file && bytes
+            ? Buffer.concat([bytes, Buffer.from("\n")])
+            : bytes;
+        }),
+      /producer port/,
+    );
+  }
+  const source = "tests/typescript-plugin/inherited-config.ts";
+  const changed = Buffer.concat([read("head", source)!, Buffer.from("\n")]);
+  const altered = copy();
+  const producer = altered[0].tests.find(
+    (row: { selector: string }) => row.selector === "checkInheritedConfig",
+  );
+  assert(producer);
+  producer.sha256 = createHash("sha256").update(changed).digest("hex");
+  assert.throws(
+    () =>
+      newLanguageProjectCases(undefined, altered, (side, file) =>
+        side === "head" && file === source ? changed : read(side, file),
+      ),
+    /unreviewed producer registration/,
+  );
 });

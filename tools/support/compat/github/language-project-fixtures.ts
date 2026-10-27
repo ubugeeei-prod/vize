@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { validateLanguageProjectProducerPort } from "./language-project-producer-port.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const LANGUAGE_PROJECT_CASE_ID =
@@ -167,6 +168,7 @@ export function newLanguageProjectCases(
     require(test.selector === selector && test.source === source, "unregistered producer");
     pinned(readFile, source, test.sha256);
   }
+  validateLanguageProjectProducerPort(readFile, row.tests);
   const beforeInputs = files.get("before-inputs.json")!;
   require(digest(beforeInputs) ===
     "8fedd5da81bb3f78ae01dbe525bfad594702933f5ad3ff05b270a719d70f0e43", "original input witness changed");

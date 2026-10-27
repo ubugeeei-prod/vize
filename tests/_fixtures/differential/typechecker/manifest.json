@@ -10003,12 +10003,12 @@
         {
           "selector": "checkInheritedConfig",
           "source": "tests/typescript-plugin/inherited-config.ts",
-          "sha256": "17b8c03fae46c3c3d34e41d27e7901cc3b1969e1c43b13d6c5c1eceb18ec30d0"
+          "sha256": "fbdd2e93fdf74b15d84c1232f60401a1a042870b8f37d484206ad1b054486320"
         },
         {
           "selector": "createOrdinaryHostFrontier",
           "source": "tests/typescript-plugin/ordinary-host-frontier.ts",
-          "sha256": "d05c9afd2e0f0db0f1818f4ee4bd65790ebb38bdf352212fcba2e193faa7dc76"
+          "sha256": "d6cd8d770f74d488bbe251aecb87d940271cac91740c374613eb627c7d6cc8f4"
         },
         {
           "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
@@ -10017,13 +10017,13 @@
         },
         {
           "selector": "packed-consumer",
-          "source": "tests/typescript-plugin/packed-consumer.mjs",
-          "sha256": "daf6932d21e43514e02eb41a2b4dd17c04a3396e07482d8c568e6d5e74641d30"
+          "source": "tests/typescript-plugin/packed-consumer.ts",
+          "sha256": "7a1d073b558da95a4b3491b5b9599618209b13861f22e73d323c9e70663ef8d5"
         },
         {
           "selector": "startTsserver",
-          "source": "tests/typescript-plugin/tsserver-client.mjs",
-          "sha256": "03a93ea537ad511f17b6b2ef35030098c3e8f6bdac3ef2657d5cec8e4fb3b2af"
+          "source": "tests/typescript-plugin/tsserver-client.ts",
+          "sha256": "77b8970dfb6e528a4f5b8955ab4fb4b436c66b0ec9916007be2cdbb2ec0bf8e5"
         },
         {
           "selector": "checkInheritedConfiguration",
@@ -10038,7 +10038,7 @@
         {
           "selector": "TypeScript 5.7.3 and 6.0.3",
           "source": ".github/workflows/typescript-plugin.yml",
-          "sha256": "d4ea39e3bd3a68224bce2303304d7b82cf872cef559894d6b882d56d1f262905"
+          "sha256": "734f5482d5cacd69668dad12e43a43985823cad8c56322dd674c0a4dbce2d288"
         },
         {
           "selector": "Linux and Windows physical VSIX",
