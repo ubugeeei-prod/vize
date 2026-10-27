@@ -1,7 +1,7 @@
 mod slot_tree;
 
 use crate::facts::has_local_render_binding;
-use crate::facts::imported_render_target;
+use crate::facts::{imported_render_target_at, template_usage_is_shadowed};
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use std::borrow::Cow;
@@ -256,14 +256,16 @@ fn runtime_usages(
     vize_croquis::facts::component_usage_list(&entry.analysis)
         .iter()
         .filter_map(|usage| {
-            let target_id = imported_render_target(registry, entry.id, usage.name.as_str())
-                .or_else(|| {
-                    if has_local_render_binding(registry, entry.id, usage.name.as_str()) {
-                        None
-                    } else {
-                        graph.find_by_component(usage.name.as_str())
-                    }
-                })?;
+            if template_usage_is_shadowed(&entry.analysis, usage) {
+                return None;
+            }
+            let target_id = imported_render_target_at(registry, entry.id, usage).or_else(|| {
+                if has_local_render_binding(registry, entry.id, usage.name.as_str()) {
+                    None
+                } else {
+                    graph.find_by_component(usage.name.as_str())
+                }
+            })?;
             Some(RuntimeUsage {
                 target_id,
                 start: usage.start,

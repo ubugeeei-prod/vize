@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { actualTemplateShadows } from "./template-shadow.ts";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -287,6 +288,13 @@ writeFileSync(
   join(output, "actual-vue-runtime.json"),
   JSON.stringify(actualVueRuntime, null, 2) + "\n",
 );
+const runtimePackage = process.env.VIZE_ASYNC_RUNTIME_PACKAGE;
+assert(runtimePackage);
+const actualTemplateShadowRuntime = await actualTemplateShadows(runtimePackage);
+writeFileSync(
+  join(output, "actual-template-shadows.json"),
+  JSON.stringify(actualTemplateShadowRuntime, null, 2) + "\n",
+);
 const actualOriginal = observe("original", original.files);
 assert.deepEqual(actualOriginal.statuses, role === "before" ? [1, 1, 1, 0] : [0, 0, 0, 0]);
 assert.deepEqual(
@@ -432,6 +440,7 @@ writeFileSync(
         image: imageIdentity,
       },
       actualVueRuntime,
+      actualTemplateShadowRuntime,
       original: actualOriginal,
       controls: packets,
     },

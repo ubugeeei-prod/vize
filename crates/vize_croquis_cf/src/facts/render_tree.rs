@@ -8,7 +8,10 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use vize_carton::CompactString;
+mod site;
+pub(crate) use site::template_usage_is_shadowed;
+
+use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::facts::components::{LocalComponentBinding, local_component_binding};
 use vize_croquis::facts::{FactGroup, component_identity};
 use vize_l0::fact::{Demand, FactProducer, FactTable, FactTableBuilder, FactView};
@@ -75,86 +78,114 @@ pub fn component_usage_targets(registry: &ModuleRegistry, caller: FileId) -> Vec
     // The same resolution `RenderTree` stores. Walking one file does not
     // rebuild the project table: a lint rebuilds every file, and a fresh
     // table per file was quadratic.
+    let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+    let covered = concrete_coverage(&usages);
     let mut targets = Vec::new();
-    for tag in source_tags(entry) {
-        let Some((target, _)) = resolve_tag(registry, entry, tag.as_str()) else {
+    let mut seen = FxHashSet::default();
+    let mut resolutions = FxHashMap::default();
+    for usage in &usages {
+        if template_usage_is_shadowed(&entry.analysis, usage) {
             continue;
-        };
-        if !targets.contains(&target) {
+        }
+        if let Some((target, _)) =
+            cached_tag(registry, entry, usage.name.as_str(), &mut resolutions)
+            && seen.insert(target)
+        {
+            targets.push(target);
+        }
+    }
+    for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
+        // Concrete-but-shadowed is complete evidence of zero root usages.
+        // Only genuinely unavailable site records retain the legacy fallback.
+        if covered.contains(&normalized_tag(name.as_str())) {
+            continue;
+        }
+        if let Some((target, _)) = cached_tag(registry, entry, name.as_str(), &mut resolutions)
+            && seen.insert(target)
+        {
             targets.push(target);
         }
     }
     targets
 }
 
-fn source_tags(entry: &ModuleEntry) -> Vec<CompactString> {
-    let mut tags = Vec::new();
-    for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
-        if !tags
-            .iter()
-            .any(|tag: &CompactString| names_match(tag.as_str(), usage.name.as_str()))
-        {
-            tags.push(usage.name);
-        }
+fn normalized_tag(tag: &str) -> CompactString {
+    CompactString::new(vize_croquis::naming::to_pascal_case(tag))
+}
+
+fn concrete_coverage(
+    usages: &[vize_croquis::analysis::ComponentUsage],
+) -> FxHashSet<CompactString> {
+    usages
+        .iter()
+        .map(|usage| normalized_tag(usage.name.as_str()))
+        .collect()
+}
+
+fn cached_tag(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
+    tag: &str,
+    resolutions: &mut FxHashMap<CompactString, Option<(FileId, CompactString)>>,
+) -> Option<(FileId, CompactString)> {
+    if let Some(resolved) = resolutions.get(tag) {
+        return resolved.clone();
     }
-    for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
-        if !tags
-            .iter()
-            .any(|tag: &CompactString| names_match(tag.as_str(), name.as_str()))
-        {
-            tags.push(name);
-        }
-    }
-    tags
+    let resolved = resolve_tag(registry, entry, tag);
+    resolutions.insert(CompactString::new(tag), resolved.clone());
+    resolved
 }
 
 fn edges_of(
     registry: &ModuleRegistry,
     entry: &ModuleEntry,
 ) -> BTreeMap<RenderEdgeKey, Vec<RenderSite>> {
-    let mut grouped = BTreeMap::new();
-    for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
-        push_edge(
-            registry,
-            entry,
-            usage.name.as_str(),
-            Some(RenderSite {
+    let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+    let covered = concrete_coverage(&usages);
+    let mut grouped: BTreeMap<RenderEdgeKey, Vec<RenderSite>> = BTreeMap::new();
+    let mut resolutions = FxHashMap::default();
+    for usage in &usages {
+        if template_usage_is_shadowed(&entry.analysis, usage) {
+            continue;
+        }
+        let Some((target, export_name)) =
+            cached_tag(registry, entry, usage.name.as_str(), &mut resolutions)
+        else {
+            continue;
+        };
+        grouped
+            .entry(RenderEdgeKey {
+                caller: entry.id,
+                target,
+                export_name,
+            })
+            .or_default()
+            .push(RenderSite {
                 start: usage.start,
                 end: usage.end,
-            }),
-            &mut grouped,
-        );
+            });
     }
     for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
-        let covered = vize_croquis::facts::component_usage_list(&entry.analysis)
-            .iter()
-            .any(|usage| names_match(usage.name.as_str(), name.as_str()));
-        if !covered {
-            push_edge(registry, entry, name.as_str(), None, &mut grouped);
+        if covered.contains(&normalized_tag(name.as_str())) {
+            continue;
         }
+        let Some((target, export_name)) =
+            cached_tag(registry, entry, name.as_str(), &mut resolutions)
+        else {
+            continue;
+        };
+        grouped
+            .entry(RenderEdgeKey {
+                caller: entry.id,
+                target,
+                export_name,
+            })
+            .or_default();
     }
     for sites in grouped.values_mut() {
         sites.sort_by_key(|site| (site.start, site.end));
     }
     grouped
-}
-
-fn push_edge(
-    registry: &ModuleRegistry,
-    entry: &ModuleEntry,
-    tag: &str,
-    site: Option<RenderSite>,
-    grouped: &mut BTreeMap<RenderEdgeKey, Vec<RenderSite>>,
-) {
-    let Some((target, export_name)) = resolve_tag(registry, entry, tag) else {
-        return;
-    };
-    let key = RenderEdgeKey {
-        caller: entry.id,
-        target,
-        export_name,
-    };
-    grouped.entry(key).or_default().extend(site);
 }
 
 /// The file a tag renders through this file's imports, with re-exports
@@ -166,6 +197,19 @@ pub fn imported_render_target(
 ) -> Option<FileId> {
     let entry = registry.get(caller)?;
     resolve_bound(registry, entry, tag).map(|(file, _)| file)
+}
+
+/// Site-owned import resolution for consumers which retain a ComponentUsage.
+pub(crate) fn imported_render_target_at(
+    registry: &ModuleRegistry,
+    caller: FileId,
+    usage: &vize_croquis::analysis::ComponentUsage,
+) -> Option<FileId> {
+    let entry = registry.get(caller)?;
+    if template_usage_is_shadowed(&entry.analysis, usage) {
+        return None;
+    }
+    resolve_bound(registry, entry, usage.name.as_str()).map(|(file, _)| file)
 }
 
 fn resolve_tag(

@@ -259,3 +259,14 @@ pub fn local_component_binding<'a>(
         None => LocalComponentBinding::Opaque,
     }
 }
+
+/// The authored local name used when a template spelling selects a setup binding.
+/// Scope readers use this identity rather than comparing script/template offsets.
+#[doc(hidden)]
+pub fn component_reference_name<'a>(croquis: &'a crate::Croquis, tag: &str) -> Option<&'a str> {
+    croquis
+        .value_binding_origins
+        .as_deref()?
+        .component_binding_name(tag)?
+        .flatten()
+}
