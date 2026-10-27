@@ -25,6 +25,25 @@ pub(crate) fn provided_value_reactive_kind(
     analysis: &vize_croquis::Croquis,
     value: &str,
 ) -> Option<ReactiveKind> {
+    let value = value.trim();
+    let callee = value.split_once('(').map(|(callee, _)| callee.trim());
+    let plain_name = |name: &str| {
+        !name.is_empty()
+            && name
+                .chars()
+                .all(|character| character.is_alphanumeric() || matches!(character, '_' | '$'))
+    };
+    // The index only needs the kind. Ordinary unresolved names/calls and
+    // literal values keep their fact-only path; service collection owns its
+    // existing AST parse. Wrapped/generic expressions need one fallback AST.
+    let literal = value
+        .as_bytes()
+        .first()
+        .is_some_and(|byte| byte.is_ascii_digit() || matches!(byte, b'\'' | b'"' | b'`' | b'{'));
+    if value.is_empty() || plain_name(value) || callee.is_some_and(plain_name) || literal {
+        return named_reactive_kind(analysis, value)
+            .or_else(|| callee.and_then(ReactiveKind::from_name));
+    }
     classify_provided_value(analysis, value).reactive_kind
 }
 
@@ -246,6 +265,9 @@ mod tests {
                 },
             );
         assert_eq!(actual, expected);
+        let actual_kinds =
+            cases.map(|(value, _, _)| super::provided_value_reactive_kind(&analysis, value));
+        assert_eq!(actual_kinds, cases.map(|(_, kind, _)| kind));
     }
 
     #[test]
