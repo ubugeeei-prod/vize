@@ -106,13 +106,13 @@ export async function createOrdinaryHostFrontier(
       assert.equal(observation.fresh.success, true);
       assert.deepEqual(
         pluginWarm.body,
-        observation.warm.body,
-        "ordinary warm TypeScript behavior is unchanged by the Vue adapter",
+        pluginFresh.body,
+        "the configured plugin host follows the complete fresh diagnostic oracle",
       );
       assert.deepEqual(
         pluginFresh.body,
         observation.fresh.body,
-        "ordinary fresh TypeScript behavior is unchanged by the Vue adapter",
+        "the plugin preserves the unmodified fresh TypeScript oracle",
       );
       if (expected)
         assert.deepEqual(
