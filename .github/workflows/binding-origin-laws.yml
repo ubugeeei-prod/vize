@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import hashlib, json, os, pathlib, re, subprocess
+          import hashlib, json, os, pathlib, re, runpy, shutil, subprocess
           root = pathlib.Path(os.environ["GITHUB_WORKSPACE"]).resolve()
           out = pathlib.Path(os.environ["RUNNER_TEMP"]) / "binding-origin-admission"
           assert not out.exists(), "never replace earlier evidence"
@@ -147,15 +147,38 @@ jobs:
               (out / f"{version}.native.stdout.txt").write_text(result.stdout)
               (out / f"{version}.native.stderr.txt").write_text(result.stderr)
               qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
-              row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
+              wire = None
+              wire_error = None
+              if qualified:
+                  try:
+                      verifier = runpy.run_path(str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify_wire.py"))
+                      wire = verifier["verify"](capture, version)
+                  except Exception as error:
+                      wire_error = repr(error)
+                      qualified = False
+              carrier = json.loads((capture / "carrier-receipt.json").read_text()) if (capture / "carrier-receipt.json").exists() else None
+              row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"wire":wire,"wireError":wire_error,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
               native_rows.append(row)
               print(json.dumps(row), flush=True)
               if not qualified:
                   print(result.stdout, flush=True)
                   print(result.stderr, flush=True)
-              for line in result.stdout.splitlines():
-                  if line.startswith("NATIVE_ORIGIN_API_RECEIPT "):
-                      print(line, flush=True)
+              if carrier is not None:
+                  print("NATIVE_ORIGIN_API_RECEIPT " + json.dumps(carrier), flush=True)
+              if wire is not None:
+                  print("NATIVE_ORIGIN_WIRE_RECEIPT " + json.dumps(wire), flush=True)
+              lean = out / "native-metadata" / version
+              lean.mkdir(parents=True)
+              wanted = ["backend-version.json","actual-launch.json","adapter-normalized-symbol.json","source-file-names.json","source-input-manifest.json","carrier-receipt.json","raw-symbol-candidates.json","full-wire-symbol-packets.json","full-wire-receipt.json","native.stderr.txt"]
+              for name in wanted:
+                  if (capture / name).is_file():
+                      shutil.copyfile(capture / name, lean / name)
+              for name in ["probe.ts","tsconfig.json"]:
+                  if (capture / "project" / name).is_file():
+                      shutil.copyfile(capture / "project" / name, lean / name)
+              for suffix in ["native.stdout.txt","native.stderr.txt","package-lock.json.txt","npm.stdout.txt","npm.stderr.txt"]:
+                  if (out / (version + "." + suffix)).is_file():
+                      shutil.copyfile(out / (version + "." + suffix), lean / suffix)
           assert git("rev-parse", "HEAD") == source
           assert git("status", "--porcelain", "--untracked-files=no") == ""
           assert digest(binary) == image_sha
@@ -176,7 +199,9 @@ jobs:
               "passed":len(rows)==17 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
           }
           (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")
-          assert receipt["passed"], "all 17 exact source laws must each pass once, with zero ignored"
+          shutil.copyfile(out / "acceptance.json", out / "native-metadata/actual-source-acceptance.json")
+          print("SOURCE_IMAGE_RECEIPT " + json.dumps({"sourceSha":source,"sourceTree":tree,"binarySha256":image_sha,"binaryBytes":binary.stat().st_size,"nativeRoles":native_rows}), flush=True)
+          assert receipt["passed"], "all 17 source laws and both native carrier roles must pass"
           PY
       - name: Package actual compiler and test receipts
         if: always()
@@ -184,11 +209,20 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/binding-origin-admission"
-          tar --exclude=cargo-target --exclude=providers -czf "$RUNNER_TEMP/binding-origin-admission.tgz" -C "$RUNNER_TEMP" binding-origin-admission
+          tar --exclude=cargo-target --exclude=providers --exclude="*.sock" -czf "$RUNNER_TEMP/binding-origin-admission.tgz" -C "$RUNNER_TEMP" binding-origin-admission
+          mkdir -p "$RUNNER_TEMP/binding-origin-admission/native-metadata"
+          tar -czf "$RUNNER_TEMP/binding-origin-native-metadata.tgz" -C "$RUNNER_TEMP/binding-origin-admission" native-metadata
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: binding-origin-source-laws-${{ github.sha }}
           path: ${{ runner.temp }}/binding-origin-admission.tgz
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: binding-origin-native-metadata-${{ github.sha }}
+          path: ${{ runner.temp }}/binding-origin-native-metadata.tgz
           retention-days: 14
 

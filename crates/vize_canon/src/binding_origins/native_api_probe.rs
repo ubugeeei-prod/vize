@@ -1,6 +1,6 @@
 //! Test-only direct-stdio API carrier. This does not qualify editor socket IPC.
 use corsa::{
-    api::{ApiMode, ApiSpawnConfig, ProjectSession},
+    api::{ApiClient, ProjectSession},
     runtime::block_on,
 };
 use serde_json::{Value, json};
@@ -12,6 +12,9 @@ use std::{
     process::Command,
 };
 use vize_carton::{String, append, cstr};
+
+mod transport;
+use transport::NativeTap;
 
 fn hash(bytes: &[u8]) -> String {
     let mut output = String::with_capacity(64);
@@ -33,6 +36,7 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     let backend = required("VIZE_ORIGIN_API_BACKEND").canonicalize().unwrap();
     let output = required("VIZE_ORIGIN_API_CAPTURE");
     let version = std::env::var("VIZE_ORIGIN_API_VERSION").unwrap();
+    assert_hash_vectors();
     assert!(!output.exists(), "never replace earlier evidence");
     fs::create_dir(&output).unwrap();
     let probe = Command::new(&backend).arg("--version").output().unwrap();
@@ -58,20 +62,14 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     let launcher = output.join("api-exec.py");
     fs::write(&launcher, include_str!("native_api_probe.py")).unwrap();
     fs::set_permissions(&launcher, fs::Permissions::from_mode(0o755)).unwrap();
-    let spawn = ApiSpawnConfig::new(&launcher)
-        .with_cwd(&root)
-        .with_mode(ApiMode::AsyncJsonRpcStdio)
-        .with_env(
-            "VIZE_ORIGIN_API_BACKEND",
-            backend.to_string_lossy().as_ref(),
-        )
-        .with_env("VIZE_ORIGIN_API_CAPTURE", output.to_string_lossy().as_ref());
-    let session = block_on(ProjectSession::spawn(
-        spawn,
+    let mut tap = NativeTap::start(&launcher, &backend, &root, &output);
+    let client = block_on(ApiClient::connect_pipe(tap.socket())).unwrap();
+    let session = block_on(ProjectSession::open(
+        client,
         config.to_string_lossy().as_ref(),
         None,
     ))
-    .expect("direct API stdio carrier must actually open the configured project");
+    .expect("the observed standalone API must open the configured project");
     let lease = session.snapshot_lease();
     let snapshot = lease.handle.clone();
     let project = session.project().clone();
@@ -79,6 +77,7 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     let launch: Value =
         serde_json::from_slice(&fs::read(output.join("actual-launch.json")).unwrap()).unwrap();
     let pid = launch.get("pid").and_then(Value::as_u64).unwrap();
+    assert_eq!(pid, u64::from(tap.pid()));
     let executable = fs::read_link(cstr!("/proc/{pid}/exe").as_str()).unwrap();
     assert_eq!(executable, backend);
     let stdin = fs::read_link(cstr!("/proc/{pid}/fd/0").as_str()).unwrap();
@@ -168,15 +167,17 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     );
     assert_eq!(session.snapshot().handle, snapshot);
     assert_eq!(session.project(), &project);
-    let receipt = json!({
-        "schema":"vize.binding-origin.native-api-carrier.v1",
-        "scope":"test-only standalone direct stdio; editor Unix-socket IPC and origin host wiring are unqualified",
+    let mut receipt = json!({
+        "schema":"vize.binding-origin.native-api-carrier.v2",
+        "scope":"test-only Unix relay to standalone native stdio; product editor socket IPC and origin host wiring are unqualified",
         "version":version,"backend":backend,"backendSha256":hash(&fs::read(&backend).unwrap()),
         "provider":provider,"launch":launch,"actualExecutable":executable,
         "actualStdin":stdin,"actualStdout":stdout,"dialect":dialect,
         "snapshot":snapshot,"project":project,"sourceInputManifestEntries":manifest.len(),
         "selected":selected,"target":target,"repeat":again,"adapterNormalized":normalized,
-        "fullWireCaptured":false,"actualWireRequestCounts":Value::Null,
+        "fullWireCaptured":true,"actualWireRequestCounts":"offline verify_wire.py",
+        "transport":{"client":"test Unix relay","native":"standalone stdio","apiProgramsInferred":false},
+        "hashVectors":{"count":4,"oracle":"Node26 crypto; SHA256 empty and abc known vectors"},
         "explicitHostCalls":{"getSymbolAtPosition":3,"getAliasedSymbol":1,"getSourceFileNames":1,"getSourceFile":1},
         "managedSnapshotLeaseBytes":Value::Null,
         "retainedEncodedSourcePayloadBytes":payload.as_bytes().len(),
@@ -185,10 +186,45 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
         "hostProjectSessionSpawns":1,"hostSnapshotRefreshes":0,"snapshotHandleTransfers":0,
         "hostWire":false,"passed":true
     });
-    write(&output.join("carrier-receipt.json"), &receipt);
-    println!("NATIVE_ORIGIN_API_RECEIPT {receipt}");
     drop(lease);
     block_on(session.snapshot().release()).unwrap();
+    let (forwarded, received) = tap.finish().unwrap();
     block_on(session.close()).unwrap();
     assert!(!Path::new(cstr!("/proc/{pid}").as_str()).exists());
+    assert_eq!(
+        fs::metadata(output.join("client-to-native.wire.bin"))
+            .unwrap()
+            .len(),
+        forwarded
+    );
+    assert_eq!(
+        fs::metadata(output.join("native-to-client.wire.bin"))
+            .unwrap()
+            .len(),
+        received
+    );
+    receipt["forwardedClientBytes"] = json!(forwarded);
+    receipt["observedNativeStdoutBytes"] = json!(received);
+    write(&output.join("carrier-receipt.json"), &receipt);
+    println!("NATIVE_ORIGIN_API_RECEIPT {receipt}");
 }
+
+fn assert_hash_vectors() {
+    // Independent Node crypto output; empty and abc also match known SHA-256 vectors.
+    let inputs: [&[u8]; 4] = [
+        b"",
+        b"abc",
+        "Vue🦀\r\n漢字".as_bytes(),
+        &[0, 255, 128, 1, 0, 127],
+    ];
+    let expected = [
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+        "bd9e2a542de34728433281b5de7eb8d8ac508415f4e8affef0d072a7451ddea1",
+        "39ed0ab046e79efb308e0da701c01d10a00c181aabd802522b5b03db74787b21",
+    ];
+    for (bytes, expected) in inputs.into_iter().zip(expected) {
+        assert_eq!(hash(bytes), expected);
+    }
+}
+
