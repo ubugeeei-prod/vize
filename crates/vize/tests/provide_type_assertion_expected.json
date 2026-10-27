@@ -63,10 +63,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      0,
-      0
-    ]
+    "statuses": [0, 0]
   },
   {
     "id": "computed-plain",
@@ -117,9 +114,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:626b273cee413d67d3ec83a4f76d71d0567b0b67ab7f980ed47a2d7ee2b54213"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -196,10 +191,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-as",
@@ -250,9 +242,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:6853dd66e05517d4835e0399733655db471ee1d5814447c6d6374ca3c99a4aa8"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -329,10 +319,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-parenthesized",
@@ -383,9 +370,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:9fec60ea81e29c02710033f58f6768853820850dfbc7bb897b3ffade8da19011"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -462,10 +447,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-nested",
@@ -516,9 +498,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:c717ff06214e1ddc435819f2720c4280cfd96b7fde10b4d0fa8ee63bdb09910e"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -595,10 +575,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-satisfies",
@@ -649,9 +626,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:ee6e80ac11b9c3291979ab3dc9151cc395bc2f28d5c27cc739ed67e2536cccf5"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -728,10 +703,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-nonnull",
@@ -782,9 +754,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:195408badc3f1a29a5bdb5c82c639d800e8030edde1ad94cdcc0f79c4c50939e"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -861,10 +831,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-angle",
@@ -915,9 +882,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:0a74fbbc8fee8c296b35287ae37377f9fe73fa99c954b554f46351666d5578d1"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -994,10 +959,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "ref-as",
@@ -1048,9 +1010,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:ab4d2d34b8d9f76d43a148c06153fec52d37dd3c5ed353a3bf8a4ce31b7fdc56"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1127,10 +1087,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "reactive-as",
@@ -1181,9 +1138,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:64b62fc0e59a4ea7bf43bf86b2b883ddf06bb359f9460bf35ea693686740a082"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1260,10 +1215,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "ref-generic-call",
@@ -1314,9 +1266,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:74f528490960530f11a0368ed2663bc8e31f046f93d9db86ef074678ccb21ddd"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1393,10 +1343,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "computed-call",
@@ -1447,9 +1394,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:8fd827ad6c881ff5c6831b26acc81eab2123f8e41ab1f875a5145442899b4037"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1526,10 +1471,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "readonly-call",
@@ -1580,9 +1522,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:8407edfc749b7a51f04870f1baedecfd504b9b37a040b24ab6167f9687fc41ca"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1659,10 +1599,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "literal-plain",
@@ -1713,9 +1650,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:44c0691f780615f6555dd82b5161b5bc8f33bfaa8b8f32dee0e131f6b059bd76"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1764,9 +1699,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:44c0691f780615f6555dd82b5161b5bc8f33bfaa8b8f32dee0e131f6b059bd76"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -1854,10 +1787,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "literal-fake-ref",
@@ -1908,9 +1838,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:5cecf187a75eea49c401af50c06f15fc2afa44fa05235789e1966de58702aad0"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -1959,9 +1887,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:5cecf187a75eea49c401af50c06f15fc2afa44fa05235789e1966de58702aad0"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -2049,10 +1975,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "binding-fake-ref",
@@ -2103,9 +2026,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:bcaefe6fc80f8fa33db53c6fb3fde2385d3eed8cd3de0e26381491781572e872"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -2154,9 +2075,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:bcaefe6fc80f8fa33db53c6fb3fde2385d3eed8cd3de0e26381491781572e872"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -2244,10 +2163,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "object-fake-ref",
@@ -2298,9 +2214,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:a874c5f229d9c02002f4f2c7f00b55a4f61deab8864c3bcf51ea8948ed6095d6"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -2349,9 +2263,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:a874c5f229d9c02002f4f2c7f00b55a4f61deab8864c3bcf51ea8948ed6095d6"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -2439,10 +2351,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "snapshot-member",
@@ -2493,9 +2402,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:8f6b20d66b634f907c003dac94816fddeda9936f2179ab947b32a09edd03898a"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -2544,9 +2451,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:8f6b20d66b634f907c003dac94816fddeda9936f2179ab947b32a09edd03898a"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -2634,10 +2539,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "snapshot-binding",
@@ -2688,9 +2590,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:03fda3ef5aae96af70b19571bb775d4395f112d7e6d7bf9ada7e6fcadd5f9f64"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -2739,9 +2639,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:03fda3ef5aae96af70b19571bb775d4395f112d7e6d7bf9ada7e6fcadd5f9f64"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -2829,10 +2727,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "unknown-call",
@@ -2883,9 +2778,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:4bb559729b457ea0f78915fa6fcb38cc11f93ebf743355180ad9391beb4bbc30"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -2934,9 +2827,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:4bb559729b457ea0f78915fa6fcb38cc11f93ebf743355180ad9391beb4bbc30"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -3024,10 +2915,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "mixed-conditional",
@@ -3078,9 +2966,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:e0fef6a5d3be536d28fac60e2ba19aaf870c2e561240b2b16368a6852efc9bcf"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -3129,9 +3015,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:e0fef6a5d3be536d28fac60e2ba19aaf870c2e561240b2b16368a6852efc9bcf"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -3219,10 +3103,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "destructure-ref-plain",
@@ -3273,9 +3154,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:07d5bca64d82e8ced19b333d528e6c8b70e2c543a4f8720cae740d2abd82a597"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -3325,10 +3204,7 @@
               "src/App.vue": "sha256:07d5bca64d82e8ced19b333d528e6c8b70e2c543a4f8720cae740d2abd82a597",
               "src/components/MyChild.vue": "sha256:d0d300dbfc25feb8dd85bc6081dea24a199a6cfa3d11e9f36a1d3b90a2217aee"
             },
-            "invalidationInputs": [
-              "src/App.vue",
-              "src/components/MyChild.vue"
-            ]
+            "invalidationInputs": ["src/App.vue", "src/components/MyChild.vue"]
           },
           "related": [
             {
@@ -3427,10 +3303,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "destructure-ref-as",
@@ -3481,9 +3354,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:ab4d2d34b8d9f76d43a148c06153fec52d37dd3c5ed353a3bf8a4ce31b7fdc56"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -3533,10 +3404,7 @@
               "src/App.vue": "sha256:ab4d2d34b8d9f76d43a148c06153fec52d37dd3c5ed353a3bf8a4ce31b7fdc56",
               "src/components/MyChild.vue": "sha256:d0d300dbfc25feb8dd85bc6081dea24a199a6cfa3d11e9f36a1d3b90a2217aee"
             },
-            "invalidationInputs": [
-              "src/App.vue",
-              "src/components/MyChild.vue"
-            ]
+            "invalidationInputs": ["src/App.vue", "src/components/MyChild.vue"]
           },
           "related": [
             {
@@ -3635,10 +3503,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "destructure-fake-plain",
@@ -3689,9 +3554,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:ee949bfd7dc38f7fd1443506161f50d8365eebdf518c7a50e54fa644695cb6b8"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -3740,9 +3603,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:ee949bfd7dc38f7fd1443506161f50d8365eebdf518c7a50e54fa644695cb6b8"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -3830,10 +3691,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "destructure-fake-as",
@@ -3884,9 +3742,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:a874c5f229d9c02002f4f2c7f00b55a4f61deab8864c3bcf51ea8948ed6095d6"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -3935,9 +3791,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:a874c5f229d9c02002f4f2c7f00b55a4f61deab8864c3bcf51ea8948ed6095d6"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Non Reactive Provide"
@@ -4025,10 +3879,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "service-object-as",
@@ -4079,9 +3930,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:4eb42e4d11881698e83db2f04a9e87c1818c32da2c8054f9bab5cd14dfc66016"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -4158,10 +4007,7 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   },
   {
     "id": "service-composable-as",
@@ -4212,9 +4058,7 @@
             "invalidationFingerprints": {
               "src/App.vue": "sha256:aec04c818bc924fc3343ed680616854a176d1645457687dda237d0c9b89e83f1"
             },
-            "invalidationInputs": [
-              "src/App.vue"
-            ]
+            "invalidationInputs": ["src/App.vue"]
           },
           "suppression": "reason-required",
           "title": "Value Extraction Breaks Reactivity"
@@ -4291,9 +4135,6 @@
         "warningCount": 0
       }
     ],
-    "statuses": [
-      1,
-      1
-    ]
+    "statuses": [1, 1]
   }
 ]
