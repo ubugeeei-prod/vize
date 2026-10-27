@@ -475,5 +475,6 @@ const listId = "fruits";
 }
 
 #[cfg(test)]
-#[path = "interactive_supports_focus_tests.rs"]
-mod listbox_tests;
+pub(super) fn create_legacy_linter_for_test() -> crate::linter::Linter {
+    tests::create_legacy_linter()
+}
