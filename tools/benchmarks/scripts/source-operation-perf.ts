@@ -120,10 +120,12 @@ export function captureSourceOperationPerf(request: SourceOperationPerfRequest) 
   const sampleCount =
     mode === "record" ? Number(/\((\d+) samples\)/u.exec(stderr)?.[1] ?? 0) : null;
   const dataBytes = existsSync(rawPath) ? statSync(rawPath).size : 0;
+  const evidencePresent =
+    mode === "stat" ? missingEvents.length === 0 : dataBytes > 0 && (sampleCount ?? 0) > 0;
   const collection =
     result.error || result.signal || result.status === 124 || result.status === 137
       ? "failed"
-      : fatalPerfCapability(stderr) ||
+      : (fatalPerfCapability(stderr) && !evidencePresent) ||
           (mode === "stat" && (missingEvents.length > 0 || !sanity.plausible))
         ? "unavailable"
         : mode === "record" && (!dataBytes || !sampleCount)

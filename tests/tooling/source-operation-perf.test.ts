@@ -204,6 +204,7 @@ if(a[0]==='report'){
  if(!a.includes('--no-buildid')||!a.includes('--no-buildid-cache'))throw Error('record post-pass must be disabled');
  fs.writeFileSync(a[a.indexOf('--output')+1],'retained trace');
  console.error('WARNING: Kernel address maps are restricted. Check /proc/kallsyms permission or run as root.');
+ console.error('workload note: optional feature not supported');
  console.error('[ perf record: Captured and wrote 1.0 MB trace (12 samples) ]');
 }\n`,
       { mode: 0o755 },

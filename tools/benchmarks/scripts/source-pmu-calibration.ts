@@ -154,14 +154,20 @@ export function calibrateSourcePmu(options: {
     smallCacheMisses: median("cache-small", "cache-misses"),
     largeCacheMisses: median("cache-large", "cache-misses"),
   };
-  if (!(signals.busyInstructions! > 2 * signals.baselineInstructions!))
+  const hasTwofoldSignal = (busy: number | null, baseline: number | null) =>
+    busy !== null && baseline !== null && busy > 2 * baseline;
+  if (!hasTwofoldSignal(signals.busyInstructions, signals.baselineInstructions))
     groups.core.reasons.push("instruction positive control did not exceed baseline by twofold");
-  if (!(signals.busyBranches! > 2 * signals.baselineBranches!))
+  if (!hasTwofoldSignal(signals.busyBranches, signals.baselineBranches))
     groups.core.reasons.push("branch positive control did not exceed baseline by twofold");
   if (
     !(
-      signals.largeCacheReferences! > signals.smallCacheReferences! &&
-      signals.largeCacheMisses! > signals.smallCacheMisses!
+      signals.largeCacheReferences !== null &&
+      signals.smallCacheReferences !== null &&
+      signals.largeCacheMisses !== null &&
+      signals.smallCacheMisses !== null &&
+      signals.largeCacheReferences > signals.smallCacheReferences &&
+      signals.largeCacheMisses > signals.smallCacheMisses
     )
   )
     groups.cache.reasons.push(
