@@ -39,7 +39,7 @@ jobs:
           with tarfile.open(fileobj=io.BytesIO(tgz),mode="r:gz") as tar:
               for entry in tar:
                   assert entry.isdir() or entry.isfile()
-                  assert entry.name.startswith("native-metadata/")
+                  assert (entry.isdir() and entry.name == "native-metadata") or entry.name.startswith("native-metadata/"), entry.name
                   assert ".." not in pathlib.PurePosixPath(entry.name).parts
                   if entry.isdir(): continue
                   assert entry.size < 5_000_000
