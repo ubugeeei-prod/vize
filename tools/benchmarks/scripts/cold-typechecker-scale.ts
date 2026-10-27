@@ -16,6 +16,7 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import { DEFAULT_SHAPE, generateWorkspace } from "./check-workspace.ts";
+import { coldScaleCommand } from "./cold-typechecker-scale-command.ts";
 
 const hash = (text: string | Buffer) => createHash("sha256").update(text).digest("hex");
 const packages = 130;
@@ -198,50 +199,8 @@ export function captureColdScale(options: {
   const { provider, out, files, tool, invalid } = options;
   mkdirSync(join(out, "tmp"), { recursive: true });
   const corpus = prepareColdScale(join(out, "project"), provider, files, invalid);
-  const require = createRequire(join(provider, "package.json"));
-  const nativePackage =
-    process.platform === "darwin"
-      ? `@typescript/typescript-darwin-${process.arch}`
-      : `@typescript/typescript-linux-${process.arch}`;
-  const nativeRequire = createRequire(require.resolve("typescript-native/package.json"));
-  const checker = join(
-    dirname(nativeRequire.resolve(nativePackage + "/package.json")),
-    "lib",
-    "tsc",
-  );
-  const cli = options.binary ?? join(provider, "node_modules", "vize", "bin", "vize");
-  const executable =
-    tool === "mapper"
-      ? checker
-      : tool === "vue-tsc"
-        ? process.execPath
-        : options.binary
-          ? cli
-          : process.execPath;
-  const args =
-    tool === "mapper"
-      ? ["--runExternalCode", "--noEmit", "--pretty", "false", "-p", "tsconfig.json"]
-      : tool === "vue-tsc"
-        ? [
-            join(provider, "node_modules", "vue-tsc", "bin", "vue-tsc.js"),
-            "--noEmit",
-            "--pretty",
-            "false",
-            "-p",
-            "tsconfig.json",
-          ]
-        : [
-            ...(options.binary ? [] : [cli]),
-            "check",
-            "--no-config",
-            "--format",
-            "json",
-            "--tsconfig",
-            "tsconfig.json",
-            "--corsa-path",
-            checker,
-            ...(tool === "profile" ? ["--profile-json", join(out, "profile.json")] : []),
-          ];
+  const { command } = coldScaleCommand({ ...options, app: corpus.app });
+  const { executable, args } = command;
   const started = performance.now();
   const result = spawnSync(
     "/usr/bin/time",
@@ -253,9 +212,7 @@ export function captureColdScale(options: {
       timeout: 600_000,
       env: {
         ...process.env,
-        NO_COLOR: "1",
-        XDG_CACHE_HOME: join(out, "xdg-cache"),
-        TMPDIR: join(out, "tmp"),
+        ...command.env,
       },
     },
   );
