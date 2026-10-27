@@ -7,6 +7,7 @@ import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { run, save, identify, hash } from "./canon-instance-directives-io.ts";
 import { isRecord, jsonValue, packet } from "./canon-instance-directives-model.ts";
+import { sourceCandidateColumn } from "./canon-slot-framework-candidate.ts";
 type Case = { id: string; component: string; source: string; requiresAuthoredError: boolean };
 function cases(value: unknown): value is Case[] {
   return (
@@ -40,7 +41,7 @@ function diagnostics(bytes: Buffer, status: number | null, project: string) {
   return result;
 }
 async function main() {
-  const [providerArg, driverArg, outArg] = process.argv.slice(2);
+  const [providerArg, driverArg, outArg, candidateArg] = process.argv.slice(2);
   assert.ok(providerArg && driverArg && outArg);
   const provider = path.resolve(providerArg),
     driver = path.resolve(driverArg),
@@ -279,6 +280,17 @@ async function main() {
     project,
   );
   const cliPacket = packet(cli.stdout, cli.status, project);
+  const candidate = candidateArg
+    ? sourceCandidateColumn(
+        project,
+        provider,
+        path.resolve(candidateArg),
+        checker,
+        rows,
+        officialDiagnostics,
+        out,
+      )
+    : null;
   const byCase = rows.map((row) => ({
     id: row.id,
     requiresAuthoredError: row.requiresAuthoredError,
@@ -308,6 +320,7 @@ async function main() {
     vueTscTypeScript: identify(vueTs),
     physicalVue: fs.realpathSync(path.join(project, "node_modules/vue/package.json")),
     manifest,
+    candidate,
     hDiagnostics,
     hOwners,
     hSource: hSource.join("\n") + "\n",
