@@ -46,8 +46,7 @@ pub(super) fn run() {
         Some(vize_croquis::BindingType::LiteralConst)
     );
     let _plain = vize_croquis::script_parser::parse_script(plain);
-    // The current fatal path retries the original view before blanking its dot.
-    // Count both actual recovery parses; a request count must not hide this work.
+    // Reuse the original fatal diagnostic: only the repaired view is reparsed.
     let _recovered = vize_croquis::script_parser::parse_script_setup(incomplete);
     profiler.disable();
     let sites = micro::snapshot();
@@ -90,7 +89,7 @@ pub(super) fn run() {
         .collect::<Vec<_>>();
     assert_eq!(
         spans,
-        [("croquis.oxc.original", 3), ("croquis.oxc.recovery", 2)]
+        [("croquis.oxc.original", 3), ("croquis.oxc.recovery", 1)]
     );
     println!(
         "parser_control_counts={}",
