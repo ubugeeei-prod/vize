@@ -52,6 +52,14 @@ fn check(project: &VirtualProject, servers: usize, label: &str) {
         after.attempts, before.attempts,
         "{label}/{servers} fallback control flow"
     );
+    if label == "leaf-admitted" && servers > 1 {
+        assert_eq!(
+            actual.shards.len(),
+            servers,
+            "positive shared-leaf path skipped"
+        );
+        assert_eq!(after.attempts, 1, "positive shared-leaf path fell back");
+    }
     let unique: BTreeSet<_> = after.members.iter().copied().collect();
     assert_eq!(
         after.members.len(),
@@ -93,10 +101,14 @@ fn build(shape: &str) -> (tempfile::TempDir, VirtualProject) {
             fs::write(&helper, "export const n = 1;\n").unwrap();
             paths.push(helper);
             script = format!("import {{ n }} from '@/H{index}';\n");
-        } else if shape == "scc" {
-            let next = (index / 3) * 3 + (index + 1) % 3;
+        } else if shape == "scc" || shape == "connected" {
+            let next = if shape == "connected" {
+                (index + 1) % count
+            } else {
+                (index / 3) * 3 + (index + 1) % 3
+            };
             script = format!("import Next from './C{next}.vue';\nvoid Next;\nconst n = {index};\n");
-        } else if shape == "leaf" || shape == "global-fallback" {
+        } else if matches!(shape, "leaf" | "leaf-admitted" | "global-fallback") {
             script = "import { n } from './shared';\n".to_owned();
         }
         let extra = if shape == "heavy" && index == 0 {
@@ -108,7 +120,7 @@ fn build(shape: &str) -> (tempfile::TempDir, VirtualProject) {
         fs::write(&path, format!("<script setup lang=\"ts\">\n{script}/* {extra} */\n</script><template>{{{{ n }}}}</template>")).unwrap();
         paths.push(path);
     }
-    if shape == "leaf" || shape == "global-fallback" {
+    if matches!(shape, "leaf" | "leaf-admitted" | "global-fallback") {
         let leaf = root.join("src/shared.ts");
         fs::write(&leaf, "export const n = 1;\n").unwrap();
         paths.push(leaf);
@@ -129,6 +141,9 @@ fn build(shape: &str) -> (tempfile::TempDir, VirtualProject) {
     }
     let mut project = VirtualProject::new(&root).unwrap();
     project.register_paths(&paths).unwrap();
+    if shape == "leaf-admitted" {
+        project.materialize().unwrap();
+    }
     (keep, project)
 }
 #[test]
@@ -140,7 +155,9 @@ fn cached_weights_preserve_complete_plans_and_read_each_member_once() {
         "heavy",
         "alias",
         "scc",
+        "connected",
         "leaf",
+        "leaf-admitted",
         "global-fallback",
         "global",
     ] {
