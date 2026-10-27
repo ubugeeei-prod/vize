@@ -204,7 +204,12 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
                 || directives::admit(&directive_states, index, diagnostic.rule_name, diagnostic)
         });
         if let Some((path, _)) = files.get(index) {
-            directives::finalize(directive_states[index].as_ref(), path, result, settings);
+            directives::finalize(
+                directive_states.get(index).and_then(Option::as_ref),
+                path,
+                result,
+                settings,
+            );
         }
         result.error_count = result
             .diagnostics
