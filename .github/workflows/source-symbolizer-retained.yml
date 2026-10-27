@@ -6,8 +6,8 @@ on:
       - .github/workflows/source-symbolizer-retained.yml
       - tools/benchmarks/scripts/source-symbolizer-*.ts
       - tests/tooling/source-symbolizer-protocol.test.ts
-      - tools/benchmarks/scripts/cold-evidence-thin.py
-      - tools/benchmarks/scripts/cold-evidence-summary.py
+      - tools/benchmarks/scripts/cold-evidence-*.ts
+      - tests/tooling/cold-evidence-thin.test.ts
   workflow_dispatch:
     inputs:
       metadata_run_id: { type: string, default: "" }
@@ -28,7 +28,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with: { node-version-file: package.json, run-install: false }
       - run: node --test tests/tooling/source-symbolizer-protocol.test.ts
-      - run: python3 tools/benchmarks/scripts/cold-evidence-thin.py --self-test
+      - run: node --test tests/tooling/cold-evidence-thin.test.ts tests/tooling/retired-tooling-languages.test.ts
   offline:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id == '' }}
     needs: controls
@@ -103,6 +103,8 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
       - name: Bind the requested completed artifact
         env:
           GH_TOKEN: ${{ github.token }}
@@ -128,7 +130,7 @@ jobs:
           set -euo pipefail
           mapfile -t archives < <(find "$RUNNER_TEMP/thin-download" -type f -name '*.tgz')
           [[ "${#archives[@]}" == 1 ]]
-          python3 tools/benchmarks/scripts/cold-evidence-thin.py "${archives[0]}" \
+          node tools/benchmarks/scripts/cold-evidence-thin.ts "${archives[0]}" \
             "$RUNNER_TEMP/thin-metadata" "$SOURCE_RUN" "$SOURCE_ARTIFACT" \
             "$RUNNER_TEMP/source-artifact-api.json"
       - name: Preserve metadata and extraction custody
@@ -145,7 +147,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir "$RUNNER_TEMP/metadata-summary"
-          python3 tools/benchmarks/scripts/cold-evidence-summary.py \
+          node tools/benchmarks/scripts/cold-evidence-summary.ts \
             "$RUNNER_TEMP/thin-download" "$RUNNER_TEMP/metadata-summary/summary.json"
           cp "$RUNNER_TEMP/source-artifact-api.json" "$RUNNER_TEMP/metadata-summary/capsule-api.json"
       - name: Preserve the small summary separately from raw metadata
