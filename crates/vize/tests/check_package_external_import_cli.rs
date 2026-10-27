@@ -186,7 +186,11 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
         );
     }
     let app = workspace.join("apps/app");
-    let virtual_root = vize_canon::project_virtual_root(&app);
+    let virtual_root = vize_canon::persistent_batch_virtual_root(
+        &workspace,
+        &app,
+        Some(&app.join("tsconfig.json")),
+    );
     let jsx = workspace.join("node_modules/.pnpm/vue@3.4.23/node_modules/vue/jsx.d.ts");
     let original_jsx = std::fs::read(&jsx).unwrap();
     let expected = serde_json::json!([[
@@ -247,7 +251,7 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
             "the requested package must retain its storage root:\n{stderr}"
         );
         assert!(
-            virtual_root.join("src/entry.ts").is_file(),
+            virtual_root.join("apps/app/src/entry.ts").is_file(),
             "the stable package mirror must survive process exit: {}",
             virtual_root.display()
         );
@@ -256,10 +260,7 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
         let authored_json = workspace.join("packages/ui/src/data.json");
         let mirrored_json = owned
             .iter()
-            .filter(|path| {
-                vize_canon::batch::external_mirror_original_path(path).as_ref()
-                    == Some(&authored_json)
-            })
+            .filter(|path| *path == &virtual_root.join("packages/ui/src/data.json"))
             .collect::<Vec<_>>();
         assert_eq!(
             mirrored_json.len(),
@@ -301,10 +302,10 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
                 "both sides of the package boundary must be mirrored"
             );
             assert!(
-                persisted.iter().any(|(path, _)| path
-                    .components()
-                    .any(|part| part.as_os_str() == "__vize_external__")),
-                "the sibling SFC must use the external subtree"
+                persisted
+                    .iter()
+                    .any(|(path, _)| path == &virtual_root.join("packages/ui/src/Shared.vue.ts")),
+                "the sibling SFC must retain its authored workspace geometry"
             );
         } else {
             assert_eq!(

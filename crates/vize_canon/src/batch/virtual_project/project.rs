@@ -38,6 +38,7 @@ impl VirtualProject {
         let mut project = Self {
             project_root,
             virtual_root,
+            private_batch_namespace: false,
             _cache_usage_lock: cache_usage_lock,
             tsconfig_path: None,
             compiler_configuration: None,

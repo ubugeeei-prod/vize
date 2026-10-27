@@ -217,7 +217,7 @@ fn prepare_candidate(
     let project_root = resolve_project_root_with_boundary(
         candidate.tsconfig_path.as_deref(),
         cwd,
-        &candidate.inputs,
+        &candidate.files,
         tsconfig_boundary,
     );
     let discovered_tsconfig_path = candidate.tsconfig_path.clone().or_else(|| {
@@ -286,10 +286,16 @@ fn prepare_candidate(
     let project_root = resolve_project_root_with_boundary(
         program_tsconfig_path.as_deref(),
         cwd,
+        &candidate.files,
+        tsconfig_boundary,
+    );
+    let storage_owner = resolve_project_root_with_boundary(
+        program_tsconfig_path.as_deref(),
+        cwd,
         &candidate.inputs,
         tsconfig_boundary,
     );
-    let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
+    let logical_program_root = logical_program_root.unwrap_or(storage_owner);
     resolve::retain_project_files(
         &mut candidate.files,
         &candidate.inputs,

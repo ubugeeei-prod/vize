@@ -27,16 +27,7 @@ impl VirtualProject {
             self.finalize_editor_imports();
             return;
         }
-        // Relative mirror edges are projected only after reachability closes,
-        // making initial registration independent of file and batch ordering.
-        let external_sources = self
-            .original_index
-            .keys()
-            .any(|path| !path.starts_with(&self.project_root));
-        if !external_sources
-            && !self.jsx_typecheck
-            && !self.virtual_files.values().any(is_denied_javascript_sfc)
-        {
+        if !self.jsx_typecheck && !self.virtual_files.values().any(is_denied_javascript_sfc) {
             self.finalize_declaration_imports();
             return;
         }
@@ -90,7 +81,6 @@ impl VirtualProject {
                             .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
                     };
                     let options = VirtualProjectRewriteOptions {
-                        has_external_sources: true,
                         preserve_relative_declarations: self
                             .is_package_route_path(&file.original_path)
                             || self.session_scripts,
@@ -202,7 +192,6 @@ impl VirtualProject {
                         roots,
                         file.original_path.parent(),
                         VirtualProjectRewriteOptions {
-                            has_external_sources: true,
                             preserve_relative_declarations: self
                                 .is_package_route_path(&file.original_path)
                                 || self.session_scripts,

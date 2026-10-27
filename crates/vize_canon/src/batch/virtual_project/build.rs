@@ -220,7 +220,6 @@ pub(super) fn build_vue_registered_file(
                 path.parent(),
                 crate::batch::import_rewriter::VirtualProjectRewriteOptions {
                     preserve_relative_declarations: context.preserve_relative_declarations,
-                    has_external_sources: false,
                     mirrorable_project_files: context.mirrorable_project_files,
                     alias_rewrite_policy: context.alias_rewrite_policy,
                     module_resolver: None,
@@ -228,11 +227,8 @@ pub(super) fn build_vue_registered_file(
             )
     );
     let star_projection = super::star_exports::StarProjection::from_rewrite(&rewritten, stars);
-    // Dependency closure and finalization must always start from authored edges.
-    // Initial registration cannot know which later inputs will cross the mirror.
-    let preserve_module_source =
-        crate::batch::import_rewriter::source_may_contain_relative_specifier(&code)
-            || rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
+    let preserve_module_source = !context.allow_javascript
+        && rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
     let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
     projection.restore_row_metadata(mapping_meta);
     projection.set_prop_default_key_links(prop_default_key_links);
@@ -317,7 +313,7 @@ pub(super) fn prepend_vue_jsx_reference(
     }
 }
 
-pub(in crate::batch) fn mirrored_virtual_path(
+pub(super) fn mirrored_virtual_path(
     project_root: &Path,
     virtual_root: &Path,
     path: &Path,

@@ -8,10 +8,7 @@ const PASSTHROUGH_EXTENSIONS: &[&str] = &["js", "jsx", "mjs", "cjs", "json"];
 const TYPESCRIPT_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "js", "jsx"];
 const PACKAGE_ENTRY_FIELDS: &[&str] = &["types", "typings", "main"];
 
-pub(in crate::batch) fn resolve_relative_passthrough_module(
-    dir: &Path,
-    specifier: &str,
-) -> Option<PathBuf> {
+pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -> Option<PathBuf> {
     let base = dir.join(specifier);
     if specifier.ends_with(".vue") && !base.is_file() {
         return first_existing_with_extensions(&base, &["d.ts"]);

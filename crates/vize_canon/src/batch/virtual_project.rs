@@ -28,7 +28,6 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod art_usage;
 mod build;
-pub(in crate::batch) use build::mirrored_virtual_path;
 mod content_mapper;
 mod content_mapper_config;
 pub use content_mapper::{
@@ -63,6 +62,9 @@ pub(in crate::batch) use diagnostic_route::DiagnosticRoute;
 mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
+mod persistent_namespace;
+pub(in crate::batch) use persistent_namespace::prepare_persistent_batch_root;
+pub use persistent_namespace::{persistent_batch_storage_root, persistent_batch_virtual_root};
 mod identity;
 pub use identity::{
     legacy_project_virtual_roots, project_virtual_access_path, project_virtual_lock_paths,
@@ -104,7 +106,6 @@ mod package_shadow_runtime;
 mod package_shadow_scope;
 mod package_source_index;
 mod passthrough;
-pub(in crate::batch) use passthrough::resolve_relative_passthrough_module;
 mod paths;
 pub(in crate::batch) use paths::script_virtual_path;
 mod project;
@@ -203,6 +204,7 @@ pub struct VirtualProject {
     /// outside the checked tree and `node_modules`; editor projects are
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
+    private_batch_namespace: bool,
 
     /// Shared owner lock held for as long as this project can read or patch
     /// its materialized cache. Cache GC takes the same file exclusively.

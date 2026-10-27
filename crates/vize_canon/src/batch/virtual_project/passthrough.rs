@@ -12,7 +12,7 @@ use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 use super::{VirtualProject, build::mirrored_virtual_path};
 
 mod resolution;
-pub(in crate::batch) use resolution::resolve_relative_passthrough_module;
+use resolution::resolve_relative_passthrough_module;
 
 impl VirtualProject {
     pub(super) fn javascript_passthrough_files(&self) -> impl Iterator<Item = &Path> {

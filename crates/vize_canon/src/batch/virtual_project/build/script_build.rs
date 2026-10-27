@@ -28,7 +28,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
                 path.parent(),
                 VirtualProjectRewriteOptions {
                     preserve_relative_declarations: context.preserve_relative_declarations,
-                    has_external_sources: false,
                     mirrorable_project_files: (!context.preserve_relative_declarations)
                         .then_some(context.mirrorable_project_files)
                         .flatten(),

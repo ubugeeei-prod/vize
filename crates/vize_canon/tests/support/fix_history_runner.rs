@@ -303,15 +303,16 @@ pub(crate) fn check_pack(
                 _ => None,
             },
         };
-        // The corpus capture owns every workspace input while this checker
-        // must exercise the package/external mirror boundary from #10934.
-        let checker_root = if name == "relative-sibling-storage-10934" {
-            project_root.join("apps/app")
-        } else {
-            project_root.clone()
-        };
         let mut checker =
-            BatchTypeChecker::with_options(&checker_root, options).expect("the checker must start");
+            BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
+        if name == "relative-sibling-storage-10934" {
+            checker
+                .set_persistent_storage_owner(
+                    &project_root.join("apps/app"),
+                    Some(&project_root.join("apps/app/tsconfig.json")),
+                )
+                .expect("the package must select its private persistent storage owner");
+        }
         if name == "workspace-package-import-alias-10175" {
             let mut resolver = PackageRouteResolver::default();
             let bindings = [
