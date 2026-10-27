@@ -12,7 +12,11 @@ import {
 import { createColdBackendObserver } from "../../tools/benchmarks/scripts/typechecker-cache-backend.ts";
 import { summarizeColdBackendObserver } from "../../tools/benchmarks/scripts/typechecker-cache-custody.ts";
 import { sealFixtureInputs } from "../../tools/benchmarks/scripts/typechecker-fixture-identity.ts";
-import { inferCacheSemanticRoot } from "../../tools/benchmarks/scripts/typechecker-cache-root.ts";
+import {
+  cachePathContains,
+  inferCacheSemanticRoot,
+  rootOutsideOwnedNamespace,
+} from "../../tools/benchmarks/scripts/typechecker-cache-root.ts";
 
 const hash = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 
@@ -264,6 +268,19 @@ void test("actual explicit generated include roots qualify only when every prima
       fs.writeFileSync(path.join(project, entry.path), "<template/>");
       fs.writeFileSync(path.join(virtual, entry.path + ".ts"), "export {};");
     }
+    assert.equal(rootOutsideOwnedNamespace(project, virtual), true);
+    assert.equal(rootOutsideOwnedNamespace(virtual, virtual), false);
+    assert.equal(rootOutsideOwnedNamespace(root, virtual), false);
+    assert.equal(
+      rootOutsideOwnedNamespace(path.join(virtual, "src"), virtual),
+      false,
+      "a semantic root nested under the cache must fail independently of metadata/mirror equality",
+    );
+    assert.equal(
+      cachePathContains(root, path.join(root, "..cache")),
+      true,
+      "a child segment starting with two dots is not parent traversal",
+    );
     const request = {
       projectRoot: project,
       entries,
