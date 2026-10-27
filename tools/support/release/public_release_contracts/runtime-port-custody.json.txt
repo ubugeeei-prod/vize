@@ -1,0 +1,137 @@
+{
+  "schema": "vize-public-runtime-ts-port-custody-v1",
+  "originals": [
+    {
+      "path": "public-compiler-contracts-admitted.mjs",
+      "sha256": "e6c3d5304b8af962b0b1d257165fcb6423c723642519418d9845dc631bfe3cc5"
+    },
+    {
+      "path": "public-wasm-compiler-contracts.mjs",
+      "sha256": "cdb53465c971f8eabe3be5b90327ff4924c3817f3ee50763f6660619ebf5b652"
+    }
+  ],
+  "ported": {
+    "path": "runtime-contracts.ts",
+    "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329",
+    "bytes": 7823
+  },
+  "validation": {
+    "strictTypeScript": "PASS",
+    "oxfmt": "PASS",
+    "nativeOriginalToPortedWholePacketEqual": true,
+    "wasmOriginalToPortedWholePacketEqual": true,
+    "frozenPublic600NativeWholePacketEqual": true,
+    "frozenPublic600WasmWholePacketEqual": true,
+    "vue": "3.6.0-rc.13",
+    "version": "0.600.0",
+    "freshConsumerAcceptanceCredit": false,
+    "adapters": "In-memory stdout capture only; WASM resolver points to previously extracted public600 payload, with file URL for data-URL evaluation."
+  },
+  "frozenPackets": [
+    {
+      "path": "public-compiler-contracts-admitted.json",
+      "sha256": "ab0eeae879f333e7da8bbbf25a26144ba66ca3fcd8a16a7e08e1db68d9211b63"
+    },
+    {
+      "path": "public-wasm-compiler-contracts.json",
+      "sha256": "7dc56029bf34d86066b1389264589cc454f683bc673cc0db4c4ea2dbd2132f0b"
+    }
+  ],
+  "nativeProof": {
+    "strictTypeScript": "PASS",
+    "nativePublicVersion": "0.600.0",
+    "vue": "3.6.0-rc.13",
+    "completeRows": [
+      {
+        "id": "10875-native-once-click",
+        "observed": {
+          "handler": "function",
+          "button": "0",
+          "title": "0",
+          "output": "2"
+        },
+        "passed": true
+      },
+      {
+        "id": "10815-component-once-props-events-slots",
+        "observed": {
+          "button": "0:2",
+          "output": "2"
+        },
+        "passed": true
+      },
+      {
+        "id": "10891-private-default",
+        "observed": {
+          "text": "1",
+          "publicMsg": null,
+          "exposed": {}
+        },
+        "passed": true
+      },
+      {
+        "id": "10891-explicit-expose",
+        "observed": {
+          "text": "1",
+          "publicMsg": 1,
+          "exposed": {
+            "msg": 1
+          }
+        },
+        "passed": true
+      }
+    ],
+    "originalSourceToPortedEqual": true,
+    "frozenOriginalPublic600Equal": true
+  },
+  "wasmProof": {
+    "backend": "wasm",
+    "version": "0.600.0",
+    "vue": "3.6.0-rc.13",
+    "completeRows": [
+      {
+        "id": "10875-native-once-click",
+        "observed": {
+          "handler": "function",
+          "button": "0",
+          "title": "0",
+          "output": "2"
+        },
+        "passed": true
+      },
+      {
+        "id": "10815-component-once-props-events-slots",
+        "observed": {
+          "button": "0:2",
+          "output": "2"
+        },
+        "passed": true
+      },
+      {
+        "id": "10891-private-default",
+        "observed": {
+          "text": "1",
+          "publicMsg": null,
+          "exposed": {}
+        },
+        "passed": true
+      },
+      {
+        "id": "10891-explicit-expose",
+        "observed": {
+          "text": "1",
+          "publicMsg": 1,
+          "exposed": {
+            "msg": 1
+          }
+        },
+        "passed": true
+      }
+    ],
+    "originalSourceToPortedEqual": true,
+    "frozenOriginalPublic600Equal": true,
+    "resolverOnlyAdapter": "/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package",
+    "acceptanceCredit": false
+  }
+}
+

@@ -1,0 +1,298 @@
+{
+  "originalManifest": {
+    "path": "tools/support/release/public_release_contracts/source-manifest.original.json.txt",
+    "sha": "b92420dd67e6c4cd047a19c41855b3152d84915b",
+    "bytes": 3814,
+    "sha256": "c90ef297e5796d8c5f60bf948a043bef2b90b126ee0183835159edea296d6035",
+    "kind": "byte-identical original manifest"
+  },
+  "frozenInputs": [
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/bootstrap.mjs.txt",
+      "sha": "da4d7c5c237c94bb3ae85cec3705ffa25d1822a0",
+      "bytes": 1387,
+      "sha256": "f035ebda0859d4711bbdf6d68b54d9b9420e47275783406bdca8a2bfbc0320af",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/diagnostic-reference-0.600.json.txt",
+      "sha": "f995c8b4e2c45cd3548312d3b74014c8bef3a6ad",
+      "bytes": 6851,
+      "sha256": "c0bc78179f9d0fa1b06b608862f7dd6298f272c6cbc769b7fef304f98d4fc41b",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/empty-v-slot-expression/cases.json.txt",
+      "sha": "4f0b982e792b95332e7cae2effb86b1c770c21e9",
+      "bytes": 2016,
+      "sha256": "b6661e26301be0ad20fc3736afaf735acdbeae45118525313e52e27f897042e3",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/empty-v-slot-expression/src/BlankSlotProps.vue.txt.txt",
+      "sha": "672203740044a319f1fd5def8e26de239a25c39d",
+      "bytes": 208,
+      "sha256": "f362e9149bb47efa66d2762ed496fb1f387305d1a01785d56d7494207d9752e5",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/empty-v-slot-expression/src/Box.vue.txt.txt",
+      "sha": "f08d585bfacd13ec2c886434e6623ca34e7a79f4",
+      "bytes": 173,
+      "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/empty-v-slot-expression/src/EmptySlotProps.vue.txt.txt",
+      "sha": "1a7a022a0a6bb2d00f21c5d1a89c4dbea0cdb09e",
+      "bytes": 193,
+      "sha256": "686aed65d8f40003516ccc43a520f60afd855b009829d7814b98b31dab70839a",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/empty-v-slot-expression/src/EmptySlotPropsWrongName.vue.txt.txt",
+      "sha": "8c940352e3b1d059c35c0cf1f03a62574b014d92",
+      "bytes": 193,
+      "sha256": "1464e0809943a078e56f91e29dd74001cd895dfac99a9e1d9135bc14ad26e7ba",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/empty-v-slot-expression/tsconfig.json.txt.txt",
+      "sha": "ec3dbb4f695cf51f9d50bf2df45c131718050635",
+      "bytes": 231,
+      "sha256": "e6f26dd6bc1929582d982162d78514fb7d0df8c238748dc209017c566293ed20",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/options-api-reserved-component-reference/cases.json.txt",
+      "sha": "648b3b4df62dbb434d266a5143eea3249926a1e8",
+      "bytes": 1921,
+      "sha256": "a4682d2de6f99c3e27b86364e9780b554b5365fb1d9dac1cfbdb05f102c6a12b",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/options-api-reserved-component-reference/src/Heading.vue.txt.txt",
+      "sha": "6daf9f584bd88f2bf4d9e4ba2420fa7a13dec27f",
+      "bytes": 335,
+      "sha256": "191228d56df91990fe87893b890218069cf24c2c120095992d6fdfb7b70af48a",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/options-api-reserved-component-reference/src/HeadingCollision.vue.txt.txt",
+      "sha": "2e7e9dba27792b3f21a86fa6a8eb8d5ba1bd1050",
+      "bytes": 420,
+      "sha256": "37d957d7044cbfdc26bef362b7d11b2f5da17ac958098026171932c237f62a1d",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/options-api-reserved-component-reference/src/HeadingWrong.vue.txt.txt",
+      "sha": "5ec6fd402a9f6b89a05ff4512512892def14404f",
+      "bytes": 340,
+      "sha256": "d78da8e1973b1b3078f36031310745cd07882a9e0501c93c4f73d2969c5181e9",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/options-api-reserved-component-reference/src/Page.vue.txt.txt",
+      "sha": "24de98afff8833dda0c4bc83188e32a164d7f15c",
+      "bytes": 327,
+      "sha256": "f030edba4e98e93d8eb6637bbb0ec69f736ac903c2b4b71db2be6cc26e1fff82",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/fixtures/options-api-reserved-component-reference/tsconfig.json.txt.txt",
+      "sha": "31cf23d8ce57017b1913a0139b26b10d48fd4e58",
+      "bytes": 230,
+      "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/public-before-0.596.json.txt",
+      "sha": "ecabbbdcb17a1759b3a316624ce9ead9bc214f62",
+      "bytes": 1560,
+      "sha256": "6ca13af2ce200795ce72823a60741edf62b3da36cf22c84f71fca09b12860495",
+      "kind": "byte-identical frozen input"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/public-compiler-contracts-admitted.mjs.txt",
+      "sha": "fd58d6aed491004ea0ff596f122f2eea4205c81a",
+      "bytes": 4093,
+      "sha256": "e6c3d5304b8af962b0b1d257165fcb6423c723642519418d9845dc631bfe3cc5",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/public-config-recovery.mjs.txt",
+      "sha": "743171cda77622aa79dcc959db1e741e34c4411d",
+      "bytes": 3938,
+      "sha256": "0f065b5c7b456e54e975d07357091f7083159e794d7e1997a0210e62b16d4fcc",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/public-contribution-contracts.mjs.txt",
+      "sha": "29a80aa46e0f20b2197cc6ebb349ac6841bdb472",
+      "bytes": 2441,
+      "sha256": "d5ce906e78f084774502bb3a4ec10b4cfe3a66c9e8800024592119eca99fb9bd",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/public-dynamic-role.mjs.txt",
+      "sha": "cfaf664ba7899ebe4da025131548763eec0bdf9f",
+      "bytes": 1165,
+      "sha256": "0d4b6fee342be9bd918be72f8a1d8252fef9418bd9333c4f12a65c14d23a6dcf",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/public-wasm-compiler-contracts.mjs.txt",
+      "sha": "ac3bfeb61c4ce57073f9f525df92a7ecbb1dbb22",
+      "bytes": 4282,
+      "sha256": "cdb53465c971f8eabe3be5b90327ff4924c3817f3ee50763f6660619ebf5b652",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/original-sources/run.mjs.txt",
+      "sha": "f70aaa7e7bdfd4edf4c658a6de7cdb20711bb3d1",
+      "bytes": 4926,
+      "sha256": "36dd22ca0babd9bb2d9cb262cad653a7ea0574fbdf89bd407774a8fbcdde4544",
+      "kind": "byte-identical original source"
+    },
+    {
+      "path": "tools/support/release/public_release_contracts/source-manifest.original.json.txt",
+      "sha": "b92420dd67e6c4cd047a19c41855b3152d84915b",
+      "bytes": 3814,
+      "sha256": "c90ef297e5796d8c5f60bf948a043bef2b90b126ee0183835159edea296d6035",
+      "kind": "byte-identical original manifest"
+    }
+  ],
+  "sourceTransformations": [
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/bootstrap.mjs.txt",
+        "sha": "da4d7c5c237c94bb3ae85cec3705ffa25d1822a0",
+        "bytes": 1387,
+        "sha256": "f035ebda0859d4711bbdf6d68b54d9b9420e47275783406bdca8a2bfbc0320af",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/bootstrap.ts",
+        "sha": "665ebdd389c36a88aacebc4bde4a71a6428308b2",
+        "bytes": 1721,
+        "sha256": "7f0490e98ee9a70736d601493ffff63d5c6daddb32b35ed0e266d812a6593258"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    },
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/public-compiler-contracts-admitted.mjs.txt",
+        "sha": "fd58d6aed491004ea0ff596f122f2eea4205c81a",
+        "bytes": 4093,
+        "sha256": "e6c3d5304b8af962b0b1d257165fcb6423c723642519418d9845dc631bfe3cc5",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/runtime-contracts.ts",
+        "sha": "640b52916691e107e4980bec63c390b6d9d3001c",
+        "bytes": 7823,
+        "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    },
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/public-config-recovery.mjs.txt",
+        "sha": "743171cda77622aa79dcc959db1e741e34c4411d",
+        "bytes": 3938,
+        "sha256": "0f065b5c7b456e54e975d07357091f7083159e794d7e1997a0210e62b16d4fcc",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/public-config-recovery.ts",
+        "sha": "6737ceb8d346477b644e50081ab23b0c42b615f1",
+        "bytes": 5364,
+        "sha256": "3e3c3db8d92edb4fa5cf356e66ab1ae53325b0d97598e5bd9a126022c80cd5c0"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    },
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/public-contribution-contracts.mjs.txt",
+        "sha": "29a80aa46e0f20b2197cc6ebb349ac6841bdb472",
+        "bytes": 2441,
+        "sha256": "d5ce906e78f084774502bb3a4ec10b4cfe3a66c9e8800024592119eca99fb9bd",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/public-contribution-contracts.ts",
+        "sha": "6579f0eee73e610909f3f324c3fee9174ea18620",
+        "bytes": 4276,
+        "sha256": "6912d890eae5f405bc404721360acb9b1a92f2936505eee38697055172ef26e0"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    },
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/public-dynamic-role.mjs.txt",
+        "sha": "cfaf664ba7899ebe4da025131548763eec0bdf9f",
+        "bytes": 1165,
+        "sha256": "0d4b6fee342be9bd918be72f8a1d8252fef9418bd9333c4f12a65c14d23a6dcf",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/public-dynamic-role.ts",
+        "sha": "e96e2dc55ba28bf1e1997f8ea84a3ba74747c5a4",
+        "bytes": 1626,
+        "sha256": "1e2c75a1789f7b8b490cfab03eb8e6324fc53971158885391b42eaac47196b18"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    },
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/public-wasm-compiler-contracts.mjs.txt",
+        "sha": "ac3bfeb61c4ce57073f9f525df92a7ecbb1dbb22",
+        "bytes": 4282,
+        "sha256": "cdb53465c971f8eabe3be5b90327ff4924c3817f3ee50763f6660619ebf5b652",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/runtime-contracts.ts",
+        "sha": "640b52916691e107e4980bec63c390b6d9d3001c",
+        "bytes": 7823,
+        "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    },
+    {
+      "original": {
+        "path": "tools/support/release/public_release_contracts/original-sources/run.mjs.txt",
+        "sha": "f70aaa7e7bdfd4edf4c658a6de7cdb20711bb3d1",
+        "bytes": 4926,
+        "sha256": "36dd22ca0babd9bb2d9cb262cad653a7ea0574fbdf89bd407774a8fbcdde4544",
+        "kind": "byte-identical original source"
+      },
+      "ported": {
+        "path": "tools/support/release/public_release_contracts/run.ts",
+        "sha": "118c40d3edc418e5a0445afbc620d21616043e6f",
+        "bytes": 6980,
+        "sha256": "7be3203c762bcf1c7c7d27c27824053dccabdcaae2b4889df3c0d19d7f3ae0cb"
+      },
+      "method": "strict TypeScript type port and formatter; raw source, frozen packet data, authored input bytes and expected vectors retained"
+    }
+  ],
+  "validation": {
+    "typescript": "6.0.3",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "diagnostics": 0,
+    "formatterErrors": 0,
+    "virtualCompilerHost": true,
+    "localFilesystemWrites": false,
+    "runtimePortCustodyBlob": "d357b007ba376025792559ed45c7c3d0c182ab7e",
+    "runtimeOriginal600NativeAndWasmPacketsEqual": true
+  },
+  "workflowMutation": {
+    "originalEventJobUnchangedExceptNewPhaseGuard": true,
+    "originalRegisteredContractTestsRetained": true,
+    "customPropertiesIsSeparateFreshAfterOnlyOptIn": true,
+    "publishedCandidateSeparatedFromProducerSource": true
+  },
+  "note": "Original before/after proof data are not reformatted or repinned. JSON and authored fixture bytes are stored as explicit .txt payloads."
+}

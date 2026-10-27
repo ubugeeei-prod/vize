@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const label = 'x'
+</script>
+<template>
+  <i v-for="item in item" :key="item">{{ item.toFixed() }}</i>
+  <i v-for="entry in (missing || missing)" :key="entry">{{ entry }}</i>
+</template>
