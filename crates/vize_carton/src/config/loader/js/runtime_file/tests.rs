@@ -22,9 +22,14 @@ fn large_evaluator_is_a_private_file_instead_of_a_command_argument() {
         &actual[..super::ARGV_COMPATIBILITY.len()],
         super::ARGV_COMPATIBILITY
     );
+    let script_end = super::ARGV_COMPATIBILITY.len() + script.len();
     assert_eq!(
-        &actual[super::ARGV_COMPATIBILITY.len()..],
+        &actual[super::ARGV_COMPATIBILITY.len()..script_end],
         script.as_bytes()
+    );
+    assert_eq!(
+        &actual[script_end..],
+        b"\n//# sourceURL=vize:config-runtime\n"
     );
     #[cfg(unix)]
     {
@@ -134,4 +139,59 @@ fn temporary_module_is_removed_after_success_or_child_failure() {
         }
         assert!(!path.exists(), "scoped runtime file must not leak");
     }
+}
+
+#[test]
+fn runtime_source_identity_preserves_authored_errors_across_retries() {
+    let project = tempfile::tempdir().unwrap();
+    let config = project.path().join("vite.config.mjs");
+    let authored_source = "throw new Error('authored-specificreason 日本語');\n";
+    fs::write(&config, authored_source).unwrap();
+    let script = "const { pathToFileURL } = await import('node:url');\nawait import(pathToFileURL(process.argv[1]).href);\n";
+    let first = NodeRuntimeFile::new(script).unwrap();
+    let second = NodeRuntimeFile::new(script).unwrap();
+    assert_ne!(first.path(), second.path());
+    let output = first.command(&config).output().unwrap();
+    let repeated = second.command(&config).output().unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(output.stdout.as_slice(), b"");
+    assert_eq!(repeated.status, output.status);
+    assert_eq!(repeated.stdout, output.stdout);
+    assert_eq!(repeated.stderr, output.stderr);
+
+    // A direct Node execution independently owns the authored file/source/error
+    // header. The wrapper may name its own frame, but must retain this header.
+    let direct = std::process::Command::new("node")
+        .arg(&config)
+        .output()
+        .unwrap();
+    assert_eq!(direct.status.code(), Some(1));
+    let direct_stderr = std::str::from_utf8(&direct.stderr).unwrap();
+    let observed_stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert_eq!(
+        observed_stderr.lines().take(5).collect::<Vec<_>>(),
+        direct_stderr.lines().take(5).collect::<Vec<_>>()
+    );
+    assert_eq!(
+        observed_stderr.lines().nth(4),
+        Some("Error: authored-specificreason 日本語")
+    );
+
+    fs::write(&config, "throw new Error('changed-specificreason');\n").unwrap();
+    let changed_message = first.command(&config).output().unwrap();
+    assert_eq!(changed_message.status.code(), Some(1));
+    assert_ne!(changed_message.stderr, output.stderr);
+    assert_eq!(
+        std::str::from_utf8(&changed_message.stderr)
+            .unwrap()
+            .lines()
+            .nth(4),
+        Some("Error: changed-specificreason")
+    );
+
+    let other_config = project.path().join("another.config.mjs");
+    fs::write(&other_config, authored_source).unwrap();
+    let changed_path = first.command(&other_config).output().unwrap();
+    assert_eq!(changed_path.status.code(), Some(1));
+    assert_ne!(changed_path.stderr, output.stderr);
 }
