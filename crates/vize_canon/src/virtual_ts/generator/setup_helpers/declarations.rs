@@ -1,10 +1,10 @@
 //! Emit helpers by lexical ownership; never rewrite a generated block afterward.
 
+use super::super::template_ref_keys::TemplateRefUsage;
 use crate::virtual_ts::helpers::setup_macros::{
     SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
@@ -13,9 +13,9 @@ use vize_croquis::Croquis;
 
 pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
-    vue_template_ref_import: bool,
     pub(crate) macro_results: Vec<CompactString>,
     pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
+    pub(in crate::virtual_ts::generator) template_refs: TemplateRefUsage,
 }
 
 impl SetupHelperPlan {
@@ -37,9 +37,7 @@ impl SetupHelperPlan {
     }
 
     pub(crate) fn emit_import_anchors(&self, ts: &mut String) {
-        if self.vue_template_ref_import {
-            ts.push_str("// Keep the authored Vue helper import used by its specialized setup signature\nvoid useTemplateRef;\n");
-        }
+        self.template_refs.emit_import_anchors(ts);
     }
 
     pub(crate) fn template_emit_initializer(
@@ -99,6 +97,13 @@ pub(super) fn emit(
     } else {
         "  // Compiler macros (only valid in setup scope, not global)\n"
     });
+    if typed_refs {
+        append!(
+            *ts,
+            "  const {} = (undefined as unknown as __VizeUseTemplateRef);\n",
+            plan.template_refs.helper_name()
+        );
+    }
     for helper in SETUP_MACRO_HELPERS {
         if shadowed.contains(helper.name) {
             continue;
@@ -108,12 +113,6 @@ pub(super) fn emit(
                 GENERIC_PROPS_HOISTED
             } else {
                 GENERIC_PROPS_EMBEDDED
-            });
-        } else if helper.name == "useTemplateRef" && typed_refs {
-            ts.push_str(if hoisted {
-                "  const useTemplateRef = __vize_useTemplateRef as unknown as __VizeUseTemplateRef;\n"
-            } else {
-                "  const useTemplateRef = (undefined as unknown as __VizeUseTemplateRef); void ((_key: string) => useTemplateRef(_key));\n"
             });
         } else {
             ts.push_str(if hoisted {
@@ -144,15 +143,16 @@ fn shadowed_helpers(
 ) -> SetupHelperPlan {
     let mut plan = SetupHelperPlan {
         shadowed: FxHashSet::default(),
-        vue_template_ref_import: false,
         macro_results: Vec::new(),
         emit_calls: Vec::new(),
+        template_refs: TemplateRefUsage::default(),
     };
     if !SETUP_MACRO_HELPERS
         .iter()
         .any(|helper| crate::virtual_ts::script_facts::contains_binding(summary, helper.name))
         && summary.macros.define_props().is_none()
         && summary.macros.define_emits().is_none()
+        && !source.is_some_and(|source| source.contains("useTemplateRef"))
     {
         return plan;
     }
@@ -182,26 +182,8 @@ fn shadowed_helpers(
                 .insert(CompactString::from(scoping.symbol_name(symbol)));
         }
     }
-    // Vue's runtime helper is intentionally specialized from the template ref
-    // registry. Other authored values (including imports from other modules)
-    // retain their actual declarations and signatures.
-    for statement in &parsed.program.body {
-        if let Statement::ImportDeclaration(import) = statement
-            && import.source.value == "vue"
-            && import.import_kind != ImportOrExportKind::Type
-            && let Some(specifiers) = &import.specifiers
-        {
-            for specifier in specifiers {
-                if let ImportDeclarationSpecifier::ImportSpecifier(named) = specifier
-                    && named.import_kind != ImportOrExportKind::Type
-                    && named.local.name == "useTemplateRef"
-                    && named.imported.name() == "useTemplateRef"
-                {
-                    plan.shadowed.remove("useTemplateRef");
-                    plan.vue_template_ref_import = true;
-                }
-            }
-        }
+    if source.contains("useTemplateRef") {
+        plan.template_refs = TemplateRefUsage::collect(&parsed.program, scoping, source);
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
     if preserve_event_navigation && parsed.diagnostics.is_empty() && built.diagnostics.is_empty() {
