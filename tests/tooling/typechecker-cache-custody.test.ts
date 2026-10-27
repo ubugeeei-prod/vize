@@ -167,9 +167,32 @@ process.exit(2);
           source,
         ).qualified,
         false,
-        "source roots inside or containing the cache namespace must fail",
+        "malformed source roots disagree with the observed primary root",
       );
     }
+    fs.writeFileSync(
+      path.join(namespace, "src/Control.vue"),
+      fs.readFileSync(path.join(project, "src/Control.vue")),
+    );
+    entry.projectRoot = namespace;
+    entry.compiledSourceRevision = source;
+    for (const name of ["first.json", "second.json"])
+      fs.writeFileSync(path.join(metadata, name), JSON.stringify(entry));
+    const nested = summarizeColdBackendObserver(
+      observer.calls,
+      runtime.evidence.ownedRoot,
+      { projectRoot: namespace, entries: [{ path: "src/Control.vue" }] },
+      metadata,
+      source,
+    );
+    assert.equal(nested.rows[0].observedRoot?.qualified, true);
+    assert.equal(nested.rows[0].observedRoot?.root, namespace);
+    assert.equal(nested.rows[0].explicit.projectRoot, namespace);
+    assert.equal(
+      nested.qualified,
+      false,
+      "matching observed and attested roots nested inside cache must fail specifically at containment",
+    );
     runtime.cleanup();
     assert.equal(fs.existsSync(project), true);
   } finally {
