@@ -220,6 +220,7 @@ pub(super) fn build_vue_registered_file(
                 path.parent(),
                 crate::batch::import_rewriter::VirtualProjectRewriteOptions {
                     preserve_relative_declarations: context.preserve_relative_declarations,
+                    has_external_sources: context.has_external_sources,
                     mirrorable_project_files: context.mirrorable_project_files,
                     alias_rewrite_policy: context.alias_rewrite_policy,
                     module_resolver: None,
@@ -313,7 +314,7 @@ pub(super) fn prepend_vue_jsx_reference(
     }
 }
 
-pub(super) fn mirrored_virtual_path(
+pub(in crate::batch) fn mirrored_virtual_path(
     project_root: &Path,
     virtual_root: &Path,
     path: &Path,

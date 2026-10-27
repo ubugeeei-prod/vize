@@ -14,6 +14,7 @@ pub(in crate::batch::virtual_project) struct ScriptBuildContext<'a> {
     pub(in crate::batch::virtual_project) rewriter: &'a ImportRewriter,
     pub(in crate::batch::virtual_project) preserve_relative_declarations: bool,
     pub(in crate::batch::virtual_project) preserve_declaration_spelling: bool,
+    pub(in crate::batch::virtual_project) has_external_sources: bool,
     pub(in crate::batch::virtual_project) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
     pub(in crate::batch::virtual_project) alias_rewrite_policy:
         Option<&'a VirtualAliasRewritePolicy>,
@@ -42,6 +43,7 @@ pub(in crate::batch::virtual_project) struct VirtualBuildContext<'a> {
         Option<super::super::VueDocumentVirtualTsOptions>,
     pub(in crate::batch::virtual_project) preserve_relative_declarations: bool,
     pub(in crate::batch::virtual_project) preserve_declaration_spelling: bool,
+    pub(in crate::batch::virtual_project) has_external_sources: bool,
     pub(in crate::batch::virtual_project) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
     pub(in crate::batch::virtual_project) rewriter: &'a ImportRewriter,
     pub(in crate::batch::virtual_project) alias_rewrite_policy:
@@ -57,6 +59,7 @@ impl<'a> VirtualBuildContext<'a> {
             rewriter: self.rewriter,
             preserve_relative_declarations: self.preserve_relative_declarations,
             preserve_declaration_spelling: self.preserve_declaration_spelling,
+            has_external_sources: self.has_external_sources,
             mirrorable_project_files: self.mirrorable_project_files,
             alias_rewrite_policy: self.alias_rewrite_policy,
         }

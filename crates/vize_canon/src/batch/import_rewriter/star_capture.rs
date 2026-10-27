@@ -122,6 +122,7 @@ mod compatibility_tests {
         let roots = (root.path(), mirror.path());
         let rewriter = ImportRewriter::new();
         let options = VirtualProjectRewriteOptions {
+            has_external_sources: true,
             preserve_relative_declarations: false,
             mirrorable_project_files: None,
             alias_rewrite_policy: None,

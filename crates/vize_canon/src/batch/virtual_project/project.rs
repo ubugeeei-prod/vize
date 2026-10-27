@@ -230,6 +230,7 @@ impl VirtualProject {
             editor_document_options: self.editor_document_options,
             preserve_relative_declarations: package_route_path || self.session_scripts,
             preserve_declaration_spelling: self.session_scripts,
+            has_external_sources: true,
             mirrorable_project_files: None,
             rewriter: &self.rewriter,
             alias_rewrite_policy: Some(self.alias_rewrite_policy()),
@@ -296,6 +297,9 @@ impl VirtualProject {
             editor_document_options: self.editor_document_options,
             preserve_relative_declarations: self.session_scripts,
             preserve_declaration_spelling: self.session_scripts,
+            has_external_sources: mirrorable_project_files
+                .iter()
+                .any(|path| !path.starts_with(&self.project_root)),
             mirrorable_project_files: Some(&mirrorable_project_files),
             rewriter: &self.rewriter,
             alias_rewrite_policy: Some(self.alias_rewrite_policy()),
@@ -358,6 +362,7 @@ impl VirtualProject {
                 preserve_relative_declarations: self.is_package_route_path(path)
                     || self.session_scripts,
                 preserve_declaration_spelling: self.session_scripts,
+                has_external_sources: true,
                 mirrorable_project_files: None,
                 rewriter: &self.rewriter,
                 alias_rewrite_policy: Some(self.alias_rewrite_policy()),
@@ -399,6 +404,7 @@ impl VirtualProject {
                 preserve_relative_declarations: self.is_package_route_path(path)
                     || self.session_scripts,
                 preserve_declaration_spelling: self.session_scripts,
+                has_external_sources: true,
                 mirrorable_project_files: None,
                 alias_rewrite_policy: Some(self.alias_rewrite_policy()),
             },

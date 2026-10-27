@@ -7,8 +7,8 @@ use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 use super::dts_rewrite::rewrite_relative_dts_specifier;
 use super::virtual_rewrite::{
-    absolute_import_needs_virtual_rewrite, is_rewritable_project_specifier,
-    is_rewritable_vue_specifier, resolve_source_path,
+    absolute_import_needs_virtual_rewrite, absolute_project_relative,
+    is_rewritable_project_specifier, is_rewritable_vue_specifier, resolve_source_path,
 };
 use super::{
     EmptyVueStar, ImportRewriter, ImportSourceMap, RewriteResult, VirtualAliasRewritePolicy,
@@ -18,6 +18,7 @@ use super::{
 #[derive(Clone, Copy)]
 pub(in crate::batch) struct VirtualProjectRewriteOptions<'a> {
     pub(in crate::batch) preserve_relative_declarations: bool,
+    pub(in crate::batch) has_external_sources: bool,
     pub(in crate::batch) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
     pub(in crate::batch) alias_rewrite_policy: Option<&'a VirtualAliasRewritePolicy>,
     pub(in crate::batch) module_resolver:
@@ -36,6 +37,7 @@ impl ImportRewriter {
     ) -> (RewriteResult, Vec<EmptyVueStar>) {
         let VirtualProjectRewriteOptions {
             preserve_relative_declarations,
+            has_external_sources,
             mirrorable_project_files,
             alias_rewrite_policy,
             module_resolver,
@@ -66,6 +68,15 @@ impl ImportRewriter {
             |path, mode| {
                 if let Some(rewritten) = module_resolver.and_then(|resolve| resolve(path, mode)) {
                     return Some(rewritten.into());
+                }
+                if let Some(rewritten) = super::relative_mirror::rewrite(
+                    has_external_sources,
+                    path,
+                    source_dir,
+                    roots,
+                    mirrorable_project_files,
+                ) {
+                    return Some(rewritten);
                 }
                 self.rewrite_module_specifier_with_missing_vue_policy_and_alias_policy(
                     path,
@@ -101,8 +112,7 @@ impl ImportRewriter {
         )
     }
 
-    /// Rewrite a script's module specifiers for the canon virtual project.
-    /// `source_dir` (when known) enables the generated-`.d.ts` redirect (#2227).
+    /// Rewrite script imports, using `source_dir` for declaration redirects (#2227).
     pub fn rewrite_for_virtual_project(
         &self,
         source: &str,
@@ -117,6 +127,7 @@ impl ImportRewriter {
             source_dir,
             VirtualProjectRewriteOptions {
                 preserve_relative_declarations: false,
+                has_external_sources: true,
                 mirrorable_project_files: None,
                 alias_rewrite_policy: None,
                 module_resolver: None,
@@ -140,6 +151,7 @@ impl ImportRewriter {
             source_dir,
             VirtualProjectRewriteOptions {
                 preserve_relative_declarations: true,
+                has_external_sources: true,
                 mirrorable_project_files: None,
                 alias_rewrite_policy,
                 module_resolver: None,
@@ -164,6 +176,7 @@ impl ImportRewriter {
             source_dir,
             VirtualProjectRewriteOptions {
                 preserve_relative_declarations: false,
+                has_external_sources: true,
                 mirrorable_project_files,
                 alias_rewrite_policy,
                 module_resolver: None,
@@ -210,14 +223,7 @@ impl ImportRewriter {
                 {
                     return Some(rewritten.into());
                 }
-                self.rewrite_virtual_project_specifier(
-                    path,
-                    roots,
-                    source_dir,
-                    options.preserve_relative_declarations,
-                    options.mirrorable_project_files,
-                    options.alias_rewrite_policy,
-                )
+                self.rewrite_virtual_project_specifier(path, roots, source_dir, options)
             },
             capture_stars,
         )
@@ -228,10 +234,24 @@ impl ImportRewriter {
         path: &str,
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
-        preserve_relative_declarations: bool,
-        mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
-        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
+        options: VirtualProjectRewriteOptions<'_>,
     ) -> Option<String> {
+        let VirtualProjectRewriteOptions {
+            preserve_relative_declarations,
+            has_external_sources,
+            mirrorable_project_files,
+            alias_rewrite_policy,
+            ..
+        } = options;
+        if let Some(rewritten) = super::relative_mirror::rewrite(
+            has_external_sources,
+            path,
+            source_dir,
+            roots,
+            mirrorable_project_files,
+        ) {
+            return Some(rewritten);
+        }
         if let Some(rewritten) =
             authored_vue_ts::rewrite_authored_or_missing_vue_import(path, source_dir, true, false)
         {
@@ -327,20 +347,4 @@ impl ImportRewriter {
         }
         Some(rewritten)
     }
-}
-
-/// `candidate` relative to the project root, physical spelling first. Only an
-/// absolute spelling can name a project file, so bare and relative specifiers
-/// skip both `realpath` calls (each specifier paid them before #9727).
-fn absolute_project_relative(candidate: &Path, project_root: &Path) -> Option<PathBuf> {
-    if !candidate.is_absolute() {
-        return None;
-    }
-    let canonical_candidate = vize_carton::path::canonicalize_non_verbatim(candidate);
-    let canonical_project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
-    canonical_candidate
-        .strip_prefix(&canonical_project_root)
-        .or_else(|_| candidate.strip_prefix(project_root))
-        .ok()
-        .map(Path::to_path_buf)
 }

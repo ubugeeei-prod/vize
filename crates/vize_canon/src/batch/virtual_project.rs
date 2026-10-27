@@ -28,6 +28,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod art_usage;
 mod build;
+pub(in crate::batch) use build::mirrored_virtual_path;
 mod content_mapper;
 mod content_mapper_config;
 pub use content_mapper::{

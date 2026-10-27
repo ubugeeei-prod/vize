@@ -35,6 +35,7 @@ pub(crate) use virtual_alias::VirtualAliasRewritePolicy;
 mod dts_rewrite;
 
 mod project_mirror;
+mod relative_mirror;
 #[cfg(test)]
 mod relative_mirror_tests;
 pub(crate) use dts_rewrite::declaration_module_path;

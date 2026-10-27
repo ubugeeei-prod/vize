@@ -300,3 +300,19 @@ mod tests {
         let _ = fs::remove_dir_all(&root);
     }
 }
+
+/// `candidate` relative to the project root, physical spelling first. Only an
+/// absolute spelling can name a project file, so bare and relative specifiers
+/// skip both `realpath` calls (each specifier paid them before #9727).
+pub(super) fn absolute_project_relative(candidate: &Path, project_root: &Path) -> Option<PathBuf> {
+    if !candidate.is_absolute() {
+        return None;
+    }
+    let canonical_candidate = vize_carton::path::canonicalize_non_verbatim(candidate);
+    let canonical_project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    canonical_candidate
+        .strip_prefix(&canonical_project_root)
+        .or_else(|_| candidate.strip_prefix(project_root))
+        .ok()
+        .map(Path::to_path_buf)
+}

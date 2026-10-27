@@ -81,6 +81,7 @@ impl VirtualProject {
                             .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
                     };
                     let options = VirtualProjectRewriteOptions {
+                        has_external_sources: true,
                         preserve_relative_declarations: self
                             .is_package_route_path(&file.original_path)
                             || self.session_scripts,
@@ -192,6 +193,7 @@ impl VirtualProject {
                         roots,
                         file.original_path.parent(),
                         VirtualProjectRewriteOptions {
+                            has_external_sources: true,
                             preserve_relative_declarations: self
                                 .is_package_route_path(&file.original_path)
                                 || self.session_scripts,

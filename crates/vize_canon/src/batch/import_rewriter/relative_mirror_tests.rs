@@ -35,6 +35,7 @@ impl Fixture {
         let rewriter = ImportRewriter::new();
         let roots = (self.root.as_path(), self.mirror.as_path());
         let options = super::VirtualProjectRewriteOptions {
+            has_external_sources: true,
             preserve_relative_declarations: false,
             mirrorable_project_files: None,
             alias_rewrite_policy: None,
@@ -146,5 +147,70 @@ fn external_neighbors_and_missing_generated_collisions_keep_their_semantics() {
                 .contains(crate::batch::virtual_specifier_message::MISSING_VUE_IMPORT_SENTINEL)
         );
         assert!(rewritten.contains(crate::batch::AUTHORED_VUE_TS_SENTINEL));
+    }
+}
+
+#[test]
+fn crossing_authored_vue_ts_keeps_its_collision_free_module_identity() {
+    let fixture = Fixture::new();
+    let app_dir = fixture.root.join("src");
+    let sibling_dir = fixture.sibling.join("src");
+    std::fs::write(sibling_dir.join("Shared.vue"), "<template />").unwrap();
+    std::fs::write(
+        sibling_dir.join("Shared.vue.ts"),
+        "export const authored = 1",
+    )
+    .unwrap();
+    let expected = fixture.expected_specifier(&app_dir, &sibling_dir.join("Shared.vue"));
+    let marker = crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
+    for generated in [false, true] {
+        assert_eq!(
+            fixture.project(
+                "import { authored } from '../../ui/src/Shared.vue.ts';",
+                &app_dir,
+                generated
+            ),
+            format!("import {{ authored }} from '{expected}.ts{marker}';")
+        );
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn relative_file_symlinks_follow_the_registered_physical_identity() {
+    let fixture = Fixture::new();
+    let app_dir = fixture.root.join("src");
+    let sibling_dir = fixture.sibling.join("src");
+    std::fs::write(sibling_dir.join("Shared.vue"), "<template />").unwrap();
+    std::fs::write(sibling_dir.join("model.ts"), "export const value = 1").unwrap();
+    std::os::unix::fs::symlink(sibling_dir.join("Shared.vue"), app_dir.join("Linked.vue")).unwrap();
+    std::os::unix::fs::symlink(
+        sibling_dir.join("model.ts"),
+        app_dir.join("linked-model.ts"),
+    )
+    .unwrap();
+    let vue = fixture.expected_specifier(&app_dir, &sibling_dir.join("Shared.vue"));
+    let model = fixture.expected_specifier(&app_dir, &sibling_dir.join("model"));
+    for generated in [false, true] {
+        assert_eq!(
+            fixture.project("import Shared from './Linked.vue';", &app_dir, generated),
+            format!("import Shared from '{vue}.ts';")
+        );
+        assert_eq!(
+            fixture.project(
+                "export { value } from './linked-model';",
+                &app_dir,
+                generated
+            ),
+            format!("export {{ value }} from '{model}';")
+        );
+        assert_eq!(
+            fixture.project(
+                "export { value } from './linked-model.js';",
+                &app_dir,
+                generated
+            ),
+            format!("export {{ value }} from '{model}.js';")
+        );
     }
 }
