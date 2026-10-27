@@ -27,8 +27,10 @@ type Packet = {
   stdout: string;
   stderr: string;
   nodePath: string | null;
+  registry: string;
 };
 const root = fileURLToPath(new URL("../../../", import.meta.url));
+const registry = "https://registry.npmjs.org";
 const output = path.resolve(process.argv[2] ?? "");
 const archive = process.argv[3];
 assert(process.argv[2] && archive, "proof directory and actual packed MCP archive are required");
@@ -60,7 +62,7 @@ const save = () =>
 function run(name: string, command: string, args: string[], cwd: string, env = process.env) {
   const result = spawnSync(command, args, {
     cwd,
-    env,
+    env: { ...env, npm_config_registry: registry, NPM_CONFIG_REGISTRY: registry },
     encoding: "utf8",
     timeout: 300_000,
     maxBuffer: 64 * 1024 * 1024,
@@ -75,6 +77,7 @@ function run(name: string, command: string, args: string[], cwd: string, env = p
     stdout: result.stdout ?? "",
     stderr: result.stderr ?? "",
     nodePath: env.NODE_PATH ?? null,
+    registry,
   };
   report.processes[name] = packet;
   save();
@@ -329,7 +332,10 @@ async function main() {
   const consumerManifest = readPackage(path.join(consumer, "package.json"));
   for (const field of ["overrides", "pnpm", "resolutions"] as const)
     assert.equal(consumerManifest[field], undefined, "consumer has no workspace policy " + field);
-  const packedMcp = resolvePackage(consumer, "@vizejs/musea-mcp-server");
+  // The MCP package exposes only its ESM import entry; inspect the installed
+  // root manifest directly instead of asking CommonJS export resolution.
+  const packedMcp = fs.realpathSync(path.join(consumer, "node_modules/@vizejs/musea-mcp-server"));
+  assert.equal(readPackage(path.join(packedMcp, "package.json")).name, "@vizejs/musea-mcp-server");
   const sourceRoutes = routes(path.join(root, "npm/mcp-musea")),
     packedRoutes = routes(packedMcp);
   const expectedLib = tree(path.join(fixed.installed, "lib")),
