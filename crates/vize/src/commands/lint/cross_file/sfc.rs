@@ -9,6 +9,7 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences as capture_sfc},
     parse_sfc,
 };
+use vize_croquis::croquis::NuxtTemplateRenderFacts;
 use vize_croquis::{
     Croquis, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_sfc_scripts,
 };
@@ -132,10 +133,9 @@ pub(super) fn analyze_sfc_for_cross_file(
     } else {
         // The successful full original template parse above also proves zero
         // elements for an empty template; this is explicit descriptor evidence.
-        analysis
-            .nuxt_render_template
-            .get_or_insert_default()
-            .admitted = true;
+        let template_facts: &mut NuxtTemplateRenderFacts =
+            analysis.nuxt_render_template.get_or_insert_default();
+        template_facts.admitted = true;
         if descriptor.script.is_none() && descriptor.script_setup.is_none() {
             analysis.nuxt_static_render_script = Some(true);
         }
