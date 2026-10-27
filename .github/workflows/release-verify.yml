@@ -32,9 +32,15 @@ jobs:
       PUBLIC_STORAGE_CANDIDATE: ${{ inputs.candidate }}
       PUBLIC_STORAGE_AUTHORITY_BLOB: ${{ inputs.authority_blob }}
       PUBLIC_STORAGE_SOURCE: ${{ github.workspace }}/release-source
-      PUBLIC_STORAGE_ROOT: ${{ runner.temp }}/public-storage-10934-${{ github.run_id }}-${{ github.run_attempt }}
       NODE_DISABLE_COMPILE_CACHE: "1"
     steps:
+      - name: Allocate the owned acceptance location
+        shell: bash
+        run: |
+          set -euo pipefail
+          acceptance_root="$RUNNER_TEMP/public-storage-10934-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          [[ ! -e "$acceptance_root" ]]
+          printf 'PUBLIC_STORAGE_ROOT=%s\n' "$acceptance_root" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { path: carrier, persist-credentials: false }
       - name: Validate release inputs

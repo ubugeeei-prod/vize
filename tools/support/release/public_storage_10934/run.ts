@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { homedir } from "node:os";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { loadAuthority } from "./authority.ts";
@@ -41,10 +42,15 @@ try {
   fs.writeFileSync(script, scriptBytes);
   const fixture = path.join(source, "tests/_fixtures/differential/typechecker/relative-sibling-storage-10934");
   const harnessOutput = path.join(evidence, "harness");
-  const cachePath = path.join(root, "cache");
+  const cacheParent = path.join(homedir(), ".cache");
+  fs.mkdirSync(cacheParent, { recursive: true });
+  const cachePath = path.join(cacheParent,
+    "vize-storage-10934-" + env("GITHUB_RUN_ID") + "-" + env("GITHUB_RUN_ATTEMPT"));
   assert.equal(fs.existsSync(cachePath), false);
-  fs.mkdirSync(cachePath);
+  fs.mkdirSync(cachePath, { mode: 0o700 });
   const cache = fs.realpathSync(cachePath);
+  assert.equal(cache.startsWith(fs.realpathSync(root) + path.sep), false,
+    "private cache must stay outside the common provider/project parent");
   const environment = { ...process.env };
   const publicMode: Record<string, { inheritedPresent: boolean; effective: string | null }> = {};
   for (const name of [
