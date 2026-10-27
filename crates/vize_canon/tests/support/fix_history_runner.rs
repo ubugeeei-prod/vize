@@ -119,6 +119,7 @@ pub(crate) fn check_pack(
             | "content-mapper-slot-host-callbacks-10774"
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
+            | "relative-sibling-storage-10934"
             | "reopen-repaired-diagnostics-10730"
             | "editor-alias-import-extension-10753"
             | "options-api-reserved-component-reference"
@@ -311,11 +312,22 @@ pub(crate) fn check_pack(
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))
                 }
+                "relative-sibling-storage-10934" => {
+                    Some(project_root.join("apps/app/tsconfig.json"))
+                }
                 _ => None,
             },
         };
         let mut checker =
             BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
+        if name == "relative-sibling-storage-10934" {
+            checker
+                .set_persistent_storage_owner(
+                    &project_root.join("apps/app"),
+                    Some(&project_root.join("apps/app/tsconfig.json")),
+                )
+                .expect("the package must select its private persistent storage owner");
+        }
         if name == "workspace-package-import-alias-10175" {
             let mut resolver = PackageRouteResolver::default();
             let bindings = [

@@ -1,0 +1,12 @@
+<template>
+  <Box>
+    <template v-slot:text="  ">
+      <span>{{ label.length }}</span>
+    </template>
+  </Box>
+</template>
+
+<script setup lang="ts">
+import Box from './Box.vue'
+const label = 'x'
+</script>

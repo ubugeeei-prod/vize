@@ -74,6 +74,7 @@ impl VirtualProject {
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
         let owned_files = self.workspace_cold_owned_files(&expected_files);
+        self.prepare_owned_batch_writes(&owned_files)?;
         self.validate_workspace_alias_targets(&owned_files)?;
         let workspace_alias_claims = self.workspace_alias_claims();
         let mut link_claims = expected_files.clone();

@@ -1,0 +1,16 @@
+{
+  "exactDiagnosticSnapshot": [
+    [
+      "src/Mutation.vue",
+      2339,
+      "8:7: Property 'missing' does not exist on the component instance."
+    ],
+    [
+      "src/Mutation.vue",
+      2345,
+      "7:18: Argument of type 'boolean' is not assignable to parameter of type 'string'."
+    ]
+  ],
+  "wholeAugmentation": "import 'vue';\ndeclare module 'vue' {\n  interface ComponentCustomProperties {\n    isSP: boolean;\n    appName: string;\n    opaque: unknown;\n    dynamic: any;\n    $service: { ping(value: string): number };\n  }\n}\n",
+  "wholeAuthoredSource": "<script setup lang=\"ts\">\nfunction booleanOnly(value: boolean) { return value }\nfunction stringOnly(value: string) { return value }\n</script>\n<template>\n<p>{{ booleanOnly(isSP) }}</p>\n<p>{{ stringOnly(isSP) }}</p>\n<p>{{ missing }}</p>\n</template>\n"
+}

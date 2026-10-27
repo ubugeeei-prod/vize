@@ -6,6 +6,11 @@ name: Release verify
 on:
   workflow_dispatch:
     inputs:
+      quota_dry_run:
+        description: Read quota histories and run admission controls without publication
+        required: false
+        default: false
+        type: boolean
       version:
         description: Published release version (X.Y.Z)
         required: true
@@ -15,14 +20,14 @@ on:
         required: true
         type: string
       sha:
-        description: Commit the release tag points at
+        description: Prepared tag commit; for quota dry-run, the source commit to inspect
         required: true
         type: string
       packages:
         description: Space-separated npm package names the release published
         required: true
         type: string
-run-name: Release verify ${{ inputs.tag }}
+run-name: ${{ inputs.quota_dry_run && format('Release quota dry-run {0}', inputs.version) || format('Release verify {0}', inputs.tag) }}
 permissions: { contents: read }
 concurrency:
   group: release-verify-${{ inputs.version }}
@@ -30,9 +35,51 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
+  quota-dry-run:
+    name: Read-only rolling crate admission
+    if: inputs.quota_dry_run == true && github.repository == 'ubugeeei-prod/vize'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions: { contents: read, actions: read }
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Run the admission controls without a package install
+        run: node --test tests/tooling/release/rolling-quota.test.ts tests/tooling/release/rolling-quota-ownership.test.ts tests/tooling/release/rolling-quota-producer.test.ts
+      - name: Read histories from staged tooling against the selected source without publishing
+        env:
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/quota-dry-run/report.json
+          QUOTA_SOURCE: ${{ inputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$QUOTA_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
+          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$QUOTA_SOURCE...$GITHUB_SHA" --jq .status)
+          [[ "$status" == ahead || "$status" == identical ]]
+          git fetch --no-tags --depth=1 origin "$QUOTA_SOURCE"
+          git checkout --detach FETCH_HEAD
+          node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota-dry-run "$RELEASE_VERSION"
+      - name: Require legacy 0.602 automatic recovery refusal without fabricated authority
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node "$RUNNER_TEMP/release-quota-tooling/tests/tooling/release/quota-live-legacy-refusal.ts" "$RUNNER_TEMP/quota-dry-run/legacy-recovery-refusal.json"
+      - name: Retain the live dry-run receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: rolling-quota-dry-run-${{ github.run_id }}
+          path: ${{ runner.temp }}/quota-dry-run
+          if-no-files-found: error
+          retention-days: 90
+
   # Verify every package together and install the CLI from npm.
   verify-npm:
-    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    if: inputs.quota_dry_run != true && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
     name: Verify npm packages
     runs-on: ubuntu-24.04
     timeout-minutes: 40
