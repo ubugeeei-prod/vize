@@ -11,6 +11,9 @@ mod counters;
 mod metrics;
 #[cfg(feature = "micro-profiling")]
 pub mod micro;
+#[cfg(feature = "micro-profiling")]
+pub mod micro_hash;
+mod micro_hash_macros;
 mod micro_macros;
 mod report;
 mod shard;
