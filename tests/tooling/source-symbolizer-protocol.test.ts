@@ -50,3 +50,33 @@ void test("abbreviated counts and foreign C source cannot qualify missing Rust a
   );
   assert.equal(rustSourceCensus(foreign.rows, "vize", 6).qualified, false);
 });
+
+void test("bounded packets require every unique authored error before every repaired file", async () => {
+  const { verifyStagePacket } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-stages.ts");
+  const project = "/tmp/original-stage",
+    names = ["Binding0.vue", "Binding1.vue"];
+  const diagnostic = "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.";
+  const packet = {
+    fileCount: 2,
+    errorCount: 2,
+    warningCount: 0,
+    files: names.map((file) => ({ file, diagnostics: [diagnostic] })),
+  };
+  assert.equal(verifyStagePacket(packet, project, names, true).files.length, 2);
+  const repaired = {
+    ...packet,
+    errorCount: 0,
+    files: names.map((file) => ({ file, diagnostics: [] })),
+  };
+  assert.equal(verifyStagePacket(repaired, project, names, false).files.length, 2);
+  for (const bad of [
+    { ...packet, files: packet.files.slice(0, 1) },
+    { ...packet, files: [packet.files[0], packet.files[0]] },
+    { ...packet, files: [{ file: "Binding0.vue", diagnostics: [] }, packet.files[1]] },
+    { ...packet, files: [packet.files[0], { file: "elsewhere.vue", diagnostics: [diagnostic] }] },
+    { ...packet, errorCount: 0 },
+  ])
+    assert.throws(() => verifyStagePacket(bad, project, names, true));
+  assert.throws(() => verifyStagePacket(packet, project, names, false));
+});

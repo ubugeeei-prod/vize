@@ -61,7 +61,7 @@ jobs:
           run-id: ${{ inputs.replay_run_id }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/source-symbolizer-replay-download
-      - name: Replay the exact retained normal Rust binary and software CPU samples
+      - name: Restore the sealed normal binary and prepare bounded public controls
         if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
         run: |
           set -euo pipefail
@@ -73,14 +73,36 @@ jobs:
             cold-scale/record-head/direct-process/receipt.json \
             cold-scale/binaries/normal-head/vize \
             cold-scale/builds/normal-head.json
+          provider="$RUNNER_TEMP/source-symbolizer-provider"
+          mkdir "$provider"
+          node -e 'process.stdout.write(JSON.stringify({private:true,dependencies:{vue:"3.6.0-rc.13",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}))' > "$provider/package.json"
+          npm install --prefix "$provider" --ignore-scripts --no-audit --no-fund
+          node tools/benchmarks/scripts/source-symbolizer-stages.ts --perf "$SMOKE_PERF" \
+            --out "$out/bounded" --root "$RUNNER_TEMP/cold-scale" --provider "$provider" \
+            --carrier "$out/carrier/result.json"
+      - name: Decode retained full software capture after bounded controls
+        if: ${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           node tools/benchmarks/scripts/source-symbolizer-smoke.ts --perf "$SMOKE_PERF" \
             --out "$out/normal" --replay-root "$RUNNER_TEMP/cold-scale" \
-            --carrier-result "$out/carrier/result.json"
+            --carrier-result "$out/carrier/result.json" --bounded-result "$out/bounded/result.json"
+      - name: Package bounded evidence without traversing project dependencies
+        if: always()
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          if [[ -d "$out" ]]; then
+            tar -czf "$RUNNER_TEMP/source-symbolizer-evidence.tgz" \
+              --exclude='*/project/node_modules' --exclude='*/tmp' --exclude='*/xdg-cache' \
+              -C "$out" .
+          fi
       - name: Preserve raw protocols, exact sample census, and separate self/inclusive reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: source-symbolizer-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/source-symbolizer/${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-symbolizer-evidence.tgz
           if-no-files-found: warn
           retention-days: 14

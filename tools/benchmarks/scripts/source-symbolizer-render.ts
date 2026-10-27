@@ -27,6 +27,7 @@ export function boundedCommand(
   args: string[],
   timeoutMs: number,
   input?: string,
+  execution?: { cwd?: string; env?: NodeJS.ProcessEnv },
 ) {
   mkdirSync(out, { recursive: true });
   const startedAt = new Date().toISOString(),
@@ -40,6 +41,7 @@ export function boundedCommand(
   ];
   const env = {
     ...process.env,
+    ...execution?.env,
     LC_ALL: "C",
     PERF_CONFIG: "/dev/null",
     DEBUGINFOD_URLS: "",
@@ -48,6 +50,7 @@ export function boundedCommand(
   };
   const result = spawnSync("/usr/bin/timeout", supervised, {
     encoding: "utf8",
+    cwd: execution?.cwd,
     input,
     env,
     timeout: timeoutMs + 6000,
@@ -57,6 +60,7 @@ export function boundedCommand(
   const receipt = {
     executable,
     args,
+    cwd: execution?.cwd ?? process.cwd(),
     startedAt,
     finishedAt: new Date().toISOString(),
     wallMs: performance.now() - start,
@@ -141,6 +145,7 @@ export function renderSourceCpu(options: {
   out: string;
   totalSamples: number;
   requiredSource?: string;
+  reportTimeoutMs?: number;
 }) {
   assert.ok(!existsSync(options.out), "refuse to overwrite source decoding evidence");
   mkdirSync(options.out, { recursive: true });
@@ -190,7 +195,7 @@ export function renderSourceCpu(options: {
           "--input",
           options.data,
         ],
-        120_000,
+        options.reportTimeoutMs ?? 120_000,
       );
       const parsed = parseFlatSourceReport(command.stdout);
       const protocolErrors =

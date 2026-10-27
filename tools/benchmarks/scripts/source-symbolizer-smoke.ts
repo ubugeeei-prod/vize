@@ -107,16 +107,10 @@ export function runCarrierSmoke(options: { perf: string; out: string; decoders: 
   return result;
 }
 
-export function replayNormal(options: {
-  perf: string;
-  out: string;
-  decoder: string;
-  root: string;
-}) {
-  assert.ok(!existsSync(options.out), "fresh replay evidence required");
-  const original = json(join(options.root, "record-head/direct-process/receipt.json"));
-  const build = json(join(options.root, "builds/normal-head.json"));
-  const binary = join(options.root, "binaries/normal-head/vize");
+export function retainedNormalIdentity(root: string) {
+  const original = json(join(root, "record-head/direct-process/receipt.json"));
+  const build = json(join(root, "builds/normal-head.json"));
+  const binary = join(root, "binaries/normal-head/vize");
   assert.equal(original.mode, "record");
   assert.equal(original.metric, "software-user-cpu-clock-samples");
   assert.equal(original.samplingHz, 99);
@@ -130,7 +124,7 @@ export function replayNormal(options: {
   assert.equal(build.binary, binary);
   assert.equal(statSync(binary).size, build.binaryBytes);
   assert.equal(
-    statSync(join(options.root, "record-head/direct-process/perf.data")).size,
+    statSync(join(root, "record-head/direct-process/perf.data")).size,
     original.dataBytes,
   );
   assert.equal(build.sourceSha, original.identity.source);
@@ -142,6 +136,17 @@ export function replayNormal(options: {
   assert.equal(build.allocation, false);
   assert.ok(!build.cargoArtifact.features.includes("profiling"));
   assert.ok(Number.isSafeInteger(original.sampleCount) && original.sampleCount > 0);
+  return { original, build, binary };
+}
+
+export function replayNormal(options: {
+  perf: string;
+  out: string;
+  decoder: string;
+  root: string;
+}) {
+  assert.ok(!existsSync(options.out), "fresh replay evidence required");
+  const { original, build, binary } = retainedNormalIdentity(options.root);
   const dwarf = boundedCommand(
     join(options.out, "sections"),
     "readelf",
@@ -186,6 +191,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       },
       "replay-root": { type: "string" },
       "carrier-result": { type: "string" },
+      "bounded-result": { type: "string" },
     },
   });
   assert.ok(values.perf && values.out);
@@ -193,6 +199,22 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     assert.ok(values["carrier-result"]);
     const carrier = json(resolve(values["carrier-result"]));
     assert.equal(carrier.qualified, true);
+    assert.ok(values["bounded-result"], "1/10/100 controls must precede retained full replay");
+    const bounded = json(resolve(values["bounded-result"]));
+    const retained = retainedNormalIdentity(resolve(values["replay-root"]));
+    assert.equal(bounded.qualified, true);
+    assert.equal(bounded.binarySha256, retained.original.binarySha256);
+    assert.equal(bounded.backendSha256, retained.original.identity.backendSha256);
+    assert.deepEqual(
+      bounded.stages.map((stage: { sfcCount: number }) => stage.sfcCount),
+      [1, 10, 100],
+    );
+    assert.ok(
+      bounded.stages.every(
+        (stage: { accuracyQualified: boolean; captureCompleted: boolean }) =>
+          stage.accuracyQualified && stage.captureCompleted,
+      ),
+    );
     replayNormal({
       perf: values.perf,
       out: resolve(values.out),
