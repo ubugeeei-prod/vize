@@ -45,6 +45,7 @@ pub(crate) struct FailedSubproblemKey {
 pub(crate) struct FailedSubproblem<'a> {
     error: ParserDiagnostic<'a>,
     token: Token,
+    lexer_token: Token,
     previous_token_end: u32,
     trivia: SpeculativeTrivia,
 }
@@ -93,10 +94,12 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         };
         if let Some(failed) = self.state.failed_speculative_subproblems.get(&key) {
             let error = failed.error.clone();
+            let lexer_token = failed.lexer_token;
             self.token = failed.token;
             self.prev_token_end = failed.previous_token_end;
             self.lexer.trivia_builder.restore_speculative_state(failed.trivia);
             self.set_fatal_error(error);
+            self.lexer.restore_failed_speculative_token(lexer_token);
             #[cfg(test)]
             {
                 self.state.subproblem_reuses += 1;
@@ -109,6 +112,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         // a subproblem which wrote any of it. Monotonic revisions also detect
         // insert/remove pairs whose final collection lengths happen to match.
         if key.effects == self.speculative_effects()
+            && key.context == self.ctx
             && let Some(fatal) = &self.fatal_error
         {
             self.state.failed_speculative_subproblems.insert(
@@ -116,6 +120,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
                 FailedSubproblem {
                     error: fatal.error.clone(),
                     token: self.token,
+                    lexer_token: self.lexer.speculative_position().1,
                     previous_token_end: self.prev_token_end,
                     trivia: self.lexer.trivia_builder.speculative_state(),
                 },
