@@ -242,28 +242,29 @@ fn generate_component_prop_entries(
     for (i, prop) in props.iter().enumerate() {
         let key = prop.key.content;
         if crate::ir::is_on(key) {
-            let name = component_prop_key(prop);
             if props
                 .iter()
                 .take(i)
-                .any(|earlier| component_prop_key(earlier) == name)
+                .any(|earlier| same_component_key(earlier, prop))
             {
                 continue;
             }
-            let handlers = props
+            let mut duplicates = props
                 .iter()
-                .filter(|other| component_prop_key(other) == name)
-                .map(|other| component_prop_expression_value(ctx, other))
-                .collect::<std::vec::Vec<_>>();
-            entries.push(format_component_prop_entry(
-                prop,
-                if handlers.len() > 1 {
-                    cstr!("() => ([{}])", handlers.join(", "))
-                } else {
-                    component_prop_getter_value(ctx, prop)
-                },
-            ));
-            continue;
+                .skip(i + 1)
+                .filter(|other| same_component_key(other, prop));
+            if let Some(second) = duplicates.next() {
+                let mut handlers = std::vec::Vec::new();
+                handlers.push(component_prop_expression_value(ctx, prop));
+                handlers.push(component_prop_expression_value(ctx, second));
+                handlers
+                    .extend(duplicates.map(|other| component_prop_expression_value(ctx, other)));
+                entries.push(format_component_prop_entry(
+                    prop,
+                    cstr!("() => ([{}])", handlers.join(", ")),
+                ));
+                continue;
+            }
         }
         if key == "class" {
             if Some(i) == first_class_index {
@@ -313,12 +314,21 @@ fn merge_component_prop_values(values: &[String]) -> String {
 }
 
 fn format_component_prop_entry(prop: &IRProp<'_>, value: String) -> String {
-    let key = component_prop_key(prop);
-    if !prop.key.is_static {
+    let suffix = handler_option_suffix(prop);
+    if suffix.is_empty() {
+        return format_component_prop_named_entry(prop.key.content, prop.key.is_static, value);
+    }
+    let mut key = String::from(prop.key.content);
+    key.push_str(suffix);
+    format_component_prop_named_entry(&key, prop.key.is_static, value)
+}
+
+fn format_component_prop_named_entry(key: &str, is_static: bool, value: String) -> String {
+    if !is_static {
         return cstr!("[{}]: {}", key, value);
     }
-    if should_quote_component_prop_key(&key) {
-        cstr!("\"{}\": {}", escape_js_string_literal(&key), value)
+    if should_quote_component_prop_key(key) {
+        cstr!("\"{}\": {}", escape_js_string_literal(key), value)
     } else {
         cstr!("{}: {}", key, value)
     }
@@ -383,24 +393,39 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
     value
 }
 
-fn component_prop_key(prop: &IRProp<'_>) -> String {
-    cstr!("{}{}", prop.key.content, handler_option_suffix(prop))
+fn same_component_key(left: &IRProp<'_>, right: &IRProp<'_>) -> bool {
+    let (left_suffix, right_suffix) = (handler_option_suffix(left), handler_option_suffix(right));
+    if left.key.content == right.key.content {
+        return left_suffix == right_suffix;
+    }
+    if left_suffix.is_empty() && right_suffix.is_empty() {
+        return false;
+    }
+    left.key.content.bytes().chain(left_suffix.bytes()).eq(right
+        .key
+        .content
+        .bytes()
+        .chain(right_suffix.bytes()))
 }
 
-fn handler_option_suffix(prop: &IRProp<'_>) -> String {
-    let mut suffix = String::from("");
-    if let Some(modifiers) = prop.handler_modifiers {
-        for (enabled, name) in [
-            (modifiers.options.once, "Once"),
-            (modifiers.options.capture, "Capture"),
-            (modifiers.options.passive, "Passive"),
-        ] {
-            if enabled {
-                suffix.push_str(name);
-            }
-        }
+fn handler_option_suffix(prop: &IRProp<'_>) -> &'static str {
+    let Some(modifiers) = prop.handler_modifiers else {
+        return "";
+    };
+    match (
+        modifiers.options.once,
+        modifiers.options.capture,
+        modifiers.options.passive,
+    ) {
+        (false, false, false) => "",
+        (true, false, false) => "Once",
+        (false, true, false) => "Capture",
+        (false, false, true) => "Passive",
+        (true, true, false) => "OnceCapture",
+        (true, false, true) => "OncePassive",
+        (false, true, true) => "CapturePassive",
+        (true, true, true) => "OnceCapturePassive",
     }
-    suffix
 }
 
 fn should_quote_component_prop_key(key: &str) -> bool {
