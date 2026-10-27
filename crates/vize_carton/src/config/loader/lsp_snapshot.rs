@@ -274,9 +274,23 @@ mod tests {
         assert!(created.valid, "{:?}", created.error);
         assert!(created.watch_dependencies_complete);
         let canonical = path.canonicalize().unwrap();
-        let mut expected = vec![path.clone(), canonical.clone()];
+        // The JS dependency graph uses Node's native realpath spelling. On
+        // Windows this expands 8.3 paths without Rust's verbatim path prefix.
+        // An independent Node call owns the expected spelling; keep the exact
+        // authored and Rust-canonical aliases in the expected watch set too.
+        let node_realpath = std::process::Command::new("node")
+            .arg("-e")
+            .arg("process.stdout.write(require('node:fs').realpathSync.native(process.argv[1]));")
+            .arg("--")
+            .arg(&path)
+            .output()
+            .unwrap();
+        assert_eq!(node_realpath.status.code(), Some(0));
+        assert_eq!(node_realpath.stderr.as_slice(), b"");
+        let node_canonical = PathBuf::from(std::str::from_utf8(&node_realpath.stdout).unwrap());
+        let mut expected = vec![path.clone(), canonical, node_canonical.clone()];
         expected.extend(
-            canonical
+            node_canonical
                 .parent()
                 .unwrap()
                 .ancestors()

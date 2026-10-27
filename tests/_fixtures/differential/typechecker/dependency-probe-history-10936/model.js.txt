@@ -1,0 +1,1 @@
+export const model = 'runtime must not replace authored TS';

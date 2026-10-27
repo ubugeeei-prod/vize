@@ -69,6 +69,7 @@ mod template_key_expressions;
 mod template_ref_slot_vnode_handlers;
 mod ts_extension_substitution;
 mod tsx_catch_all_emits;
+mod undeclared_instance_globals;
 mod unknown_checks;
 mod unmapped_template_fallback;
 mod v_for_source_callbacks;
