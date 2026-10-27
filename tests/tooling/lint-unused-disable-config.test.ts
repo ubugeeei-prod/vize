@@ -85,6 +85,12 @@ test("native unused-disable configuration preserves flag precedence and all temp
       assert.equal(explicit.status, 1);
       assert.deepEqual(JSON.parse(explicit.stdout), report);
     }
+    for (const linter of [{ rules: { "vue/no-v-html": "error" } }, { preset: "essential" }]) {
+      config({ preset: "essential", reportUnusedDisableDirectives: true }, [
+        { files: ["App.vue"], linter },
+      ]);
+      assert.deepEqual(JSON.parse(run().stdout), report, "omitted entry policy inherits true");
+    }
     config({ preset: "essential", reportUnusedDisableDirectives: true }, [
       { files: ["App.vue"], linter: { reportUnusedDisableDirectives: false } },
     ]);
@@ -241,6 +247,69 @@ test(
           2,
         ),
       );
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+const pklAvailable = spawnSync("pkl", ["--version"], { encoding: "utf8" }).status === 0;
+test(
+  "rendered Pkl linter entries preserve omitted inheritance and explicit false",
+  { skip: !pklAvailable },
+  () => {
+    const directory = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-unused-pkl-")));
+    const packets: unknown[] = [];
+    try {
+      fs.writeFileSync(path.join(directory, "App.vue"), unused);
+      for (const schema of ["LinterConfig.pkl", "vize.pkl"]) {
+        for (const setting of [undefined, false, true]) {
+          const input = `import ${JSON.stringify(path.join(root, "npm/cli/pkl", schema))} as Schema
+entry = new Schema.LinterConfig {
+  preset = "essential"
+${setting === undefined ? "" : `  reportUnusedDisableDirectives = ${setting}\n`}}
+`;
+          const pklFile = path.join(directory, "entry.pkl");
+          fs.writeFileSync(pklFile, input);
+          const rendered = spawnSync("pkl", ["eval", "-f", "json", pklFile], {
+            encoding: "utf8",
+            timeout: 30_000,
+          });
+          assert.equal(rendered.status, 0, rendered.stdout + rendered.stderr);
+          const raw = JSON.parse(rendered.stdout);
+          assert.equal(raw.entry.reportUnusedDisableDirectives ?? undefined, setting);
+          // Public config normalization drops Pkl's nullable defaults before passing
+          // the resulting document to native tools.
+          const entry = JSON.parse(
+            JSON.stringify(raw.entry, (_key, value: unknown) =>
+              value === null ? undefined : value,
+            ),
+          );
+          const config = {
+            vue: {
+              linter: { preset: "essential", reportUnusedDisableDirectives: true },
+              entries: [{ files: ["App.vue"], linter: entry }],
+            },
+          };
+          fs.writeFileSync(path.join(directory, "config.json"), JSON.stringify(config));
+          const result = spawnSync(
+            binary,
+            ["lint", "App.vue", "--format", "json", "--config", "config.json"],
+            { cwd: directory, encoding: "utf8", timeout: 30_000 },
+          );
+          packets.push({ schema, setting, input, rendered, config, result });
+          assert.equal(result.error, undefined);
+          assert.equal(result.status, setting === false ? 0 : 1, result.stdout + result.stderr);
+          assert.deepEqual(
+            JSON.parse(result.stdout)[0].messages.map(
+              (message: { ruleId: string }) => message.ruleId,
+            ),
+            setting === false ? [] : [code],
+          );
+        }
+      }
+    } finally {
+      fs.mkdirSync(output, { recursive: true });
+      fs.writeFileSync(path.join(output, "pkl.json"), JSON.stringify({ binary, packets }, null, 2));
       fs.rmSync(directory, { recursive: true, force: true });
     }
   },
