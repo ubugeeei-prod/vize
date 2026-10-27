@@ -92,7 +92,8 @@ jobs:
           set -euo pipefail
           node tools/benchmarks/scripts/typechecker-cache-source.ts --source-root "$GITHUB_WORKSPACE" --target-dir "$RUNNER_TEMP/cache-source-target" --receipt "$RUNNER_TEMP/cache-evidence/source-build.json"
       - name: Full all-SFC coverage before absolute timing
-        env: { SOURCE_MODE: "${{ inputs.source_mode }}", COVERAGE_ONLY: "${{ inputs.coverage_only }}" }
+        env:
+          { SOURCE_MODE: "${{ inputs.source_mode }}", COVERAGE_ONLY: "${{ inputs.coverage_only }}" }
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
         shell: bash
         run: |
