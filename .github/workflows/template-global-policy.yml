@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: { role: [before, candidate] }
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
       CARGO_BUILD_JOBS: "12"
@@ -107,7 +107,7 @@ jobs:
           if-no-files-found: error
   runtime:
     name: Actual stock and native component runtimes
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 25
     env:
       CARGO_BUILD_JOBS: "12"
