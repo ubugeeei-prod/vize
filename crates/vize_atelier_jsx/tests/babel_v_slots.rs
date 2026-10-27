@@ -109,16 +109,6 @@ fn native_mode_still_rejects_every_forwardable_v_slots_literal() {
 fn babel_vapor_output_keeps_rejecting_forwardable_v_slots_literals() {
     // Compat mode is a VDOM-only contract, so the Vapor request is diagnosed and
     // the value is still rejected rather than half-applied.
-    let expected_module = concat!(
-        "import { resolveComponent as _resolveComponent, createComponentWithFallback as ",
-        "_createComponentWithFallback } from 'vue';\n",
-        "\n",
-        "export function render(_ctx) {\n",
-        "  const _component_B = _resolveComponent(\"B\")\n",
-        "  const n0 = _createComponentWithFallback(_component_B, null, null, true)\n",
-        "  return n0\n",
-        "}\n",
-    );
     for value in ["1", "`text`"] {
         let source = format!("const A = () => <B v-slots={{{value}}}/>;");
         let (module, diagnostics) =
@@ -134,7 +124,10 @@ fn babel_vapor_output_keeps_rejecting_forwardable_v_slots_literals() {
             ],
             "{value}"
         );
-        assert_eq!(module, expected_module, "{value}");
+        assert!(
+            module.is_empty(),
+            "invalid native modules cannot be published: {value}"
+        );
     }
 }
 
@@ -146,7 +139,13 @@ fn babel_ssr_output_keeps_rejecting_forwardable_v_slots_literals() {
         ..Default::default()
     };
     let (bare_module, bare_diagnostics) = compile_with_config("const A = () => <B/>;", &config);
-    assert_eq!(bare_diagnostics, Vec::<String>::new());
+    assert_eq!(
+        bare_diagnostics,
+        vec![
+            "SSR expression-bodied VDOM components require an explicit functional props and attribute fallthrough projection; use a stateful block-body component or the Vapor component role"
+        ]
+    );
+    assert!(bare_module.is_empty());
 
     for value in ["1", "`text`"] {
         let source = format!("const A = () => <B v-slots={{{value}}}/>;");
@@ -199,5 +198,54 @@ fn a_quoted_v_slots_attribute_is_rejected_in_both_modes() {
         );
         assert_eq!(diagnostics, vec![not_a_slots_object("\"str\"")]);
         assert_eq!(module, render_module(None));
+    }
+}
+
+#[test]
+fn babel_ssr_stateful_slot_producer_keeps_primary_value_diagnostics() {
+    let config = JsxCompileConfig {
+        compat: JsxCompatMode::Babel,
+        ssr: true,
+        ..Default::default()
+    };
+    let allocator = Allocator::new();
+    let source = "const A = () => { return <B/>; };";
+    let bare = compile_jsx(&allocator, source, JsxLang::Jsx, &config);
+    assert!(bare.diagnostics.is_empty(), "{:?}", bare.diagnostics);
+    assert_eq!(
+        bare.module_code(),
+        concat!(
+            "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\n",
+            "import { resolveComponent as _resolveComponent } from \"vue\"\n\n",
+            "const A = ({\n__ssrInlineRender: true,\nname: \"A\",\nsetup() {\n",
+            " return (() => {\n\n\n\n",
+            "return ((_ctx, _push, _parent, _attrs) => {\n",
+            "  _push(_ssrRenderComponent(_resolveComponent(\"B\"), _attrs, null, _parent))\n",
+            "})\n})()\n}\n});",
+        )
+    );
+    for value in ["1", "`text`"] {
+        let input = format!("const A = () => {{ return <B v-slots={{{value}}}/>; }};");
+        let output = compile_jsx(&allocator, &input, JsxLang::Jsx, &config);
+        assert_eq!(
+            output
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>(),
+            [not_a_slots_object(value)]
+        );
+        assert!(output.module_code().is_empty());
+        assert_eq!(
+            output
+                .components
+                .iter()
+                .map(|component| component.code())
+                .collect::<Vec<_>>(),
+            bare.components
+                .iter()
+                .map(|component| component.code())
+                .collect::<Vec<_>>()
+        );
     }
 }

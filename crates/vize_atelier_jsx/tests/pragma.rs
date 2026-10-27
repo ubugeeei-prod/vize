@@ -213,9 +213,21 @@ fn babel_pragma_does_not_leak_into_a_vapor_component_override() {
         },
         Some("h"),
     );
-    let module = output.module_code();
-    assert!(module.contains("h(\"div\")"), "{module}");
-    assert!(!module.contains("h(\"span\")"), "{module}");
+    assert!(
+        output.module_code().is_empty(),
+        "an invalid native mode must not publish an executable module"
+    );
+    let mut components = output.components.iter();
+    let vdom = components.next().expect("VDOM producer");
+    let vapor = components.next().expect("Vapor producer");
+    assert!(matches!(vdom, vize_atelier_jsx::JsxComponent::Vdom(_)));
+    assert!(matches!(vapor, vize_atelier_jsx::JsxComponent::Vapor(_)));
+    assert!(vdom.code().contains("h(\"div\")"), "{}", vdom.code());
+    assert!(!vapor.code().contains("h(\"span\")"), "{}", vapor.code());
+    assert!(
+        !vapor.code().is_empty(),
+        "the actual rejected backend packet stays inspectable"
+    );
     assert_eq!(output.diagnostics.len(), 1);
     assert!(output.diagnostics[0].message.contains("Vapor output"));
 }

@@ -1,0 +1,794 @@
+[
+  {
+    "components": [
+      {
+        "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<strong>Hello</strong>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { template as _template } from \"vue\"\n\nexport default ({\n__vapor: true,\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<strong>Hello</strong>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  return n0\n})(undefined, [])\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;uBAAQ,OAAO;;;;;;;;EAAc",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "export default () => <strong>Hello</strong>;"
+      ],
+      "version": 3
+    },
+    "source": "export default () => <strong>Hello</strong>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<i>yes</i>\", true)\nconst t1 = _template(\" \", true)\nconst t2 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t2()\n  _setInsertionState(n0)\n  const n1 = _createIf(() => (flag), () => {\n    const n3 = t0()\n    return n3\n  }, () => {\n    const n5 = t1()\n    _renderEffect(() => _setText(n5, _toDisplayString(null)))\n    return n5\n  }, 9 /* TRUE_SINGLE_ROOT, FALSE_MULTI_ROOT */)\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<i>yes</i>\", true)\nconst t1 = _template(\" \", true)\nconst t2 = _template(\"<div></div>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t2()\n  _setInsertionState(n0)\n  const n1 = _createIf(() => (flag), () => {\n    const n3 = t0()\n    return n3\n  }, () => {\n    const n5 = t1()\n    _renderEffect(() => _setText(n5, _toDisplayString(null)))\n    return n5\n  }, 9 /* TRUE_SINGLE_ROOT, FALSE_MULTI_ROOT */)\n  return n0\n})(undefined, [])\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAqB,EAAE;;uBAAf;;;;;aAAY,iBAAP;;;KAAoB;;sDAAA;;;;;;;EAAW",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;"
+      ],
+      "version": 3
+    },
+    "source": "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { createDynamicComponent as _createDynamicComponent } from 'vue';\n\nexport function render(_ctx) {\n  const n0 = _createDynamicComponent(() => (Child), null, null, true)\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { createDynamicComponent as _createDynamicComponent } from \"vue\"\n\nimport Child from './Child.js'; export const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx) => {\n  const n0 = _createDynamicComponent(() => (Child), null, null, true)\n  return n0\n})(undefined, [])\n})()\n}\n}); export default App;",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;EAAe,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import Child from './Child.js'; export const App = () => <Child/>; export default App;"
+      ],
+      "version": 3
+    },
+    "source": "import Child from './Child.js'; export const App = () => <Child/>; export default App;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { createDynamicComponent as _createDynamicComponent } from 'vue';\n\nexport function render(_ctx) {\n  const n0 = _createDynamicComponent(() => (UI.Child), null, null, true)\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { createDynamicComponent as _createDynamicComponent } from \"vue\"\n\nimport * as UI from './Child.js'; export const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx) => {\n  const n0 = _createDynamicComponent(() => (UI.Child), null, null, true)\n  return n0\n})(undefined, [])\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;EAAkB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import * as UI from './Child.js'; export const App = () => <UI.Child/>;"
+      ],
+      "version": 3
+    },
+    "source": "import * as UI from './Child.js'; export const App = () => <UI.Child/>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setListener as _setListener, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button> : </button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => {\n    _setListener(n0, \"onClick\", inc)\n    _setText(x0, _toDisplayString(props.label) + \":\" + _toDisplayString(clicks.value))\n  })\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "Counter",
+        "preamble": "",
+        "setup": "Some(ComponentSetupSpan { declaration_start: 32, declaration_end: 198, params_start: 49, params_end: 70, type_params_start: 0, type_params_end: 0, is_async: false, destructured_props: [\"label\"], setup_start: 76, setup_end: 128, render_start: 135, render_end: 194 })",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setListener as _setListener, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nimport {ref} from 'vue'; export const Counter = ({\n__vapor: true,\nname: \"Counter\",\nprops: [\"label\"],\nsetup(props: {label:string}) {\n const clicks=ref(0); const inc=()=>clicks.value++; return (() => {\n\nconst t0 = _template(\"<button> : </button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => {\n    _setListener(n0, \"onClick\", inc)\n    _setText(x0, _toDisplayString(props.label) + \":\" + _toDisplayString(clicks.value))\n  })\n  return n0\n})(undefined, [])\n})()\n}\n}); export default Counter;",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;MAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAAO,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;uBAAS,QAAkC;;;;;;sBAA3B,UAAS;kCAAM,sCAAc;;;;;;EAAyB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import {ref} from 'vue'; export const Counter = (props: {label:string}) => { const clicks=ref(0); const inc=()=>clicks.value++; return <button onClick={inc}>{props.label}:{clicks.value}</button>; }; export default Counter;"
+      ],
+      "version": 3
+    },
+    "source": "import {ref} from 'vue'; export const Counter = (props: {label:string}) => { const clicks=ref(0); const inc=()=>clicks.value++; return <button onClick={inc}>{props.label}:{clicks.value}</button>; }; export default Counter;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<i> </i>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(mark)))\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "A",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      },
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<b> </b>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(mark)))\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "B",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nconst mark=sideEffect(); export const A=({\n__vapor: true,\nname: \"A\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<i> </i>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(mark)))\n  return n0\n})(undefined, [])\n})()\n}\n}); export const B=({\n__vapor: true,\nname: \"B\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<b> </b>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(mark)))\n  return n0\n})(undefined, [])\n})()\n}\n}); export {A as Alias}; export default B;",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;oDAAG;;;;;EAAS,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;oDAAG;;;;;EAAS,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const mark=sideEffect(); export const A=()=> <i>{mark}</i>; export const B=()=> <b>{mark}</b>; export {A as Alias}; export default B;"
+      ],
+      "version": 3
+    },
+    "source": "const mark=sideEffect(); export const A=()=> <i>{mark}</i>; export const B=()=> <b>{mark}</b>; export {A as Alias}; export default B;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<p>Hello</p>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "#!/usr/bin/env node\n'use client';\nimport { template as _template } from \"vue\"\n\n\nexport default ({\n__vapor: true,\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<p>Hello</p>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  return n0\n})(undefined, [])\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": "AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACnB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;AAAC;AACb,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;uBAAQ,EAAE;;;;;;;;EAAS",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "#!/usr/bin/env node\n'use client';\nexport default () => <p>Hello</p>;"
+      ],
+      "version": 3
+    },
+    "source": "#!/usr/bin/env node\n'use client';\nexport default () => <p>Hello</p>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<i> </i>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(n)))\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 40,
+        "error": true,
+        "message": "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        "start": 30
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const nodes=[1].map(n=><i>{n}</i>);",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';\n\nexport function render(_ctx) {\n  const _component_Child = _resolveComponent(\"Child\")\n  const n0 = _createComponentWithFallback(_component_Child, { icon: () => (<i/>) }, null, true)\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 42,
+        "error": true,
+        "message": "Vapor/SSR backend retained JSX inside an attribute expression; this context requires shared IR lowering before module emission",
+        "start": 22
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=()=> <Child icon={<i/>}/>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<p></p>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 33,
+        "error": true,
+        "message": "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        "start": 29
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export function App(){return <p/>;}",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<p> </p>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(props.label)))\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 53,
+        "error": true,
+        "message": "Vapor/SSR component props require an identifier with an explicit nonempty inline object type; destructured, inferred and aliased props need a reactive binding projection",
+        "start": 17
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=(props: Props)=><p>{props.label}</p>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<p> </p>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(label)))\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 57,
+        "error": true,
+        "message": "Vapor/SSR component props require an identifier with an explicit nonempty inline object type; destructured, inferred and aliased props need a reactive binding projection",
+        "start": 17
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=({label}:{label:string})=><p>{label}</p>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<p> </p>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(this.label)))\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 27,
+        "error": true,
+        "message": "Vapor/SSR component setup cannot preserve the authored lexical this, arguments or new.target in this context",
+        "start": 23
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export default()=> <p>{this.label}</p>;",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<i></i>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      },
+      {
+        "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<p></p>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "Some(ComponentSetupSpan { declaration_start: 7, declaration_end: 56, params_start: 0, params_end: 0, type_params_start: 0, type_params_end: 0, is_async: false, destructured_props: [], setup_start: 22, setup_end: 42, render_start: 49, render_end: 53 })",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 41,
+        "error": true,
+        "message": "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        "start": 37
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=()=>{if(flag)return <i/>;return <p/>;};",
+    "ssr": false
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<strong${_ssrRenderAttrs(_attrs)}>Hello</strong>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport default ({\n__ssrInlineRender: true,\n__vapor: true,\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<strong${_ssrRenderAttrs(_attrs)}>Hello</strong>`)\n})\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;UAAQ,iCAAO;;;;EAAc",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "export default () => <strong>Hello</strong>;"
+      ],
+      "version": 3
+    },
+    "source": "export default () => <strong>Hello</strong>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  if (flag) {\n    _push(`<i>yes</i>`)\n  } else {\n    _push(`${_ssrInterpolate(null)}`)\n  }\n  _push(`</div>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport const App = ({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  if (flag) {\n    _push(`<i>yes</i>`)\n  } else {\n    _push(`${_ssrInterpolate(null)}`)\n  }\n  _push(`</div>`)\n})\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;UAAQ;EAAY,IAAP;YAAQ,EAAE;IAAU;6BAAA;;;;;;EAAW",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;"
+      ],
+      "version": 3
+    },
+    "source": "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderVNode as _ssrRenderVNode, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(Child), _attrs, null), _parent)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { ssrRenderVNode as _ssrRenderVNode, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent } from \"vue\"\n\nimport Child from './Child.js'; export const App = ({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(Child), _attrs, null), _parent)\n})\n})()\n}\n}); export default App;",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;EAAe,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import Child from './Child.js'; export const App = () => <Child/>; export default App;"
+      ],
+      "version": 3
+    },
+    "source": "import Child from './Child.js'; export const App = () => <Child/>; export default App;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderVNode as _ssrRenderVNode, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(UI.Child), _attrs, null), _parent)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { ssrRenderVNode as _ssrRenderVNode, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent } from \"vue\"\n\nimport * as UI from './Child.js'; export const App = ({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(UI.Child), _attrs, null), _parent)\n})\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;EAAkB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import * as UI from './Child.js'; export const App = () => <UI.Child/>;"
+      ],
+      "version": 3
+    },
+    "source": "import * as UI from './Child.js'; export const App = () => <UI.Child/>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({ onClick: inc }, _attrs))}>${_ssrInterpolate(props.label)}:${_ssrInterpolate(clicks.value)}</button>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "Counter",
+        "preamble": "",
+        "setup": "Some(ComponentSetupSpan { declaration_start: 32, declaration_end: 198, params_start: 49, params_end: 70, type_params_start: 0, type_params_end: 0, is_async: false, destructured_props: [\"label\"], setup_start: 76, setup_end: 128, render_start: 135, render_end: 194 })",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nimport {ref} from 'vue'; export const Counter = ({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"Counter\",\nprops: [\"label\"],\nsetup(props: {label:string}) {\n const clicks=ref(0); const inc=()=>clicks.value++; return (() => {\n\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({ onClick: inc }, _attrs))}>${_ssrInterpolate(props.label)}:${_ssrInterpolate(clicks.value)}</button>`)\n})\n})()\n}\n}); export default Counter;",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;MAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAAO,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;UAAS,+CAAe,mCAAO,aAAY,mBAAE;;;;EAAyB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import {ref} from 'vue'; export const Counter = (props: {label:string}) => { const clicks=ref(0); const inc=()=>clicks.value++; return <button onClick={inc}>{props.label}:{clicks.value}</button>; }; export default Counter;"
+      ],
+      "version": 3
+    },
+    "source": "import {ref} from 'vue'; export const Counter = (props: {label:string}) => { const clicks=ref(0); const inc=()=>clicks.value++; return <button onClick={inc}>{props.label}:{clicks.value}</button>; }; export default Counter;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(mark)}</i>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "A",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      },
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<b${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(mark)}</b>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "B",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nconst mark=sideEffect(); export const A=({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"A\",\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(mark)}</i>`)\n})\n})()\n}\n}); export const B=({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"B\",\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<b${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(mark)}</b>`)\n})\n})()\n}\n}); export {A as Alias}; export default B;",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;UAAO,8CAAG;;;;EAAS,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;UAAO,8CAAG;;;;EAAS,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const mark=sideEffect(); export const A=()=> <i>{mark}</i>; export const B=()=> <b>{mark}</b>; export {A as Alias}; export default B;"
+      ],
+      "version": 3
+    },
+    "source": "const mark=sideEffect(); export const A=()=> <i>{mark}</i>; export const B=()=> <b>{mark}</b>; export {A as Alias}; export default B;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>Hello</p>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [],
+    "module": "#!/usr/bin/env node\n'use client';\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nexport default ({\n__ssrInlineRender: true,\n__vapor: true,\nsetup() {\nreturn (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>Hello</p>`)\n})\n})()\n}\n});",
+    "moduleMap": {
+      "file": "module.tsx",
+      "mappings": "AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACnB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;AAAC;AACb,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;UAAQ,4BAAE;;;;EAAS",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "#!/usr/bin/env node\n'use client';\nexport default () => <p>Hello</p>;"
+      ],
+      "version": 3
+    },
+    "source": "#!/usr/bin/env node\n'use client';\nexport default () => <p>Hello</p>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(n)}</i>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 40,
+        "error": true,
+        "message": "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        "start": 30
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const nodes=[1].map(n=><i>{n}</i>);",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, mergeProps as _mergeProps } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Child\"), _mergeProps({ icon: <i/> }, _attrs), null, _parent))\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 42,
+        "error": true,
+        "message": "Vapor/SSR backend retained JSX inside an attribute expression; this context requires shared IR lowering before module emission",
+        "start": 22
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=()=> <Child icon={<i/>}/>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}></p>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 33,
+        "error": true,
+        "message": "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        "start": 29
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export function App(){return <p/>;}",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(props.label)}</p>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 53,
+        "error": true,
+        "message": "Vapor/SSR component props require an identifier with an explicit nonempty inline object type; destructured, inferred and aliased props need a reactive binding projection",
+        "start": 17
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=(props: Props)=><p>{props.label}</p>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(label)}</p>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 57,
+        "error": true,
+        "message": "Vapor/SSR component props require an identifier with an explicit nonempty inline object type; destructured, inferred and aliased props need a reactive binding projection",
+        "start": 17
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=({label}:{label:string})=><p>{label}</p>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(this.label)}</p>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": null,
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 27,
+        "error": true,
+        "message": "Vapor/SSR component setup cannot preserve the authored lexical this, arguments or new.target in this context",
+        "start": 23
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export default()=> <p>{this.label}</p>;",
+    "ssr": true
+  },
+  {
+    "components": [
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}></i>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "None",
+        "style": "None"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}></p>`)\n}\n",
+        "map": null,
+        "mode": "vapor",
+        "name": "App",
+        "preamble": "",
+        "setup": "Some(ComponentSetupSpan { declaration_start: 7, declaration_end: 56, params_start: 0, params_end: 0, type_params_start: 0, type_params_end: 0, is_async: false, destructured_props: [], setup_start: 22, setup_end: 42, render_start: 49, render_end: 53 })",
+        "style": "None"
+      }
+    ],
+    "diagnostics": [
+      {
+        "end": 41,
+        "error": true,
+        "message": "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        "start": 37
+      }
+    ],
+    "module": "",
+    "moduleMap": null,
+    "source": "export const App=()=>{if(flag)return <i/>;return <p/>;};",
+    "ssr": true
+  }
+]

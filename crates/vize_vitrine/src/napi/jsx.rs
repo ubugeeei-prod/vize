@@ -26,6 +26,7 @@
     reason = "N-API values cross the boundary as std `String`s"
 )]
 
+#[cfg(feature = "napi")]
 use napi_derive::napi;
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
@@ -33,7 +34,7 @@ use vize_atelier_jsx::{
 use vize_l0::Allocator;
 
 /// Options for [`compile_jsx`].
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct JsxCompileOptionsNapi {
     /// Source filename, used to infer the language when `lang` is omitted.
@@ -65,7 +66,7 @@ pub struct JsxCompileOptionsNapi {
 /// A JSX component's extracted `<style scoped>` block, surfaced to the bundler
 /// plugins so a `.jsx`/`.tsx` component's scoped CSS reaches the same emission
 /// path as SFC `<style>` blocks (#1495, #1533).
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct JsxScopedStyleNapi {
     /// The generated scope id, e.g. `data-v-1a2b3c4d`. Already injected into the
     /// component's rendered elements; surfaced here so the bundler can name the
@@ -77,16 +78,16 @@ pub struct JsxScopedStyleNapi {
 }
 
 /// Result of [`compile_jsx`].
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct JsxCompileResultNapi {
     /// Complete emitted module, including the deduplicated runtime helpers.
-    /// VDOM output retains authored imports, declarations and exports. Static
-    /// standalone Vapor output contains named renderer exports; unsupported
-    /// authored Vapor modules return diagnostics and an empty module.
+    /// Authored imports, declarations and exports are retained. Native component
+    /// arrows use genuine Vue setup contracts; unrepresented native contexts
+    /// return source diagnostics and an empty module.
     pub code: String,
     /// v3 source map (JSON) for `code`, present when requested for mappable
-    /// output. Authored spans and all VDOM JSX roots map against the complete
-    /// source. `null` for generated backends without map support.
+    /// output. Authored spans and generated JSX roots map against the complete
+    /// original source.
     pub map: Option<String>,
     /// Error-severity diagnostic messages.
     pub errors: Vec<String>,
@@ -115,6 +116,7 @@ fn resolve_default_mode(jsx_mode: Option<&str>, vapor: Option<bool>) -> JsxOutpu
     }
 }
 
+#[cfg(feature = "napi")]
 #[napi(js_name = "compileJsx")]
 pub fn compile_jsx(
     source: String,
@@ -159,8 +161,8 @@ fn compile_jsx_impl(
         ..Default::default()
     };
     config.ssr = opts.ssr.unwrap_or(false);
-    // Surface a v3 source map when requested. The flag only affects client VDOM
-    // codegen; enabling it is a no-op for Vapor and SSR output.
+    // Every backend carries its genuine per-root source origins into the
+    // complete authored module when maps are requested.
     config.vdom.source_map = opts.source_map.unwrap_or(false);
 
     let allocator = Allocator::new();
@@ -416,7 +418,7 @@ mod tests {
     #[test]
     fn jsx_compile_result_supports_ssr_output() {
         let result = compile_jsx_impl(
-            "const App = () => <div>{message}</div>;".to_string(),
+            "const App = () => { return <div>{message}</div>; };".to_string(),
             Some(JsxCompileOptionsNapi {
                 ssr: Some(true),
                 source_map: Some(true),
@@ -425,14 +427,24 @@ mod tests {
         );
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert_eq!(
-            result.code,
-            "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } \
-             from \"@vue/server-renderer\"\n\n\
-             function ssrRender(_ctx, _push, _parent, _attrs) {\n  \
-             _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(message)}</div>`)\n\
-             }\n"
+        insta::assert_snapshot!(
+            "jsx_authored_ssr_dto_10701",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "code": &result.code,
+                "map": &result.map,
+                "errors": &result.errors,
+                "warnings": &result.warnings,
+                "scopedStyles": result.scoped_styles.iter().map(|style| serde_json::json!({"scopeId":&style.scope_id,"css":&style.css})).collect::<Vec<_>>(),
+            })).expect("complete NAPI result")
         );
-        assert!(result.map.is_none(), "SSR output has no source map yet");
+        let decoded: serde_json::Value =
+            serde_json::from_str(&result.map.expect("SSR module source map"))
+                .expect("valid v3 map");
+        assert_eq!(
+            decoded.get("sourcesContent"),
+            Some(&serde_json::json!([
+                "const App = () => { return <div>{message}</div>; };"
+            ]))
+        );
     }
 }

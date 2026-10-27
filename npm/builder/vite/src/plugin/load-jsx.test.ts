@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { SourceMap } from "node:module";
+import { compileJsx } from "@vizejs/native";
+import ts from "typescript";
 import { fileURLToPath } from "node:url";
 import type { VizePluginState } from "./state.ts";
 import { transformHook } from "./load.ts";
@@ -86,32 +89,142 @@ const jsxVaporState: VizePluginState = {
   mergedOptions: { ...jsxState.mergedOptions, vapor: true },
 };
 
-const jsxVaporTransform = await transformHook(
-  jsxVaporState,
-  'const App = () => <div class="greeting">standalone</div>;',
-  jsxFixturePath,
-  { ssr: false },
-);
-assert.ok(
-  jsxVaporTransform && typeof jsxVaporTransform === "object",
-  "Vapor .jsx transforms should also produce a result",
-);
-assert.match(
-  jsxVaporTransform.code,
-  /_template\(/,
-  "Vapor .jsx components should compile to hoisted templates through the transform hook",
-);
-// The Vapor backend does not emit a source map yet, so the transform reports none.
-assert.equal(
-  jsxVaporTransform.map,
-  null,
-  "Vapor .jsx transform has no source map (Vapor codegen does not emit one yet)",
-);
+const standaloneVaporSource = 'const App = () => <div class="greeting">standalone</div>;';
+for (const input of [
+  { source: standaloneVaporSource, exports: [] },
+  { source: jsxFixtureSource, exports: ["App"] },
+]) {
+  const outputs = [];
+  for (const isProduction of [false, true]) {
+    const sourceMap = !isProduction;
+    const native = compileJsx(input.source, {
+      filename: jsxFixturePath,
+      lang: "jsx",
+      vapor: true,
+      sourceMap,
+    });
+    const actual = await transformHook(
+      { ...jsxVaporState, isProduction },
+      input.source,
+      jsxFixturePath,
+      { ssr: false },
+    );
+    assert.ok(actual && typeof actual === "object");
+    assert.deepEqual(actual, {
+      code: native.code,
+      map: sourceMap ? JSON.parse(native.map!) : null,
+    });
+    assert.deepEqual(native, {
+      code: actual.code,
+      ...(sourceMap ? { map: native.map } : {}),
+      errors: [],
+      warnings: [],
+      scopedStyles: [],
+    });
+    outputs.push(actual.code);
+
+    const module = ts.createSourceFile(
+      jsxFixturePath,
+      actual.code,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.JS,
+    );
+    assert.deepEqual(
+      ts.transpileModule(actual.code, {
+        fileName: jsxFixturePath,
+        reportDiagnostics: true,
+        compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext },
+      }).diagnostics ?? [],
+      [],
+    );
+    assert.deepEqual(
+      module.statements
+        .filter(ts.isExportAssignment)
+        .map((statement) => statement.expression.getText(module)),
+      input.exports,
+      "the hook retains the authored export role of each original input",
+    );
+    assert.deepEqual(
+      module.statements.filter(
+        (statement) =>
+          ts.isExportDeclaration(statement) ||
+          (ts.canHaveModifiers(statement) &&
+            ts
+              .getModifiers(statement)
+              ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)),
+      ),
+      [],
+      "the hook does not invent a standalone renderer export",
+    );
+    const bindings = module.statements
+      .filter(ts.isVariableStatement)
+      .flatMap((statement) => [...statement.declarationList.declarations])
+      .filter(
+        (declaration) => ts.isIdentifier(declaration.name) && declaration.name.text === "App",
+      );
+    assert.equal(bindings.length, 1);
+    let component = bindings[0].initializer;
+    assert(component);
+    while (ts.isParenthesizedExpression(component)) component = component.expression;
+    assert(ts.isObjectLiteralExpression(component));
+    assert.deepEqual(
+      component.properties.map((property) =>
+        "name" in property ? property.name?.getText(module) : undefined,
+      ),
+      ["__vapor", "name", "setup"],
+    );
+    const marker = component.properties[0];
+    assert(ts.isPropertyAssignment(marker));
+    assert.equal(marker.initializer.kind, ts.SyntaxKind.TrueKeyword);
+    const setup = component.properties[2];
+    assert(ts.isMethodDeclaration(setup));
+    assert(setup.body?.statements.some(ts.isReturnStatement));
+
+    if (sourceMap) {
+      const map = actual.map;
+      assert(map && typeof map === "object");
+      const parsed = JSON.parse(native.map!);
+      assert.equal(parsed.version, 3);
+      assert.equal(parsed.file, "module.jsx");
+      assert.deepEqual(parsed.sources, ["module.jsx"]);
+      assert.deepEqual(parsed.sourcesContent, [input.source]);
+      const offset = actual.code.indexOf("const App =");
+      assert(offset >= 0);
+      const prefix = actual.code.slice(0, offset);
+      assert.deepEqual(
+        new SourceMap(parsed).findEntry(
+          prefix.split("\n").length - 1,
+          prefix.length - prefix.lastIndexOf("\n") - 1,
+        ),
+        {
+          generatedLine: prefix.split("\n").length - 1,
+          generatedColumn: prefix.length - prefix.lastIndexOf("\n") - 1,
+          originalSource: "module.jsx",
+          originalLine: 0,
+          originalColumn: 0,
+          name: undefined,
+        },
+      );
+    } else assert.equal(actual.map, null);
+  }
+  assert.equal(outputs[0], outputs[1], "production map policy keeps every compiled byte");
+}
+
+const callableAlias = "const App = () => <div/>; const alias = App; export default alias;";
+const aliasRefusal =
+  "Vapor/SSR component-object bindings may be used only as JSX component tags or direct exports; local calls, callable aliases, introspection and value escapes require an explicit callable representation";
+assert.deepEqual(compileJsx(callableAlias, { lang: "jsx", vapor: true, sourceMap: true }), {
+  code: "",
+  errors: [aliasRefusal],
+  warnings: [],
+  scopedStyles: [],
+});
 await assert.rejects(
-  () => transformHook(jsxVaporState, jsxFixtureSource, jsxFixturePath, { ssr: false }),
+  () => transformHook(jsxVaporState, callableAlias, jsxFixturePath, { ssr: false }),
   {
     name: "VizeSfcCompileError",
-    message: `[vize] Compilation failed in ${jsxFixturePath}:\n  - Vapor/SSR authored module preservation is not supported for imports, exports or captured setup bindings; use VDOM output or consume the per-component renderer`,
+    message: `[vize] Compilation failed in ${jsxFixturePath}:\n  - ${aliasRefusal}`,
   },
 );
 
