@@ -53,7 +53,10 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
     );
     ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
-        return ScriptParseResult::default();
+        return ScriptParseResult {
+            source_program_count: 1,
+            ..Default::default()
+        };
     }
 
     let mut result = analyze_script_setup_program_demand::<BUILTIN_TYPES>(
@@ -131,6 +134,7 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
+        source_program_count: 1,
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::script_setup(),
         // The builtin-specialized variable fast path does not run the common
@@ -281,7 +285,10 @@ pub(crate) fn parse_script_with_options_source_type(
     );
     ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
-        let mut result = ScriptParseResult::default();
+        let mut result = ScriptParseResult {
+            source_program_count: 1,
+            ..Default::default()
+        };
         if unused {
             result
                 .setup_context
@@ -293,6 +300,7 @@ pub(crate) fn parse_script_with_options_source_type(
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
+        source_program_count: 1,
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::new(), // Not script setup
         nuxt_static_render_script: Some(!ret.panicked && ret.diagnostics.is_empty()),

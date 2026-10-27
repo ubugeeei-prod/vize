@@ -264,3 +264,84 @@ fn demanded_builtin_walk_retains_the_same_lexical_bindings() {
             .canonical
     );
 }
+
+#[test]
+fn actual_uncaptured_refused_and_empty_programs_never_alias_absence() {
+    fn captured() -> crate::Croquis {
+        parse_script_setup("import { ref } from 'vue'; const value = ref;").into_croquis()
+    }
+    fn compiled() -> crate::Croquis {
+        super::parse_script_setup_with_exports::<false>(
+            "const value = 1;",
+            None,
+            false,
+            false,
+            true,
+            false,
+            None,
+        )
+        .into_croquis()
+    }
+    fn failed() -> crate::Croquis {
+        parse_script_setup("const =").into_croquis()
+    }
+    fn empty_program() -> crate::Croquis {
+        parse_script_setup("").into_croquis()
+    }
+    fn assert_refused(analysis: &crate::Croquis) {
+        assert_eq!(analysis.source_program_count, 2);
+        if let Some(origins) = analysis.value_binding_origins.as_ref() {
+            assert!(!origins.is_complete());
+        }
+    }
+    for other in [compiled, failed, empty_program] {
+        let other_program = other();
+        assert_eq!(other_program.source_program_count, 1);
+        let mut left = captured();
+        left.merge_plain_script(other_program);
+        assert_refused(&left);
+
+        let mut right = other();
+        right.merge_plain_script(captured());
+        assert_refused(&right);
+    }
+    let mut sole = captured();
+    sole.merge_plain_script(crate::Croquis::new());
+    assert_eq!(sole.source_program_count, 1);
+    assert!(
+        sole.value_binding_origins
+            .as_ref()
+            .expect("sole capture")
+            .is_complete()
+    );
+
+    let mut empty_first = crate::Croquis::new();
+    empty_first.merge_plain_script(captured());
+    assert_eq!(empty_first.source_program_count, 1);
+    assert!(
+        empty_first
+            .value_binding_origins
+            .as_ref()
+            .expect("preserved original store")
+            .is_complete()
+    );
+
+    let mut triple = captured();
+    triple.merge_plain_script(compiled());
+    triple.merge_plain_script(empty_program());
+    assert_refused(&triple);
+    triple.merge_plain_script(crate::Croquis::new());
+    assert_refused(&triple);
+
+    let mut contradiction = captured();
+    contradiction.source_program_count = 0;
+    contradiction.merge_plain_script(crate::Croquis::new());
+    assert_eq!(contradiction.source_program_count, 0);
+    assert!(
+        !contradiction
+            .value_binding_origins
+            .as_ref()
+            .expect("contradiction refuses")
+            .is_complete()
+    );
+}

@@ -234,6 +234,12 @@ pub fn local_component_binding<'a>(
     let Some(name) = name else {
         return LocalComponentBinding::Opaque;
     };
+    if origins.is_syntactic_value_import(name) {
+        return LocalComponentBinding::StaticImport;
+    }
+    if croquis.source_program_count != 1 {
+        return LocalComponentBinding::Opaque;
+    }
     let Some(reference) = origins.root_reference(name) else {
         return LocalComponentBinding::Opaque;
     };
@@ -244,7 +250,9 @@ pub fn local_component_binding<'a>(
         return LocalComponentBinding::Opaque;
     }
     if resolved.import.is_some() {
-        return LocalComponentBinding::StaticImport;
+        // A const alias is not the authored static-import declaration which
+        // the legacy component-identity resolver can read. Keep it opaque.
+        return LocalComponentBinding::Opaque;
     }
     match origins.async_components.module_for(origins, name) {
         Some(module) => LocalComponentBinding::Async(module),

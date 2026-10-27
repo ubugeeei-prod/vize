@@ -27,7 +27,7 @@ interface Frozen {
 }
 interface Native {
   getNativeBuildToken(): string | null;
-  buildInspectorGraph(files: Array<{ path: string; source: string }>): string;
+  buildInspectorGraph(files: Array<{ path: string; source: string }>): Json;
 }
 function sha(bytes: string | Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
@@ -187,7 +187,7 @@ const sourceFiles = Object.entries(original.files).map(([path, file]) => {
   assert.equal(sha(file.source), file.sha256, path);
   return { path, source: file.source };
 });
-assert.deepEqual(JSON.parse(native.buildInspectorGraph(sourceFiles)) as Json, publicBefore.graph);
+assert.deepEqual(native.buildInspectorGraph(sourceFiles), publicBefore.graph);
 const cleanDoctor = structuredClone(publicBefore.reports.doctor);
 cleanDoctor.findings = [];
 const summary = object(cleanDoctor.summary);

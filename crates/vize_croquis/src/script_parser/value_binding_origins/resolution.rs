@@ -124,6 +124,22 @@ impl ValueBindingOrigins {
         self.canonical_member_writes.contains(&canonical)
     }
 
+    /// Preserve the existing static-import consumer's authored declaration
+    /// contract. This does not admit async factory/value provenance.
+    pub(crate) fn is_syntactic_value_import(&self, name: &str) -> bool {
+        let Some(declaration) = self
+            .root
+            .and_then(|root| self.declarations.get(&root))
+            .and_then(|table| table.get(name))
+        else {
+            return false;
+        };
+        !declaration.ambiguous
+            && declaration.immutable
+            && !self.mutated.contains(&declaration.key)
+            && matches!(&declaration.origin, Origin::Import(import) if import.value)
+    }
+
     pub(crate) fn component_binding_name(&self, tag: &str) -> Option<Option<&str>> {
         let root = self.declarations.get(&self.root?)?;
         if let Some((name, _)) = root.get_key_value(tag) {

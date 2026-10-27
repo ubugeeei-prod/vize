@@ -75,6 +75,7 @@ pub(crate) struct RuntimeObjectLiteral {
 /// Result of parsing a script setup block
 #[derive(Default)]
 pub struct ScriptParseResult {
+    pub(crate) source_program_count: u8,
     pub(crate) value_binding_origins:
         Option<Box<super::value_binding_origins::ValueBindingOrigins>>,
     pub bindings: BindingMetadata,
@@ -348,7 +349,14 @@ impl ScriptParseResult {
         } else {
             self.nuxt_page_layout
         };
-        summary.value_binding_origins = self.value_binding_origins;
+        summary.source_program_count = self.source_program_count;
+        let mut origins = self.value_binding_origins;
+        if self.source_program_count != 1
+            && let Some(origins) = origins.as_mut()
+        {
+            origins.refuse();
+        }
+        summary.value_binding_origins = origins;
         summary.bindings = self.bindings;
         summary.unused_bindings = self.unused_bindings;
         summary.macros = self.macros;
