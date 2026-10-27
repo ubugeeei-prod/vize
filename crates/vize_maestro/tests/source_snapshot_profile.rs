@@ -130,7 +130,9 @@ fn snapshot_producers_keep_owned_results_and_exact_utf8_payloads() {
             text_bytes: 0,
         },
     );
-    assert_eq!(empty, [(Vec::new(), Vec::new())]);
+    assert_eq!(empty.len(), 1);
+    assert!(empty[0].0.is_empty());
+    assert!(empty[0].1.is_empty());
     for (path, text, language) in [
         ("file:///fixture/A.vue", "abc\r\n", "vue"),
         ("file:///fixture/Empty.vue", "", "vue"),
