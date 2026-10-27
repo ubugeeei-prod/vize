@@ -1,5 +1,5 @@
 {
-  "schema": "vize-public-runtime-ts-port-custody-v2",
+  "schema": "vize-public-runtime-ts-port-custody-v3",
   "originals": [
     {
       "path": "public-compiler-contracts-admitted.mjs",
@@ -12,9 +12,9 @@
   ],
   "ported": {
     "path": "runtime-contracts.ts",
-    "sha256": "5350cddf80198131a315d20f48933f129022bc5fca7943fc9c30fcd7ad753920",
-    "bytes": 8056,
-    "blob": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e"
+    "bytes": 8109,
+    "sha256": "edd780c60ee2bb6c9ef9ec3ac450004fcf01d343e4359b9d68125f88e3be2000",
+    "sha": "8ed3c416c31a22257fa54f440c0e7e88fd7b840b"
   },
   "validation": {
     "strictTypeScript": "PASS",
@@ -25,7 +25,8 @@
     "frozenPublic600WasmWholePacketEqual": true,
     "metadataValueAdapter": false,
     "freshConsumerAcceptanceCredit": false,
-    "adapters": "In-memory stdout capture; WASM root resolver uses the existing package's actual exported self-reference entry. Metadata is read normally from its adjacent original package.json."
+    "adapters": "In-memory stdout capture; WASM root resolver uses the existing package's actual exported self-reference entry. Metadata is read normally from its adjacent original package.json.",
+    "actionsLint": "pending exact new head; zero-warning budget unchanged; no suppression"
   },
   "frozenPackets": [
     {
@@ -169,7 +170,7 @@
     }
   },
   "currentWholePacketProof": {
-    "proofs": [
+    "compileFunctionParity": [
       {
         "backend": "native",
         "version": "0.600.0",
@@ -216,8 +217,7 @@
         ],
         "originalSourceToPortedEqual": true,
         "frozenOriginalPublic600Equal": true,
-        "metadataValueAdapter": false,
-        "resolverAdapter": null
+        "metadataValueAdapter": false
       },
       {
         "backend": "wasm",
@@ -265,10 +265,44 @@
         ],
         "originalSourceToPortedEqual": true,
         "frozenOriginalPublic600Equal": true,
-        "metadataValueAdapter": false,
-        "resolverAdapter": "/private/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package/index.js"
+        "metadataValueAdapter": false
       }
     ],
     "freshPublicAfterAcceptanceCredit": false
+  },
+  "history": [
+    {
+      "previousRuntimeBlob": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e",
+      "previousRuntimeCustodyBlob": "9abd9819abd6299972cacf3dfedda1e61da4218d",
+      "reason": "Zero-warning CI: compile generated render factories with node:vm compileFunction instead of the Function constructor; function parameters and generated code bytes are unchanged."
+    }
+  ],
+  "lintTransition": {
+    "oldHead": "022e7c2e6416ec768dbd760d8afd047008fb2ed4",
+    "oldJob": 122266971684,
+    "noImpliedEvalSitesReplaced": 4,
+    "unboundFunctionTypesCorrected": 3,
+    "strictTypeScriptFiles": 4,
+    "formatterFiles": 3,
+    "contributionErasedJavaScriptIdentical": true,
+    "expectedDataChanged": false,
+    "eventBeforeProof": {
+      "compileFunctionEventParity": true,
+      "fullNativeCompileAndVNodeResultsEqual": true,
+      "version": "0.599.0",
+      "templates": 10,
+      "observations": 20,
+      "failed": [
+        "original-native-if",
+        "original-native-for-keyed",
+        "native-if-explicit-key",
+        "native-if-else",
+        "native-for-unkeyed"
+      ],
+      "wholeResultSha256": "cfdbd91edc38ccce703531651de6d26928cbbb23f46612a0e4f3570ca118559c",
+      "referenceSha256": "c8752cefa3ebd5ccfdbe9477804fe8fc4bc03060507efdef4bb7961f8df97437",
+      "inputSha256": "d614ba281249549cbc92c061defd21a9aeee0b724aa644b16e7df35b7a205cce",
+      "freshPublicAfterAcceptanceCredit": false
+    }
   }
 }

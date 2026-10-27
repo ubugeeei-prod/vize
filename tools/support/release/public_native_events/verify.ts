@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { compileFunction } from "node:vm";
 import { createHash } from "node:crypto";
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -107,7 +108,7 @@ type NodeShape = {
   shapeFlag: number;
 };
 function context(ok: boolean) {
-  return { ok, pingA: function pingA() {}, pingB: function pingB() {} };
+  return { ok, pingA: function pingA(this: void) {}, pingB: function pingB(this: void) {} };
 }
 function view(value: unknown, ctx: ReturnType<typeof context>): unknown {
   if (typeof value === "function") {
@@ -154,8 +155,8 @@ function execute(code: string, preamble: string | null) {
     const ctx = context(state.ok);
     const render =
       preamble === null
-        ? new Function("Vue", code)(runtime)
-        : new Function("Vue", "ok", "pingA", "pingB", `${preamble}\n${code}\nreturn render;`)(
+        ? compileFunction(code, ["Vue"])(runtime)
+        : compileFunction(`${preamble}\n${code}\nreturn render;`, ["Vue", "ok", "pingA", "pingB"])(
             runtime,
             ctx.ok,
             ctx.pingA,

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { compileFunction } from "node:vm";
 import { createRequire } from "node:module";
 import { join, resolve, dirname } from "node:path";
 import { writeFileSync, readFileSync } from "node:fs";
@@ -76,7 +77,7 @@ else {
 function render(template: string): (...args: unknown[]) => unknown {
   const x = native.compile(template, { mode: "function", prefixIdentifiers: true });
   assert.deepEqual(x.errors ?? [], []);
-  return new Function("Vue", x.preamble + "\n" + x.code + "\nreturn render;")(Vue);
+  return compileFunction(x.preamble + "\n" + x.code + "\nreturn render;", ["Vue"])(Vue);
 }
 function component(source: string): object {
   const x = native.compileSfc(source, { filename: "Private.vue", inlineTemplate: false });
@@ -87,7 +88,7 @@ function component(source: string): object {
       (_match: string, names: string) => `const {${names.replace(/\bas\b/g, ":")}} = Vue;`,
     )
     .replace("export default", "return");
-  return new Function("Vue", code)(Vue);
+  return compileFunction(code, ["Vue"])(Vue);
 }
 const node = (type: string, text = ""): HostNode => ({
   type,

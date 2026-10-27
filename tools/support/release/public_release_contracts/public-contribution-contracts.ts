@@ -35,7 +35,7 @@ const native = require("@vizejs/native") as {
   ): string;
 };
 const { babelParse } = require("vue/compiler-sfc") as {
-  babelParse(source: string, options: { sourceType: string; plugins: string[] }): unknown;
+  babelParse: (source: string, options: { sourceType: string; plugins: string[] }) => unknown;
 };
 const rows: ContributionRow[] = [];
 for (const packName of ["empty-v-slot-expression", "options-api-reserved-component-reference"]) {
