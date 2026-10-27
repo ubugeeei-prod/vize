@@ -5,6 +5,138 @@
   "product": "formatter",
   "cases": [
     {
+      "id": "formatter/sfc/adjacent-interpolation-width-10908",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-adjacent-interpolation-width-10908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c2dc69bab9676349f95a60559ce73e09e34a33280a697c3ff8759451e82dbdb1",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "003543105e22344390f48cd42efd871d4dffedc282a38db21367158ddedfc20c",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          10908
+        ],
+        "commits": [
+          {
+            "sha": "d8fa267d8039f7f782d55887550e4abaa931a4dc",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter/text_wrap.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 10908,
+            "path": "crates/vize_glyph/src/template/tests/print_width.rs",
+            "symbol": "adjacent_interpolation_expansion_is_included_in_closing_tag_width"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/template/tests/print_width.rs",
+          "symbol": "adjacent_interpolation_expansion_is_included_in_closing_tag_width",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "print-width",
+            "idempotence"
+          ],
+          "limitations": [
+            "Current source-built CLI execution remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "adjacent-interpolation",
+              "unicode-text"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI with pinned default-preset printWidth=100; complete adjacent interpolation output and three-pass idempotence.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-adjacent-interpolation-width-10908/reference.expected.txt",
+              "sha256": "cd52f6e5bee0fddde399d9d5252e49f2b5c5b18468a855aa364c0ff96682e804",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 10908,
+                "path": "crates/vize_glyph/src/template/tests/print_width.rs",
+                "symbol": "adjacent_interpolation_expansion_is_included_in_closing_tag_width",
+                "assertion": "First-pass complete output uses the formatted adjacent interpolation width and remains idempotent."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed is not compared by the CLI adapter"
+          ],
+          "referenceState": "issue-10908-authored-complete-output; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/auto-cr",
       "state": "active",
       "targets": [

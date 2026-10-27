@@ -39,7 +39,10 @@ fn adjacent_interpolation_expansion_is_included_in_closing_tag_width() {
                 expected.replace("</span\n        >", "</span>")
             };
             assert_eq!(formatted.as_str(), expected);
-            assert_eq!(crate::format_sfc(&formatted, &options).unwrap().code, formatted);
+            assert_eq!(
+                crate::format_sfc(&formatted, &options).unwrap().code,
+                formatted
+            );
         }
     }
 }
