@@ -199,8 +199,10 @@ export function captureColdScale(options: {
   const { provider, out, files, tool, invalid } = options;
   mkdirSync(join(out, "tmp"), { recursive: true });
   const corpus = prepareColdScale(join(out, "project"), provider, files, invalid);
-  const { command } = coldScaleCommand({ ...options, app: corpus.app });
+  const { command, backend } = coldScaleCommand({ ...options, app: corpus.app });
   const { executable, args } = command;
+  const executableSha256 = hash(readFileSync(executable));
+  const backendSha256 = existsSync(backend) ? hash(readFileSync(backend)) : null;
   const started = performance.now();
   const result = spawnSync(
     "/usr/bin/time",
@@ -217,6 +219,11 @@ export function captureColdScale(options: {
     },
   );
   const wallMs = performance.now() - started;
+  assert.equal(
+    hash(readFileSync(executable)),
+    executableSha256,
+    "measured executable was replaced",
+  );
   writeFileSync(join(out, "stdout.txt"), result.stdout ?? "");
   writeFileSync(join(out, "stderr.txt"), result.stderr ?? "");
   let correctness: { passed: boolean; diagnostics?: Diagnostic[]; error?: string };
@@ -251,6 +258,8 @@ export function captureColdScale(options: {
     signal: result.signal,
     error: result.error?.message,
     executable,
+    executableSha256,
+    backendSha256,
     args,
     cold: {
       newProcess: true,

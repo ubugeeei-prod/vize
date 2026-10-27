@@ -17,6 +17,8 @@ on:
       - tools/benchmarks/scripts/cold-typechecker-scale*.ts
       - tools/benchmarks/scripts/source-operation-perf.ts
       - crates/vize/src/commands/check/runner/default_imports.rs
+      - crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs
+      - crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution/input_history_tests.rs
       - tests/tooling/cold-typechecker-scale*.test.ts
       - tests/tooling/source-operation-perf.test.ts
 permissions: { contents: read }
@@ -42,10 +44,6 @@ jobs:
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: cold-typechecker-scale-v1
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Validate the full SFC cohort
         run: |
           [[ "$VIZE_BENCH_SFCS" =~ ^(2500|10000|50000)$ ]]
@@ -70,12 +68,12 @@ jobs:
           mkdir -p "$RUNNER_TEMP/cold-scale"
           git rev-parse HEAD > "$RUNNER_TEMP/cold-scale/head.sha"
           git -C "$RUNNER_TEMP/base" rev-parse HEAD > "$RUNNER_TEMP/cold-scale/base.sha"
-          cd "$RUNNER_TEMP/base"
-          CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo build --locked --profile ci-opt -p vize --config 'profile.ci-opt.debug="line-tables-only"' --config 'profile.ci-opt.package.vize.strip="none"'
-          cp "$GITHUB_WORKSPACE/target/ci-opt/vize" "$RUNNER_TEMP/vize-base"
-          cd "$GITHUB_WORKSPACE"
-          cargo build --locked --profile ci-opt -p vize --config 'profile.ci-opt.debug="line-tables-only"' --config 'profile.ci-opt.package.vize.strip="none"'
-          cp target/ci-opt/vize "$RUNNER_TEMP/vize-head"
+          for source in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$source" == base ]]; then source_root="$RUNNER_TEMP/base"; fi
+            node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$source_root" --target-dir "$RUNNER_TEMP/cold-builds/normal-$source" --binary "$RUNNER_TEMP/cold-scale/binaries/normal-$source/vize" --receipt "$RUNNER_TEMP/cold-scale/builds/normal-$source.json" --role "normal-$source"
+          done
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --base-receipt "$RUNNER_TEMP/cold-scale/builds/normal-base.json" --head-receipt "$RUNNER_TEMP/cold-scale/builds/normal-head.json" --receipt "$RUNNER_TEMP/cold-scale/builds/normal-pair.json"
       - name: Compare fresh processes and independent authored diagnostic controls
         run: |
           bench_cpu_set=$(python3 -c 'import os; print(",".join(map(str, sorted(os.sched_getaffinity(0))[:8])))')
@@ -83,7 +81,7 @@ jobs:
             order='base head'
             if [[ "$round" == 2 ]]; then order='head base'; fi
             for source in $order; do
-              taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --binary "$RUNNER_TEMP/vize-$source" --out "$RUNNER_TEMP/cold-scale/$source-$round"
+              taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --binary "$RUNNER_TEMP/cold-scale/binaries/normal-$source/vize" --out "$RUNNER_TEMP/cold-scale/$source-$round"
             done
           done
           for tool in mapper vue-tsc; do
@@ -91,19 +89,25 @@ jobs:
           done
           for tool in cli mapper vue-tsc; do
             args=()
-            if [[ "$tool" == cli ]]; then args+=(--binary "$RUNNER_TEMP/vize-head"); fi
+            if [[ "$tool" == cli ]]; then args+=(--binary "$RUNNER_TEMP/cold-scale/binaries/normal-head/vize"); fi
             taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool "$tool" --invalid "${args[@]}" --out "$RUNNER_TEMP/cold-scale/control-$tool"
           done
       - name: Build allocation instrumentation separately from timing binaries
         run: |
-          cargo build --locked --profile ci-opt -p vize --features profiling --config 'profile.ci-opt.debug="line-tables-only"' --config 'profile.ci-opt.package.vize.strip="none"'
-          cp target/ci-opt/vize "$RUNNER_TEMP/vize-profile"
-      - name: Capture Rust allocation spans without CPU sampling overhead
-        timeout-minutes: 5
+          for source in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$source" == base ]]; then source_root="$RUNNER_TEMP/base"; fi
+            node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$source_root" --target-dir "$RUNNER_TEMP/cold-builds/profile-$source" --binary "$RUNNER_TEMP/vize-profile-$source" --receipt "$RUNNER_TEMP/cold-scale/builds/profile-$source.json" --role "profile-$source" --allocation
+          done
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --base-receipt "$RUNNER_TEMP/cold-scale/builds/profile-base.json" --head-receipt "$RUNNER_TEMP/cold-scale/builds/profile-head.json" --receipt "$RUNNER_TEMP/cold-scale/builds/profile-pair.json"
+      - name: Capture paired Rust allocation spans without CPU sampling overhead
+        timeout-minutes: 10
         run: |
           bench_cpu_set=$(python3 -c 'import os; print(",".join(map(str, sorted(os.sched_getaffinity(0))[:8])))')
-          taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool profile --binary "$RUNNER_TEMP/vize-profile" --out "$RUNNER_TEMP/cold-scale/profile"
-          node --input-type=module -e 'import fs from "node:fs"; const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/cold-scale/profile/profile.json")); if(!x.allocation)throw Error("allocation instrumentation missing");'
+          for source in base head; do
+            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool profile --binary "$RUNNER_TEMP/vize-profile-$source" --out "$RUNNER_TEMP/cold-scale/profile-$source"
+          done
+          node --input-type=module -e 'import fs from "node:fs"; for (const source of ["base","head"]) { const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/cold-scale/profile-"+source+"/profile.json")); if(!x.allocation)throw Error("allocation instrumentation missing"); }'
       - name: Capture direct normal-process PMU counters and bounded source stacks
         timeout-minutes: 15
         run: |
@@ -119,13 +123,13 @@ jobs:
           llvm-addr2line --version > "$RUNNER_TEMP/cold-scale/addr2line-version.txt"
           for source in base head; do
             source_sha=$(cat "$RUNNER_TEMP/cold-scale/$source.sha")
-            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode stat --binary "$RUNNER_TEMP/vize-$source" --source "$source_sha" --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/stat-$source"
+            taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode stat --binary "$RUNNER_TEMP/cold-scale/binaries/normal-$source/vize" --source "$source_sha" --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/stat-$source"
           done
           source_sha=$(cat "$RUNNER_TEMP/cold-scale/head.sha")
           for mode in stat record; do
             taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool mapper --mode "$mode" --source 'public-vize-0.596.0' --perf "$perf_bin" --addr2line /usr/bin/llvm-addr2line --out "$RUNNER_TEMP/cold-scale/$mode-mapper"
           done
-          taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode record --binary "$RUNNER_TEMP/vize-head" --source "$source_sha" --perf "$perf_bin" --addr2line /usr/bin/llvm-addr2line --out "$RUNNER_TEMP/cold-scale/record-head"
+          taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale-profile.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool cli --mode record --binary "$RUNNER_TEMP/cold-scale/binaries/normal-head/vize" --source "$source_sha" --perf "$perf_bin" --addr2line /usr/bin/llvm-addr2line --out "$RUNNER_TEMP/cold-scale/record-head"
       - name: Package evidence without traversing workspace links
         if: always()
         run: |
