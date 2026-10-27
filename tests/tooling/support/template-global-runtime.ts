@@ -20,12 +20,7 @@ export type RuntimeResult = {
   phase?: string;
 };
 type Component = { setup: unknown; render?: unknown };
-type HostElement = {
-  innerHTML: string;
-  appendChild(node: HostElement): HostElement;
-  querySelector(selector: string): { focus(): void; dispatchEvent(event: unknown): void } | null;
-  remove(): void;
-};
+type HostElement = HTMLElement;
 type RuntimeApp = {
   _component: Component;
   config: {
@@ -43,10 +38,7 @@ type RuntimeProvider = Record<string, unknown> & {
   nextTick(): Promise<void>;
 };
 type LoadedComponent = { component: Component; runtime: RuntimeProvider; resolvedCode: string };
-const dom = globalThis as typeof globalThis & {
-  document: { body: HostElement; activeElement: unknown; createElement(tag: string): HostElement };
-  MouseEvent: new (type: string, options: { bubbles: boolean }) => unknown;
-};
+const dom = globalThis;
 
 const stable = await import(
   dataUrl(readFileSync(stableProvider.resolve("vue/dist/vue.runtime.esm-browser.js"), "utf8"))
