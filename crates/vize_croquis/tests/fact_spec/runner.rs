@@ -40,6 +40,15 @@ pub struct Planes {
 }
 
 impl Planes {
+    pub fn absorb(&mut self, other: Self) {
+        self.bindings.absorb(other.bindings);
+        self.unused.absorb(other.unused);
+        self.undefined.absorb(other.undefined);
+        self.reactivity.absorb(other.reactivity);
+        self.provide.absorb(other.provide);
+        self.race.absorb(other.race);
+    }
+
     /// `((artifacts, compared, facts) per group)` — the pinned census.
     pub fn census(&self) -> ((u64, u64, u64), (u64, u64, u64)) {
         let row = |run: &Agreement| (run.artifacts, run.compared, run.facts);

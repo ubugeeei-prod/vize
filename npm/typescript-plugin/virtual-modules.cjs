@@ -29,6 +29,7 @@ function installVueVirtualModules(ts, info) {
     /* Logging cannot affect the host. */
   }
   const snapshots = new Map();
+  const projectOptions = createProjectOptions(ts, info, originalOptions, readFile, fileExists);
   const projectConfiguration = createProjectConfiguration(
     engine,
     readFile,
@@ -44,6 +45,7 @@ function installVueVirtualModules(ts, info) {
         /* Logging cannot affect the host. */
       }
     },
+    (name) => projectOptions?.refresh(name),
   );
   const readSource = (fileName) => {
     if (!isSfc(fileName)) return undefined;
@@ -66,7 +68,7 @@ function installVueVirtualModules(ts, info) {
   const get = (fileName) => {
     const source = readSource(fileName);
     if (typeof source !== "string") return undefined;
-    const settings = originalOptions?.() || {};
+    const settings = options();
     const project = engine.native
       ? projectConfiguration.get(settings)
       : { configuration: JSON.stringify([settings.checkJs, settings.configFilePath]) };
@@ -102,7 +104,12 @@ function installVueVirtualModules(ts, info) {
     return value;
   };
   const options = () => {
-    const original = originalOptions?.() || {};
+    let original = originalOptions?.() || {};
+    if (engine.native) {
+      projectConfiguration.get(original);
+      projectOptions?.apply();
+      original = originalOptions?.() || {};
+    }
     // TypeScript stores the parsed configFile as a non-enumerable option.
     // Losing it crashes configured-project reload when another SFC opens.
     return Object.create(Object.getPrototypeOf(original), {
@@ -161,9 +168,9 @@ function installVueVirtualModules(ts, info) {
     ...(originalProjectVersion
       ? {
           getProjectVersion() {
-            const version = originalProjectVersion();
             const project = projectConfiguration.get(originalOptions?.() || {});
-            return `${version}:${project.configuration}`;
+            projectOptions?.apply();
+            return `${originalProjectVersion()}:${project.configuration}`;
           },
         }
       : {}),
@@ -243,6 +250,72 @@ function installAtomically(host, replacements) {
   }
 }
 
+// tsserver caches its extends resolution, including absent package candidates.
+// Refresh only configured projects through public APIs; roots and references
+// remain owned by tsserver. No extended-config cache enters this fresh parse.
+function createProjectOptions(ts, info, originalOptions, readFile, fileExists) {
+  const project = info.project;
+  if (
+    project?.projectKind !== ts.server?.ProjectKind.Configured ||
+    typeof project.setCompilerOptions !== "function" ||
+    typeof ts.getParsedCommandLineOfConfigFile !== "function"
+  )
+    return undefined;
+  const server = info.serverHost || ts.sys;
+  const controlled = new Set();
+  let parsedOptions, applied;
+  return {
+    refresh(configFileName) {
+      const parsed = ts.getParsedCommandLineOfConfigFile(configFileName, undefined, {
+        ...server,
+        readFile,
+        fileExists,
+        readDirectory: server.readDirectory.bind(server),
+        getCurrentDirectory: project.getCurrentDirectory.bind(project),
+        useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
+        onUnRecoverableConfigFileDiagnostic() {},
+      });
+      if (!parsed) return;
+      parsedOptions = parsed.options;
+      applied = undefined;
+      this.apply();
+    },
+    apply() {
+      if (!parsedOptions) return;
+      const original = originalOptions();
+      if (original === applied) return;
+      for (const name of Object.keys(parsedOptions))
+        if (name !== "configFile") controlled.add(name);
+      const changed = [...controlled].some(
+        (name) => JSON.stringify(original[name]) !== JSON.stringify(parsedOptions[name]),
+      );
+      applied = original;
+      if (!changed) return;
+      const descriptors = Object.getOwnPropertyDescriptors(original);
+      for (const name of controlled)
+        if (!Object.hasOwn(parsedOptions, name)) delete descriptors[name];
+      for (const [name, descriptor] of Object.entries(
+        Object.getOwnPropertyDescriptors(parsedOptions),
+      )) {
+        // The server's SourceFile carries its root specs and reload state.
+        // Preserve its exact non-enumerable descriptor and object identity.
+        if (name === "configFile") continue;
+        controlled.add(name);
+        const prior = descriptors[name];
+        descriptors[name] =
+          prior && "value" in prior ? { ...prior, value: descriptor.value } : descriptor;
+      }
+      const options = Object.create(Object.getPrototypeOf(original), descriptors);
+      applied = options;
+      // Besides changing the option values, this public operation invalidates
+      // the server's module-resolution cache when the selected options require it.
+      // reloadProjects may subsequently restore its stale cached options. Reapply
+      // this parsed snapshot to a changed host object without parsing it again.
+      project.setCompilerOptions(options);
+    },
+  };
+}
+
 // One resolver snapshot belongs to the project, not to any individual SFC.
 // Known files are read and hashed once per project version or watcher event.
 function createProjectConfiguration(
@@ -252,6 +325,7 @@ function createProjectConfiguration(
   getProjectVersion,
   changed,
   trace,
+  refreshOptions,
 ) {
   let configFile, epoch, metadata, error;
   let dirty = true;
@@ -371,6 +445,8 @@ function createProjectConfiguration(
               error = cause instanceof Error ? cause.message : String(cause);
               watch([...new Set([name, ...watchers.keys()])]);
             }
+            refreshOptions?.(name);
+            epoch = getProjectVersion?.();
           }
           fingerprints = new Map(
             (metadata?.watchedFiles || [name]).map((file) => [file, fingerprint(file)]),

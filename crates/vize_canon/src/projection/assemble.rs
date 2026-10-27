@@ -265,11 +265,11 @@ fn project<P>(
     } else {
         severity
     };
-    // Only a lexical lookup failure can become an instance diagnostic, so the
-    // template range is computed for nothing else.
+    // Only a template name lookup failure can become an instance diagnostic,
+    // so the template range is computed for nothing else.
     let (code, message) = match code {
         Some(lookup)
-            if crate::template_instance_names::is_lexical_lookup_failure(lookup)
+            if crate::template_instance_names::is_template_name_lookup_failure(lookup)
                 && authored
                     .template()
                     .is_some_and(|template| template.contains(&authored_start)) =>

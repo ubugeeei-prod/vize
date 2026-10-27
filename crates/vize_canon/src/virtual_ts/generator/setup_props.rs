@@ -170,6 +170,7 @@ impl SetupPropsPlan {
             uses_resolved_props: module_scope_declares_props
                 && (defer
                     || has_models
+                    || crate::virtual_ts::props::hoisted_props_alias_replaced(summary)
                     || (imported_props_would_collide
                         && (define_props_is_authored || options_api_props_present))),
         }

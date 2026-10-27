@@ -9,6 +9,9 @@ mod cache;
 mod core;
 mod counters;
 mod metrics;
+#[cfg(feature = "micro-profiling")]
+pub mod micro;
+mod micro_macros;
 mod report;
 mod shard;
 mod snapshot;

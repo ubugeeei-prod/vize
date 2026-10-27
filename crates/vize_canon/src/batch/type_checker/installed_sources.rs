@@ -85,14 +85,9 @@ impl BatchTypeChecker {
             .parent()
             .ok_or_else(|| std::io::Error::other("Batch virtual root has no storage parent"))?;
         std::fs::create_dir_all(base)?;
-        let storage = tempfile::Builder::new()
-            .prefix("batch-installed-")
-            .tempdir_in(base)?;
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(storage.path(), std::fs::Permissions::from_mode(0o700))?;
-        }
+        let key = self.project.installed_storage_key();
+        let mut storage = super::installed_storage::InstalledStorage::claim(base, &key)?;
+        storage.reset(&self.project.batch_build_info_dir(storage.path()))?;
         self.project.scope_batch_namespace(storage.path());
         self.owned_storage = Some(storage);
         Ok(())

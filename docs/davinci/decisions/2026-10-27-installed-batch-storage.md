@@ -9,7 +9,8 @@ The CLI supplies the requested program root and original configuration path as
 an explicit storage owner before scanning. Programs with an expanded root or
 installed inputs use a separate private namespace, keyed by the canonical owner,
 semantic root and original config. Ordinary single-root namespaces are unchanged;
-embedding callers retain temporary installed-source storage unless they opt in.
+embedding callers retain the existing installed-source lifetime unless they opt
+in. Their plain build info may survive, while their generated mirror is cleared.
 
 Persistent namespaces never reuse ordinary project mirrors. Their parent is
 private to one owner, their context entries use the existing bounded Canon cache

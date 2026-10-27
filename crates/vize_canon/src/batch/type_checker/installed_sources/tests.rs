@@ -10,7 +10,8 @@
     clippy::disallowed_types,
     reason = "fixture assertions use std strings"
 )]
-//! Private batch storage must remain alive with its owner and disappear on drop.
+//! Installed-source storage must remain alive with its owner, and only build
+//! info may outlive it.
 
 use super::{BatchTypeChecker, BatchTypeCheckerOptions, contains_node_modules};
 use std::path::{Path, PathBuf};
@@ -24,6 +25,19 @@ fn checker(root: &Path) -> BatchTypeChecker {
         Some(&binary),
     )
     .unwrap()
+}
+
+/// Only plain build info outlives an owner; none exists before a check.
+fn assert_mirror_removed(storage: &Path) {
+    let left = std::fs::read_dir(storage)
+        .map(|entries| {
+            entries
+                .flatten()
+                .map(|entry| entry.path())
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    assert_eq!(left, Vec::<PathBuf>::new());
 }
 
 fn source(root: &Path, relative: &str) -> PathBuf {
@@ -110,7 +124,7 @@ fn installed_owner_reuses_private_paths_and_cleans_successful_materialization() 
     );
     assert!(namespace.is_dir());
     drop(owner);
-    assert!(!storage.exists());
+    assert_mirror_removed(&storage);
     assert_eq!(std::fs::read(&selected).unwrap(), raw);
 }
 
@@ -126,7 +140,7 @@ fn installed_owner_cleans_storage_after_registration_error() {
     let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
     assert!(storage.is_dir());
     drop(owner);
-    assert!(!storage.exists());
+    assert_mirror_removed(&storage);
 }
 
 #[test]
@@ -142,7 +156,7 @@ fn installed_owner_cleans_storage_during_unwind() {
         panic!("exercise batch owner unwind");
     }));
     assert!(result.is_err());
-    assert!(!storage.unwrap().exists());
+    assert_mirror_removed(&storage.unwrap());
 }
 
 #[cfg(unix)]
@@ -159,7 +173,7 @@ fn logical_installed_symlink_roots_still_select_private_storage() {
         .unwrap();
     let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
     drop(owner);
-    assert!(!storage.exists());
+    assert_mirror_removed(&storage);
     assert_eq!(
         std::fs::read_link(root.path().join("node_modules/selected")).unwrap(),
         external.path()
@@ -289,6 +303,6 @@ fn canonical_installed_target_selects_private_storage() {
     owner.scan_paths(std::slice::from_ref(&logical)).unwrap();
     let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
     drop(owner);
-    assert!(!storage.exists());
+    assert_mirror_removed(&storage);
     assert_eq!(std::fs::read_link(logical).unwrap(), installed);
 }

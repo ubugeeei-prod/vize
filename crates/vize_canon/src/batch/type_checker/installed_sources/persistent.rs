@@ -13,8 +13,8 @@ pub(in crate::batch::type_checker) struct PersistentStorageOwner {
 impl BatchTypeChecker {
     /// Reuse a private, owner-keyed namespace when this program needs an
     /// expanded resolution root or explicitly registered installed files.
-    /// Set before scanning. Default embedding callers retain temporary storage
-    /// for installed inputs; ordinary single-root CLI namespaces stay unchanged.
+    /// Set before scanning. Default embedding callers keep their existing
+    /// installed-source lifetime; ordinary single-root namespaces stay unchanged.
     pub fn set_persistent_storage_owner(
         &mut self,
         owner: &Path,

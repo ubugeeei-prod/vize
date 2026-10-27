@@ -77,7 +77,7 @@ pub(crate) struct Capture {
     clippy::disallowed_macros,
     reason = "the JSON observation requires a std String hexadecimal digest"
 )]
-fn digest(bytes: &[u8]) -> String {
+pub(crate) fn digest(bytes: &[u8]) -> String {
     Sha256::digest(bytes)
         .iter()
         .map(|byte| format!("{byte:02x}"))
