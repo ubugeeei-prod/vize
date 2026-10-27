@@ -94,6 +94,18 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
     write("head-normal-identity.json", badBinary);
     assert.throws(() => compareLspMarkerScans(directory), /distinct actual measured binaries/u);
     write("head-normal-identity.json", identity("head", false));
+    const wrongProfile = identity("head", true);
+    wrongProfile.binary.sha256 = identity("head", false).binary.sha256;
+    const wrongCapture = capture("head", true, 200);
+    wrongCapture.server_sha256 = wrongProfile.binary.sha256;
+    write("head-profile-identity.json", wrongProfile);
+    write("head-profile.json", wrongCapture);
+    assert.throws(
+      () => compareLspMarkerScans(directory),
+      /instrumented and ordinary executables must differ/u,
+    );
+    write("head-profile-identity.json", identity("head", true));
+    write("head-profile.json", capture("head", true, 200));
     for (const mutate of [
       (value: ReturnType<typeof capture>) => {
         value.per_run[0].resident_document_witnesses--;

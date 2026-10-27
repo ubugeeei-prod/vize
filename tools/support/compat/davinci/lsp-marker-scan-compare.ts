@@ -64,6 +64,15 @@ export function compareLspMarkerScans(directory: string) {
     headIdentity.build,
     "compiler, features and flags must match",
   );
+  assert.ok(
+    !baseIdentity.build.features.includes("profiling"),
+    "ordinary timing must use the ordinary allocator",
+  );
+  assert.notEqual(
+    load<Identity>("base-profile-identity.json").binary.sha256,
+    load<Identity>("head-profile-identity.json").binary.sha256,
+    "source profiles must use distinct actual baseline and candidate binaries",
+  );
   const baseline = load<Capture>("base-normal-1.json");
   const reference = baseline.per_run[0];
   const semantics = (run: Run) => ({
@@ -123,6 +132,11 @@ export function compareLspMarkerScans(directory: string) {
       (role === "base" ? baseIdentity : headIdentity).source.revision,
     );
     assert.ok(identity.build.features.includes("profiling"));
+    assert.notEqual(
+      identity.binary.sha256,
+      (role === "base" ? baseIdentity : headIdentity).binary.sha256,
+      "instrumented and ordinary executables must differ",
+    );
     if (profileBuild) assert.deepEqual(identity.build, profileBuild);
     profileBuild = identity.build;
     admit(load<Capture>(`${role}-profile.json`), identity.binary.sha256);
