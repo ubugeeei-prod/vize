@@ -1838,6 +1838,32 @@
       }
     },
     {
+      "id": "linter/mdi-remix-icons-10928",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "mdi-remix-icons-10928",
+        "files": [
+          {
+            "path": "Icons.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "ce74b4a5ed9332f091a1669c20748705f43739a5c507f8cc3a9a1a71a463d4a7"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/native-canonical-image-alt-10563",
       "state": "active",
       "targets": ["lint"],

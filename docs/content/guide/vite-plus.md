@@ -157,7 +157,21 @@ The recommended typecheck is the [content mapper](./content-mapper.md). TypeScri
 Pass paths after `--` to check, lint, and format tasks. Formatting also accepts
 `--check` or `--write`. Put tool options in the corresponding config section.
 Checks continue after diagnostics so one failing tool does not hide the others.
-Generated tasks are uncached so fixes and configuration changes take effect.
+Generated tasks are uncached by default. Opt in to Vite+ caching for the read-only
+`lint`, `fmt:check`, `check`, and `typecheck` tasks:
+
+```ts
+export default defineConfig({}, { taskCache: true });
+```
+
+Vite+ automatically tracks source files, configuration imports, dependencies, and
+directory entries. Generated `node_modules/.vize/**` and `**/.vize/**` files are
+excluded from cache inputs, and checks never restore output files. Source-writing
+tasks such as `fmt` and `lint:fix` remain uncached. Passing `--fix` to a cached
+check still runs on changed inputs, including reintroducing the same unformatted
+source after a previous fix. Existing `run.tasks` keep their own cache policy, and renaming a
+generated task preserves its policy. Both the Vite+ 0.x and 1.x cache APIs are
+supported.
 
 > [!WARNING]
 > Custom tasks use `vp run`. Built-in `vp check`, `vp lint`, and `vp fmt` do not
