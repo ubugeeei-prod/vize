@@ -86,6 +86,11 @@ export class LspSession {
     return this.process.pid;
   }
 
+  /** A profile is admissible only after successful exit and actual stdio EOF. */
+  get exitedGracefully(): boolean {
+    return this.process.exitCode === 0 && this.process.signalCode === null;
+  }
+
   /**
    * Server stderr captured so far. Timeout errors raised by this session
    * already embed it; suites with their own deadlines (for example the churn

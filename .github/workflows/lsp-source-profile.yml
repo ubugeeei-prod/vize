@@ -9,6 +9,9 @@ on:
       - "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
       - "tools/support/compat/davinci/lsp-resources.ts"
       - "tools/support/compat/davinci/lib/lsp-profile-launch.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-finalize.ts"
+      - "tests/tooling/lsp-resource-finalize.test.ts"
+      - "tests/tooling/support/lsp/session.ts"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +32,8 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -36,6 +41,8 @@ jobs:
           run-install: false
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify profile failure cleanup and primary error preservation
+        run: vp exec node --test tests/tooling/lsp-resource-finalize.test.ts
       - name: Install the repository Rust toolchain
         run: rustup toolchain install || rustup show active-toolchain
       - uses: ./.github/actions/setup-rust-sticky-cache
