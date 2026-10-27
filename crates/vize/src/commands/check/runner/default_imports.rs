@@ -190,6 +190,7 @@ fn complete_default_run_files(
     );
     reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
     let mut package_routes = discovered.package_routes;
+    let before_ambient_files = files.len();
     vize_l0::profile!(
         "cli.check.collect.ambient",
         register_ambient_declaration_files(
@@ -201,21 +202,26 @@ fn complete_default_run_files(
     );
     // Imports reached only through hidden ambient declarations provide type
     // context, but are not authored members of the checked program.
-    let hidden_discovered = vize_l0::profile!(
-        "cli.check.collect.hidden_imports",
-        register_transitive_local_imports_with_session(
-            &mut files,
-            LocalImportContext {
-                cwd: context.cwd,
-                tsconfig_path: context.tsconfig_path,
-                import_options: context.import_options,
-            },
-            canonical_paths,
-            resolver,
-            &mut import_session,
-        )
-    );
-    package_routes.extend(hidden_discovered.package_routes);
+    // The first import walk reached a fixpoint. Ambient registration only
+    // appends paths, so an unchanged root set cannot discover another edge.
+    // Avoid resolving every source/package a second time in ordinary projects.
+    if files.len() > before_ambient_files {
+        let hidden_discovered = vize_l0::profile!(
+            "cli.check.collect.hidden_imports",
+            register_transitive_local_imports_with_session(
+                &mut files,
+                LocalImportContext {
+                    cwd: context.cwd,
+                    tsconfig_path: context.tsconfig_path,
+                    import_options: context.import_options,
+                },
+                canonical_paths,
+                resolver,
+                &mut import_session,
+            )
+        );
+        package_routes.extend(hidden_discovered.package_routes);
+    }
     sort_package_route_bindings(&mut package_routes);
 
     CollectedRoots {

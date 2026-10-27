@@ -32,7 +32,10 @@ export type PublicProps = VNodeProps & AllowedComponentProps & ComponentCustomPr
 type DistributeRef<T> = T extends Ref<infer V> ? V : T;
 export type ShallowUnwrapRef<T> = { [K in keyof T]: DistributeRef<T[K]> };
 
-export interface ComponentPublicInstance<Props = {}> {
+// Vue re-exports this interface so augmenting "vue" updates the public instance.
+export interface ComponentCustomProperties {}
+
+export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;
   $attrs: { [key: string]: unknown };
   $slots: { [key: string]: unknown };

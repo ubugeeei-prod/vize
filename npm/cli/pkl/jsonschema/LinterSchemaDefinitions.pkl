@@ -48,6 +48,10 @@ linterConfigDef: JsonSchema = new JsonSchema {
       minimum = 0
       description = "Fail when warnings exceed this limit; absent means unlimited"
     }
+    ["reportUnusedDisableDirectives"] = new JsonSchema {
+      description = "Report template eslint/oxlint disable comments that suppress no active rule; defaults to false"
+      type = "boolean"
+    }
     ["rules"] = new JsonSchema {
       type = "object"
       description = "Rules to enable/disable"

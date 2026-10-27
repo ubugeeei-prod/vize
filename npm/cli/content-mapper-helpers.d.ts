@@ -22,3 +22,6 @@ export type VizeComponentGlobalHtmlAttrs =
       } & {
         [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown;
       };
+
+// Share canonical helper identities across virtual modules.
+export type * from "./generated/content-mapper-types.js" with { "resolution-mode": "import" };

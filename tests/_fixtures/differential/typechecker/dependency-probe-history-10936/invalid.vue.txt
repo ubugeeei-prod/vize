@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { model } from "./model.js";
+import { part } from "@parts/part";
+const wrong: string = model;
+const aliasCorrect: string = part;
+</script>
+<template>{{ wrong }} {{ aliasCorrect }}</template>
