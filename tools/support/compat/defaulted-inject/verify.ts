@@ -198,8 +198,8 @@ try {
       const targets = packet.messages.filter(optional);
       if (targets.length > 0) {
         assert.equal(
-          packet.file.replaceAll("\\", "/").endsWith("src/components/MyDivider.vue"),
-          true,
+          path.relative(workspace, path.resolve(workspace, packet.file)).replaceAll("\\", "/"),
+          "src/components/MyDivider.vue",
         );
         const source = input.files["src/components/MyDivider.vue"];
         assert(source);
@@ -258,7 +258,7 @@ try {
       qualified: true,
       fullLintPacketPairs: 9,
       rawDoctorPairs: 9,
-      role: "source-before-public-0.602",
+      role: "source-candidate-against-public-0.602",
       source: identity,
     }),
   );
