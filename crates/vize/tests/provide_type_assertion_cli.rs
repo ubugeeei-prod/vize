@@ -92,6 +92,7 @@ fn observe_complete_provide_assertion_packets() {
         ("service-composable-as", "useService() as unknown", false),
     ];
     let mut manifest = Vec::new();
+    let mut observations = Vec::new();
     for (id, expression, destructure) in cases {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path();
@@ -168,6 +169,8 @@ fn observe_complete_provide_assertion_packets() {
         )
         .unwrap();
         let mut processes = Vec::new();
+        let mut reports = Vec::new();
+        let mut statuses = Vec::new();
         for (name, args) in [
             ("doctor", vec!["doctor", "--format", "json", "."]),
             (
@@ -203,6 +206,8 @@ fn observe_complete_provide_assertion_packets() {
                 serde_json::to_vec_pretty(&packet).unwrap(),
             )
             .unwrap();
+            reports.push(packet);
+            statuses.push(output.status.code());
             processes.push(serde_json::json!({
                 "command": name, "arguments": args, "exitCode": output.status.code(),
                 "elapsedMicros": elapsed_micros, "signal": output.status.code().is_none()
@@ -218,6 +223,7 @@ fn observe_complete_provide_assertion_packets() {
             serde_json::to_vec_pretty(&packet).unwrap(),
         )
         .unwrap();
+        observations.push(serde_json::json!({"id":id,"native":canonical,"doctor":reports[0],"lint":reports[1],"statuses":statuses}));
         manifest.push(packet);
     }
     fs::write(
@@ -226,6 +232,18 @@ fn observe_complete_provide_assertion_packets() {
     )
     .unwrap();
     assert_eq!(manifest.len(), 27);
+    fs::write(
+        artifacts.join("complete-observations.json"),
+        serde_json::to_vec_pretty(&observations).unwrap(),
+    )
+    .unwrap();
+    let expected: serde_json::Value =
+        serde_json::from_str(include_str!("provide_type_assertion_expected.json")).unwrap();
+    assert_eq!(
+        serde_json::to_value(observations).unwrap(),
+        expected,
+        "all native, doctor, lint and status fields"
+    );
 }
 
 fn add_script(analyzer: &mut CrossFileAnalyzer, path: &str, script: &str, used: &[&str]) {

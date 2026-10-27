@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/provide-type-assertion.yml
       - crates/vize/tests/provide_type_assertion_cli.rs
+      - crates/vize/tests/provide_type_assertion_expected.json
       - crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs
       - crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs
 permissions:
@@ -20,13 +21,19 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   whole-before:
-    name: Native and actual CLI complete packets
+    name: Native and actual CLI complete packets (${{ matrix.role }})
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [baseline, source]
+    env:
+      ROLE: ${{ matrix.role }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ matrix.role == 'baseline' && '98ff4d1ca1ccc2c6ac9ca869177913b90c0da6a1' || github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           fetch-depth: 0
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -48,7 +55,7 @@ jobs:
           git status --porcelain > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/source-status.txt"
           git hash-object crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/helper-blob.txt"
           git diff db5c35c12124086f034563b6800dbdab8605cdc0 -- crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs crates/vize_croquis_cf/src/rules/provide_inject/index.rs > "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"
-          test ! -s "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"
+          if [[ "$ROLE" == baseline ]]; then test ! -s "$VIZE_PROVIDE_ASSERTION_ARTIFACTS/product.diff"; fi
       - name: Capture whole original and positive negative destructuring controls
         env:
           VIZE_PROVIDE_ASSERTION_ARTIFACTS: ${{ runner.temp }}/provide-assertion-packets
@@ -66,7 +73,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: provide-assertion-whole-${{ github.sha }}-${{ github.run_attempt }}
+          name: provide-assertion-whole-${{ matrix.role }}-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/provide-assertion-packets
           if-no-files-found: error
           retention-days: 14
