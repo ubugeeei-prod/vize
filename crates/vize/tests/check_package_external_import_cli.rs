@@ -216,7 +216,7 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
             .unwrap();
         super::check_outside_import_types_cli::capture(
             &app,
-            &corsa,
+            Path::new(&corsa),
             &format!("sibling-{run}"),
             &[],
             &output,

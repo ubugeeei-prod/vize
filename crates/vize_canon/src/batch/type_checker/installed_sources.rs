@@ -46,7 +46,7 @@ impl BatchTypeChecker {
             incremental_paths: IncrementalPaths::new(),
             owned_storage: None,
             persistent_storage_owner: None,
-            persistent_storage_owner_lease: None,
+            _persistent_storage_leases: None,
         })
     }
 }

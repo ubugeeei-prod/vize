@@ -81,7 +81,7 @@ pub struct BatchTypeChecker {
     owned_storage: Option<installed_storage::InstalledStorage>,
     persistent_storage_owner: Option<installed_sources::PersistentStorageOwner>,
     // Owner and context leases both outlive the executor.
-    persistent_storage_owner_lease: Option<(std::fs::File, std::fs::File)>,
+    _persistent_storage_leases: Option<(std::fs::File, std::fs::File)>,
 }
 
 impl BatchTypeChecker {
