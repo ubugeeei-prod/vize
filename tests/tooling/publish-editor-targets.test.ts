@@ -41,7 +41,7 @@ function observe(t: TestContext, script: string, target: string, mode = "publish
       " const other=expected==='darwin-x64'?'linux-x64':'darwin-x64';",
       " const selected=mode==='exact'||(state.published&&mode!=='wrong-after')?expected:other;",
       " const version=!state.published&&mode==='wrong-version'?'0.56.0':'0.57.0';",
-      " const row={version,targetPlatform:selected};",
+      " const row={version,targetPlatform:selected,flags:'validated'};",
       " if(!state.published&&mode==='universal')delete row.targetPlatform;",
       // Marketplace probes POST to the gallery; Open VSX GETs one version.
       ` const gallery=${JSON.stringify(galleryWith([]))};gallery.results[0].extensions[0].versions=[row];`,

@@ -5,7 +5,7 @@
 // Marketplace publish step:
 // 1. Read the extension id and target version from `package.json`.
 // 2. Query the public gallery inventory directly (one small POST per probe).
-// 3. Skip publish entirely when the exact version and target are listed.
+// 3. Skip publish entirely when the exact version and target are validated.
 // 4. Treat a non-zero `vsce publish` exit as success if the version becomes
 //    visible immediately after the attempted publish.
 import { collectOutput, println, run, runMain, sleepSeconds, writeStderr } from "../command_io.ts";
@@ -43,7 +43,7 @@ export function vsceDlxArgs(
 }
 
 /**
- * Returns whether a gallery response lists `version` for `target`. A row
+ * Returns whether a gallery response lists a validated `version` for `target`. A row
  * without `targetPlatform` is universal. A malformed or partial inventory is
  * treated as not visible, so the caller keeps polling.
  */
@@ -61,10 +61,15 @@ export function galleryListsVersion(
   }
   return (
     Array.isArray(versions) &&
-    versions.some((row: { version?: unknown; targetPlatform?: unknown }) => {
+    versions.some((row: { version?: unknown; targetPlatform?: unknown; flags?: unknown }) => {
       const platform =
         row.targetPlatform == null || row.targetPlatform === "" ? "universal" : row.targetPlatform;
-      return row.version === version && platform === target;
+      return (
+        row.version === version &&
+        platform === target &&
+        typeof row.flags === "string" &&
+        row.flags.split(",").some((flag) => flag.trim() === "validated")
+      );
     })
   );
 }

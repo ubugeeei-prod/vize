@@ -48,6 +48,23 @@ test("a gallery row matches only its own target", () => {
   assert.equal(lists(galleryWith(platformsOnly), "0.584.0", "universal"), false);
 });
 
+test("a gallery row must finish Marketplace validation before it is visible", () => {
+  for (const target of ["linux-x64", "universal"]) {
+    const row = {
+      version: "0.584.0",
+      ...(target === "universal" ? {} : { targetPlatform: target }),
+    };
+    for (const flags of [undefined, "", "none", "unvalidated", "prerelease"]) {
+      assert.equal(lists(galleryWith([{ ...row, flags }]), "0.584.0", target), false);
+    }
+    assert.equal(lists(galleryWith([{ ...row, flags: "validated" }]), "0.584.0", target), true);
+    assert.equal(
+      lists(galleryWith([{ ...row, flags: "validated, prerelease" }]), "0.584.0", target),
+      true,
+    );
+  }
+});
+
 test("a partial or foreign gallery inventory is not visible", () => {
   const paged = recordedGallery() as unknown as { results: { pagingToken: string }[] };
   paged.results[0].pagingToken = "next";
@@ -134,6 +151,16 @@ test("a rerun uploads a platform version the gallery lists only for other target
     t,
     galleryWith(rows.filter((row) => row.targetPlatform !== "linux-x64")),
   );
+  assert.equal(result.status, 1);
+  assert.deepEqual(
+    calls.map((call) => call[0] + (call[0] === "vp" ? ` ${call[5]}` : "")),
+    ["curl", "vp publish", "curl"],
+  );
+});
+
+test("an unvalidated upload cannot turn a failed publisher into success", (t) => {
+  const rows = recordedGallery().results[0].extensions[0].versions;
+  const { result, calls } = rerun(t, galleryWith(rows.map((row) => ({ ...row, flags: "none" }))));
   assert.equal(result.status, 1);
   assert.deepEqual(
     calls.map((call) => call[0] + (call[0] === "vp" ? ` ${call[5]}` : "")),
