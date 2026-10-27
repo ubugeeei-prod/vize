@@ -1,5 +1,5 @@
 name: Vite+ task cache consumers
-run-name: Vite+ task cache ${{ inputs.version && format('public {0}', inputs.version) || 'source' }}
+run-name: Vite+ task cache ${{ inputs.version && format('public {0}', inputs.version) || inputs.source_cli_artifact_id && format('source CLI {0}', inputs.source_cli_artifact_id) || 'source' }}
 
 on:
   workflow_dispatch:
@@ -8,18 +8,31 @@ on:
         description: Published Vize version to verify; omit to test the source integration
         required: false
         type: string
+      source_cli_artifact_id:
+        description: Qualified persistent-storage source CLI artifact ID
+        type: string
+      source_cli_zip_sha256:
+        description: Expected artifact ZIP SHA-256
+        type: string
+      source_cli_binary_sha256:
+        description: Expected contained Linux x64 CLI SHA-256
+        type: string
+      source_cli_source_sha:
+        description: Actual checked-out source SHA recorded inside the artifact
+        type: string
   pull_request:
     paths:
       - "npm/builder/vite/src/**"
       - "npm/cli/src/config/**"
       - "crates/vize_carton/src/config/loader/**"
       - "npm/builder/vite/scripts/check-task-cache.ts"
+      - "npm/builder/vite/scripts/task-cache-source-cli.ts"
       - ".github/workflows/viteplus-task-cache.yml"
 
-permissions: { contents: read }
+permissions: { contents: read, actions: read }
 
 concurrency:
-  group: viteplus-task-cache-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'source' }}
+  group: viteplus-task-cache-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || inputs.source_cli_artifact_id || 'source' }}
   cancel-in-progress: true
 
 jobs:
@@ -34,10 +47,44 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with: { node-version-file: package.json, run-install: false }
+      - name: Validate qualified source CLI producer
+        id: source-cli
+        if: ${{ inputs.source_cli_artifact_id || inputs.source_cli_zip_sha256 || inputs.source_cli_binary_sha256 || inputs.source_cli_source_sha }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VIZE_TASK_CACHE_PUBLIC_VERSION: ${{ inputs.version }}
+          VIZE_TASK_CACHE_SOURCE_ARTIFACT_ID: ${{ inputs.source_cli_artifact_id }}
+          VIZE_TASK_CACHE_SOURCE_ZIP_SHA256: ${{ inputs.source_cli_zip_sha256 }}
+          VIZE_TASK_CACHE_SOURCE_BINARY_SHA256: ${{ inputs.source_cli_binary_sha256 }}
+          VIZE_TASK_CACHE_SOURCE_SHA: ${{ inputs.source_cli_source_sha }}
+        run: node npm/builder/vite/scripts/task-cache-source-cli.ts inspect
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ steps.source-cli.outputs.directory }}
+        with:
+          artifact-ids: ${{ inputs.source_cli_artifact_id }}
+          run-id: ${{ steps.source-cli.outputs.run-id }}
+          github-token: ${{ github.token }}
+          path: ${{ steps.source-cli.outputs.directory }}/artifact
+          merge-multiple: true
+          digest-mismatch: error
+      - name: Verify source CLI archive and actual binary
+        id: source-cli-binary
+        if: ${{ steps.source-cli.outputs.directory }}
+        env:
+          VIZE_TASK_CACHE_PUBLIC_VERSION: ${{ inputs.version }}
+          VIZE_TASK_CACHE_SOURCE_ARTIFACT_ID: ${{ inputs.source_cli_artifact_id }}
+          VIZE_TASK_CACHE_SOURCE_ZIP_SHA256: ${{ inputs.source_cli_zip_sha256 }}
+          VIZE_TASK_CACHE_SOURCE_BINARY_SHA256: ${{ inputs.source_cli_binary_sha256 }}
+          VIZE_TASK_CACHE_SOURCE_SHA: ${{ inputs.source_cli_source_sha }}
+          VIZE_TASK_CACHE_SOURCE_DIRECTORY: ${{ steps.source-cli.outputs.directory }}
+        run: node npm/builder/vite/scripts/task-cache-source-cli.ts extract
       - name: Check real installed tasks and cache invalidation
         env:
           VIZE_TASK_CACHE_PROVIDER: ${{ matrix.provider }}
           VIZE_TASK_CACHE_PUBLIC_VERSION: ${{ inputs.version }}
+          VIZE_TASK_CACHE_SOURCE_CLI: ${{ steps.source-cli-binary.outputs.binary }}
+          VIZE_TASK_CACHE_SOURCE_RECEIPT: ${{ steps.source-cli-binary.outputs.receipt }}
+          VIZE_TASK_CACHE_SOURCE_BINARY_SHA256: ${{ inputs.source_cli_binary_sha256 }}
         run: |
           if [ -n "$VIZE_TASK_CACHE_PUBLIC_VERSION" ]; then
             node npm/builder/vite/scripts/check-task-cache.ts "$VIZE_TASK_CACHE_PUBLIC_VERSION"

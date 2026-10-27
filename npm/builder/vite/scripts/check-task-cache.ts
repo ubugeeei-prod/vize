@@ -16,11 +16,16 @@ assert.ok(
   "optional argument is a published Vize version",
 );
 const publicVersion = published ?? "0.595.0";
+const sourceCli = process.env.VIZE_TASK_CACHE_SOURCE_CLI || undefined;
+assert.ok(!published || !sourceCli, "public acceptance never replaces a published CLI");
 const directory = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-task-cache-")));
+const privateCache = sourceCli
+  ? fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-task-private-cache-")))
+  : undefined;
 const evidence = path.join(
   root,
   "target/differential/viteplus-task-cache",
-  `${provider}${published ? `-published-${published}` : ""}.json`,
+  `${provider}${published ? `-published-${published}` : sourceCli ? "-source-cli" : ""}.json`,
 );
 interface TaskRunOptions {
   hit?: boolean;
@@ -44,7 +49,10 @@ interface TaskRunReceipt {
 const rows: TaskRunReceipt[] = [];
 let packageLock: unknown;
 let sourceArchive: { filename: string; sha256: string } | undefined;
-const env = { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" };
+let sourceCliReceipt: unknown;
+let privateStorage: { root: string; files: { path: string; bytes: number }[] } | undefined;
+const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" };
+if (privateCache) env.XDG_CACHE_HOME = privateCache;
 const write = (file: string, contents: string): void => {
   fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
   fs.writeFileSync(path.join(directory, file), contents);
@@ -150,6 +158,33 @@ try {
     fs.rmSync(packed, { recursive: true, force: true });
   }
   packageLock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
+  if (sourceCli) {
+    assert.equal(process.platform, "linux");
+    const expected = process.env.VIZE_TASK_CACHE_SOURCE_BINARY_SHA256;
+    assert.ok(expected && /^[a-f0-9]{64}$/u.test(expected));
+    const hash = createHash("sha256");
+    for await (const chunk of fs.createReadStream(sourceCli)) hash.update(chunk);
+    assert.equal(hash.digest("hex"), expected, "the exact verified source CLI executes");
+    const receipt = process.env.VIZE_TASK_CACHE_SOURCE_RECEIPT;
+    assert.ok(receipt);
+    const launcher = path.resolve(path.dirname(require.resolve("vize")), "../bin/vize");
+    const originalLauncher = fs.readFileSync(launcher, "utf8");
+    // Only this disposable install's launcher delegates to the real, verified
+    // Rust CLI. Its original arguments, environment and all streams pass through.
+    fs.writeFileSync(
+      launcher,
+      `#!/usr/bin/env node\nimport { spawnSync } from "node:child_process";\nconst result = spawnSync(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nif (result.error) throw result.error;\nif (result.signal) process.kill(process.pid, result.signal);\nelse process.exitCode = result.status ?? 1;\n`,
+    );
+    sourceCliReceipt = {
+      verified: JSON.parse(fs.readFileSync(receipt, "utf8")) as unknown,
+      launcher: {
+        path: launcher,
+        original: originalLauncher,
+        originalSha256: createHash("sha256").update(originalLauncher).digest("hex"),
+        delegatedSha256: createHash("sha256").update(fs.readFileSync(launcher)).digest("hex"),
+      },
+    };
+  }
   const vp = require.resolve("vite-plus/package.json").replace(/package\.json$/u, "bin/vp");
   const cleanVue =
     '<script setup lang="ts">\nimport { value } from "./value";\n</script>\n\n<template>\n  <div>{{ value }}</div>\n</template>\n';
@@ -214,6 +249,21 @@ try {
   run("initial-format", "fmt", { unchanged: false });
   for (const task of ["verify:lint", "fmt:check", "typecheck", "vize:check"]) {
     run(`${task}-cold`, task, { hit: false });
+    if (task === "typecheck" && privateCache) {
+      const storage = path.join(privateCache, "vize/canon/private-batch-v1");
+      const files: { path: string; bytes: number }[] = [];
+      const visit = (selected: string): void => {
+        for (const entry of fs.readdirSync(selected, { withFileTypes: true })) {
+          const file = path.join(selected, entry.name);
+          if (entry.isDirectory()) visit(file);
+          else if (entry.isFile())
+            files.push({ path: path.relative(storage, file), bytes: fs.statSync(file).size });
+        }
+      };
+      visit(storage);
+      assert.ok(files.length > 0, "typecheck uses the new private batch store outside the project");
+      privateStorage = { root: storage, files };
+    }
     run(`${task}-hit`, task, { hit: true });
   }
   write("src/value.ts", 'export const value: string = "hello";\ndebugger;\n');
@@ -313,6 +363,8 @@ try {
         published: Boolean(published),
         directory,
         sourceArchive,
+        sourceCliReceipt,
+        privateStorage,
         packageLock,
         rows,
       },
@@ -322,5 +374,6 @@ try {
   );
   // Keep the independent streams and file fingerprints, remove only our fixture.
   fs.rmSync(directory, { recursive: true, force: true });
+  if (privateCache) fs.rmSync(privateCache, { recursive: true, force: true });
   console.log(`Evidence: ${evidence}`);
 }
