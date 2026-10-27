@@ -90,3 +90,23 @@ void test("Go address decoder retains every unique PC and demands negative contr
     parseGoAddressFrames(output.replace("module/checker.go:123", "invalid"), ["0x401010"]),
   );
 });
+
+void test("Rust caller collection selects the exact executable PID and retains its other DSOs", async () => {
+  const { rustPidScope } =
+    await import("../../tools/benchmarks/scripts/native-checker-cpu-rust-callers.ts");
+  const trace =
+    "7/7 10.000000000: 10101010 400001 (/bin/vize+0x1)\n" +
+    "7/8 10.000000001: 10101010 400002 (/bin/vize+0x2)\n" +
+    "7/8 10.000000002: 10101010 700003 (/lib/libc.so+0x3)\n" +
+    "9/9 10.000000003: 10101010 800004 (/bin/tsc+0x4)\n";
+  assert.deepEqual(rustPidScope(trace, "/bin/vize"), {
+    pids: ["7"],
+    rustImageSamples: 2,
+    selectedPidSamples: 3,
+  });
+  assert.deepEqual(rustPidScope(trace, "/bin/missing"), {
+    pids: [],
+    rustImageSamples: 0,
+    selectedPidSamples: 0,
+  });
+});

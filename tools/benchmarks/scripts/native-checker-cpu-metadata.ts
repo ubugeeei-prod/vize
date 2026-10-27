@@ -15,6 +15,7 @@ import { retainedNormalIdentity } from "./source-symbolizer-smoke.ts";
 import { boundedCommand, digest } from "./source-symbolizer-render.ts";
 import { renderSymbolCpu } from "./source-symbolizer-symbols.ts";
 import { decodeNativeCheckerCpu } from "./native-checker-cpu-decode.ts";
+import { collectRustCallchains } from "./native-checker-cpu-rust-callers.ts";
 export const nativeCheckerImage = {
   sha256: "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
   path: "/home/runner/_work/_temp/provider/node_modules/@typescript/typescript-linux-x64/lib/tsc",
@@ -223,6 +224,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       normalBinarySha256: metadata.normalBinarySha256,
       sdk: metadata.sdk,
     },
+  });
+  collectRustCallchains({
+    binary: join(resolve(values.root), "binaries/normal-head/vize"),
+    binarySha256: nativeCheckerImage.normalSha256,
+    data: join(resolve(values.root), "record-head/direct-process/perf.data"),
+    dataSha256: nativeCheckerImage.dataSha256,
+    trace: join(resolve(values.out), "runtime-addresses/stdout.txt"),
+    perf: values.perf,
+    out: join(resolve(values.out), "rust-callers"),
+    source: nativeCheckerImage.source,
   });
   console.log(
     JSON.stringify({
