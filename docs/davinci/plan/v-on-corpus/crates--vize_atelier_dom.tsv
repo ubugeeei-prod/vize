@@ -1,6 +1,8 @@
 file	spelling
 crates/vize_atelier_dom/tests/dom_snapshot.rs	@click.ctrl
 crates/vize_atelier_dom/tests/dom_snapshot.rs	@keydown.enter.prevent
+crates/vize_atelier_dom/tests/element_v_once.rs	@click.stop
+crates/vize_atelier_dom/tests/element_v_once.rs	@keyup.enter
 crates/vize_atelier_dom/tests/l2_binding_metadata.rs	@click.stop
 crates/vize_atelier_dom/tests/l2_binding_metadata.rs	@keyup.enter
 crates/vize_atelier_dom/tests/l2_cache_handlers.rs	@click.stop
