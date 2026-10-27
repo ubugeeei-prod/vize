@@ -13,12 +13,13 @@ concurrency:
   cancel-in-progress: true
 jobs:
   native:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 60
     env:
       PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "8"
       GOMAXPROCS: "8"
       RAYON_NUM_THREADS: "8"
     steps:
