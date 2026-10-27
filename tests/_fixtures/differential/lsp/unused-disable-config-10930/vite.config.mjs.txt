@@ -1,0 +1,1 @@
+export default {"vue":{"linter":{"preset":"essential","reportUnusedDisableDirectives":true},"languageServer":{"editor":false,"lint":true,"typecheck":false,"ecosystem":false}}};

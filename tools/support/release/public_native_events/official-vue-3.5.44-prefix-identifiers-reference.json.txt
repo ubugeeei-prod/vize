@@ -1,0 +1,960 @@
+{
+  "schema": "vize-public-uppercase-event-oracle-v1",
+  "compiler": "@vue/compiler-dom@3.5.44",
+  "runtime": "vue@3.5.44",
+  "inputSha256": "d614ba281249549cbc92c061defd21a9aeee0b724aa644b16e7df35b7a205cce",
+  "cases": [
+    {
+      "id": "original-native-if",
+      "source": "<div v-if=\"ok\" @fooBar=\"pingA\">x</div>",
+      "code": "const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_ctx.ok)\n    ? (_openBlock(), _createElementBlock(\"div\", {\n        key: 0,\n        \"on:fooBar\": _ctx.pingA\n      }, \"x\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": 0,
+            "ref": null,
+            "props": {
+              "key": 0,
+              "on:fooBar": {
+                "handler": "pingA"
+              }
+            },
+            "children": "x",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "on:fooBar"
+            ],
+            "shapeFlag": 9
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "Comment",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": "v-if",
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "original-native-for-keyed",
+      "source": "<div><div v-for=\"i in 3\" :key=\"i\" @fooBar=\"pingA\">a</div></div>",
+      "code": "const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createElementVNode: _createElementVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(3, (i) => {\n      return _createElementVNode(\"div\", {\n        key: i,\n        \"on:fooBar\": _ctx.pingA\n      }, \"a\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"])\n    }), 64 /* STABLE_FRAGMENT */))\n  ]))\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "div",
+                    "key": 1,
+                    "ref": null,
+                    "props": {
+                      "key": 1,
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 2,
+                    "ref": null,
+                    "props": {
+                      "key": 2,
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 3,
+                    "ref": null,
+                    "props": {
+                      "key": 3,
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "div",
+                    "key": 1,
+                    "ref": null,
+                    "props": {
+                      "key": 1,
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 2,
+                    "ref": null,
+                    "props": {
+                      "key": 2,
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 3,
+                    "ref": null,
+                    "props": {
+                      "key": 3,
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": "original-component-if",
+      "source": "<Comp v-if=\"ok\" @fooBar=\"pingA\" />",
+      "code": "const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n\n  return (_ctx.ok)\n    ? (_openBlock(), _createBlock(_component_Comp, {\n        key: 0,\n        onFooBar: _ctx.pingA\n      }, null, 8 /* PROPS */, [\"onFooBar\"]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "component:Comp",
+            "key": 0,
+            "ref": null,
+            "props": {
+              "key": 0,
+              "onFooBar": {
+                "handler": "pingA"
+              }
+            },
+            "children": null,
+            "patchFlag": 8,
+            "dynamicProps": [
+              "onFooBar"
+            ],
+            "shapeFlag": 4
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "Comment",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": "v-if",
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-plain-control",
+      "source": "<div @fooBar=\"pingA\">x</div>",
+      "code": "const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", { \"on:fooBar\": _ctx.pingA }, \"x\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"]))\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": {
+              "on:fooBar": {
+                "handler": "pingA"
+              }
+            },
+            "children": "x",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "on:fooBar"
+            ],
+            "shapeFlag": 9
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": {
+              "on:fooBar": {
+                "handler": "pingA"
+              }
+            },
+            "children": "x",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "on:fooBar"
+            ],
+            "shapeFlag": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-if-lowercase-control",
+      "source": "<div v-if=\"ok\" @foobar=\"pingA\">x</div>",
+      "code": "const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_ctx.ok)\n    ? (_openBlock(), _createElementBlock(\"div\", {\n        key: 0,\n        onFoobar: _ctx.pingA\n      }, \"x\", 40 /* PROPS, NEED_HYDRATION */, [\"onFoobar\"]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": 0,
+            "ref": null,
+            "props": {
+              "key": 0,
+              "onFoobar": {
+                "handler": "pingA"
+              }
+            },
+            "children": "x",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "onFoobar"
+            ],
+            "shapeFlag": 9
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "Comment",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": "v-if",
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-for-lowercase-control",
+      "source": "<div><div v-for=\"i in 3\" :key=\"i\" @foobar=\"pingA\">a</div></div>",
+      "code": "const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createElementVNode: _createElementVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(3, (i) => {\n      return _createElementVNode(\"div\", {\n        key: i,\n        onFoobar: _ctx.pingA\n      }, \"a\", 40 /* PROPS, NEED_HYDRATION */, [\"onFoobar\"])\n    }), 64 /* STABLE_FRAGMENT */))\n  ]))\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "div",
+                    "key": 1,
+                    "ref": null,
+                    "props": {
+                      "key": 1,
+                      "onFoobar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "onFoobar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 2,
+                    "ref": null,
+                    "props": {
+                      "key": 2,
+                      "onFoobar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "onFoobar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 3,
+                    "ref": null,
+                    "props": {
+                      "key": 3,
+                      "onFoobar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "onFoobar"
+                    ],
+                    "shapeFlag": 9
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "div",
+                    "key": 1,
+                    "ref": null,
+                    "props": {
+                      "key": 1,
+                      "onFoobar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "onFoobar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 2,
+                    "ref": null,
+                    "props": {
+                      "key": 2,
+                      "onFoobar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "onFoobar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": 3,
+                    "ref": null,
+                    "props": {
+                      "key": 3,
+                      "onFoobar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "onFoobar"
+                    ],
+                    "shapeFlag": 9
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-if-explicit-key",
+      "source": "<div v-if=\"ok\" key=\"native\" @fooBar=\"pingA\">x</div>",
+      "code": "const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_ctx.ok)\n    ? (_openBlock(), _createElementBlock(\"div\", {\n        key: \"native\",\n        \"on:fooBar\": _ctx.pingA\n      }, \"x\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": "native",
+            "ref": null,
+            "props": {
+              "key": "native",
+              "on:fooBar": {
+                "handler": "pingA"
+              }
+            },
+            "children": "x",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "on:fooBar"
+            ],
+            "shapeFlag": 9
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "Comment",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": "v-if",
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "component-for-control",
+      "source": "<div><Comp v-for=\"i in 3\" :key=\"i\" @fooBar=\"pingA\" /></div>",
+      "code": "const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, resolveComponent: _resolveComponent, createVNode: _createVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(3, (i) => {\n      return _createVNode(_component_Comp, {\n        key: i,\n        onFooBar: _ctx.pingA\n      }, null, 8 /* PROPS */, [\"onFooBar\"])\n    }), 64 /* STABLE_FRAGMENT */))\n  ]))\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "component:Comp",
+                    "key": 1,
+                    "ref": null,
+                    "props": {
+                      "key": 1,
+                      "onFooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": null,
+                    "patchFlag": 8,
+                    "dynamicProps": [
+                      "onFooBar"
+                    ],
+                    "shapeFlag": 4
+                  },
+                  {
+                    "type": "component:Comp",
+                    "key": 2,
+                    "ref": null,
+                    "props": {
+                      "key": 2,
+                      "onFooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": null,
+                    "patchFlag": 8,
+                    "dynamicProps": [
+                      "onFooBar"
+                    ],
+                    "shapeFlag": 4
+                  },
+                  {
+                    "type": "component:Comp",
+                    "key": 3,
+                    "ref": null,
+                    "props": {
+                      "key": 3,
+                      "onFooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": null,
+                    "patchFlag": 8,
+                    "dynamicProps": [
+                      "onFooBar"
+                    ],
+                    "shapeFlag": 4
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "component:Comp",
+                    "key": 1,
+                    "ref": null,
+                    "props": {
+                      "key": 1,
+                      "onFooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": null,
+                    "patchFlag": 8,
+                    "dynamicProps": [
+                      "onFooBar"
+                    ],
+                    "shapeFlag": 4
+                  },
+                  {
+                    "type": "component:Comp",
+                    "key": 2,
+                    "ref": null,
+                    "props": {
+                      "key": 2,
+                      "onFooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": null,
+                    "patchFlag": 8,
+                    "dynamicProps": [
+                      "onFooBar"
+                    ],
+                    "shapeFlag": 4
+                  },
+                  {
+                    "type": "component:Comp",
+                    "key": 3,
+                    "ref": null,
+                    "props": {
+                      "key": 3,
+                      "onFooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": null,
+                    "patchFlag": 8,
+                    "dynamicProps": [
+                      "onFooBar"
+                    ],
+                    "shapeFlag": 4
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-if-else",
+      "source": "<div v-if=\"ok\" @fooBar=\"pingA\">a</div><div v-else @fooBar=\"pingB\">b</div>",
+      "code": "const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_ctx.ok)\n    ? (_openBlock(), _createElementBlock(\"div\", {\n        key: 0,\n        \"on:fooBar\": _ctx.pingA\n      }, \"a\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"]))\n    : (_openBlock(), _createElementBlock(\"div\", {\n        key: 1,\n        \"on:fooBar\": _ctx.pingB\n      }, \"b\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"]))\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": 0,
+            "ref": null,
+            "props": {
+              "key": 0,
+              "on:fooBar": {
+                "handler": "pingA"
+              }
+            },
+            "children": "a",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "on:fooBar"
+            ],
+            "shapeFlag": 9
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "div",
+            "key": 1,
+            "ref": null,
+            "props": {
+              "key": 1,
+              "on:fooBar": {
+                "handler": "pingB"
+              }
+            },
+            "children": "b",
+            "patchFlag": 40,
+            "dynamicProps": [
+              "on:fooBar"
+            ],
+            "shapeFlag": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-for-unkeyed",
+      "source": "<div><div v-for=\"i in 3\" @fooBar=\"pingA\">a</div></div>",
+      "code": "const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createElementVNode: _createElementVNode } = Vue\n\nreturn function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(3, (i) => {\n      return _createElementVNode(\"div\", { \"on:fooBar\": _ctx.pingA }, \"a\", 40 /* PROPS, NEED_HYDRATION */, [\"on:fooBar\"])\n    }), 64 /* STABLE_FRAGMENT */))\n  ]))\n}",
+      "warnings": [],
+      "observations": [
+        {
+          "state": {
+            "id": "branch-on",
+            "ok": true
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "div",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        },
+        {
+          "state": {
+            "id": "branch-off",
+            "ok": false
+          },
+          "vnode": {
+            "type": "div",
+            "key": null,
+            "ref": null,
+            "props": null,
+            "children": [
+              {
+                "type": "Fragment",
+                "key": null,
+                "ref": null,
+                "props": null,
+                "children": [
+                  {
+                    "type": "div",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  },
+                  {
+                    "type": "div",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "on:fooBar": {
+                        "handler": "pingA"
+                      }
+                    },
+                    "children": "a",
+                    "patchFlag": 40,
+                    "dynamicProps": [
+                      "on:fooBar"
+                    ],
+                    "shapeFlag": 9
+                  }
+                ],
+                "patchFlag": 64,
+                "dynamicProps": null,
+                "shapeFlag": 16
+              }
+            ],
+            "patchFlag": 0,
+            "dynamicProps": null,
+            "shapeFlag": 17
+          }
+        }
+      ]
+    }
+  ]
+}

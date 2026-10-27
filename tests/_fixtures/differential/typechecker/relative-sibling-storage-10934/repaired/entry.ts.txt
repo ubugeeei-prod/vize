@@ -1,0 +1,3 @@
+import Component, { type SiblingValue } from "../../../packages/ui/src/Shared.vue";
+const value: SiblingValue = { id: 1 };
+export { Component, value };

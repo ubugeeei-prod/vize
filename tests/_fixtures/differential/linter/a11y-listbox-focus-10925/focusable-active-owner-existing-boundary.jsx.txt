@@ -1,0 +1,1 @@
+const App = () => (<><ul id="outer" role="listbox" tabindex="0" aria-activedescendant="active"><li id="active" role="option">A</li></ul></>);

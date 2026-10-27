@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const items = ["a", "b", "c"];
+const selected = ref("a");
+</script>
+
+<template>
+  <ul role="listbox" aria-label="letters">
+    <li
+      v-for="item in items"
+      :key="item"
+      role="option"
+      :aria-selected="item === selected"
+      :tabindex="item === selected ? 0 : -1"
+      @click="() => (selected = item)"
+      @keydown.enter="() => (selected = item)"
+    >
+      {{ item }}
+    </li>
+  </ul>
+  <div role="tablist" aria-label="tabs">
+    <button type="button" role="tab" aria-selected="true">one</button>
+  </div>
+  <div role="grid" aria-label="grid">
+    <div role="row"><div role="gridcell" tabindex="0">1</div></div>
+  </div>
+</template>

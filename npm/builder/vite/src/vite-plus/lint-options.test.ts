@@ -14,6 +14,7 @@ void test("lint.vue carries execution settings through native config without for
     crossFileTree: true,
     crossFileComplexity: true,
     maxWarnings: 0,
+    reportUnusedDisableDirectives: true,
   };
   const resolved = await defineConfig(
     { lint: { vue: linter } },

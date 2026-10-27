@@ -106,6 +106,13 @@ export function inspectLspObservation(
   );
   if (opensDocument) {
     assert(diagnosticsIndex >= 0, "exact entry and version diagnostics are required");
+    if (fixture.data.initialDiagnostics !== undefined) {
+      assert.deepEqual(
+        server[diagnosticsIndex]?.params?.diagnostics,
+        materializeWorkspace(fixture.data.initialDiagnostics, workspaceUri),
+        "complete configured initial diagnostic packet must match",
+      );
+    }
   } else {
     assert.equal(diagnosticsIndex, -1, "unopened sessions must not invent readiness diagnostics");
   }

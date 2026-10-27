@@ -20,6 +20,7 @@ export type FixtureData = {
   openDocument?: false;
   languageId?: "vue" | "javascriptreact" | "typescriptreact";
   initializationOptions?: Record<string, boolean>;
+  initialDiagnostics?: unknown[];
   hierarchicalDocumentSymbols?: true;
   files?: FileReference[];
   input?: FileReference;

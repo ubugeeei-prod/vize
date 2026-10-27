@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/kazupon/ox-jsdoc",
+  "commit": "86005b1a5d1266148e61b8969edaaaa73a7bfe53",
+  "originalRun": 40498957092,
+  "originalWindowsJob": 122171489741,
+  "originalConfig": {
+    "path": "apps/playground/vite.config.ts",
+    "gitBlob": "2be55582077c5f010546169ebffd316a950aecc6",
+    "bytes": 1868
+  },
+  "originalLock": {
+    "path": "pnpm-lock.yaml",
+    "gitBlob": "cd32155484cb1593a836d1da9b56756d42872280",
+    "bytes": 639260
+  },
+  "tools": {
+    "node": "24.22.1",
+    "vitePlus": "1.4.0",
+    "pnpm": "10.34.7",
+    "vue": "3.5.35",
+    "pluginVue": "6.0.7"
+  },
+  "originalCommand": [
+    "vp",
+    "exec",
+    "vize",
+    "lint",
+    "--preset",
+    "opinionated",
+    "--help-level",
+    "short",
+    "src"
+  ],
+  "beforePublicVersion": "0.601.0",
+  "reporter": "Kazuya Kawaguchi <72989+kazupon@users.noreply.github.com>"
+}

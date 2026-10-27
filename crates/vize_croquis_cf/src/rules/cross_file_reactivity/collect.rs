@@ -1,7 +1,5 @@
 use super::engine::CrossFileReactivityAnalyzer;
-use super::provide_helpers::{
-    is_reactive_service, provide_key_display, provide_key_identity, provided_value_reactive_kind,
-};
+use super::provide_helpers::{classify_provided_value, provide_key_display, provide_key_identity};
 use super::types::ProvideDefinition;
 
 impl<'a> CrossFileReactivityAnalyzer<'a> {
@@ -16,8 +14,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 let key_identity = provide_key_identity(&provide.key);
 
                 // Check if the provided value is reactive
-                let is_reactive =
-                    provided_value_reactive_kind(analysis, provide.value.as_str()).is_some();
+                let classification = classify_provided_value(analysis, provide.value.as_str());
 
                 self.provides
                     .entry(file_id)
@@ -27,8 +24,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         key: key_str,
                         key_identity,
                         value_name: provide.value.clone(),
-                        is_reactive,
-                        is_reactive_service: is_reactive_service(analysis, provide.value.as_str()),
+                        is_reactive: classification.reactive_kind.is_some(),
+                        is_reactive_service: classification.is_reactive_service,
                         offset: provide.start,
                     });
             }

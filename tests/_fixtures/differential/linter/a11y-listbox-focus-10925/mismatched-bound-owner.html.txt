@@ -1,0 +1,1 @@
+<input role="combobox" aria-activedescendant="a" :aria-controls="listId" /><ul :id="otherId" role="listbox"><li role="option">A</li></ul>

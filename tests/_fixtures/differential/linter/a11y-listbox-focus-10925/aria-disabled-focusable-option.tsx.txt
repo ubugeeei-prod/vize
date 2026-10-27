@@ -1,0 +1,1 @@
+const App = () => (<><ul id="outer" role="listbox" ><li role="option" tabindex="0" aria-disabled="true">A</li></ul></>);
