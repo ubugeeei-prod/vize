@@ -36,8 +36,10 @@ export function capacitySource(index: number, uri: string): CapacityProbe {
     "</script>",
     '<template><ul class="probe"><li v-for="item in items" :key="item">{{ item }} {{ value' +
       id +
+      " }} {{ file" +
+      id +
       " }}</li></ul></template>",
-    "<style>.probe { color: #123456 }</style>",
+    "<style scoped>.probe { color: #123456 }</style>",
     "",
   ].join(eol);
   const invalid = valid.replace(".toFixed()", "." + token + "()").replace(' :key="item"', "");
