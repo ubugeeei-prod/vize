@@ -1,0 +1,87 @@
+{
+  "filename": "Icons.vue",
+  "error_count": 0,
+  "warning_count": 8,
+  "diagnostics": [
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 23,
+      "end": 50,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 55,
+      "end": 79,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 84,
+      "end": 114,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 119,
+      "end": 144,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 149,
+      "end": 175,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 188,
+      "end": 214,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 219,
+      "end": 257,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "a11y/no-i-for-icon",
+      "severity": "warning",
+      "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+      "start": 262,
+      "end": 286,
+      "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues \u2014 screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+      "labels": [],
+      "fix": null
+    }
+  ]
+}

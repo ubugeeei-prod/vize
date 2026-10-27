@@ -1,0 +1,17 @@
+<script setup lang="ts">
+const { clickable = false } = defineProps<{ clickable?: boolean }>();
+const emit = defineEmits<{ press: [] }>();
+function press(): void {
+  if (clickable) emit("press");
+}
+</script>
+<template>
+  <span
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    @click="press"
+    @keydown.enter="press"
+  >
+    <slot />
+  </span>
+</template>

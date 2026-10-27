@@ -36,6 +36,10 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
   ["runPackagedExtensionHost", "editors/vscode/test/run-typescript-provider-host.mjs"],
   ["TypeScript 5.7.3 and 6.0.3", ".github/workflows/typescript-plugin.yml"],
   ["Linux and Windows physical VSIX", ".github/workflows/typescript-provider-vsix.yml"],
+  [
+    "configured hosts refresh package-selected options once without replacing roots or descriptors",
+    "tests/typescript-plugin/package-options.test.cjs",
+  ],
 ] as const;
 
 // These are whole-file identities of the reviewed transition, not a path or

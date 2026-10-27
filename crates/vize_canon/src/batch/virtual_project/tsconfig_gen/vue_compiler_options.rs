@@ -195,8 +195,7 @@ impl VirtualProject {
             || load_vue_compiler_options(path.as_deref()).ok(),
             |snapshot| Some(snapshot.vue_options.clone()),
         );
-        self.typed_router.root =
-            super::super::typed_router::configured_root(self, options.as_ref(), path.as_deref());
+        super::super::typed_router::refresh(self, options.as_ref(), path.as_deref());
         self.virtual_ts_check_options.check_unknown_props = if path.is_none() {
             true
         } else {

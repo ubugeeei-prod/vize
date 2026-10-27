@@ -20,6 +20,7 @@ pub fn is_git_metadata_path(path: &Path) -> bool {
 /// needs a stable absolute path, so strip the verbatim prefix back to the
 /// ordinary DOS/UNC spelling before handing paths to TypeScript-facing code.
 pub fn canonicalize_non_verbatim(path: &Path) -> PathBuf {
+    vize_l0::micro_count!("fs.canonicalize.calls", 1);
     let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
     normalize_windows_verbatim_path(canonical)
 }
@@ -29,6 +30,7 @@ pub fn canonicalize_non_verbatim(path: &Path) -> PathBuf {
 /// renamed documents still map. Falls back to `path` when nothing exists.
 pub fn physical_path(path: &Path) -> PathBuf {
     for ancestor in path.ancestors() {
+        vize_l0::micro_count!("fs.canonicalize.calls", 1);
         if let Ok(physical) = ancestor.canonicalize()
             && let Ok(relative) = path.strip_prefix(ancestor)
         {

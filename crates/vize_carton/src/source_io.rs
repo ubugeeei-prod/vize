@@ -23,16 +23,20 @@ pub use vize_l0::source_io::decode_utf8;
 )]
 #[cfg(not(target_arch = "wasm32"))]
 pub fn read_to_string(path: impl AsRef<Path>) -> io::Result<FileString> {
-    let bytes = std::fs::read(path)?;
-    if decode_utf8(&bytes).is_err() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "stream did not contain valid UTF-8",
-        ));
-    }
-    // SAFETY: decode_utf8 accepted this exact buffer above. The buffer is
-    // exclusively owned and cannot change between validation and this move.
-    Ok(unsafe { FileString::from_utf8_unchecked(bytes) })
+    vize_l0::micro_span!("source.read_to_string", {
+        vize_l0::micro_count!("fs.read.calls", 1);
+        let bytes = std::fs::read(path)?;
+        vize_l0::micro_count!("fs.read.bytes", bytes.len());
+        if decode_utf8(&bytes).is_err() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "stream did not contain valid UTF-8",
+            ));
+        }
+        // SAFETY: decode_utf8 accepted this exact buffer above. The buffer is
+        // exclusively owned and cannot change between validation and this move.
+        Ok(unsafe { FileString::from_utf8_unchecked(bytes) })
+    })
 }
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
