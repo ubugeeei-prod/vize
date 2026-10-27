@@ -6,7 +6,7 @@ on:
       - crates/vize_croquis/src/script_parser/recovery.rs
       - crates/vize_croquis/src/script_parser/recovery/**
       - davinci/vize_l0/examples/source_recovery_benchmark.rs
-      - davinci/vize_l0/tests/source_operations_profile/source_probes.rs
+      - davinci/vize_l0/tests/source_probes/mod.rs
   workflow_dispatch:
     inputs:
       base_sha:
