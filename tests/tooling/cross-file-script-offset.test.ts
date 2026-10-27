@@ -24,7 +24,7 @@ type Anchor = { before: Span; after: Span };
 type Block = { start: number; content: string; setup: boolean };
 type Input = { name: string; app: string; child: string; templateControl: boolean };
 
-const root = fileURLToPath(new URL("../../", import.meta.url));
+const root = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const issue = JSON.parse(
   fs.readFileSync(
     new URL("./fixtures/cross-file-script-offset/issue.json", import.meta.url),
@@ -216,6 +216,7 @@ test("cross-file split-script coordinates preserve complete public packets and a
     });
     return {
       command: cli,
+      cwd: workspace,
       args,
       status: run.status,
       signal: run.signal,

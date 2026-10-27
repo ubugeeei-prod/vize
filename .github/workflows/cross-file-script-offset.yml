@@ -6,20 +6,26 @@ on:
       - .github/workflows/cross-file-script-offset.yml
       - crates/vize/src/commands/lint/cross_file.rs
       - crates/vize/src/commands/lint/cross_file/**
+      - crates/vize/src/commands/doctor.rs
       - crates/vize/src/commands/doctor/**
       - crates/vize_croquis_cf/**
       - tests/tooling/cross-file-script-offset.test.ts
       - tests/tooling/fixtures/cross-file-script-offset/**
+      - tests/tooling/support/nuxt-exclusive-id-public-before.ts
+      - tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json
   push:
     branches: [main]
     paths:
       - .github/workflows/cross-file-script-offset.yml
       - crates/vize/src/commands/lint/cross_file.rs
       - crates/vize/src/commands/lint/cross_file/**
+      - crates/vize/src/commands/doctor.rs
       - crates/vize/src/commands/doctor/**
       - crates/vize_croquis_cf/**
       - tests/tooling/cross-file-script-offset.test.ts
       - tests/tooling/fixtures/cross-file-script-offset/**
+      - tests/tooling/support/nuxt-exclusive-id-public-before.ts
+      - tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json
   workflow_dispatch:
 
 permissions:
@@ -37,6 +43,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
+      VIZE_CROSS_FILE_OFFSET_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
       VIZE_CROSS_FILE_OFFSET_BEFORE_CLI: ${{ runner.temp }}/cross-file-before/node_modules/.bin/vize
       VIZE_CROSS_FILE_OFFSET_REQUIRE_BEFORE: "1"
       VIZE_CROSS_FILE_OFFSET_PROOF: ${{ runner.temp }}/cross-file-offset-proof/packets.json
@@ -57,19 +64,25 @@ jobs:
           wild-version: "0.9.0"
       - run: vp install --frozen-lockfile --prefer-offline
       - uses: ./.github/actions/restore-source-cli
+        id: restore
         with:
           producer: ${{ toJSON(needs.producer.outputs) }}
       - name: Install the immutable public before producer outside the workspace
+        id: public_before
         run: |
           mkdir -p "$RUNNER_TEMP/cross-file-offset-proof"
-          npm view vize@0.601.0 --json > "$RUNNER_TEMP/cross-file-offset-proof/before-registry.json"
-          npm install --prefix "$RUNNER_TEMP/cross-file-before" --ignore-scripts --no-audit --no-fund vize@0.601.0 > "$RUNNER_TEMP/cross-file-offset-proof/before-install.stdout" 2> "$RUNNER_TEMP/cross-file-offset-proof/before-install.stderr"
+          npm view --registry=https://registry.npmjs.org vize@0.601.0 --json > "$RUNNER_TEMP/cross-file-offset-proof/before-registry.json"
+          npm install --registry=https://registry.npmjs.org --prefix "$RUNNER_TEMP/cross-file-before" --ignore-scripts --no-audit --no-fund vize@0.601.0 > "$RUNNER_TEMP/cross-file-offset-proof/before-install.stdout" 2> "$RUNNER_TEMP/cross-file-offset-proof/before-install.stderr"
           cp "$RUNNER_TEMP/cross-file-before/package-lock.json" "$RUNNER_TEMP/cross-file-offset-proof/before-lock.json"
           cp "$RUNNER_TEMP/cross-file-before/node_modules/vize/package.json" "$RUNNER_TEMP/cross-file-offset-proof/before-manifest.json"
           cp target/ci/vize.differential-build.json "$RUNNER_TEMP/cross-file-offset-proof/candidate-build.json"
           cp target/ci/vize.source-use.json "$RUNNER_TEMP/cross-file-offset-proof/candidate-use.json"
       - name: Require complete packets, script spans and unchanged template and doctor controls
         run: vp node --test tests/tooling/cross-file-script-offset.test.ts
+      - name: Capture research-only Nuxt ID before packets
+        if: ${{ always() && steps.public_before.outcome == 'success' }}
+        run: |
+          vp node tests/tooling/support/nuxt-exclusive-id-public-before.ts --corpus tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json --cli "$VIZE_CROSS_FILE_OFFSET_BEFORE_CLI" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919"
       - name: Preserve all original producer inputs, processes and output packets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
