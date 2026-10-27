@@ -83,10 +83,6 @@ pub fn parse_program_for_analysis<'a>(
     original
 }
 
-/// A fatal parse can report only the unmatched call's eventual closing point,
-/// so no diagnostic label necessarily remains beside the authored `(`. The
-/// line boundary is still deterministic: a declaration cannot continue an
-/// unfinished call whose preceding line ends at its opening parenthesis.
 // Preserve the existing four-scalar break set while searching encoded bytes.
 // Non-break E2 sequences remain ordinary source text.
 fn line_break_offsets(source: &str) -> impl Iterator<Item = usize> + '_ {
@@ -97,6 +93,10 @@ fn line_break_offsets(source: &str) -> impl Iterator<Item = usize> + '_ {
     })
 }
 
+/// A fatal parse can report only the unmatched call's eventual closing point,
+/// so no diagnostic label necessarily remains beside the authored `(`. The
+/// line boundary is still deterministic: a declaration cannot continue an
+/// unfinished call whose preceding line ends at its opening parenthesis.
 fn incomplete_call_before_declaration(source: &str) -> Option<Range<usize>> {
     line_break_offsets(source).find_map(|line_break| {
         let end = source.get(..line_break)?.trim_end().len();
