@@ -116,6 +116,7 @@ pub(crate) fn check_pack(
             | "content-mapper-slot-host-callbacks-10774"
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
+            | "relative-sibling-storage-10934"
             | "reopen-repaired-diagnostics-10730"
             | "editor-alias-import-extension-10753"
             | "options-api-reserved-component-reference"
@@ -296,11 +297,21 @@ pub(crate) fn check_pack(
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))
                 }
+                "relative-sibling-storage-10934" => {
+                    Some(project_root.join("apps/app/tsconfig.json"))
+                }
                 _ => None,
             },
         };
+        // The corpus capture owns every workspace input while this checker
+        // must exercise the package/external mirror boundary from #10934.
+        let checker_root = if name == "relative-sibling-storage-10934" {
+            project_root.join("apps/app")
+        } else {
+            project_root.clone()
+        };
         let mut checker =
-            BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
+            BatchTypeChecker::with_options(&checker_root, options).expect("the checker must start");
         if name == "workspace-package-import-alias-10175" {
             let mut resolver = PackageRouteResolver::default();
             let bindings = [
