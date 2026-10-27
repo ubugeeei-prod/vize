@@ -114,3 +114,24 @@ void test("source links bind the compiled SHA and reject outside or unresolved p
   );
   assert.throws(() => frozenSourceLocations([], "/build/vize", "main"));
 });
+
+void test("known address streams require every ordered address and complete sentinel frames", async () => {
+  const { completeKnownFrames } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-protocol.ts");
+  const sentinel = "0x00000000\n??\n??:0\n";
+  const first = "0x000000123\noriginal_function\n/build/original.rs:12\n";
+  const second = "0x000000456\nanother_function\n/build/original.rs:44\n";
+  const stream = sentinel + first + sentinel + second + sentinel;
+  assert.equal(completeKnownFrames(stream, ["123", "456"], "gnu"), true);
+  for (const bad of [
+    stream.slice(0, -sentinel.length),
+    stream.replace(second, ""),
+    stream.replace("0x000000456", "0x000000789"),
+    stream.replace("??:0", "wrong_frame.rs:77"),
+  ])
+    assert.equal(completeKnownFrames(bad, ["123", "456"], "gnu"), false);
+  assert.equal(
+    completeKnownFrames(",\n" + first + ",\n" + second + ",\n", ["123", "456"], "llvm-echo"),
+    true,
+  );
+});

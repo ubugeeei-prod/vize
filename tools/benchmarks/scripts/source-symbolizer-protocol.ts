@@ -183,3 +183,26 @@ export function frozenSourceLocations(rows: SourceCpuRow[], sourceRoot: string, 
     };
   });
 }
+
+export function completeKnownFrames(
+  output: string,
+  addresses: string[],
+  style: "gnu" | "llvm-echo" | null,
+) {
+  if (style === null) return false;
+  const lines = output.trimEnd().replaceAll("\r\n", "\n").split("\n");
+  const tokens: string[] = [];
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    if (style === "gnu" && /^0x0+$/iu.test(line)) {
+      if (lines[index + 1] !== "??" || lines[index + 2] !== "??:0") return false;
+      tokens.push("sentinel");
+    } else if (style === "llvm-echo" && line === ",") tokens.push("sentinel");
+    else if (/^0x[0-9a-f]+$/iu.test(line)) tokens.push(BigInt(line).toString(16));
+  }
+  const expected = [
+    "sentinel",
+    ...addresses.flatMap((address) => [BigInt("0x" + address).toString(16), "sentinel"]),
+  ];
+  return JSON.stringify(tokens) === JSON.stringify(expected);
+}

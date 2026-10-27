@@ -7,6 +7,7 @@ import { performance } from "node:perf_hooks";
 import { parsePerfEventStats } from "./source-operation-perf.ts";
 import {
   parseFlatSourceReport,
+  completeKnownFrames,
   rustSourceCensus,
   sentinelStyle,
 } from "./source-symbolizer-protocol.ts";
@@ -133,11 +134,13 @@ export function probeDecoders(
       join(root, "known-source"),
       decoder,
       ["-e", binary, "-a", "-i", "-f"],
-      3000,
+      witness.timeoutMs ?? 3000,
       ",\n" + addresses.map((value) => value + "\n,\n").join(""),
     );
     const style = sentinelStyle(sentinel.stdout);
+    const framesComplete = completeKnownFrames(known.stdout, addresses, style);
     const qualified =
+      framesComplete &&
       version.status === 0 &&
       sentinel.status === 0 &&
       known.status === 0 &&
@@ -153,6 +156,7 @@ export function probeDecoders(
       style,
       version: version.stdout.trim(),
       knownAddresses: addresses,
+      framesComplete,
       sentinelWallMs: sentinel.wallMs,
       knownQueryWallMs: known.wallMs,
       firstDataLatencyMs: null,
