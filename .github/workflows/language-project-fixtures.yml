@@ -1,0 +1,38 @@
+name: Language project fixture laws
+on:
+  pull_request:
+    paths:
+      - .github/workflows/language-project-fixtures.yml
+      - .github/workflows/typescript-plugin.yml
+      - .github/workflows/typescript-provider-vsix.yml
+      - crates/vize_vitrine/src/napi/language_code.rs
+      - npm/typescript-plugin/**
+      - editors/vscode/test/run-typescript-provider-host.mjs
+      - editors/vscode/test/suite/typescript-provider-host.cjs
+      - tests/typescript-plugin/**
+      - tools/support/compat/github/**
+      - tests/tooling/language-project-*.test.ts
+      - tests/_fixtures/tooling/language-project-source-pairs-10740.json
+      - tests/_fixtures/differential/typechecker/**
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: language-project-fixtures-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  language-project-fixtures:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Check original source pairs and complete language project registration
+        run: node --test tests/tooling/language-project-fixtures.test.ts tests/tooling/language-project-registration.test.ts
