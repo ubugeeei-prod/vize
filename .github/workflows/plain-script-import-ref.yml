@@ -17,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  CARGO_BUILD_JOBS: "12"
-  RAYON_NUM_THREADS: "4"
+  CARGO_BUILD_JOBS: "4"
+  RAYON_NUM_THREADS: "2"
 jobs:
   public-before:
     runs-on: blacksmith-8vcpu-ubuntu-2404
@@ -48,7 +48,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   source-before:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 25
     env:
       SOURCE_SHA: db5c35c12124086f034563b6800dbdab8605cdc0
@@ -109,7 +109,7 @@ jobs:
           retention-days: 30
   candidate:
     needs: [public-before, source-before]
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 25
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
