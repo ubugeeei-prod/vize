@@ -1,6 +1,7 @@
 "use strict";
 
 const crypto = require("node:crypto");
+const path = require("node:path");
 const { loadNative } = require("./provider.cjs");
 const installedHosts = new WeakMap();
 
@@ -15,6 +16,8 @@ function installVueVirtualModules(ts, info) {
   const readFile = bind("readFile");
   const fileExists = bind("fileExists");
   const getSnapshot = bind("getScriptSnapshot");
+  const originalOptions = bind("getCompilationSettings");
+  const originalProjectVersion = bind("getProjectVersion");
   if (!readFile || !fileExists || !getSnapshot) return undefined;
   const root = host.getCurrentDirectory?.() || info.project?.getCurrentDirectory?.();
   const engine = loadNative(root, info.config?.nativePath);
@@ -26,16 +29,22 @@ function installVueVirtualModules(ts, info) {
     /* Logging cannot affect the host. */
   }
   const snapshots = new Map();
-  const projectVersion = bind("getProjectVersion");
-  let config;
-  // Every SFC query shares one config read per project version.
-  const configText = (fileName) => {
-    if (typeof fileName !== "string") return "";
-    const version = projectVersion?.();
-    if (version === undefined || config?.fileName !== fileName || config.version !== version)
-      config = { fileName, version, text: readFile(fileName) };
-    return config.text;
-  };
+  const projectConfiguration = createProjectConfiguration(
+    engine,
+    readFile,
+    serverHost.watchFile?.bind(serverHost),
+    originalProjectVersion,
+    () => info.project?.refreshDiagnostics?.(),
+    (configuration) => {
+      try {
+        info.project?.projectService?.logger?.info?.(
+          `[vize] TypeScript project configuration ${JSON.stringify(configuration)}`,
+        );
+      } catch {
+        /* Logging cannot affect the host. */
+      }
+    },
+  );
   const readSource = (fileName) => {
     if (!isSfc(fileName)) return undefined;
     const originalSnapshot = getSnapshot(fileName);
@@ -57,9 +66,11 @@ function installVueVirtualModules(ts, info) {
   const get = (fileName) => {
     const source = readSource(fileName);
     if (typeof source !== "string") return undefined;
-    const settings = host.getCompilationSettings?.() || {};
-    const configSource = configText(settings.configFilePath);
-    const configuration = JSON.stringify([settings.checkJs, settings.configFilePath, configSource]);
+    const settings = originalOptions?.() || {};
+    const project = engine.native
+      ? projectConfiguration.get(settings)
+      : { configuration: JSON.stringify([settings.checkJs, settings.configFilePath]) };
+    const configuration = project.configuration;
     const cached = snapshots.get(fileName);
     if (cached?.source === source && cached.configuration === configuration) return cached;
     const version = crypto
@@ -71,6 +82,7 @@ function installVueVirtualModules(ts, info) {
     let projection, error;
     try {
       if (!engine.native) throw new Error(`Native projection unavailable: ${engine.error}`);
+      if (project.error) throw new Error(project.error);
       projection = engine.toUtf16LanguageProjection(
         source,
         engine.native.generateVueLanguageCode(source, {
@@ -89,7 +101,6 @@ function installVueVirtualModules(ts, info) {
     snapshots.set(fileName, value);
     return value;
   };
-  const originalOptions = bind("getCompilationSettings");
   const options = () => {
     const original = originalOptions?.() || {};
     // TypeScript stores the parsed configFile as a non-enumerable option.
@@ -147,6 +158,15 @@ function installVueVirtualModules(ts, info) {
       isSfc(name) ? ts.ScriptKind.TSX : (previousKind?.(name) ?? ts.ScriptKind.Unknown),
     getScriptVersion: (name) =>
       isSfc(name) ? (get(name)?.version ?? "0") : (previousVersion?.(name) ?? "0"),
+    ...(originalProjectVersion
+      ? {
+          getProjectVersion() {
+            const version = originalProjectVersion();
+            const project = projectConfiguration.get(originalOptions?.() || {});
+            return `${version}:${project.configuration}`;
+          },
+        }
+      : {}),
     resolveModuleNameLiterals(...args) {
       const [literals, containingFile, redirectedReference, compilerOptions, sourceFile] = args;
       const prior = previousLiterals?.(...args) || [];
@@ -178,8 +198,19 @@ function installVueVirtualModules(ts, info) {
     },
   };
   const support = { get, readSource, engine, resolve, fileExists, readFile, snapshots };
+  let restore;
+  support.dispose = () => {
+    projectConfiguration.dispose();
+    snapshots.clear();
+    installedHosts.delete(host);
+    restore?.();
+  };
   if (!engine.native) return support;
-  if (!installAtomically(host, replacements)) return undefined;
+  restore = installAtomically(host, replacements);
+  if (!restore) {
+    projectConfiguration.dispose();
+    return undefined;
+  }
   installedHosts.set(host, support);
   return support;
 }
@@ -194,7 +225,13 @@ function installAtomically(host, replacements) {
       if (!Reflect.set(host, name, value) || host[name] !== value)
         throw new Error("Host is read-only");
     }
-    return true;
+    return () => {
+      for (const [name, descriptor] of originals) {
+        if (host[name] !== replacements[name]) continue;
+        if (descriptor) Object.defineProperty(host, name, descriptor);
+        else delete host[name];
+      }
+    };
   } catch {
     for (const [name, descriptor] of originals) {
       try {
@@ -204,6 +241,152 @@ function installAtomically(host, replacements) {
     }
     return false;
   }
+}
+
+// One resolver snapshot belongs to the project, not to any individual SFC.
+// Known files are read and hashed once per project version or watcher event.
+function createProjectConfiguration(
+  engine,
+  readFile,
+  watchFile,
+  getProjectVersion,
+  changed,
+  trace,
+) {
+  let configFile, epoch, metadata, error;
+  let dirty = true;
+  let disposed = false;
+  let fingerprints = new Map();
+  const watchers = new Map();
+  const close = () => {
+    for (const watcher of watchers.values()) watcher.close();
+    watchers.clear();
+  };
+  function watch(files) {
+    const retained = new Set(files);
+    const added = new Map();
+    try {
+      if (watchFile)
+        for (const file of retained)
+          if (!watchers.has(file))
+            added.set(
+              file,
+              watchFile(
+                file,
+                () => {
+                  if (disposed) return;
+                  dirty = true;
+                  changed();
+                },
+                // Missing candidates use the server host's polling fallback.
+                250,
+              ),
+            );
+    } catch (cause) {
+      for (const watcher of added.values()) watcher.close();
+      throw cause;
+    }
+    for (const [file, watcher] of watchers)
+      if (!retained.has(file)) {
+        watcher.close();
+        watchers.delete(file);
+      }
+    for (const [file, watcher] of added) watchers.set(file, watcher);
+  }
+  return {
+    get(settings) {
+      const name = typeof settings.configFilePath === "string" ? settings.configFilePath : "";
+      if (name !== configFile) {
+        close();
+        configFile = name;
+        metadata = undefined;
+        error = undefined;
+        fingerprints = new Map();
+        dirty = true;
+      }
+      if (name) {
+        const version = getProjectVersion?.();
+        if (dirty || version !== epoch || (!metadata && !error)) {
+          epoch = version;
+          dirty = false;
+          const observed = new Map();
+          const fingerprint = (file) => {
+            if (observed.has(file)) return observed.get(file);
+            let source;
+            try {
+              source = readFile(file);
+            } catch {
+              // Resolver probes can be missing files or package directories.
+            }
+            const digest =
+              typeof source === "string"
+                ? crypto.createHash("sha256").update(source).digest("hex")
+                : undefined;
+            observed.set(file, digest);
+            return digest;
+          };
+          let altered = false;
+          // Every known input must precede the native snapshot, even after the
+          // first mismatch. Later reads must not bless concurrently changed bytes.
+          for (const [file, digest] of fingerprints)
+            if (fingerprint(file) !== digest) altered = true;
+          if (!metadata || error || altered) {
+            try {
+              if (typeof engine.native?.getVueLanguageProjectMetadata !== "function")
+                throw new Error("Native project configuration metadata is unavailable");
+              let next;
+              for (let capture = 0; capture < 3; capture++) {
+                const candidate = engine.native.getVueLanguageProjectMetadata(name);
+                if (
+                  !candidate ||
+                  typeof candidate.configIdentity !== "string" ||
+                  !Array.isArray(candidate.watchedFiles) ||
+                  candidate.watchedFiles.some(
+                    (file) => typeof file !== "string" || !path.isAbsolute(file),
+                  )
+                )
+                  throw new Error("Invalid native project configuration metadata");
+                const discovered = candidate.watchedFiles.filter((file) => !observed.has(file));
+                if (!discovered.length) {
+                  next = candidate;
+                  break;
+                }
+                // Newly discovered inputs must also be watched and fingerprinted
+                // before the snapshot whose identity we eventually admit.
+                watch([...watchers.keys(), ...candidate.watchedFiles]);
+                for (const file of discovered) fingerprint(file);
+              }
+              if (!next)
+                throw new Error("Project configuration dependencies changed during three captures");
+              watch(next.watchedFiles);
+              metadata = next;
+              error = undefined;
+              trace({
+                configFileName: name,
+                configIdentity: next.configIdentity,
+                nativeWatchedFiles: next.watchedFiles,
+                registeredFiles: [...watchers.keys()],
+              });
+            } catch (cause) {
+              error = cause instanceof Error ? cause.message : String(cause);
+              watch([...new Set([name, ...watchers.keys()])]);
+            }
+          }
+          fingerprints = new Map(
+            (metadata?.watchedFiles || [name]).map((file) => [file, fingerprint(file)]),
+          );
+        }
+      }
+      return {
+        configuration: JSON.stringify([settings.checkJs, name, error || metadata?.configIdentity]),
+        error,
+      };
+    },
+    dispose() {
+      disposed = true;
+      close();
+    },
+  };
 }
 
 function isSfc(fileName) {

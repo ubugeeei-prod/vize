@@ -189,10 +189,12 @@ fn same_element_v_if_does_not_see_v_for_alias() {
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
+    // `attribute` is read before the loop binds it, so it is an unresolved
+    // template read: declared from the public instance, never from the alias.
     assert!(
-        output
-            .code
-            .contains("\n  // Undefined references from template:\n  void (attribute);\n"),
+        output.code.lines().any(|line| {
+            line == "  var attribute!: __VizeTemplateInstanceMember<\"attribute\">; void (attribute);"
+        }),
         "same-element v-if must be checked before its v-for aliases exist:\n{}",
         output.code
     );

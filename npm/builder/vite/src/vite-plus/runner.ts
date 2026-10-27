@@ -90,16 +90,13 @@ export async function runTools(
 export async function runTask(argv: string[]): Promise<number> {
   const [task, ...rest] = argv;
   const args = rest[0] === "--" ? rest.slice(1) : rest;
-  if (task === "editor:setup") {
-    const { setupEditor } = await import("./editor.ts");
-    await setupEditor();
-    return 0;
-  }
   const { require, binary: vp } = resolveVitePlus();
   if (["build", "dev", "preview", "test", "pack"].includes(task)) {
     return execute(process.execPath, [vp, task, ...args]);
   }
-  if (!["check", "typecheck", "lint", "lint:fix", "fmt", "fmt:check"].includes(task)) {
+  if (
+    !["editor:setup", "check", "typecheck", "lint", "lint:fix", "fmt", "fmt:check"].includes(task)
+  ) {
     throw new Error(`Unknown Vize task: ${task}`);
   }
   const { loadConfigFromFile } = require("vite-plus") as typeof import("vite-plus");
@@ -109,6 +106,16 @@ export async function runTask(argv: string[]): Promise<number> {
     throw new Error(
       "The current vite.config must use defineConfig from @vizejs/vite-plugin/vite-plus.",
     );
+  if (task === "editor:setup") {
+    const env = { command: "build", mode: "production" } as const;
+    const config =
+      metadata.config === undefined
+        ? await loadConfig(process.cwd(), { env })
+        : await resolveConfigExport(metadata.config, env);
+    const { setupEditor } = await import("./editor.ts");
+    await setupEditor(process.cwd(), config?.languageServer ?? config?.lsp);
+    return 0;
+  }
   const native = nativeBinary();
   return runTools(task as VizeTask, args, metadata, vp, native, execute);
 }
