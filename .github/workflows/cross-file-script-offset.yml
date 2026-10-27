@@ -43,10 +43,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
-      VIZE_CROSS_FILE_OFFSET_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
-      VIZE_CROSS_FILE_OFFSET_BEFORE_CLI: ${{ runner.temp }}/cross-file-before/node_modules/.bin/vize
       VIZE_CROSS_FILE_OFFSET_REQUIRE_BEFORE: "1"
-      VIZE_CROSS_FILE_OFFSET_PROOF: ${{ runner.temp }}/cross-file-offset-proof/packets.json
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -62,6 +59,12 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
+      - name: Configure shared packet paths on the runner
+        run: |
+          mkdir -p "$RUNNER_TEMP/cross-file-offset-proof"
+          printf 'VIZE_CROSS_FILE_OFFSET_SOURCE_CLI=%s\n' "$GITHUB_WORKSPACE/target/ci/vize" >> "$GITHUB_ENV"
+          printf 'VIZE_CROSS_FILE_OFFSET_BEFORE_CLI=%s\n' "$RUNNER_TEMP/cross-file-before/node_modules/.bin/vize" >> "$GITHUB_ENV"
+          printf 'VIZE_CROSS_FILE_OFFSET_PROOF=%s\n' "$RUNNER_TEMP/cross-file-offset-proof/packets.json" >> "$GITHUB_ENV"
       - run: vp install --frozen-lockfile --prefer-offline
       - uses: ./.github/actions/restore-source-cli
         id: restore
