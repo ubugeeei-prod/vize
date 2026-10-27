@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sfcs: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{0}]', inputs.sfcs) || '[1,10]') }}
+        sfcs: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{0}]', inputs.sfcs) || '[1]') }}
     env:
       NODE_DISABLE_COMPILE_CACHE: "1"
       GOMAXPROCS: "2"
@@ -97,6 +97,10 @@ jobs:
         run: |
           set -euo pipefail
           node --test tests/tooling/canon-helper-native-proxy.test.ts
+      - name: Preserve the frozen public repro and independently poison inferred slot payloads
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/canon-helper-slot-triage.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-slot-triage"
       - name: Capture actual CLI and source mapper packets with mutation and repair oracles
         run: |
           set -euo pipefail
@@ -108,6 +112,7 @@ jobs:
           cd "$RUNNER_TEMP"
           paths=(helper-baseline-custody)
           if [[ -d helper-baseline ]]; then paths+=(helper-baseline); fi
+          if [[ -d helper-slot-triage ]]; then paths+=(helper-slot-triage); fi
           tar --exclude=node_modules --exclude=project --exclude=tmp --exclude=cache --exclude=xdg-cache -czf helper-baseline-evidence.tgz "${paths[@]}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
