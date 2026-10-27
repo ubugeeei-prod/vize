@@ -79,6 +79,9 @@ pub struct BatchTypeChecker {
     incremental_paths: IncrementalPaths,
     // Dropped after the executor, so live sessions cannot outlast their files.
     owned_storage: Option<installed_storage::InstalledStorage>,
+    persistent_storage_owner: Option<installed_sources::PersistentStorageOwner>,
+    // Owner and context leases both outlive the executor.
+    _persistent_storage_leases: Option<(std::fs::File, std::fs::File)>,
 }
 
 impl BatchTypeChecker {
