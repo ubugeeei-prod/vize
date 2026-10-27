@@ -332,3 +332,32 @@ fn test_vif_guard_in_template() {
 
     insta::assert_debug_snapshot!(expressions);
 }
+
+/// A same-element `v-for` source is read in the enclosing scope before the
+/// loop's aliases exist. A name nothing binds there is an unresolved read of
+/// the template wherever the loop sits, including a slot template, so the
+/// checker resolves it on the instance like any binding expression.
+#[test]
+fn v_for_sources_report_unresolved_reads() {
+    for template in [
+        r#"<div><i v-for="i in list" :key="i">x</i></div>"#,
+        r#"<Box><template #text><i v-for="i in (isSP ? list : [])" :key="i">x</i></template></Box>"#,
+        r#"<Box><template #text="{ row }"><i v-for="(i, index) in list" :key="index">{{ row }}</i></template></Box>"#,
+    ] {
+        let undefined = undefined_refs_with_empty_script(template);
+        assert!(
+            undefined.iter().any(|name| name == "list"),
+            "the source must be an unresolved read: {template} => {undefined:?}"
+        );
+        for alias in ["i", "index", "row"] {
+            assert!(
+                !undefined.iter().any(|name| name == alias),
+                "a loop or slot alias is bound: {template} => {undefined:?}"
+            );
+        }
+    }
+    let undefined = undefined_refs_with_empty_script(
+        r#"<Box><template #text><i v-for="i in (isSP ? list : [])" :key="i">x</i></template></Box>"#,
+    );
+    assert_eq!(undefined, ["isSP", "list"]);
+}

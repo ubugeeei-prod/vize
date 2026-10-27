@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
+import { publicInstanceReference } from "./public-instance-reference.js";
 import {
   directory,
   workspace,
@@ -272,7 +273,7 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
       story.languageService.getSemanticDiagnostics(file),
     );
     assert.equal(diagnostics.length, 1);
-    assert.equal(diagnostics[0].code, 2304);
+    assert.equal(diagnostics[0].code, 2339);
     assert.equal(
       storySource.slice(diagnostics[0].start, diagnostics[0].start + diagnostics[0].length),
       "unknownStoryBinding",
@@ -513,5 +514,5 @@ void test("all captured packets equal the reviewed complete source expectations"
   );
   assert.equal(hash(JSON.stringify(expected)), provenance.expectedPacketDataSha256);
   assert.equal(expected.length, provenance.expectedPackets);
-  assert.deepEqual(packets, expected);
+  assert.deepEqual(packets, publicInstanceReference(expected));
 });

@@ -53,6 +53,7 @@ void test("Rust corpus inputs include compiler, hydrated shards, matrix, harness
     ".github/workflows/pr-source-checks.yml",
     "tests/_fixtures/_git/create-vue",
     "tests/_fixtures/_git/ant-design-vue",
+    "tests/_fixtures/_git/layoutit-grid",
     "tests/fixtures/davinci-matrix/deleted.vue",
     "tools/benchmarks/crates/davinci_harness/src/fixtures.rs",
     "docs/davinci/plan/complexity-metrics.md",

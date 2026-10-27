@@ -7694,6 +7694,292 @@
       }
     },
     {
+      "id": "typechecker/setup-custom-properties/script-setup-custom-properties",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "setup-custom-properties",
+      "case": "script-setup-custom-properties",
+      "test": "custom_properties_resolve_on_the_template_instance",
+      "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "setup-custom-properties/cases.json",
+        "sha256": "dd7fe5ddf6229a1caf9335aeadba48d5067492bf4a265e692e0b6135bfbdf25b"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "setup-custom-properties/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "path": "setup-custom-properties/src/mixin.d.ts.txt",
+          "sha256": "b7ef038df90920d9f271833f9dc34c14de3c172310fe5a33a99f0bfc61af28fd"
+        },
+        {
+          "file": "src/Box.vue",
+          "path": "setup-custom-properties/src/Box.vue.txt",
+          "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6"
+        },
+        {
+          "file": "src/Setup.vue",
+          "path": "setup-custom-properties/src/Setup.vue.txt",
+          "sha256": "7103f459dce11b21d2f46237cc42bfdde252bcb4f7a8a1387fc50d4e95ec0858"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/setup-custom-properties/script-setup-wrong-use-and-unknown-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "setup-custom-properties",
+      "case": "script-setup-wrong-use-and-unknown-name",
+      "test": "custom_properties_resolve_on_the_template_instance",
+      "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "setup-custom-properties/cases.json",
+        "sha256": "dd7fe5ddf6229a1caf9335aeadba48d5067492bf4a265e692e0b6135bfbdf25b"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "setup-custom-properties/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "path": "setup-custom-properties/src/mixin.d.ts.txt",
+          "sha256": "b7ef038df90920d9f271833f9dc34c14de3c172310fe5a33a99f0bfc61af28fd"
+        },
+        {
+          "file": "src/Box.vue",
+          "path": "setup-custom-properties/src/Box.vue.txt",
+          "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6"
+        },
+        {
+          "file": "src/Setup.vue",
+          "path": "setup-custom-properties/src/SetupWrong.vue.txt",
+          "sha256": "69ee01b1e05be45f195c7abe3a6d670fa50026c6281e66a00018174717870a44"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Setup.vue",
+          "line": 6,
+          "column": 29,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toFixed' does not exist on type 'boolean'."
+        },
+        {
+          "file": "src/Setup.vue",
+          "line": 7,
+          "column": 9,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        },
+        {
+          "file": "src/Setup.vue",
+          "line": 7,
+          "column": 23,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "typechecker/setup-custom-properties/options-api-slot-loop-source",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "setup-custom-properties",
+      "case": "options-api-slot-loop-source",
+      "test": "custom_properties_resolve_on_the_template_instance",
+      "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "setup-custom-properties/cases.json",
+        "sha256": "dd7fe5ddf6229a1caf9335aeadba48d5067492bf4a265e692e0b6135bfbdf25b"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "setup-custom-properties/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "path": "setup-custom-properties/src/mixin.d.ts.txt",
+          "sha256": "b7ef038df90920d9f271833f9dc34c14de3c172310fe5a33a99f0bfc61af28fd"
+        },
+        {
+          "file": "src/Box.vue",
+          "path": "setup-custom-properties/src/Box.vue.txt",
+          "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6"
+        },
+        {
+          "file": "src/Options.vue",
+          "path": "setup-custom-properties/src/Options.vue.txt",
+          "sha256": "81639aa722178f2bb27774da0477b7a60a742f1438279a2a1248b13b31787412"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/setup-custom-properties/options-api-slot-loop-unknown-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "setup-custom-properties",
+      "case": "options-api-slot-loop-unknown-name",
+      "test": "custom_properties_resolve_on_the_template_instance",
+      "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "setup-custom-properties/cases.json",
+        "sha256": "dd7fe5ddf6229a1caf9335aeadba48d5067492bf4a265e692e0b6135bfbdf25b"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "setup-custom-properties/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "path": "setup-custom-properties/src/mixin.d.ts.txt",
+          "sha256": "b7ef038df90920d9f271833f9dc34c14de3c172310fe5a33a99f0bfc61af28fd"
+        },
+        {
+          "file": "src/Box.vue",
+          "path": "setup-custom-properties/src/Box.vue.txt",
+          "sha256": "ea2c56f504bf8b68f3fdb5a5213b53ded6a80bdc07becbcc71446e18f640b5f6"
+        },
+        {
+          "file": "src/Options.vue",
+          "path": "setup-custom-properties/src/OptionsWrong.vue.txt",
+          "sha256": "a9cde4264de53a9811a1e7777d58d4f9fa11c815b141fc03cbaef209161ee7fd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Options.vue",
+          "line": 3,
+          "column": 49,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        },
+        {
+          "file": "src/Options.vue",
+          "line": 4,
+          "column": 11,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        }
+      ]
+    },
+    {
       "id": "typechecker/slot-outlet-key/declared-and-inferred-key-payload",
       "targets": ["batch"],
       "adapters": {
