@@ -1,113 +1,85 @@
-name: Release verify
-# Post-publish checks for one release. release.yml dispatches it once npm has
-# accepted every package, so npm propagation and these checks never hold the
-# Release run, and with it the cadence's next release, open. Verifying npm
-# still gates JSR: a failed verify dispatches no JSR publication.
+name: Public storage acceptance 10934
+run-name: Public storage acceptance ${{ inputs.version }}
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: Published release version (X.Y.Z)
-        required: true
+        description: Genuine public npm version
         type: string
-      tag:
-        description: Release tag (vX.Y.Z)
         required: true
+      candidate:
+        description: Actual immutable release tag commit
         type: string
-      sha:
-        description: Commit the release tag points at
         required: true
+      authority_blob:
+        description: Byte-pinned genuine producer and npm authority Git blob
         type: string
-      packages:
-        description: Space-separated npm package names the release published
         required: true
-        type: string
-run-name: Release verify ${{ inputs.tag }}
-permissions: { contents: read }
+permissions: { contents: read, actions: read }
 concurrency:
-  group: release-verify-${{ inputs.version }}
+  group: public-storage-10934-${{ inputs.version }}
   cancel-in-progress: false
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
-  # Verify every package together and install the CLI from npm.
-  verify-npm:
-    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
-    name: Verify npm packages
+  public-storage:
+    if: github.repository == 'ubugeeei-prod/vize'
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 25
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
-      RELEASE_TAG: ${{ inputs.tag }}
-      RELEASE_SHA: ${{ inputs.sha }}
+      GH_TOKEN: ${{ github.token }}
+      PUBLIC_STORAGE_VERSION: ${{ inputs.version }}
+      PUBLIC_STORAGE_CANDIDATE: ${{ inputs.candidate }}
+      PUBLIC_STORAGE_AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+      PUBLIC_STORAGE_SOURCE: ${{ github.workspace }}/release-source
+      PUBLIC_STORAGE_ROOT: ${{ runner.temp }}/public-storage-10934-${{ github.run_id }}-${{ github.run_attempt }}
+      NODE_DISABLE_COMPILE_CACHE: "1"
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
-      - name: Check the release identity
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { path: carrier, persist-credentials: false }
+      - name: Validate release inputs
+        shell: bash
         run: |
-          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          [[ "$RELEASE_TAG" == "v$RELEASE_VERSION" ]]
-          [[ "$(git rev-parse HEAD)" == "$RELEASE_SHA" ]]
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Wait for npm and smoke the published CLI
-        env:
-          RELEASE_PACKAGES: ${{ inputs.packages }}
+          set -euo pipefail
+          [[ "$PUBLIC_STORAGE_VERSION" =~ ^0\.[0-9]+\.0$ ]]
+          [[ "$PUBLIC_STORAGE_CANDIDATE" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$PUBLIC_STORAGE_AUTHORITY_BLOB" =~ ^[a-f0-9]{40}$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.candidate }}
+          path: release-source
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 26.6.0, package-manager-cache: false }
+      - name: Check the strict TypeScript carrier
+        shell: bash
         run: |
-          read -ra packages <<< "$RELEASE_PACKAGES"
-          node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
-
-  # Gates nothing: fresh, migrated and monorepo projects configured only by
-  # vite.config.ts and tsconfig.json, using the packages just verified.
-  verify-config:
-    name: Verify config-free projects
-    needs: verify-npm
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Set up fresh, migrated and monorepo projects without vize.config.*
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-        run: node tools/support/release/verify_published/config_free.ts "$RELEASE_VERSION"
-
-  # Gates nothing: Musea VRT from the published plugin in Chromium on Linux.
-  verify-musea-vrt:
-    name: Verify Musea VRT
-    needs: verify-npm
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      # playwright install --with-deps uses apt.
-      - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Capture, match, diff and update a Musea baseline
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-        run: node tools/support/release/verify_published/musea_vrt.ts "$RELEASE_VERSION"
-
-  # JSR's facade resolves the npm packages, so it follows their verification.
-  # It runs as its own workflow because JSR's processing takes 10-60 min.
-  publish-jsr:
-    name: Dispatch the JSR publication
-    needs: verify-npm
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    # JSR only accepts OIDC publishes whose actor is a scope member, never
-    # github-actions[bot], so dispatch as the maintainer.
-    environment: release-operator
-    steps:
-      - name: Dispatch release-jsr.yml
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
-          JSR_VERSION: ${{ inputs.tag }}
-          JSR_SOURCE: ${{ inputs.sha }}
+          set -euo pipefail
+          qa_types="$RUNNER_TEMP/public-storage-types"
+          npm install --prefix "$qa_types" --ignore-scripts --no-audit --no-fund --prefer-online typescript@6.0.3 @types/node@25.9.2
+          node "$qa_types/node_modules/typescript/lib/tsc.js" --noEmit --strict --noUnusedLocals --noUnusedParameters --noUncheckedIndexedAccess --skipLibCheck --target ESNext --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions --types node --typeRoots "$qa_types/node_modules/@types" carrier/tools/support/release/public_storage_10934/run.ts
+      - name: Provide read-only process observation
+        shell: bash
         run: |
-          gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
-            -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"
+          set -euo pipefail
+          if ! command -v strace >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends strace
+          fi
+      - name: Verify genuine public storage in three fresh processes
+        run: node carrier/tools/support/release/public_storage_10934/run.ts
+      - name: Archive complete evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PUBLIC_STORAGE_ROOT/evidence"
+          tar --exclude='./harness/project' -czf "$RUNNER_TEMP/public-storage-10934.tgz" -C "$PUBLIC_STORAGE_ROOT/evidence" .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: public-storage-10934-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/public-storage-10934.tgz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
