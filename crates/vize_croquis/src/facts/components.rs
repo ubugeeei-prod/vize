@@ -161,53 +161,6 @@ fn names_match(left: &str, right: &str) -> bool {
     left == right || to_pascal_case(left) == to_pascal_case(right)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::ComponentUsages;
-    use crate::drawer::{Drawer, DrawerOptions};
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
-    use vize_armature::parse;
-    use vize_carton::Allocator;
-
-    struct Reader;
-    impl FactConsumer for Reader {
-        const NAME: &'static str = "test/component-usages-reader";
-        const DEMAND: Demand = Demand::NONE.with(ComponentUsages::ID);
-    }
-
-    #[test]
-    fn aliased_import_records_the_exported_identity() {
-        let allocator = Allocator::new();
-        let (root, _errors) = parse(&allocator, "<Bar />");
-        let mut drawer = Drawer::with_options(DrawerOptions::full());
-        drawer.draw_script_setup("import { Foo as Bar } from './Foo.vue'\n");
-        drawer.draw_template(&root);
-        let croquis = drawer.finish();
-
-        assert_eq!(croquis.component_usages.len(), 1);
-        assert_eq!(croquis.component_usages[0].name.as_str(), "Bar");
-
-        let mut facts = CroquisFacts::new(&croquis);
-        let table = facts.prepare::<Reader>().get::<ComponentUsages>().unwrap();
-        let recorded: Vec<_> = table
-            .iter()
-            .map(|(identity, sites)| {
-                (
-                    identity.module.as_deref(),
-                    identity.export_name.as_str(),
-                    sites.len(),
-                )
-            })
-            .collect();
-        assert_eq!(recorded, vec![(Some("./Foo.vue"), "Foo", 1)]);
-        assert!(
-            table
-                .iter()
-                .all(|(identity, _)| identity.export_name.as_str() != "Bar")
-        );
-    }
-}
-
 /// Source-owned local component binding. This is private CF authority, not a
 /// synthetic static import and not part of the serialized component DTO.
 pub enum LocalComponentBinding<'a> {
@@ -269,4 +222,51 @@ pub fn component_reference_name<'a>(croquis: &'a crate::Croquis, tag: &str) -> O
         .as_deref()?
         .component_binding_name(tag)
         .flatten()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ComponentUsages;
+    use crate::drawer::{Drawer, DrawerOptions};
+    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use vize_armature::parse;
+    use vize_carton::Allocator;
+
+    struct Reader;
+    impl FactConsumer for Reader {
+        const NAME: &'static str = "test/component-usages-reader";
+        const DEMAND: Demand = Demand::NONE.with(ComponentUsages::ID);
+    }
+
+    #[test]
+    fn aliased_import_records_the_exported_identity() {
+        let allocator = Allocator::new();
+        let (root, _errors) = parse(&allocator, "<Bar />");
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_script_setup("import { Foo as Bar } from './Foo.vue'\n");
+        drawer.draw_template(&root);
+        let croquis = drawer.finish();
+
+        assert_eq!(croquis.component_usages.len(), 1);
+        assert_eq!(croquis.component_usages[0].name.as_str(), "Bar");
+
+        let mut facts = CroquisFacts::new(&croquis);
+        let table = facts.prepare::<Reader>().get::<ComponentUsages>().unwrap();
+        let recorded: Vec<_> = table
+            .iter()
+            .map(|(identity, sites)| {
+                (
+                    identity.module.as_deref(),
+                    identity.export_name.as_str(),
+                    sites.len(),
+                )
+            })
+            .collect();
+        assert_eq!(recorded, vec![(Some("./Foo.vue"), "Foo", 1)]);
+        assert!(
+            table
+                .iter()
+                .all(|(identity, _)| identity.export_name.as_str() != "Bar")
+        );
+    }
 }
