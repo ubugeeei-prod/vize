@@ -331,3 +331,84 @@ fn workspace_vue_reachability_uses_the_main_import_graph() {
         "workspace sources do not need the bounded external-package scan"
     );
 }
+
+/// Nuxt's `.nuxt/imports.d.ts` re-exports composables and generated JS for
+/// auto-imports. A workspace walk enters it to see barrels, but its targets
+/// were never authored before #10015 (#10889).
+#[test]
+#[cfg(unix)]
+fn declaration_re_exports_in_a_workspace_walk_stay_unauthored() {
+    use std::os::unix::fs::symlink;
+
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("app");
+    let entry = write(
+        &app,
+        "src/entry.ts",
+        "import { Widget } from '@workspace/ui';\nvoid Widget;\n",
+    );
+    write(
+        &app,
+        ".nuxt/imports.d.ts",
+        "export { useTour } from '../composables/useTour';\nexport { $fetch } from './fetch.mjs';\n",
+    );
+    write(&app, ".nuxt/fetch.mjs", "export const $fetch = () => {};\n");
+    write(
+        &app,
+        "composables/useTour.ts",
+        "export const useTour = () => 1;\n",
+    );
+    let tsconfig = write(
+        &app,
+        "tsconfig.json",
+        r##"{"compilerOptions":{"allowJs":true,"paths":{"#imports":["./.nuxt/imports.d.ts"]}}}"##,
+    );
+    let package = root.path().join("packages/ui");
+    let index = write(
+        root.path(),
+        "packages/ui/src/index.ts",
+        "import { useTour } from '#imports';\nvoid useTour;\nexport { default as Widget } from './widget';\n",
+    );
+    write(
+        root.path(),
+        "packages/ui/src/widget.d.ts",
+        "export { default } from './Widget.vue';\n",
+    );
+    let widget = write(
+        root.path(),
+        "packages/ui/src/Widget.vue",
+        "<template><button /></template>\n",
+    );
+    write(
+        root.path(),
+        "packages/ui/package.json",
+        r#"{"name":"@workspace/ui","type":"module","exports":{".":"./src/index.ts"}}"#,
+    );
+    let link = app.join("node_modules/@workspace/ui");
+    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
+    symlink(&package, &link).unwrap();
+
+    let aliases = PathAliasResolver::from_tsconfig(Some(&tsconfig));
+    let mut resolver = PackageRouteResolver::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let mut authored = collect_transitive_local_imports_with_session(
+        &[entry],
+        &app,
+        &mut CanonicalPathCache::default(),
+        ImportFileOptions {
+            include_js: true,
+            include_jsx: false,
+        },
+        Some(&aliases),
+        &mut resolver,
+        &mut session,
+    )
+    .authored;
+    authored.sort();
+    let mut expected = vec![
+        index.canonicalize().unwrap(),
+        widget.canonicalize().unwrap(),
+    ];
+    expected.sort();
+    assert_eq!(authored, expected);
+}

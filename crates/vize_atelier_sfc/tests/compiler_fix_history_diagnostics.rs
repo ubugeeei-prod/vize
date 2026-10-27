@@ -27,10 +27,15 @@ fn invalid_template_expression_keeps_complete_result() {
     )
     .expect("authored options must match their reference");
     let descriptor = parse_sfc(SOURCE, descriptor_options).expect("parse authored SFC");
+    let expected = support::closed_setup_reference::advance(
+        serde_json::from_str::<Value>(EXPECTED).expect("valid immutable Result reference"),
+        "  setup(__props) {\n",
+        "  setup(__props, { expose: __expose }) {\n  __expose();\n",
+    );
     assert_eq!(
         serde_json::to_value(compile_sfc(&descriptor, options))
             .expect("serialize complete public Result"),
-        serde_json::from_str::<Value>(EXPECTED).expect("valid immutable Result reference"),
+        expected,
         "complete diagnostic Result changed for fix 336622af2"
     );
 }

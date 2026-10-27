@@ -22,7 +22,6 @@ pub(super) struct PropsObjectOptions<'a> {
     pub empty_key_multiline: bool,
     pub is_plain_element: bool,
     pub for_item: bool,
-    pub suppress_once_cache_dynamic: bool,
     pub force_multiline: bool,
 }
 
@@ -37,19 +36,12 @@ pub(super) fn emit_props_object(
         empty_key_multiline,
         is_plain_element,
         for_item,
-        suppress_once_cache_dynamic,
         force_multiline,
     } = options;
-    let split_once_static_class = cx.once_depth > 0
-        && pieces_have_static_attr(pieces, "class")
-        && pieces_have_named(pieces, "class");
-    let skip_class = pieces_have_named(pieces, "class") && !split_once_static_class;
+    let skip_class = pieces_have_named(pieces, "class");
     let skip_style = pieces_have_named(pieces, "style");
     let skip_key = if_key.is_some() || cx.suppress_template_for_child_key;
     let keep_template_if_static_key = if_key.is_some() && cx.template_if_branch_root;
-    if suppress_once_cache_dynamic {
-        reserve_skipped_once_helpers(cx, pieces)?;
-    }
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
         .filter(|piece| {
@@ -59,7 +51,7 @@ pub(super) fn emit_props_object(
                 skip_style,
                 skip_key,
                 keep_template_if_static_key,
-            ) && !(suppress_once_cache_dynamic && skip_once_cache_piece(piece))
+            )
         })
         .collect();
     let scope_id = cx.scope_id_here();
@@ -239,22 +231,6 @@ fn skip_emitted_key(
         Piece::Bind(bind) if skip_key && super::props_bind::is_key_bind_name(bind) => true,
         _ => false,
     }
-}
-
-fn skip_once_cache_piece(piece: &Piece<'_>) -> bool {
-    matches!(piece, Piece::On(_) | Piece::VueHtml(_))
-}
-
-fn reserve_skipped_once_helpers(
-    cx: &mut EmitCx<'_>,
-    pieces: &[Piece<'_>],
-) -> Result<(), EmitError> {
-    for piece in pieces {
-        if let Piece::On(on) = piece {
-            on::reserve_skipped_once_helpers(cx, on)?;
-        }
-    }
-    Ok(())
 }
 
 pub(super) fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {

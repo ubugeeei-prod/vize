@@ -15,7 +15,8 @@ export default {
     default: () => ({})
   } },
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const __returned__ = { ItemTab };
     Object.defineProperty(__returned__, "__isScriptSetup", {
       enumerable: false,

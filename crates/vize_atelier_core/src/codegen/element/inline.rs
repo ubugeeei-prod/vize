@@ -10,7 +10,7 @@ use crate::{
 
 use super::{
     super::{
-        children::{generate_children, is_directive_comment},
+        children::{generate_children, generate_children_force_array, is_directive_comment},
         context::CodegenContext,
         expression::generate_expression,
         helpers::{is_builtin_component, to_valid_asset_identifier},
@@ -85,300 +85,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     };
 
     match el.tag_type {
-        ElementType::Element => {
-            // Check for custom directives.
-            // Inline children need the same withDirectives wrapping as block roots.
-            let has_custom_dirs = has_custom_directives(el);
-            if has_custom_dirs {
-                ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
-                ctx.push("(");
-            }
-
-            // Native v-model is a runtime directive. If custom directives are
-            // present, it is merged into their withDirectives array.
-            let has_vmodel = has_vmodel_directive(el);
-            if has_vmodel && !has_custom_dirs {
-                ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
-                ctx.push("(");
-            }
-
-            // v-show is merged into custom/v-model wrappers when either is present.
-            let has_vshow = has_vshow_directive(el) && !has_vmodel && !has_custom_dirs;
-            if has_vshow {
-                ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.use_helper(RuntimeHelper::VShow);
-                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
-                ctx.push("(");
-            }
-
-            ctx.push_pure();
-            ctx.use_helper(RuntimeHelper::CreateElementVNode);
-            ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
-            ctx.push("(\"");
-            // Anchor the generated tag name at the authored tag name (the byte
-            // after the open tag's `<`). No-op without `source_map`.
-            ctx.push_tag(el);
-            ctx.push("\"");
-
-            // Calculate patch flag and dynamic props
-            let (patch_flag, dynamic_props) = calculate_element_patch_info(
-                el,
-                ctx.options.binding_metadata.as_ref(),
-                ctx.cache_handlers_in_current_scope(),
-            );
-            let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
-
-            // Generate props (only if there are renderable props, not just v-show)
-            // If props are hoisted, use the hoisted reference
-            if let Some(hoisted_index) = el.hoisted_props_index {
-                ctx.push(", _hoisted_");
-                ctx.push(&hoisted_index.to_compact_string());
-            } else if super::helpers::has_renderable_props(el) {
-                ctx.push(", ");
-                ctx.props_is_plain_element = true;
-                generate_props(ctx, &el.props);
-                ctx.props_is_plain_element = false;
-            } else if !el.children.is_empty() || has_patch_info {
-                ctx.push(", null");
-            }
-
-            // Generate children
-            if !el.children.is_empty() {
-                ctx.push(", ");
-                ctx.with_parent_namespace(child_namespace(el), |ctx| {
-                    generate_children(ctx, &el.children);
-                });
-            } else if has_patch_info {
-                ctx.push(", null");
-            }
-
-            // Generate patch flag
-            if let Some(flag) = patch_flag {
-                ctx.push(", ");
-                ctx.push(&flag.to_compact_string());
-                ctx.push(" /* ");
-                let flag_name = patch_flag_name(flag);
-                ctx.push(&flag_name);
-                ctx.push(" */");
-            }
-
-            // Generate dynamic props
-            if let Some(props) = dynamic_props {
-                ctx.push(", [");
-                for (i, prop) in props.iter().enumerate() {
-                    if i > 0 {
-                        ctx.push(", ");
-                    }
-                    ctx.push("\"");
-                    ctx.push(prop);
-                    ctx.push("\"");
-                }
-                ctx.push("]");
-            }
-
-            ctx.push(")");
-
-            // Close withDirectives for custom directives. This helper also
-            // merges native v-model/v-show when they share the same element.
-            if has_custom_dirs {
-                generate_custom_directives_closing(ctx, el);
-            }
-
-            // Close withDirectives for v-model
-            if has_vmodel && !has_custom_dirs {
-                generate_vmodel_closing(ctx, el);
-            }
-
-            // Close withDirectives for v-show
-            if has_vshow {
-                generate_vshow_closing(ctx, el);
-            }
-        }
-        ElementType::Component => {
-            let has_custom_dirs = has_custom_directives(el);
-            if has_custom_dirs {
-                ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
-                ctx.push("(");
-            }
-
-            // Support v-show on non-block components:
-            // _withDirectives(_createVNode(...), [[_vShow, expr]])
-            let has_vshow = has_vshow_directive(el) && !has_custom_dirs;
-            if has_vshow {
-                ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.use_helper(RuntimeHelper::VShow);
-                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
-                ctx.push("(");
-            }
-
-            ctx.push_pure();
-            ctx.use_helper(RuntimeHelper::CreateVNode);
-            ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
-            ctx.push("(");
-
-            // Check for dynamic component (<component :is="..."> or <Component is="...">)
-            let is_dynamic = is_dynamic_component(el, ctx.source.as_str());
-            let (dynamic_is, static_is) = if is_dynamic {
-                let dynamic = el.props.iter().find_map(|p| {
-                    if let PropNode::Directive(dir) = p
-                        && dir.name == "bind"
-                        && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                        && arg.content == "is"
-                    {
-                        return dir.exp.as_ref();
-                    }
-                    None
-                });
-                let static_val = el.props.iter().find_map(|p| {
-                    if let PropNode::Attribute(attr) = p
-                        && attr.name == "is"
-                    {
-                        return attr.value.as_ref().map(|v| v.content);
-                    }
-                    None
-                });
-                (dynamic, static_val)
-            } else {
-                (None, None)
-            };
-
-            if let Some(is_exp) = dynamic_is {
-                ctx.use_helper(RuntimeHelper::ResolveDynamicComponent);
-                ctx.push(ctx.helper(RuntimeHelper::ResolveDynamicComponent));
-                ctx.push("(");
-                generate_expression(ctx, is_exp);
-                ctx.push(")");
-            } else if let Some(component_name) = static_is {
-                ctx.use_helper(RuntimeHelper::ResolveDynamicComponent);
-                ctx.push(ctx.helper(RuntimeHelper::ResolveDynamicComponent));
-                ctx.push("(\"");
-                ctx.push(component_name);
-                ctx.push("\")");
-            } else if let Some(builtin) = is_builtin_component(el.tag) {
-                ctx.use_helper(builtin);
-                ctx.push(ctx.helper(builtin));
-            } else if ctx.push_component_binding_tag(el.tag) {
-            } else {
-                ctx.push(&to_valid_asset_identifier("component", el.tag));
-            }
-
-            // Calculate patch flag and dynamic props for component
-            // For dynamic components, skip the :is binding from patch flag calculation
-            let (mut patch_flag, dynamic_props) = if is_dynamic {
-                calculate_element_patch_info_skip_is(
-                    el,
-                    ctx.options.binding_metadata.as_ref(),
-                    ctx.cache_handlers_in_current_scope(),
-                )
-            } else {
-                calculate_element_patch_info(
-                    el,
-                    ctx.options.binding_metadata.as_ref(),
-                    ctx.cache_handlers_in_current_scope(),
-                )
-            };
-
-            // Slot content is patched through the slot object, so the component vnode
-            // itself should not keep the TEXT flag.
-            if has_slot_children(el)
-                && let Some(flag) = patch_flag
-            {
-                let new_flag = flag & !1;
-                patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
-            }
-
-            // KeepAlive always needs DYNAMIC_SLOTS. Other components need it when
-            // slot structure is dynamic.
-            if needs_dynamic_slots_patch(ctx, el) {
-                patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
-            }
-
-            let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
-
-            // Generate props -- for dynamic components, filter out the `is` prop
-            let effective_has_props = if is_dynamic {
-                el.props
-                    .iter()
-                    .any(|p| !is_is_prop(p) && is_renderable_prop(p))
-            } else {
-                has_renderable_props(el)
-            };
-            if let Some(hoisted_index) = el.hoisted_props_index {
-                ctx.push(", _hoisted_");
-                ctx.push(&hoisted_index.to_compact_string());
-            } else if effective_has_props {
-                ctx.push(", ");
-                if is_dynamic {
-                    ctx.skip_is_prop = true;
-                }
-                ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
-                ctx.skip_is_prop = false;
-            } else if !el.children.is_empty() || has_patch_info {
-                ctx.push(", null");
-            }
-
-            // Generate children/slots - use slot generation for component children
-            if has_slot_children(el) {
-                ctx.push(", ");
-                generate_slots(ctx, el);
-            } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
-                ctx.push(", [");
-                ctx.indent();
-                let filtered: Vec<_> = el
-                    .children
-                    .iter()
-                    .filter(|c| !is_directive_comment(c))
-                    .collect();
-                for (i, child) in filtered.iter().enumerate() {
-                    if i > 0 {
-                        ctx.push(",");
-                    }
-                    ctx.newline();
-                    generate_node(ctx, child);
-                }
-                ctx.deindent();
-                ctx.newline();
-                ctx.push("]");
-            } else if has_patch_info {
-                ctx.push(", null");
-            }
-
-            if let Some(flag) = patch_flag {
-                ctx.push(", ");
-                ctx.push(&flag.to_compact_string());
-                ctx.push(" /* ");
-                let flag_name = patch_flag_name(flag);
-                ctx.push(&flag_name);
-                ctx.push(" */");
-            }
-
-            if let Some(props) = dynamic_props {
-                ctx.push(", [");
-                for (i, prop) in props.iter().enumerate() {
-                    if i > 0 {
-                        ctx.push(", ");
-                    }
-                    ctx.push("\"");
-                    ctx.push(prop);
-                    ctx.push("\"");
-                }
-                ctx.push("]");
-            }
-
-            ctx.push(")");
-
-            if has_custom_dirs {
-                generate_custom_directives_closing(ctx, el);
-            }
-
-            // Close withDirectives for v-show on component
-            if has_vshow {
-                generate_vshow_closing(ctx, el);
-            }
-        }
+        ElementType::Element => generate_native_vnode(ctx, el),
+        ElementType::Component => generate_component_vnode(ctx, el),
         ElementType::Slot => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
@@ -443,5 +151,315 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push(", _cache, ");
         ctx.push(&cache_index.to_compact_string());
         ctx.push(")");
+    }
+}
+
+/// The non-block native element vnode, wrapped in its runtime directives.
+/// `v-once` caches exactly this call.
+pub(super) fn generate_native_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    // Check for custom directives.
+    // Inline children need the same withDirectives wrapping as block roots.
+    let has_custom_dirs = has_custom_directives(el);
+    if has_custom_dirs {
+        ctx.use_helper(RuntimeHelper::WithDirectives);
+        ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+        ctx.push("(");
+    }
+
+    // Native v-model is a runtime directive. If custom directives are
+    // present, it is merged into their withDirectives array.
+    let has_vmodel = has_vmodel_directive(el);
+    if has_vmodel && !has_custom_dirs {
+        ctx.use_helper(RuntimeHelper::WithDirectives);
+        ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+        ctx.push("(");
+    }
+
+    // v-show is merged into custom/v-model wrappers when either is present.
+    let has_vshow = has_vshow_directive(el) && !has_vmodel && !has_custom_dirs;
+    if has_vshow {
+        ctx.use_helper(RuntimeHelper::WithDirectives);
+        ctx.use_helper(RuntimeHelper::VShow);
+        ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+        ctx.push("(");
+    }
+
+    ctx.push_pure();
+    ctx.use_helper(RuntimeHelper::CreateElementVNode);
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
+    ctx.push("(\"");
+    // Anchor the generated tag name at the authored tag name (the byte
+    // after the open tag's `<`). No-op without `source_map`.
+    ctx.push_tag(el);
+    ctx.push("\"");
+
+    // Calculate patch flag and dynamic props
+    let (mut patch_flag, dynamic_props) = calculate_element_patch_info(
+        el,
+        ctx.options.binding_metadata.as_ref(),
+        ctx.cache_handlers_in_current_scope(),
+    );
+    // `once` has no directive transform, so Vue turns its text children into
+    // text vnodes and the element has no TEXT child.
+    let once = super::helpers::has_v_once(el);
+    if once {
+        patch_flag = patch_flag.map(|flag| flag & !1).filter(|flag| *flag != 0);
+    }
+    let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
+
+    // Generate props (only if there are renderable props, not just v-show)
+    // If props are hoisted, use the hoisted reference
+    if let Some(hoisted_index) = el.hoisted_props_index {
+        ctx.push(", _hoisted_");
+        ctx.push(&hoisted_index.to_compact_string());
+    } else if super::helpers::has_renderable_props(el) {
+        ctx.push(", ");
+        ctx.props_is_plain_element = true;
+        generate_props(ctx, &el.props);
+        ctx.props_is_plain_element = false;
+    } else if !el.children.is_empty() || has_patch_info {
+        ctx.push(", null");
+    }
+
+    // Generate children
+    if !el.children.is_empty() {
+        ctx.push(", ");
+        ctx.with_parent_namespace(child_namespace(el), |ctx| {
+            if once {
+                generate_children_force_array(ctx, &el.children);
+            } else {
+                generate_children(ctx, &el.children);
+            }
+        });
+    } else if has_patch_info {
+        ctx.push(", null");
+    }
+
+    // Generate patch flag
+    if let Some(flag) = patch_flag {
+        ctx.push(", ");
+        ctx.push(&flag.to_compact_string());
+        ctx.push(" /* ");
+        let flag_name = patch_flag_name(flag);
+        ctx.push(&flag_name);
+        ctx.push(" */");
+    }
+
+    // Generate dynamic props
+    if let Some(props) = dynamic_props {
+        ctx.push(", [");
+        for (i, prop) in props.iter().enumerate() {
+            if i > 0 {
+                ctx.push(", ");
+            }
+            ctx.push("\"");
+            ctx.push(prop);
+            ctx.push("\"");
+        }
+        ctx.push("]");
+    }
+
+    ctx.push(")");
+
+    // Close withDirectives for custom directives. This helper also
+    // merges native v-model/v-show when they share the same element.
+    if has_custom_dirs {
+        generate_custom_directives_closing(ctx, el);
+    }
+
+    // Close withDirectives for v-model
+    if has_vmodel && !has_custom_dirs {
+        generate_vmodel_closing(ctx, el);
+    }
+
+    // Close withDirectives for v-show
+    if has_vshow {
+        generate_vshow_closing(ctx, el);
+    }
+}
+
+/// The non-block component vnode, wrapped in its runtime directives. `v-once`
+/// caches exactly this call.
+pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let has_custom_dirs = has_custom_directives(el);
+    if has_custom_dirs {
+        ctx.use_helper(RuntimeHelper::WithDirectives);
+        ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+        ctx.push("(");
+    }
+
+    // Support v-show on non-block components:
+    // _withDirectives(_createVNode(...), [[_vShow, expr]])
+    let has_vshow = has_vshow_directive(el) && !has_custom_dirs;
+    if has_vshow {
+        ctx.use_helper(RuntimeHelper::WithDirectives);
+        ctx.use_helper(RuntimeHelper::VShow);
+        ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+        ctx.push("(");
+    }
+
+    ctx.push_pure();
+    ctx.use_helper(RuntimeHelper::CreateVNode);
+    ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
+    ctx.push("(");
+
+    // Check for dynamic component (<component :is="..."> or <Component is="...">)
+    let is_dynamic = is_dynamic_component(el, ctx.source.as_str());
+    let (dynamic_is, static_is) = if is_dynamic {
+        let dynamic = el.props.iter().find_map(|p| {
+            if let PropNode::Directive(dir) = p
+                && dir.name == "bind"
+                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && arg.content == "is"
+            {
+                return dir.exp.as_ref();
+            }
+            None
+        });
+        let static_val = el.props.iter().find_map(|p| {
+            if let PropNode::Attribute(attr) = p
+                && attr.name == "is"
+            {
+                return attr.value.as_ref().map(|v| v.content);
+            }
+            None
+        });
+        (dynamic, static_val)
+    } else {
+        (None, None)
+    };
+
+    if let Some(is_exp) = dynamic_is {
+        ctx.use_helper(RuntimeHelper::ResolveDynamicComponent);
+        ctx.push(ctx.helper(RuntimeHelper::ResolveDynamicComponent));
+        ctx.push("(");
+        generate_expression(ctx, is_exp);
+        ctx.push(")");
+    } else if let Some(component_name) = static_is {
+        ctx.use_helper(RuntimeHelper::ResolveDynamicComponent);
+        ctx.push(ctx.helper(RuntimeHelper::ResolveDynamicComponent));
+        ctx.push("(\"");
+        ctx.push(component_name);
+        ctx.push("\")");
+    } else if let Some(builtin) = is_builtin_component(el.tag) {
+        ctx.use_helper(builtin);
+        ctx.push(ctx.helper(builtin));
+    } else if ctx.push_component_binding_tag(el.tag) {
+    } else {
+        ctx.push(&to_valid_asset_identifier("component", el.tag));
+    }
+
+    // Calculate patch flag and dynamic props for component
+    // For dynamic components, skip the :is binding from patch flag calculation
+    let (mut patch_flag, dynamic_props) = if is_dynamic {
+        calculate_element_patch_info_skip_is(
+            el,
+            ctx.options.binding_metadata.as_ref(),
+            ctx.cache_handlers_in_current_scope(),
+        )
+    } else {
+        calculate_element_patch_info(
+            el,
+            ctx.options.binding_metadata.as_ref(),
+            ctx.cache_handlers_in_current_scope(),
+        )
+    };
+
+    // Slot content is patched through the slot object, so the component vnode
+    // itself should not keep the TEXT flag.
+    if has_slot_children(el)
+        && let Some(flag) = patch_flag
+    {
+        let new_flag = flag & !1;
+        patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
+    }
+
+    // KeepAlive always needs DYNAMIC_SLOTS. Other components need it when
+    // slot structure is dynamic.
+    if needs_dynamic_slots_patch(ctx, el) {
+        patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
+    }
+
+    let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
+
+    // Generate props -- for dynamic components, filter out the `is` prop
+    let effective_has_props = if is_dynamic {
+        el.props
+            .iter()
+            .any(|p| !is_is_prop(p) && is_renderable_prop(p))
+    } else {
+        has_renderable_props(el)
+    };
+    if let Some(hoisted_index) = el.hoisted_props_index {
+        ctx.push(", _hoisted_");
+        ctx.push(&hoisted_index.to_compact_string());
+    } else if effective_has_props {
+        ctx.push(", ");
+        if is_dynamic {
+            ctx.skip_is_prop = true;
+        }
+        ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
+        ctx.skip_is_prop = false;
+    } else if !el.children.is_empty() || has_patch_info {
+        ctx.push(", null");
+    }
+
+    // Generate children/slots - use slot generation for component children
+    if has_slot_children(el) {
+        ctx.push(", ");
+        generate_slots(ctx, el);
+    } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
+        ctx.push(", [");
+        ctx.indent();
+        let filtered: Vec<_> = el
+            .children
+            .iter()
+            .filter(|c| !is_directive_comment(c))
+            .collect();
+        for (i, child) in filtered.iter().enumerate() {
+            if i > 0 {
+                ctx.push(",");
+            }
+            ctx.newline();
+            generate_node(ctx, child);
+        }
+        ctx.deindent();
+        ctx.newline();
+        ctx.push("]");
+    } else if has_patch_info {
+        ctx.push(", null");
+    }
+
+    if let Some(flag) = patch_flag {
+        ctx.push(", ");
+        ctx.push(&flag.to_compact_string());
+        ctx.push(" /* ");
+        let flag_name = patch_flag_name(flag);
+        ctx.push(&flag_name);
+        ctx.push(" */");
+    }
+
+    if let Some(props) = dynamic_props {
+        ctx.push(", [");
+        for (i, prop) in props.iter().enumerate() {
+            if i > 0 {
+                ctx.push(", ");
+            }
+            ctx.push("\"");
+            ctx.push(prop);
+            ctx.push("\"");
+        }
+        ctx.push("]");
+    }
+
+    ctx.push(")");
+
+    if has_custom_dirs {
+        generate_custom_directives_closing(ctx, el);
+    }
+
+    // Close withDirectives for v-show on component
+    if has_vshow {
+        generate_vshow_closing(ctx, el);
     }
 }

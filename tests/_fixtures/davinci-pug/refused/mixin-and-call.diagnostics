@@ -1,2 +1,1 @@
-0..17 Semantic "mixin card(title)" — pug `mixin` is not supported in Vue templates: mixins expand at build time; use a Vue component
-33..44 Semantic "+card('Hi')" — pug `+mixin call` is not supported in Vue templates: mixins expand at build time; use a Vue component
+38..47 Semantic "(heading)" — pug mixin call cannot be evaluated at build time: `heading` is not defined by the template (mixins expand with build-time values; use a Vue component for component state)

@@ -57,7 +57,7 @@ pub(super) fn transform_component<'a>(
         _ => ComponentKind::Regular,
     };
 
-    let mut props = Vec::new_in(&ctx.allocator);
+    let mut props = Vec::with_capacity_in(el.props.len(), &ctx.allocator);
     let mut slots = Vec::new_in(&ctx.allocator);
     let mut v_show_exp: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut is_expr: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
@@ -161,9 +161,21 @@ pub(super) fn transform_component<'a>(
                     if let Some(ref arg) = dir.arg
                         && let ExpressionNode::Simple(event_exp) = arg
                     {
+                        let modifiers: Option<&crate::ir::EventModifiers<'a>> =
+                            (!dir.modifiers.is_empty()).then(|| {
+                                let modifiers = crate::ir::EventModifiers::from_names(
+                                    ctx.allocator,
+                                    event_exp.is_static.then_some(event_exp.content),
+                                    dir.modifiers.iter().map(|modifier| modifier.content),
+                                );
+                                &*ctx.allocator.as_oxc().alloc(modifiers)
+                            });
                         let mut key_node = if event_exp.is_static {
-                            let on_name =
-                                vize_atelier_core::steps::create_on_name(event_exp.content);
+                            let on_name = vize_atelier_core::steps::create_on_name(
+                                modifiers.map_or(event_exp.content, |modifiers| {
+                                    modifiers.event_name(event_exp.content)
+                                }),
+                            );
                             SimpleExpressionNode::new(
                                 ctx.allocator.alloc_str(&on_name),
                                 true,
@@ -181,7 +193,9 @@ pub(super) fn transform_component<'a>(
                             let val_node = SimpleExpressionNode::from_node(val_exp);
                             values.push(Box::new_in(val_node, &ctx.allocator));
                         }
-                        props.push(IRProp::new(key, values, true));
+                        let mut prop = IRProp::new(key, values, true);
+                        prop.handler_modifiers = modifiers;
+                        props.push(prop);
                     }
                 } else if matches!(dir.name, "text" | "html") {
                     // Content directives become the props that write the

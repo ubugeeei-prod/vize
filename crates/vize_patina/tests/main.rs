@@ -78,6 +78,7 @@ mod pug_template_lint;
 mod ref_factory_identity;
 mod ref_member_access;
 mod report_history;
+mod require_explicit_emits_parity;
 mod require_v_for_key_object_bind;
 mod require_v_for_key_slot_fallback;
 mod reserved_prefix_8090;

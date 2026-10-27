@@ -64,7 +64,8 @@ export default /*@__PURE__*/_defineComponent({
     name: { type: String, required: true }
   },
   ssrRender: ssrRender,
-  setup(__props: any) {
+  setup(__props: any, { expose: __expose }) {
+  __expose();
 
 const props = __props
 const iconProps = useForwardProps(props)

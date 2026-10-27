@@ -2260,6 +2260,59 @@
       }
     },
     {
+      "id": "linter/require-explicit-emits-parity-10822",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "require-explicit-emits-parity-10822",
+        "files": [
+          {
+            "path": "NegativeControls.vue.txt",
+            "role": "negative-control",
+            "sha256": "4a4e3652f8e1829f91efd090cbebdb984a4fd1a5e136c4bc5f09d341036c6bb5"
+          },
+          {
+            "path": "OptionsWithoutEmits.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "f185c29f3aa29fe1673891f48af9ab284635b24c8d396719218c3e226bc6ed6b"
+          },
+          {
+            "path": "SetupWithoutMacro.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "ae7c5725762055e9d017da717ae12aa60c99fb43963e1a9d8e4c2d812663347f"
+          },
+          {
+            "path": "SiblingBlockTypes.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "181c38a625ee7bff8fe8df42b6c454ecc5c3d65c863b1936b43f820d19c1062a"
+          },
+          {
+            "path": "eslint-plugin-vue.json",
+            "role": "eslint-plugin-vue-oracle",
+            "sha256": "649fe26cc74cc57035f32dbe3bdbd9fe4d2ffbe507521df06a7e224e9e34c080"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/retained-projection-10440",
       "state": "active",
       "targets": ["lint"],
