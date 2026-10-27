@@ -11,6 +11,8 @@ on:
       - crates/vize_atelier_core/src/codegen/slots/params.rs
       - crates/vize_atelier_sfc/src/script/import_usage_check/**
       - crates/vize_atelier_sfc/tests/template_global_policy.rs
+      - tests/tooling/native-template-global-policy.test.mjs
+      - tests/tooling/support/template-global-*.mjs
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -95,4 +97,55 @@ jobs:
         with:
           name: template-global-${{ matrix.role }}-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ github.workspace }}/target/vize-tests/template-global-${{ matrix.role }}
+          if-no-files-found: error
+  runtime:
+    name: Actual stock and native component runtimes
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEMPLATE_GLOBAL_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIZE_TEMPLATE_GLOBAL_RUNTIME_REQUIRED: "1"
+      VIZE_TEMPLATE_GLOBAL_RUNTIME_PROOF: ${{ github.workspace }}/target/vize-tests/template-global-runtime
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.VIZE_TEMPLATE_GLOBAL_SOURCE_SHA }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-js-packages, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Install the pinned workspace runtime providers
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the independent public Vue and Vize baseline
+        run: |
+          npm install --prefix "$RUNNER_TEMP/template-global-oracle" --registry=https://registry.npmjs.org --no-audit --no-fund --save-exact vue@3.5.41 @vue/compiler-sfc@3.5.41 vize@0.600.0 @vizejs/native@0.600.0 @vizejs/native-linux-x64-gnu@0.600.0
+          echo "VIZE_TEMPLATE_GLOBAL_ORACLE_PACKAGE=$RUNNER_TEMP/template-global-oracle/package.json" >> "$GITHUB_ENV"
+      - name: Build the exact candidate native compiler
+        run: |
+          test "$(git rev-parse HEAD)" = "$VIZE_TEMPLATE_GLOBAL_SOURCE_SHA"
+          token="$(openssl rand -hex 16)"
+          VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked --profile ci -p vize_vitrine --features napi
+          cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
+          echo "VIZE_TEMPLATE_GLOBAL_EXPECTED_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Execute complete modules under the actual Vue runtimes
+        run: |
+          unset NAPI_RS_NATIVE_LIBRARY_PATH
+          node --test tests/tooling/native-template-global-policy.test.mjs
+      - name: Preserve complete public and candidate modules, graphs and actual runtime observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: template-global-runtime-${{ env.VIZE_TEMPLATE_GLOBAL_SOURCE_SHA }}
+          path: ${{ env.VIZE_TEMPLATE_GLOBAL_RUNTIME_PROOF }}
           if-no-files-found: error

@@ -143,11 +143,15 @@ fn every_sfc_backend_keeps_host_globals_on_the_component_proxy() {
                     1,
                     "allowed Math must remain a real global"
                 );
-                assert_eq!(
-                    roots.iter().filter(|name| **name == "Intl").count(),
-                    1,
-                    "allowed Intl must remain a real global"
-                );
+                // The immutable producer also incorrectly prefixes Intl. Preserve
+                // that observed baseline while requiring the Vue policy after repair.
+                if std::env::var_os("VIZE_TEMPLATE_GLOBAL_BEFORE").is_none() {
+                    assert_eq!(
+                        roots.iter().filter(|name| **name == "Intl").count(),
+                        1,
+                        "allowed Intl must remain a real global"
+                    );
+                }
             }
         }
     }
