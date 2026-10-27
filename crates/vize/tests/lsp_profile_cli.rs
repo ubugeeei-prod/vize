@@ -63,5 +63,14 @@ fn lsp_exports_profile_after_graceful_stdio_shutdown() {
         "the ordinary allocator has no counts"
     );
     #[cfg(feature = "profiling")]
-    assert!(report["allocation"]["calls"].as_u64().unwrap() > 0);
+    {
+        assert!(report["allocation"]["calls"].as_u64().unwrap() > 0);
+        let operations = report["micro"].as_array().unwrap();
+        assert!(operations.iter().any(|row| {
+            row["name"] == "maestro.project.document_root" && row["calls"].as_u64().unwrap() > 0
+        }));
+        assert!(operations.iter().any(|row| {
+            row["name"] == "fs.read_dir.entries" && row["units"].as_u64().unwrap() > 0
+        }));
+    }
 }
