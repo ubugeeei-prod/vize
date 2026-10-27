@@ -1,0 +1,142 @@
+name: Binding origin source laws
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/binding-origin-laws.yml
+      - crates/vize_canon/src/binding_origins/**
+      - crates/vize_canon/src/lib.rs
+permissions: { contents: read }
+concurrency:
+  group: binding-origin-laws-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  laws:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env: { CARGO_BUILD_JOBS: "4", RAYON_NUM_THREADS: "4", CARGO_INCREMENTAL: "0" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build one fresh source test image and run 15 exact origin laws
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, subprocess
+          root = pathlib.Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          out = pathlib.Path(os.environ["RUNNER_TEMP"]) / "binding-origin-admission"
+          assert not out.exists(), "never replace earlier evidence"
+          out.mkdir()
+          target = out / "cargo-target"
+          env = dict(os.environ, CARGO_TARGET_DIR=str(target), CARGO_BUILD_JOBS="4", CARGO_INCREMENTAL="0")
+          def run(command, timeout=30):
+              return subprocess.run(command, cwd=root, env=env, capture_output=True, text=True, timeout=timeout)
+          def git(*args):
+              result = run(["git", *args])
+              assert result.returncode == 0, result.stderr
+              return result.stdout.strip()
+          def digest(file):
+              return hashlib.sha256(file.read_bytes()).hexdigest()
+          source = git("rev-parse", "HEAD")
+          tree = git("rev-parse", "HEAD^{tree}")
+          assert git("status", "--porcelain", "--untracked-files=no") == ""
+          compiler = {}
+          for command in ["cargo", "rustc"]:
+              result = run([command, "-Vv"])
+              assert result.returncode == 0, result.stderr
+              compiler[command] = result.stdout
+          argv = ["cargo", "test", "--locked", "--profile", "ci", "-p", "vize_canon", "--lib", "--no-run", "--message-format=json-render-diagnostics", "--jobs", "4"]
+          built = run(argv, 1200)
+          (out / "cargo.stdout.jsonl").write_text(built.stdout)
+          (out / "cargo.stderr.txt").write_text(built.stderr)
+          assert built.returncode == 0, "inspect retained actual compiler output"
+          artifacts = []
+          for line in built.stdout.splitlines():
+              try:
+                  row = json.loads(line)
+              except json.JSONDecodeError:
+                  continue
+              if row.get("reason") == "compiler-artifact" and row.get("target", {}).get("name") == "vize_canon" and row.get("profile", {}).get("test") and row.get("executable"):
+                  artifacts.append(row)
+          assert len(artifacts) == 1, artifacts
+          artifact, = artifacts
+          assert artifact["fresh"] is False
+          assert "native" in artifact["features"]
+          binary = pathlib.Path(artifact["executable"]).resolve()
+          assert binary.is_relative_to(target)
+          image_sha = digest(binary)
+          tests = [
+              "binding_origins::tests::source_callable_shape_never_authorizes_vue_identity",
+              "binding_origins::tests::actual_type_queries_and_type_only_aliases_retain_provider_identity",
+              "binding_origins::tests::module_spelling_and_stale_provider_revisions_cannot_authorize_identity",
+              "binding_origins::tests::source_and_project_owners_are_explicit_snapshot_inputs",
+              "binding_origins::tests::alias_cycles_do_not_require_a_recursion_limit_or_fabricate_an_origin",
+              "binding_origins::tests::cyclic_export_evidence_can_reach_one_provider_without_guessing_missing_edges",
+              "binding_origins::tests_graph::twenty_thousand_aliases_expand_without_recursion_or_repeated_resolution",
+              "binding_origins::tests_graph::distinct_global_declarations_keep_ambiguous_ownership",
+              "binding_origins::tests_graph::stale_or_foreign_resolver_images_never_authorize_a_provider",
+              "binding_origins::tests_graph::type_only_runtime_values_do_not_become_callable_providers",
+              "binding_origins::tests_graph::requested_roots_do_not_resolve_unrelated_global_values",
+              "binding_origins::tests_ambient::annotated_runtime_custom_functions_cannot_borrow_provider_identity",
+              "binding_origins::tests_ambient::uninitialized_runtime_annotations_are_not_ambient_provider_declarations",
+              "binding_origins::tests_ambient::actual_ambient_declarations_and_immutable_value_aliases_keep_provider_identity",
+              "binding_origins::tests_ambient::merged_overload_declarations_preserve_custom_symbol_identity",
+          ]
+          listing = run([str(binary), "--list"])
+          (out / "registered-tests.stdout.txt").write_text(listing.stdout)
+          (out / "registered-tests.stderr.txt").write_text(listing.stderr)
+          assert listing.returncode == 0
+          registered = {line.removesuffix(": test") for line in listing.stdout.splitlines() if line.endswith(": test")}
+          assert set(tests).issubset(registered), set(tests) - registered
+          rows = []
+          for index, name in enumerate(tests, 1):
+              command = [str(binary), "--exact", name, "--nocapture", "--test-threads", "1"]
+              result = run(command, 120)
+              stem = f"{index:02d}"
+              (out / f"{stem}.stdout.txt").write_text(result.stdout)
+              (out / f"{stem}.stderr.txt").write_text(result.stderr)
+              qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
+              row = {"name":name,"command":command,"status":result.returncode,"qualified":qualified}
+              rows.append(row)
+              print(json.dumps(row), flush=True)
+          assert git("rev-parse", "HEAD") == source
+          assert git("status", "--porcelain", "--untracked-files=no") == ""
+          assert digest(binary) == image_sha
+          receipt = {
+              "schema":"vize.binding-origin.source-laws.v1",
+              "sourceSha":source,"sourceTree":tree,
+              "requestedRef":os.environ.get("GITHUB_REF"),
+              "eventSourceSha":os.environ.get("GITHUB_SHA"),
+              "scope":"Unwired Rust declaration-origin foundation only; not CLI, mapper, LSP accuracy or performance qualification",
+              "targetStartedAbsent":True,"target":str(target),
+              "cargoCommand":argv,"actualCargoArtifact":artifact,
+              "actualTestImage":{"path":str(binary),"bytes":binary.stat().st_size,"sha256":image_sha},
+              "compiler":compiler,
+              "compilerEnvironment":{k:v for k,v in env.items() if k in ["RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","RUSTC","RUSTC_WRAPPER","RUSTC_WORKSPACE_WRAPPER","CARGO_BUILD_TARGET","CARGO_INCREMENTAL","CARGO_BUILD_JOBS"] or k.startswith("CARGO_PROFILE_CI_")},
+              "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
+              "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").glob("*.rs"))},
+              "tests":rows,
+              "passed":len(rows)==15 and all(row["qualified"] for row in rows),
+          }
+          (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")
+          assert receipt["passed"], "all 15 exact source laws must each pass once, with zero ignored"
+          PY
+      - name: Package actual compiler and test receipts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/binding-origin-admission"
+          tar --exclude=cargo-target -czf "$RUNNER_TEMP/binding-origin-admission.tgz" -C "$RUNNER_TEMP" binding-origin-admission
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: binding-origin-source-laws-${{ github.sha }}
+          path: ${{ runner.temp }}/binding-origin-admission.tgz
+          retention-days: 14
+
