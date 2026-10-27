@@ -26,7 +26,6 @@ jobs:
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      CARGO_TARGET_DIR: ${{ runner.temp }}/vize-config-10988-target
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -53,6 +52,7 @@ jobs:
       - name: Run all four actual Windows transport regressions
         run: |
           set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/vize-config-10988-target"
           cargo test --locked --profile ci -p vize_carton \
             config::loader::js::runtime_file::tests:: -- --nocapture --test-threads=1 \
             2>&1 | tee "$RUNNER_TEMP/windows-config-runtime/tests.txt"
