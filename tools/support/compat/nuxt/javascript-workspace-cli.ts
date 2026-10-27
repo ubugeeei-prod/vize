@@ -13,6 +13,7 @@ import { lexical, save, sha } from "./javascript-workspace-project.ts";
 import type { WorkspaceContext } from "./javascript-workspace-project.ts";
 import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.ts";
 import { packageDeclarations } from "./javascript-workspace-declarations.ts";
+import { probeHiddenMembership } from "./javascript-workspace-hidden-membership.ts";
 
 export interface CommandResult {
   status: number | null;
@@ -363,6 +364,19 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
         });
         save(context.artifacts, "typecheck-mismatches.json", mismatches);
       }
+    }
+    if (context.cohort.id === "nuxt3") {
+      probeHiddenMembership({
+        app,
+        main,
+        artifacts: context.artifacts,
+        binary,
+        provider,
+        vueTsc,
+        stockPrograms,
+        original,
+        command,
+      });
     }
     assert.deepEqual(mismatches, [], "all seven complete check vectors must qualify");
   } finally {
