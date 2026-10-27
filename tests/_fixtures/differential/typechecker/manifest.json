@@ -9136,7 +9136,7 @@
         {
           "selector": "createProjectConfiguration",
           "source": "npm/typescript-plugin/virtual-modules.cjs",
-          "sha256": "3f9de3c0cdcd8d2bf418584510d890cc1dbed7df4cfcfe6c9d8b031d197718c1"
+          "sha256": "cbd6352f2bc709a5edf6c93463cc4e02718c6e2d5454b2b762c2d79b6e42bbf4"
         },
         {
           "selector": "createMappedLanguageService",
@@ -9196,7 +9196,7 @@
         {
           "selector": "configured hosts refresh package-selected options once without replacing roots or descriptors",
           "source": "tests/typescript-plugin/package-options.test.cjs",
-          "sha256": "84a4cdb07458551589b1e2b3b6fc8a7634795718be1b5068a2524435aa730c94"
+          "sha256": "e90c718cb4ae1ea44aa3e3ccf898d1d450676bc1c0972bf15a9c1ca63a74c678"
         }
       ],
       "witness": {

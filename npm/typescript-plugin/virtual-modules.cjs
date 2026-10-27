@@ -107,6 +107,7 @@ function installVueVirtualModules(ts, info) {
     let original = originalOptions?.() || {};
     if (engine.native) {
       projectConfiguration.get(original);
+      projectOptions?.apply();
       original = originalOptions?.() || {};
     }
     // TypeScript stores the parsed configFile as a non-enumerable option.
@@ -168,6 +169,7 @@ function installVueVirtualModules(ts, info) {
       ? {
           getProjectVersion() {
             const project = projectConfiguration.get(originalOptions?.() || {});
+            projectOptions?.apply();
             return `${originalProjectVersion()}:${project.configuration}`;
           },
         }
@@ -261,6 +263,7 @@ function createProjectOptions(ts, info, originalOptions, readFile, fileExists) {
     return undefined;
   const server = info.serverHost || ts.sys;
   const controlled = new Set();
+  let parsedOptions, applied;
   return {
     refresh(configFileName) {
       const parsed = ts.getParsedCommandLineOfConfigFile(configFileName, undefined, {
@@ -273,12 +276,26 @@ function createProjectOptions(ts, info, originalOptions, readFile, fileExists) {
         onUnRecoverableConfigFileDiagnostic() {},
       });
       if (!parsed) return;
+      parsedOptions = parsed.options;
+      applied = undefined;
+      this.apply();
+    },
+    apply() {
+      if (!parsedOptions) return;
       const original = originalOptions();
+      if (original === applied) return;
+      for (const name of Object.keys(parsedOptions))
+        if (name !== "configFile") controlled.add(name);
+      const changed = [...controlled].some(
+        (name) => JSON.stringify(original[name]) !== JSON.stringify(parsedOptions[name]),
+      );
+      applied = original;
+      if (!changed) return;
       const descriptors = Object.getOwnPropertyDescriptors(original);
       for (const name of controlled)
-        if (!Object.hasOwn(parsed.options, name)) delete descriptors[name];
+        if (!Object.hasOwn(parsedOptions, name)) delete descriptors[name];
       for (const [name, descriptor] of Object.entries(
-        Object.getOwnPropertyDescriptors(parsed.options),
+        Object.getOwnPropertyDescriptors(parsedOptions),
       )) {
         // The server's SourceFile carries its root specs and reload state.
         // Preserve its exact non-enumerable descriptor and object identity.
@@ -289,8 +306,11 @@ function createProjectOptions(ts, info, originalOptions, readFile, fileExists) {
           prior && "value" in prior ? { ...prior, value: descriptor.value } : descriptor;
       }
       const options = Object.create(Object.getPrototypeOf(original), descriptors);
+      applied = options;
       // Besides changing the option values, this public operation invalidates
       // the server's module-resolution cache when the selected options require it.
+      // reloadProjects may subsequently restore its stale cached options. Reapply
+      // this parsed snapshot to a changed host object without parsing it again.
       project.setCompilerOptions(options);
     },
   };

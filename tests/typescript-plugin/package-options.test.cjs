@@ -140,6 +140,10 @@ void test("configured hosts refresh package-selected options once without replac
     body();
   }
   assert.equal(parses, 2, "one initial parse and one parse for the changed project closure");
+  currentOptions = original;
+  version++;
+  assert.deepEqual(body(), expected, "reloadProjects cannot restore its stale cached options");
+  assert.equal(parses, 2, "reapplying a fresh snapshot does not parse the project again");
   write("node_modules/vize-config-priority/preferred.json", { compilerOptions: {} });
   watches.get(preferred)(preferred, ts.FileWatcherEventKind.Changed);
   assert.deepEqual(body(), []);
