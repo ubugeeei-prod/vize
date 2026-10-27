@@ -33,7 +33,9 @@ test("the full reference rejects unrelated code, map, descriptor and diagnostic 
         packet.code += "\nvoid 1;";
       },
       (packet: ExposurePacket) => {
-        packet.map = String(packet.map).replace('"mappings":"', '"mappings":"A');
+        if (typeof packet.map !== "string")
+          throw new TypeError("captured native map must be encoded");
+        packet.map = packet.map.replace('"mappings":"', '"mappings":"A');
       },
       (packet: ExposurePacket) => {
         packet.moduleShape!.defaultExportEnd += 1;
