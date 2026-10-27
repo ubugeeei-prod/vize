@@ -36,8 +36,34 @@ const owned = (file: string): string => {
   return result;
 };
 const version = "0.602.0";
+save(out, "observer-start.json", {
+  stage: "before-only",
+  observerHead: process.env.GITHUB_SHA,
+  node: process.version,
+  platform: process.platform,
+  arch: process.arch,
+});
+fs.copyFileSync(path.join(workspace, "package.json"), path.join(out, "installed-package.json"));
+fs.copyFileSync(
+  path.join(workspace, "package-lock.json"),
+  path.join(out, "installed-package-lock.json"),
+);
+const packageManifest = (name: string): string => {
+  let file: string | undefined;
+  try {
+    file = require.resolve(name + "/package.json");
+  } catch (error) {
+    assert.equal(object(error).code, "ERR_PACKAGE_PATH_NOT_EXPORTED");
+    file = (require.resolve.paths(name) ?? [])
+      .map((directory) => path.join(directory, name, "package.json"))
+      .find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+  }
+  assert.ok(file, name + " physically installed manifest");
+  return owned(file);
+};
+
 const packages = ["vize", "@vizejs/native", "vue", "typescript"].map((name) => {
-  const file = owned(require.resolve(name + "/package.json")),
+  const file = packageManifest(name),
     bytes = fs.readFileSync(file);
   const manifest = object(JSON.parse(bytes.toString()));
   assert.equal(manifest.name, name);
@@ -177,7 +203,22 @@ const rows: unknown[] = [],
 let cliPackets = 0,
   inspectorPackets = 0,
   publicNativePackets = 0,
-  runtimeProbes = 0;
+  runtimeProbes = 0,
+  nativeProjectGraphs = 0;
+const publicGraphBuilder = object(native).buildInspectorGraph;
+const captureGraph = (inputs: Obj, artifacts: string): unknown => {
+  if (typeof publicGraphBuilder !== "function") {
+    const unavailable = { available: false, reason: "public export absent" };
+    save(artifacts, "public-native-graph.json", unavailable);
+    return unavailable;
+  }
+  const graph: unknown = (
+    publicGraphBuilder as (files: { path: string; source: string }[]) => unknown
+  )(Object.entries(inputs).map(([name, value]) => ({ path: name, source: text(value) })));
+  save(artifacts, "public-native-graph.json", graph);
+  nativeProjectGraphs++;
+  return graph;
+};
 const probeRuntime = (row: Obj, inputs: Obj, artifacts: string): unknown => {
   const spec = object(row.runtime),
     directory = path.join(workspace, "runtime", text(row.id));
@@ -333,6 +374,7 @@ for (const [kind, cases] of [
       save(artifacts, "doctor.json", doctorPacket);
       save(artifacts, "lint.json", lintPacket);
       cliPackets += 2;
+      captureGraph(inputs, artifacts);
       const inspector = capture(
         ["inspector", "--format", "json", "src/**/*.vue"],
         project,
@@ -380,6 +422,80 @@ for (const [kind, cases] of [
     }
   }
 }
+const peerRows: unknown[] = [];
+const peerCases = array(corpus.peerCases).map(object);
+assert.equal(peerCases.length, 1);
+for (const row of peerCases) {
+  const id = text(row.id),
+    artifacts = path.join(out, id),
+    project = path.join(workspace, "cases", id);
+  fs.mkdirSync(artifacts);
+  fs.mkdirSync(project, { recursive: true });
+  const custody = object(row.custody),
+    members = object(custody.files),
+    inputs: Obj = {};
+  save(artifacts, "original-custody.json", row);
+  assert.equal(custody.issue, 10900);
+  assert.equal(Object.keys(members).length, 7);
+  for (const [name, value] of Object.entries(members)) {
+    assert.ok(!path.isAbsolute(name) && !name.split("/").includes(".."));
+    const item = object(value),
+      source = text(item.source);
+    assert.equal(sha(source), item.sha256);
+    assert.equal(Buffer.byteLength(source), item.bytes);
+    inputs[name] = source;
+    fs.mkdirSync(path.dirname(path.join(project, name)), { recursive: true });
+    fs.writeFileSync(path.join(project, name), source);
+  }
+  fs.cpSync(project, path.join(artifacts, "fixture"), { recursive: true });
+  try {
+    const doctor = capture(["doctor", "--format", "json", "."], project, artifacts, "doctor");
+    const lintPlain = capture(
+      ["lint", "-f", "plain", "--no-config", "--cross-file", "src/**/*.vue"],
+      project,
+      artifacts,
+      "lint-plain",
+    );
+    const lint = capture(
+      ["lint", "--format", "json", "--no-config", "--cross-file", "src/**/*.vue"],
+      project,
+      artifacts,
+      "lint",
+    );
+    const inspector = capture(
+      ["inspector", "--format", "agent", "src/**/*.vue"],
+      project,
+      artifacts,
+      "inspector-agent",
+    );
+    const reports = {
+      doctor: JSON.parse(doctor.stdout) as unknown,
+      lint: JSON.parse(lint.stdout) as unknown,
+      inspectorAgent: JSON.parse(inspector.stdout) as unknown,
+    };
+    save(artifacts, "whole-cli-json.json", reports);
+    const graph = captureGraph(inputs, artifacts);
+    peerRows.push({
+      id,
+      issue: 10900,
+      originalEnvironment: custody.originalReportedEnvironment,
+      observedEnvironment: {
+        version,
+        node: process.version,
+        platform: process.platform,
+        arch: process.arch,
+      },
+      reports,
+      statuses: [doctor.status, lintPlain.status, lint.status, inspector.status],
+      graph,
+    });
+    save(out, "peer-complete-before-rows.json", peerRows);
+  } catch (error) {
+    failures.push({ id, error: String(error) });
+    save(out, "observer-failures.json", failures);
+  }
+}
+
 const result = {
   stage: "before-only",
   productFixed: false,
@@ -393,6 +509,9 @@ const result = {
   inspectorPackets,
   publicNativePackets,
   runtimeProbes,
+  nativeProjectGraphs,
+  nativeProjectGraphAvailable: typeof publicGraphBuilder === "function",
+  peerCasesObserved: peerRows.length,
   failures,
 };
 save(out, "before-observer-result.json", result);
@@ -402,4 +521,6 @@ assert.equal(cliPackets, 82);
 assert.equal(inspectorPackets, 41);
 assert.equal(publicNativePackets, 82);
 assert.equal(runtimeProbes, 14);
+assert.equal(peerRows.length, 1);
+assert.equal(nativeProjectGraphs, typeof publicGraphBuilder === "function" ? 42 : 0);
 console.log(JSON.stringify(result));

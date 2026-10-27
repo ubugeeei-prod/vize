@@ -4916,5 +4916,72 @@
         }
       }
     ]
-  }
+  },
+  "peerCases": [
+    {
+      "id": "async-loader-original-10900",
+      "issue": 10900,
+      "custodyBlob": "fd9e5f6c0454bfbca987f7d6423d1050b590327a",
+      "custodySha256": "db7bdd1947ad38a891d84f32859b35511613eada2edac865902dea84f9b9a40a",
+      "custody": {
+        "schema": "vize.asyncComponentBinding10900.original.v1",
+        "issue": 10900,
+        "issueUrl": "https://github.com/ubugeeei-prod/vize/issues/10900",
+        "issueAuthor": "ubugeeei",
+        "issueBody": "## Versions\n\n`vize` **0.589.0** (npm), Node 26.6.0, macOS arm64. Same result on 0.574.0.\n\n## Reproduction\n\n`nuxt.config.ts`\n\n```ts\nexport default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n```\n\n`src/composables/keys.ts`\n\n```ts\nimport type { InjectionKey } from \"vue\";\nexport const NoticeKey: InjectionKey<{ show(text: string): void }> = Symbol(\"notice\");\n```\n\n`src/app.vue`\n\n```vue\n<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n```\n\n`src/layouts/default.vue`\n\n```vue\n<script setup lang=\"ts\">\nimport { provide } from \"vue\";\nimport { NoticeKey } from \"../composables/keys\";\n\nprovide(NoticeKey, { show: text => console.warn(text) });\n</script>\n\n<template>\n  <main><slot /></main>\n</template>\n```\n\n`src/components/NoticeButton.vue` and `src/components/NoticeLink.vue` (identical)\n\n```vue\n<script setup lang=\"ts\">\nimport { inject } from \"vue\";\nimport { NoticeKey } from \"../composables/keys\";\n\nconst notice = inject(NoticeKey)!;\n</script>\n\n<template>\n  <button type=\"button\" @click=\"notice.show('hi')\">notify</button>\n</template>\n```\n\n`src/pages/index.vue`\n\n```vue\n<script setup lang=\"ts\">\nimport { defineAsyncComponent } from \"vue\";\n\n// 1: the binding has the same name as the file → linked\nconst NoticeButton = defineAsyncComponent(() => import(\"../components/NoticeButton.vue\"));\n// 2: any other binding name → not linked\nconst LazyNoticeLink = defineAsyncComponent(() => import(\"../components/NoticeLink.vue\"));\n</script>\n\n<template>\n  <NoticeButton />\n  <LazyNoticeLink />\n</template>\n```\n\n```\n$ vize --version\nvize 0.589.0\n$ vize doctor --format json . | jq \"[.findings[] | {code, path: .primary.path, message}]\"\n[\n {\n  \"code\": \"VIZE_DOCTOR_CF_UNMATCHED_INJECT\",\n  \"path\": \"src/components/NoticeLink.vue\",\n  \"message\": \"**Unmatched Inject**: `inject(NoticeKey)` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.\"\n }\n]\n$ vize lint -f plain --no-config --cross-file \"src/**/*.vue\" | grep cross-file\n  src/components/NoticeLink.vue:5:16 error cross-file vize:croquis/cf/unmatched-inject: **Unmatched Inject**: `inject(NoticeKey)` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.\n```\n\n## Expected\n\nNo findings: both components are rendered by `pages/index.vue`, below the layout that provides `NoticeKey`.\n\n## Notes\n\n- Only the binding name matters: `NoticeButton = defineAsyncComponent(() => import(\"…/NoticeButton.vue\"))` is linked,\n  `LazyNoticeLink = defineAsyncComponent(() => import(\"…/NoticeLink.vue\"))` is not. The `{ loader: () => import(…) }`\n  form behaves the same. A static `import LazyNoticeLink from \"…/NoticeLink.vue\"` under a different name is linked, so\n  it looks like the tag is matched by file name and the `import()` inside `defineAsyncComponent` is not followed.\n- A `Lazy…` prefix is a common way to name such bindings (it mirrors Nuxt's own lazy components), so every\n  component loaded this way loses its ancestry: its `inject()`s become \"unmatched\" errors and the matching `provide()`s\n  can become \"unused\".\n",
+        "issueBodySha256": "68efc249f173d7ea5e24da717f703f6cdc370cef88dd6060dced912f9a9e06af",
+        "originalReportedEnvironment": {
+          "versions": [
+            "0.589.0",
+            "0.574.0"
+          ],
+          "node": "26.6.0",
+          "os": "macOS arm64"
+        },
+        "files": {
+          "nuxt.config.ts": {
+            "source": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+            "bytes": 68,
+            "sha256": "d1c4aa379ddf253673fd26bd77e06681f4fd568eb922beb0c9ccd7741d7e5874"
+          },
+          "src/composables/keys.ts": {
+            "source": "import type { InjectionKey } from \"vue\";\nexport const NoticeKey: InjectionKey<{ show(text: string): void }> = Symbol(\"notice\");\n",
+            "bytes": 128,
+            "sha256": "42a4456109f27eb8145c3fa9cca8e10283759839c8113178af56c79e9bf7b449"
+          },
+          "src/app.vue": {
+            "source": "<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n",
+            "bytes": 71,
+            "sha256": "63c1fb3634b5ab76dca3c9935629cda7582f157b4638da766f73b8f690864f7e"
+          },
+          "src/layouts/default.vue": {
+            "source": "<script setup lang=\"ts\">\nimport { provide } from \"vue\";\nimport { NoticeKey } from \"../composables/keys\";\n\nprovide(NoticeKey, { show: text => console.warn(text) });\n</script>\n\n<template>\n  <main><slot /></main>\n</template>\n",
+            "bytes": 222,
+            "sha256": "09c7fe9ec6829baedd8146f3ae83e7fb474aac6ee400442b2527810e6f68c891"
+          },
+          "src/components/NoticeButton.vue": {
+            "source": "<script setup lang=\"ts\">\nimport { inject } from \"vue\";\nimport { NoticeKey } from \"../composables/keys\";\n\nconst notice = inject(NoticeKey)!;\n</script>\n\n<template>\n  <button type=\"button\" @click=\"notice.show('hi')\">notify</button>\n</template>\n",
+            "bytes": 241,
+            "sha256": "703672ead7524a66d067b3b0e625c80bcbb2189b90299b670630849cd7411949"
+          },
+          "src/components/NoticeLink.vue": {
+            "source": "<script setup lang=\"ts\">\nimport { inject } from \"vue\";\nimport { NoticeKey } from \"../composables/keys\";\n\nconst notice = inject(NoticeKey)!;\n</script>\n\n<template>\n  <button type=\"button\" @click=\"notice.show('hi')\">notify</button>\n</template>\n",
+            "bytes": 241,
+            "sha256": "703672ead7524a66d067b3b0e625c80bcbb2189b90299b670630849cd7411949"
+          },
+          "src/pages/index.vue": {
+            "source": "<script setup lang=\"ts\">\nimport { defineAsyncComponent } from \"vue\";\n\n// 1: the binding has the same name as the file → linked\nconst NoticeButton = defineAsyncComponent(() => import(\"../components/NoticeButton.vue\"));\n// 2: any other binding name → not linked\nconst LazyNoticeLink = defineAsyncComponent(() => import(\"../components/NoticeLink.vue\"));\n</script>\n\n<template>\n  <NoticeButton />\n  <LazyNoticeLink />\n</template>\n",
+            "bytes": 429,
+            "sha256": "3694d12efe59892b7fe40299a2a98832b5c3fec70e8fa094ede68f43ef8c9a02"
+          }
+        },
+        "reportedCommandsAndOutput": "$ vize --version\nvize 0.589.0\n$ vize doctor --format json . | jq \"[.findings[] | {code, path: .primary.path, message}]\"\n[\n {\n  \"code\": \"VIZE_DOCTOR_CF_UNMATCHED_INJECT\",\n  \"path\": \"src/components/NoticeLink.vue\",\n  \"message\": \"**Unmatched Inject**: `inject(NoticeKey)` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.\"\n }\n]\n$ vize lint -f plain --no-config --cross-file \"src/**/*.vue\" | grep cross-file\n  src/components/NoticeLink.vue:5:16 error cross-file vize:croquis/cf/unmatched-inject: **Unmatched Inject**: `inject(NoticeKey)` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.\n",
+        "public602Observation": {
+          "status": "not yet executed; do not infer report output"
+        },
+        "producerRequirement": "actual public0.602 image/doctor/lint/full projectgraph/raw inspection separately captured before source changes",
+        "createdAt": "2026-10-27T19:35:34.867418+00:00"
+      }
+    }
+  ]
 }
