@@ -4,6 +4,55 @@
 use vize_canon::virtual_ts::VirtualTsOptions;
 use vize_l0::config::VueVersion;
 
+fn assert_complete_stubs(options: &VirtualTsOptions, mut expected: Vec<&str>) {
+    expected.extend([
+        "type Composer = any;",
+        "type Ref<T = any> = import('vue').Ref<T>;",
+        "type ComputedRef<T = any> = import('vue').ComputedRef<T>;",
+        "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
+        "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
+        "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
+        "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
+        "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
+        "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
+        "type Component = import('vue').Component;",
+        "declare function defineNuxtConfig<T extends Record<string, any>>(config: T): T;",
+        "declare const NuxtLink: any;",
+        "declare const NuxtPage: any;",
+        "declare const NuxtLayout: any;",
+        "declare const NuxtLoadingIndicator: any;",
+        "declare const NuxtErrorBoundary: any;",
+        "declare const NuxtWelcome: any;",
+        "declare const NuxtIsland: any;",
+        "declare const NuxtRouteAnnouncer: any;",
+        "declare const ClientOnly: any;",
+        "declare const DevOnly: any;",
+    ]);
+    let mut actual = options
+        .auto_import_stubs
+        .iter()
+        .map(|stub| stub.as_str())
+        .collect::<Vec<_>>();
+    actual.sort_unstable();
+    expected.sort_unstable();
+    assert_eq!(actual, expected);
+}
+
+fn assert_complete_template_globals(options: &VirtualTsOptions, expected: Vec<(&str, &str, &str)>) {
+    let actual = options
+        .template_globals
+        .iter()
+        .map(|global| {
+            (
+                global.name.as_str(),
+                global.type_annotation.as_str(),
+                global.default_value.as_str(),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(actual, expected);
+}
+
 #[test]
 fn configured_generated_stubs_follow_references_and_literal_includes() {
     let directory = tempfile::tempdir().unwrap();
@@ -73,23 +122,24 @@ fn configured_generated_stubs_follow_references_and_literal_includes() {
             false,
             VueVersion::V3,
         );
-        let stubs = options.auto_import_stubs.join("\n");
-        assert!(stubs.contains("declare const useConfigured:"));
-        assert!(stubs.contains("declare const referencedGlobal: number;"));
-        assert_eq!(
-            stubs.contains("declare const unusedGlobal:"),
-            include_unused
-        );
-        assert_eq!(
-            stubs.contains("declare const staleRootGlobal:"),
-            include_root
-        );
-        assert_eq!(
-            options
-                .template_globals
-                .iter()
-                .any(|global| global.name == "$unused"),
-            include_unused
+        let mut expected = vec![
+            "declare const useConfigured: () => string;",
+            "declare const referencedGlobal: number;",
+        ];
+        if include_unused {
+            expected.push("declare const unusedGlobal: string;");
+        }
+        if include_root {
+            expected.push("declare const staleRootGlobal: boolean;");
+        }
+        assert_complete_stubs(&options, expected);
+        assert_complete_template_globals(
+            &options,
+            if include_unused {
+                vec![("$unused", "any", "undefined as any")]
+            } else {
+                vec![]
+            },
         );
         assert!(options.strict_instance_globals);
     }
@@ -139,9 +189,11 @@ fn configured_generated_stubs_follow_custom_build_dir_outside_the_app() {
         false,
         VueVersion::V3,
     );
-    let stubs = options.auto_import_stubs.join("\n");
-    assert!(stubs.contains("declare const useOutsideBuildDir:"));
-    assert!(!stubs.contains("declare const staleOutsideBuildDir:"));
+    assert_complete_stubs(
+        &options,
+        vec!["declare const useOutsideBuildDir: () => string;"],
+    );
+    assert_complete_template_globals(&options, vec![]);
     assert!(options.strict_instance_globals);
 }
 
@@ -173,8 +225,9 @@ fn configured_pure_manifest_retains_imports_after_ambient_root_filtering() {
         Some(&config),
         &mut super::super::tsconfig_inputs::TsconfigInputCache::default(),
     );
-    assert!(
-        files.is_empty(),
+    assert_eq!(
+        files,
+        Vec::new(),
         "pure/import manifests are not ambient roots"
     );
     let mut options = VirtualTsOptions::default();
@@ -186,8 +239,7 @@ fn configured_pure_manifest_retains_imports_after_ambient_root_filtering() {
         false,
         VueVersion::V3,
     );
-    let stubs = options.auto_import_stubs.join("\n");
-    assert!(stubs.contains("declare const useConfigured:"));
-    assert!(!stubs.contains("declare const staleGlobal:"));
+    assert_complete_stubs(&options, vec!["declare const useConfigured: () => string;"]);
+    assert_complete_template_globals(&options, vec![]);
     assert!(options.strict_instance_globals);
 }
