@@ -17,7 +17,9 @@ fn usage(script: &str) -> TemplateRefUsage {
 }
 
 fn generate(script: &str) -> String {
-    let usage = usage(script);
+    let source = format!("import {{ useTemplateRef }} from 'vue';\n{script}");
+    let usage = usage(&source);
+    let script = source.as_str();
     let mut checks = usage.key_checks(true);
     let mut ts = String::default();
     let mut mappings = Vec::new();
@@ -36,7 +38,9 @@ fn generate(script: &str) -> String {
             script[mapping.src_range]
         );
     }
-    ts
+    ts.strip_prefix("import { useTemplateRef } from 'vue';\n")
+        .unwrap()
+        .into()
 }
 
 #[test]
@@ -148,4 +152,45 @@ fn escaped_composable_callees_preserve_authored_spelling() {
         generate(script),
         "void (null! as __VizeTemplateRefs[\"target\"]); const target = __vizeInferRef('target');\n"
     );
+}
+
+#[test]
+fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
+    let script = "const target = useTemplateRe\\u0066('target');\n";
+    let usage = usage(script);
+    let mut checks = usage.key_checks(true);
+    let mut generated = String::default();
+    let mut mappings = Vec::new();
+    checks.emit_for_line(&mut generated, &mut mappings, (0, script.len()), &|n| n);
+    checks.emit_line(
+        &mut generated,
+        &mut mappings,
+        std::borrow::Cow::Borrowed(script),
+        (0, script.len()),
+        &|n| n,
+    );
+    assert!(generated.contains("(useTemplateRe\\u0066 as __vizeInferRefGlobal)('target')"));
+    assert!(
+        generated.contains("[\"target\" & (__vizeInferRefIsVue extends true ? unknown : never)]")
+    );
+    let callee = mappings
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .find(|span| &script[span.src_range.clone()] == "useTemplateRe\\u0066")
+        .unwrap();
+    assert_eq!(&generated[callee.gen_range.clone()], "useTemplateRe\\u0066");
+    let mut helpers = String::default();
+    usage.emit_inference_helpers(&mut helpers);
+    assert!(helpers.contains("type __vizeInferRefSource = typeof useTemplateRef;"));
+    assert!(helpers.contains("? __VizeUseTemplateRef : __vizeInferRefSource;"));
+    assert!(!helpers.contains("const useTemplateRef"));
+    assert!(!helpers.contains("function useTemplateRef"));
+}
+
+#[test]
+fn generated_global_type_names_cannot_capture_authored_names() {
+    for suffix in ["Source", "Equal", "Result", "IsVue", "Global"] {
+        let script = format!("type __vizeInferRef{suffix} = string;\nuseTemplateRef('target');");
+        assert_ne!(usage(&script).helper_name(), "__vizeInferRef");
+    }
 }

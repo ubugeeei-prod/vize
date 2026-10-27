@@ -29,6 +29,7 @@ runs:
         unset VIZE_TEST_DISABLE_TSGO
         node --test --test-concurrency=1 \
           tests/tooling/canon-type-admission.test.ts \
+          tests/tooling/canon-global-ref-admission.test.ts \
           tests/tooling/lsp-type-admission.test.ts \
           tests/tooling/lsp-vue-language-tools-oracles.test.ts \
           tests/tooling/lsp-editor-feature-isolation.test.ts \
@@ -56,6 +57,7 @@ runs:
         path: |
           target/differential/fallthrough-listener-inputs/template-ref-admission-*
           target/differential/template-ref-type-admission-lsp
+          target/differential/template-ref-global-admission
         if-no-files-found: error
         retention-days: 7
     - name: Preserve complete experimental route protocol receipts

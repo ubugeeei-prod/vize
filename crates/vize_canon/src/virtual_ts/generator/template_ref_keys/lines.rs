@@ -3,7 +3,7 @@
 use super::TemplateRefKeyChecks;
 use crate::virtual_ts::{VizeMapping, VizeSubSpan};
 use std::borrow::Cow;
-use vize_carton::String;
+use vize_carton::{String, append};
 
 impl TemplateRefKeyChecks<'_> {
     /// Append one authored script line with exact spans for specialized callees.
@@ -49,7 +49,7 @@ impl TemplateRefKeyChecks<'_> {
         }
         if calls
             .iter()
-            .all(|call| call.callee.len() == self.helper.len())
+            .all(|call| call.imported && call.callee.len() == self.helper.len())
         {
             for call in calls {
                 let range = call.callee.start - start..call.callee.end - start;
@@ -79,11 +79,22 @@ impl TemplateRefKeyChecks<'_> {
                 });
                 output.push_str(prefix);
             }
+            if !call.imported {
+                output.push('(');
+            }
+            let callee = if call.imported {
+                self.helper
+            } else {
+                call.name.as_str()
+            };
             spans.push(VizeSubSpan {
-                gen_range: gen_start + output.len()..gen_start + output.len() + self.helper.len(),
+                gen_range: gen_start + output.len()..gen_start + output.len() + callee.len(),
                 src_range: source_offset(call.callee.start)..source_offset(call.callee.end),
             });
-            output.push_str(self.helper);
+            output.push_str(callee);
+            if !call.imported {
+                append!(output, " as {}Global)", self.helper);
+            }
             cursor = range.end;
         }
         if let Some(tail) = line.get(cursor..)

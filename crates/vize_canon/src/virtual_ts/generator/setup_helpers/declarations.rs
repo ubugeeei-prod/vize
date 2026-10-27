@@ -2,7 +2,7 @@
 
 use super::super::template_ref_keys::TemplateRefUsage;
 use crate::virtual_ts::helpers::setup_macros::{
-    ACTIVE_TEMPLATE_REF_HELPER, SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
+    SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -99,19 +99,13 @@ pub(super) fn emit(
         "  // Compiler macros (only valid in setup scope, not global)\n"
     });
     if typed_refs {
-        append!(
-            *ts,
-            "  const {} = (undefined as unknown as __VizeUseTemplateRef);\n",
-            plan.template_refs.helper_name()
-        );
+        plan.template_refs.emit_inference_helpers(ts);
     }
     for helper in SETUP_MACRO_HELPERS {
         if shadowed.contains(helper.name) {
             continue;
         }
-        if helper.name == "useTemplateRef" && plan.active_template_ref {
-            ts.push_str(ACTIVE_TEMPLATE_REF_HELPER);
-        } else if helper.name == "defineProps" && generic_props {
+        if helper.name == "defineProps" && generic_props {
             ts.push_str(if hoisted {
                 GENERIC_PROPS_HOISTED
             } else {
@@ -167,6 +161,12 @@ fn shadowed_helpers(
     let Some(source) = source else {
         return plan;
     };
+    // This is a runtime composable, not a compiler macro. Never invent or
+    // replace its ambient contract: custom globals and missing imports must
+    // keep their authored types and diagnostics, including parser recovery.
+    if plan.active_template_ref {
+        plan.shadowed.insert(CompactString::from("useTemplateRef"));
+    }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
     let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
@@ -220,11 +220,11 @@ const GENERIC_PROPS_EMBEDDED: &str = r#"  function defineProps<_T = unknown>(): 
 
 #[cfg(test)]
 mod template_ref_fallback_tests {
-    use super::{ACTIVE_TEMPLATE_REF_HELPER, SetupHelperPlan, VUE_SETUP_HELPERS, emit};
+    use super::{SetupHelperPlan, VUE_SETUP_HELPERS, emit};
     use vize_carton::String;
 
     #[test]
-    fn possible_global_ref_calls_never_receive_the_inactive_any_contract() {
+    fn possible_global_ref_calls_never_receive_an_invented_runtime_contract() {
         for source in [
             "function nested() { useTemplateRef<unknown>('missing'); }",
             "function nested() { useTemplateRef<never>('missing'); }",
@@ -236,7 +236,7 @@ mod template_ref_fallback_tests {
             for hoisted in [false, true] {
                 let mut generated = String::default();
                 emit(&mut generated, &plan, hoisted, false, false);
-                assert_eq!(generated.matches(ACTIVE_TEMPLATE_REF_HELPER).count(), 1);
+                assert!(!generated.contains("function useTemplateRef"));
                 assert_eq!(
                     generated
                         .matches("function useTemplateRef<_T = any")

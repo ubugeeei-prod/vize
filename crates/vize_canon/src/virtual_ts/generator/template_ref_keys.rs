@@ -27,6 +27,7 @@ use vize_carton::{FxHashSet, String, append, cstr};
 use crate::virtual_ts::VizeMapping;
 use crate::virtual_ts::helpers::push_ts_string_literal;
 
+mod globals;
 mod lines;
 
 #[derive(Default)]
@@ -131,6 +132,13 @@ impl TemplateRefKeyChecks<'_> {
                 src_range: source_offset(literal.start)..source_offset(literal.end),
                 sub_spans: Vec::new(),
             });
+            if !call.imported {
+                append!(
+                    *ts,
+                    " & ({}IsVue extends true ? unknown : never)",
+                    self.helper
+                );
+            }
             ts.push_str("]); ");
         }
     }
@@ -175,18 +183,27 @@ fn helper_name(scoping: &Scoping) -> String {
                     .map(|name| name.as_str()),
             )
     };
-    if !names().any(|name| name == "__vizeInferRef") {
+    if !names().any(|name| occupies_helper(name, "__vizeInferRef")) {
         return "__vizeInferRef".into();
     }
     let occupied: FxHashSet<&str> = names().collect();
     let mut index = 0_u32;
     loop {
         let candidate = cstr!("__vize{index:08x}");
-        if !occupied.contains(candidate.as_str()) {
+        if !occupied
+            .iter()
+            .any(|name| occupies_helper(name, candidate.as_str()))
+        {
             return candidate;
         }
         index += 1;
     }
+}
+
+fn occupies_helper(name: &str, candidate: &str) -> bool {
+    ["", "Source", "Equal", "Result", "IsVue", "Global"]
+        .iter()
+        .any(|suffix| name.strip_prefix(candidate) == Some(suffix))
 }
 
 struct Collector<'s> {
