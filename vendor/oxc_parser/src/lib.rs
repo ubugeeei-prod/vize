@@ -517,7 +517,7 @@ mod parser_parse {
         options: ParseOptions,
         config: C,
     ) -> ParserReturn<'a> {
-        if source_text.as_bytes().contains(&b'<') {
+        if memchr::memchr(b'<', source_text.as_bytes()).is_some() {
             ParserImpl::<C>::new(
                 allocator,
                 source_text,
@@ -547,7 +547,7 @@ mod parser_parse {
         options: ParseOptions,
         config: C,
     ) -> Result<Expression<'a>, Diagnostics> {
-        if source_text.as_bytes().contains(&b'<') {
+        if memchr::memchr(b'<', source_text.as_bytes()).is_some() {
             ParserImpl::<C>::new(
                 allocator,
                 source_text,
