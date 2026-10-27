@@ -76,11 +76,7 @@ jobs:
             test "$result" -eq 101
           fi
           cat "$capture/before-scheduler.log"
-          rg 'running 1 test' "$capture/before-scheduler.log"
-          rg 'test result: FAILED. 0 passed; 1 failed; 0 ignored' "$capture/before-scheduler.log"
-          rg 'accepted distinct URIs cannot be evicted' "$capture/before-scheduler.log"
-          rg 'left:[[:space:]]*64' "$capture/before-scheduler.log"
-          rg 'right:[[:space:]]*65' "$capture/before-scheduler.log"
+          python3 -c 'import pathlib,re,sys; text=pathlib.Path(sys.argv[1]).read_text(); required=[r"running 1 test",r"test result: FAILED[.] 0 passed; 1 failed; 0 ignored",r"accepted distinct URIs cannot be evicted",r"left:\s*64",r"right:\s*65"]; missing=[pattern for pattern in required if re.search(pattern,text) is None]; assert not missing,missing; print("Original source conservation: exact named failure 64 != 65 verified")' "$capture/before-scheduler.log"
       - name: Build the exact source once in its own target
         env:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
