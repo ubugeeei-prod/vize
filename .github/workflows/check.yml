@@ -1,5 +1,5 @@
 name: Native origin metadata extraction only
-run-name: Metadata only from existing native law 40593117892
+run-name: Metadata only from existing native law 40596896378
 on: { workflow_dispatch: {} }
 permissions: { contents: read, actions: read }
 jobs:
@@ -16,9 +16,9 @@ jobs:
           import hashlib, io, json, os, pathlib, subprocess, tarfile, zipfile
           repo = os.environ["GITHUB_REPOSITORY"]
           assert repo == "ubugeeei-prod/vize"
-          artifact_id = 12774393097
-          expected_bytes = 113795
-          expected_sha = "23ab33a0258366ed27059ab40773add97d6daa507c8e65e8e4356607d660f1e6"
+          artifact_id = 12777146839
+          expected_bytes = 107940
+          expected_sha = "3c2903bd300e8a7502ba9b95a98964713b064ae09f567078ad1efa0b62834a12"
           def api(path):
               result = subprocess.run(["gh","api","--allow-escape-sequences",path],capture_output=True,timeout=90)
               assert result.returncode == 0, result.stderr.decode("utf8","replace")
@@ -26,7 +26,7 @@ jobs:
           metadata = json.loads(api(f"repos/{repo}/actions/artifacts/{artifact_id}"))
           assert metadata["id"] == artifact_id and metadata["size_in_bytes"] == expected_bytes
           assert metadata["digest"] == "sha256:" + expected_sha
-          assert metadata["workflow_run"]["id"] == 40593117892
+          assert metadata["workflow_run"]["id"] == 40596896378
           archive = api(f"repos/{repo}/actions/artifacts/{artifact_id}/zip")
           assert len(archive) == expected_bytes
           assert hashlib.sha256(archive).hexdigest() == expected_sha
@@ -50,14 +50,95 @@ jobs:
                   members[entry.name] = content
           source_name = "native-metadata/actual-source-acceptance.json"
           source = json.loads(members[source_name])
-          assert source["sourceSha"] == "64364ac0db4346f7aac9cc2ec90c12fa3c578e49"
-          assert source["actualTestImage"]["sha256"] == "626e8e2181af2a628f9bf42c25cb7eed534e8ac107f751e5c2b8062385ae87f5"
-          assert source["passed"] and len(source["tests"]) == 17
+          assert source["sourceSha"] == "cfa9b573e9857e87caa67d2e938c302fdacf5f49"
+          assert source["actualTestImage"]["sha256"] == "af8a05e0ffce56c4c3dd6603b4cd435d7f96ac71a93eabf8aac5a7bb25eb0150"
+          assert source["passed"] and len(source["tests"]) == 22
           assert all(row["qualified"] for row in source["tests"])
           original_members = [{"name":name,"bytes":len(data),"sha256":hashlib.sha256(data).hexdigest()} for name,data in sorted(members.items())]
           out = pathlib.Path(os.environ["RUNNER_TEMP"]) / "origin-metadata-only"
           assert not out.exists()
           out.mkdir()
+          full_id = 12777516451
+          full_size = 5493285
+          full_sha = "397540d7992196478a1dcbae82df278b536e45fcf38fe4b6e1f567c9720355b9"
+          full_meta = json.loads(api(f"repos/{repo}/actions/artifacts/{full_id}"))
+          assert full_meta["size_in_bytes"] == full_size and full_meta["digest"] == "sha256:" + full_sha
+          assert full_meta["workflow_run"]["id"] == 40596896378
+          full_archive = api(f"repos/{repo}/actions/artifacts/{full_id}/zip")
+          assert len(full_archive) == full_size and hashlib.sha256(full_archive).hexdigest() == full_sha
+          with zipfile.ZipFile(io.BytesIO(full_archive)) as zipped:
+              entry, = zipped.infolist()
+              assert entry.filename == "binding-origin-admission.tgz"
+              full_tgz = zipped.read(entry)
+          headers = {"7.0.2":[],"7.1.0-beta":[]}
+          role_maps = {}
+          for version in headers:
+              prefix = "native-metadata/" + version + "/"
+              role_rows = {name.removeprefix(prefix):json.loads(content) for name,content in members.items() if name.startswith(prefix) and name.endswith(".json")}
+              raw = role_rows["raw-symbol-candidates.json"]
+              declaration_refs = {}
+              file_descriptors = {}
+              requests_by_id = {request["id"]:request for request in raw["requests"]}
+              phase_snapshots = {phase:str(role_rows[phase + "/phase-receipt.json"]["snapshot"]) for phase in ["valid","partial","repaired"]}
+              for response in raw["responses"]:
+                  symbol = response.get("result")
+                  if not isinstance(symbol,dict) or not isinstance(symbol.get("declarations"),list): continue
+                  snapshot = str(requests_by_id[response["id"]]["params"]["snapshot"])
+                  for handle in symbol.get("declarations",[]):
+                      path = handle.split(".",2)[2]
+                      declaration_refs.setdefault((snapshot,path),set()).add(handle)
+                  reference = symbol.get("reference")
+                  if isinstance(reference,dict) and reference.get("kind")==0:
+                      descriptor = reference["file"]
+                      path = descriptor["fileName"]
+                      key = (snapshot,path)
+                      if key in file_descriptors:
+                          assert file_descriptors[key] == descriptor
+                      file_descriptors[key] = descriptor
+              phases = {}
+              for phase in ["valid","partial","repaired"]:
+                  cases = role_rows[phase + "/cases-normalized.json"]
+                  handles = list(cases["real"]["declarations"])
+                  for row in cases["cases"]:
+                      if "target" in row: handles += row["target"]["declarations"]
+                  phases[phase] = sorted({handle.split(".",2)[2] for handle in handles})
+              role_maps[version] = (phases,declaration_refs,file_descriptors,phase_snapshots)
+          with tarfile.open(fileobj=io.BytesIO(full_tgz),mode="r:gz") as tar:
+              full_source_same = False
+              for entry in tar:
+                  if entry.name == "binding-origin-admission/acceptance.json":
+                      file = tar.extractfile(entry); assert file is not None
+                      assert file.read() == members[source_name]
+                      full_source_same = True
+                  match = __import__("re").fullmatch(r"binding-origin-admission/native-(7[.]0[.]2|7[.]1[.]0-beta)/(valid|partial|repaired)/declaration-([0-9]+)[.]encoded[.]bin",entry.name)
+                  if match is None: continue
+                  assert entry.isfile() and entry.size < 5_000_000
+                  version,phase,index = match.groups()
+                  phases,refs,descriptors,snapshots = role_maps[version]
+                  owner = phases[phase][int(index)]
+                  file = tar.extractfile(entry); assert file is not None
+                  payload = file.read()
+                  assert len(payload) == entry.size and len(payload) >= 44
+                  protocol = payload[3]
+                  node_offset = int.from_bytes(payload[40:44],"little")
+                  nodes = []
+                  for handle in sorted(refs.get((snapshots[phase],owner),[])):
+                      node_index,raw_kind,_ = handle.split(".",2)
+                      offset = node_offset + int(node_index)*28
+                      record = payload[offset:offset+28] if offset >= node_offset and offset+28 <= len(payload) else b""
+                      words = [int.from_bytes(record[i:i+4],"little") for i in range(0,len(record),4)]
+                      nodes.append({"originalRawReference":handle,"byteOffset":offset,"rawRecordHex":record.hex(),"littleEndianWords":words,"rawReferenceKindEqualsRecordWord0":len(words)==7 and int(raw_kind)==words[0],"classificationQualified":False})
+                  descriptor = descriptors.get((snapshots[phase],owner))
+                  v9 = None
+                  if protocol == 9 and len(payload) >= 64:
+                      source_id = int.from_bytes(payload[44:52],"little")
+                      v9 = {"layout":"published pinned SDK v9 observation only","sourceFileId":str(source_id),"sourceFileLease":str(int.from_bytes(payload[52:60],"little")),"binderDataOffset":int.from_bytes(payload[60:64],"little"),"fileDescriptorNodeIdMatches":descriptor is not None and str(descriptor["nodeId"])==str(source_id)}
+                  headers[version].append({"originalMember":entry.name,"bytes":len(payload),"sha256":hashlib.sha256(payload).hexdigest(),"owner":owner,"phase":phase,"snapshot":snapshots[phase],"first64BytesHex":payload[:64].hex(),"protocolByte":protocol,"nodeTableOffsetWord":node_offset,"observedV9Fields":v9,"rawFileDescriptor":descriptor,"referencedNodeRecords":nodes,"rustDecoderCompatible":None,"originClassifierQualified":False})
+              assert full_source_same
+          for version in headers:
+              assert len(headers[version]) == 24
+              assert sorted(row["phase"] for row in headers[version]) == sorted(["valid","partial","repaired"]*8)
+          
           for version in ["7.0.2","7.1.0-beta"]:
               prefix = "native-metadata/" + version + "/"
               rows = []
@@ -75,7 +156,7 @@ jobs:
                   "version":version,"inputArtifact":metadata,"inputZipSha256":expected_sha,
                   "originalMembers":original_members,
                   "sourceAdmission":{"originalMember":source_name,"bytes":len(members[source_name]),"sha256":hashlib.sha256(members[source_name]).hexdigest(),"value":source},
-                  "jsonMembers":rows,"sourceBodiesCopied":False,
+                  "jsonMembers":rows,"encodedHeaderObservations":{"inputArtifact":full_meta,"inputZipSha256":full_sha,"members":headers[version],"sourceBodiesCopied":False},"sourceBodiesCopied":False,
                   "originClassifierQualified":False,"hostWireQualified":False,
               }
               content = (json.dumps(result,separators=(",",":"),ensure_ascii=False)+"\n").encode()
@@ -89,13 +170,13 @@ jobs:
           PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: origin-native-metadata-only-7.0.2
+          name: origin-native-decoder-boundary-7.0.2
           path: ${{ runner.temp }}/origin-metadata-only/7.0.2.json
           compression-level: 9
           retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: origin-native-metadata-only-7.1.0-beta
+          name: origin-native-decoder-boundary-7.1.0-beta
           path: ${{ runner.temp }}/origin-metadata-only/7.1.0-beta.json
           compression-level: 9
           retention-days: 14
