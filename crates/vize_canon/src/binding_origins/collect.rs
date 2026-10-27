@@ -1,7 +1,5 @@
 //! Read only the caller's existing AST/semantic snapshot; no parser or I/O.
-use super::{
-    BindingRef, BindingTarget, LocalSymbol, Namespace, SourceFacts, SourceRevision, Usage,
-};
+use super::{BindingTarget, LocalSymbol, Namespace, SourceFacts, SourceRevision};
 use oxc_ast::{
     AstKind,
     ast::{
