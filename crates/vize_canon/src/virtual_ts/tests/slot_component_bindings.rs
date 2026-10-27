@@ -84,7 +84,9 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
             .code
             .matches("__VizeSlotsFactory<typeof ElBadge>")
             .count(),
-        1,
+        // The slot body and restored canonical prop-check scope each keep the
+        // same actual PascalCase constructor, as for configured globals below.
+        2,
         "{}",
         output.code,
     );
