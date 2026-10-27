@@ -1,1 +1,2 @@
-export type LocalId = number;
+import data from "../../../packages/ui/src/data.json";
+export type LocalId = typeof data.id;

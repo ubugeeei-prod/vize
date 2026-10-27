@@ -253,6 +253,24 @@ fn relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics() {
         );
         let mut owned = Vec::new();
         collect_owned_files(&virtual_root, &mut owned);
+        let authored_json = workspace.join("packages/ui/src/data.json");
+        let mirrored_json = owned
+            .iter()
+            .filter(|path| {
+                vize_canon::batch::external_mirror_original_path(path).as_ref()
+                    == Some(&authored_json)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            mirrored_json.len(),
+            1,
+            "JSON must have one owned external mirror"
+        );
+        assert_eq!(
+            std::fs::read(mirrored_json[0]).unwrap(),
+            std::fs::read(&authored_json).unwrap(),
+            "the mirrored JSON must preserve its exact bytes"
+        );
         let mut current_build_info = owned
             .iter()
             .filter(|path| {

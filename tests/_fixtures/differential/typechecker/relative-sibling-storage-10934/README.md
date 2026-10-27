@@ -3,7 +3,9 @@
 This minimized project preserves the graph reported by [dmnlk](https://github.com/dmnlk)
 in [Issue #10934](https://github.com/ubugeeei-prod/vize/issues/10934): an app imports
 a sibling SFC by a relative climb while a shared tsconfig explicitly includes a
-hoisted Vue JSX declaration. The SFC imports the app's `LocalId` type in return.
+hoisted Vue JSX declaration. The SFC imports the app's `LocalId` type in return;
+that type is inferred from the sibling package's `data.json`, so passthrough
+JSON imports must also survive the external mirror boundary.
 
 The starting CLI regression is pinned at
 `cb9c06d2b879da6b47a0a2f783d9a5f324776585`. This pack moves only the isolated JSX

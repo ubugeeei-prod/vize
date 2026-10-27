@@ -37,6 +37,10 @@
           "source": "apps/app/src/model.ts.txt"
         },
         {
+          "file": "packages/ui/src/data.json",
+          "source": "packages/ui/src/data.json.txt"
+        },
+        {
           "file": "packages/ui/src/Shared.vue",
           "source": "packages/ui/src/Shared.vue.txt"
         },
@@ -78,6 +82,10 @@
         {
           "file": "apps/app/src/model.ts",
           "source": "apps/app/src/model.ts.txt"
+        },
+        {
+          "file": "packages/ui/src/data.json",
+          "source": "packages/ui/src/data.json.txt"
         },
         {
           "file": "packages/ui/src/Shared.vue",
