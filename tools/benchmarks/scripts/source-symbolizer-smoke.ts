@@ -10,6 +10,7 @@ import { frozenSourceLocations } from "./source-symbolizer-protocol.ts";
 import {
   boundedCommand,
   digest,
+  createSentinelAdapter,
   probeDecoders,
   renderSourceCpu,
 } from "./source-symbolizer-render.ts";
@@ -25,7 +26,14 @@ export function runCarrierSmoke(options: { perf: string; out: string; decoders: 
     out: join(options.out, "hardware-admission"),
     rounds: 1,
   });
-  const probes = probeDecoders(binary, join(options.out, "protocol-probes"), options.decoders);
+  const llvm = options.decoders.find(
+    (decoder) => decoder.includes("llvm-addr2line") && existsSync(decoder),
+  );
+  const adapter = llvm ? createSentinelAdapter(join(options.out, "adapter"), llvm) : null;
+  const probes = probeDecoders(binary, join(options.out, "protocol-probes"), [
+    ...(adapter ? [adapter] : []),
+    ...options.decoders,
+  ]);
   writeFileSync(join(options.out, "probes.json"), JSON.stringify(probes, null, 2) + "\n");
   const selected = probes.find((probe) => probe.qualified)?.decoder;
   assert.ok(selected, "no decoder passed the exact sentinel plus original Rust source witness");

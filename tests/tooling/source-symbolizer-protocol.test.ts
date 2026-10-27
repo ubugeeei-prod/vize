@@ -135,3 +135,27 @@ void test("known address streams require every ordered address and complete sent
     true,
   );
 });
+
+void test("stream adapter preserves real UTF8 frames and rejects invalid synthetic markers", async () => {
+  const { sentinelAdapterScript } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-adapter.ts");
+  const { spawnSync } = await import("node:child_process");
+  const fake =
+    'import sys\nfor line in sys.stdin.buffer:\n    if line == b"0xdeadbeefbadc0ffe\\n":\n        sys.stdout.buffer.write(line + b"??\\n??:0\\n")\n    else:\n        sys.stdout.buffer.write(line + "original_function\\n/source/雪.rs:12\\n".encode("utf8"))\n    sys.stdout.buffer.flush()\n';
+  const script = sentinelAdapterScript("/usr/bin/python3");
+  const run = (child: string) =>
+    spawnSync("python3", ["-c", script, "-c", child], {
+      input: ",\n0x123\n,\n0x456\n,\n",
+      encoding: "utf8",
+      timeout: 3000,
+    });
+  const good = run(fake);
+  assert.equal(good.status, 0, good.stderr);
+  assert.equal(
+    good.stdout,
+    ",\n0x123\noriginal_function\n/source/雪.rs:12\n,\n0x456\noriginal_function\n/source/雪.rs:12\n,\n",
+  );
+  const malformed = run(fake.replace("??:0", "wrong_source.rs:12"));
+  assert.equal(malformed.status, 1);
+  assert.match(malformed.stderr, /sentinel frame failed/u);
+});

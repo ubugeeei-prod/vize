@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { parsePerfEventStats } from "./source-operation-perf.ts";
+import { sentinelAdapterScript } from "./source-symbolizer-adapter.ts";
 import {
   parseFlatSourceReport,
   completeKnownFrames,
@@ -81,6 +82,36 @@ export function boundedCommand(
   writeFileSync(join(out, "stderr.txt"), result.stderr ?? "");
   writeFileSync(join(out, "invocation.json"), JSON.stringify(receipt, null, 2) + "\n");
   return { ...receipt, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
+}
+export function createSentinelAdapter(out: string, decoder: string) {
+  assert.ok(existsSync(decoder));
+  mkdirSync(out, { recursive: true });
+  const path = join(out, "llvm-sentinel-adapter");
+  assert.ok(!existsSync(path));
+  const script = sentinelAdapterScript(decoder);
+  writeFileSync(path, script, { mode: 0o755 });
+  const python = boundedCommand(join(out, "python-version"), "python3", ["--version"], 3000);
+  assert.equal(python.status, 0);
+  writeFileSync(
+    join(out, "adapter.json"),
+    JSON.stringify(
+      {
+        decoder,
+        decoderSha256: digest(decoder),
+        wrapper: path,
+        wrapperSha256: digest(path),
+        driver: python.stdout.trim(),
+        script,
+        inputChange: "standalone comma becomes reserved noncanonical 0xdeadbeefbadc0ffe",
+        outputChange: "only its exact unknown 3-line synthetic frame becomes comma",
+        sourceOutputChange:
+          "genuine function/source/address bytes pass unchanged; malformed sentinel is fatal",
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  return path;
 }
 export function probeDecoders(
   binary: string,
