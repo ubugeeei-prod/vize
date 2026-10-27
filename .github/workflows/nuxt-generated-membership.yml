@@ -9,9 +9,10 @@ on:
       - crates/vize/tests/check_cli.rs
       - crates/vize/src/commands/check/nuxt/**
       - crates/vize/src/commands/check/nuxt.rs
+      - crates/vize/src/commands/check/tsconfig_inputs.rs
       - crates/vize/src/commands/check/tsconfig_inputs/**
       - crates/vize/src/commands/check/runner/execution.rs
-      - crates/vize_canon/src/batch/tsconfig/**
+      - crates/vize_canon/src/batch/virtual_project/tsconfig_gen/**
 permissions:
   contents: read
 concurrency:
