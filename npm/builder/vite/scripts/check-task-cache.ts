@@ -175,7 +175,7 @@ try {
   );
   write("lint-policy.ts", 'export const debuggerRule = "off";\n');
   const config = (taskCache = true) =>
-    `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";\nimport { debuggerRule } from "./lint-policy";\nexport default defineConfig({ lint: { rules: { "no-debugger": debuggerRule } }, fmt: { ignorePatterns: ["vite.config.ts", "lint-policy.ts", "package*.json", "tsconfig.json"] }, run: { tasks: { warmup: { command: "node --version", cache: false }, owned: { command: "node --version", cache: false } } } }, { plugin: false, taskCache: ${taskCache}, tasks: { lint: "verify:lint" } });\n`;
+    `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";\nimport { debuggerRule } from "./lint-policy";\nexport default defineConfig({ lint: { rules: { "no-debugger": debuggerRule } }, fmt: { ignorePatterns: ["vite.config.ts", "lint-policy.ts", "package*.json", "tsconfig.json"] }, run: { tasks: { warmup: { command: "node --version", cache: false }, owned: { command: "node --version", cache: false } } } }, { plugin: false, taskCache: ${taskCache}, tasks: { lint: "verify:lint" } }).withVue({});\n`;
   write("vite.config.ts", config());
   // Initialize the provider's summary before checks enumerate the project.
   requireSuccess(process.execPath, [vp, "run", "warmup"]);
