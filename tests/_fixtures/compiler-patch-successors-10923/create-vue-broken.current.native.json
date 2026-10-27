@@ -1,0 +1,31 @@
+{
+  "code": "export default {\n  __name: \"App\",\n  setup(__props, { expose: __expose }) {\n    __expose();\n  }\n};",
+  "errors": [
+    "Template compilation errors: [CompilerError { code: InvalidEndTag, message: \"Invalid end tag.\", loc: Some(SourceLocation { start: Position { offset: 18, line: 2, column: 18 }, end: Position { offset: 23, line: 2, column: 23 }, source: \"</h2>\" }) }, CompilerError { code: MissingEndTag, message: \"Element is missing end tag.\", loc: Some(SourceLocation { start: Position { offset: 3, line: 2, column: 3 }, end: Position { offset: 7, line: 2, column: 7 }, source: \"<h1>\" }) }]"
+  ],
+  "warnings": [],
+  "hasScoped": true,
+  "styles": [
+    {
+      "content": "",
+      "scoped": true,
+      "module": false,
+      "index": 0
+    }
+  ],
+  "customBlocks": [],
+  "macroArtifacts": [],
+  "templateHash": "3d7f80e403a1e7ba",
+  "styleHash": "c44bdff4074eecdb",
+  "scriptHash": "2d06800538d394c2",
+  "moduleShape": {
+    "hasDefaultExport": true,
+    "hasSfcMainDefined": false,
+    "hasNamedRenderExport": false,
+    "hasNamedSsrRenderExport": false,
+    "defaultExportIsSfcMain": false,
+    "defaultExportStart": 0,
+    "defaultExportKeywordEnd": 14,
+    "defaultExportEnd": 97
+  }
+}
