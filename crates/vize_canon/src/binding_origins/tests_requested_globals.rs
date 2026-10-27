@@ -34,7 +34,7 @@ fn capture(text: &str, global_script: bool, names: &[&str]) -> SourceFacts {
 
 #[test]
 fn requested_global_names_do_not_lower_ten_thousand_unrelated_values() {
-    let mut text = String::new();
+    let mut text = String::default();
     for index in 0..10_000 {
         append!(
             text,
