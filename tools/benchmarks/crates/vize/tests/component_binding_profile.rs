@@ -31,8 +31,7 @@ fn authored_source(count: usize, shape: &str) -> String {
             "camel" => source.push_str(&format!("<choice-item-{index} />")),
             "missing" => source.push_str(&format!("<missing-item-{index} />")),
             "dynamic" => source.push_str(&format!("<component :is=\"choiceItem{index}\" />")),
-            "empty" => {}
-            _ => unreachable!(),
+            _ => assert_eq!(shape, "empty", "unsupported public fixture shape"),
         }
     }
     source.push_str("</section></template>\r\n");
