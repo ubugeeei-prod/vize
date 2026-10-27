@@ -37,6 +37,7 @@ impl CrossFileAnalyzer {
             pages: resolve(&dirs.pages),
             layouts: resolve(&dirs.layouts),
             pages_enabled: dirs.pages_enabled,
+            static_render_config: dirs.static_render_config,
         });
         let mut edges = Vec::new();
         let mut configured_app = false;

@@ -12,7 +12,12 @@ on:
       - tests/tooling/cross-file-script-offset.test.ts
       - tests/tooling/fixtures/cross-file-script-offset/**
       - tests/tooling/support/nuxt-exclusive-id-public-before.ts
+      - tests/tooling/support/nuxt-render-foundation-parity.ts
+      - crates/vize_croquis/**
+      - crates/vize/src/commands/project_nuxt.rs
+      - crates/vize/src/commands/project_nuxt/**
       - tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json
+      - tests/_fixtures/cross-file/nuxt-render-foundation-controls-10919.json
   push:
     branches: [main]
     paths:
@@ -25,7 +30,12 @@ on:
       - tests/tooling/cross-file-script-offset.test.ts
       - tests/tooling/fixtures/cross-file-script-offset/**
       - tests/tooling/support/nuxt-exclusive-id-public-before.ts
+      - tests/tooling/support/nuxt-render-foundation-parity.ts
+      - crates/vize_croquis/**
+      - crates/vize/src/commands/project_nuxt.rs
+      - crates/vize/src/commands/project_nuxt/**
       - tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json
+      - tests/_fixtures/cross-file/nuxt-render-foundation-controls-10919.json
   workflow_dispatch:
 
 permissions:
@@ -86,6 +96,10 @@ jobs:
         if: ${{ always() && steps.public_before.outcome == 'success' }}
         run: |
           vp node tests/tooling/support/nuxt-exclusive-id-public-before.ts --corpus tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json --cli "$VIZE_CROSS_FILE_OFFSET_BEFORE_CLI" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919"
+      - name: Require byte-identical old Nuxt packets while foundation admission stays inactive
+        if: ${{ always() && steps.public_before.outcome == 'success' }}
+        run: |
+          vp node tests/tooling/support/nuxt-render-foundation-parity.ts --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-foundation-parity.json"
       - name: Preserve all original producer inputs, processes and output packets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

@@ -64,8 +64,9 @@ pub use snapshot::{
 };
 pub use summary::CroquisSemanticSummary;
 pub use template::{
-    ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
-    SlotUsage, SpreadProp, TemplateExpression, TemplateExpressionKind, TemplateInfo,
+    ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener,
+    NuxtTemplateRenderFacts, PassedProp, SlotUsage, SpreadProp, TemplateExpression,
+    TemplateExpressionKind, TemplateInfo,
 };
 pub use template_components::TemplateComponentRegistrations;
 
@@ -120,6 +121,14 @@ pub struct Croquis {
     /// `ClassApi` when the default export is a class (vue-class-component /
     /// vue-property-decorator); `Unspecified` otherwise.
     pub component_shape: ComponentShape,
+
+    /// Closed original-script proof for Nuxt render exclusivity.
+    /// `None` and `Some(false)` are unknown; this fact is not projected in DTOs.
+    pub nuxt_static_render_script: Option<bool>,
+
+    /// Nuxt invocation evidence; absent or non-admitted facts remain unknown.
+    /// Excluded from DTOs, semantic summaries, and cache fingerprints.
+    pub nuxt_render_template: Option<NuxtTemplateRenderFacts>,
 
     /// Template-level metadata (root count, $attrs usage, etc.)
     pub template_info: TemplateInfo,
