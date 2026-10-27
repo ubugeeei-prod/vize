@@ -65,7 +65,7 @@ impl Buf {
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
             alias_mask,
-            alias_positions: None,
+            alias_positions: SHARED.then(|| self.scan_alias_positions(alias_mask)),
         };
         listed.sort_by(|left, right| {
             left.rank()
@@ -142,10 +142,7 @@ impl Buf {
         cache: &mut OrderCache,
     ) -> Option<usize> {
         if SHARED && cache.alias_mask & helper.bit() != 0 {
-            let alias_mask = cache.alias_mask;
-            let positions = cache
-                .alias_positions
-                .get_or_insert_with(|| self.scan_alias_positions(alias_mask));
+            let positions = cache.alias_positions.as_ref()?;
             return positions
                 .get(helper.bit().trailing_zeros() as usize)
                 .copied()
@@ -386,7 +383,7 @@ mod tests {
                     mask
                 }
             }),
-            alias_positions: None,
+            alias_positions: Some(buf.scan_alias_positions(buf.used)),
         };
         assert!(
             buf.first_alias_position::<true>(Helper::MergeProps, &mut cache)
