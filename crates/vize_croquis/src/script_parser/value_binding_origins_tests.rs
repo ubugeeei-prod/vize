@@ -131,3 +131,91 @@ fn incomplete_and_two_program_domains_refuse_but_absent_script_preserves() {
             .is_complete()
     );
 }
+
+#[test]
+fn loop_lvalues_and_var_hoisting_cannot_keep_stale_loader_identity() {
+    for statement in [
+        "for (var loader of [() => import('./Other.vue')]) {}",
+        "for (loader of [() => import('./Other.vue')]) {}",
+        "for (loader in { other: 1 }) {}",
+        "for ([loader] of [[() => import('./Other.vue')]]) {}",
+        "for ({ loader } of [{ loader: () => import('./Other.vue') }]) {}",
+        "for (var loader = () => import('./Other.vue'); false;) {}",
+    ] {
+        let mut source = vize_carton::String::from(
+            "import { defineAsyncComponent } from 'vue'; function scope() { function loader() { return import('./Child.vue'); } ",
+        );
+        source.push_str(statement);
+        source.push_str(" const Comp = defineAsyncComponent(loader); }");
+        let result = parse_script_setup(source.as_str());
+        let origins = result.value_binding_origins.as_ref().expect("capture");
+        let reference_start = source.rfind("loader").expect("loader use") as u32;
+        let scope = result
+            .scopes
+            .iter()
+            .find(|scope| scope.get_binding("Comp").is_some())
+            .expect("component scope")
+            .id;
+        let reference = ValueReference::new(
+            scope,
+            "loader",
+            Span::new(reference_start, reference_start + 6),
+        );
+        let resolved = origins
+            .resolve(&reference)
+            .expect("known function declaration");
+        assert_eq!(resolved.canonical, None, "{statement}");
+    }
+}
+
+#[test]
+fn cached_identity_keeps_each_use_tdz_independent() {
+    let source = "const before = value; const value = 1; const after = value;";
+    let (result, reference) = at(source, "value");
+    let origins = result.value_binding_origins.as_ref().expect("capture");
+    let late = origins.resolve(&reference).expect("later value use");
+    assert_eq!(late.canonical, Some(late.binding));
+    let early_start = source.find("value").expect("early use") as u32;
+    let early = ValueReference::new(
+        reference.scope,
+        "value",
+        Span::new(early_start, early_start + 5),
+    );
+    assert_eq!(
+        origins.resolve(&early).expect("same declaration").canonical,
+        None
+    );
+    assert_eq!(
+        origins
+            .resolve(&reference)
+            .expect("later use still admitted")
+            .canonical,
+        Some(late.binding)
+    );
+}
+
+#[test]
+fn long_aliases_and_many_functions_use_indexed_iterative_identity() {
+    use std::fmt::Write;
+    let mut source = vize_carton::String::from(
+        "import { defineAsyncComponent as origin } from 'vue'; const alias0 = origin;\n",
+    );
+    for index in 1..20_000 {
+        writeln!(source, "const alias{index} = alias{};", index - 1).expect("source");
+    }
+    for index in 0..10_000 {
+        writeln!(source, "function function{index}() {{}}").expect("source");
+    }
+    source.push_str("alias19999;");
+    let (result, reference) = at(source.as_str(), "alias19999");
+    let origins = result.value_binding_origins.as_ref().expect("capture");
+    let resolved = origins.resolve(&reference).expect("alias binding");
+    assert!(resolved.canonical.is_some());
+    assert_eq!(resolved.import.expect("Vue origin").source, "vue");
+    assert_eq!(origins.inventory(), [30_001, 30_001, 10_001, 0]);
+    println!(
+        "VALUE_BINDING_ORIGINS_INVENTORY inventory={:?} aliases=20000 functions=10000 source_bytes={}",
+        origins.inventory(),
+        source.len()
+    );
+}

@@ -246,6 +246,44 @@ for (const test of cases) {
     wholeInspector: result.inspector,
   });
 }
+
+// A literal package spelling is not a resolved Vue provider. Both configured
+// type and runtime aliases explicitly route this factory to an ordinary fake.
+// This precision control must remain red until caller-owned authority refuses it.
+const overridePage =
+  '<script setup lang="ts">\nimport NoticeButton from "../components/NoticeButton.vue";\nimport { defineAsyncComponent } from "vue";\nconst LazyNoticeLink = defineAsyncComponent(() => import("../components/NoticeLink.vue"));\n</script>\n<template><NoticeButton/><LazyNoticeLink/></template>\n';
+const overrideSources = {
+  "src/pages/index.vue": overridePage,
+  "src/fake-vue.ts": "export function defineAsyncComponent(_loader: unknown) { return {}; }\n",
+  "tsconfig.json":
+    JSON.stringify({ compilerOptions: { baseUrl: ".", paths: { vue: ["src/fake-vue.ts"] } } }) +
+    "\n",
+  "vite.config.mjs":
+    'export default { resolve: { alias: { vue: new URL("./src/fake-vue.ts", import.meta.url).pathname } } };\n',
+};
+const overrideFiles = { ...original.files };
+for (const [path, source] of Object.entries(overrideSources)) {
+  overrideFiles[path] = { source, bytes: Buffer.byteLength(source), sha256: sha(source) };
+}
+const overrideResult = observe("custom-vue-provider", overrideFiles);
+if (role === "candidate") {
+  assert.deepEqual(
+    overrideResult.statuses,
+    [1, 1, 1, 0],
+    "custom Vue authority must remain unknown",
+  );
+  assert.deepEqual(overrideResult.doctor, publicBefore.reports.doctor, "custom Vue provider");
+  assert.deepEqual(overrideResult.lint, publicBefore.reports.lint, "custom Vue provider");
+}
+packets.push({
+  id: "custom-vue-provider",
+  expectedCandidateErrors: 1,
+  statuses: overrideResult.statuses,
+  wholeDoctor: overrideResult.doctor,
+  wholeLint: overrideResult.lint,
+  wholeInspector: overrideResult.inspector,
+});
+
 writeFileSync(
   join(output, "receipt.json"),
   JSON.stringify(

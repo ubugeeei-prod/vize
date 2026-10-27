@@ -117,7 +117,7 @@ impl AsyncComponentBindings {
             return false;
         }
         if let Some(import) = resolved.import {
-            if import.source != "vue" || !import.value {
+            if import.source != "vue" || !import.value || !import.ordinary {
                 return false;
             }
             return match (factory, import.export) {
@@ -236,7 +236,7 @@ fn import_path(expression: &Expression<'_>) -> Option<CompactString> {
     let Expression::ImportExpression(import) = expression.get_inner_expression() else {
         return None;
     };
-    if import.options.is_some() {
+    if import.options.is_some() || import.phase.is_some() {
         return None;
     }
     let Expression::StringLiteral(literal) = import.source.get_inner_expression() else {

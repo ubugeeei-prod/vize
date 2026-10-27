@@ -56,6 +56,9 @@ jobs:
           from pathlib import Path
           text = Path('target/vize-tests/async-component/units.stdout').read_text()
           names = [
+            'loop_lvalues_and_var_hoisting_cannot_keep_stale_loader_identity',
+            'cached_identity_keeps_each_use_tdz_independent',
+            'long_aliases_and_many_functions_use_indexed_iterative_identity',
             'stable_opaque_functions_and_const_leaves_keep_identity',
             'reassignment_tdz_and_mutable_bindings_refuse_value_authority',
             'closure_parameters_and_hoisted_function_shadow_imports',

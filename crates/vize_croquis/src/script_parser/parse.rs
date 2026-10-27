@@ -188,6 +188,9 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     }
 
     if let Some(origins) = result.value_binding_origins.as_mut() {
+        if !result.invalid_exports.is_empty() {
+            origins.refuse();
+        }
         origins.finish(&result.scopes);
     }
 
@@ -336,6 +339,9 @@ pub(crate) fn parse_script_with_options_source_type(
     });
 
     if let Some(origins) = result.value_binding_origins.as_mut() {
+        if !result.invalid_exports.is_empty() {
+            origins.refuse();
+        }
         origins.finish(&result.scopes);
     }
 

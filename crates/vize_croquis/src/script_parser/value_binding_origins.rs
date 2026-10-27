@@ -5,7 +5,8 @@
 
 use crate::scope::{ScopeChain, ScopeId, ScopeKind};
 mod observe;
-pub(crate) use observe::note_expression_mutation;
+mod resolution;
+pub(crate) use observe::{note_expression_mutation, note_loop_left};
 
 use oxc_ast::ast::{
     BindingPattern, Expression, ImportDeclaration, ImportDeclarationSpecifier,
@@ -51,6 +52,8 @@ pub(crate) struct ValueImportOrigin {
     pub source: CompactString,
     pub export: ValueImportExport,
     pub value: bool,
+    /// Ordinary evaluation imports only; source/defer phases and attributes are not factory authority.
+    pub ordinary: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -82,6 +85,10 @@ pub struct ValueBindingOrigins {
     root: Option<ScopeId>,
     parents: FxHashMap<ScopeId, Option<ScopeId>>,
     declarations: FxHashMap<ScopeId, FxHashMap<CompactString, Declaration>>,
+    key_names: FxHashMap<ValueBindingKey, CompactString>,
+    canonical_keys: FxHashMap<ValueBindingKey, Option<ValueBindingKey>>,
+    canonical_member_writes: FxHashSet<ValueBindingKey>,
+    component_names: FxHashMap<CompactString, Option<CompactString>>,
     writes: Vec<(ValueReference, bool)>,
     mutated: FxHashSet<ValueBindingKey>,
     member_mutated: FxHashSet<ValueBindingKey>,
@@ -135,6 +142,7 @@ impl ValueBindingOrigins {
             }
             return;
         }
+        self.key_names.insert(key, CompactString::new(name));
         table.insert(
             CompactString::new(name),
             Declaration {
@@ -178,6 +186,7 @@ impl ValueBindingOrigins {
                     source: CompactString::new(import.source.value.as_str()),
                     export,
                     value,
+                    ordinary: import.phase.is_none() && import.with_clause.is_none(),
                 }),
                 0,
                 true,
@@ -353,117 +362,31 @@ impl ValueBindingOrigins {
                 }
             }
         }
-    }
-
-    pub(crate) fn declaration_key(&self, scope: ScopeId, span: Span) -> Option<ValueBindingKey> {
-        self.declarations
-            .get(&scope)?
-            .values()
-            .find(|declaration| {
-                declaration.key.start == span.start && declaration.key.end == span.end
-            })
-            .map(|declaration| declaration.key)
-    }
-
-    fn lookup(&self, reference: &ValueReference) -> Option<&Declaration> {
-        if reference.end < reference.start {
-            return None;
+        if !self.refused {
+            self.finalize_identities();
         }
-        let mut scope = Some(reference.scope);
-        while let Some(id) = scope {
-            if let Some(declaration) = self
-                .declarations
-                .get(&id)
-                .and_then(|table| table.get(reference.name.as_str()))
-            {
-                return Some(declaration);
-            }
-            scope = self.parents.get(&id).copied().flatten();
-        }
-        None
-    }
-
-    pub(crate) fn resolve(&self, reference: &ValueReference) -> Option<ResolvedValueBinding> {
-        let declaration = self.lookup(reference)?;
-        let canonical = if self.is_complete() {
-            self.canonical(declaration, reference.start, &mut FxHashSet::default())
-        } else {
-            None
-        };
-        let import = canonical
-            .and_then(|key| self.by_key(key))
-            .and_then(|declaration| match &declaration.origin {
-                Origin::Import(import) if import.value => Some(import.clone()),
-                _ => None,
-            });
-        Some(ResolvedValueBinding {
-            binding: declaration.key,
-            canonical,
-            import,
-        })
-    }
-
-    fn canonical(
-        &self,
-        declaration: &Declaration,
-        use_start: u32,
-        seen: &mut FxHashSet<ValueBindingKey>,
-    ) -> Option<ValueBindingKey> {
-        if !seen.insert(declaration.key)
-            || declaration.ambiguous
-            || !declaration.immutable
-            || self.mutated.contains(&declaration.key)
-            || declaration.initialized > use_start
-        {
-            return None;
-        }
-        match &declaration.origin {
-            Origin::Alias(reference) => {
-                self.canonical(self.lookup(reference)?, reference.start, seen)
-            }
-            Origin::Import(import) if !import.value => None,
-            _ => Some(declaration.key),
-        }
-    }
-
-    #[allow(
-        dead_code,
-        reason = "private identity API consumed by return-origin analysis"
-    )]
-    pub(crate) fn by_key_is_stable(&self, key: ValueBindingKey) -> bool {
-        self.by_key(key).is_some_and(|declaration| {
-            self.canonical(declaration, u32::MAX, &mut FxHashSet::default())
-                .is_some()
-        })
-    }
-
-    fn by_key(&self, key: ValueBindingKey) -> Option<&Declaration> {
-        self.declarations
-            .get(&key.scope)?
-            .values()
-            .find(|declaration| declaration.key == key)
-    }
-
-    pub(crate) fn has_member_write(&self, canonical: ValueBindingKey) -> bool {
-        self.member_mutated.iter().any(|key| {
-            self.by_key(*key).and_then(|declaration| {
-                self.canonical(declaration, u32::MAX, &mut FxHashSet::default())
-            }) == Some(canonical)
-        })
-    }
-
-    pub(crate) fn binding_names(&self) -> impl Iterator<Item = &str> {
-        self.root
+        let names: Vec<_> = self
+            .root
             .and_then(|root| self.declarations.get(&root))
             .into_iter()
-            .flat_map(|table| table.keys().map(CompactString::as_str))
+            .flat_map(|table| table.keys().cloned())
+            .collect();
+        for name in names {
+            let normalized = CompactString::new(crate::naming::to_pascal_case(name.as_str()));
+            self.component_names
+                .entry(normalized)
+                .and_modify(|previous| *previous = None)
+                .or_insert(Some(name));
+        }
     }
 
-    pub(crate) fn root_reference(&self, name: &str) -> Option<ValueReference> {
-        Some(ValueReference::new(
-            self.root?,
-            name,
-            Span::new(u32::MAX, u32::MAX),
-        ))
+    #[cfg(test)]
+    pub(crate) fn inventory(&self) -> [usize; 4] {
+        [
+            self.key_names.len(),
+            self.canonical_keys.len(),
+            self.parents.len(),
+            self.writes.len(),
+        ]
     }
 }

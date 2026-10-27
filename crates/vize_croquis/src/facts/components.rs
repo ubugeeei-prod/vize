@@ -228,15 +228,12 @@ pub fn local_component_binding<'a>(
     let Some(origins) = croquis.value_binding_origins.as_deref() else {
         return LocalComponentBinding::Absent;
     };
-    let mut names = origins.binding_names().filter(|name| {
-        *name == tag || crate::naming::to_pascal_case(name) == crate::naming::to_pascal_case(tag)
-    });
-    let Some(name) = names.next() else {
+    let Some(name) = origins.component_binding_name(tag) else {
         return LocalComponentBinding::Absent;
     };
-    if names.next().is_some() {
+    let Some(name) = name else {
         return LocalComponentBinding::Opaque;
-    }
+    };
     let Some(reference) = origins.root_reference(name) else {
         return LocalComponentBinding::Opaque;
     };

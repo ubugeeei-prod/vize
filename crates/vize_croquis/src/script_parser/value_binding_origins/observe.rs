@@ -89,7 +89,29 @@ pub(crate) fn note_expression_mutation(
         Expression::CallExpression(call) if matches!(call.callee.get_inner_expression(), Expression::Identifier(id) if id.name == "eval") => {
             origins.refuse()
         }
-        Expression::ClassExpression(_) => origins.refuse(),
+        Expression::ClassExpression(_)
+        | Expression::NewExpression(_)
+        | Expression::TaggedTemplateExpression(_)
+        | Expression::JSXElement(_)
+        | Expression::JSXFragment(_)
+        | Expression::TSTypeAssertion(_)
+        | Expression::TSInstantiationExpression(_)
+        | Expression::YieldExpression(_)
+        | Expression::PrivateInExpression(_)
+        | Expression::PrivateFieldExpression(_) => origins.refuse(),
+        Expression::TemplateLiteral(template) if !template.expressions.is_empty() => {
+            origins.refuse()
+        }
+        Expression::ImportExpression(import)
+            if import.options.is_some()
+                || import.phase.is_some()
+                || !matches!(
+                    import.source.get_inner_expression(),
+                    Expression::StringLiteral(_)
+                ) =>
+        {
+            origins.refuse()
+        }
         Expression::FunctionExpression(function) => {
             // Named function-expression identity is local to the closure; the
             // scope builder does not currently record that name as a binding.
@@ -118,5 +140,36 @@ fn note_member_write(
             note_member_write(origins, scope, &member.object)
         }
         _ => {}
+    }
+}
+
+/// The existing for-in/of walker owns the only visit to the assignment slot.
+pub(crate) fn note_loop_left(
+    result: &mut crate::script_parser::ScriptParseResult,
+    left: &oxc_ast::ast::ForStatementLeft<'_>,
+) {
+    if let oxc_ast::ast::ForStatementLeft::VariableDeclaration(declaration) = left {
+        for declarator in &declaration.declarations {
+            result.note_value_declaration(declarator, declaration.kind);
+        }
+    } else if let Some(target) = left.as_assignment_target() {
+        let scope = result.scopes.current_id();
+        if let Some(origins) = result.value_binding_origins.as_mut() {
+            use oxc_ast::ast::AssignmentTarget;
+            match target {
+                AssignmentTarget::AssignmentTargetIdentifier(id) => {
+                    origins.note_write(ValueReference::new(scope, id.name.as_str(), id.span), false)
+                }
+                AssignmentTarget::StaticMemberExpression(member) => {
+                    note_member_write(origins, scope, &member.object)
+                }
+                AssignmentTarget::ComputedMemberExpression(member) => {
+                    note_member_write(origins, scope, &member.object)
+                }
+                // Destructuring/defaulted targets need ownership the current
+                // walker does not encode. Refuse instead of guessing names.
+                _ => origins.refuse(),
+            }
+        }
     }
 }

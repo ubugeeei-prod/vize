@@ -176,6 +176,7 @@ pub(in crate::script_parser) fn walk_statement(
                 match init {
                     oxc_ast::ast::ForStatementInit::VariableDeclaration(var_decl) => {
                         for decl in var_decl.declarations.iter() {
+                            result.note_value_declaration(decl, var_decl.kind);
                             add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                             if let Some(init_expr) = &decl.init {
                                 walk_expression(result, init_expr, source);
@@ -210,6 +211,7 @@ pub(in crate::script_parser) fn walk_statement(
                 for_in.span.start,
                 for_in.span.end,
             );
+            super::super::value_binding_origins::note_loop_left(result, &for_in.left);
             // Add loop variable binding
             if let oxc_ast::ast::ForStatementLeft::VariableDeclaration(var_decl) = &for_in.left {
                 for decl in var_decl.declarations.iter() {
@@ -231,6 +233,7 @@ pub(in crate::script_parser) fn walk_statement(
                 for_of.span.start,
                 for_of.span.end,
             );
+            super::super::value_binding_origins::note_loop_left(result, &for_of.left);
             // Add loop variable binding
             if let oxc_ast::ast::ForStatementLeft::VariableDeclaration(var_decl) = &for_of.left {
                 for decl in var_decl.declarations.iter() {
