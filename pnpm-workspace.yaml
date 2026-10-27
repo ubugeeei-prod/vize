@@ -71,7 +71,7 @@ overrides:
   node-forge: "1.4.0"
   "postcss@>=8.0.0 <8.5.26": "8.5.26"
   nuxt: "4.6.2"
-  qs: "6.16.0"
+  qs: "6.16.1"
   "readdir-glob>minimatch": "10.2.5"
   shell-quote: "1.11.0"
   # v4 removes unsafe argument forms; Devtools' default import is patched below.
