@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 test("shared mapper types are generated from the canonical standalone helper bodies", () => {
   const checked = spawnSync(
     process.execPath,
-    ["tools/scripts/generate-content-mapper-types.ts", "--check"],
+    ["npm/cli/scripts/generate-content-mapper-types.ts", "--check"],
     {
       cwd: root,
       encoding: "utf8",

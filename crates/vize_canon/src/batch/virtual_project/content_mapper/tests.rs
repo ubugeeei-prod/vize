@@ -19,8 +19,8 @@ mod models;
 mod navigation;
 mod protocol;
 mod scoped_event_navigation;
-mod shared_types;
 mod slot_outlet_navigation;
+
 #[test]
 fn emits_stable_semantic_links_for_ref_unwraps() {
     let source = r#"<script setup lang="ts">
