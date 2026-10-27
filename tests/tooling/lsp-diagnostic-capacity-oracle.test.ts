@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { decodeNativeSockets, nativeIpcGrew } from "./support/lsp/diagnostic-capacity-pipe.ts";
 import { CapacityNativeCoverage } from "./support/lsp/diagnostic-capacity-native.ts";
 import { CapacityCoverage, capacitySource } from "./support/lsp/diagnostic-capacity.ts";
 
@@ -102,4 +103,38 @@ test("lint-only empties, started passes and foreign URI/version finishes never p
   assert.equal(native.idle(), true);
   coverage.record({ uri: probe.uri, version: 3, diagnostics: [{ code: 2339 }] }, 2);
   assert.equal(complete(), false, "a later wrong packet invalidates past native success");
+});
+
+test("native socket admission joins stopped owner FD and inode and rejects listener or foreign queues", () => {
+  const descriptor = { pid: 10, fd: 7, inode: "123", birthTicks: "30", executable: "/native/tsc" };
+  const raw = (queue: number) =>
+    "u_str ESTAB " +
+    queue +
+    ' 0 /tmp/tsgo-api-test 123 * 456 users:(("tsc",pid=10,fd=7)) uid:1001 ino:123 sk:42';
+  const before = {
+    source: "Linux AF_UNIX SOCK_DIAG" as const,
+    processes: [],
+    raw: [raw(0)],
+    descriptors: [descriptor],
+    channels: decodeNativeSockets([raw(0)], [descriptor]),
+  };
+  const after = { ...before, channels: decodeNativeSockets([raw(48)], [descriptor]) };
+  assert.equal(nativeIpcGrew(before, after), true);
+  for (const wrong of [
+    raw(48).replace("pid=10", "pid=11"),
+    raw(48).replace("fd=7", "fd=8"),
+    raw(48).replace("ino:123", "ino:124"),
+    raw(48).replace("ESTAB", "LISTEN"),
+    raw(48).replace("/tmp/tsgo-api-test", "/tmp/other-service"),
+  ]) {
+    assert.deepEqual(decodeNativeSockets([wrong], [descriptor]), []);
+  }
+  assert.equal(
+    nativeIpcGrew(before, {
+      ...after,
+      channels: after.channels.map((row) => ({ ...row, birthTicks: "31" })),
+    }),
+    false,
+  );
+  assert.equal(nativeIpcGrew(before, before), false);
 });

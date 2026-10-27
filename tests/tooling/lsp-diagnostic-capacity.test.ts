@@ -12,8 +12,8 @@ import {
 import { CapacityNativeCoverage } from "./support/lsp/diagnostic-capacity-native.ts";
 import { NativeDiagnosticsGate } from "./support/lsp/responsive-lint-native-gate.ts";
 import {
-  nativePipeEvidence,
-  nativePipeGrew,
+  nativeIpcEvidence,
+  nativeIpcGrew,
   cleanupCapacitySession,
 } from "./support/lsp/diagnostic-capacity-pipe.ts";
 import { LspSession } from "./support/lsp/session.ts";
@@ -145,11 +145,11 @@ test(
       note("seed-native-complete");
       gate = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
       await gate.stop();
-      const before = nativePipeEvidence(gate.lives);
+      const before = nativeIpcEvidence(gate.lives);
       note("native-stopped-before-blocker", {
         lives: gate.lives,
         signals: gate.signals,
-        pipes: before,
+        ipc: before,
       });
       const afterTrace = session.stderrText.length;
       change(seed, 2, seed.invalid + "\n");
@@ -167,12 +167,12 @@ test(
       assert.ok(
         await waitUntil(() => {
           gate!.assertStopped();
-          after = nativePipeEvidence(gate!.lives);
-          return nativePipeGrew(before, after);
+          after = nativeIpcEvidence(gate!.lives);
+          return nativeIpcGrew(before, after);
         }, 10_000),
-        "the stopped native stdin must gain real request bytes before the open burst",
+        "the stopped native API socket must gain real request bytes before the open burst",
       );
-      note("seed-pass-inflight", { pipesBefore: before, pipesAfter: after });
+      note("seed-pass-inflight", { ipcBefore: before, ipcAfter: after });
       const accepted: { uri: string; atMs: number; syncPackets: number }[] = [];
       const startsBefore = session.stderrText
         .split("\n")
@@ -207,7 +207,7 @@ test(
         accepted,
         startsBefore,
         startsAfter,
-        pipes: nativePipeEvidence(gate.lives),
+        ipc: nativeIpcEvidence(gate.lives),
       });
       const last = probes[probes.length - 1];
       assert.ok(last);
@@ -309,7 +309,10 @@ test(
     } finally {
       const cleanup = await cleanupCapacitySession(session, gate);
       report.cleanup = cleanup;
-      if (!cleanup.complete) failure ??= new Error("owned process tree did not terminate");
+      if (!cleanup.complete) {
+        report.qualified = false;
+        failure ??= new Error("owned process tree did not terminate");
+      }
       try {
         save();
       } finally {

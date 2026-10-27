@@ -39,7 +39,9 @@ jobs:
       - run: vp install --frozen-lockfile --prefer-offline
       - run: rustup toolchain install || rustup show active-toolchain
       - name: Verify exact token, version, UTF16 and duplicate controls
-        run: vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts
+        run: >-
+          vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts
+          tests/tooling/lsp-diagnostic-capacity-socket.test.ts
       - name: Build the exact source once in its own target
         env:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}

@@ -5,33 +5,70 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import type { NativeLife } from "./responsive-lint-native-gate.ts";
 
-export type PipeEvidence = {
+export type SocketDescriptor = {
   pid: number;
+  fd: number;
+  inode: string;
   birthTicks: string;
   executable: string;
-  queuedBytes: number | null;
-  available: boolean;
-  error?: string;
+};
+export type SocketEvidence = SocketDescriptor & {
+  queuedBytes: number;
+  localPath: string;
+  raw: string;
+};
+export type IpcEvidence = {
+  source: "Linux AF_UNIX SOCK_DIAG";
+  raw: string[];
+  processes: NativeLife[];
+  descriptors: SocketDescriptor[];
+  channels: SocketEvidence[];
 };
 
-/** FIONREAD observes a paused child's stdin pipe without consuming native wire bytes. */
-export function nativePipeEvidence(lives: NativeLife[]): PipeEvidence[] {
+/** Join all three kernel identities; LISTEN queues count connections, not request bytes. */
+export function decodeNativeSockets(
+  raw: string[],
+  descriptors: SocketDescriptor[],
+): SocketEvidence[] {
+  const result: SocketEvidence[] = [];
+  for (const line of raw) {
+    const fields = line.trim().split(/\s+/u);
+    const state = fields.indexOf("ESTAB");
+    if (state < 0) continue;
+    const localPath = fields[state + 3];
+    const queue = fields[state + 1];
+    const inode = /\bino:(\d+)/u.exec(line)?.[1] ?? fields[state + 4];
+    if (!localPath?.startsWith("/tmp/tsgo-api-") || !queue || !/^\d+$/u.test(queue)) continue;
+    for (const match of line.matchAll(/\bpid=(\d+),fd=(\d+)/gu)) {
+      const descriptor = descriptors.find(
+        (row) => row.pid === Number(match[1]) && row.fd === Number(match[2]) && row.inode === inode,
+      );
+      if (descriptor)
+        result.push({ ...descriptor, queuedBytes: Number(queue), localPath, raw: line });
+    }
+  }
+  return result;
+}
+
+/** Read kernel socket queue lengths without opening, peeking at, or consuming the RPC stream. */
+export function nativeIpcEvidence(lives: NativeLife[]): IpcEvidence {
   const code = [
-    "import sys,json,os,fcntl,termios,array",
-    "rows=[]",
-    "for expected in json.loads(sys.argv[1]):",
+    "import sys,json,os,re,subprocess",
+    "lives=json.loads(sys.argv[1]);descriptors=[];processes=[]",
+    "for expected in lives:",
     " pid=expected['pid'];raw=open('/proc/'+str(pid)+'/stat').read();fields=raw[raw.rfind(') ')+2:].split()",
     " assert fields[19]==expected['birthTicks'] and fields[0]=='T'",
     " assert os.path.realpath('/proc/'+str(pid)+'/exe')==expected['executable']",
-    " row={'pid':pid,'birthTicks':fields[19],'executable':expected['executable'],'queuedBytes':None,'available':False}",
-    " try:",
-    "  fd=os.open('/proc/'+str(pid)+'/fd/0',os.O_RDONLY|os.O_NONBLOCK|os.O_CLOEXEC)",
-    "  try:",
-    "   value=array.array('i',[0]);fcntl.ioctl(fd,termios.FIONREAD,value,True);row.update(queuedBytes=value[0],available=True)",
-    "  finally: os.close(fd)",
-    " except OSError as error: row['error']=str(error)",
-    " rows.append(row)",
-    "print(json.dumps(rows))",
+    " processes.append(dict(expected,state=fields[0],rawStat=raw))",
+    " for name in os.listdir('/proc/'+str(pid)+'/fd'):",
+    "  try: link=os.readlink('/proc/'+str(pid)+'/fd/'+name)",
+    "  except FileNotFoundError: continue",
+    "  match=re.fullmatch(r'socket:\\[(\\d+)\\]',link)",
+    "  if match: descriptors.append({'pid':pid,'fd':int(name),'inode':match[1],'birthTicks':expected['birthTicks'],'executable':expected['executable']})",
+    "output=subprocess.run(['ss','--unix','--all','--numeric','--processes','--extended','--no-header'],capture_output=True,text=True,check=True).stdout",
+    "owned={row['pid'] for row in lives}",
+    "lines=[line for line in output.splitlines() if any(int(pid) in owned for pid in re.findall(r'pid=(\\d+),fd=',line))]",
+    "print(json.dumps({'raw':lines,'descriptors':descriptors,'processes':processes}))",
   ].join("\n");
   const parsed: unknown = JSON.parse(
     execFileSync("python3", ["-c", code, JSON.stringify(lives)], {
@@ -39,22 +76,40 @@ export function nativePipeEvidence(lives: NativeLife[]): PipeEvidence[] {
       timeout: 10_000,
     }),
   );
-  assert.ok(Array.isArray(parsed));
-  return parsed as PipeEvidence[];
+  assert.ok(
+    parsed &&
+      typeof parsed === "object" &&
+      "raw" in parsed &&
+      "descriptors" in parsed &&
+      "processes" in parsed,
+  );
+  assert.ok(
+    Array.isArray(parsed.raw) &&
+      Array.isArray(parsed.descriptors) &&
+      Array.isArray(parsed.processes),
+  );
+  const raw = parsed.raw as string[],
+    descriptors = parsed.descriptors as SocketDescriptor[];
+  return {
+    source: "Linux AF_UNIX SOCK_DIAG",
+    raw,
+    processes: parsed.processes as NativeLife[],
+    descriptors,
+    channels: decodeNativeSockets(raw, descriptors),
+  };
 }
-export function nativePipeGrew(before: PipeEvidence[], after: PipeEvidence[]): boolean {
-  return after.some(
-    (row) =>
-      row.available &&
-      before.some(
-        (old) =>
-          old.available &&
-          old.pid === row.pid &&
-          old.birthTicks === row.birthTicks &&
-          old.queuedBytes !== null &&
-          row.queuedBytes !== null &&
-          row.queuedBytes > old.queuedBytes,
-      ),
+export function nativeIpcGrew(before: IpcEvidence, after: IpcEvidence): boolean {
+  return after.channels.some((row) =>
+    before.channels.some(
+      (old) =>
+        old.pid === row.pid &&
+        old.birthTicks === row.birthTicks &&
+        old.fd === row.fd &&
+        old.inode === row.inode &&
+        old.executable === row.executable &&
+        old.localPath === row.localPath &&
+        row.queuedBytes > old.queuedBytes,
+    ),
   );
 }
 
