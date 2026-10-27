@@ -202,6 +202,9 @@ try {
           noEmit: true,
           skipLibCheck: true,
         },
+        // Register a genuine installed declaration so this source-only fixture
+        // exercises the installed-input private store rather than the ordinary root.
+        ...(sourceCli ? { files: ["node_modules/vue/jsx.d.ts"] } : {}),
         include: ["src/**/*"],
       },
       null,
