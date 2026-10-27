@@ -109,6 +109,16 @@
             "path": "empty-listbox.vue.txt",
             "role": "negative-control",
             "sha256": "3a0012cff6d95b586550eed28d8fbc1692bb8cb9e4c26cf0b9aeeecc75ecbe08"
+          },
+          {
+            "path": "option-zero.jsx.txt",
+            "role": "jsx-native-control",
+            "sha256": "6c8817a6b037e1a3fed20ea459eef485975d7d65e592960eace09d571a6b9961"
+          },
+          {
+            "path": "option-zero.tsx.txt",
+            "role": "tsx-native-control",
+            "sha256": "6c8817a6b037e1a3fed20ea459eef485975d7d65e592960eace09d571a6b9961"
           }
         ]
       },
@@ -118,8 +128,8 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "jsx", "tsx"],
-            "selector": "pinned whole source CLI packets and native/legacy host controls"
+            "dialects": ["vue3-sfc", "html-template", "ts", "jsx", "tsx"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

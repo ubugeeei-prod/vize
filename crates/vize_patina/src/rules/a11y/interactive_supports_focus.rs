@@ -278,6 +278,26 @@ mod tests {
         Linter::with_registry(registry)
     }
 
+    pub(super) fn create_legacy_linter() -> Linter {
+        struct Legacy;
+        impl crate::rule::Rule for Legacy {
+            fn meta(&self) -> &'static crate::rule::RuleMeta {
+                crate::rule::Rule::meta(&InteractiveSupportsFocus)
+            }
+
+            fn run_on_template<'a>(
+                &self,
+                ctx: &mut crate::context::LintContext<'a>,
+                root: &vize_relief::RootNode<'a>,
+            ) {
+                crate::rule::Rule::run_on_template(&InteractiveSupportsFocus, ctx, root);
+            }
+        }
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(Legacy));
+        Linter::with_registry(registry)
+    }
+
     #[test]
     fn test_valid_native_button() {
         let linter = create_linter();
@@ -455,5 +475,5 @@ const listId = "fruits";
 }
 
 #[cfg(test)]
-#[path = "interactive_supports_focus/listbox_tests.rs"]
+#[path = "interactive_supports_focus_tests.rs"]
 mod listbox_tests;

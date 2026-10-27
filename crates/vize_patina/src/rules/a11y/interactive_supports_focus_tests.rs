@@ -1,12 +1,10 @@
 use super::InteractiveSupportsFocus;
-use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::linter::{LintResult, Linter};
 use crate::output::{OutputFormat, format_results};
-use crate::rule::{Rule, RuleMeta, RuleRegistry};
+use crate::rule::RuleRegistry;
 use serde_json::Value;
 use vize_atelier_jsx::JsxLang;
-use vize_relief::RootNode;
 
 const CASES: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -14,22 +12,11 @@ const CASES: &str = include_str!(concat!(
 ));
 
 fn linter(legacy: bool) -> Linter {
-    struct Legacy;
-    impl Rule for Legacy {
-        fn meta(&self) -> &'static RuleMeta {
-            InteractiveSupportsFocus.meta()
-        }
-
-        fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-            InteractiveSupportsFocus.run_on_template(ctx, root);
-        }
+    if legacy {
+        return super::tests::create_legacy_linter();
     }
     let mut registry = RuleRegistry::new();
-    if legacy {
-        registry.register(Box::new(Legacy));
-    } else {
-        registry.register(Box::new(InteractiveSupportsFocus));
-    }
+    registry.register(Box::new(InteractiveSupportsFocus));
     Linter::with_registry(registry)
 }
 
