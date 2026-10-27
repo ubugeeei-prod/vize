@@ -52,9 +52,4 @@ impl<'a> IRProp<'a> {
         self.value_kind = kind;
         self
     }
-
-    pub const fn with_handler_modifiers(mut self, modifiers: &'a EventModifiers<'a>) -> Self {
-        self.handler_modifiers = Some(modifiers);
-        self
-    }
 }

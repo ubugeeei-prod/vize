@@ -161,14 +161,20 @@ pub(super) fn transform_component<'a>(
                     if let Some(ref arg) = dir.arg
                         && let ExpressionNode::Simple(event_exp) = arg
                     {
-                        let modifiers = crate::ir::EventModifiers::from_names(
-                            ctx.allocator,
-                            event_exp.is_static.then_some(event_exp.content),
-                            dir.modifiers.iter().map(|modifier| modifier.content),
-                        );
+                        let modifiers: Option<&crate::ir::EventModifiers<'a>> =
+                            (!dir.modifiers.is_empty()).then(|| {
+                                let modifiers = crate::ir::EventModifiers::from_names(
+                                    ctx.allocator,
+                                    event_exp.is_static.then_some(event_exp.content),
+                                    dir.modifiers.iter().map(|modifier| modifier.content),
+                                );
+                                &*ctx.allocator.as_oxc().alloc(modifiers)
+                            });
                         let mut key_node = if event_exp.is_static {
                             let on_name = vize_atelier_core::steps::create_on_name(
-                                modifiers.event_name(event_exp.content),
+                                modifiers.map_or(event_exp.content, |modifiers| {
+                                    modifiers.event_name(event_exp.content)
+                                }),
                             );
                             SimpleExpressionNode::new(
                                 ctx.allocator.alloc_str(&on_name),
@@ -187,12 +193,9 @@ pub(super) fn transform_component<'a>(
                             let val_node = SimpleExpressionNode::from_node(val_exp);
                             values.push(Box::new_in(val_node, &ctx.allocator));
                         }
-                        let prop = IRProp::new(key, values, true);
-                        props.push(if dir.modifiers.is_empty() {
-                            prop
-                        } else {
-                            prop.with_handler_modifiers(ctx.allocator.as_oxc().alloc(modifiers))
-                        });
+                        let mut prop = IRProp::new(key, values, true);
+                        prop.handler_modifiers = modifiers;
+                        props.push(prop);
                     }
                 } else if matches!(dir.name, "text" | "html") {
                     // Content directives become the props that write the
