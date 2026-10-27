@@ -1,0 +1,78 @@
+{
+  "schema": "vize.router-project-capability-artifacts",
+  "version": 1,
+  "issue": 10579,
+  "providers": [
+    {
+      "kind": "published",
+      "name": "vue-router",
+      "version": "5.4.0",
+      "archiveSha256": "0c3a6d93f5236da11d0d2496fa4244e56a2518d8a2c5cb93a81e6956e117dbab",
+      "integrity": "sha512-pFvcYcxinDHjZUlf7AzFBrT8r8Xqvv4uMHoJnjc+EqPawXQvHTkF8S4tfSmQLpriVHUGfkaKlI7Et0KRjTMTdw==",
+      "files": [
+        {
+          "path": "package.json",
+          "bytes": 6072,
+          "sha256": "738107ee305f1c6bdb29c1622950ba100e6857bc6c4a745954bba55383fb5d67"
+        },
+        {
+          "path": "dist/experimental/index.d.ts",
+          "bytes": 5573,
+          "sha256": "95c7c590e8194142f74faa771875c9e07fbc27c789652d3ed2ec89c01a88a7a8"
+        },
+        {
+          "path": "dist/vue-router.d.ts",
+          "bytes": 6247,
+          "sha256": "e203b2e3ec2fd307b884c8d56290f6ce0205b7044ce6bd9deea67bb854b2394d"
+        },
+        {
+          "path": "dist/index-u4XkZVDG.d.ts",
+          "bytes": 135729,
+          "sha256": "6ca05f0565d4f82f85add82d1016c36faeb634d0eb794fbfb9a65378b1d98a0a"
+        }
+      ]
+    },
+    {
+      "kind": "preview",
+      "name": "vue-router",
+      "version": "5.4.0",
+      "archiveSha256": "54e73ab24d9152932d7a589e7d3b1c40ab2ba18001ad8b28fa91d52e014d13b9",
+      "integrity": "sha512-Fumr2B2BDrER76qwbqN4SrPqnjYTtDSZgaXjBmBDj/hjAQ+jeXGLwIwU/pcUfZOcGlUuwxaH0uu7mEW7rQryyA==",
+      "files": [
+        {
+          "path": "package.json",
+          "bytes": 6073,
+          "sha256": "79ef1456483509599772a9ae8d7253194a149adfc2f399c85005685a6f341517"
+        },
+        {
+          "path": "dist/experimental/index.d.ts",
+          "bytes": 5932,
+          "sha256": "13761cfc15091af523b48a5c55a9172b301df1a843e41efafbfbab9c8fe6a6c1"
+        },
+        {
+          "path": "dist/vue-router.d.ts",
+          "bytes": 6247,
+          "sha256": "bfe48f2c98fef228be32c79b8dd3728654adfb7580267f47ddaab3ac52a8541b"
+        },
+        {
+          "path": "dist/index-BA_Jc-EQ.d.ts",
+          "bytes": 143209,
+          "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b"
+        }
+      ]
+    }
+  ],
+  "preview": {
+    "upstreamRevision": "593d7ad9ff99e95c24be28e962717df0fb2be763",
+    "upstreamTree": "885476969881154b639ea4e2a0c736ec6fa1796a",
+    "sourceBuiltPackageIsPublishedNpmArchive": false,
+    "qualifiedManualProviderPr": 10557,
+    "runId": "40176025203",
+    "providerArtifactId": 12592250861
+  },
+  "published": {
+    "tarball": "https://registry.npmjs.org/vue-router/-/vue-router-5.4.0.tgz"
+  },
+  "qualificationCredit": false,
+  "state": "source-payloads-only"
+}

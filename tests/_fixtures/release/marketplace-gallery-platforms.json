@@ -1,0 +1,148 @@
+{
+  "results": [
+    {
+      "extensions": [
+        {
+          "publisher": {
+            "publisherId": "7f28d1d4-1a5e-4688-87b1-8f78bd47fc3c",
+            "publisherName": "ubugeeei",
+            "displayName": "ubugeeei",
+            "flags": "verified",
+            "domain": null,
+            "isDomainVerified": false
+          },
+          "extensionId": "f9bc804a-f3b3-4a27-b4b3-54c72293a61c",
+          "extensionName": "vize",
+          "displayName": "Vize",
+          "flags": "validated, public",
+          "lastUpdated": "2026-10-26T15:16:05.647Z",
+          "publishedDate": "2026-04-21T04:46:30.59Z",
+          "releaseDate": "2026-04-21T04:46:30.59Z",
+          "shortDescription": "Vue Language Support powered by Vize - A high-performance language server for Vue SFC",
+          "versions": [
+            {
+              "version": "0.584.0",
+              "targetPlatform": "win32-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:16:05.643Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "alpine-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:15:59.28Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "alpine-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:15:07.137Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "linux-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:14:03.597Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "darwin-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:14:01.06Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "darwin-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:13:33.79Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "win32-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:13:27.17Z"
+            },
+            {
+              "version": "0.584.0",
+              "targetPlatform": "linux-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:13:25.627Z"
+            },
+            {
+              "version": "0.584.0",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T15:12:05.57Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "darwin-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:06:54.98Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "alpine-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:59.187Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "darwin-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:59.18Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "alpine-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:56.34Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "linux-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:54.017Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "win32-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:52.887Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "win32-arm64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:20.763Z"
+            },
+            {
+              "version": "0.583.0",
+              "targetPlatform": "linux-x64",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:04:20.017Z"
+            },
+            {
+              "version": "0.583.0",
+              "flags": "validated",
+              "lastUpdated": "2026-10-26T14:01:54.747Z"
+            }
+          ],
+          "versionsTruncated": false,
+          "deploymentType": 0
+        }
+      ],
+      "pagingToken": null,
+      "resultMetadata": [
+        {
+          "metadataType": "ResultCount",
+          "metadataItems": [
+            {
+              "name": "TotalCount",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

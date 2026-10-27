@@ -103,7 +103,7 @@ async function measure() {
     services: { editor: true, ecosystem: true, lint: true, typecheck: true },
     server,
     server_binary_mib: mib(fs.statSync(server).size),
-    build: "ci-opt: release, thin LTO, 16 codegen units",
+    build: flag("--build", "unspecified: pass --build to record the actual server recipe"),
     sampler: "Linux /proc process-tree summed RSS every 50 ms, from spawn through idle",
     idle_seconds: idleSeconds,
     acceptance:

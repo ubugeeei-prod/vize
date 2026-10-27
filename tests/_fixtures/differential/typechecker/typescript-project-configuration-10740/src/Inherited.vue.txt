@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const known = 1;
+</script>
+<template><UnknownClosureProbe :n="known"/></template>
