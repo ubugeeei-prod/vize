@@ -19,6 +19,12 @@
       "originalPath": "crates/vize_croquis_cf/src/analyzer/tests_provide_inject/tree_partial.rs",
       "originalBlob": "0eeaf57d84ca553cadcb98257921eebd8a091eac",
       "sha256": "27904032c9c4b143f0d27a1cc1af18d1934fe07392bd76c900db65e8d3e32bcb"
+    },
+    {
+      "path": "tools/support/compat/defaulted-inject/historical-provider-context.rs.txt",
+      "originalPath": "crates/vize_croquis_cf/src/analyzer/tests_provide_inject/provider_context.rs",
+      "originalBlob": "1d3a08f03f6040c29af5a55d5bb11454fb4d44fe",
+      "sha256": "269133ee988831a850ea833cdce51065e1fd6fb01beb6cbd4cc39b391cdd0e70"
     }
   ],
   "retiredSnapshotLine": "Warning: **Conditionally Defaulted Inject**: `inject('locale')` falls back to its default value in 1 of 2 ancestor branches.",
@@ -28,5 +34,17 @@
     "cliWholePairs": 9
   },
   "publicBefore": "0.602.0",
-  "qualification": "pending Actions; formatting/strict TS6 passed"
+  "qualification": "pending Actions; formatting/strict TS6 passed",
+  "providerContextTransition": {
+    "before": "Explicit fallback was expected to emit UnmatchedInject Warning",
+    "after": "Explicit fallback has no UnmatchedInject finding",
+    "scope": "Only the final provider-context test changes; every preceding original byte remains identical",
+    "actualBefore": {
+      "run": 40580412455,
+      "job": 122457972423,
+      "artifact": 12770180297,
+      "passed": 49,
+      "failed": 1
+    }
+  }
 }
