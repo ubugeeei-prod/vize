@@ -125,7 +125,7 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
         "props: { disabled: {",
         "href: String(__props.to)",
         "href: _unref(href)",
-        "onClick: _cache[0] || (_cache[0] = (...args) => navigate && navigate(...args))",
+        "onClick: _cache[0] || (_cache[0] = (...args) => _unref(navigate) && _unref(navigate)(...args))",
       ]) {
         assert.equal(count(output.code, expected), 1, `${expected}\n${output.code}`);
       }
