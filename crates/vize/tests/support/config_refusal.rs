@@ -57,6 +57,18 @@ pub fn assert_error(
     exception: &str,
     code: i32,
 ) {
+    assert_error_with_suffix(output, selected, directory, exception, code, "");
+}
+
+/// Preserve the complete independently observed Node error before owned CLI guidance.
+pub fn assert_error_with_suffix(
+    output: &Output,
+    selected: &Path,
+    directory: &Path,
+    exception: &str,
+    code: i32,
+    suffix: &str,
+) {
     // The independent probe owns Node's uncaught-error renderer, without loading
     // any configuration. Substitute its unique exception token on the expected
     // side only; every actual process byte remains intact.
@@ -72,7 +84,7 @@ pub fn assert_error(
             .replace(TOKEN, &format!("[{exception}]"))
     };
     let expected = format!(
-        "\x1b[31mError:\x1b[0m failed to parse {}: node failed to load config: {body}",
+        "\x1b[31mError:\x1b[0m failed to parse {}: node failed to load config: {body}{suffix}",
         selected.display()
     );
     assert_packet(output, code, expected.as_bytes());

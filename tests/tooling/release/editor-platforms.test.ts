@@ -135,3 +135,20 @@ test("platform providers install the extension's packager like the universal VSI
     ),
   );
 });
+
+test("editor publishers outwait registry validation and Open VSX maintenance", () => {
+  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  const waitSeconds = (job: { env: Record<string, string> }) =>
+    Number(job.env.PUBLISH_RESOLUTION_RETRY_LIMIT) * 10;
+  // The Marketplace listed the 0.584.0 platform uploads 6.5-9 min after vsce exited.
+  const vscode = release.jobs["publish-vscode-platforms"];
+  assert.equal(waitSeconds(vscode), 20 * 60);
+  assert.ok(vscode["timeout-minutes"] * 60 >= waitSeconds(vscode) + 5 * 60);
+  // Read-only retries wait 30 + 60 + 120 + 240 s before the scan wait starts.
+  for (const key of ["publish-open-vsx", "publish-open-vsx-platforms"]) {
+    const job = release.jobs[key];
+    // Release 0.598.0 still had missing targets over twelve minutes after upload.
+    assert.equal(waitSeconds(job), 20 * 60, key);
+    assert.ok(job["timeout-minutes"] * 60 >= 450 + waitSeconds(job) + 5 * 60, key);
+  }
+});

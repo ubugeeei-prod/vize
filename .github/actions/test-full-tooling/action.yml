@@ -24,9 +24,9 @@ runs:
         key: test-scripts
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-shard-${{ inputs.shard }}
     - uses: ./.github/actions/setup-rust-script
-    - name: Hydrate CLI diagnostic fixture and install JS dependencies
+    - name: Hydrate CLI and fact corpus fixtures and install JS dependencies
       shell: bash
-      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.ts
+      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.ts
     - uses: ./.github/actions/restore-source-cli
       with: { producer: "${{ inputs.producer }}" }
     - name: Check configured Router page CLI and editor types

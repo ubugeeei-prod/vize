@@ -12,12 +12,14 @@ use xxhash_rust::xxh3::{Xxh3Default, xxh3_64};
 /// non-cryptographic purposes like change detection.
 #[inline]
 pub fn hash_bytes(data: &[u8]) -> u64 {
+    crate::micro_count!("hash.xxhash3.complete.bytes", data.len());
     xxh3_64(data)
 }
 
 /// Compute a 64-bit hash of the given string using xxHash3.
 #[inline]
 pub fn hash_str(data: &str) -> u64 {
+    crate::micro_count!("hash.xxhash3.complete.bytes", data.len());
     xxh3_64(data.as_bytes())
 }
 
@@ -67,6 +69,7 @@ impl StableHasher128 {
     /// Feed `bytes`; streaming in pieces equals hashing the concatenation.
     #[inline]
     pub fn update(&mut self, bytes: &[u8]) {
+        crate::micro_count!("hash.xxhash3.stream.write.bytes", bytes.len());
         self.0.update(bytes);
     }
 
@@ -75,6 +78,7 @@ impl StableHasher128 {
     #[inline]
     #[must_use]
     pub fn digest(&self) -> [u8; 16] {
+        crate::micro_count!("hash.xxhash3.stream.finish.calls", 1);
         self.0.digest128().to_be_bytes()
     }
 }
