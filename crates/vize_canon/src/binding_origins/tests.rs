@@ -13,8 +13,16 @@ fn revision(source: u32) -> SourceRevision {
     }
 }
 fn source(text: &str, id: u32) -> (SourceFacts, LocalSymbol) {
+    source_as(text, id, SourceType::d_ts(), false)
+}
+fn source_as(
+    text: &str,
+    id: u32,
+    source_type: SourceType,
+    global_script: bool,
+) -> (SourceFacts, LocalSymbol) {
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, text, SourceType::d_ts()).parse();
+    let parsed = Parser::new(&allocator, text, source_type).parse();
     assert!(!parsed.panicked);
     assert_eq!(parsed.diagnostics.len(), 0);
     let built = SemanticBuilder::new().build(&parsed.program);
@@ -30,7 +38,13 @@ fn source(text: &str, id: u32) -> (SourceFacts, LocalSymbol) {
         namespace: Namespace::Value,
     };
     (
-        collect(&parsed.program, &built.semantic, revision(id), false, &[]),
+        collect(
+            &parsed.program,
+            &built.semantic,
+            revision(id),
+            global_script,
+            &[],
+        ),
         local,
     )
 }
@@ -86,7 +100,7 @@ fn source_callable_shape_never_authorizes_vue_identity() {
     };
     let mut project = project(reference);
     project.add_source(Arc::new(facts)).unwrap();
-    let snapshot = seal(project, &resolver, reference).unwrap();
+    let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
     assert_eq!(
         snapshot.get(
             "useTemplateRef",
@@ -116,7 +130,7 @@ fn actual_type_queries_and_type_only_aliases_retain_provider_identity() {
         };
         let mut project = project(reference);
         project.add_source(Arc::new(facts)).unwrap();
-        let snapshot = seal(project, &resolver, reference).unwrap();
+        let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
         assert_eq!(
             snapshot.get(
                 "useTemplateRef",
@@ -149,7 +163,7 @@ fn module_spelling_and_stale_provider_revisions_cannot_authorize_identity() {
         identity: custom,
         calls: AtomicUsize::new(0),
     };
-    let snapshot = seal(project, &resolver, reference).unwrap();
+    let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
     assert_eq!(
         snapshot.get(
             "useTemplateRef",
@@ -213,7 +227,7 @@ fn alias_cycles_do_not_require_a_recursion_limit_or_fabricate_an_origin() {
         identity: reference,
         calls: AtomicUsize::new(0),
     };
-    let snapshot = seal(project, &resolver, reference).unwrap();
+    let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
     assert_eq!(
         snapshot.get(
             "useTemplateRef",
@@ -257,7 +271,7 @@ fn cyclic_export_evidence_can_reach_one_provider_without_guessing_missing_edges(
         identity: reference,
         calls: AtomicUsize::new(0),
     };
-    let snapshot = seal(project, &resolver, reference).unwrap();
+    let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
     assert_eq!(
         snapshot.get(
             "useTemplateRef",
@@ -269,4 +283,32 @@ fn cyclic_export_evidence_can_reach_one_provider_without_guessing_missing_edges(
         Ok(BindingOrigin::Vue)
     );
     assert_eq!(resolver.calls.load(Ordering::Relaxed), 1);
+}
+
+pub(super) fn observe(
+    text: &str,
+    source_type: SourceType,
+    global_script: bool,
+) -> (BindingOrigin, usize) {
+    let (facts, _) = source_as(text, 1, source_type, global_script);
+    let reference = provider();
+    let resolver = Imports {
+        identity: reference,
+        calls: AtomicUsize::new(0),
+    };
+    let mut project = project(reference);
+    project.add_source(Arc::new(facts)).unwrap();
+    let snapshot = seal(project, &resolver, reference, &["useTemplateRef"]).unwrap();
+    (
+        snapshot
+            .get(
+                "useTemplateRef",
+                ProjectRevision {
+                    owner: 1,
+                    generation: 10,
+                },
+            )
+            .unwrap(),
+        resolver.calls.load(Ordering::Relaxed),
+    )
 }

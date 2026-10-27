@@ -17,6 +17,7 @@ pub(super) struct Collector<'s, 'a> {
     pub(super) semantic: &'s Semantic<'a>,
     pub(super) facts: SourceFacts,
     pending: VecDeque<LocalSymbol>,
+    declaration_file: bool,
 }
 
 /// `global_script` is the host's effective module classification, including
@@ -36,6 +37,7 @@ pub fn collect<'a>(
             globals: Vec::new(),
         },
         pending: VecDeque::new(),
+        declaration_file: program.source_type.is_typescript_definition(),
     };
     collector.pending.extend(requested.iter().copied());
     for statement in &program.body {
@@ -151,6 +153,19 @@ impl<'a> Collector<'_, 'a> {
                 .collect(),
         )
     }
+    fn is_ambient(&self, node: oxc_syntax::node::NodeId) -> bool {
+        self.declaration_file
+            || self
+                .semantic
+                .nodes()
+                .ancestor_kinds(node)
+                .any(|kind| match kind {
+                    AstKind::VariableDeclaration(declaration) => declaration.declare,
+                    AstKind::TSGlobalDeclaration(_) => true,
+                    AstKind::TSModuleDeclaration(module) => module.declare,
+                    _ => false,
+                })
+    }
     fn declaration_target(
         &self,
         local: LocalSymbol,
@@ -194,20 +209,24 @@ impl<'a> Collector<'_, 'a> {
                 }
             }
             AstKind::VariableDeclarator(declaration) if local.namespace == Namespace::Value => {
-                if let Some(annotation) = &declaration.type_annotation {
-                    self.annotation(&annotation.type_annotation)
-                } else if declaration.kind == VariableDeclarationKind::Const
-                    && !self
-                        .semantic
-                        .scoping()
-                        .get_resolved_references(local.symbol)
-                        .any(|reference| reference.is_write())
-                {
+                if let Some(initializer) = &declaration.init {
+                    if declaration.kind == VariableDeclarationKind::Const
+                        && !self
+                            .semantic
+                            .scoping()
+                            .get_resolved_references(local.symbol)
+                            .any(|reference| reference.is_write())
+                    {
+                        self.value_alias(initializer)
+                    } else {
+                        BindingTarget::Opaque
+                    }
+                } else if self.is_ambient(node.id()) {
                     declaration
-                        .init
+                        .type_annotation
                         .as_ref()
-                        .map_or(BindingTarget::Opaque, |expression| {
-                            self.value_alias(expression)
+                        .map_or(BindingTarget::Opaque, |annotation| {
+                            self.annotation(&annotation.type_annotation)
                         })
                 } else {
                     BindingTarget::Opaque

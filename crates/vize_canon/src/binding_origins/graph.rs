@@ -190,6 +190,7 @@ pub fn seal<R: Resolver>(
     facts: ProjectFacts,
     resolver: &R,
     reference: SymbolIdentity,
+    requested_globals: &[&str],
 ) -> Result<OriginSnapshot, OriginError> {
     if reference.source.owner != facts.revision.owner {
         return Err(OriginError::ForeignOwner);
@@ -217,10 +218,9 @@ pub fn seal<R: Resolver>(
                 });
         }
     }
-    let mut names = graph
-        .globals
-        .keys()
-        .filter_map(|(name, space)| (*space == Namespace::Value).then_some(name.clone()))
+    let mut names = requested_globals
+        .iter()
+        .map(|name| String::from(*name))
         .collect::<Vec<_>>();
     names.sort();
     names.dedup();

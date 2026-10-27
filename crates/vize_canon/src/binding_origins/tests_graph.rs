@@ -105,7 +105,7 @@ fn twenty_thousand_aliases_expand_without_recursion_or_repeated_resolution() {
         identity: identity(1_000_000),
         calls: AtomicUsize::new(0),
     };
-    let snapshot = seal(facts, &resolver, identity(1_000_000)).unwrap();
+    let snapshot = seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
     assert_eq!(origin(&snapshot), BindingOrigin::Vue);
     assert_eq!(resolver.calls.load(Ordering::Relaxed), 1);
 }
@@ -118,7 +118,7 @@ fn distinct_global_declarations_keep_ambiguous_ownership() {
         identity: identity(1_000_000),
         calls: AtomicUsize::new(0),
     };
-    let snapshot = seal(facts, &resolver, identity(1_000_000)).unwrap();
+    let snapshot = seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
     assert_eq!(origin(&snapshot), BindingOrigin::Ambiguous);
 }
 #[test]
@@ -142,7 +142,7 @@ fn stale_or_foreign_resolver_images_never_authorize_a_provider() {
             },
             calls: AtomicUsize::new(0),
         };
-        let snapshot = seal(facts, &resolver, identity(1_000_000)).unwrap();
+        let snapshot = seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
         assert_eq!(origin(&snapshot), BindingOrigin::Unresolved);
     }
 }
@@ -162,7 +162,53 @@ fn type_only_runtime_values_do_not_become_callable_providers() {
         identity: identity(1_000_000),
         calls: AtomicUsize::new(0),
     };
-    let snapshot = seal(facts, &resolver, identity(1_000_000)).unwrap();
+    let snapshot = seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
     assert_eq!(origin(&snapshot), BindingOrigin::Unresolved);
     assert_eq!(resolver.calls.load(Ordering::Relaxed), 0);
+}
+
+#[test]
+fn requested_roots_do_not_resolve_unrelated_global_values() {
+    let mut facts = project();
+    let mut bindings = FxHashMap::default();
+    let mut globals = Vec::new();
+    for index in 0..10_000 {
+        let local = LocalSymbol {
+            symbol: SymbolId::new(index),
+            namespace: Namespace::Value,
+        };
+        let name = if index == 0 {
+            String::from("useTemplateRef")
+        } else {
+            String::from(format!("unrelated{index}"))
+        };
+        bindings.insert(local, imported());
+        globals.push((name, local));
+    }
+    facts
+        .add_source(Arc::new(SourceFacts {
+            revision: version(1),
+            bindings,
+            globals,
+        }))
+        .unwrap();
+    let resolver = Imports {
+        identity: identity(1_000_000),
+        calls: AtomicUsize::new(0),
+    };
+    let snapshot = seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
+    assert_eq!(origin(&snapshot), BindingOrigin::Vue);
+    assert_eq!(resolver.calls.load(Ordering::Relaxed), 1);
+    assert_eq!(
+        snapshot
+            .get(
+                "unrelated1",
+                ProjectRevision {
+                    owner: 1,
+                    generation: 1
+                }
+            )
+            .unwrap(),
+        BindingOrigin::Unresolved
+    );
 }

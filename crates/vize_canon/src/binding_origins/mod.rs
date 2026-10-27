@@ -11,6 +11,8 @@ pub use graph::seal;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod tests_ambient;
+#[cfg(test)]
 mod tests_graph;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
