@@ -56,8 +56,9 @@ jobs:
         run: |
           set -euo pipefail
           qa_types="$RUNNER_TEMP/public-storage-types"
-          npm install --prefix "$qa_types" --ignore-scripts --no-audit --no-fund --prefer-online typescript@6.0.3 @types/node@25.9.2
-          node "$qa_types/node_modules/typescript/lib/tsc.js" --noEmit --strict --noUnusedLocals --noUnusedParameters --noUncheckedIndexedAccess --skipLibCheck --target ESNext --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions --types node --typeRoots "$qa_types/node_modules/@types" carrier/tools/support/release/public_storage_10934/run.ts
+          mkdir -p "$RUNNER_TEMP/public-storage-carrier-preflight"
+          npm install --prefix "$qa_types" --ignore-scripts --no-audit --no-fund --prefer-online typescript@6.0.3 @types/node@25.9.2 2>&1 | tee "$RUNNER_TEMP/public-storage-carrier-preflight/install.log"
+          node "$qa_types/node_modules/typescript/lib/tsc.js" --noEmit --strict --noUnusedLocals --noUnusedParameters --noUncheckedIndexedAccess --skipLibCheck --target ESNext --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions --types node --typeRoots "$qa_types/node_modules/@types" carrier/tools/support/release/public_storage_10934/run.ts 2>&1 | tee "$RUNNER_TEMP/public-storage-carrier-preflight/typecheck.log"
       - name: Provide read-only process observation
         shell: bash
         run: |
@@ -74,6 +75,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$PUBLIC_STORAGE_ROOT/evidence"
+          if [[ -d "$RUNNER_TEMP/public-storage-carrier-preflight" ]]; then
+            cp -R "$RUNNER_TEMP/public-storage-carrier-preflight" "$PUBLIC_STORAGE_ROOT/evidence/"
+          fi
           tar --exclude='./harness/project' -czf "$RUNNER_TEMP/public-storage-10934.tgz" -C "$PUBLIC_STORAGE_ROOT/evidence" .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()

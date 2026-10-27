@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import { loadAuthority } from "./authority.ts";
 import { bootstrap, NATIVE_PACKAGE } from "./provider.ts";
 import { attestGoExecutions } from "./trace.ts";
@@ -17,6 +18,9 @@ fs.mkdirSync(root);
 const evidence = path.join(root, "evidence");
 fs.mkdirSync(evidence);
 try {
+  assert.equal(env("GITHUB_REPOSITORY"), "ubugeeei-prod/vize");
+  assert.equal(env("GITHUB_EVENT_NAME"), "workflow_dispatch");
+  assert.equal(env("GITHUB_REF"), "refs/heads/test/canon-public-storage-10934");
   const version = env("PUBLIC_STORAGE_VERSION");
   const candidate = env("PUBLIC_STORAGE_CANDIDATE");
   const authorityBlob = env("PUBLIC_STORAGE_AUTHORITY_BLOB");
@@ -114,6 +118,15 @@ try {
   }));
   const result = {
     schema: "vize.publicStorage10934Acceptance.v1",
+    harness: {
+      runId: env("GITHUB_RUN_ID"), attempt: env("GITHUB_RUN_ATTEMPT"),
+      workflowHead: env("GITHUB_SHA"), workflowRef: env("GITHUB_WORKFLOW_REF"),
+      node: process.version,
+      carrierFiles: ["run.ts", "io.ts", "authority.ts", "provider.ts", "trace.ts"].map((name) => {
+        const file = path.join(path.dirname(fileURLToPath(import.meta.url)), name);
+        return { file, sha256: sha256(fs.readFileSync(file)) };
+      }),
+    },
     version, candidate, requiredMerge: REQUIRED_MERGE,
     authorityBlob, authoritySha256: authority.authoritySha256,
     producerSource: authority.source, workflowHead: authority.workflowHead,

@@ -75,6 +75,7 @@ export function run(
   const result = spawnSync(command, args, {
     cwd,
     env: environment,
+    encoding: "buffer",
     timeout,
     maxBuffer: 32 * 1024 * 1024,
   });
