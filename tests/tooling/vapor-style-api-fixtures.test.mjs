@@ -15,19 +15,27 @@ const row = manifest.vaporStyleApiCases;
 const authority = JSON.parse(readFileSync(root + "authority.json", "utf8"));
 // The refined producer closure; `authority.json` keeps the original campaign.
 const admission = JSON.parse(readFileSync(root + "admission-source-pairs.json", "utf8"));
+// This is the immutable source pair admitted by #10751. Later compiler
+// changes execute the full packet/runtime workflows; they cannot inherit this
+// closed historical source permission by replacing the approved hashes.
+const admittedRevision = "b09ac660cd0684396c21d24249c4b1e2193e965a";
 const files = new Map();
 for (const source of admission.sourceFiles) {
   const old = spawnSync("git", ["show", `${authority.beforeRevision}:${source.path}`], {
     maxBuffer: 8 * 1024 * 1024,
   });
   files.set(`base:${source.path}`, old.status === 0 ? old.stdout : null);
-  files.set(`head:${source.path}`, readFileSync(source.path));
+  const admitted = spawnSync("git", ["show", `${admittedRevision}:${source.path}`], {
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  assert.equal(admitted.status, 0, `missing admitted source ${source.path}`);
+  files.set(`head:${source.path}`, admitted.stdout);
 }
 for (const pin of [...row[0].inputs, ...row[0].witnesses])
   files.set(`head:${pin.path}`, readFileSync(pin.path));
 const read = (side, path) => files.get(`${side}:${path}`) ?? null;
 
-await test("actual finite Vapor CSR source witness grants exactly the real source closure", () => {
+await test("the admitted finite Vapor CSR source witness grants exactly its historical source closure", () => {
   const result = newVaporStyleApiCases(undefined, row, read);
   assert.deepEqual(result.ids, [VAPOR_STYLE_API_CASE_ID]);
   assert.deepEqual(
@@ -35,6 +43,16 @@ await test("actual finite Vapor CSR source witness grants exactly the real sourc
     admission.sourceFiles.map((source) => source.path),
   );
   assert.equal(result.sources.size, 20);
+});
+
+await test("current producer edits receive no privilege from the historical admission", () => {
+  const current = (side, file) =>
+    side === "head" && admission.sourceFiles.some((source) => source.path === file)
+      ? readFileSync(file)
+      : read(side, file);
+  const result = newVaporStyleApiCases(row, row, current);
+  assert.deepEqual(result.ids, []);
+  assert.equal(result.sources.size, 0);
 });
 
 await test("missing registration cannot be appeased by a generic SSR filler", () => {
