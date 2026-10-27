@@ -1,5 +1,7 @@
 //! Lossless optional custody of the actual normal-batch native CLI invocation.
 
+mod cache_metadata;
+
 use super::VirtualProject;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -16,6 +18,10 @@ pub(super) fn requested(
     config: &Path,
 ) -> Option<(PathBuf, Value)> {
     let directory = std::env::var_os("VIZE_LEXICAL_DOLLAR_CAPTURE_DIR").map(PathBuf::from)?;
+    // Disabled captures retain the original single environment lookup.
+    if std::env::var_os("VIZE_LEXICAL_DOLLAR_CAPTURE_METADATA_ONLY").is_some() {
+        return cache_metadata::requested(command, project, config, &directory);
+    }
     static NEXT: AtomicUsize = AtomicUsize::new(0);
     let sequence = NEXT.fetch_add(1, Ordering::Relaxed);
     let binary = Path::new(command.get_program()).canonicalize().unwrap();
