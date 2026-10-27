@@ -247,6 +247,16 @@ fn prop<'a>(
     {
         return Err(LegacyReason::Component.into());
     }
+    // Explicit listeners beside a model update retain their existing fallback
+    // until the model's assignment/handler merge has its own native contract.
+    if handler
+        && !fresh
+        && props.iter().any(|prop| {
+            prop.key == binding.name && prop.value_kind == crate::ir::PropValueKind::ModelUpdate
+        })
+    {
+        return Err(LegacyReason::Component.into());
+    }
     let handler_modifiers = (handler && !binding.modifiers.is_empty()).then(|| {
         let modifiers = crate::ir::EventModifiers::from_names(
             alloc,
