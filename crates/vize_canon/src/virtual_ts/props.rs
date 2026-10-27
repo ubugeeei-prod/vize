@@ -97,7 +97,16 @@ pub(crate) fn generate_props_type(
             );
         }
     } else if props_already_defined {
-        if has_models {
+        if let Some(inner_type) =
+            define_props_inner_type.filter(|_| hoisted_props_alias_replaced(summary))
+        {
+            append!(*ts, "type __VizeResolvedProps{generic_decl} = {inner_type}");
+            if has_models {
+                ts.push_str(" & ");
+                append_model_props_type_literal(ts, summary, models, generic_param);
+            }
+            ts.push_str(";\n");
+        } else if has_models {
             ts.push_str("type __VizeResolvedProps = Props & ");
             append_model_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
@@ -122,6 +131,29 @@ pub(crate) fn generate_props_type(
     }
 
     ts.push('\n');
+}
+
+/// A hoisted authored `Props` alias is the component contract only while the
+/// `defineProps` argument names it; vue-tsc always uses the argument itself,
+/// e.g. a typed-page plugin's `props: true` intersection.
+pub(crate) fn hoisted_props_alias_replaced(summary: &Croquis) -> bool {
+    let Some(inner) = summary
+        .macros
+        .define_props()
+        .and_then(|call| call.type_args.as_deref())
+        .map(|type_args| inner_macro_type(type_args.trim()).trim())
+    else {
+        return false;
+    };
+    let names_props = inner == "Props"
+        || (inner.starts_with("Props<")
+            && inner.ends_with('>')
+            && !template_model::has_top_level_type_operator(inner));
+    !names_props
+        && summary
+            .type_exports
+            .iter()
+            .any(|export| export.hoisted && export.name.as_str() == "Props")
 }
 
 /// Lookup key for a `defineProps<...>` type argument when resolving its fields

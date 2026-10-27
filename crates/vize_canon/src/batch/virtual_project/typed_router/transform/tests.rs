@@ -1,10 +1,11 @@
-use super::{SourceType, apply};
+use super::{SourceType, plan};
 use crate::virtual_ts::{
     ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VirtualTsOutput, VizeMapping,
     VizeSemanticLink, VizeSemanticLinkKind, VizeSubSpan,
 };
 mod experimental_imports;
 mod ownership_tests;
+mod route_props_tests;
 mod traversal_tests;
 const FILE: &str = "\"/src/pages/[id].vue\"";
 const ROUTE: &str =
@@ -24,6 +25,36 @@ fn transform(script: &str, javascript: bool) -> (VirtualTsOutput, bool) {
     let mut result = output(script);
     let imported = rewrite(&mut result, script, javascript);
     (result, imported)
+}
+
+/// The published capability: only the file generic and route names apply.
+fn apply(
+    output: &mut VirtualTsOutput,
+    script: &str,
+    source_offset: impl Fn(usize) -> usize + Copy,
+    setup_range: std::ops::Range<usize>,
+    source_type: SourceType,
+    file: &str,
+    ownership: Option<&crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
+) -> bool {
+    plan(
+        script,
+        source_offset,
+        setup_range.clone(),
+        source_type,
+        false,
+    )
+    .is_some_and(|plan| {
+        super::apply(
+            output,
+            &plan,
+            script,
+            source_offset,
+            setup_range,
+            (file, None),
+            ownership,
+        )
+    })
 }
 
 fn rewrite(result: &mut VirtualTsOutput, script: &str, js: bool) -> bool {

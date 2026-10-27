@@ -1057,6 +1057,17 @@ fn experimental_page_import_preserves_published_path_diagnostics() {
 }
 
 #[test]
+fn experimental_route_props_follow_the_admitted_project_types() {
+    check_pack(
+        "experimental-router-props-10579",
+        "experimental_route_props_follow_the_admitted_project_types",
+        "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+        Some(10579),
+        &["required-component-prop", "route-params-as-props"],
+    );
+}
+
+#[test]
 fn literal_reference_paths_preserve_complete_authored_diagnostics() {
     check_pack(
         "literal-reference-paths-10551",

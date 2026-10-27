@@ -4083,6 +4083,141 @@
       ]
     },
     {
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "id": "typechecker/experimental-router-props-10579/required-component-prop",
+      "pack": "experimental-router-props-10579",
+      "case": "required-component-prop",
+      "test": "experimental_route_props_follow_the_admitted_project_types",
+      "regressionCommit": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+      "sourceRevision": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+      "packReference": {
+        "path": "experimental-router-props-10579/cases.json",
+        "sha256": "2732a093db7e4b0b35656f8bfde5e1e91f8b52e7c531416c033e5060d8b5581c"
+      },
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "path": "experimental-router-props-10579/PageRequired.vue.txt",
+          "sha256": "2dadaeac8e7ed6781fb063d798e64f38775d35dde2dc425d6135c984f22642bf"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "experimental-router-props-10579/tsconfig.json.txt",
+          "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "path": "experimental-router-props-10579/typed-router.d.ts.txt",
+          "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974"
+        },
+        {
+          "file": "src/params/date.ts",
+          "path": "experimental-router-props-10579/date.ts.txt",
+          "sha256": "cd1c4ef8f84c3dfff8e957635138256f8c1a47fa7f0b29a82f9a8ed727fb14ea"
+        },
+        {
+          "file": "node_modules/vue-router/vue-router-auto-routes.d.mts",
+          "path": "experimental-router-props-10579/auto-routes.d.mts.txt",
+          "sha256": "2b242ab6b6518cfc6f62c79163576b198fc22d5b94abcae94ae24781d581874a"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "line": 11,
+          "column": 3,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'true' is not assignable to type 'EXPERIMENTAL_RouteRecordPropsOption<RouteLocationNormalizedLoadedTyped<RouteNamedMap, \"/products/[id=int]\">, __VizeResolvedProps> | undefined'."
+        }
+      ]
+    },
+    {
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "id": "typechecker/experimental-router-props-10579/route-params-as-props",
+      "pack": "experimental-router-props-10579",
+      "case": "route-params-as-props",
+      "test": "experimental_route_props_follow_the_admitted_project_types",
+      "regressionCommit": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+      "sourceRevision": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+      "packReference": {
+        "path": "experimental-router-props-10579/cases.json",
+        "sha256": "2732a093db7e4b0b35656f8bfde5e1e91f8b52e7c531416c033e5060d8b5581c"
+      },
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "path": "experimental-router-props-10579/PageValid.vue.txt",
+          "sha256": "e3eba09f78512d8286533eddfe123f33f094badcb8b1a10b0399b6a882c3f1ad"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "experimental-router-props-10579/tsconfig.json.txt",
+          "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "path": "experimental-router-props-10579/typed-router.d.ts.txt",
+          "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974"
+        },
+        {
+          "file": "src/params/date.ts",
+          "path": "experimental-router-props-10579/date.ts.txt",
+          "sha256": "cd1c4ef8f84c3dfff8e957635138256f8c1a47fa7f0b29a82f9a8ed727fb14ea"
+        },
+        {
+          "file": "node_modules/vue-router/vue-router-auto-routes.d.mts",
+          "path": "experimental-router-props-10579/auto-routes.d.mts.txt",
+          "sha256": "2b242ab6b6518cfc6f62c79163576b198fc22d5b94abcae94ae24781d581874a"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
       "id": "typechecker/generic-constructor-slots-10416/props-infer-plain-and-covariant-slots",
       "state": "active",
       "targets": ["batch"],

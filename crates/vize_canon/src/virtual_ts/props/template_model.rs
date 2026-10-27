@@ -32,7 +32,8 @@ mod opaque_defaults;
 mod type_shape;
 
 use opaque_defaults::{generate_opaque_defaults_capture, opaque_defaults_props_type_ref};
-use type_shape::{has_top_level_type_operator, is_plain_inline_type_literal};
+pub(super) use type_shape::has_top_level_type_operator;
+use type_shape::is_plain_inline_type_literal;
 
 /// The component's resolved prop contract as the template sees it.
 pub(crate) struct TemplatePropsModel {
@@ -62,8 +63,14 @@ impl TemplatePropsModel {
             !props.is_empty() || !models.is_empty() || define_props_type_args.is_some();
 
         let setup_scoped = define_props_type_requires_setup_scope(summary);
-        let authored_type_ref =
-            props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
+        let authored_type_ref = if !setup_scoped && super::hoisted_props_alias_replaced(summary) {
+            generic_param.map_or_else(
+                || "__VizeResolvedProps".into(),
+                |generic| cstr!("__VizeResolvedProps<{}>", generic.names),
+            )
+        } else {
+            props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"))
+        };
 
         let (mut defaulted_prop_names, undefined_default_names) =
             collect_with_defaults_default_names(summary);
