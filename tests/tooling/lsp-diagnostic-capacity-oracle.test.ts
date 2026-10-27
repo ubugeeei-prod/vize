@@ -110,7 +110,7 @@ test("native socket admission joins stopped owner FD and inode and rejects liste
   const raw = (queue: number) =>
     "u_str ESTAB " +
     queue +
-    ' 0 /tmp/tsgo-api-test 123 * 456 users:(("tsc",pid=10,fd=7)) uid:1001 ino:123 sk:42';
+    ' 0 /tmp/tsgo-api-test 123 * 456 users:(("tsc",pid=10,fd=7)) uid:1001 ino:9702886 dev:0/2049 sk:42';
   const before = {
     source: "Linux AF_UNIX SOCK_DIAG" as const,
     processes: [],
@@ -120,10 +120,12 @@ test("native socket admission joins stopped owner FD and inode and rejects liste
   };
   const after = { ...before, channels: decodeNativeSockets([raw(48)], [descriptor]) };
   assert.equal(nativeIpcGrew(before, after), true);
+  assert.equal(after.channels[0]?.inode, "123");
+  assert.equal(after.channels[0]?.filesystemInode, "9702886");
   for (const wrong of [
     raw(48).replace("pid=10", "pid=11"),
     raw(48).replace("fd=7", "fd=8"),
-    raw(48).replace("ino:123", "ino:124"),
+    raw(48).replace(" 123 * 456", " 124 * 456"),
     raw(48).replace("ESTAB", "LISTEN"),
     raw(48).replace("/tmp/tsgo-api-test", "/tmp/other-service"),
   ]) {

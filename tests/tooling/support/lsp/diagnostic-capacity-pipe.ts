@@ -15,6 +15,7 @@ export type SocketDescriptor = {
 export type SocketEvidence = SocketDescriptor & {
   queuedBytes: number;
   localPath: string;
+  filesystemInode: string | null;
   raw: string;
 };
 export type IpcEvidence = {
@@ -37,14 +38,22 @@ export function decodeNativeSockets(
     if (state < 0) continue;
     const localPath = fields[state + 3];
     const queue = fields[state + 1];
-    const inode = /\bino:(\d+)/u.exec(line)?.[1] ?? fields[state + 4];
+    // The address column is the kernel socket inode; extended ino: identifies its filesystem path.
+    const inode = fields[state + 4];
+    const filesystemInode = /\bino:(\d+)/u.exec(line)?.[1] ?? null;
     if (!localPath?.startsWith("/tmp/tsgo-api-") || !queue || !/^\d+$/u.test(queue)) continue;
     for (const match of line.matchAll(/\bpid=(\d+),fd=(\d+)/gu)) {
       const descriptor = descriptors.find(
         (row) => row.pid === Number(match[1]) && row.fd === Number(match[2]) && row.inode === inode,
       );
       if (descriptor)
-        result.push({ ...descriptor, queuedBytes: Number(queue), localPath, raw: line });
+        result.push({
+          ...descriptor,
+          queuedBytes: Number(queue),
+          localPath,
+          filesystemInode,
+          raw: line,
+        });
     }
   }
   return result;

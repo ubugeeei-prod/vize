@@ -110,7 +110,8 @@ test(
       }
       const terminated = await waitUntil(() => closed, 2000);
       report.cleanup = { terminated };
-    report.qualified = report.qualified === true && terminated && report.cleanupError === undefined;
+      report.qualified =
+        report.qualified === true && terminated && report.cleanupError === undefined;
       fs.rmSync(directory, { recursive: true, force: true });
       const capture = path.join(testOutputRoot, "diagnostic-capacity-129");
       fs.mkdirSync(capture, { recursive: true });
