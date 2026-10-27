@@ -191,7 +191,10 @@ if (phase === "public") {
         [
           "gh",
           "api",
-          "repos/ubugeeei-prod/vize/compare/" + required + "..." + asString(authority.tagSourceSha),
+          "repos/ubugeeei-prod/vize/compare/" +
+            required +
+            "..." +
+            asString(authority.producerSource),
         ],
         project,
       );
