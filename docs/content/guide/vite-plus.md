@@ -168,8 +168,8 @@ Vite+ automatically tracks source files, configuration imports, dependencies, an
 directory entries. Generated `node_modules/.vize/**` and `**/.vize/**` files are
 excluded from cache inputs, and checks never restore output files. Source-writing
 tasks such as `fmt` and `lint:fix` remain uncached. Passing `--fix` to a cached
-check still runs on changed inputs; Vite+ refuses to store a run that modifies its
-tracked inputs. Existing `run.tasks` keep their own cache policy, and renaming a
+check still runs on changed inputs, including reintroducing the same unformatted
+source after a previous fix. Existing `run.tasks` keep their own cache policy, and renaming a
 generated task preserves its policy. Both the Vite+ 0.x and 1.x cache APIs are
 supported.
 

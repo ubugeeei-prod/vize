@@ -272,9 +272,22 @@ try {
     run(`${task}-first`, task, { hit: false, unchanged: false });
     run(`${task}-second-uncached`, task, { hit: false });
   }
-  write("src/App.vue", "<template><div   > changed </div></template>\n");
+  const dirtyVue = "<template><div   > changed </div></template>\n";
+  write("src/App.vue", dirtyVue);
   run("check-fix-writes", "vize:check", { hit: false, args: ["--", "--fix"], unchanged: false });
   const formatted = fs.readFileSync(path.join(directory, "src/App.vue"), "utf8");
+  assert.notEqual(formatted, dirtyVue);
+  write("src/App.vue", dirtyVue);
+  run("check-fix-identical-dirty-input", "vize:check", {
+    hit: false,
+    args: ["--", "--fix"],
+    unchanged: false,
+  });
+  assert.equal(
+    fs.readFileSync(path.join(directory, "src/App.vue"), "utf8"),
+    formatted,
+    "reintroducing the same dirty input must apply fixes again",
+  );
   write("src/App.vue", "<template><div   > changed again </div></template>\n");
   run("check-fix-changed-source", "vize:check", {
     hit: false,
