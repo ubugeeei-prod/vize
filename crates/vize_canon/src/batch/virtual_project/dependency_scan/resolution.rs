@@ -87,12 +87,9 @@ fn resolve_dependency_inner<const RECORD_INPUTS: bool>(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    let folded;
-    let specifier = if let Some(stem) = specifier.strip_suffix(".vue.ts") {
-        folded = cstr!("{stem}.vue");
-        folded.as_str()
-    } else {
-        specifier
+    let specifier = match specifier.strip_suffix(".ts") {
+        Some(stem) if stem.ends_with(".vue") => stem,
+        _ => specifier,
     };
     if matches!(specifier, "." | "..")
         || specifier.starts_with("./")

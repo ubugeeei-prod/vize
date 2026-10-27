@@ -54,7 +54,14 @@ export function captureColdScalePerf(options: {
         GOMAXPROCS: process.env.GOMAXPROCS,
         RAYON_NUM_THREADS: process.env.RAYON_NUM_THREADS,
       },
-      cold: { process: "fresh", project: "unique", incremental: false, osPageCache: "not flushed" },
+      cold: {
+        process: "fresh",
+        project: "unique",
+        sourceConfigIncremental: false,
+        effectiveBackendIncremental: tool === "cli",
+        cacheQualified: false,
+        osPageCache: "not flushed",
+      },
     },
   });
   let correctness: { passed: boolean; diagnostics?: unknown; error?: string };

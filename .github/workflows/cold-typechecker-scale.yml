@@ -15,6 +15,7 @@ on:
     paths:
       - .github/workflows/cold-typechecker-scale.yml
       - tools/benchmarks/scripts/cold-typechecker-scale*.ts
+      - tools/benchmarks/scripts/check-workspace.ts
       - tools/benchmarks/scripts/source-operation-perf*.ts
       - tools/benchmarks/scripts/source-pmu-calibration.ts
       - tools/benchmarks/src/pmu_calibration.rs
@@ -128,7 +129,6 @@ jobs:
           done
           test -n "$perf_bin"
           llvm-addr2line --version > "$RUNNER_TEMP/cold-scale/addr2line-version.txt"
-          rustc --edition=2024 -O -g tools/benchmarks/src/pmu_calibration.rs -o "$RUNNER_TEMP/cold-scale/pmu-calibration"
           taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/source-pmu-calibration.ts --binary "$RUNNER_TEMP/cold-scale/pmu-calibration" --perf "$perf_bin" --out "$RUNNER_TEMP/cold-scale/pmu-controls"
           calibration="$RUNNER_TEMP/cold-scale/pmu-controls/calibration.json"
           for source in base head; do

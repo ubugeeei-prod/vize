@@ -12,10 +12,11 @@ zero cycles fail sanity. Retired instructions and branches use a separate `core`
 from the `cache` cohort. CSV values are already scaled by perf; scheduling below 99.9%
 is labeled a scaled estimate and does not qualify for strict comparison.
 
-Build the original Rust admission controls outside the measured window:
+The runner compiles the original Rust admission controls outside all measured windows.
+`--binary` must name a new output path; an existing executable is rejected. The build
+receipt binds the source hash, compiler arguments/version and actual binary bytes:
 
 ```sh
-rustc -O -g --edition 2024 tools/benchmarks/src/pmu_calibration.rs -o /tmp/pmu-calibration
 taskset -c 0-7 node tools/benchmarks/scripts/source-pmu-calibration.ts \
   --binary /tmp/pmu-calibration --perf /usr/bin/perf --out /tmp/pmu-admission
 ```
@@ -23,7 +24,9 @@ taskset -c 0-7 node tools/benchmarks/scripts/source-pmu-calibration.ts \
 Use the same actual CPU affinity for calibration and product measurement. Each control
 runs in a fresh process. Instruction and branch workloads must produce a larger signal
 than the baseline, and dependent loads over a larger working set must produce an observable
-cache-event signal. The raw CPU, microcode, kernel, PMU type, affinity, perf version,
+cache-event signal after subtracting a separate setup-only control for each working-set
+size. Table initialization alone cannot qualify the cache cohort. The raw CPU,
+microcode, kernel, PMU type, affinity, perf version,
 source hash and executable hashes accompany the result. Calibration is scoped to that
 environment; it is not a Vize performance result.
 

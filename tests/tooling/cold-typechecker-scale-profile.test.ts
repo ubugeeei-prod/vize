@@ -68,6 +68,9 @@ process.exit(cp.spawnSync(args[split+1], args.slice(split+2), {stdio:"inherit",e
     assert.equal(receipt.command.executable, binary);
     assert.equal(receipt.command.args[0], "check");
     assert.equal(receipt.identity.sfcFiles, 177);
+    assert.equal(receipt.identity.cold.sourceConfigIncremental, false);
+    assert.equal(receipt.identity.cold.effectiveBackendIncremental, true);
+    assert.equal(receipt.identity.cold.cacheQualified, false);
     assert.equal(receipt.identity.backendSha256.length, 64);
     assert.equal(receipt.identity.providerLockSha256.length, 64);
     assert.equal(readFileSync(join(out, "tmp", "checker-ran"), "utf8"), "yes");

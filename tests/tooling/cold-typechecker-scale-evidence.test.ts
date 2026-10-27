@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -9,6 +10,26 @@ import {
   prepareColdScale,
   verifyColdDiagnostics,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale.ts";
+
+type ScaleWorkflow = {
+  on: { pull_request: { paths: string[] } };
+  jobs: { profile: { steps: { name?: string; run?: string }[] } };
+};
+
+function scaleWorkflow(): ScaleWorkflow {
+  return parse(
+    readFileSync(
+      new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
+      "utf8",
+    ),
+  ) as ScaleWorkflow;
+}
+
+function workflowScript(name: string): string {
+  const step = scaleWorkflow().jobs.profile.steps.find((candidate) => candidate.name === name);
+  assert.ok(step && typeof step.run === "string", "the real workflow step must be exercised");
+  return step.run;
+}
 
 // Independently equal public vize0.596 / native TS7.1 / vue-tsc3.3.13 packets.
 const diagnostics = [
@@ -113,20 +134,16 @@ console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}
   }
 });
 
+test("workspace generator edits trigger the complete SFC corpus measurement", () => {
+  assert.ok(
+    scaleWorkflow().on.pull_request.paths.includes("tools/benchmarks/scripts/check-workspace.ts"),
+  );
+});
+
 test("manual Actions comparisons reject absent, mutable or identical baseline identities", () => {
   const root = mkdtempSync(join(tmpdir(), "cold-scale-baseline-"));
   try {
-    const workflow = readFileSync(
-      new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
-      "utf8",
-    );
-    const match =
-      /name: Validate the full SFC cohort\n\s+run: \|\n([\s\S]*?)(?=      - name:)/.exec(workflow);
-    assert.ok(match);
-    const script = match[1]
-      .split("\n")
-      .map((line) => line.replace(/^          /, ""))
-      .join("\n");
+    const script = workflowScript("Validate the full SFC cohort");
     const cwd = new URL("../../", import.meta.url);
     const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf8" });
     assert.equal(head.status, 0, head.stderr);
@@ -169,19 +186,7 @@ test("Actions evidence packaging retains packets without following dependency-li
     const packet = '{"correctness":{"passed":true},"files":4323,"sfcFiles":2500}\n';
     writeFileSync(join(evidence, "measurement.json"), packet);
     writeFileSync(join(evidence, "stdout.txt"), "complete diagnostic bytes\n");
-    const workflow = readFileSync(
-      new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
-      "utf8",
-    );
-    const match =
-      /name: Package evidence without traversing workspace links\n[\s\S]*?run: \|\n([\s\S]*?)(?=      - uses:)/.exec(
-        workflow,
-      );
-    assert.ok(match, "the real packaging step must be exercised");
-    const script = match[1]
-      .split("\n")
-      .map((line) => line.replace(/^          /, ""))
-      .join("\n");
+    const script = workflowScript("Package evidence without traversing workspace links");
     const packed = spawnSync("bash", ["-euc", script], {
       env: { ...process.env, RUNNER_TEMP: root },
       encoding: "utf8",

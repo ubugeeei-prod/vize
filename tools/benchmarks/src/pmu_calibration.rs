@@ -50,6 +50,8 @@ fn cache_work(iterations: u64, bytes: usize) -> u64 {
     let next: Vec<usize> = (0..words)
         .map(|index| index.wrapping_mul(1_664_525).wrapping_add(1_013_904_223) & (words - 1))
         .collect();
+    // Both setup-only and load controls must materialize the identical initialized table.
+    black_box(&next);
     let mut index = 0;
     for _ in 0..iterations {
         index = black_box(next[black_box(index)]);
@@ -81,6 +83,7 @@ fn main() {
         "instructions" => instruction_work(iterations),
         "branches" => branch_work(iterations),
         "cache-small" | "cache-large" => cache_work(iterations, bytes),
+        "cache-setup-small" | "cache-setup-large" => cache_work(0, bytes),
         "threads" => {
             let first = std::thread::spawn(move || instruction_work(iterations));
             let second = std::thread::spawn(move || instruction_work(iterations));
@@ -109,6 +112,11 @@ fn main() {
         }
         _ => panic!("unknown control"),
     };
+    let dependent_loads = match mode.as_str() {
+        "cache-small" | "cache-large" => iterations.to_string(),
+        "cache-setup-small" | "cache-setup-large" => "0".to_owned(),
+        _ => "null".to_owned(),
+    };
     let child_pid = child_pid.map_or_else(|| "null".to_owned(), |pid| pid.to_string());
     let child_exit = child_exit.map_or_else(|| "null".to_owned(), |exit| exit.to_string());
     let worker_checksums = workers
@@ -117,6 +125,6 @@ fn main() {
         .collect::<Vec<_>>()
         .join(",");
     println!(
-        "{{\"schema\":\"vize-pmu-calibration\",\"mode\":\"{mode}\",\"iterations\":{iterations},\"bytes\":{bytes},\"checksum\":\"{checksum:016x}\",\"completed\":true,\"childPid\":{child_pid},\"childExit\":{child_exit},\"workerChecksums\":[{worker_checksums}]}}"
+        "{{\"schema\":\"vize-pmu-calibration\",\"mode\":\"{mode}\",\"iterations\":{iterations},\"bytes\":{bytes},\"checksum\":\"{checksum:016x}\",\"completed\":true,\"dependentLoads\":{dependent_loads},\"childPid\":{child_pid},\"childExit\":{child_exit},\"workerChecksums\":[{worker_checksums}]}}"
     );
 }

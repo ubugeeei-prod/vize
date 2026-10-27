@@ -1,10 +1,11 @@
 /** Calibrate observable hardware signals before admitting Vize instruction counts. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { captureSourceOperationPerf, sourcePerfEnvironment } from "./source-operation-perf.ts";
 import { coreEvents, cacheEvents } from "./source-operation-perf-evidence.ts";
 
@@ -13,9 +14,51 @@ const controls: Control[] = [
   { name: "baseline", group: "core", bytes: 64 },
   { name: "instructions", group: "core", bytes: 64 },
   { name: "branches", group: "core", bytes: 64 },
+  { name: "cache-setup-small", group: "cache", bytes: 64 * 1024 },
   { name: "cache-small", group: "cache", bytes: 64 * 1024 },
+  { name: "cache-setup-large", group: "cache", bytes: 64 * 1024 * 1024 },
   { name: "cache-large", group: "cache", bytes: 64 * 1024 * 1024 },
 ];
+
+const digest = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex");
+
+function buildCarrier(binary: string, out: string, compiler: string) {
+  assert.ok(
+    !existsSync(binary),
+    "carrier must be a fresh compiler output, not an arbitrary supplied binary",
+  );
+  const source = fileURLToPath(new URL("../src/pmu_calibration.rs", import.meta.url));
+  const sourceSha256 = digest(source);
+  const args = ["--edition=2024", "-O", "-g", source, "-o", binary];
+  const version = spawnSync(compiler, ["-Vv"], { encoding: "utf8", timeout: 30_000 });
+  assert.equal(version.status, 0, "compiler identity probe failed");
+  mkdirSync(dirname(binary), { recursive: true });
+  const build = spawnSync(compiler, args, {
+    encoding: "utf8",
+    timeout: 120_000,
+    killSignal: "SIGKILL",
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  writeFileSync(join(out, "build.stdout.txt"), build.stdout ?? "");
+  writeFileSync(join(out, "build.stderr.txt"), build.stderr ?? "");
+  assert.equal(build.status, 0, "carrier compilation failed; inspect build.stderr.txt");
+  assert.equal(digest(source), sourceSha256, "carrier source changed while compiling");
+  assert.ok(existsSync(binary) && statSync(binary).size > 0, "compiler did not emit a carrier");
+  const receipt = {
+    qualified: true,
+    method: "fresh-source-compiler-output",
+    source,
+    sourceSha256,
+    binary,
+    binarySha256: digest(binary),
+    binaryBytes: statSync(binary).size,
+    compiler: { executable: compiler, args, version: version.stdout.trim() },
+    scope:
+      "carrier compilation outside all perf windows; compiler identity retained, not a Vize speed measurement",
+  };
+  writeFileSync(join(out, "build.json"), JSON.stringify(receipt, null, 2) + "\n");
+  return receipt;
+}
 
 export function calibrateSourcePmu(options: {
   binary: string;
@@ -23,6 +66,8 @@ export function calibrateSourcePmu(options: {
   out: string;
   rounds?: number;
   iterations?: number;
+  /** Test-only compiler injection; the workflow uses pinned rustc. */
+  rustcExecutable?: string;
 }) {
   const { binary, perf, out } = options;
   const rounds = options.rounds ?? 3;
@@ -32,9 +77,8 @@ export function calibrateSourcePmu(options: {
   assert.ok(!existsSync(out), "refuse to overwrite PMU calibration");
   mkdirSync(out, { recursive: true });
   const environment = sourcePerfEnvironment();
-  const sourceSha256 = createHash("sha256")
-    .update(readFileSync(new URL("../src/pmu_calibration.rs", import.meta.url)))
-    .digest("hex");
+  const build = buildCarrier(binary, out, options.rustcExecutable ?? "rustc");
+  const { sourceSha256, binarySha256 } = build;
   const rows: {
     name: string;
     group: "core" | "cache";
@@ -65,6 +109,8 @@ export function calibrateSourcePmu(options: {
         identity: {
           calibration: true,
           sourceSha256,
+          binarySha256,
+          buildMethod: build.method,
           control: control.name,
           round,
           iterations,
@@ -78,12 +124,19 @@ export function calibrateSourcePmu(options: {
         reason: string | null = null;
       try {
         assert.equal(receipt.perf.status, 0);
+        assert.equal(receipt.binarySha256, binarySha256, "control used a different carrier");
+        assert.equal(receipt.binarySha256After, binarySha256, "control replaced its carrier");
         const packet = JSON.parse(readFileSync(join(out, directory, "stdout.txt"), "utf8"));
         assert.equal(packet.schema, "vize-pmu-calibration");
         assert.equal(packet.completed, true);
         assert.equal(packet.mode, control.name);
         assert.equal(packet.iterations, iterations);
         assert.equal(packet.bytes, control.bytes);
+        if (control.group === "cache")
+          assert.equal(
+            packet.dependentLoads,
+            control.name.startsWith("cache-setup") ? 0 : iterations,
+          );
         assert.match(packet.checksum, /^[a-f0-9]{16}$/u);
         checksum = packet.checksum;
         correct = true;
@@ -144,15 +197,23 @@ export function calibrateSourcePmu(options: {
         groups[group].reasons.push("an event is unavailable: " + event);
     }
   }
+  if (digest(binary) !== binarySha256 || digest(build.source) !== sourceSha256)
+    for (const group of Object.values(groups))
+      group.reasons.push("carrier source or binary changed after build");
+  const cacheDelta = (size: "small" | "large", event: string) => {
+    const workload = median("cache-" + size, event),
+      setup = median("cache-setup-" + size, event);
+    return workload === null || setup === null ? null : workload - setup;
+  };
   const signals = {
     baselineInstructions: median("baseline", "instructions"),
     busyInstructions: median("instructions", "instructions"),
     baselineBranches: median("baseline", "branches"),
     busyBranches: median("branches", "branches"),
-    smallCacheReferences: median("cache-small", "cache-references"),
-    largeCacheReferences: median("cache-large", "cache-references"),
-    smallCacheMisses: median("cache-small", "cache-misses"),
-    largeCacheMisses: median("cache-large", "cache-misses"),
+    smallCacheReferences: cacheDelta("small", "cache-references"),
+    largeCacheReferences: cacheDelta("large", "cache-references"),
+    smallCacheMisses: cacheDelta("small", "cache-misses"),
+    largeCacheMisses: cacheDelta("large", "cache-misses"),
   };
   const hasTwofoldSignal = (busy: number | null, baseline: number | null) =>
     busy !== null && baseline !== null && busy > 2 * baseline;
@@ -166,12 +227,14 @@ export function calibrateSourcePmu(options: {
       signals.smallCacheReferences !== null &&
       signals.largeCacheMisses !== null &&
       signals.smallCacheMisses !== null &&
+      signals.smallCacheReferences >= 0 &&
+      signals.smallCacheMisses >= 0 &&
       signals.largeCacheReferences > signals.smallCacheReferences &&
       signals.largeCacheMisses > signals.smallCacheMisses
     )
   )
     groups.cache.reasons.push(
-      "larger dependent working set did not produce a positive cache-event signal",
+      "larger dependent loads did not exceed same-size setup-adjusted cache-event signal",
     );
   for (const group of Object.values(groups)) group.qualified = group.reasons.length === 0;
   const result = {
@@ -181,6 +244,8 @@ export function calibrateSourcePmu(options: {
     groups,
     qualified: groups.core.qualified && groups.cache.qualified,
     sourceSha256,
+    binarySha256,
+    build,
     signals,
     controls: rows,
     scope:
@@ -190,7 +255,7 @@ export function calibrateSourcePmu(options: {
       minimumInstructionRatio: 2,
       minimumBranchRatio: 2,
       cacheSignal:
-        "larger-than-small working set has more generic cache references and misses; CPU-specific meaning retained in raw perf metadata",
+        "median(setup+dependent-loads) minus median(same-size setup-only); larger working set must add more references/misses; generic CPU-specific events, not exact per-load counts",
     },
   };
   writeFileSync(join(out, "calibration.json"), JSON.stringify(result, null, 2) + "\n");
