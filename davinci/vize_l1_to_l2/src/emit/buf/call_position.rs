@@ -131,6 +131,7 @@ fn quoted_end(bytes: &[u8], start: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::{helper_call_position, underscore_call_sites};
+    use vize_l0::String;
 
     #[test]
     fn scans_helper_calls_without_picking_up_strings_comments_or_members() {
@@ -158,7 +159,7 @@ mod tests {
             .map(char::from)
             .chain(['é', '中', '\u{200c}', '😀', '\u{a0}'])
         {
-            let mut text = String::new();
+            let mut text = String::default();
             text.push(ch);
             text.push_str("_createVNode()");
             let mut selected = None;

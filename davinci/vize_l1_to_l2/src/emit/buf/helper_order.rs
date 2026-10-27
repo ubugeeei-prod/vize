@@ -51,9 +51,12 @@ impl Buf {
                 .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
                 > 65_536
         {
-            // Virtual positions also consult neighboring helpers of other ranks.
-            // Include them in the shared scan instead of rescanning the module.
-            self.sort_helpers::<true>(listed, self.used)
+            // Virtual positions consult transient helpers too, including helpers
+            // replaced in `used_order`. Cache every known alias in the one scan.
+            let all_aliases = Helper::ALL
+                .iter()
+                .fold(0, |mask, helper| mask | helper.bit());
+            self.sort_helpers::<true>(listed, all_aliases)
         } else {
             self.sort_helpers::<false>(listed, 0)
         }
