@@ -222,3 +222,79 @@ fn requested_roots_do_not_resolve_unrelated_global_values() {
         BindingOrigin::Unresolved
     );
 }
+
+struct ContextImports {
+    calls: AtomicUsize,
+}
+impl Resolver for ContextImports {
+    fn resolve_import(
+        &self,
+        from: SourceRevision,
+        _: &str,
+        _: &str,
+        _: Namespace,
+        usage: Usage,
+    ) -> ImportResolution {
+        self.calls.fetch_add(1, Ordering::Relaxed);
+        ImportResolution::External(identity(if usage == Usage::TypeQuery || from.source == 2 {
+            2_000_000
+        } else {
+            1_000_000
+        }))
+    }
+}
+
+#[test]
+fn import_memoization_preserves_distinct_effective_usage() {
+    let mut target = imported();
+    if let BindingTarget::Import { usage, .. } = &mut target {
+        *usage = None;
+    }
+    let imported_source = source(3, target, false);
+    let root = source(
+        1,
+        BindingTarget::Candidates(
+            [Usage::Runtime, Usage::TypeQuery]
+                .into_iter()
+                .map(|usage| BindingTarget::Alias {
+                    binding: BindingRef {
+                        source: 3,
+                        local: local(),
+                    },
+                    usage,
+                })
+                .collect(),
+        ),
+        true,
+    );
+    let mut facts = project();
+    facts.register_revision(version(2_000_000)).unwrap();
+    facts.add_source(&root).unwrap();
+    facts.add_source(&imported_source).unwrap();
+    let resolver = ContextImports {
+        calls: AtomicUsize::new(0),
+    };
+    let snapshot = super::seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
+    assert_eq!(origin(&snapshot), BindingOrigin::Ambiguous);
+    assert_eq!(resolver.calls.load(Ordering::Relaxed), 2);
+}
+
+#[test]
+fn import_memoization_preserves_distinct_source_owners() {
+    let mut target = imported();
+    if let BindingTarget::Import { usage, .. } = &mut target {
+        *usage = None;
+    }
+    let first = source(1, target.clone(), true);
+    let second = source(2, target, true);
+    let mut facts = project();
+    facts.register_revision(version(2_000_000)).unwrap();
+    facts.add_source(&first).unwrap();
+    facts.add_source(&second).unwrap();
+    let resolver = ContextImports {
+        calls: AtomicUsize::new(0),
+    };
+    let snapshot = super::seal(facts, &resolver, identity(1_000_000), &["useTemplateRef"]).unwrap();
+    assert_eq!(origin(&snapshot), BindingOrigin::Ambiguous);
+    assert_eq!(resolver.calls.load(Ordering::Relaxed), 2);
+}

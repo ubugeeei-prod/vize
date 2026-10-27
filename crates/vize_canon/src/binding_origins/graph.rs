@@ -52,6 +52,15 @@ impl Evidence {
         }
     }
 }
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct ImportKey<'a> {
+    from: SourceRevision,
+    module: &'a str,
+    exported: &'a str,
+    namespace: Namespace,
+    usage: Usage,
+}
+
 #[derive(Default)]
 struct Node {
     evidence: Evidence,
@@ -64,8 +73,9 @@ struct Graph<'f, 's, R> {
     indices: FxHashMap<Key, usize>,
     nodes: Vec<Node>,
     globals: FxHashMap<(String, Namespace), Vec<BindingRef>>,
+    resolutions: FxHashMap<ImportKey<'s>, ImportResolution>,
 }
-impl<R: Resolver> Graph<'_, '_, R> {
+impl<'s, R: Resolver> Graph<'_, 's, R> {
     fn node(&self, index: usize) -> Result<&Node, OriginError> {
         self.nodes.get(index).ok_or(OriginError::InvalidGraphIndex)
     }
@@ -104,12 +114,18 @@ impl<R: Resolver> Graph<'_, '_, R> {
         }
         Ok(())
     }
+    fn resolve_import(&mut self, key: ImportKey<'s>) -> ImportResolution {
+        let resolver = self.resolver;
+        *self.resolutions.entry(key).or_insert_with(|| {
+            resolver.resolve_import(key.from, key.module, key.exported, key.namespace, key.usage)
+        })
+    }
     fn target(
         &mut self,
         node: usize,
         owner: BindingRef,
         usage: Usage,
-        target: &BindingTarget,
+        target: &'s BindingTarget,
     ) -> Result<(), OriginError> {
         let mut pending = Vec::new();
         let mut first = Some(target);
@@ -142,13 +158,14 @@ impl<R: Resolver> Graph<'_, '_, R> {
                         self.node_mut(node)?.evidence.missing = true;
                         continue;
                     }
-                    match self.resolver.resolve_import(
-                        self.source(owner.source)?,
+                    let from = self.source(owner.source)?;
+                    match self.resolve_import(ImportKey {
+                        from,
                         module,
                         exported,
-                        *namespace,
+                        namespace: *namespace,
                         usage,
-                    ) {
+                    }) {
                         ImportResolution::Binding(identity)
                             if identity.local.namespace == *namespace
                                 && self.facts.versions.get(&identity.source.source)
@@ -196,6 +213,7 @@ impl<R: Resolver> Graph<'_, '_, R> {
                 match facts
                     .sources
                     .get(&binding.source)
+                    .copied()
                     .and_then(|source| source.bindings.get(&binding.local))
                 {
                     Some(target) => self.target(index, binding, usage, target)?,
@@ -237,6 +255,7 @@ pub fn seal<R: Resolver>(
         indices: FxHashMap::default(),
         nodes: Vec::new(),
         globals: FxHashMap::default(),
+        resolutions: FxHashMap::default(),
     };
     for source in facts.sources.values() {
         for (name, local) in &source.globals {

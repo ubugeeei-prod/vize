@@ -22,7 +22,7 @@ jobs:
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
-      - name: Build one fresh source test image and run 15 exact origin laws
+      - name: Build one fresh source test image and run 17 exact origin laws
         shell: bash
         run: |
           set -euo pipefail
@@ -82,6 +82,8 @@ jobs:
               "binding_origins::tests_graph::stale_or_foreign_resolver_images_never_authorize_a_provider",
               "binding_origins::tests_graph::type_only_runtime_values_do_not_become_callable_providers",
               "binding_origins::tests_graph::requested_roots_do_not_resolve_unrelated_global_values",
+              "binding_origins::tests_graph::import_memoization_preserves_distinct_effective_usage",
+              "binding_origins::tests_graph::import_memoization_preserves_distinct_source_owners",
               "binding_origins::tests_ambient::annotated_runtime_custom_functions_cannot_borrow_provider_identity",
               "binding_origins::tests_ambient::uninitialized_runtime_annotations_are_not_ambient_provider_declarations",
               "binding_origins::tests_ambient::actual_ambient_declarations_and_immutable_value_aliases_keep_provider_identity",
@@ -121,10 +123,10 @@ jobs:
               "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
               "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").glob("*.rs"))},
               "tests":rows,
-              "passed":len(rows)==15 and all(row["qualified"] for row in rows),
+              "passed":len(rows)==17 and all(row["qualified"] for row in rows),
           }
           (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")
-          assert receipt["passed"], "all 15 exact source laws must each pass once, with zero ignored"
+          assert receipt["passed"], "all 17 exact source laws must each pass once, with zero ignored"
           PY
       - name: Package actual compiler and test receipts
         if: always()
