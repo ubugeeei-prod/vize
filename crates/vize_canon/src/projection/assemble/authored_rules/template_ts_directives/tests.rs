@@ -19,7 +19,7 @@ fn diagnostic(source: &str, needle: &str, code: u32) -> AssembledDiagnostic<()> 
 #[test]
 fn relocated_instance_read_consumes_only_its_own_expectation() {
     for newline in ["\n", "\r\n"] {
-        let source = format!(
+        let source = vize_carton::cstr!(
             "<template>日本😀{{{{{newline}// @ts-expect-error{newline}missing{newline}}}}}{{{{ sibling }}}}</template>"
         );
         let mut diagnostics = vec![
@@ -65,7 +65,7 @@ fn literal_nonleading_and_malformed_comments_have_no_authority() {
         "// @ts-expect-error\nmissing(",
         "/* @ts-expect-error\nmissing",
     ] {
-        let source = format!("<template>{{{{ {expression} }}}}</template>");
+        let source = vize_carton::cstr!("<template>{{{{ {expression} }}}}</template>");
         let original = vec![diagnostic(&source, "missing", 2339)];
         let mut diagnostics = original.clone();
         filter(&AuthoredSource::vue(&source), &mut diagnostics);
@@ -121,7 +121,9 @@ fn complete_block_comment_uses_its_exact_next_line() {
 #[test]
 fn blank_and_explanatory_comment_lines_preserve_native_directive_ownership() {
     for gap in ["\n", "// explanation\n"] {
-        let source = format!("<template>{{{{\n// @ts-expect-error\n{gap}missing\n}}}}</template>");
+        let source = vize_carton::cstr!(
+            "<template>{{{{\n// @ts-expect-error\n{gap}missing\n}}}}</template>"
+        );
         let mut diagnostics = vec![
             diagnostic(&source, "// @ts-expect-error", 2578),
             diagnostic(&source, "missing", 2339),
@@ -157,7 +159,7 @@ fn a_later_code_line_and_a_repeated_sibling_are_not_owned() {
 fn javascript_line_terminators_and_unicode_indentation_match_native_directives() {
     for newline in ["\n", "\r\n", "\r", "\u{2028}", "\u{2029}"] {
         for indentation in ["", "\u{00a0}", "\u{feff}", "\u{3000}"] {
-            let source = format!(
+            let source = vize_carton::cstr!(
                 "<template>{{{{{newline}{indentation}// @ts-expect-error{newline}{indentation}missing{newline}}}}}</template>"
             );
             let mut diagnostics = vec![
@@ -176,7 +178,7 @@ fn ordinary_block_comments_and_first_line_block_tokens_do_not_suppress() {
         "// @ts-expect-error\n/* explanation */\nmissing",
         "/* @ts-expect-error\n explanation */\nmissing",
     ] {
-        let source = format!("<template>{{{{\n{expression}\n}}}}</template>");
+        let source = vize_carton::cstr!("<template>{{{{\n{expression}\n}}}}</template>");
         let original = vec![diagnostic(&source, "missing", 2339)];
         let mut diagnostics = original.clone();
         filter(&AuthoredSource::vue(&source), &mut diagnostics);
@@ -193,9 +195,24 @@ fn native_directive_prefix_and_final_block_line_grammar_are_preserved() {
         "/* explanation\n @ts-expect-error */",
         "/* explanation\n * @ts-expect-error */",
     ] {
-        let source = format!("<template>{{{{\n{comment}\nmissing\n}}}}</template>");
+        let source = vize_carton::cstr!("<template>{{{{\n{comment}\nmissing\n}}}}</template>");
         let mut diagnostics = vec![
             diagnostic(&source, comment, 2578),
+            diagnostic(&source, "missing", 2339),
+        ];
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert!(diagnostics.is_empty(), "{source}");
+    }
+}
+
+#[test]
+fn a_block_comment_on_the_target_line_does_not_block_the_directive() {
+    for comment in ["/* explanation */ ", "/* 日本 🧭 */ "] {
+        let source = vize_carton::cstr!(
+            "<template>{{{{\n// @ts-expect-error\n{comment}missing\n}}}}</template>"
+        );
+        let mut diagnostics = vec![
+            diagnostic(&source, "// @ts-expect-error", 2578),
             diagnostic(&source, "missing", 2339),
         ];
         filter(&AuthoredSource::vue(&source), &mut diagnostics);

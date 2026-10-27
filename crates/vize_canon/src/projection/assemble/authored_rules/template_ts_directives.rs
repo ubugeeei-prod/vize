@@ -144,10 +144,6 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
         };
         if let Some(expect) = recognized {
             owner = Some((cursor..end, expect));
-        } else if block {
-            // Native lookup crosses blank and // lines, but a non-directive
-            // block comment between an expectation and code stops ownership.
-            owner = None;
         }
         cursor = end;
     }
@@ -163,6 +159,22 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
     let target_start = line_start + terminator.len_utf8();
     if comment.end >= target_start {
         return None;
+    }
+    let after_comment = expression.get(comment.end..target_start)?;
+    let (newline, terminator) = after_comment
+        .char_indices()
+        .find(|(_, c)| is_line_terminator(*c))?;
+    // Native lookup walks backward from the line BEFORE the diagnostic:
+    // blank and // lines are transparent; block-comment lines are barriers.
+    // Comments on the target line itself cannot block its own directive.
+    for line in after_comment
+        .get(newline + terminator.len_utf8()..)?
+        .split(is_line_terminator)
+    {
+        let line = line.trim_matches(is_js_whitespace);
+        if !line.is_empty() && !line.starts_with("//") {
+            return None;
+        }
     }
     let target_end = cursor
         + expression
