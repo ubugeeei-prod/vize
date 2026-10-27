@@ -4,8 +4,24 @@
 static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
-#[cfg(not(feature = "micro-profiling"))]
+// Keep libtest's listing protocol while excluding its reporting threads from
+// the allocator window. Nextest invokes this executable with --list first.
 fn main() {
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    let ignored = args.iter().any(|arg| arg == "--ignored");
+    if args.iter().any(|arg| arg == "--list") {
+        if !ignored {
+            println!("source_operations_profile: test");
+        }
+        return;
+    }
+    if !ignored {
+        run();
+    }
+}
+
+#[cfg(not(feature = "micro-profiling"))]
+fn run() {
     let side_effects = std::cell::Cell::new(0);
     vize_l0::micro_count!("test.disabled", {
         side_effects.set(1);
@@ -24,7 +40,7 @@ fn main() {
     clippy::unwrap_used,
     reason = "the standalone collector law asserts by panicking"
 )]
-fn main() {
+fn run() {
     use std::alloc::{Layout, alloc, dealloc, realloc};
     use vize_l0::profiler::{allocation_snapshot, global_profiler, micro};
 
@@ -32,6 +48,7 @@ fn main() {
     profiler.clear();
     profiler.enable();
     let before = allocation_snapshot();
+    let expected_line = line!() + 1;
     vize_l0::micro_count!("test.registration", 7);
     let snapshot = micro::snapshot();
     let after = allocation_snapshot();
@@ -45,8 +62,9 @@ fn main() {
         .find(|entry| entry.name == "test.registration")
         .unwrap();
     assert_eq!((entry.calls, entry.units), (1, 7));
-    assert!(entry.file.ends_with("source_operations_profile.rs"));
-    assert!(entry.line > 0);
+    assert_eq!(entry.file, file!());
+    assert_eq!(entry.module, module_path!());
+    assert_eq!(entry.line, expected_line);
     assert_eq!(entry.kind, "counter");
     // The readback was allocated with tracking suppressed, so drop it outside
     // the subsequent exact allocator operation window too.
