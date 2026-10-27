@@ -2,7 +2,7 @@
 
 Performance changes need an attributable base/head comparison while normal development remains free to merge without waiting for benchmark runners. `pr-performance-observation.yml` runs independently on every opened, updated, or reopened PR, including contributions from forks. It is not a required status check, a dependency of Check, a merge-group job, or a release gate. Existing historical benchmark budgets retain their own behavior.
 
-The optional **Performance observations** check links to an Actions summary and a downloadable `pr-performance-<PR>-<head SHA>-<attempt>` artifact. Reports, raw invocations, source identities, build receipts, and inputs are retained for 90 days. A subsequent push cancels the superseded measurement for that PR. An explicit dispatch can repeat an immutable base/head pair; the dispatch ref must identify the requested head.
+The optional **Performance observations** check links to an Actions summary and a downloadable `pr-performance-<PR>-<head SHA>-<attempt>` artifact. Reports, raw invocations, source identities, build receipts, and inputs are retained for 90 days. A subsequent push cancels the superseded measurement for that PR. An explicit dispatch can repeat any immutable base/head pair using the selected workflow driver.
 
 ## What is compared
 
@@ -14,7 +14,7 @@ These are fresh-process measurements after warmup. Filesystem pages and persiste
 
 ## Source and measurement custody
 
-Each role checks out the exact PR base or authored head SHA. The source-pair receipt also records the merge base and changed paths. A PR comparison never silently substitutes a historical commit or the synthetic merge commit for either role.
+The measurement driver is checked out separately at the immutable workflow SHA. Its tools, dependency provider, and corpus do not depend on whether an older PR head contains the new measurement infrastructure. Manual replay can therefore measure commits from before instrumentation was introduced. Each product role still checks out the exact PR base or authored head SHA. The source-pair receipt records the driver/tree, merge base, and changed paths. A PR comparison never silently substitutes a historical commit or the synthetic merge commit for either role.
 
 Base and head build sequentially into distinct, initially absent target directories. No compiled target or binary cache is restored. Cargo JSON binds the actual executable to its source role, fresh compilation, features, compiler recipe, toolchain, and binary hash. Both builds use the same optimized `ci-opt` settings with thin LTO, 16 codegen units, stripped symbols, and no profiling feature. This is a consistent comparison profile; its byte size is not a claim about every published platform artifact.
 

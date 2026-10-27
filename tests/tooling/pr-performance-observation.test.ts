@@ -12,6 +12,7 @@ type Step = {
 };
 type ObservationWorkflow = {
   on: Record<string, unknown>;
+  env: Record<string, string>;
   permissions: Record<string, string>;
   concurrency: { "cancel-in-progress": boolean };
   jobs: Record<string, { name: string; needs?: unknown; steps: Step[] }>;
@@ -86,6 +87,7 @@ test("source roles, isolated fresh builds, and separate measurement artifacts st
   assert.deepEqual(
     checkouts.map((step) => [step.with?.path, step.with?.ref, step.with?.["persist-credentials"]]),
     [
+      ["driver", "${{ env.DRIVER_SHA }}", false],
       ["head", "${{ env.HEAD_SHA }}", false],
       ["base", "${{ env.BASE_SHA }}", false],
     ],
@@ -110,4 +112,51 @@ test("source roles, isolated fresh builds, and separate measurement artifacts st
     (step) => step.name === "Validate measurement and source custody controls",
   );
   assert.ok(install >= 0 && controls > install);
+});
+
+function requireWorkflowDriver(candidate: ObservationWorkflow): void {
+  assert.equal(candidate.env.DRIVER_SHA, "${{ github.workflow_sha }}");
+  const steps = candidate.jobs.observe.steps;
+  const checkout = steps.find((step) => step.with?.path === "driver");
+  assert.equal(checkout?.with?.ref, "${{ env.DRIVER_SHA }}");
+  for (const name of [
+    "Install one pinned physical dependency provider",
+    "Validate measurement and source custody controls",
+    "Generate identical public inputs and pin the native runtime",
+  ]) {
+    const step = steps.find((entry) => entry.name === name);
+    assert.equal(
+      (step as Step & { "working-directory"?: string })?.["working-directory"],
+      "driver",
+    );
+  }
+  const build = steps.find(
+    (step) => step.name === "Build normal source binaries in independent fresh targets",
+  );
+  assert.match(
+    build?.run ?? "",
+    /node driver\/tools\/benchmarks\/scripts\/pr-performance-build\.ts/,
+  );
+  const observe = steps.find((step) => step.name?.startsWith("Observe alternating latency"));
+  assert.match(
+    observe?.run ?? "",
+    /node driver\/tools\/benchmarks\/scripts\/pr-performance-observation\.ts/,
+  );
+}
+
+test("older authored heads do not need to contain the measurement driver", () => {
+  requireWorkflowDriver(workflow);
+  for (const mutation of ["driver-is-head", "build-at-head", "observe-at-head"]) {
+    const changed = structuredClone(workflow);
+    if (mutation === "driver-is-head") changed.env.DRIVER_SHA = "${{ env.HEAD_SHA }}";
+    else {
+      const prefix =
+        mutation === "build-at-head"
+          ? "Build normal source binaries"
+          : "Observe alternating latency";
+      const step = changed.jobs.observe.steps.find((entry) => entry.name?.startsWith(prefix))!;
+      step.run = step.run!.replaceAll("node driver/tools/", "node head/tools/");
+    }
+    assert.throws(() => requireWorkflowDriver(changed), assert.AssertionError);
+  }
 });
