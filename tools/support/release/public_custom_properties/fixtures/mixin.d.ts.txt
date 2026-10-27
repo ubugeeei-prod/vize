@@ -1,0 +1,2 @@
+import 'vue';
+declare module 'vue' { interface ComponentCustomProperties { isSP: boolean; appName: string; item: number[]; opaque: unknown; dynamic: any; $service: { ping(value: string): number } } }

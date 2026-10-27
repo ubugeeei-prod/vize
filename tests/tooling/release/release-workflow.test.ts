@@ -214,9 +214,11 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     const ref = prePublish(name) ? "ref" : "tag";
     const expected =
-      name === "publish-npm"
-        ? "${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}"
-        : `${"${{"} needs.version.outputs.${ref} }}`;
+      name === "publication-quota"
+        ? "${{ github.sha }}"
+        : name === "publish-npm"
+          ? "${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}"
+          : `${"${{"} needs.version.outputs.${ref} }}`;
     assert.equal(checkout?.with?.ref, expected, name);
   }
   for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
@@ -328,11 +330,27 @@ test("the release ends at publishing and dispatches verification as the maintain
   );
   assert.match(String(step.run), /^gh workflow run release-verify\.yml .*--ref main/);
   assert.deepEqual(Object.keys(verify.on.workflow_dispatch.inputs), [
+    "quota_dry_run",
     "version",
     "tag",
     "sha",
     "packages",
   ]);
+  const dryInput = verify.on.workflow_dispatch.inputs.quota_dry_run as {
+    required?: boolean;
+    default?: boolean;
+    type?: string;
+  };
+  assert.equal(dryInput.required, false);
+  assert.equal(dryInput.default, false);
+  assert.equal(dryInput.type, "boolean");
+  for (const name of ["version", "tag", "sha", "packages"]) {
+    assert.equal(
+      (verify.on.workflow_dispatch.inputs[name] as { required?: boolean }).required,
+      true,
+      name,
+    );
+  }
   // Nothing in the Release run waits on npm propagation or JSR any more.
   for (const name of Object.keys(workflow.jobs)) {
     assert.ok(!/^verify-|^publish-jsr$/.test(name), name);
@@ -355,8 +373,14 @@ test("verification runs outside the release concurrency group and gates only JSR
   assert.match(steps, /verify_published\/main\.ts "\$RELEASE_VERSION" "\$\{packages\[@\]\}"/);
   for (const [name, job] of Object.entries(verify.jobs)) {
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
-    if (name !== "publish-jsr") assert.equal(checkout?.with?.ref, "${{ inputs.tag }}", name);
+    if (name !== "publish-jsr") {
+      const expected = name === "quota-dry-run" ? "${{ github.sha }}" : "${{ inputs.tag }}";
+      assert.equal(checkout?.with?.ref, expected, name);
+    }
   }
+  assert.deepEqual(verify.jobs["quota-dry-run"].permissions, { contents: "read", actions: "read" });
+  assert.match(String(verify.jobs["quota-dry-run"].if), /quota_dry_run == true/);
+  assert.match(String(verify.jobs["verify-npm"].if), /quota_dry_run != true/);
   // A failed or skipped verify-npm skips the JSR dispatch for that version.
   const jsr = verify.jobs["publish-jsr"];
   assert.deepEqual(verifyNeeds("publish-jsr"), ["verify-npm"]);

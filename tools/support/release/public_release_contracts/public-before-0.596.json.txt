@@ -1,0 +1,36 @@
+{
+  "version": "0.596.0",
+  "source": "<script setup lang=\"ts\">\nconst { clickable = false } = defineProps<{ clickable?: boolean }>();\nconst emit = defineEmits<{ press: [] }>();\nfunction press(): void {\n  if (clickable) emit(\"press\");\n}\n</script>\n<template>\n  <span\n    :role=\"clickable ? 'button' : undefined\"\n    :tabindex=\"clickable ? 0 : undefined\"\n    @click=\"press\"\n    @keydown.enter=\"press\"\n  >\n    <slot />\n  </span>\n</template>\n",
+  "options": {
+    "filename": "ClickableTag.vue",
+    "preset": "opinionated",
+    "enabledRules": [
+      "a11y/no-static-element-interactions"
+    ]
+  },
+  "result": {
+    "diagnostics": [
+      {
+        "help": "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+        "location": {
+          "end": {
+            "column": 4,
+            "line": 14,
+            "offset": 362
+          },
+          "start": {
+            "column": 3,
+            "line": 9,
+            "offset": 220
+          }
+        },
+        "message": "<span> is a static element and should not have interactive event handlers",
+        "rule": "a11y/no-static-element-interactions",
+        "severity": "warning"
+      }
+    ],
+    "errorCount": 0,
+    "filename": "ClickableTag.vue",
+    "warningCount": 1
+  }
+}

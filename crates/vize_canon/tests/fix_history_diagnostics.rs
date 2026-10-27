@@ -888,6 +888,17 @@ fn literal_bracket_pages_keep_their_project_options() {
 }
 
 #[test]
+fn relative_sibling_imports_preserve_complete_package_diagnostics() {
+    check_pack(
+        "relative-sibling-storage-10934",
+        "relative_sibling_imports_preserve_complete_package_diagnostics",
+        "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+        Some(10934),
+        &["typed-sibling-error", "repaired-sibling-import"],
+    );
+}
+
+#[test]
 fn missing_exported_package_target_preserves_ts2307() {
     check_pack(
         "package-target-deletion-refresh",

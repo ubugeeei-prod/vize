@@ -1,0 +1,1 @@
+<ul id="outer" role="listbox" ><OptionGroup><li role="option" tabindex="0">A</li></OptionGroup></ul>
