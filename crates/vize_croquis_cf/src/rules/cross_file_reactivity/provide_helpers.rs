@@ -8,71 +8,94 @@ use vize_croquis::ScopeData;
 use vize_croquis::provide::ProvideKey;
 use vize_croquis::reactivity::{ReactiveKind, ReactivityLossKind};
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(super) struct ProvidedValueClassification {
+    pub(super) reactive_kind: Option<ReactiveKind>,
+    pub(super) is_reactive_service: bool,
+}
+
+fn named_reactive_kind(analysis: &vize_croquis::Croquis, value: &str) -> Option<ReactiveKind> {
+    vize_croquis::facts::reactivity_sources(analysis)
+        .into_iter()
+        .find(|source| source.name.as_str() == value)
+        .map(|source| source.kind)
+}
+
 pub(crate) fn provided_value_reactive_kind(
     analysis: &vize_croquis::Croquis,
     value: &str,
 ) -> Option<ReactiveKind> {
     let value = value.trim();
-
-    if let Some(source) = vize_croquis::facts::reactivity_sources(analysis)
-        .into_iter()
-        .find(|source| source.name.as_str() == value)
-    {
-        return Some(source.kind);
-    }
-
-    let callee = value
-        .split_once('(')
-        .map(|(callee, _)| callee.trim())
-        .unwrap_or_default();
-
-    match callee {
-        "ref" => Some(ReactiveKind::Ref),
-        "shallowRef" => Some(ReactiveKind::ShallowRef),
-        "reactive" => Some(ReactiveKind::Reactive),
-        "shallowReactive" => Some(ReactiveKind::ShallowReactive),
-        "computed" => Some(ReactiveKind::Computed),
-        "readonly" => Some(ReactiveKind::Readonly),
-        "shallowReadonly" => Some(ReactiveKind::ShallowReadonly),
-        "toRef" => Some(ReactiveKind::ToRef),
-        "toRefs" => Some(ReactiveKind::ToRefs),
-        _ => None,
-    }
-}
-
-/// Whether a provided service keeps its state live through refs/reactive values.
-///
-/// Unknown call results stay reportable, except for Vue composables: `useXxx()`
-/// is the established contract for returning a setup service. Object members
-/// must each be a known reactive binding, a function, or a value that may be a
-/// ref and has not already been proven to be a plain reactive snapshot.
-pub(super) fn is_reactive_service(analysis: &vize_croquis::Croquis, value: &str) -> bool {
-    let allocator = Allocator::default();
-    let Ok(expression) = Parser::new(&allocator, value, SourceType::ts()).parse_expression() else {
-        return false;
+    let callee = value.split_once('(').map(|(callee, _)| callee.trim());
+    let plain_name = |name: &str| {
+        !name.is_empty()
+            && name
+                .chars()
+                .all(|character| character.is_alphanumeric() || matches!(character, '_' | '$'))
     };
-
-    is_reactive_service_expression(analysis, unwrap_expression(&expression))
+    // The index only needs the kind. Ordinary unresolved names/calls and
+    // literal values keep their fact-only path; service collection owns its
+    // existing AST parse. Wrapped/generic expressions need one fallback AST.
+    let literal = value
+        .as_bytes()
+        .first()
+        .is_some_and(|byte| byte.is_ascii_digit() || matches!(byte, b'\'' | b'"' | b'`' | b'{'));
+    if value.is_empty() || plain_name(value) || callee.is_some_and(plain_name) || literal {
+        return named_reactive_kind(analysis, value)
+            .or_else(|| callee.and_then(ReactiveKind::from_name));
+    }
+    classify_provided_value(analysis, value).reactive_kind
 }
 
-fn unwrap_expression<'a>(mut expression: &'a Expression<'a>) -> &'a Expression<'a> {
-    loop {
-        expression = match expression {
-            Expression::TSAsExpression(wrapper) => &wrapper.expression,
-            Expression::TSSatisfiesExpression(wrapper) => &wrapper.expression,
-            Expression::TSNonNullExpression(wrapper) => &wrapper.expression,
-            Expression::ParenthesizedExpression(wrapper) => &wrapper.expression,
-            _ => break,
+pub(super) fn classify_provided_value(
+    analysis: &vize_croquis::Croquis,
+    value: &str,
+) -> ProvidedValueClassification {
+    let value = value.trim();
+    // Preserve the existing direct binding and direct call fast paths.
+    let direct_kind = named_reactive_kind(analysis, value).or_else(|| {
+        value
+            .split_once('(')
+            .and_then(|(callee, _)| ReactiveKind::from_name(callee.trim()))
+    });
+    if let Some(kind) = direct_kind {
+        return ProvidedValueClassification {
+            reactive_kind: Some(kind),
+            is_reactive_service: false,
         };
     }
-    expression
+
+    let allocator = Allocator::default();
+    let Ok(expression) = Parser::new(&allocator, value, SourceType::ts()).parse_expression() else {
+        return ProvidedValueClassification::default();
+    };
+    let expression = expression.get_inner_expression();
+    let reactive_kind = match expression {
+        Expression::Identifier(identifier) => {
+            named_reactive_kind(analysis, identifier.name.as_str())
+        }
+        Expression::CallExpression(call) => match call.callee.get_inner_expression() {
+            Expression::Identifier(callee) => ReactiveKind::from_name(callee.name.as_str()),
+            _ => None,
+        },
+        _ => None,
+    };
+    ProvidedValueClassification {
+        reactive_kind,
+        is_reactive_service: is_reactive_service_expression(analysis, expression),
+    }
+}
+
+#[cfg(test)]
+fn is_reactive_service(analysis: &vize_croquis::Croquis, value: &str) -> bool {
+    classify_provided_value(analysis, value).is_reactive_service
 }
 
 fn is_reactive_service_expression(
     analysis: &vize_croquis::Croquis,
     expression: &Expression<'_>,
 ) -> bool {
-    match unwrap_expression(expression) {
+    match expression.get_inner_expression() {
         Expression::CallExpression(call) => match &call.callee {
             Expression::Identifier(callee) => {
                 vize_croquis::call_graph::is_composable_name(callee.name.as_str())
@@ -93,11 +116,11 @@ fn is_reactive_service_expression(
 }
 
 fn is_live_service_member(analysis: &vize_croquis::Croquis, value: &Expression<'_>) -> bool {
-    match unwrap_expression(value) {
+    match value.get_inner_expression() {
         Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => true,
         Expression::Identifier(identifier) => {
             let name = identifier.name.as_str();
-            provided_value_reactive_kind(analysis, name).is_some()
+            named_reactive_kind(analysis, name).is_some()
                 || is_named_function(analysis, name)
                 || matches!(
                     analysis.get_binding_type(name),
@@ -175,6 +198,76 @@ mod tests {
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
         analyzer.analyze_script_setup(source);
         analyzer.finish()
+    }
+
+    #[test]
+    fn provided_value_wrappers_preserve_runtime_kinds_and_plain_negatives() {
+        use super::{ProvidedValueClassification, classify_provided_value};
+        use vize_croquis::reactivity::ReactiveKind;
+        let analysis = analyze(
+            "const source = ref(0); const value = computed(() => source.value); const state = reactive({count: 1}); const plain = 1; const snapshot = source.value;",
+        );
+        let cases = [
+            ("value", Some(ReactiveKind::Computed), false),
+            ("value as Ref<number>", Some(ReactiveKind::Computed), false),
+            (
+                "((value as unknown) as Ref<number>)",
+                Some(ReactiveKind::Computed),
+                false,
+            ),
+            (
+                "value satisfies Ref<number>",
+                Some(ReactiveKind::Computed),
+                false,
+            ),
+            ("value!", Some(ReactiveKind::Computed), false),
+            ("<Ref<number>>value", Some(ReactiveKind::Computed), false),
+            ("source as Ref<number>", Some(ReactiveKind::Ref), false),
+            ("state as typeof state", Some(ReactiveKind::Reactive), false),
+            (
+                "ref<number>(0) as Ref<number>",
+                Some(ReactiveKind::Ref),
+                false,
+            ),
+            (
+                "(computed(() => source.value)) as Ref<number>",
+                Some(ReactiveKind::Computed),
+                false,
+            ),
+            ("(ref)(0) as Ref<number>", Some(ReactiveKind::Ref), false),
+            (
+                "readonly(source) as Ref<number>",
+                Some(ReactiveKind::Readonly),
+                false,
+            ),
+            ("1 as unknown as Ref<number>", None, false),
+            ("plain as unknown as Ref<number>", None, false),
+            ("({value: 1}) as unknown as Ref<number>", None, false),
+            ("source.value as unknown as Ref<number>", None, false),
+            ("snapshot as unknown as Ref<number>", None, false),
+            ("getValue() as Ref<number>", None, false),
+            (
+                "(true ? source : plain) as unknown as Ref<number>",
+                None,
+                false,
+            ),
+            ("({source, update: () => {}}) as unknown", None, true),
+            ("useService() as unknown", None, true),
+            ("unresolved", None, false),
+            ("(unresolved as unknown)!", None, false),
+        ];
+        let actual = cases.map(|(value, _, _)| classify_provided_value(&analysis, value));
+        let expected =
+            cases.map(
+                |(_, reactive_kind, is_reactive_service)| ProvidedValueClassification {
+                    reactive_kind,
+                    is_reactive_service,
+                },
+            );
+        assert_eq!(actual, expected);
+        let actual_kinds =
+            cases.map(|(value, _, _)| super::provided_value_reactive_kind(&analysis, value));
+        assert_eq!(actual_kinds, cases.map(|(_, kind, _)| kind));
     }
 
     #[test]

@@ -32,7 +32,14 @@ pub fn detect_provide_inject_call(
             let value = call
                 .arguments
                 .get(1)
-                .map(|arg| extract_argument_source(arg, source))
+                .map(|arg| match arg {
+                    Argument::TSTypeAssertion(assertion) => String::from(
+                        source
+                            .get(assertion.span.start as usize..assertion.span.end as usize)
+                            .unwrap_or(""),
+                    ),
+                    _ => extract_argument_source(arg, source),
+                })
                 .unwrap_or_default();
             let value_type = call
                 .arguments
@@ -167,4 +174,57 @@ pub fn extract_argument_source(arg: &Argument<'_>, source: &str) -> String {
             .get(span.start as usize..span.end as usize)
             .unwrap_or(""),
     )
+}
+
+#[cfg(test)]
+mod source_tests {
+    use crate::provide::{ProvideEntry, ProvideKey, ProviderId};
+    use vize_carton::CompactString;
+
+    #[test]
+    fn typed_assertion_value_keeps_exact_provider_source_and_metadata() {
+        const SOURCE: &str = r#"import { provide, ref } from 'vue';
+import type { Ref } from 'vue';
+const state = ref('a');
+provide('plain', state);
+provide('as', state as Ref<string>);
+provide('angle', <Ref<string>>state);
+"#;
+        let mut analyzer = crate::Analyzer::with_options(crate::AnalyzerOptions::full());
+        analyzer.analyze_script_setup(SOURCE);
+        let croquis = analyzer.finish();
+        let expected = [
+            ProvideEntry {
+                id: ProviderId::new(0),
+                key: ProvideKey::String(CompactString::new("plain")),
+                value: CompactString::new("state"),
+                value_type: None,
+                from_composable: None,
+                start: 92,
+                end: 115,
+            },
+            ProvideEntry {
+                id: ProviderId::new(1),
+                key: ProvideKey::String(CompactString::new("as")),
+                value: CompactString::new("state as Ref<string>"),
+                value_type: Some(CompactString::new("Ref<string>")),
+                from_composable: None,
+                start: 117,
+                end: 152,
+            },
+            ProvideEntry {
+                id: ProviderId::new(2),
+                key: ProvideKey::String(CompactString::new("angle")),
+                value: CompactString::new("<Ref<string>>state"),
+                value_type: None,
+                from_composable: None,
+                start: 154,
+                end: 190,
+            },
+        ];
+        assert_eq!(
+            crate::facts::provide_entries(&croquis).as_slice(),
+            expected.as_slice()
+        );
+    }
 }

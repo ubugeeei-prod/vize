@@ -251,10 +251,15 @@ fn cross_file_diagnostic_to_lint(
     help_level: HelpLevel,
 ) -> LintDiagnostic {
     let source_len = source_len as u32;
-    let offset = cross_file_diagnostic_offset(diagnostic, offsets);
-    let map = |position| match diagnostic.primary_source {
-        DiagnosticSource::Script => offsets.map_script(position),
-        _ => position + offset,
+    // Legacy diagnostics leave their coordinate space unspecified. Resolve
+    // their kind before mapping, so split-script offsets use both blocks.
+    let script_source = cross_file_diagnostic_is_script(diagnostic);
+    let map = |position| {
+        if script_source {
+            offsets.map_script(position)
+        } else {
+            position + offsets.template
+        }
     };
     let start = map(diagnostic.primary_offset).min(source_len);
     let raw_end = map(diagnostic.primary_end_offset);
@@ -276,20 +281,16 @@ fn cross_file_diagnostic_to_lint(
     lint
 }
 
-fn cross_file_diagnostic_offset(
-    diagnostic: &CrossFileDiagnostic,
-    offsets: CrossFileSourceOffsets,
-) -> u32 {
+fn cross_file_diagnostic_is_script(diagnostic: &CrossFileDiagnostic) -> bool {
     match diagnostic.primary_source {
-        DiagnosticSource::Script => return offsets.script,
-        DiagnosticSource::Template => return offsets.template,
-        DiagnosticSource::Unspecified => {}
-    }
-    match diagnostic.kind {
-        CrossFileDiagnosticKind::DuplicateElementId { .. }
-        | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
-        | CrossFileDiagnosticKind::BrowserApiInSsr { .. } => offsets.template,
-        _ => offsets.script,
+        DiagnosticSource::Script => true,
+        DiagnosticSource::Template => false,
+        DiagnosticSource::Unspecified => !matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::DuplicateElementId { .. }
+                | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
+                | CrossFileDiagnosticKind::BrowserApiInSsr { .. }
+        ),
     }
 }
 
