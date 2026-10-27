@@ -124,7 +124,18 @@ impl TemplateRefKeyChecks<'_> {
             if call.statement_start < start {
                 continue;
             }
-            ts.push_str("void (null! as __VizeTemplateRefs[");
+            if call.imported {
+                ts.push_str("void (null! as __VizeTemplateRefs[");
+            } else {
+                // A missing global produces the checker's error-type `any`.
+                // Keep that on the object side of the conditional: using it
+                // as the index would invent TS2538 beside the real TS2304.
+                append!(
+                    *ts,
+                    "void (null! as ({}IsVue extends true ? __VizeTemplateRefs : Record<string, never>)[",
+                    self.helper
+                );
+            }
             let literal_start = ts.len();
             push_ts_string_literal(ts, key.as_str());
             mappings.push(VizeMapping {
@@ -132,13 +143,6 @@ impl TemplateRefKeyChecks<'_> {
                 src_range: source_offset(literal.start)..source_offset(literal.end),
                 sub_spans: Vec::new(),
             });
-            if !call.imported {
-                append!(
-                    *ts,
-                    " & ({}IsVue extends true ? unknown : never)",
-                    self.helper
-                );
-            }
             ts.push_str("]); ");
         }
     }

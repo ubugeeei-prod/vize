@@ -220,7 +220,9 @@ const GENERIC_PROPS_EMBEDDED: &str = r#"  function defineProps<_T = unknown>(): 
 
 #[cfg(test)]
 mod template_ref_fallback_tests {
-    use super::{SetupHelperPlan, VUE_SETUP_HELPERS, emit};
+    use super::{
+        SETUP_MACRO_HELPERS, SetupHelperPlan, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, emit,
+    };
     use vize_carton::String;
 
     #[test]
@@ -236,19 +238,25 @@ mod template_ref_fallback_tests {
             for hoisted in [false, true] {
                 let mut generated = String::default();
                 emit(&mut generated, &plan, hoisted, false, false);
-                assert!(!generated.contains("function useTemplateRef"));
-                assert_eq!(
-                    generated
-                        .matches("function useTemplateRef<_T = any")
-                        .count(),
-                    0
-                );
-                assert_eq!(
-                    generated
-                        .matches("const useTemplateRef = __vize_useTemplateRef")
-                        .count(),
-                    0
-                );
+                let helper = SETUP_MACRO_HELPERS
+                    .iter()
+                    .find(|helper| helper.name == "useTemplateRef")
+                    .unwrap();
+                let expected = if hoisted {
+                    VUE_SETUP_HELPERS_HOISTED
+                } else {
+                    VUE_SETUP_HELPERS
+                }
+                .replace(
+                    if hoisted {
+                        helper.hoisted
+                    } else {
+                        helper.embedded
+                    },
+                    "",
+                )
+                .replace(" void useTemplateRef;", "");
+                assert_eq!(generated, expected);
             }
         }
     }

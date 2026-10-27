@@ -3,6 +3,7 @@ import { sfc, proof, member, type AdmissionMutation } from "./type-admission-fix
 export type GlobalRefAdmission = {
   name: string;
   ambient: string;
+  vueComposable?: boolean;
   source: string;
   mutation: AdmissionMutation;
 };
@@ -10,6 +11,8 @@ export type GlobalRefAdmission = {
 const generic =
   "<T = string, K extends string = string>(key: K): import('vue').ShallowRef<T | null>";
 const callable = generic.replace("): import", ") => import");
+const importedWitnesses = `type ImportedWitnesses = [Exact<string, string>, IsAny<string>, IsNever<never>, IsUnknown<unknown>, IsReadonly<{ readonly value: 1 }, 'value'>];
+void (null as unknown as ImportedWitnesses);`;
 const mutableScript = `const target = useTemplateRef('not-a-template-ref');
 const explicit = useTemplateRef<{ count: number }>('target');
 ${proof("target", "string | null", false)}
@@ -38,14 +41,34 @@ export const globalRefAdmission: GlobalRefAdmission[] = [
     mutation: mutableMutation,
   })),
   {
+    name: "VueGlobalKey",
+    ambient: "const useTemplateRef: typeof import('vue').useTemplateRef;",
+    vueComposable: true,
+    source: sfc(
+      `const target = useTemplateRef('target');
+${importedWitnesses}
+void target;`,
+      '<button ref="target" />',
+    ),
+    mutation: {
+      name: "real-vue-global-missing-key",
+      before: "useTemplateRef('target')",
+      after: "useTemplateRef('missingVueKey')",
+      token: "'missingVueKey'",
+      code: 2339,
+    },
+  },
+  {
     name: "CustomUnknown",
     ambient: `const useTemplateRef: <T = unknown, K extends string = string>(key: K) => import('vue').ShallowRef<T | null>;`,
     source: sfc(
       `const target = useTemplateRef('not-a-template-ref');
 type Value = Assert<Exact<typeof target.value, unknown>>;
 type NotAny = Assert<Exact<IsAny<typeof target.value>, false>>;
+type Unknown = Assert<Exact<IsUnknown<typeof target.value>, true>>;
+type NotNever = Assert<Exact<IsNever<typeof target.value>, false>>;
 type Mutable = Assert<Exact<IsReadonly<typeof target, 'value'>, false>>;
-void (null as unknown as [Value, NotAny, Mutable]);
+void (null as unknown as [Value, NotAny, Unknown, NotNever, Mutable]);
 target.value = 'mutable';
 void target.value;`,
       '<button ref="target" />',
@@ -103,6 +126,7 @@ target.value.marker.toUpperCase();`,
     source: sfc(
       `import { useTemplateRef } from 'vue';
 const target = useTemplateRef${parameters}('target');
+${importedWitnesses}
 void target;`,
       '<button ref="target" />',
     ),

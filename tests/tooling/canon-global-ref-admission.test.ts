@@ -55,7 +55,9 @@ for (const row of globalRefAdmission) {
         },
         // These custom globals are not Vue composables. Disable the oracle's
         // name-only inference; real Vue imports remain explicitly typed here.
-        vueCompilerOptions: { composables: { useTemplateRef: [] } },
+        vueCompilerOptions: {
+          composables: { useTemplateRef: row.vueComposable ? ["useTemplateRef"] : [] },
+        },
         include: ["*.vue", "*.ts"],
       }),
     );
@@ -74,7 +76,8 @@ for (const row of globalRefAdmission) {
       source: process.env.GITHUB_SHA,
       backend: checker,
     });
-    const session = new LspSession();
+    let session: LspSession | undefined;
+    let initialized = false;
     const file = path.join(directory, "Probe.vue");
     const uri = pathToFileURL(file).href;
     try {
@@ -99,12 +102,14 @@ for (const row of globalRefAdmission) {
         assert.deepEqual(actual.map(diagnosticIdentity), diagnostics, `${row.name} ${stage}: CLI`);
         assert.deepEqual(oracle, diagnostics, `${row.name} ${stage}: independent Vue oracle`);
       }
+      session = new LspSession();
       await session.initialize(directory, {
         editor: true,
         hover: true,
         lint: false,
         typecheck: true,
       });
+      initialized = true;
       for (const [index, source] of [row.source, mutation.source, row.source].entries()) {
         fs.writeFileSync(file, source);
         const version = index + 1;
@@ -142,7 +147,10 @@ for (const row of globalRefAdmission) {
         );
       }
     } finally {
-      await session.shutdown();
+      if (session) {
+        if (initialized) await session.shutdown();
+        else await session.kill();
+      }
       fs.rmSync(directory, { recursive: true, force: true });
     }
   });

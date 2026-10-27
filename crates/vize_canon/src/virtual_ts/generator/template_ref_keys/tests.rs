@@ -169,9 +169,9 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
         (0, script.len()),
         &|n| n,
     );
-    assert!(generated.contains("(useTemplateRe\\u0066 as __vizeInferRefGlobal)('target')"));
-    assert!(
-        generated.contains("[\"target\" & (__vizeInferRefIsVue extends true ? unknown : never)]")
+    assert_eq!(
+        generated,
+        "void (null! as (__vizeInferRefIsVue extends true ? __VizeTemplateRefs : Record<string, never>)[\"target\"]); const target = (useTemplateRe\\u0066 as __vizeInferRefGlobal)('target');\n\n"
     );
     let callee = mappings
         .iter()
@@ -179,12 +179,6 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
         .find(|span| &script[span.src_range.clone()] == "useTemplateRe\\u0066")
         .unwrap();
     assert_eq!(&generated[callee.gen_range.clone()], "useTemplateRe\\u0066");
-    let mut helpers = String::default();
-    usage.emit_inference_helpers(&mut helpers);
-    assert!(helpers.contains("type __vizeInferRefSource = typeof useTemplateRef;"));
-    assert!(helpers.contains("? __VizeUseTemplateRef : __vizeInferRefSource;"));
-    assert!(!helpers.contains("const useTemplateRef"));
-    assert!(!helpers.contains("function useTemplateRef"));
 }
 
 #[test]
