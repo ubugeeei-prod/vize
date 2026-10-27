@@ -5,6 +5,7 @@
 
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,
+    compile_template_with_options,
 };
 use vize_l0::Allocator;
 
@@ -82,5 +83,30 @@ fn component_v_once_keeps_props_listeners_and_slots_in_both_lanes() {
             Some(*expected),
             "legacy: {source}"
         );
+    }
+}
+
+#[test]
+fn cached_component_props_do_not_shift_static_slot_hoists() {
+    // Minimized from the pinned Vue Material icon corpus: the component's
+    // class stays in the cache while its SVG slot can still be hoisted.
+    let source = r#"<md-icon class="md-icon-image" v-once><svg><path d="x" /></svg></md-icon>"#;
+    for prefix_identifiers in [false, true] {
+        for hoist_static in [false, true] {
+            let options = DomCompilerOptions {
+                prefix_identifiers,
+                hoist_static,
+                ..DomCompilerOptions::default()
+            };
+            let allocator = Allocator::new();
+            let (_, errors, selected) =
+                compile_template_with_options(&allocator, source, options.clone());
+            assert_eq!(errors.len(), 0);
+            let allocator = Allocator::new();
+            let (_, errors, legacy) =
+                compile_template_legacy_with_options(&allocator, source, options);
+            assert_eq!(errors.len(), 0);
+            assert_eq!(selected.code, legacy.code);
+        }
     }
 }
