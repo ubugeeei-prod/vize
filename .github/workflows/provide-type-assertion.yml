@@ -56,9 +56,11 @@ jobs:
       - name: Preserve actual executable identity
         if: ${{ always() }}
         run: |
-          if [[ -f "$CARGO_TARGET_DIR/ci/vize" ]]; then
-            sha256sum "$CARGO_TARGET_DIR/ci/vize" > "$RUNNER_TEMP/provide-assertion-packets/binary-sha256.txt"
-            "$CARGO_TARGET_DIR/ci/vize" --version > "$RUNNER_TEMP/provide-assertion-packets/binary-version.txt"
+          binary="${CARGO_TARGET_DIR:-target}/ci/vize"
+          test -f "$binary"
+          if [[ -f "$binary" ]]; then
+            sha256sum "$binary" > "$RUNNER_TEMP/provide-assertion-packets/binary-sha256.txt"
+            "$binary" --version > "$RUNNER_TEMP/provide-assertion-packets/binary-version.txt"
           fi
       - name: Preserve every raw report and complete native result
         if: ${{ always() }}
