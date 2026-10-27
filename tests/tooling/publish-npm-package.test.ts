@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
+import { galleryWith } from "./support/marketplace-gallery.ts";
 
 test("publish_npm_package normalizes workspace and catalog dependency specs before publishing", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-normalize-"));
@@ -408,13 +409,13 @@ test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () 
       packageJsonPath,
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }, null, 2)}\n`,
     );
+    writeFakeCommand(binDir, "curl", "process.exit(22);");
     writeFakeCommand(
       binDir,
       "vp",
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
-        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'show') { if (fs.existsSync(process.env.VP_ARGS_LOG)) { process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] })); process.exit(0); } process.exit(1); }",
         "fs.writeFileSync(process.env.VP_ARGS_LOG, args.join('\\n'));",
         "process.exit(0);",
       ].join("\n"),
@@ -460,15 +461,20 @@ test("publish_vscode_extension skips publish when the Marketplace already has th
     );
     writeFakeCommand(
       binDir,
+      "curl",
+      [
+        "const fs = require('node:fs');",
+        "fs.appendFileSync(process.env.VP_ARGS_LOG, `curl ${process.argv.slice(2).join(' ')}\\n`);",
+        `process.stdout.write(${JSON.stringify(JSON.stringify(galleryWith([{ version: "0.57.0", flags: "validated" }])))});`,
+      ].join("\n"),
+    );
+    writeFakeCommand(
+      binDir,
       "vp",
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.VP_ARGS_LOG, `${args.join(' ')}\\n`);",
-        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'show') {",
-        "  process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] }));",
-        "  process.exit(0);",
-        "}",
         "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'publish') process.exit(99);",
         "process.exit(1);",
       ].join("\n"),
@@ -509,22 +515,28 @@ test("publish_vscode_extension waits for delayed Marketplace visibility after pu
     );
     writeFakeCommand(
       binDir,
+      "curl",
+      [
+        "const fs = require('node:fs');",
+        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
+        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
+        "  : { publishCalls: 0, queryCalls: 0 };",
+        "state.queryCalls += 1;",
+        "fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
+        `const gallery = ${JSON.stringify(galleryWith([{ version: "0.57.0", flags: "none" }]))};`,
+        "if (state.publishCalls > 0 && state.queryCalls >= 3) gallery.results[0].extensions[0].versions[0].flags = 'validated';",
+        "process.stdout.write(JSON.stringify(gallery));",
+      ].join("\n"),
+    );
+    writeFakeCommand(
+      binDir,
       "vp",
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
         "const state = fs.existsSync(process.env.VP_STATE_PATH)",
         "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { publishCalls: 0, showCalls: 0 };",
-        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'show') {",
-        "  state.showCalls += 1;",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "  if (state.publishCalls > 0 && state.showCalls >= 3) {",
-        "    process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
+        "  : { publishCalls: 0, queryCalls: 0 };",
         "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'publish') {",
         "  state.publishCalls += 1;",
         "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
@@ -547,10 +559,10 @@ test("publish_vscode_extension waits for delayed Marketplace visibility after pu
     assert.match(result.stdout, /was published despite a non-zero vsce publish exit/i);
     const state = JSON.parse(fs.readFileSync(statePath, "utf8")) as {
       publishCalls: number;
-      showCalls: number;
+      queryCalls: number;
     };
     assert.equal(state.publishCalls, 1);
-    assert.equal(state.showCalls, 3);
+    assert.equal(state.queryCalls, 3);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
