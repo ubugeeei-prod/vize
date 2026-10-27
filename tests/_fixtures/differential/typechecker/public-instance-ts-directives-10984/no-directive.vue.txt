@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineExpose({ x: 3 });
+</script>
+
+<template>
+	{{ 
+		x
+	}}
+</template>

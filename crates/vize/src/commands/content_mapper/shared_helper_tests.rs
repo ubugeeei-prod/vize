@@ -79,3 +79,48 @@ fn mismatched_project_and_helper_vue_packages_keep_transforms_self_contained() {
         "{text}"
     );
 }
+
+#[test]
+fn core_sharing_requires_the_installed_package_export_and_declaration() {
+    let directory = tempfile::tempdir().unwrap();
+    let project = directory.path().join("app");
+    std::fs::create_dir_all(&project).unwrap();
+    let config = project.join("tsconfig.json");
+    std::fs::write(&config, "{}").unwrap();
+    let package = directory.path().join("node_modules/vize");
+    std::fs::create_dir_all(package.join("generated")).unwrap();
+    let vue = directory.path().join("node_modules/vue");
+    std::fs::create_dir_all(&vue).unwrap();
+    std::fs::write(vue.join("package.json"), "{}").unwrap();
+    let package_source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../npm/cli");
+    let helper = package.join("content-mapper-helpers.d.ts");
+    std::fs::write(&helper, "export {};").unwrap();
+    for stage in 0..3 {
+        if stage == 1 {
+            std::fs::copy(
+                package_source.join("generated/content-mapper-types.d.ts"),
+                package.join("generated/content-mapper-types.d.ts"),
+            )
+            .unwrap();
+        } else if stage == 2 {
+            std::fs::copy(package_source.join("content-mapper-helpers.d.ts"), &helper).unwrap();
+        }
+        let mut open = open_project_request(2, Value::Null, json!({}));
+        open["params"]["configFileName"] = json!(config);
+        let responses = exchange(&frames(&[
+            initialize_request(),
+            open,
+            transform_request(3, "<template><main /></template>"),
+        ]));
+        let text = responses[2]["result"]["text"].as_str().unwrap();
+        assert_eq!(
+            text.matches("from \"vize/content-mapper-helpers\";")
+                .count(),
+            if stage == 2 { 2 } else { 1 }
+        );
+        assert_eq!(
+            text.matches("type __VizeComponentInput<").count(),
+            usize::from(stage != 2)
+        );
+    }
+}
