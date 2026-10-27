@@ -18,7 +18,8 @@ const rule = "vue/no-v-html";
 const message = `Unused eslint-disable directive (no problems were reported from '${rule}').`;
 const marker = `eslint-disable-next-line ${rule}`;
 const source = (body: string) => `<template>\n${body}\n</template>\n`;
-const unused = source(`😀 <!-- ${marker} -->\n<div />`);
+const fixtureRoot = path.join(root, "tests/_fixtures/differential/lsp/unused-disable-config-10930");
+const unused = fs.readFileSync(path.join(fixtureRoot, "App.vue.txt"), "utf8");
 const used = source(`😀 <!-- ${marker} -->\n<div v-html="'trusted'" />`);
 const repaired = source("<div />");
 const binary =
@@ -193,6 +194,10 @@ test(
         source: "vize/lint",
         message,
       };
+      assert.deepEqual(
+        JSON.parse(fs.readFileSync(path.join(fixtureRoot, "case.json"), "utf8")).initialDiagnostics,
+        [diagnostic],
+      );
       const change = (version: number, text: string) =>
         wire!.notify("textDocument/didChange", {
           textDocument: { uri, version },
