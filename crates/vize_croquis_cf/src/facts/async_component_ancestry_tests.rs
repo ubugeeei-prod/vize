@@ -79,6 +79,8 @@ fn async_component_ancestry_rejects_fake_opaque_nonliteral_and_uncalled_nested_l
         "import { defineAsyncComponent } from 'fake-vue'; const NoticeLink = defineAsyncComponent(() => import('./NoticeLink.vue'))",
         "const defineAsyncComponent = (loader) => ({}); const NoticeLink = defineAsyncComponent(() => import('./NoticeLink.vue'))",
         "import type { defineAsyncComponent } from 'vue'; const NoticeLink = defineAsyncComponent(() => import('./NoticeLink.vue'))",
+        "import { defineAsyncComponent as dac } from 'vue'; function make(dac) { return dac(() => import('./NoticeLink.vue')); } const NoticeLink = make(fake)",
+        "import * as Vue from 'vue'; function make(Vue) { return Vue.defineAsyncComponent(() => import('./NoticeLink.vue')); } const NoticeLink = make(fake)",
         "import { defineAsyncComponent as dac } from 'vue'; let NoticeLink = dac(() => import('./NoticeLink.vue'))",
         "import { defineAsyncComponent as dac } from 'vue'; const path = './NoticeLink.vue'; const NoticeLink = dac(() => import(path))",
         "import { defineAsyncComponent as dac } from 'vue'; const NoticeLink = dac(() => { const nested = () => import('./NoticeLink.vue'); return {}; })",
