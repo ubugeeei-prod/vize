@@ -18,7 +18,7 @@ import {
   sha256,
 } from "./pr-performance-observation-evidence.ts";
 
-test("advisory regression retains the existing paired estimator without a budget failure", () => {
+void test("advisory regression retains the existing paired estimator without a budget failure", () => {
   const result = advisoryComparison([10, 20, 30], [20, 40, 60], null, "compile", "Compile", 5);
   assert.equal(result.availability, "observed");
   assert.equal(result.result?.rate, 2);
@@ -30,7 +30,7 @@ test("advisory regression retains the existing paired estimator without a budget
   );
 });
 
-test("check admission rejects omitted files and diagnostics hidden by Set deduplication", () => {
+void test("check admission rejects omitted files and diagnostics hidden by Set deduplication", () => {
   const report = {
     files: [{ file: "A.vue", diagnostics: ["error:1:1 [TS2322] bad", "error:1:1 [TS2322] bad"] }],
     fileCount: 1,
@@ -51,7 +51,7 @@ test("check admission rejects omitted files and diagnostics hidden by Set dedupl
   );
 });
 
-test("GNU time RSS is bytes and missing or zero evidence stays unavailable", () => {
+void test("GNU time RSS is bytes and missing or zero evidence stays unavailable", () => {
   assert.equal(parseGnuTime("\tMaximum resident set size (kbytes): 1234\n"), 1234 * 1024);
   assert.equal(parseGnuTime("Maximum resident set size (kbytes): 0"), null);
   assert.equal(parseGnuTime(""), null);
@@ -60,7 +60,7 @@ test("GNU time RSS is bytes and missing or zero evidence stays unavailable", () 
   assert.equal(observationEnvironment(1).GITHUB_TOKEN, undefined);
 });
 
-test("a hung command is unavailable with raw timeout evidence, never a fast sample", () => {
+void test("a hung command is unavailable with raw timeout evidence, never a fast sample", () => {
   const dir = mkdtempSync(join(tmpdir(), "vize-pr-observer-timeout-"));
   try {
     const run = runObservation({
@@ -79,7 +79,7 @@ test("a hung command is unavailable with raw timeout evidence, never a fast samp
   }
 });
 
-test("check lanes without explicit backend publish no timing or memory win", () => {
+void test("check lanes without explicit backend publish no timing or memory win", () => {
   const dir = mkdtempSync(join(tmpdir(), "vize-pr-observer-admission-"));
   try {
     const input = join(dir, "input");
@@ -115,7 +115,7 @@ test("check lanes without explicit backend publish no timing or memory win", () 
   }
 });
 
-test("full external-process admission catches invalid witnesses and requires repaired controls", () => {
+void test("full external-process admission catches invalid witnesses and requires repaired controls", () => {
   const dir = mkdtempSync(join(tmpdir(), "vize-pr-observer-witness-"));
   try {
     const input = join(dir, "input"),
@@ -171,7 +171,7 @@ console.log(JSON.stringify({files,fileCount:files.length,errorCount:errors,warni
   }
 });
 
-test("build labels bind actual identity and independently fresh targets", () => {
+void test("build labels bind actual identity and independently fresh targets", () => {
   const dir = mkdtempSync(join(tmpdir(), "vize-pr-observer-bindings-"));
   try {
     const binaries = {
@@ -243,7 +243,7 @@ test("build labels bind actual identity and independently fresh targets", () => 
   }
 });
 
-test("a backend swapped during otherwise successful commands prevents a speed claim", () => {
+void test("a backend swapped during otherwise successful commands prevents a speed claim", () => {
   const dir = mkdtempSync(join(tmpdir(), "vize-pr-observer-seal-"));
   try {
     const input = join(dir, "input"),

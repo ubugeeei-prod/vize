@@ -96,6 +96,8 @@ export function writeObservationReport(context: {
       return `| ${row.label} | ${result?.baseMs.toFixed(2) ?? "n/a"} | ${result?.headMs.toFixed(2) ?? "n/a"} | ${result?.rate.toFixed(3) ?? "n/a"} | ${row.rss.base ?? "n/a"} / ${row.rss.head ?? "n/a"} B | ${row.reason?.replaceAll("|", "/") ?? status ?? "unavailable"} |`;
     }),
     "",
+    "RSS is one separate GNU time sample: maximum individual process/waited child, not the sum of simultaneous Rust/Go memory.",
+    "",
     `Normal CLI bytes: ${binaries.base.bytes} → ${binaries.head.bytes}. Full hashes, versions, corpus identities, independent controls and raw commands are in the artifact.`,
     "",
   ];

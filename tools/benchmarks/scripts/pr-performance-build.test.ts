@@ -10,7 +10,7 @@ import {
   verifyPrPerformanceBuildReceipt,
 } from "./pr-performance-build.ts";
 
-test("fresh normal builds support Cargo's own output path and legitimate identical optimized code", () => {
+void test("fresh normal builds support Cargo's own output path and legitimate identical optimized code", () => {
   const root = mkdtempSync(join(tmpdir(), "pr-performance-custody-"));
   try {
     const source = join(root, "source");
