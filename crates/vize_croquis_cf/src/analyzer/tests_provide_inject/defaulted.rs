@@ -184,3 +184,104 @@ fn optional_inject_keeps_reactive_destructuring_errors() {
         )]
     );
 }
+
+#[test]
+fn spread_defaults_keep_unproven_findings() {
+    let mut vectors = 0;
+    for context in ["none", "partial", "all"] {
+        for (prelude, default) in [
+            ("", "...[]"),
+            ("const fallback: [] = [];", "...fallback"),
+            ("declare const fallback: [] | [unknown];", "...fallback"),
+        ] {
+            for assignment in [
+                "const state = INJECT",
+                "const { state } = INJECT",
+                "const [state] = INJECT",
+                "const { state } = toRefs(INJECT)",
+                "const [state] = toRefs(INJECT)",
+            ] {
+                let call = format!("inject('state', {default})");
+                let statement = assignment.replace("INJECT", &call);
+                let script =
+                    format!("import {{ inject, toRefs }} from 'vue'; {prelude} {statement};");
+                let analysis = script_analysis(&script, &[]);
+                let entries = vize_croquis::facts::inject_entries(&analysis);
+                assert_eq!(entries.len(), 1);
+                assert!(entries[0].default_value.is_some());
+                // Keep this control independent of the new fact's representation:
+                // the authored syntax cannot prove a second runtime argument.
+                let mut analyzer = project(
+                    &script,
+                    context,
+                    "import { provide } from 'vue'; provide('state', true)",
+                );
+                let result = analyzer.analyze();
+                let unmatched = result
+                    .diagnostics
+                    .iter()
+                    .filter(|diagnostic| {
+                        matches!(
+                            diagnostic.kind,
+                            CrossFileDiagnosticKind::UnmatchedInject { .. }
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(
+                    unmatched.len(),
+                    usize::from(context != "all"),
+                    "{context}: {statement}"
+                );
+                if let Some(diagnostic) = unmatched.first() {
+                    assert_eq!(diagnostic.severity, DiagnosticSeverity::Warning);
+                    let expected = if context == "partial" {
+                        "**Conditionally Defaulted Inject**: `inject('state')` falls back to its default value in 1 of 2 ancestor branches."
+                    } else {
+                        "**Unmatched Inject Default**: `inject('state')` falls back to its default value because no ancestor provides this key."
+                    };
+                    assert_eq!(diagnostic.message.as_str(), expected);
+                }
+                vectors += 1;
+            }
+        }
+    }
+    assert_eq!(vectors, 45);
+}
+
+#[test]
+fn explicit_default_before_spread_flags_stays_optional() {
+    let mut vectors = 0;
+    for context in ["none", "partial", "all"] {
+        for assignment in [
+            "const state = INJECT",
+            "const { state } = INJECT",
+            "const [state] = INJECT",
+            "const { state } = toRefs(INJECT)",
+            "const [state] = toRefs(INJECT)",
+        ] {
+            let statement = assignment.replace("INJECT", "inject('state', undefined, ...flags)");
+            let script = format!(
+                "import {{ inject, toRefs }} from 'vue'; const flags: [] = []; {statement};"
+            );
+            let mut analyzer = project(
+                &script,
+                context,
+                "import { provide } from 'vue'; provide('state', true)",
+            );
+            let result = analyzer.analyze();
+            let unmatched = result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| {
+                    matches!(
+                        diagnostic.kind,
+                        CrossFileDiagnosticKind::UnmatchedInject { .. }
+                    )
+                })
+                .count();
+            assert_eq!(unmatched, 0, "{context}: {statement}");
+            vectors += 1;
+        }
+    }
+    assert_eq!(vectors, 15);
+}
