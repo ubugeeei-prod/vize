@@ -225,8 +225,8 @@ try {
       "export default async (env) => {\nconst config = await factory(env);\n" +
       "for (const task of Object.values(config.run.tasks)) {\n" +
       '  if (task && typeof task === "object" && task.cache) {\n' +
-      '    if (typeof task.cache === "object") task.cache.env = ["XDG_CACHE_HOME"];\n' +
-      '    else task.env = ["XDG_CACHE_HOME"];\n' +
+      '    const cache = typeof task.cache === "object" ? task.cache : task;\n' +
+      '    cache.env = [...new Set([...(cache.env ?? []), "XDG_CACHE_HOME"])];\n' +
       "  }\n" +
       "}\nreturn config;\n};\n"
     );
