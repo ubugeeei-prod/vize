@@ -8,6 +8,10 @@ import { pathToFileURL } from "node:url";
 
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import {
+  assertCompilerPatchSuccessor,
+  compilerPatchSuccessor,
+} from "../../_helpers/compiler-patch-successors.ts";
+import {
   assertFailedBuild,
   type BuildResult,
   type CompilerObservation,
@@ -82,7 +86,10 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       const cleanSecond = runBuild(fixture.workspaceDir, ".vize-compiler-clean-second");
       assertSuccessfulBuild(cleanFirst);
       assertSuccessfulBuild(cleanSecond);
-      assert.equal(sha256(cleanFirst.outputText), cleanOutputSha256);
+      assertCompilerPatchSuccessor("vue-router-clean", cleanFirst.outputText, {
+        packetSha256: cleanOutputSha256,
+        codeSha256: cleanCodeSha256,
+      });
       assert.equal(
         cleanSecond.outputText,
         cleanFirst.outputText,
@@ -110,7 +117,7 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
           warnings: [],
         },
       );
-      assert.equal(sha256(output.code), cleanCodeSha256, output.code);
+      assert.equal(output.code, compilerPatchSuccessor("vue-router-clean").current.code);
       assertParsesAsModule(output.code, "vue-router AppLink.json#code");
       for (const expected of [
         "renderSlot as _renderSlot, mergeProps as _mergeProps",
@@ -118,7 +125,7 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
         "props: { disabled: {",
         "href: String(__props.to)",
         "href: _unref(href)",
-        "onClick: _cache[0] || (_cache[0] = (...args) => navigate && navigate(...args))",
+        "onClick: _cache[0] || (_cache[0] = (...args) => _unref(navigate) && _unref(navigate)(...args))",
       ]) {
         assert.equal(count(output.code, expected), 1, `${expected}\n${output.code}`);
       }
@@ -434,7 +441,10 @@ function assertSuccessfulBuild(result: BuildResult): void {
 
 function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
   assertFailedBuild(result, appPath, compiler.output.errors);
-  assert.equal(sha256(compiler.outputText), brokenOutputSha256);
+  assertCompilerPatchSuccessor("vue-router-broken", compiler.outputText, {
+    packetSha256: brokenOutputSha256,
+    codeSha256: brokenCodeSha256,
+  });
   assert.deepEqual(
     {
       css: compiler.output.css,
@@ -455,7 +465,7 @@ function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): 
       warnings: [],
     },
   );
-  assert.equal(sha256(compiler.output.code), brokenCodeSha256, compiler.output.code);
+  assert.equal(compiler.output.code, compilerPatchSuccessor("vue-router-broken").current.code);
   assertParsesAsModule(compiler.output.code, "broken vue-router AppLink.json#code");
   assert.equal(compiler.output.code.includes("_createElementBlock"), false, compiler.output.code);
   assert.equal(count(compiler.output.code, "return {"), 1, compiler.output.code);

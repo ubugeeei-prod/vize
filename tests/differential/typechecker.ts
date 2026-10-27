@@ -230,7 +230,8 @@ export function loadTypecheckerManifest(manifestPath: string) {
     assert.deepEqual(
       pack.checkerOptions,
       fixture.pack === "options-api-any-instance" ||
-        fixture.pack === "options-api-reserved-component-reference"
+        fixture.pack === "options-api-reserved-component-reference" ||
+        fixture.pack === "setup-custom-properties"
         ? { optionsApi: true }
         : fixture.pack === "jsx-prop-token-ranges-10494"
           ? { jsxTypecheck: true }

@@ -28,6 +28,11 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
   const directory = workspace("lsp-type-admission-");
   const valid = admissionFiles("valid");
   const invalid = admissionFiles("invalid");
+  const capture = path.join(root, "target/differential/template-ref-type-admission-lsp");
+  fs.mkdirSync(capture, { recursive: true });
+  const record = (name: string, value: unknown) =>
+    fs.writeFileSync(path.join(capture, name + ".json"), JSON.stringify(value, null, 2) + "\n");
+  record("authored-inputs", { valid, invalid, source: process.env.GITHUB_SHA, backend: checker });
   fs.writeFileSync(
     path.join(directory, "tsconfig.json"),
     JSON.stringify({
@@ -77,10 +82,12 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
         },
       });
     const clean = await Promise.all(rows.map((row) => diagnostics(row.file, 1)));
+    record("valid-whole-packets", clean);
     for (const packet of clean) assert.deepEqual(packet.diagnostics, [], packet.uri);
 
     // Hover is an additional typed query, independent of the diagnostic stream.
     // Authored Exact/NotAny/NotUnknown/NotNever constraints cover deeper shapes.
+    const hoverPackets: unknown[] = [];
     for (const [file, anchor, token, expected] of [
       ["TypedDom-1.vue", "button.value?.click", "button", /HTMLButtonElement/],
       ["InferredDom-1.vue", "button.value?.click", "button", /HTMLButtonElement/],
@@ -95,6 +102,8 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
         textDocument: { uri: uri(file) },
         position: offsetToPosition(source, offset),
       });
+      hoverPackets.push({ file, anchor, token, hover });
+      record("typed-hover-whole-packets", hoverPackets);
       const text = hoverToText(hover as { contents?: unknown } | null);
       assert.match(text, expected, file);
       assert.doesNotMatch(text, /\b(?:any|unknown|never)\b|__Vize|__VLS/, file);
@@ -108,18 +117,23 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
       });
     }
     const broken = await Promise.all(rows.map((row) => diagnostics(row.file, 2)));
+    record("invalid-whole-packets", broken);
     for (const [index, row] of rows.entries()) {
       const actual = broken[index].diagnostics;
       assert.deepEqual(
-        actual.map((diagnostic) => ({
-          code: Number(diagnostic.code),
-          line: diagnostic.range.start.line + 1,
-          column: diagnostic.range.start.character + 1,
-        })),
+        actual.map((diagnostic) => {
+          const start = diagnostic.range?.start;
+          assert.ok(start && typeof start.line === "number" && typeof start.character === "number");
+          return {
+            code: Number(diagnostic.code),
+            line: start.line + 1,
+            column: start.character + 1,
+          };
+        }),
         [{ code: row.code, line: row.line, column: row.column }],
         row.file,
       );
-      assert.ok(actual[0].message.length > 0);
+      assert.ok(actual[0]?.message && actual[0].message.length > 0);
     }
     for (const row of rows) {
       fs.writeFileSync(path.join(directory, row.file), valid.files[row.file]);
@@ -129,6 +143,7 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
       });
     }
     const repaired = await Promise.all(rows.map((row) => diagnostics(row.file, 3)));
+    record("repaired-whole-packets", repaired);
     for (const packet of repaired) assert.deepEqual(packet.diagnostics, [], packet.uri);
     assert.equal(
       rows.length,

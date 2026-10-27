@@ -7,7 +7,7 @@
 
 use crate::croquis::{ElementIdInfo, ElementIdKind, UndefinedRef};
 use vize_carton::{CompactString, profile};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, JsExpression, PropNode};
 
 use super::super::Drawer;
 use super::super::helpers::{
@@ -184,7 +184,24 @@ impl Drawer {
             }
         };
         let base_offset = expr.loc().span.start;
+        self.check_expression_text_refs(content, retained.as_ref(), base_offset, scope_vars, true);
+    }
 
+    /// Check an expression's authored text for undefined references.
+    ///
+    /// `content` starts at template offset `base_offset`; `retained` is its
+    /// parse-once AST when the node carries one. A same-element `v-for`
+    /// source has no node of its own (it is a slice of the directive's
+    /// expression) and walks through here directly; its occurrences are
+    /// captured with the loop scope, so it passes `note_occurrences = false`.
+    pub(super) fn check_expression_text_refs(
+        &mut self,
+        content: &str,
+        retained: Option<&JsExpression<'_>>,
+        base_offset: u32,
+        scope_vars: &[CompactString],
+        note_occurrences: bool,
+    ) {
         // Identifier extraction is a pure function of the expression text, and
         // template expressions repeat heavily (the same bindings/handlers across
         // every v-for iteration's rendered element). Memoize the walk per
@@ -205,7 +222,7 @@ impl Drawer {
                 "croquis.template.expression.extract_identifiers",
                 if let Some(capture) = self.occurrence_capture.as_mut() {
                     let (names, references, runtime_only) =
-                        extract_identifier_refs_retained(content, retained.as_ref());
+                        extract_identifier_refs_retained(content, retained);
                     match references {
                         Some(references) => {
                             capture
@@ -216,13 +233,15 @@ impl Drawer {
                     }
                     names
                 } else {
-                    extract_identifiers_retained(content, retained.as_ref())
+                    extract_identifiers_retained(content, retained)
                 }
             );
             self.ident_cache
                 .insert(CompactString::new(content), computed);
         }
-        self.note_expression_occurrences(content, base_offset, scope_vars);
+        if note_occurrences {
+            self.note_expression_occurrences(content, base_offset, scope_vars);
+        }
         let Some(idents) = self.ident_cache.get(content) else {
             return;
         };

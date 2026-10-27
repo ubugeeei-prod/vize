@@ -101,7 +101,6 @@ declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modi
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
 
 import { ref, useTemplateRef } from 'vue'
-// Keep the authored Vue helper import used by its specialized setup signature
 void useTemplateRef;
 
 // ========== Exported Types ==========
@@ -113,6 +112,7 @@ function __setup() {
   type __VizeTemplateRefs = { "inputRef": __VizeDomElement<"input">; "btn": __VizeDomElement<"button">; };
   type __VizeUseTemplateRef = { <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };
   // Compiler macros (only valid in setup scope, not global)
+  const __vizeInferRef = (undefined as unknown as __VizeUseTemplateRef);
   function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
@@ -125,17 +125,16 @@ function __setup() {
   const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
-  const useTemplateRef = (undefined as unknown as __VizeUseTemplateRef); void ((_key: string) => useTemplateRef(_key));
   // Mark compiler macros as used
-  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
+  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults;
 
   // User setup code
   
   
   const inputRef = ref<HTMLInputElement | null>(null)
-void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('btn')
+void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = __vizeInferRef('btn')
   
-  // @vize-map: 16185:16332 -> 0:135
+  // @vize-map: 16038:16185 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

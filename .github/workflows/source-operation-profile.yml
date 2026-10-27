@@ -1,0 +1,74 @@
+name: Source operation profile
+on:
+  pull_request:
+    paths:
+      - .github/workflows/source-operation-profile.yml
+      - davinci/vize_l0/src/profiler/**
+      - davinci/vize_l0/src/profiler.rs
+      - davinci/vize_l0/tests/source_operations_profile.rs
+      - davinci/vize_l0/examples/source_operation_overhead.rs
+      - davinci/vize_l0/Cargo.toml
+      - crates/vize_carton/src/profile_export/**
+      - crates/vize_carton/src/profile_export.rs
+      - crates/vize_carton/Cargo.toml
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: source-operation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  scopes:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: source-operation-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Check disabled and instrumented collector laws
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          git rev-parse HEAD > evidence/source.sha
+          rustc +1.99.1 -vV > evidence/rustc.txt
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
+          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
+          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
+          test "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
+          test -z "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"
+      - name: Measure instrumentation overhead separately from product speed
+        run: |
+          set -euo pipefail
+          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead
+          cp target/ci-opt/examples/source_operation_overhead evidence/normal
+          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead --features micro-profiling
+          cp target/ci-opt/examples/source_operation_overhead evidence/instrumented
+          sha256sum evidence/normal evidence/instrumented > evidence/binaries.sha256
+          wc -c evidence/normal evidence/instrumented > evidence/binary-bytes.txt
+          cpus=$(python3 -c 'import os;print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
+          printf '%s\n' "$cpus" > evidence/measurement-cpus.txt
+          lscpu > evidence/cpu.txt
+          for round in 1 2 3; do
+            taskset -c "$cpus" evidence/normal disabled 8 500000 > "evidence/normal-$round.json"
+            taskset -c "$cpus" evidence/instrumented disabled 8 500000 > "evidence/feature-disabled-$round.json"
+            taskset -c "$cpus" evidence/instrumented enabled 8 500000 > "evidence/feature-enabled-$round.json"
+          done
+          rm evidence/normal evidence/instrumented
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: source-operation-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error

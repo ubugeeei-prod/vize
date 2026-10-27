@@ -1464,6 +1464,52 @@
       }
     },
     {
+      "id": "compiler/sfc/uppercase-native-event-keys-10826",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "uppercase-native-event-keys-10826",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "d75f901aca5657678f2f13ffe978b02ecc0c656c1d336f4786a5223231561c5f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "uppercase-native-event-keys-10826/module.expected.txt",
+        "sha256": "91c41d07e314931f04fcd502d00e1390c511060c6a5f6af8bf9028a9fbefb259",
+        "source": "crates/vize_atelier_dom/tests/uppercase_native_event_keys.rs:branch_and_item_roots_keep_uppercase_native_event_keys_in_both_lanes; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10826",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/v-model-maybe-ref-9897",
       "state": "active",
       "targets": ["ssr"],

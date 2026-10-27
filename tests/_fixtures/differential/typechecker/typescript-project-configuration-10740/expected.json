@@ -1,0 +1,34 @@
+{
+  "before": [],
+  "strict": [
+    {
+      "start": {
+        "line": 4,
+        "offset": 12
+      },
+      "end": {
+        "line": 4,
+        "offset": 31
+      },
+      "text": "Property 'UnknownClosureProbe' does not exist on type '{}'.",
+      "code": 2339,
+      "category": "error"
+    }
+  ],
+  "controlBefore": [],
+  "controlAfter": [
+    {
+      "start": {
+        "line": 3,
+        "offset": 5
+      },
+      "end": {
+        "line": 3,
+        "offset": 16
+      },
+      "text": "Fallthrough case in switch.",
+      "code": 7029,
+      "category": "error"
+    }
+  ]
+}

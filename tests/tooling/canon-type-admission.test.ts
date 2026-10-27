@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { admissionFiles } from "./support/type-admission-project.ts";
 import {
   check,
+  type Diagnostic,
   compareIdentity,
   diagnosticIdentity,
   workspace,
@@ -44,7 +45,9 @@ test("template refs preserve exact types and reject every unique mutation before
       // Vue's oracle recognizes configured composable names rather than import
       // symbols. Vize must resolve the authored import alias independently.
       vueCompilerOptions: {
-        composables: { useTemplateRef: ["useTemplateRef", "templateRef", "r"] },
+        composables: {
+          useTemplateRef: ["useTemplateRef", "templateRef", "r", "useTemplateRe\\u0066"],
+        },
       },
       include: ["*.vue", "*.ts"],
     }),
@@ -66,7 +69,10 @@ test("template refs preserve exact types and reject every unique mutation before
         path.join(root, "target/differential/fallthrough-listener-inputs", oracleCapture),
         { recursive: true },
       );
-      const subjects = await Promise.allSettled([
+      const subjects: [
+        PromiseSettledResult<Diagnostic[]>,
+        PromiseSettledResult<Pick<Diagnostic, "file" | "line" | "column" | "code">[]>,
+      ] = await Promise.allSettled([
         check(directory, ["--corsa-path", checker], {
           name: captureName,
           sources: ["tsconfig.json", ...Object.keys(files)],
@@ -74,8 +80,9 @@ test("template refs preserve exact types and reject every unique mutation before
         Promise.resolve().then(() => vueTscDiagnostics(directory, oracleCapture)),
       ]);
       for (const result of subjects) if (result.status === "rejected") throw result.reason;
-      const actual = subjects[0].status === "fulfilled" ? subjects[0].value : [];
-      const oracle = subjects[1].status === "fulfilled" ? subjects[1].value : [];
+      const actual: Diagnostic[] = subjects[0].status === "fulfilled" ? subjects[0].value : [];
+      const oracle: Pick<Diagnostic, "file" | "line" | "column" | "code">[] =
+        subjects[1].status === "fulfilled" ? subjects[1].value : [];
       // Arrays retain duplicate diagnostics. A Set would conceal repeated reports
       // and could conceal an unvisited file behind another file's same message.
       assert.deepEqual(
@@ -88,7 +95,7 @@ test("template refs preserve exact types and reject every unique mutation before
         [...expected].sort(compareIdentity),
         `${name}: independent Vue oracle`,
       );
-      if (stage !== "valid") assert.equal(actual.length, 24);
+      if (stage !== "valid") assert.equal(actual.length, 30);
     }
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
