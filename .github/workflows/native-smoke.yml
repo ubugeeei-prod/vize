@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: 5ef61784933cf98997f9106685d10956e2fd4566
+          ref: bf30c15a4814ac7536bca87af255ba112fa1f5d1
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
@@ -24,7 +24,7 @@ jobs:
       - name: Record exact source and unchanged compiler profile
         run: |
           mkdir -p "$RUNNER_TEMP/optional-inject-native"
-          [[ "$(git rev-parse HEAD)" == "5ef61784933cf98997f9106685d10956e2fd4566" ]]
+          [[ "$(git rev-parse HEAD)" == "bf30c15a4814ac7536bca87af255ba112fa1f5d1" ]]
           git rev-parse HEAD > "$RUNNER_TEMP/optional-inject-native/source.txt"
           rustc -Vv > "$RUNNER_TEMP/optional-inject-native/rustc.txt"
           cargo metadata --locked --no-deps --format-version=1 > "$RUNNER_TEMP/optional-inject-native/metadata.json"
