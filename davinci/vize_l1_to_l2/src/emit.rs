@@ -179,8 +179,6 @@ struct EmitCx<'facts> {
     once_cache_index: u32,
     /// Static children nested inside `v-once` follow shipped one-shot hoists.
     once_depth: u32,
-    /// Inside a cached `v-once` vnode, where Vue caches no handlers.
-    in_once: bool,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
     /// Emission is inside a `v-for` render-list item that was lowered from

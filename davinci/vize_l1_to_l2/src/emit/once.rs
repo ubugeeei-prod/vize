@@ -44,7 +44,7 @@ pub(super) fn emit_element(
 ) -> Result<(), EmitError> {
     emit_cached(cx, |cx| {
         // The same vnode as without `v-once`, minus handler caching.
-        let in_once = core::mem::replace(&mut cx.in_once, true);
+        let cache_handlers = core::mem::replace(&mut cx.cache_handlers, false);
         cx.once_depth += 1;
         let result = super::directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
@@ -59,7 +59,7 @@ pub(super) fn emit_element(
             )
         });
         cx.once_depth -= 1;
-        cx.in_once = in_once;
+        cx.cache_handlers = cache_handlers;
         result
     })
 }
@@ -72,9 +72,9 @@ pub(super) fn emit_component(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     emit_cached(cx, |cx| {
-        let in_once = core::mem::replace(&mut cx.in_once, true);
+        let cache_handlers = core::mem::replace(&mut cx.cache_handlers, false);
         let result = super::component::emit_once(cx, component, id);
-        cx.in_once = in_once;
+        cx.cache_handlers = cache_handlers;
         result
     })
 }
