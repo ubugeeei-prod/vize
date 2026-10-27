@@ -36,7 +36,10 @@ fn acyclic_branching_graph_stops_before_a_4097th_read() {
     assert!(result.has_errors());
     assert!(result.html.is_empty());
     assert_eq!(result.diagnostics.len(), 1);
-    assert!(result.diagnostics[0].message.contains("compilation budget"));
+    assert_eq!(
+        result.diagnostics[0].message.as_str(),
+        "pug includes exceed the compilation budget (4096 loads/expansions or 16 MiB source/output)"
+    );
 }
 
 struct Raw {
@@ -67,7 +70,10 @@ fn cached_includes_have_an_independent_expansion_budget() {
     assert!(result.has_errors());
     assert_eq!(result.html.len(), 4096);
     assert_eq!(result.diagnostics.len(), 1);
-    assert!(result.diagnostics[0].message.contains("compilation budget"));
+    assert_eq!(
+        result.diagnostics[0].message.as_str(),
+        "pug includes exceed the compilation budget (4096 loads/expansions or 16 MiB source/output)"
+    );
 }
 
 #[test]
@@ -83,7 +89,10 @@ fn cached_raw_files_cannot_multiply_output_past_sixteen_mib() {
     assert!(result.has_errors());
     assert_eq!(result.html.len(), 16 * 1024 * 1024);
     assert_eq!(result.diagnostics.len(), 1);
-    assert!(result.diagnostics[0].message.contains("compilation budget"));
+    assert_eq!(
+        result.diagnostics[0].message.as_str(),
+        "pug includes exceed the compilation budget (4096 loads/expansions or 16 MiB source/output)"
+    );
 }
 
 #[test]
@@ -106,7 +115,12 @@ fn absolute_paths_never_reach_the_host_reader() {
         );
         assert_eq!(reader.reads, 0, "{path}");
         assert!(result.has_errors(), "{path}");
-        assert!(result.diagnostics[0].message.contains("basedir"), "{path}");
+        assert_eq!(result.diagnostics.len(), 1, "{path}");
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            "the \"basedir\" option is required to use includes and extends with \"absolute\" paths",
+            "{path}"
+        );
     }
 }
 

@@ -12,7 +12,7 @@
 
 use std::borrow::Cow;
 
-use vize_l1_to_l2::lower::pug::{PugIncludes, PugRendering, derive_template_source_including};
+use vize_l1_to_l2::lower::pug::{PugRendering, derive_template_source_including};
 
 use crate::types::{BlockLocation, SfcDescriptor, SfcError};
 
