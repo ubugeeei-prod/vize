@@ -16,10 +16,11 @@ concurrency:
 jobs:
   coverage:
     name: Every one of 129 independent native diagnostics and repairs
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     env:
       CARGO_TERM_COLOR: always
+      CARGO_BUILD_JOBS: "4"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       VIZE_TEST_REQUIRE_TSGO: "1"
       VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"

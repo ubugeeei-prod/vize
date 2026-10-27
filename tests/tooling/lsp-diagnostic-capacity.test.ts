@@ -9,6 +9,7 @@ import {
   capacitySource,
   waitUntil,
 } from "./support/lsp/diagnostic-capacity.ts";
+import { CapacityNativeCoverage } from "./support/lsp/diagnostic-capacity-native.ts";
 import { NativeDiagnosticsGate } from "./support/lsp/responsive-lint-native-gate.ts";
 import {
   nativePipeEvidence,
@@ -76,6 +77,8 @@ test(
     const session = new LspSession({ repoRoot: sourceRoot, binary });
     const coverage = new CapacityCoverage(probes);
     const seedCoverage = new CapacityCoverage([seed]);
+    const native = new CapacityNativeCoverage(coverage, () => session.stderrText);
+    const seedNative = new CapacityNativeCoverage(seedCoverage, () => session.stderrText);
     const events: { atMs: number; stage: string; value?: unknown }[] = [];
     const began = performance.now();
     let gate: NativeDiagnosticsGate | undefined;
@@ -99,9 +102,9 @@ test(
             ...report,
             packets: coverage.packets,
             seedPackets: seedCoverage.packets,
-            invalid: coverage.rows(1, false),
-            repaired: coverage.rows(2, true),
-            recovery: coverage.rows(3, true),
+            invalid: native.rows(1, false),
+            repaired: native.rows(2, true),
+            recovery: native.rows(3, true),
             stderr: session.stderrText,
           },
           null,
@@ -127,16 +130,6 @@ test(
         textDocument: { uri: probe.uri, version },
         contentChanges: [{ text }],
       });
-    const traceFinished = (): boolean => {
-      const lines = session.stderrText.split("\n");
-      const started = lines.filter((line) =>
-        line.includes("starting initial type diagnostics for "),
-      ).length;
-      const finished = lines.filter((line) =>
-        line.includes("finished initial type diagnostics for "),
-      ).length;
-      return started > 0 && started === finished;
-    };
     try {
       await session.initialize(directory, {
         editor: true,
@@ -146,7 +139,7 @@ test(
       });
       open(seed, 1, seed.invalid);
       assert.ok(
-        await waitUntil(() => seedCoverage.rows(1, false).every((row) => row.complete), 60_000),
+        await waitUntil(() => seedNative.rows(1, false).every((row) => row.complete), 60_000),
         "the actual native seed must finish before signalling its exact process",
       );
       note("seed-native-complete");
@@ -235,26 +228,26 @@ test(
       gate.resume();
       note("native-resumed", { signals: gate.signals });
       const allInvalid = await waitUntil(
-        () => coverage.rows(1, false).every((row) => row.complete),
+        () => native.rows(1, false).every((row) => row.complete),
         60_000,
       );
-      note("initial-native-coverage", { complete: allInvalid, rows: coverage.rows(1, false) });
+      note("initial-native-coverage", { complete: allInvalid, rows: native.rows(1, false) });
       // Repair every buffer. A silent old queue cannot be mistaken for a clean result.
       for (const probe of probes) {
         fs.writeFileSync(path.join(directory, probe.file), probe.valid);
         change(probe, 2, probe.valid);
       }
       const repaired = await waitUntil(
-        () => coverage.rows(2, true).every((row) => row.complete),
+        () => native.rows(2, true).every((row) => row.complete),
         60_000,
       );
-      note("bulk-repair-coverage", { complete: repaired, rows: coverage.rows(2, true) });
+      note("bulk-repair-coverage", { complete: repaired, rows: native.rows(2, true) });
       // Sequential recovery is an independent health control, never bulk success.
       for (const probe of probes) {
         change(probe, 3, probe.valid);
         assert.ok(
           await waitUntil(
-            () => coverage.rows(3, true).find((row) => row.uri === probe.uri)?.complete === true,
+            () => native.rows(3, true).find((row) => row.uri === probe.uri)?.complete === true,
             10_000,
           ),
           "each repaired document must receive a terminal native result",
@@ -262,7 +255,7 @@ test(
       }
       change(seed, 3, seed.valid);
       assert.ok(
-        await waitUntil(() => seedCoverage.rows(3, true).every((row) => row.complete), 30_000),
+        await waitUntil(() => seedNative.rows(3, true).every((row) => row.complete), 30_000),
       );
       let quietAfter = performance.now(),
         lastPackets = coverage.packets.length;
@@ -272,13 +265,13 @@ test(
           quietAfter = performance.now();
         }
         return (
-          coverage.rows(3, true).every((row) => row.complete) &&
-          seedCoverage.rows(3, true).every((row) => row.complete) &&
-          traceFinished() &&
+          native.rows(3, true).every((row) => row.complete) &&
+          seedNative.rows(3, true).every((row) => row.complete) &&
+          native.idle() &&
           performance.now() - quietAfter >= 1_500
         );
       }, 30_000);
-      note("checked-repair-and-idle", { idle, complete: coverage.rows(3, true) });
+      note("checked-repair-and-idle", { idle, complete: native.rows(3, true) });
       assert.ok(
         idle,
         "idle requires complete repaired coverage and no in-flight traced native pass",
@@ -293,23 +286,23 @@ test(
         allInvalid &&
         repaired &&
         idle &&
-        coverage.rows(1, false).every((row) => row.complete) &&
-        coverage.rows(2, true).every((row) => row.complete) &&
-        coverage.rows(3, true).every((row) => row.complete);
+        native.rows(1, false).every((row) => row.complete) &&
+        native.rows(2, true).every((row) => row.complete) &&
+        native.rows(3, true).every((row) => row.complete);
       save();
       console.log(
         JSON.stringify({
           scope: report.scope,
           count,
           qualified: report.qualified,
-          invalid: coverage.rows(1, false),
-          repaired: coverage.rows(2, true),
-          recovery: coverage.rows(3, true),
+          invalid: native.rows(1, false),
+          repaired: native.rows(2, true),
+          recovery: native.rows(3, true),
           reverseDependentCounts: report.reverseDependentCounts,
         }),
       );
-      coverage.assertComplete(1, false);
-      coverage.assertComplete(2, true);
+      native.assertComplete(1, false);
+      native.assertComplete(2, true);
     } catch (error) {
       failure = error;
       report.error = String(error);
