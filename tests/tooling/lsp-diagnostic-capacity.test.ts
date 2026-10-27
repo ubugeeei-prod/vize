@@ -187,27 +187,14 @@ test(
       for (const probe of probes) {
         open(probe, 1, probe.invalid);
         assert.ok(
-          await waitUntil(
-            () =>
-              coverage.packets.some(
-                ({ packet }) =>
-                  packet.uri === probe.uri &&
-                  packet.version === undefined &&
-                  packet.diagnostics.some(
-                    (row) => row.source === "vize/lint" && row.code === "vue/require-v-for-key",
-                  ),
-              ),
-            10_000,
-          ),
+          await waitUntil(() => coverage.sync(probe.uri).accepted, 10_000),
           "each URI must enter the real scheduler and finish its sync feedback while native is blocked",
         );
         gate.assertStopped();
         accepted.push({
           uri: probe.uri,
           atMs: performance.now() - began,
-          syncPackets: coverage.packets.filter(
-            ({ packet }) => packet.uri === probe.uri && packet.version === undefined,
-          ).length,
+          syncPackets: coverage.sync(probe.uri).packets,
         });
       }
       const startsAfter = session.stderrText
@@ -302,7 +289,13 @@ test(
           (line) =>
             line.includes("refreshing ") && line.includes(" open typecheck dependents for "),
         );
-      report.qualified = allInvalid && repaired && idle;
+      report.qualified =
+        allInvalid &&
+        repaired &&
+        idle &&
+        coverage.rows(1, false).every((row) => row.complete) &&
+        coverage.rows(2, true).every((row) => row.complete) &&
+        coverage.rows(3, true).every((row) => row.complete);
       save();
       console.log(
         JSON.stringify({

@@ -48,8 +48,12 @@ test("bulk diagnostic coverage preserves multiplicity and requires exact native 
   coverage.assertComplete(1, false);
   const row = coverage.rows(1, false)[0];
   assert.ok(row);
-  assert.equal(row.matchingPackets, 2);
+  assert.equal(row.historicalMatchingPackets, 2);
   assert.equal(coverage.packets.length, 8);
+  coverage.record({ ...good, diagnostics: [] }, 4);
+  assert.throws(() => coverage.assertComplete(1, false), "later empty must replace the old error");
+  coverage.record(good, 5);
+  coverage.assertComplete(1, false);
   assert.ok(probe.invalid.includes("\r\n"));
   assert.equal(probe.character, "/*🌱日本語*/ value0002.".length);
 });
@@ -64,4 +68,6 @@ test("repair needs a current complete empty packet for every URI", () => {
   assert.throws(() => coverage.assertComplete(3, true));
   coverage.record({ uri: second.uri, version: 3, diagnostics: [] }, 2);
   coverage.assertComplete(3, true);
+  coverage.record({ uri: second.uri, version: 3, diagnostics: [{ code: 2339 }] }, 3);
+  assert.throws(() => coverage.assertComplete(3, true), "later error must replace repaired empty");
 });
