@@ -41,9 +41,12 @@ fn output(strict: bool) -> VirtualTsOutput {
     generate_virtual_ts_with_offsets(&summary, Some(SCRIPT), Some(&root), 0, 1000, &options)
 }
 
-#[test]
-fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
-    let output = output(true);
+/// Every authored instance read with its exact range, keyed by the receiver
+/// the form reads it off.
+fn instance_reads<'o>(
+    output: &'o VirtualTsOutput,
+    receiver: &str,
+) -> Vec<(&'o str, std::ops::Range<usize>)> {
     let mut reads: Vec<_> = output
         .mapping
         .spans()
@@ -52,7 +55,7 @@ fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges
             output
                 .code
                 .get(..mapping.gen_range.start)
-                .filter(|head| head.ends_with("__vize_strict_template_context."))?;
+                .filter(|head| head.ends_with(receiver))?;
             Some((
                 output.code.get(mapping.gen_range.clone()).unwrap(),
                 mapping.src_range.clone(),
@@ -60,40 +63,36 @@ fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges
         })
         .collect();
     reads.sort_by_key(|(_, range)| range.start);
+    reads
+}
+
+const REAL_INSTANCE_READS: [(&str, std::ops::Range<usize>); 6] = [
+    ("$before", 1293..1300),
+    ("$after", 1384..1390),
+    ("$form", 1428..1433),
+    ("$field", 1445..1451),
+    ("$unknown", 1463..1471),
+    ("$self", 1500..1505),
+];
+
+#[test]
+fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
+    let output = output(true);
     assert_eq!(
-        reads,
-        vec![
-            ("$before", 1293..1300),
-            ("$after", 1384..1390),
-            ("$form", 1428..1433),
-            ("$field", 1445..1451),
-            ("$unknown", 1463..1471),
-            ("$self", 1500..1505),
-        ],
+        instance_reads(&output, "__vize_strict_template_context."),
+        REAL_INSTANCE_READS,
         "{}",
         output.code
     );
 }
 
 #[test]
-fn permissive_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
+fn public_instance_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
     let output = output(false);
-    let declarations: Vec<_> = output
-        .code
-        .lines()
-        .filter(|line| {
-            line.trim_start().starts_with("const $") && line.ends_with("= undefined as any;")
-        })
-        .collect();
     assert_eq!(
-        declarations,
-        vec![
-            "  const $before: __VizeInstanceGlobal<'$before'> = undefined as any;",
-            "  const $after: __VizeInstanceGlobal<'$after'> = undefined as any;",
-            "  const $form: __VizeInstanceGlobal<'$form'> = undefined as any;",
-            "  const $field: __VizeInstanceGlobal<'$field'> = undefined as any;",
-            "  const $unknown: __VizeInstanceGlobal<'$unknown'> = undefined as any;",
-            "  const $self: __VizeInstanceGlobal<'$self'> = undefined as any;",
-        ]
+        instance_reads(&output, "__ctx."),
+        REAL_INSTANCE_READS,
+        "{}",
+        output.code
     );
 }

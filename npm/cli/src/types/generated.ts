@@ -237,6 +237,10 @@ export interface LinterConfig {
    */
   maxWarnings?: number;
   /**
+   * Report template eslint/oxlint disable comments that suppress no active rule; defaults to false
+   */
+  reportUnusedDisableDirectives?: boolean;
+  /**
    * Rules to enable/disable
    */
   rules?: {

@@ -50,6 +50,7 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_unknown_options_preserve_requested_diagnostics",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
+  "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
   "dynamic-component-union-listener-10026":
     "dynamic_component_union_listener_preserves_clean_diagnostics",
   "dynamic-directive-expression-mapping-10182":
@@ -63,6 +64,7 @@ export const TYPECHECKER_TESTS = {
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
+  "experimental-router-props-10579": "experimental_route_props_follow_the_admitted_project_types",
   "generic-constructor-slots-10416": "generic_constructor_intersections_preserve_slot_payloads",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "generic-slot-outlet-10883": "generic_slot_outlets_check_against_the_setup_parameters",
@@ -92,6 +94,8 @@ export const TYPECHECKER_TESTS = {
   "planned-generic-syntax-route-10598":
     "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
+  "public-instance-ts-directives-10984":
+    "public_instance_ts_directives_preserve_owned_native_diagnostics",
   "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
   "quoted-generic-parameters-10540":
     "quoted_generic_parameters_preserve_complete_batch_diagnostics",
@@ -100,6 +104,7 @@ export const TYPECHECKER_TESTS = {
   "required-props-edges": "required_props_keep_exact_unicode_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
+  "setup-custom-properties": "custom_properties_resolve_on_the_template_instance",
   "slot-outlet-key": "slot_outlet_keys_preserve_complete_project_diagnostics",
   "split-script-original": "split_script_setup_preserves_complete_original_diagnostics",
   "strict-fallthrough-default-7856": "strict_component_attrs_infer_default_fallthrough_surfaces",
@@ -107,6 +112,7 @@ export const TYPECHECKER_TESTS = {
   "template-definite-assignment": "deferred_template_reads_preserve_script_diagnostics",
   "template-suppression-original": "template_suppression_preserves_complete_original_diagnostics",
   "typed-import-meta": "typed_import_meta_preserves_exact_authored_diagnostics",
+  "undeclared-instance-globals-10617": "undeclared_instance_globals_report_at_every_read",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
   "v-for-component-source-original":
@@ -155,6 +161,7 @@ export const sourceRevisions = {
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+  "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
   "dynamic-component-union-listener-10026": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "editor-alias-import-extension-10753": "377e5df97c4effa786a6426a62f61296ce16c750",
@@ -163,6 +170,7 @@ export const sourceRevisions = {
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
+  "experimental-router-props-10579": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "generic-slot-outlet-10883": "42ca747027a86da7f94b473cff737cb330134d8c",
@@ -188,6 +196,7 @@ export const sourceRevisions = {
   "package-target-deletion-refresh": "13fa41356d075047a229f580014b637d3bbeb57f",
   "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+  "public-instance-ts-directives-10984": "c001dc27973a316351d1d45739ad84a7db544f11",
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "quoted-generic-parameters-10540": "711b56b2499b9136d8965a59c65713a2b78540f4",
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
@@ -195,6 +204,7 @@ export const sourceRevisions = {
   "required-props-edges": originalFixtureRevision,
   "reserved-expression-shapes": originalFixtureRevision,
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+  "setup-custom-properties": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
   "slot-outlet-key": "c6e43ca98cbffe099a6ef323006139d796d62208",
   "split-script-original": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
   "strict-fallthrough-default-7856": "d32790c869ac18c1e0e24e82a8876d796190133a",
@@ -202,6 +212,7 @@ export const sourceRevisions = {
   "template-definite-assignment": originalFixtureRevision,
   "template-suppression-original": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
   "typed-import-meta": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
+  "undeclared-instance-globals-10617": "42ca747027a86da7f94b473cff737cb330134d8c",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "unicode-reserved-props": originalFixtureRevision,
   "v-for-component-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",

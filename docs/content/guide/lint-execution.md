@@ -19,6 +19,7 @@ export default defineConfig({
       crossFileTree: true,
       crossFileComplexity: true,
       maxWarnings: 0,
+      reportUnusedDisableDirectives: true,
     },
   },
 });
@@ -38,6 +39,14 @@ when any warning remains. Negative limits are invalid.
 Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vue`
 instead of passing them through to Oxlint. For example, `vp run lint -- src`
 runs both linters with their own configuration.
+
+`reportUnusedDisableDirectives: true` reports unused template `eslint-disable`,
+`eslint-disable-line`, and `eslint-disable-next-line` comments, including their
+`oxlint-` equivalents. It is off by default; `false` disables it for configured
+entries. The explicit `--report-unused-disable-directives` flag enables reporting
+even when configuration is `false`. Only rules executed by Vize count, so comments
+for external linters are left alone. This uses the existing native template pragma
+check; script/style and `vize-disable` comments do not produce unused reports.
 
 ## Static class defaults
 

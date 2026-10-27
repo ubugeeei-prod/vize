@@ -69,6 +69,7 @@ pub(crate) fn check_pack(
             | "allow-importing-ts-extensions-9890"
             | "nuxt-plugin-injection-types"
             | "listener-attribute-parity-9852"
+            | "dependency-probe-history-10936"
             | "dynamic-component-union-listener-10026"
             | "native-inline-event-handler-9835"
             | "art-variant-implicit-component-9854"
@@ -104,7 +105,9 @@ pub(crate) fn check_pack(
             | "quoted-generic-parameters-10540"
             | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
+            | "undeclared-instance-globals-10617"
             | "experimental-router-import-10520"
+            | "experimental-router-props-10579"
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
@@ -119,7 +122,9 @@ pub(crate) fn check_pack(
             | "reopen-repaired-diagnostics-10730"
             | "editor-alias-import-extension-10753"
             | "options-api-reserved-component-reference"
-            | "empty-v-slot-expression" => regression,
+            | "setup-custom-properties"
+            | "empty-v-slot-expression"
+            | "public-instance-ts-directives-10984" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -146,11 +151,14 @@ pub(crate) fn check_pack(
             name,
             "options-api-any-instance"
                 | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
                 | "jsx-prop-token-ranges-10494"
         )
         .then_some(matches!(
             name,
-            "options-api-any-instance" | "options-api-reserved-component-reference"
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
         )),
         "the original explicit checker options must be retained"
     );
@@ -162,6 +170,7 @@ pub(crate) fn check_pack(
             name,
             "options-api-any-instance"
                 | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
                 | "jsx-prop-token-ranges-10494"
         )
         .then_some(name == "jsx-prop-token-ranges-10494"),
@@ -221,6 +230,9 @@ pub(crate) fn check_pack(
         }
         if pack.project_options.is_some() {
             assert!(!project_root.join("node_modules").exists());
+        }
+        if name == "experimental-router-props-10579" {
+            super::fix_history_router_provider::install_source_build(&root, &project_root);
         }
         if name == "workspace-alias-cache-10063" {
             for (source, destination) in [
@@ -292,6 +304,9 @@ pub(crate) fn check_pack(
                 Default::default()
             },
             tsconfig_path: match name {
+                "public-instance-ts-directives-10984" => {
+                    Some(project_root.join("test-workspace/tsc/#3488/tsconfig.json"))
+                }
                 "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))

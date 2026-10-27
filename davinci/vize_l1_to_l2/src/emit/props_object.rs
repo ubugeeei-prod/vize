@@ -99,7 +99,6 @@ pub(super) fn emit_props_object(
                     || pieces_have_named(pieces, "class")
                     || pieces_have_named(pieces, "style")
                     || pieces_have_vue_text(pieces))));
-    let event_key_plain_element = is_plain_element && if_key.is_none();
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -119,18 +118,12 @@ pub(super) fn emit_props_object(
     // Most props objects are small. Building and sorting a key index costs
     // more than a short scan; reserve it for wide v-on objects.
     let event_keys = (visible.len() >= 16)
-        .then(|| super::props_object_merge::EventKeys::of(&visible, event_key_plain_element));
+        .then(|| super::props_object_merge::EventKeys::of(&visible, is_plain_element));
     for (index, piece) in visible.iter().enumerate() {
-        if let Some(key) = super::props_object_merge::event_key(piece, event_key_plain_element)
+        if let Some(key) = super::props_object_merge::event_key(piece, is_plain_element)
             && event_keys.as_ref().map_or_else(
-                || {
-                    super::props_object_merge::count(
-                        &visible,
-                        key.as_str(),
-                        event_key_plain_element,
-                    ) > 1
-                },
-                |keys| keys.is_shared(&visible, index, key.as_str(), event_key_plain_element),
+                || super::props_object_merge::count(&visible, key.as_str(), is_plain_element) > 1,
+                |keys| keys.is_shared(&visible, index, key.as_str(), is_plain_element),
             )
         {
             if emitted_merged.contains(&key) {
@@ -144,12 +137,7 @@ pub(super) fn emit_props_object(
             } else if i > 0 {
                 cx.buf.push(" ");
             }
-            super::props_object_merge::emit_handlers(
-                cx,
-                &visible,
-                key.as_str(),
-                event_key_plain_element,
-            )?;
+            super::props_object_merge::emit_handlers(cx, &visible, key.as_str(), is_plain_element)?;
             emitted_merged.push(key);
             i += 1;
             continue;
@@ -167,7 +155,7 @@ pub(super) fn emit_props_object(
             Piece::Bind(bind) => {
                 emit_bind_pair(cx, pieces, bind, skip_normalize, is_plain_element)?
             }
-            Piece::On(event) => on::emit_on_pair(cx, event, event_key_plain_element)?,
+            Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
             Piece::ModelValue { name, model, .. } => {

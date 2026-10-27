@@ -957,6 +957,17 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
+fn undeclared_instance_globals_report_at_every_read() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_report_at_every_read",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10617),
+        &["undeclared-dollar-globals"],
+    );
+}
+
+#[test]
 fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
     check_pack(
         "unicode-prop-bindings-10573",
@@ -1057,6 +1068,17 @@ fn experimental_page_import_preserves_published_path_diagnostics() {
 }
 
 #[test]
+fn experimental_route_props_follow_the_admitted_project_types() {
+    check_pack(
+        "experimental-router-props-10579",
+        "experimental_route_props_follow_the_admitted_project_types",
+        "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+        Some(10579),
+        &["required-component-prop", "route-params-as-props"],
+    );
+}
+
+#[test]
 fn literal_reference_paths_preserve_complete_authored_diagnostics() {
     check_pack(
         "literal-reference-paths-10551",
@@ -1140,6 +1162,55 @@ fn empty_v_slot_expressions_keep_slot_scopes_checked() {
             "empty-expression",
             "blank-expression",
             "empty-expression-unknown-slot",
+        ],
+    );
+}
+
+#[test]
+fn custom_properties_resolve_on_the_template_instance() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "setup-custom-properties",
+        "custom_properties_resolve_on_the_template_instance",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "script-setup-custom-properties",
+            "script-setup-wrong-use-and-unknown-name",
+            "options-api-slot-loop-source",
+            "options-api-slot-loop-unknown-name",
+        ],
+    );
+}
+
+#[test]
+fn dependency_probe_histories_preserve_complete_diagnostics() {
+    check_pack(
+        "dependency-probe-history-10936",
+        "dependency_probe_histories_preserve_complete_diagnostics",
+        "1266cd3a014654bbdcf3378500b93447411b26d9",
+        Some(10936),
+        &[
+            "valid-precedence-and-alias",
+            "invalid-authored-model",
+            "repaired-authored-model",
+        ],
+    );
+}
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
         ],
     );
 }

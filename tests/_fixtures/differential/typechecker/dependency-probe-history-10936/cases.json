@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10936,
+  "regressionCommit": "1266cd3a014654bbdcf3378500b93447411b26d9",
+  "sourceRevision": "1266cd3a014654bbdcf3378500b93447411b26d9",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "valid-precedence-and-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/model.ts",
+          "source": "model.ts.txt"
+        },
+        {
+          "file": "src/model.js",
+          "source": "model.js.txt"
+        },
+        {
+          "file": "second/part.ts",
+          "source": "part.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "invalid-authored-model",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/model.ts",
+          "source": "model.ts.txt"
+        },
+        {
+          "file": "src/model.js",
+          "source": "model.js.txt"
+        },
+        {
+          "file": "second/part.ts",
+          "source": "part.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "repaired-authored-model",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/model.ts",
+          "source": "model.ts.txt"
+        },
+        {
+          "file": "src/model.js",
+          "source": "model.js.txt"
+        },
+        {
+          "file": "second/part.ts",
+          "source": "part.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

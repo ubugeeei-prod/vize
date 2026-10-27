@@ -1,0 +1,18 @@
+<script setup lang="ts">
+// 自動の props 🍣
+import { definePage } from 'vue-router/experimental'
+interface Props { extra?: string; required: string }
+const props = defineProps<Props>()
+definePage({
+  params: {
+    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },
+    hash: { heading: {} },
+  },
+  props: true,
+})
+const id: number = props.id
+const page: number = props.page
+const tags: string[] | undefined = props.tags
+const at: Date | undefined = props.at
+</script>
+<template><div>{{ props.id.toFixed() }} {{ heading?.length }} {{ props.at?.toISOString() }}</div></template>

@@ -425,15 +425,15 @@ jobs:
     name: Publish Open VSX extension
     needs: [version, tag]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     environment: open-vsx-registry
     env:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
       # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
       PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
-      # Open VSX scans an upload before exposing it: about 2 min, but 0.484.0
-      # and 0.485.0 took over 4. Wait up to 10 min (60 x 10 s).
-      PUBLISH_RESOLUTION_RETRY_LIMIT: "60"
+      # Release 0.598.0 took over 12 min to expose every target after upload.
+      # Allow 20 min of scans plus maintenance backoff within the job timeout.
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "120"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -451,7 +451,7 @@ jobs:
     name: Publish VS Code extension - ${{ matrix.settings.target }}
     needs: [version, tag, build-editor-platforms]
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     environment: vscode-marketplace
     strategy:
       fail-fast: false
@@ -462,6 +462,9 @@ jobs:
       VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
       VSCE_DLX_BIN: npx
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      # The Marketplace validates a platform upload before listing it: 0.584.0
+      # took 6.5-9 min. Wait up to 20 min (120 x 10 s).
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "120"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -477,7 +480,7 @@ jobs:
     name: Publish Open VSX extension - ${{ matrix.settings.target }}
     needs: [version, tag, build-editor-platforms]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     environment: open-vsx-registry
     strategy:
       fail-fast: false
@@ -489,9 +492,9 @@ jobs:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
       # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
       PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
-      # Open VSX scans an upload before exposing it: about 2 min, but 0.484.0
-      # and 0.485.0 took over 4. Wait up to 10 min (60 x 10 s).
-      PUBLISH_RESOLUTION_RETRY_LIMIT: "60"
+      # Release 0.598.0 took over 12 min to expose every target after upload.
+      # Allow 20 min of scans plus maintenance backoff within the job timeout.
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "120"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }

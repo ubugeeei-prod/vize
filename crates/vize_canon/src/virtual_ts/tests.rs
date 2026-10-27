@@ -20,6 +20,7 @@ mod options_api_instance;
 mod options_api_props_spread;
 mod options_api_setup_spread;
 mod options_api_this_bridge;
+mod public_instance_refs;
 mod slot_component_bindings;
 mod slot_outlet_spread;
 mod template_ref_unwrap;
@@ -709,10 +710,9 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         &VirtualTsOptions::default(),
     );
 
-    assert!(
-        output
-            .code
-            .contains("const $t: __VizeInstanceGlobal<'$t'> = undefined as any;"),
+    assert_eq!(
+        output.code.matches("const $t = __ctx.$t;").count(),
+        1,
         "{}",
         output.code
     );

@@ -1,0 +1,157 @@
+name: Canon instance directive ownership
+on:
+  pull_request:
+    paths:
+      - .github/workflows/canon-instance-directives.yml
+      - tools/benchmarks/scripts/canon-instance-directives*.ts
+      - crates/vize_canon/src/projection/assemble/authored_rules.rs
+      - crates/vize_canon/src/projection/assemble/authored_rules/**
+      - tests/tooling/canon-upstream-diagnostics.test.ts
+permissions: { contents: read }
+concurrency:
+  group: canon-instance-directives-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  native:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "8"
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 2 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Verify actual merge parents and immutable product sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/instance-directives"
+          [[ "$PR_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          read -r parent_base parent_head parent_extra < <(git show -s --format=%P HEAD)
+          [[ "$parent_base" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$parent_head" == "$PR_HEAD_SHA" && -z "$parent_extra" ]]
+          printf 'BASE_SHA=%s\n' "$parent_base" >> "$GITHUB_ENV"
+          git rev-parse HEAD > "$RUNNER_TEMP/instance-directives/driver.sha"
+          git show -s --format=fuller HEAD > "$RUNNER_TEMP/instance-directives/merge.txt"
+          printf '%s\n' "$parent_base" > "$RUNNER_TEMP/instance-directives/base.sha"
+          printf '%s\n' "$parent_head" > "$RUNNER_TEMP/instance-directives/authored-head.sha"
+          rustc -vV > "$RUNNER_TEMP/instance-directives/rustc.txt"
+          cargo -V > "$RUNNER_TEMP/instance-directives/cargo.txt"
+          uname -a > "$RUNNER_TEMP/instance-directives/kernel.txt"
+      - name: Install fixed real Vue and both independent checker providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/instance-directive-provider"
+          cd "$RUNNER_TEMP/instance-directive-provider"
+          cat > package.json <<'JSON'
+          {"private":true,"dependencies":{"vue":"3.6.0-rc.6","typescript":"6.0.3","native-typescript":"npm:typescript@7.1.0-beta","vue-language-tools-fixture-vue":"npm:vue@3.6.0-rc.6","vue-component-type-helpers":"3.3.11"}}
+          JSON
+          npm install --ignore-scripts --no-audit --no-fund
+      - name: Build normal base and candidate in separate fresh target directories
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/instance-directive-base" "$BASE_SHA"
+          for source in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$source" == base ]]; then source_root="$RUNNER_TEMP/instance-directive-base"; fi
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/instance-directive-build-$source"
+            test ! -e "$CARGO_TARGET_DIR"
+            mkdir -p "$RUNNER_TEMP/instance-directives/builds/$source"
+            cargo build --locked --profile ci-opt -p vize --bin vize --manifest-path "$source_root/Cargo.toml" --message-format=json > "$RUNNER_TEMP/instance-directives/builds/$source/cargo.jsonl" 2> "$RUNNER_TEMP/instance-directives/builds/$source/cargo.stderr"
+            SOURCE_ROOT="$source_root" SOURCE_ROLE="$source" python3 - <<'PY'
+          import hashlib, json, os, pathlib, shutil, subprocess
+          source = pathlib.Path(os.environ["SOURCE_ROOT"])
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / "instance-directives"
+          role = os.environ["SOURCE_ROLE"]
+          entries = [json.loads(line) for line in (root / "builds" / role / "cargo.jsonl").read_text().splitlines()]
+          artifacts = [entry for entry in entries if entry.get("reason") == "compiler-artifact" and entry.get("target", {}).get("name") == "vize" and "bin" in entry["target"]["kind"] and entry.get("executable")]
+          assert len(artifacts) == 1, artifacts
+          actual = pathlib.Path(artifacts[0]["executable"]).resolve()
+          target = pathlib.Path(os.environ["CARGO_TARGET_DIR"]).resolve()
+          assert actual.is_relative_to(target)
+          binary = root / "binaries" / role / "vize"
+          binary.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copy2(actual, binary)
+          identity = lambda file: {"path": str(file), "bytes": file.stat().st_size, "sha256": hashlib.sha256(file.read_bytes()).hexdigest()}
+          git = lambda *args: subprocess.check_output(["git", "-C", str(source), *args], text=True).strip()
+          subprocess.check_call(["git", "-C", str(source), "diff", "--exit-code"])
+          receipt = {"role": role, "sourceSha": git("rev-parse", "HEAD"), "sourceTree": git("rev-parse", "HEAD^{tree}"), "targetDir": str(target), "cargoArtifact": artifacts[0], "binary": identity(binary), "manifest": identity(source / "Cargo.toml"), "lock": identity(source / "Cargo.lock"), "profile": "ci-opt", "features": [], "environment": {key: os.environ.get(key) for key in ["RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_INCREMENTAL", "CARGO_BUILD_JOBS", "CARGO_TARGET_DIR"]}}
+          (root / "builds" / role / "identity.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          PY
+          done
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / "instance-directives"
+          base = json.loads((root / "builds/base/identity.json").read_text())
+          head = json.loads((root / "builds/head/identity.json").read_text())
+          assert base["sourceSha"] == os.environ["BASE_SHA"]
+          assert head["sourceSha"] == (root / "driver.sha").read_text().strip()
+          assert base["targetDir"] != head["targetDir"]
+          assert base["binary"]["sha256"] != head["binary"]["sha256"]
+          for key in ["RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_INCREMENTAL", "CARGO_BUILD_JOBS"]:
+              assert base["environment"][key] == head["environment"][key]
+          (root / "builds/pair.json").write_text(json.dumps({"base": base, "head": head}, indent=2) + "\n")
+          PY
+      - name: Exercise Rust ownership positive and negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          CARGO_TARGET_DIR="$RUNNER_TEMP/instance-directive-build-head" cargo test --locked --profile ci-opt -p vize_canon --lib template_ts_directives -- --nocapture > "$RUNNER_TEMP/instance-directives/rust-tests.txt" 2>&1
+          python3 - <<'PY'
+          import os, pathlib
+          receipt = pathlib.Path(os.environ["RUNNER_TEMP"]) / "instance-directives/rust-tests.txt"
+          text = receipt.read_text()
+          assert "13 passed; 0 failed; 0 ignored;" in text, text
+          PY
+      - name: Retain real native base red and candidate packets with independent type witnesses
+        shell: bash
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          for source in tools/benchmarks/scripts/canon-instance-directives*.ts; do
+            node --check "$source"
+          done
+          node tools/benchmarks/scripts/canon-instance-directives.ts "$GITHUB_WORKSPACE" "$RUNNER_TEMP/instance-directive-provider" "$RUNNER_TEMP/instance-directives/binaries/base/vize" "$RUNNER_TEMP/instance-directives/binaries/head/vize" "$RUNNER_TEMP/instance-directives/packets"
+      - name: Run the unchanged 230-project authored upstream oracle
+        shell: bash
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          ln -s "$RUNNER_TEMP/instance-directive-provider/node_modules" "$GITHUB_WORKSPACE/tests/node_modules"
+          native_path=$(node --input-type=module -e 'import fs from "node:fs"; console.log(JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/instance-directives/packets/providers.json","utf8")).binaries.native.path);')
+          "$RUNNER_TEMP/instance-directives/binaries/head/vize" --version
+          set +e
+          VIZE_LSP_BIN="$RUNNER_TEMP/instance-directives/binaries/head/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=0 CORSA_PATH="$native_path" node --test --test-reporter=spec tests/tooling/canon-upstream-diagnostics.test.ts > "$RUNNER_TEMP/instance-directives/upstream-230.txt" 2>&1
+          upstream_status=$?
+          set -e
+          if [[ -d "$GITHUB_WORKSPACE/target/differential/fallthrough-listener-inputs" ]]; then
+            cp -a "$GITHUB_WORKSPACE/target/differential/fallthrough-listener-inputs" "$RUNNER_TEMP/instance-directives/upstream-inputs"
+          fi
+          cat "$RUNNER_TEMP/instance-directives/upstream-230.txt"
+          exit "$upstream_status"
+      - name: Preserve bounded evidence without dereferencing project provider links
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/instance-directives"
+          tar --exclude='*/node_modules' --exclude='*/.vize' --exclude='*/binaries' -czf "$RUNNER_TEMP/instance-directives-evidence.tgz" -C "$RUNNER_TEMP" instance-directives
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: canon-instance-directives-${{ github.sha }}
+          path: ${{ runner.temp }}/instance-directives-evidence.tgz
+          retention-days: 30

@@ -4,13 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { expandConfigDir } from "../../tools/support/compat/fixtures/typecheck-baseline-config-dir.mjs";
-import { rewriteOutsideAliasPaths } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
+import { expandConfigDir } from "../../tools/support/compat/fixtures/typecheck-baseline-config-dir.ts";
+import { rewriteOutsideAliasPaths } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.ts";
 import {
   pathMappingRoot,
   rewriteOutsidePackagePaths,
   rewriteOutsideTypeRoots,
-} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.ts";
 
 /**
  * TypeScript 5.5 expands `${configDir}` to the declaring tsconfig directory.

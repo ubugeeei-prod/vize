@@ -2,8 +2,9 @@ use vize_carton::{String, config::VueVersion};
 use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::{
-    import_meta::emit_import_meta_augmentation, scope::emit_slot_payload_helpers,
-    types::VirtualTsGenerationOptions,
+    import_meta::emit_import_meta_augmentation,
+    scope::emit_slot_payload_helpers,
+    types::{ComponentHelperModule, VirtualTsGenerationOptions},
 };
 
 /// Keep helpers outside setup so public component aliases can refer to them.
@@ -39,13 +40,17 @@ fn emit_embedded_helpers(
     summary: &Croquis,
     legacy_vue2: bool,
     dialect: VueVersion,
-    external_component_attrs_module: Option<&str>,
+    external_component_attrs_module: Option<ComponentHelperModule>,
 ) {
     if !super::legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect)
-        && external_component_attrs_module
-            == Some(crate::virtual_ts::helpers::CONTENT_MAPPER_HELPERS_MODULE)
+        && let Some(module) = external_component_attrs_module
     {
-        ts.push_str(crate::virtual_ts::helpers::CONTENT_MAPPER_TYPE_HELPERS);
+        ts.push_str(match module {
+            ComponentHelperModule::Attributes => {
+                crate::virtual_ts::helpers::LEGACY_CONTENT_MAPPER_TYPE_HELPERS
+            }
+            ComponentHelperModule::Types => crate::virtual_ts::helpers::CONTENT_MAPPER_TYPE_HELPERS,
+        });
     } else {
         ts.push_str(super::legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
     }

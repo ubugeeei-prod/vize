@@ -333,13 +333,19 @@ process.stdin.once('data', ack => {{
         assert_eq!(baseline.status.code(), Some(1));
         assert_eq!(baseline.stdout.as_slice(), b"");
         let stderr = std::str::from_utf8(&baseline.stderr).unwrap();
-        let (source, exception) = stderr.split_once("\n\n").unwrap();
+        // Node emits CRLF on Windows. Parse only this independent diagnostic
+        // header as lines; the observation transport must still preserve every
+        // byte of the original packet, as asserted below.
+        let mut diagnostic_lines = stderr.lines();
+        assert_eq!(diagnostic_lines.next(), Some("[eval]:1"));
         assert_eq!(
-            source,
-            "[eval]:1\nthrow new Error('startup-specificreason');\n^"
+            diagnostic_lines.next(),
+            Some("throw new Error('startup-specificreason');")
         );
+        assert_eq!(diagnostic_lines.next(), Some("^"));
+        assert_eq!(diagnostic_lines.next(), Some(""));
         assert_eq!(
-            exception.lines().next(),
+            diagnostic_lines.next(),
             Some("Error: startup-specificreason")
         );
 
@@ -377,7 +383,9 @@ process.stdin.once('data', ack => {{
             crate::cstr!("{error}"),
             crate::cstr!(
                 "node failed to load config: {} ({}; observation transport: failed to fill whole buffer)",
-                stderr.strip_suffix('\n').unwrap(),
+                stderr
+                    .strip_suffix(if cfg!(windows) { "\r\n" } else { "\n" })
+                    .unwrap(),
                 baseline.status
             )
         );

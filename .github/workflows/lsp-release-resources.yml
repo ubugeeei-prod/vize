@@ -1,0 +1,96 @@
+name: Shipped Linux LSP resource comparison
+
+# Optional same-SHA supplement to davinci-resource-budgets.yml. The scheduled
+# ci-opt gate and all its ceilings remain unchanged. A fat-LTO pass never
+# substitutes for a failing ci-opt result.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Fat-LTO TS-44 and production 10k SFCs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: always
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the repository Rust toolchain
+        run: rustup toolchain install || rustup show active-toolchain
+      # Same default rust-lld, target, default features and fat release profile
+      # as build-release-cli/action.yml. No CI profile or linker override.
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-release-resources
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build the shipped Linux CLI recipe
+        run: >-
+          cargo build --release -p vize --target x86_64-unknown-linux-gnu
+          --message-format=json-render-diagnostics > "${RUNNER_TEMP}/release-build.jsonl"
+      - name: Record the measured binary and build identity
+        run: >-
+          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
+          target/x86_64-unknown-linux-gnu/release/vize release
+          "${RUNNER_TEMP}/release-build.jsonl" "${RUNNER_TEMP}/release-build-identity.json"
+      - name: Measure the complete TS-44 campaign with the shipped profile
+        run: >-
+          rust-script tools/commands/davinci/resource-budgets.rs --measure
+          --preset linux-x64-ci --runs 3 --keystrokes 20 --idle-seconds 60
+          --server target/x86_64-unknown-linux-gnu/release/vize
+          --out "${RUNNER_TEMP}/release-resource.json"
+      - name: Apply every unchanged TS-44 ceiling to this additional build
+        run: >-
+          rust-script tools/commands/davinci/resource-budgets.rs --check
+          --measurement "${RUNNER_TEMP}/release-resource.json"
+      - name: Verify the protocol and controlled edit oracle
+        run: >-
+          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          --server target/x86_64-unknown-linux-gnu/release/vize
+          --build "release: fat LTO, one codegen unit"
+          --files 2 --runs 1 --idle-seconds 10
+          --out "${RUNNER_TEMP}/release-lsp-resource-smoke.json"
+      - name: Measure 10000 open buffers, 16 production providers, and Corsa
+        run: >-
+          timeout --signal=TERM --kill-after=30s 45m
+          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          --server target/x86_64-unknown-linux-gnu/release/vize
+          --build "release: fat LTO, one codegen unit"
+          --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10
+          --out "${RUNNER_TEMP}/release-lsp-resource.json"
+      - name: Summarize the separate release measurements
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '### Same-source shipped fat-LTO LSP supplement'
+            echo 'The scheduled ci-opt gate retains its recipe and ceilings.'
+            echo 'TS-44 uses three runs, 60 edits and 60s idle per run.'
+            echo 'The separate 10k SFC workload is record-only, with all Corsa descendants included.'
+            for result in release-build-identity release-resource release-lsp-resource; do
+              echo "#### ${result}"
+              echo '```json'
+              cat "${RUNNER_TEMP}/${result}.json" || true
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: release-lsp-resources-linux-x64
+          path: |
+            ${{ runner.temp }}/release-build-identity.json
+            ${{ runner.temp }}/release-resource.json
+            ${{ runner.temp }}/release-lsp-resource*.json
+          retention-days: 30
