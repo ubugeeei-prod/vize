@@ -209,7 +209,11 @@ export function captureAdmissionScale(options: Capture) {
     sourceBuild,
     nativeBinding,
     nativeBindingRole:
-      tool === "vue-tsc" ? "comparison-provider-observer-only" : "selected-provider",
+      tool === "vue-tsc"
+        ? "comparison-provider-observer-only"
+        : tool === "cli" && options.binary
+          ? "installed-provider-observer-only"
+          : "selected-provider",
     status: run.status,
     signal: run.signal,
     error: run.error?.message ?? null,
