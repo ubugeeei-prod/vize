@@ -1,0 +1,60 @@
+name: Published editor setup policy acceptance
+run-name: Public editor setup policy 0.602.0 @ ${{ github.sha }}
+on:
+  push:
+    branches: ["test/published-editor-policy-10932-0.602.0"]
+permissions: { contents: read }
+jobs:
+  fresh-public-consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PUBLIC_VERSION: "0.602.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 64 }
+      - name: Bind the accepted release and editor merge
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD^)" = "92223735e9c41cefbfe584d7f364e4847569c92b"
+          git merge-base --is-ancestor 3fa403f8cf4edbd851f7ca91c0f0648200f5777f HEAD
+          git merge-base --is-ancestor d756cde149df2ba447bad11440f26a8e949a6c66 HEAD
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          version: "1.4.0"
+          cache: false
+          run-install: false
+      - name: Install an absent public consumer graph
+        shell: bash
+        run: |
+          consumer="$RUNNER_TEMP/editor-public-$PUBLIC_VERSION"
+          test ! -e "$consumer"
+          mkdir "$consumer"
+          printf '%s\n' '{"name":"vize-public-editor-10932","private":true,"type":"module","packageManager":"pnpm@10.30.1","dependencies":{"@vizejs/vite-plugin":"0.602.0","vite-plus":"1.4.0"}}' > "$consumer/package.json"
+          printf '%s\n' 'minimum-release-age=0' 'node-linker=isolated' 'virtual-store-dir=node_modules/.pnpm' 'enable-global-virtual-store=false' > "$consumer/.npmrc"
+          cd "$consumer"
+          vp install
+          node --version
+          vp --version
+      - name: Verify registry SRI and the loaded public native addon
+        shell: bash
+        run: node tools/support/compat/editor-policy-public-registry-10932.mjs "$RUNNER_TEMP/editor-public-$PUBLIC_VERSION" "$RUNNER_TEMP/editor-public-$PUBLIC_VERSION/registry-native.json"
+      - name: Run every editor setup policy through installed Vite+
+        shell: bash
+        run: |
+          printf '%s  %s\n' '0dc4651b85b7a0058556b72930af0750bffded944f9fb94d8d67c0b755ecdde1' 'tools/support/compat/editor-policy-public-10932.ts' | sha256sum --check
+          node tools/support/compat/editor-policy-public-10932.ts "$RUNNER_TEMP/editor-public-$PUBLIC_VERSION" "$RUNNER_TEMP/editor-public-$PUBLIC_VERSION/acceptance.json"
+          node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const e=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); assert.equal(e.status,"passed"); assert.equal(e.commands.length,15); assert.equal(e.positiveCases,7); assert.equal(e.idempotentRuns,7); assert.equal(e.unsupportedAliasNoWrite,true); for (const name of ["@vizejs/vite-plugin","vize","@vizejs/native","@vizejs/unplugin"]) assert.equal(e.packages[name].version,process.env.PUBLIC_VERSION,name); assert.equal(e.packages["vite-plus"].version,"1.4.0"); console.log(JSON.stringify({qualified:true,version:process.env.PUBLIC_VERSION,actualVpTasks:e.commands.length,packages:e.packages}));' "$RUNNER_TEMP/editor-public-$PUBLIC_VERSION/acceptance.json"
+      - name: Retain complete public consumer observations
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: editor-policy-public-0.602.0-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/editor-public-0.602.0/acceptance.json
+            ${{ runner.temp }}/editor-public-0.602.0/registry-native.json
+            ${{ runner.temp }}/editor-public-0.602.0/package.json
+            ${{ runner.temp }}/editor-public-0.602.0/pnpm-lock.yaml
+          if-no-files-found: error
+          retention-days: 90
