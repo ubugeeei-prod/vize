@@ -292,6 +292,7 @@ async function matrix() {
     },
   ];
   const packets: unknown[] = [];
+  const historicalMapOmissions: unknown[] = [];
   const vue = fromHost("@vue/compiler-sfc");
   for (const entry of cases) {
     const files = new Map(original);
@@ -336,8 +337,19 @@ async function matrix() {
           });
           json(join(proof, "full-module-packets.json"), packets);
           assert.deepEqual(result.errors, []);
-          if (sourceMap) validateMap(result, source, filename, fromHost);
-          else assert(!result.map, "sourceMap:false must stay absent");
+          if (sourceMap) {
+            if (mode === "public" && result.map === undefined) {
+              historicalMapOmissions.push({
+                case: entry.name,
+                filename,
+                options,
+                nativeVersion: "0.589.0",
+                sourceSha256: sha(source),
+                observation: "Historical public response omits map; no current-source allowance",
+              });
+              json(join(proof, "historical-map-omissions.json"), historicalMapOmissions);
+            } else validateMap(result, source, filename, fromHost);
+          } else assert(!result.map, "sourceMap:false must stay absent");
           if (filename === "src/App.vue" && inlineTemplate && entry.kind === "unknown") {
             const names = entry.name === "named-alias" ? ["alias", "handler"] : ["label", "onPing"];
             for (const name of names) {
