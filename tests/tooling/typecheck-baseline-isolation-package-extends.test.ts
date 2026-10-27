@@ -4,12 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { readDeclaredPackagePaths } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation.mjs";
+import { readDeclaredPackagePaths } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation.ts";
 import {
   ancestorPackagePath,
   packageNameFromExtendsSpecifier,
-} from "../../tools/support/compat/fixtures/typecheck-baseline-isolation-package-extends.mjs";
-import { isolateUniqueLocalTypePackages } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation-unique.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-isolation-package-extends.ts";
+import { isolateUniqueLocalTypePackages } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation-unique.ts";
 
 /**
  * Relative `extends` is already followed for `paths`. A package-name specifier

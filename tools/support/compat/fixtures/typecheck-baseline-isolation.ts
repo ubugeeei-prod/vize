@@ -6,19 +6,24 @@ import {
   readFileSync,
   statSync,
   symlinkSync,
+  type Dirent,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
 import {
   ancestorPackagePath,
   packageNameFromExtendsSpecifier,
-} from "./typecheck-baseline-isolation-package-extends.mjs";
-import { recordCompilerOptionJsxImportSource } from "./typecheck-baseline-isolation-jsx.mjs";
-import { recordCompilerOptionPlugins } from "./typecheck-baseline-isolation-plugins.mjs";
-import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.mjs";
-import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.mjs";
-import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
-import { pathMappingRoot } from "./typecheck-baseline-outside-paths.mjs";
+} from "./typecheck-baseline-isolation-package-extends.ts";
+import { recordCompilerOptionJsxImportSource } from "./typecheck-baseline-isolation-jsx.ts";
+import { recordCompilerOptionPlugins } from "./typecheck-baseline-isolation-plugins.ts";
+import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.ts";
+import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.ts";
+import {
+  loadTsconfigExtendsChain,
+  type TsconfigChainEntry,
+  type TsconfigJson,
+} from "./typecheck-baseline-extends-chain.ts";
+import { pathMappingRoot } from "./typecheck-baseline-outside-paths.ts";
 
 /**
  * Keep the fixture's type environment inside the fixture (run 31979524200).
@@ -51,7 +56,7 @@ import { pathMappingRoot } from "./typecheck-baseline-outside-paths.mjs";
  * config declares it, an ancestor `node_modules` could otherwise answer it, the
  * declared target is a real package directory, and that directory is inside the
  * fixture. Everything else is left alone, and the ambient-environment gate in
- * `typecheck-baseline-ambient.mjs` is what proves the outcome — this is the
+ * `typecheck-baseline-ambient.ts` is what proves the outcome — this is the
  * repair, not the check.
  *
  * Declaration comes from `compilerOptions.paths` after relative `extends`, and
@@ -68,12 +73,21 @@ import { pathMappingRoot } from "./typecheck-baseline-outside-paths.mjs";
 /** `paths` also carries `#imports`-style aliases and `foo/*` patterns, which are not packages. */
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
 
-export function isolateFixtureTypePackages(fixtureRoot, sourceConfigPath) {
+/** A fixture-local package linked in front of an ancestor `node_modules` copy. */
+export interface ShadowedPackage {
+  readonly name: string;
+  readonly target: string;
+}
+
+export function isolateFixtureTypePackages(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+): ShadowedPackage[] {
   const root = resolve(fixtureRoot);
   const declared = readDeclaredPackagePaths(root, sourceConfigPath);
   if (declared.size === 0) return [];
   const reachable = collectAncestorPackageNames(root);
-  const shadowed = [];
+  const shadowed: ShadowedPackage[] = [];
   for (const [name, target] of [...declared].sort(([left], [right]) => compare(left, right))) {
     if (!reachable.has(name)) continue;
     const link = join(root, "node_modules", name);
@@ -86,13 +100,16 @@ export function isolateFixtureTypePackages(fixtureRoot, sourceConfigPath) {
   return shadowed;
 }
 
-export function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
-  const declared = new Map();
-  const conflicts = new Set();
-  const seen = new Set();
+export function readDeclaredPackagePaths(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+): Map<string, string> {
+  const declared = new Map<string, string>();
+  const conflicts = new Set<string>();
+  const seen = new Set<string>();
   const queue = [resolve(sourceConfigPath)];
   while (queue.length > 0) {
-    const current = queue.shift();
+    const current = queue.shift()!;
     if (seen.has(current)) continue;
     seen.add(current);
     const local = packagePathsFromExtends(fixtureRoot, current);
@@ -112,11 +129,16 @@ export function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
   return declared;
 }
 
-function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
+function mergePackageExtends(
+  declared: Map<string, string>,
+  conflicts: Set<string>,
+  configPaths: Iterable<string>,
+  fixtureRoot: string,
+): void {
   for (const configPath of configPaths) {
     const chain = loadExtendsChain(configPath);
     recordPackageExtends(declared, conflicts, fixtureRoot, chain);
-    let types;
+    let types: unknown;
     for (const { config: chained } of [...chain].reverse()) {
       const candidate = chained?.compilerOptions?.types;
       if (Array.isArray(candidate)) types = candidate;
@@ -132,7 +154,12 @@ function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
   }
 }
 
-function recordPackageExtends(declared, conflicts, fixtureRoot, chain) {
+function recordPackageExtends(
+  declared: Map<string, string>,
+  conflicts: Set<string>,
+  fixtureRoot: string,
+  chain: readonly TsconfigChainEntry[],
+): void {
   for (const { config } of chain) {
     for (const specifier of extendsSpecifiers(config.extends)) {
       const name = packageNameFromExtendsSpecifier(specifier);
@@ -144,12 +171,15 @@ function recordPackageExtends(declared, conflicts, fixtureRoot, chain) {
   }
 }
 
-function packagePathsFromExtends(fixtureRoot, sourceConfigPath) {
-  const declared = new Map();
+function packagePathsFromExtends(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+): Map<string, string> {
+  const declared = new Map<string, string>();
   // Child `compilerOptions.paths` replace the parent's object, matching tsc.
   // Targets resolve from last-wins `baseUrl`; `${configDir}` expands first (#4461).
-  let paths;
-  let configDir;
+  let paths: object | undefined;
+  let configDir: string | undefined;
   for (const { config, dir } of [...loadExtendsChain(sourceConfigPath)].reverse()) {
     const candidate = config?.compilerOptions?.paths;
     if (candidate != null && typeof candidate === "object") {
@@ -165,8 +195,8 @@ function packagePathsFromExtends(fixtureRoot, sourceConfigPath) {
     declared.set(
       name,
       resolveWithConfigDir(
-        pathMappingRoot(sourceConfigPath, fixtureRoot, configDir),
-        configDir,
+        pathMappingRoot(sourceConfigPath, fixtureRoot, configDir!),
+        configDir!,
         first,
       ),
     );
@@ -174,7 +204,11 @@ function packagePathsFromExtends(fixtureRoot, sourceConfigPath) {
   return declared;
 }
 
-function mergeDeclared(declared, conflicts, local) {
+function mergeDeclared(
+  declared: Map<string, string>,
+  conflicts: Set<string>,
+  local: ReadonlyMap<string, string>,
+): void {
   for (const [name, target] of local) {
     if (conflicts.has(name)) continue;
     const existing = declared.get(name);
@@ -189,24 +223,24 @@ function mergeDeclared(declared, conflicts, local) {
   }
 }
 
-function loadExtendsChain(sourceConfigPath) {
+function loadExtendsChain(sourceConfigPath: string): TsconfigChainEntry[] {
   return loadTsconfigExtendsChain(sourceConfigPath, resolveExtends);
 }
 
-function parseTsconfig(configPath) {
+function parseTsconfig(configPath: string): TsconfigJson | null {
   try {
-    return JSON.parse(stripJsonc(readFileSync(configPath, "utf8")));
+    return JSON.parse(stripJsonc(readFileSync(configPath, "utf8"))) as TsconfigJson | null;
   } catch {
     return null;
   }
 }
 
-function extendsSpecifiers(value) {
+function extendsSpecifiers(value: unknown): string[] {
   if (typeof value === "string") return [value];
   return Array.isArray(value) ? value.filter((entry) => typeof entry === "string") : [];
 }
 
-function resolveExtends(fromConfig, specifier) {
+function resolveExtends(fromConfig: string, specifier: unknown): string | null {
   if (typeof specifier !== "string") return null;
   if (!(specifier.startsWith("./") || specifier.startsWith("../"))) return null;
   const resolved = resolve(dirname(fromConfig), specifier);
@@ -215,14 +249,14 @@ function resolveExtends(fromConfig, specifier) {
   return null;
 }
 
-function referenceSpecifiers(value) {
+function referenceSpecifiers(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((entry) =>
     entry != null && typeof entry.path === "string" ? [entry.path] : [],
   );
 }
 
-function resolveReference(fromConfig, specifier) {
+function resolveReference(fromConfig: string, specifier: unknown): string | null {
   if (typeof specifier !== "string") return null;
   if (!(specifier.startsWith("./") || specifier.startsWith("../"))) return null;
   const resolved = resolve(dirname(fromConfig), specifier);
@@ -235,7 +269,7 @@ function resolveReference(fromConfig, specifier) {
   return null;
 }
 
-function isDirectory(path) {
+function isDirectory(path: string): boolean {
   try {
     return statSync(path).isDirectory();
   } catch {
@@ -248,10 +282,10 @@ function isDirectory(path) {
  * already self-contained is left byte-identical and the repair cannot invent a
  * resolution the real project never had.
  */
-function collectAncestorPackageNames(fixtureRoot) {
-  const names = new Set();
+function collectAncestorPackageNames(fixtureRoot: string): Set<string> {
+  const names = new Set<string>();
   let directory = dirname(fixtureRoot);
-  let previous = null;
+  let previous: string | null = null;
   while (directory !== previous) {
     collectPackageNames(join(directory, "node_modules"), names);
     previous = directory;
@@ -260,7 +294,7 @@ function collectAncestorPackageNames(fixtureRoot) {
   return names;
 }
 
-function collectPackageNames(nodeModules, names) {
+function collectPackageNames(nodeModules: string, names: Set<string>): void {
   for (const entry of readDirectory(nodeModules)) {
     if (entry.name.startsWith(".")) continue;
     if (!entry.name.startsWith("@")) {
@@ -273,7 +307,7 @@ function collectPackageNames(nodeModules, names) {
   }
 }
 
-function readDirectory(directory) {
+function readDirectory(directory: string): Dirent[] {
   try {
     return readdirSync(directory, { withFileTypes: true });
   } catch {
@@ -281,17 +315,17 @@ function readDirectory(directory) {
   }
 }
 
-function isPackageDirectory(target) {
+function isPackageDirectory(target: string): boolean {
   return existsSync(join(target, "package.json"));
 }
 
-function isInside(root, target) {
+function isInside(root: string, target: string): boolean {
   const path = relative(root, target);
   return path !== "" && !path.startsWith("..") && !path.startsWith("/");
 }
 
 /** `existsSync` follows symlinks, so a broken link would otherwise be overwritten. */
-function isDanglingLink(link) {
+function isDanglingLink(link: string): boolean {
   try {
     lstatSync(link);
     return true;
@@ -300,7 +334,7 @@ function isDanglingLink(link) {
   }
 }
 
-function compare(left, right) {
+function compare(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
@@ -308,7 +342,7 @@ function compare(left, right) {
  * Strip JSONC comments and trailing commas, string-aware. A regex pass would
  * treat `"src/**\/*"` as a block comment and rewrite the config.
  */
-function stripJsonc(text) {
+function stripJsonc(text: string): string {
   let out = "";
   let inString = false;
   for (let i = 0; i < text.length; i += 1) {

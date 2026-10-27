@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
+import { typecheckCorpusGlobs } from "./tool-matrix-command.ts";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.ts";
 import {
   summarizeTypecheckerCoverage,

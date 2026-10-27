@@ -4,7 +4,7 @@ import { relative } from "node:path";
  * Detect a `vue-tsc` baseline whose *type environment* was not the fixture's own
  * (run 31979524200).
  *
- * `typecheck-baseline-configuration.mjs` catches a baseline that could not load
+ * `typecheck-baseline-configuration.ts` catches a baseline that could not load
  * the project, and `typecheck-baseline-coverage.mjs` catches one that checked a
  * different set of `.vue` files. Run 31979524200 breached elk's budget with both
  * of those clean — 259 shared Vue files, zero configuration diagnostics — and
@@ -47,10 +47,34 @@ import { relative } from "node:path";
 const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
 const nodeModulesMarker = "/node_modules/";
 
-export function evaluateBaselineAmbientEnvironment(vueTscOutput, fixtureRoot) {
+/** Every root of one package in the program, and whether it sits inside the fixture. */
+type PackageCopies = Map<string, boolean>;
+
+export interface AmbientPackage {
+  readonly name: string;
+  readonly copies: readonly {
+    readonly path: string;
+    readonly insideFixture: boolean | undefined;
+  }[];
+  readonly insideFixtureCount: number;
+  readonly outsideFixtureCount: number;
+}
+
+export interface AmbientEnvironment {
+  readonly externalFileCount: number;
+  readonly externalPackages: readonly string[];
+  readonly unusableReason: string | null;
+  readonly verdict: "isolated" | "contaminated";
+  readonly vueRuntime: readonly AmbientPackage[];
+}
+
+export function evaluateBaselineAmbientEnvironment(
+  vueTscOutput: unknown,
+  fixtureRoot: string,
+): AmbientEnvironment {
   if (typeof vueTscOutput !== "string") throw new Error("vue-tsc output must be a string");
   const prefix = `${normalize(fixtureRoot)}/`;
-  const roots = new Map();
+  const roots = new Map<string, PackageCopies>();
   let externalFileCount = 0;
   for (const rawLine of vueTscOutput.replaceAll("\r\n", "\n").split("\n")) {
     const file = normalize(rawLine.trimEnd());
@@ -62,11 +86,11 @@ export function evaluateBaselineAmbientEnvironment(vueTscOutput, fixtureRoot) {
     const parsed = parsePackageRoot(file);
     if (parsed == null) continue;
     if (!roots.has(parsed.name)) roots.set(parsed.name, new Map());
-    roots.get(parsed.name).set(parsed.root, parsed.root.startsWith(prefix));
+    roots.get(parsed.name)!.set(parsed.root, parsed.root.startsWith(prefix));
   }
   const vueRuntime = vueRuntimePackages
     .filter((name) => roots.has(name))
-    .map((name) => describePackage(name, roots.get(name), fixtureRoot));
+    .map((name) => describePackage(name, roots.get(name)!, fixtureRoot));
   const externalPackages = [...roots]
     .filter(([, copies]) => [...copies.values()].includes(false))
     .map(([name]) => name)
@@ -81,7 +105,7 @@ export function evaluateBaselineAmbientEnvironment(vueTscOutput, fixtureRoot) {
   };
 }
 
-function describePackage(name, copies, fixtureRoot) {
+function describePackage(name: string, copies: PackageCopies, fixtureRoot: string): AmbientPackage {
   const paths = [...copies.keys()].sort(codeUnitOrder);
   return {
     name,
@@ -99,7 +123,7 @@ function describePackage(name, copies, fixtureRoot) {
  * as a working baseline, while zero fixture-owned copies is already visible as a
  * wall of unresolved-name diagnostics.
  */
-function firstAmbientFailure(vueRuntime) {
+function firstAmbientFailure(vueRuntime: readonly AmbientPackage[]): string | null {
   for (const entry of vueRuntime) {
     if (entry.copies.length > 1) {
       return (
@@ -126,7 +150,7 @@ function firstAmbientFailure(vueRuntime) {
  * `.pnpm` after that is a store path rather than a resolved package and is
  * skipped instead of being reported as a package called `.pnpm`.
  */
-function parsePackageRoot(file) {
+function parsePackageRoot(file: string): { name: string; root: string } | null {
   const index = file.lastIndexOf(nodeModulesMarker);
   if (index < 0) return null;
   const base = index + nodeModulesMarker.length;
@@ -147,14 +171,14 @@ function parsePackageRoot(file) {
  * locale-sensitive comparator would make the same program hash differently on
  * two runners — and because the workspace lint budget is zero warnings.
  */
-function codeUnitOrder(left, right) {
+function codeUnitOrder(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function isAbsoluteProgramPath(file) {
+function isAbsoluteProgramPath(file: string): boolean {
   return file.startsWith("/") || /^[A-Za-z]:\//u.test(file);
 }
 
-function normalize(value) {
+function normalize(value: string): string {
   return value.replaceAll("\\", "/").replace(/\/+$/u, "");
 }

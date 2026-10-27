@@ -1,7 +1,7 @@
 import {
   ancestorPackagePath,
   packageNameFromExtendsSpecifier,
-} from "./typecheck-baseline-isolation-package-extends.mjs";
+} from "./typecheck-baseline-isolation-package-extends.ts";
 
 /**
  * `compilerOptions.types` is another walk out of the fixture (#4461).
@@ -17,11 +17,11 @@ import {
  * belong to overlay rewrite, not unique-link.
  */
 
-export function typePackageNamesFromTypes(types) {
-  const names = [];
-  const seen = new Set();
+export function typePackageNamesFromTypes(types: unknown): string[] {
+  const names: string[] = [];
+  const seen = new Set<string>();
   if (!Array.isArray(types)) return names;
-  for (const entry of types) {
+  for (const entry of types as readonly unknown[]) {
     const name = packageNameFromExtendsSpecifier(entry);
     if (name == null || seen.has(name)) continue;
     seen.add(name);
@@ -35,7 +35,12 @@ export function typePackageNamesFromTypes(types) {
   return names;
 }
 
-export function recordCompilerOptionTypes(declared, conflicts, fixtureRoot, types) {
+export function recordCompilerOptionTypes(
+  declared: Map<string, string>,
+  conflicts: ReadonlySet<string>,
+  fixtureRoot: string,
+  types: unknown,
+): void {
   for (const name of typePackageNamesFromTypes(types)) {
     if (conflicts.has(name) || declared.has(name)) continue;
     const ancestor = ancestorPackagePath(fixtureRoot, name);

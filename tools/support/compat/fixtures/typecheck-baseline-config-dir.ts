@@ -10,11 +10,15 @@ import { resolve } from "node:path";
 
 const token = "${configDir}";
 
-export function expandConfigDir(entry, tsconfigDir) {
+export function expandConfigDir<T>(entry: T, tsconfigDir: string): T | string {
   if (typeof entry !== "string" || !entry.includes(token)) return entry;
   return entry.replaceAll(token, tsconfigDir.replaceAll("\\", "/"));
 }
 
-export function resolveWithConfigDir(mappingRoot, tsconfigDir, entry) {
+export function resolveWithConfigDir(
+  mappingRoot: string,
+  tsconfigDir: string,
+  entry: string,
+): string {
   return resolve(mappingRoot, expandConfigDir(entry, tsconfigDir));
 }
