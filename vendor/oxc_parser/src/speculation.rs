@@ -103,6 +103,16 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
             #[cfg(test)]
             {
                 self.state.subproblem_reuses += 1;
+                let index = match production {
+                    SpeculativeProduction::Type => 0,
+                    SpeculativeProduction::Assignment {
+                        allow_return_type_in_arrow_function: true,
+                    } => 1,
+                    SpeculativeProduction::Assignment {
+                        allow_return_type_in_arrow_function: false,
+                    } => 2,
+                };
+                self.state.subproblem_reuses_by_production[index] += 1;
             }
             return Dummy::dummy(self.allocator());
         }

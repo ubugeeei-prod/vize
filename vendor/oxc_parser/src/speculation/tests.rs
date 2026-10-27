@@ -122,6 +122,15 @@ fn overlapping_fatal_subproblems_are_shared_without_changing_recovery() {
         parser.bump_any();
         let expression = parser.parse_expr();
         assert!(parser.fatal_error.is_some());
+        eprintln!(
+            "PRODUCTION_REUSE enabled={enabled} type={} assignment_true={} assignment_false={} visits={} total_reuses={} arena={}",
+            parser.state.subproblem_reuses_by_production[0],
+            parser.state.subproblem_reuses_by_production[1],
+            parser.state.subproblem_reuses_by_production[2],
+            parser.state.subproblem_visits,
+            parser.state.subproblem_reuses,
+            allocator.used_bytes(),
+        );
         observations.push((
             format!("{:?}", parser.fatal_error.as_ref().unwrap().error),
             parser.state.subproblem_visits,

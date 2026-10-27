@@ -38,6 +38,8 @@ pub struct ParserState<'a> {
     pub subproblem_visits: usize,
     #[cfg(test)]
     pub subproblem_reuses: usize,
+    #[cfg(test)]
+    pub subproblem_reuses_by_production: [usize; 3],
 
     /// Temporary storage for `CoverInitializedName` `({ foo = bar })`.
     /// Keyed by `ObjectProperty`'s span.start.
@@ -79,6 +81,8 @@ impl ParserState<'_> {
             subproblem_visits: 0,
             #[cfg(test)]
             subproblem_reuses: 0,
+            #[cfg(test)]
+            subproblem_reuses_by_production: [0; 3],
             cover_initialized_name: FxHashMap::default(),
             trailing_commas: FxHashMap::default(),
             potential_await_reparse: Vec::new(),
