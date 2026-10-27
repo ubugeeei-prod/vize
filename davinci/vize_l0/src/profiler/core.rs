@@ -39,11 +39,11 @@ struct ProfileFrame {
     doc = r#"
 Profiling allocation scopes must stay on their source thread.
 
-\`\`\`compile_fail
+```compile_fail
 use vize_l0::profiler::ProfileGuard;
 fn require_send<T: Send>() {}
 require_send::<ProfileGuard>();
-\`\`\`
+```
 "#
 )]
 pub struct ProfileGuard {

@@ -7,6 +7,7 @@ on:
       - davinci/vize_l0/src/profiler/allocation.rs
       - davinci/vize_l0/src/profiler/metrics.rs
       - davinci/vize_l0/tests/profile_allocation_thread_law.rs
+      - tools/benchmarks/scripts/profile_guard_send_law.py
   workflow_dispatch: {}
 permissions: { contents: read }
 concurrency:
@@ -35,11 +36,14 @@ jobs:
           mkdir -p evidence
           git rev-parse HEAD > evidence/source.sha
           rustc +1.99.1 -vV > evidence/rustc.txt
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law -- --nocapture 2>&1 | tee evidence/normal-law.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --features micro-profiling -- --nocapture 2>&1 | tee evidence/instrumented-law.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --message-format json -- --nocapture 2>&1 | tee evidence/normal-law.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --features micro-profiling --message-format json -- --nocapture 2>&1 | tee evidence/instrumented-law.log
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --features micro-profiling --doc ProfileGuard 2>&1 | tee evidence/send-law.log
+          python3 -c 'from pathlib import Path; text=Path("evidence/send-law.log").read_text(); assert "running 1 test" in text and "1 passed; 0 failed" in text'
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/observer-law.log
           cargo +1.99.1 test --locked --profile ci -p vize_carton --test davinci_profile_export --features micro-profiling per_span_allocation_counts_and_schema_validation 2>&1 | tee evidence/nested-export-law.log
+      - name: Check the same public-type snippet against old and new guards
+        run: python3 tools/benchmarks/scripts/profile_guard_send_law.py
       - name: Compile the profiling CLI after the carrier succeeds
         run: |
           set -euo pipefail
