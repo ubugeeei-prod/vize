@@ -1,7 +1,7 @@
 //! Reconcile native instance probes with leading authored TS directives.
 //!
 //! Public-instance reads can be emitted outside their interpolation. Only a
-//! successfully parsed interpolation's next physical line can own that read.
+//! successfully parsed interpolation's next code line can own that read.
 use std::ops::Range;
 
 use vize_atelier_core::{ParserOptions, parser::parse_with_options};
@@ -97,7 +97,7 @@ pub(super) fn filter<P>(
 }
 
 /// Recognize leading comments, never strings, attributes or trailing comments.
-/// The final leading directive owns only the following authored physical line.
+/// The final leading directive owns only the following authored code line.
 fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
     if !(expression.contains("@ts-ignore") || expression.contains("@ts-expect-error"))
         || !vize_l0::expression_guard::expression_is_safe_to_parse(expression)
@@ -139,20 +139,19 @@ fn leading_directive(expression: &str, base: usize) -> Option<Directive> {
         cursor = end;
     }
     let (comment, expect) = owner?;
-    // Requiring the next physical line to contain the expression also refuses
-    // comments or blank lines between the directive and its proposed target.
-    let after_comment = expression.get(comment.end..)?;
-    let newline = after_comment.find('\n')?;
-    if !after_comment.get(..newline)?.trim().is_empty() {
+    // The leading-comment walk admits only whitespace and complete comments
+    // between this directive and the first code token. TypeScript permits
+    // blank lines and explanatory comments here; later code lines are separate.
+    let target_start = expression.get(..cursor)?.rfind('\n')? + 1;
+    if comment.end >= target_start {
         return None;
     }
-    let target_start = comment.end + newline + 1;
-    let target_end = target_start
+    let target_end = cursor
         + expression
-            .get(target_start..)?
+            .get(cursor..)?
             .find('\n')
-            .unwrap_or(expression.len() - target_start);
-    if cursor < target_start || cursor >= target_end {
+            .unwrap_or(expression.len() - cursor);
+    if cursor >= target_end {
         return None;
     }
     Some(Directive {

@@ -63,8 +63,6 @@ fn literal_nonleading_and_malformed_comments_have_no_authority() {
         "// prose @ts-expect-error\nmissing",
         "// @ts-expect-error_more\nmissing",
         "// @ts-expect-error-more\nmissing",
-        "// @ts-expect-error\n\nmissing",
-        "// @ts-expect-error\n// ordinary comment\nmissing",
         "/* @ts-expect-error */ missing",
         "// @ts-expect-error\nmissing(",
         "/* @ts-expect-error\nmissing",
@@ -120,4 +118,39 @@ fn complete_block_comment_uses_its_exact_next_line() {
     ];
     filter(&AuthoredSource::vue(source), &mut diagnostics);
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn blank_and_explanatory_comment_lines_preserve_native_directive_ownership() {
+    for gap in ["\n", "// explanation\n", "/* explanation */\n"] {
+        let source = format!("<template>{{{{\n// @ts-expect-error\n{gap}missing\n}}}}</template>");
+        let mut diagnostics = vec![
+            diagnostic(&source, "// @ts-expect-error", 2578),
+            diagnostic(&source, "missing", 2339),
+        ];
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert!(diagnostics.is_empty(), "{source}");
+        let mut repaired = vec![diagnostic(&source, "// @ts-expect-error", 2578)];
+        let expected = repaired.clone();
+        filter(&AuthoredSource::vue(&source), &mut repaired);
+        assert_eq!(repaired, expected);
+    }
+}
+
+#[test]
+fn a_later_code_line_and_a_repeated_sibling_are_not_owned() {
+    let source = "<template>{{\n// @ts-expect-error\nknown +\nmissing\n}}{{ missing }}</template>";
+    let mut first = diagnostic(source, "missing", 2339);
+    let mut sibling = first.clone();
+    sibling.start = source.rfind("missing").unwrap();
+    sibling.end = sibling.start + "missing".len();
+    first.end = first.start + "missing".len();
+    let original = vec![
+        diagnostic(source, "// @ts-expect-error", 2578),
+        first,
+        sibling,
+    ];
+    let mut diagnostics = original.clone();
+    filter(&AuthoredSource::vue(source), &mut diagnostics);
+    assert_eq!(diagnostics, original);
 }
