@@ -87,9 +87,21 @@ struct Projection {
 pub(crate) struct DiagnosticOwnership {
     rows: Vec<Projection>,
     unproven: FxHashSet<InputOwner>,
+    callback_primaries: Vec<Range<usize>>,
 }
 
 impl DiagnosticOwnership {
+    /// This actual canonical statement may not be hidden by a literal-shaped
+    /// inference copy whose contextual contract is not proved equivalent.
+    pub(crate) fn protect_callback_primary(&mut self, generated: Range<usize>) {
+        if !generated.is_empty() {
+            self.callback_primaries.push(generated);
+        }
+    }
+
+    pub(crate) fn take_callback_primaries(&mut self) -> Vec<Range<usize>> {
+        std::mem::take(&mut self.callback_primaries)
+    }
     pub(crate) fn refuse_owner(&mut self, owner: InputOwner) {
         self.unproven.insert(owner.with_role(InputRole::Value));
     }
@@ -174,6 +186,16 @@ impl DiagnosticOwnership {
         if length == 0 {
             return;
         }
+        for range in &mut self.callback_primaries {
+            if at <= range.start {
+                range.start += length;
+                range.end += length;
+            } else if at < range.end {
+                // An unproved edit can remove echo authority, but cannot
+                // authorize hiding the canonical callback's diagnostics.
+                range.end += length;
+            }
+        }
         for row in &mut self.rows {
             if at <= row.generated.start {
                 row.generated.start += length;
@@ -188,6 +210,12 @@ impl DiagnosticOwnership {
     /// Deferred root buffers are rebased with their text, before publication.
     pub(crate) fn append_rebased(&mut self, other: Self, offset: usize) {
         self.unproven.extend(other.unproven);
+        self.callback_primaries.extend(
+            other
+                .callback_primaries
+                .into_iter()
+                .map(|range| range.start + offset..range.end + offset),
+        );
         self.rows.extend(other.rows.into_iter().map(|mut row| {
             row.generated.start += offset;
             row.generated.end += offset;
@@ -195,7 +223,13 @@ impl DiagnosticOwnership {
         }));
     }
 
-    pub(crate) fn into_echoes(self) -> Vec<DiagnosticEcho> {
+    pub(crate) fn into_echoes(mut self) -> Vec<DiagnosticEcho> {
+        // Deferred root buffers can publish a primary before rows that were
+        // recorded earlier. Generated coordinates remain the ordering authority.
+        // Preserve the allocation-free fast path for ordinary monotonic emission.
+        if !self.rows.is_sorted_by_key(|row| row.generated.start) {
+            self.rows.sort_by_key(|row| row.generated.start);
+        }
         let proven = |row: &Projection| {
             row.valid
                 && (row.inert

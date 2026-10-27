@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
+import { newLanguageProjectCases } from "./language-project-fixtures.ts";
 import {
   compilerCssApiSources,
   newCompilerCssApiCases,
@@ -18,6 +19,7 @@ import {
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -72,8 +74,10 @@ interface Manifest {
   product?: unknown;
   cases?: ManifestCase[];
   protocolCases?: unknown;
+  languageProjectCases?: unknown;
   runtimeCases?: unknown;
   cssApiCases?: unknown;
+  vaporStyleApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -244,6 +248,14 @@ function checkProduct(
     const canonPaths = paths.filter((path) => path.startsWith("crates/vize_canon/src/"));
     const protocolRequired =
       product === "typechecker" && canonPaths.some(nativeShutdownProtocolSource);
+    const languageProject =
+      product === "typechecker"
+        ? newLanguageProjectCases(
+            before?.languageProjectCases,
+            manifest.languageProjectCases,
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,
@@ -258,6 +270,7 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !languageProject.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
@@ -273,13 +286,33 @@ function checkProduct(
       product === "compiler" &&
       cssApi.length > 0 &&
       onlyCompilerCssChanges(paths, compilerCssApiSources(cssApi));
+    const vaporStyle =
+      product === "compiler"
+        ? newVaporStyleApiCases(before?.vaporStyleApiCases, manifest.vaporStyleApiCases, readFile)
+        : { ids: [] as string[], sources: new Set<string>() };
+    const compilerPaths = paths.filter((path) => legacyProducts([path]).includes("compiler"));
+    const vaporIds = compilerPaths.some((path) => vaporStyle.sources.has(path))
+      ? vaporStyle.ids
+      : [];
+    const vaporOnly =
+      product === "compiler" &&
+      vaporIds.length > 0 &&
+      compilerPaths.length > 0 &&
+      compilerPaths.every((path) => vaporStyle.sources.has(path));
     const registered =
-      (cssOnly || !batchRequired || cases.length > 0) &&
+      (cssOnly || vaporOnly || !batchRequired || cases.length > 0) &&
       (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi],
+      cases: [
+        ...cases,
+        ...protocols,
+        ...runtime.ids,
+        ...cssApi,
+        ...vaporIds,
+        ...languageProject.ids,
+      ],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };

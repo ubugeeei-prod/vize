@@ -4,7 +4,8 @@
 //! used to stat, read and parse the same package files again (#9727). A pass
 //! now loads each file once, reading a scan's whole frontier in parallel,
 //! and resolves each of its path and package edges once. Equal routes reached
-//! from different importer scopes share one finished scan.
+//! from different importer scopes share one finished scan, and so do callers
+//! whose aliases answer that scan's bare spellings the same way.
 //! Facts never outlive the pass that treats the filesystem as stable.
 
 #![expect(
@@ -63,19 +64,48 @@ enum Facts {
     },
 }
 
+/// A bare spelling a scan resolved through the caller's aliases, and the
+/// answer it got. Path spellings and package edges never depend on aliases.
+pub(super) struct AliasProbe {
+    importer: PathBuf,
+    specifier: CompactString,
+    answer: (Option<PathBuf>, Vec<PathBuf>),
+}
+
+impl AliasProbe {
+    pub(super) fn new(
+        importer: &Path,
+        specifier: &str,
+        answer: &(Option<PathBuf>, Vec<PathBuf>),
+    ) -> Self {
+        Self {
+            importer: importer.to_path_buf(),
+            specifier: specifier.into(),
+            answer: answer.clone(),
+        }
+    }
+}
+
+struct FinishedScan {
+    budget: ReachabilityBudget,
+    route: crate::PackageRoute,
+    reachability: PackageRouteReachability,
+    /// Alias scopes known to answer every probe as the scan saw it.
+    scopes: Vec<u64>,
+    probes: Box<[AliasProbe]>,
+}
+
 #[derive(Default)]
 pub struct ReachabilitySources {
     files: FxHashMap<PathBuf, Facts>,
-    /// Finished scans by manifest. A scan reads only its route, the budget
-    /// and the facts above, so an equal route repeats the same outcome.
-    scans: FxHashMap<
-        PathBuf,
-        Vec<(
-            ReachabilityBudget,
-            crate::PackageRoute,
-            PackageRouteReachability,
-        )>,
-    >,
+    /// Finished scans by manifest. A scan reads only its route, the budget,
+    /// the facts above and its alias answers, so an equal route repeats the
+    /// same outcome wherever those answers agree.
+    scans: FxHashMap<PathBuf, Vec<FinishedScan>>,
+    /// The alias configuration of the scans that follow; see
+    /// [`Self::set_alias_scope`].
+    alias_scope: u64,
+    finished_scans: usize,
     input_lists: FxHashSet<InputList>,
     /// Scans keep no inputs; see [`Self::untracked`].
     untracked: bool,
@@ -97,6 +127,21 @@ impl ReachabilitySources {
         self.untracked
     }
 
+    /// Identify the aliases behind the caller's local resolver. Sources may
+    /// outlive one alias configuration, e.g. across a check's referenced
+    /// programs: a scan finished under another scope is reused only when each
+    /// bare spelling it resolved through aliases resolves the same way now.
+    /// Callers keep one set of sources per import options and package
+    /// resolution settings, since path and package edges depend on those.
+    pub fn set_alias_scope(&mut self, scope: u64) {
+        self.alias_scope = scope;
+    }
+
+    /// Scans these sources ran, not counting reused ones.
+    pub fn finished_scans(&self) -> usize {
+        self.finished_scans
+    }
+
     pub(super) fn intern(&mut self, mut inputs: Vec<PathBuf>) -> InputList {
         if self.untracked {
             inputs.clear();
@@ -110,29 +155,50 @@ impl ReachabilitySources {
     }
 
     pub(super) fn scanned(
-        &self,
+        &mut self,
         route: &crate::PackageRoute,
         budget: ReachabilityBudget,
+        resolve_local: &mut impl FnMut(&Path, &str) -> (Option<PathBuf>, Vec<PathBuf>),
     ) -> Option<PackageRouteReachability> {
-        self.scans
-            .get(&route.manifest_path)?
-            .iter()
-            .find(|(scanned_budget, scanned_route, _)| {
-                *scanned_budget == budget && scanned_route == route
+        let scope = self.alias_scope;
+        let scans = self.scans.get_mut(&route.manifest_path)?;
+        let mut unverified = Vec::new();
+        for scan in scans
+            .iter_mut()
+            .filter(|scan| scan.budget == budget && scan.route == *route)
+        {
+            if scan.scopes.contains(&scope) {
+                return Some(scan.reachability.clone());
+            }
+            unverified.push(scan);
+        }
+        let scan = unverified.into_iter().find(|scan| {
+            scan.probes.iter().all(|probe| {
+                resolve_local(&probe.importer, probe.specifier.as_str()) == probe.answer
             })
-            .map(|(_, _, scanned)| scanned.clone())
+        })?;
+        scan.scopes.push(scope);
+        Some(scan.reachability.clone())
     }
 
     pub(super) fn remember_scan(
         &mut self,
         route: &crate::PackageRoute,
         budget: ReachabilityBudget,
-        scanned: PackageRouteReachability,
+        probes: Vec<AliasProbe>,
+        reachability: PackageRouteReachability,
     ) {
+        self.finished_scans += 1;
         self.scans
             .entry(route.manifest_path.clone())
             .or_default()
-            .push((budget, route.clone(), scanned));
+            .push(FinishedScan {
+                budget,
+                route: route.clone(),
+                reachability,
+                scopes: vec![self.alias_scope],
+                probes: probes.into_boxed_slice(),
+            });
     }
 
     /// File size from metadata, or `None` when the file cannot be stat'ed.

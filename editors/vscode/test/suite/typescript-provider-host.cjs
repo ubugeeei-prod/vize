@@ -84,13 +84,127 @@ async function run() {
     );
     return values;
   });
+  const inheritedConfiguration = await checkInheritedConfiguration(workspace);
   fs.writeFileSync(
     process.env.VIZE_TYPESCRIPT_PROVIDER_RESULT,
     JSON.stringify(
-      { extensionPath: extension.extensionPath, diagnostics, hover, completion, definition },
+      {
+        extensionPath: extension.extensionPath,
+        diagnostics,
+        hover,
+        completion,
+        definition,
+        inheritedConfiguration,
+      },
       null,
       2,
     ),
   );
+}
+
+async function checkInheritedConfiguration(workspace) {
+  const crypto = require("node:crypto");
+  const { files, expected, pack } =
+    require("../../../../tests/typescript-plugin/project-fixture.cjs").readProjectFixture();
+  const root = path.join(workspace, "継承設定");
+  const src = path.join(root, "src");
+  fs.mkdirSync(src, { recursive: true });
+  const config = path.join(root, "tsconfig.json");
+  const base = path.join(root, "inherited.json");
+  const vue = path.join(src, "Inherited.vue");
+  const control = path.join(src, "control.ts");
+  const entry = path.join(src, "entry.ts");
+  const inputs = {
+    config: files.get("tsconfig-5.7.json.txt"),
+    vue: files.get("src/Inherited.vue.txt"),
+    control: files.get("src/control.ts.txt"),
+    entry: 'import "./Inherited.vue";\nexport const marker = 1;\n',
+    before: JSON.parse(files.get("inherited-before.json.txt")),
+    after: JSON.parse(files.get("inherited-after.json.txt")),
+  };
+  for (const [file, text] of [
+    [config, inputs.config],
+    [vue, inputs.vue],
+    [control, inputs.control],
+    [entry, inputs.entry],
+  ])
+    fs.writeFileSync(file, text);
+  const fixed = [config, vue, control, entry].map((file) => ({
+    file,
+    sha256: crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"),
+  }));
+  const packet = { inputs, fixed, fixture: pack };
+  const save = () =>
+    fs.writeFileSync(
+      `${process.env.VIZE_TYPESCRIPT_PROVIDER_RESULT}.configuration.json`,
+      JSON.stringify(packet, null, 2),
+    );
+  const diagnostics = async (file) => {
+    // The pinned built-in extension explicitly permits this read-only request.
+    // Passing the actual path also includes closed mixed-content external files.
+    const response = await vscode.commands.executeCommand(
+      "typescript.tsserverRequest",
+      "semanticDiagnosticsSync",
+      { file },
+    );
+    assert.equal(response?.success, true, JSON.stringify(response));
+    return response;
+  };
+  fs.writeFileSync(base, JSON.stringify(inputs.before));
+  await vscode.window.showTextDocument(
+    await vscode.workspace.openTextDocument(vscode.Uri.file(entry)),
+  );
+  try {
+    packet.before = await eventually(async () => {
+      const response = await diagnostics(vue);
+      assert.deepEqual(response.body, []);
+      return response;
+    });
+    packet.controlBefore = await diagnostics(control);
+    assert.deepEqual(packet.controlBefore.body, []);
+    save();
+    fs.writeFileSync(base, JSON.stringify(inputs.after));
+    packet.controlAfter = await eventually(async () => {
+      const response = await diagnostics(control);
+      assert(
+        response.body.some((diagnostic) => diagnostic.code === 7029),
+        JSON.stringify(response),
+      );
+      return response;
+    });
+    save();
+    packet.warm = await eventually(async () => {
+      const response = await diagnostics(vue);
+      packet.latestWarm = response;
+      save();
+      assert(
+        response.body.some(
+          (diagnostic) =>
+            diagnostic.code === 2339 && diagnostic.text.includes("UnknownClosureProbe"),
+        ),
+        JSON.stringify(response),
+      );
+      return response;
+    });
+    for (const input of fixed)
+      assert.equal(
+        crypto.createHash("sha256").update(fs.readFileSync(input.file)).digest("hex"),
+        input.sha256,
+        "only the inherited configuration changes",
+      );
+    await vscode.commands.executeCommand("typescript.restartTsServer");
+    packet.fresh = await eventually(async () => {
+      const response = await diagnostics(vue);
+      packet.latestFresh = response;
+      save();
+      assert.deepEqual(response.body, packet.warm.body);
+      return response;
+    });
+    assert.deepEqual(packet.fresh.body, expected.strict);
+    assert.deepEqual(packet.controlAfter.body, expected.controlAfter);
+    return packet;
+  } finally {
+    save();
+  }
 }
 module.exports = { run };

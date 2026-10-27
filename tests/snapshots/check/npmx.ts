@@ -18,7 +18,8 @@ describe(`${app.name} check (type checker)`, () => {
   it("vize check does not crash and snapshot matches", () => {
     const checkConfig = app.check!;
     const patterns = checkConfig.patterns.map((p) => `'${p}'`).join(" ");
-    const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet --corsa-path '${CORSA_BIN}'`;
+    const noConfig = checkConfig.noConfig ? ["--no-config"] : [];
+    const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet ${noConfig.join(" ")} --corsa-path '${CORSA_BIN}'`;
     console.log(`Running: ${cmd}`);
 
     let stdout: string;
@@ -50,6 +51,7 @@ describe(`${app.name} check (type checker)`, () => {
         "--format",
         "json",
         "--quiet",
+        ...noConfig,
         "--corsa-path",
         CORSA_BIN,
       ],

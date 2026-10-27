@@ -8,6 +8,8 @@ import {
   editorPlatformAssets,
   editorPlatformMatrix,
 } from "../../../tools/support/release/editor-platforms.ts";
+import { installVscodeExtensionDependencies } from "../../../tools/config/vite-plus/task-commands.ts";
+import { buildTasks } from "../../../tools/config/vite-plus/tasks/build.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 test("all eight release providers match the packager and have distinct immutable artifacts", () => {
@@ -95,4 +97,56 @@ test("platform providers publish after their packages without gating the release
   assert.match(github, /editor-extension-platform-\*/);
   assert.match(github, /platform\/\*\.receipt\.json/);
   assert.match(github, /VIZE_EDITOR_PLATFORM_ARTIFACTS/);
+});
+
+test("platform providers install the extension's packager like the universal VSIX", () => {
+  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  type Step = { name?: string; uses?: string; run?: string };
+  const steps = (job: string): Step[] => release.jobs[job].steps;
+  const index = (job: string, match: (step: Step) => boolean) => steps(job).findIndex(match);
+  const install = (step: Step) => step.run === "vp run --workspace-root package:vscode-extension";
+  const rustScript = (step: Step) => step.uses === "./.github/actions/setup-rust-script";
+  const packaging = (step: Step) => step.name === "Package the exact target provider";
+  // vsce and the prepublish `vp pack` resolve from editors/vscode/node_modules.
+  assert.ok(index("build-editor-platforms", rustScript) < index("build-editor-platforms", install));
+  assert.ok(index("build-editor-platforms", install) < index("build-editor-platforms", packaging));
+  assert.match(
+    steps("build-editor-extensions").find((step) => step.name === "Package editor extensions")
+      ?.run ?? "",
+    /^vp run --workspace-root package:vscode-extension$/m,
+  );
+  // Both jobs share the setup before their extension step.
+  const setup = (job: string, until: (step: Step) => boolean) =>
+    steps(job)
+      .slice(0, index(job, until))
+      .map((step) => step.uses ?? step.run);
+  assert.deepEqual(
+    setup("build-editor-platforms", install),
+    setup("build-editor-extensions", (step) => step.name === "Package editor extensions"),
+  );
+  const command = (task: unknown) => {
+    assert.ok(task !== null && typeof task === "object" && "command" in task);
+    assert.equal(typeof task.command, "string");
+    return String(task.command);
+  };
+  assert.ok(
+    command(buildTasks["package:vscode-extension"]).startsWith(
+      `${installVscodeExtensionDependencies} && `,
+    ),
+  );
+});
+
+test("editor publishers outwait registry validation and Open VSX maintenance", () => {
+  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  const waitSeconds = (job: { env: Record<string, string> }) =>
+    Number(job.env.PUBLISH_RESOLUTION_RETRY_LIMIT) * 10;
+  // The Marketplace listed the 0.584.0 platform uploads 6.5-9 min after vsce exited.
+  const vscode = release.jobs["publish-vscode-platforms"];
+  assert.equal(waitSeconds(vscode), 20 * 60);
+  assert.ok(vscode["timeout-minutes"] * 60 >= waitSeconds(vscode) + 5 * 60);
+  // Read-only retries wait 30 + 60 + 120 + 240 s before the scan wait starts.
+  for (const key of ["publish-open-vsx", "publish-open-vsx-platforms"]) {
+    const job = release.jobs[key];
+    assert.ok(job["timeout-minutes"] * 60 >= 450 + waitSeconds(job) + 5 * 60, key);
+  }
 });

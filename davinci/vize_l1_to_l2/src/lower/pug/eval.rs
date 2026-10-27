@@ -11,9 +11,9 @@
 use alloc::vec::Vec as StdVec;
 
 use oxc_ast::ast::{
-    ArrayExpressionElement, BigIntLiteral, BindingPattern, ChainExpression, Expression,
-    ImportExpression, LogicalExpression, LogicalOperator, NumericLiteral, ObjectPropertyKind,
-    PrivateInExpression, PropertyKey, PropertyKind, Statement, UnaryOperator,
+    ArrayExpressionElement, BigIntLiteral, BinaryOperator, BindingPattern, ChainExpression,
+    Expression, ImportExpression, LogicalExpression, LogicalOperator, NumericLiteral,
+    ObjectPropertyKind, PrivateInExpression, PropertyKey, PropertyKind, Statement, UnaryOperator,
     VariableDeclarationKind,
 };
 use oxc_ast_visit::{Visit, walk};
@@ -123,6 +123,67 @@ impl<'a> Visit<'a> for Es2019 {
     }
 }
 
+/// Whether `source` is an object literal (a fresh object pug may
+/// modify in place).
+pub(super) fn is_object_literal(source: &str) -> bool {
+    with_expression(source, |expression, _| {
+        Ok(matches!(expression, Expression::ObjectExpression(_)))
+    })
+    .unwrap_or(false)
+}
+
+/// Bind a mixin's parameter list (pug pastes it into
+/// `function(…)`) to `args` in the current function frame; a missing
+/// argument takes its default.
+pub(super) fn bind_parameters(
+    scope: &mut Scope,
+    params: &str,
+    args: &[Value],
+) -> Result<(), Refusal> {
+    let allocator = Allocator::default();
+    let wrapped = cstr!("(function({params}\n){{}})");
+    let parsed = Parser::new(allocator.as_oxc(), &wrapped, SourceType::script()).parse();
+    let function = match parsed.program.body.as_slice() {
+        [Statement::ExpressionStatement(statement)] if parsed.diagnostics.is_empty() => {
+            match &statement.expression {
+                Expression::ParenthesizedExpression(inner) => match &inner.expression {
+                    Expression::FunctionExpression(function) => Some(function),
+                    _ => None,
+                },
+                _ => None,
+            }
+        }
+        _ => None,
+    };
+    let Some(function) = function else {
+        return Err(cstr!(
+            "the parameters `{}` are not valid JavaScript",
+            params.trim()
+        ));
+    };
+    if function.params.rest.is_some() {
+        return Err(String::from(
+            "only the last parameter can be a rest parameter",
+        ));
+    }
+    for (index, param) in function.params.items.iter().enumerate() {
+        let BindingPattern::BindingIdentifier(name) = &param.pattern else {
+            return Err(String::from("only plain parameter names can be bound"));
+        };
+        let mut value = args.get(index).cloned().unwrap_or(Value::Undefined);
+        if let (Value::Undefined, Some(init)) = (&value, &param.initializer) {
+            let mut evaluator = Evaluator {
+                scope,
+                source: &wrapped,
+                constant: true,
+            };
+            value = evaluator.eval(init)?;
+        }
+        scope.declare_var(name.name.as_str(), value)?;
+    }
+    Ok(())
+}
+
 /// Run unbuffered code (`- …`): variable declarations only.
 pub(super) fn statements(scope: &mut Scope, source: &str) -> Result<(), Refusal> {
     let allocator = Allocator::default();
@@ -224,7 +285,8 @@ impl Evaluator<'_, '_> {
                         _ => return Err(self.unsupported(&**template)),
                     }
                     if let Some(part) = template.expressions.get(index) {
-                        out.push_str(&self.eval(part)?.to_js_string());
+                        let value = self.eval(part)?;
+                        out.push_str(&self.printable(value, &**template)?.to_js_string());
                     }
                 }
                 Value::Str(out)
@@ -278,7 +340,10 @@ impl Evaluator<'_, '_> {
                             return Err(self.unsupported(&**object));
                         }
                         key => match key.as_expression() {
-                            Some(key) if property.computed => self.eval(key)?.to_js_string(),
+                            Some(key) if property.computed => {
+                                let value = self.eval(key)?;
+                                self.printable(value, &**object)?.to_js_string()
+                            }
                             Some(
                                 key
                                 @ (Expression::StringLiteral(_) | Expression::NumericLiteral(_)),
@@ -305,8 +370,12 @@ impl Evaluator<'_, '_> {
                     UnaryOperator::LogicalNot => Value::Bool(!operand.truthy()),
                     UnaryOperator::Typeof => Value::str(operand.type_of()),
                     UnaryOperator::Void => Value::Undefined,
-                    UnaryOperator::UnaryNegation => Value::Number(-operand.to_number()),
-                    UnaryOperator::UnaryPlus => Value::Number(operand.to_number()),
+                    UnaryOperator::UnaryNegation => {
+                        Value::Number(-self.printable(operand, &**unary)?.to_number())
+                    }
+                    UnaryOperator::UnaryPlus => {
+                        Value::Number(self.printable(operand, &**unary)?.to_number())
+                    }
                     _ => return Err(self.unsupported(&**unary)),
                 }
             }
@@ -333,6 +402,19 @@ impl Evaluator<'_, '_> {
             Expression::BinaryExpression(binary) => {
                 let left = self.eval(&binary.left)?;
                 let right = self.eval(&binary.right)?;
+                // Identity and nullish comparisons never print a function.
+                let prints = match binary.operator {
+                    BinaryOperator::StrictEquality | BinaryOperator::StrictInequality => false,
+                    BinaryOperator::Equality | BinaryOperator::Inequality => {
+                        !(left.is_nullish()
+                            || right.is_nullish()
+                            || matches!((&left, &right), (Value::Function(_), Value::Function(_))))
+                    }
+                    _ => true,
+                };
+                if prints && (left.has_function() || right.has_function()) {
+                    return Err(self.unsupported(&**binary));
+                }
                 match binary_value(binary.operator, &left, &right) {
                     Some(value) => value,
                     None => return Err(self.unsupported(&**binary)),
@@ -360,6 +442,14 @@ impl Evaluator<'_, '_> {
             }
             other => return Err(self.unsupported(other)),
         })
+    }
+
+    /// `value`, unless converting it would print a function's source.
+    fn printable(&self, value: Value, node: &impl GetSpan) -> Result<Value, Refusal> {
+        if value.has_function() {
+            return Err(self.unsupported(node));
+        }
+        Ok(value)
     }
 
     fn unsupported(&self, node: &impl GetSpan) -> Refusal {

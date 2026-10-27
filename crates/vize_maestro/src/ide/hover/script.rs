@@ -83,22 +83,10 @@ impl HoverService {
             return Some(hover);
         }
 
-        // Try to get type information from Corsa via the canonical Vue virtual TS.
         if let Some(bridge) = corsa_bridge.as_ref()
             && bridge.is_initialized()
-            && let Some(doc) =
-                crate::ide::corsa_support::open_canonical_virtual_document(ctx, bridge).await
-            && let Some((line, character)) =
-                crate::ide::corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
-            && let Ok(Some(hover)) = bridge.hover(&doc.request_uri, line, character).await
+            && let Some(mut converted) = Self::typed_script_hover(ctx, bridge).await
         {
-            let mapped_range = hover.range.as_ref().and_then(|range| {
-                crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
-            });
-            let mut converted = Self::convert_lsp_hover(hover);
-            if mapped_range.is_some() {
-                converted.range = mapped_range;
-            }
             if hover_has_unknown_reactive_type(&converted)
                 && let Some(fallback) = Self::hover_script(ctx, is_setup)
             {
@@ -110,6 +98,45 @@ impl HoverService {
 
         // Fall back to croquis analysis
         Self::hover_script(ctx, is_setup)
+    }
+
+    /// Native script hover with its range mapped back to the authored file.
+    #[cfg(feature = "native")]
+    async fn typed_script_hover(ctx: &IdeContext<'_>, bridge: &CorsaBridge) -> Option<Hover> {
+        use crate::ide::corsa_support;
+
+        // A standalone Art setup has no canonical document; its setup
+        // projection answers instead of the spelling-based fallback.
+        if let Some(query) = corsa_support::open_art_script_query(ctx, bridge).await {
+            let hover = bridge
+                .hover(&query.request_uri, query.line, query.character)
+                .await
+                .ok()??;
+            let range = hover
+                .range
+                .as_ref()
+                .and_then(|range| query.authored_range(ctx, range));
+            let mut converted = Self::convert_lsp_hover(hover);
+            converted.range = range;
+            return Some(converted);
+        }
+
+        let doc = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
+        let (line, character) =
+            corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?;
+        let hover = bridge
+            .hover(&doc.request_uri, line, character)
+            .await
+            .ok()??;
+        let mapped_range = hover
+            .range
+            .as_ref()
+            .and_then(|range| corsa_support::map_canonical_lsp_range(ctx, &doc, range));
+        let mut converted = Self::convert_lsp_hover(hover);
+        if mapped_range.is_some() {
+            converted.range = mapped_range;
+        }
+        Some(converted)
     }
 
     #[cfg(feature = "native")]

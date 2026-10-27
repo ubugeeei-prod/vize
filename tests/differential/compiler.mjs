@@ -6,6 +6,7 @@ import path from "node:path";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { compareBytes } from "./compare.mjs";
 import { compilerCssApiReport, loadCompilerCssApiCases } from "./compiler-css-api.ts";
+import { closedSetupReference } from "../tooling/support/script-setup-default-expose.ts";
 import {
   loadProductManifest,
   readPinnedArtifact,
@@ -167,7 +168,13 @@ export function loadCompilerManifest(manifestPath) {
       const input = dialect
         ? dialect.input
         : readPinnedArtifact(path.join(root, fixture.inputs.root), fixture.inputs.files[0]);
-      const expected = readPinnedArtifact(root, fixture.reference);
+      const archivedExpected = readPinnedArtifact(root, fixture.reference);
+      // Authenticate the original reference before applying the reviewed
+      // closed-by-default setup contract. Candidate bytes remain untouched.
+      const expected = Buffer.from(
+        closedSetupReference({ code: archivedExpected.toString("utf8") }, input.toString("utf8"))
+          .code,
+      );
       const expectedCss = fixture.reference.cssPath
         ? readPinnedArtifact(root, {
             path: fixture.reference.cssPath,

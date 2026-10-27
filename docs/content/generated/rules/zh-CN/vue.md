@@ -5603,10 +5603,11 @@ vp run lint
 
 自定义组件监听器使用了 `@myEvent`，而不是连字符事件名称。
 
-```vue annotate="remove:2,3"
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent @myEvent="handler" />
 <MyComponent v-on:myEvent="handler" />
+<my-component @update:modelValue="handler" />
 </template>
 ```
 
@@ -5626,7 +5627,7 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [全部规则](all.md)
 
 ### `vue/v-on-handler-style`
 

@@ -103,6 +103,25 @@ fn maybe_ref_authored_handler_writes_match_the_pinned_vue_shape() {
     );
 }
 
+#[test]
+fn padded_const_handlers_on_branch_components_match_shipped_compiler() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "padded-branch-component-handler.vue",
+        r#"<script setup>
+import { ref } from 'vue'
+import Overlay from './Overlay.vue'
+const shown = ref(true)
+function switchOrg() {}
+</script>
+<template><div><Overlay @switch="
+    switchOrg
+"></Overlay><Overlay v-if="shown" @switch="
+    switchOrg
+"></Overlay><p>x</p></div></template>"#,
+    );
+}
+
 fn assert_inline_parity(filename: &str, source: &str) {
     let descriptor = parse_sfc(
         source,

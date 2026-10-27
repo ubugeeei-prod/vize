@@ -7,6 +7,7 @@ use crate::virtual_ts::{
 };
 
 mod data_assignment;
+mod reserved_component_collision;
 mod writable_computed;
 
 #[test]
@@ -343,4 +344,54 @@ fn test_options_api_configured_globals_are_not_redeclared_by_the_instance_form()
         "a configured template global must not be redeclared by the instance form:\n{}",
         output.code
     );
+}
+
+/// A reserved prop name (`as`) is read through `__vize_options_instance` in
+/// template expressions, but a `<component :is="as">` references the binding
+/// as a component: `typeof _as`, the safe spelling the `<script setup>`
+/// projection declares for the same prop. The Options API projection declares
+/// that local too, so the dynamic component resolves instead of reporting
+/// `TS2339 Property '_as' does not exist on the component instance`.
+#[test]
+fn test_options_api_reserved_prop_gets_the_safe_local_a_component_reference_reads() {
+    let script = r#"import { defineComponent, type PropType } from 'vue'
+
+export default defineComponent({
+    props: {
+        title: { type: String, required: true },
+        as: { type: String as PropType<'h1' | 'h2'>, default: 'h1' },
+    },
+})
+"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) =
+        vize_armature::parse(&allocator, r#"<component :is="as">{{ title }}</component>"#);
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
+        .with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    for expected in [
+        // the safe local a component reference reads
+        "  const _as: __VizeOptionsBinding<typeof __default__, \"as\"> = (void 0) as any; void _as;",
+        // template expressions keep reading the reserved prop through the instance
+        "  void __vize_options_instance[\"as\"];",
+        // the dynamic component resolves the local
+        "  type __as_Component_0 = typeof _as;",
+    ] {
+        assert!(
+            output.code.lines().any(|line| line == expected),
+            "expected the exact line {expected:?} in:\n{}",
+            output.code
+        );
+    }
 }

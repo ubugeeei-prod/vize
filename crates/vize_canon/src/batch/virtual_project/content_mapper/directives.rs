@@ -140,7 +140,12 @@ pub(super) fn with_component_prop_echoes(
     directives: Option<ContentMapperDiagnosticDirectives>,
     generated: &str,
     mappings: &[VizeMapping],
+    callback_primaries: &[Range<usize>],
 ) -> Option<ContentMapperDiagnosticDirectives> {
+    // A linear index of actual emitted statement identities. Text equality of
+    // a callback in another invocation cannot establish its contextual type.
+    let protected: vize_l0::FxHashSet<_> =
+        callback_primaries.iter().map(|range| range.start).collect();
     let literal_owners = mappings
         .iter()
         .filter(|candidate| {
@@ -157,6 +162,9 @@ pub(super) fn with_component_prop_echoes(
         .collect::<Vec<_>>();
     let mut echoes = Vec::new();
     for mapping in mappings {
+        if protected.contains(&mapping.gen_range.start) {
+            continue;
+        }
         let Some(text) = generated.get(mapping.gen_range.clone()) else {
             continue;
         };

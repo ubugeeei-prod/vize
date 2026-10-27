@@ -11,19 +11,19 @@ import {
   managerEnv,
   projectEnv,
   runManager,
-} from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
-import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.ts";
 import {
   packedFileSpec,
   packedRedirects,
 } from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
-import { withPoisonedVizePath } from "../../../tools/support/compat/npm/smoke-release-path-poison.mjs";
+import { withPoisonedVizePath } from "../../../tools/support/compat/npm/smoke-release-path-poison.ts";
 import { createPackedInstallReceipt } from "../../../tools/support/compat/npm/smoke-release-init-receipt.ts";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
-} from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
-import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-shapes.ts";
+import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 import {
   COREPACK_MANAGER_SPECS,

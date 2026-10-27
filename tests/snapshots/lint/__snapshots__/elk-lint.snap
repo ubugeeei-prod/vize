@@ -123,7 +123,7 @@
         "column": 1,
         "endLine": 273,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 2,
@@ -388,7 +388,7 @@
         "column": 1,
         "endLine": 38,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -551,7 +551,7 @@
         "column": 1,
         "endLine": 30,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -2105,7 +2105,7 @@
         "column": 1,
         "endLine": 253,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 1,
@@ -2195,7 +2195,7 @@
         "column": 1,
         "endLine": 57,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -2415,7 +2415,7 @@
         "column": 1,
         "endLine": 300,
         "endColumn": 23,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 1,
@@ -2433,7 +2433,7 @@
         "column": 1,
         "endLine": 68,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -2510,7 +2510,7 @@
         "column": 1,
         "endLine": 100,
         "endColumn": 8,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -2552,7 +2552,7 @@
         "column": 1,
         "endLine": 36,
         "endColumn": 23,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,
@@ -2646,7 +2646,7 @@
         "column": 1,
         "endLine": 120,
         "endColumn": 23,
-        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
+        "help": "Add scoped or module to the style block: <style scoped> or <style module>"
       }
     ],
     "errorCount": 0,

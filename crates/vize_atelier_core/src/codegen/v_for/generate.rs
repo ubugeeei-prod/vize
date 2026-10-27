@@ -419,6 +419,18 @@ pub(crate) fn generate_for_item_props(
     key_exp: Option<&ExpressionNode<'_>>,
     skip_is_prop: bool,
 ) -> bool {
+    if el.tag_type == ElementType::Component {
+        return ctx.with_component_props(|ctx| generate_item_props(ctx, el, key_exp, skip_is_prop));
+    }
+    generate_item_props(ctx, el, key_exp, skip_is_prop)
+}
+
+fn generate_item_props(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    key_exp: Option<&ExpressionNode<'_>>,
+    skip_is_prop: bool,
+) -> bool {
     let has_other = if skip_is_prop {
         el.props
             .iter()

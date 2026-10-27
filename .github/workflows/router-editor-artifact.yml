@@ -1,0 +1,78 @@
+name: Router installed editor artifact
+on:
+  pull_request:
+    paths:
+      - .github/workflows/router-editor-artifact.yml
+      - editors/vscode/test/*router*.mjs
+      - editors/vscode/test/suite/router-*.cjs
+      - tests/fixtures/editor/experimental-router-5.4/**
+      - tests/tooling/vscode-router-artifact-contract.test.ts
+      - tests/tooling/router-host-compiler-capture.test.ts
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: router-editor-artifact-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+jobs:
+  cli:
+    uses: ./.github/workflows/full-source-cli.yml
+  installed-editor:
+    needs: cli
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Preserve the initial source authority before any qualification step
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-editor-artifact"
+          git rev-parse HEAD > "$RUNNER_TEMP/router-editor-artifact/source-sha.txt"
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/router-editor-artifact/source-tree.txt"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.cli.outputs) }}" }
+      - name: Retain the original producer and consumer receipts
+        run: |
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/router-editor-artifact/producer-build.json"
+          cp target/ci/vize.source-build.json "$RUNNER_TEMP/router-editor-artifact/producer-transport.json"
+          cp target/ci/vize.source-use.json "$RUNNER_TEMP/router-editor-artifact/consumer-use.json"
+      - name: Install locked workspace dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/setup-rust-script
+      - name: Package the actual VSIX and verify its contents
+        run: vp run --workspace-root test:vscode-extension:vsix
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Prepare pinned VS Code
+        env: { VIZE_TEST_VSCODE_VERSION: "1.107.1" }
+        run: |
+          set -euo pipefail
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            vize-ci-apt-retry sudo apt-get update
+            vize-ci-apt-retry sudo apt-get install -y xvfb
+          fi
+          timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
+      - name: Check artifact contracts
+        run: node --test tests/tooling/vscode-router-artifact-contract.test.ts tests/tooling/router-host-compiler-capture.test.ts
+      - name: Exercise actual installed Vue and Art editor clients
+        env:
+          VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+          VIZE_TEST_VSCODE_VERSION: "1.107.1"
+          VIZE_ROUTER_HOST_ARTIFACT_DIR: ${{ runner.temp }}/router-editor-artifact
+        run: xvfb-run -a node editors/vscode/test/run-router-host-real.mjs
+      - name: Retain full native, public editor, and artifact observations
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: router-installed-editor-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/router-editor-artifact
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

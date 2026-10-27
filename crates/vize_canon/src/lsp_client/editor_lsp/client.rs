@@ -1,6 +1,7 @@
 //! `CorsaProjectClient` entry points that route editor requests through the
 //! lazily spawned editor LSP session.
 
+use corsa::runtime::block_on;
 use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -10,6 +11,30 @@ use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_
 use crate::lsp_client::session_paths::overlay_root_for_project;
 
 impl CorsaProjectClient {
+    /// A shared API snapshot also reads the editor's open buffers. Materialized
+    /// refreshes reach it before the editor's pending didChange, so refresh it
+    /// once the editor acknowledges the current buffers (#10730).
+    pub(in crate::lsp_client) fn refresh_acknowledged_editor_snapshot(
+        &mut self,
+        document_uri: &str,
+    ) -> Result<(), String> {
+        if !self.project_session_attached_to_editor {
+            return Ok(());
+        }
+        // Borrow the existing owner only; never spawn or replace a transport here.
+        if self.editor_lsp.is_none() || self.session.is_none() {
+            return Err(cstr!("Attached editor snapshot owner is unavailable"));
+        }
+        self.editor_lsp_session()?
+            .ready_document_uri(document_uri)?;
+        let session = self
+            .session
+            .as_mut()
+            .ok_or_else(|| cstr!("Attached editor snapshot owner is unavailable"))?;
+        block_on(session.refresh(None))
+            .map_err(|error| cstr!("Failed to refresh the acknowledged editor snapshot: {error}"))
+    }
+
     /// Answer a hover through the editor LSP transport, spawning the session on
     /// first use.
     pub(in crate::lsp_client) fn hover_via_editor_lsp(

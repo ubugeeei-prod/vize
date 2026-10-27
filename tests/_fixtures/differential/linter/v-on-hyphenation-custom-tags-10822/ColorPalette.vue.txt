@@ -1,0 +1,19 @@
+<template>
+  <ul class="color-palette" role="listbox">
+    <va-color-indicator
+      v-for="color in palette"
+      :key="color"
+      @update:modelValue="selected = color"
+    />
+    <va-color-indicator @update:model-value="selected = undefined" />
+    <li is="vue:palette-row" @rowClick="selected = undefined" />
+    <li @myEvent="selected = undefined" />
+  </ul>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{ palette: string[] }>()
+const selected = ref<string | undefined>()
+</script>

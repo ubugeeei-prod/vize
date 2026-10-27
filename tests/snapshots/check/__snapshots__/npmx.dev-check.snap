@@ -3,10 +3,6 @@
     {
       "file": "app/app.vue",
       "diagnostics": [
-        "error:3:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:57:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:83:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:93:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
         "error:140:3 [TS2304] Cannot find name 'defineOgImage'."
       ]
     },
@@ -137,15 +133,13 @@
     {
       "file": "app/components/Code/DirectoryListing.vue",
       "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
-        "error:3:36 [TS2307] Cannot find module 'vue-router/auto-routes' or its corresponding type declarations."
+        "error:3:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
       ]
     },
     {
       "file": "app/components/Code/FileTree.vue",
       "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
-        "error:3:36 [TS2307] Cannot find module 'vue-router/auto-routes' or its corresponding type declarations."
+        "error:3:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
       ]
     },
     {
@@ -158,7 +152,7 @@
     {
       "file": "app/components/Code/MobileTreeDrawer.vue",
       "diagnostics": [
-        "error:2:36 [TS2307] Cannot find module 'vue-router/auto-routes' or its corresponding type declarations."
+        "error:2:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
       ]
     },
     {
@@ -183,10 +177,8 @@
     {
       "file": "app/components/ColumnPicker.vue",
       "diagnostics": [
-        "error:3:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:17:16 [TS2304] Cannot find name 'useId'.",
-        "error:20:1 [TS2304] Cannot find name 'onClickOutside'.",
-        "error:32:3 [TS7006] Parameter 'e' implicitly has an 'any' type."
+        "error:20:1 [TS2304] Cannot find name 'onClickOutside'."
       ]
     },
     {
@@ -262,9 +254,8 @@
         "error:59:13 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:163:53 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:194:1 [TS2304] Cannot find name 'onClickOutside'.",
-        "error:300:27 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
-        "error:300:42 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
-        "error:301:45 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'."
+        "error:300:42 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'. (source: :class=\"highlightedIndex === index + resultIndexOffset ? '!bg-accent/15' : ''\")",
+        "error:301:45 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'. (source: @mouseenter=\"highlightedIndex = index + resultIndexOffset\")"
       ]
     },
     {
@@ -285,10 +276,8 @@
     {
       "file": "app/components/DependencyPathPopup.vue",
       "diagnostics": [
-        "error:2:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:3:30 [TS2307] Cannot find module '@vueuse/integrations/useFocusTrap/component' or its corresponding type declarations.",
         "error:19:1 [TS2304] Cannot find name 'onClickOutside'.",
-        "error:25:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
         "error:32:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
     },
@@ -324,9 +313,7 @@
     },
     {
       "file": "app/components/Diff/ViewerPanel.vue",
-      "diagnostics": [
-        "error:2:32 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Filter/Chips.vue",
@@ -518,7 +505,8 @@
         "error:19:34 [TS2307] Cannot find module 'vue-data-ui/utils' or its corresponding type declarations.",
         "error:147:35 [TS2558] Expected 0 type arguments, but got 1.",
         "error:150:14 [TS2339] Property 'toc' does not exist on type 'Response'.",
-        "error:159:30 [TS2339] Property 'toc' does not exist on type 'Response'."
+        "error:159:30 [TS2339] Property 'toc' does not exist on type 'Response'.",
+        "error:181:32 [TS2339] Property 'test' does not exist on type 'ImportMeta'."
       ]
     },
     {
@@ -606,7 +594,6 @@
     {
       "file": "app/components/Package/Header.vue",
       "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:23:34 [TS2304] Cannot find name 'useElementBounding'.",
         "error:39:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:40:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
@@ -615,9 +602,7 @@
     },
     {
       "file": "app/components/Package/InstallScripts.vue",
-      "diagnostics": [
-        "error:3:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Package/Keywords.vue",
@@ -658,12 +643,11 @@
     {
       "file": "app/components/Package/ManagerSelect.vue",
       "diagnostics": [
-        "error:2:50 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:33:17 [TS2304] Cannot find name 'useId'.",
         "error:48:56 [TS7006] Parameter 'pm' implicitly has an 'any' type.",
         "error:57:21 [TS2304] Cannot find name 'PackageManagerId'.",
         "error:64:30 [TS2304] Cannot find name 'useMediaQuery'.",
-        "error:169:24 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'."
+        "error:169:24 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'. (source: @mouseenter=\"highlightedIndex = index\")"
       ]
     },
     {
@@ -737,7 +721,6 @@
         "error:9:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:16:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-stackbar' or its corresponding type declarations.",
         "error:17:36 [TS2307] Cannot find module 'vue-data-ui/composables' or its corresponding type declarations.",
-        "error:39:46 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:437:10 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:442:10 [TS7006] Parameter 'csvStr' implicitly has an 'any' type.",
         "error:460:10 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -746,10 +729,9 @@
         "error:649:50 [TS7006] Parameter 'index' implicitly has an 'any' type.",
         "error:758:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:849:27 [TS7031] Binding element 'value' implicitly has an 'any' type.",
-        "error:927:25 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap.",
-        "error:927:54 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap.",
-        "error:1153:7 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap.",
-        "error:1153:20 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap."
+        "error:927:25 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap. (source: <template v-if=\"activeTab === 'totalSize' || activeTab === 'dependencyCount'\">; binding: v-if)",
+        "error:927:54 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap. (source: <template v-if=\"activeTab === 'totalSize' || activeTab === 'dependencyCount'\">; binding: v-if)",
+        "error:1153:20 [TS2367] This comparison appears to be unintentional because the types '{ value: TimelineChartMetric; } & Record<string, any>' and 'string' have no overlap. (source: :class=\"[activeTab === 'dependencySize' ? 'aspect-[1152/466.4]' : 'aspect-[1152/254.59]']\")"
       ]
     },
     {
@@ -786,7 +768,6 @@
       "diagnostics": [
         "error:2:71 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module 'vue-data-ui/composables' or its corresponding type declarations.",
-        "error:4:61 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:575:23 [TS7006] Parameter 'm' implicitly has an 'any' type.",
         "error:1155:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:1160:16 [TS7006] Parameter 'csvStr' implicitly has an 'any' type.",
@@ -803,7 +784,6 @@
       "file": "app/components/Package/VersionDistribution.vue",
       "diagnostics": [
         "error:2:70 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
-        "error:3:32 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:141:38 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:149:33 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:201:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -820,7 +800,6 @@
       "file": "app/components/Package/Versions.vue",
       "diagnostics": [
         "error:2:41 [TS2307] Cannot find module 'verkit' or its corresponding type declarations.",
-        "error:3:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:4:34 [TS2307] Cannot find module 'packumeta' or its corresponding type declarations."
       ]
     },
@@ -831,18 +810,14 @@
         "error:42:10 [TS2552] Cannot find name 'SEVERITY_LEVELS'. Did you mean 'severityLabels'?",
         "error:42:33 [TS7006] Parameter 's' implicitly has an 'any' type.",
         "error:43:10 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:138:31 [TS2551] Property 'SEVERITY_LEVELS' does not exist on the component instance. Did you mean 'severityLabels'?",
-        "error:138:54 [TS7006] Parameter 's' implicitly has an 'any' type."
+        "error:138:31 [TS2551] Property 'SEVERITY_LEVELS' does not exist on the component instance. Did you mean 'severityLabels'? (source: v-for=\"s in SEVERITY_LEVELS.filter(s => pkg.counts[s] > 0)\")",
+        "error:138:54 [TS7006] Parameter 's' implicitly has an 'any' type. (source: v-for=\"s in SEVERITY_LEVELS.filter(s => pkg.counts[s] > 0)\")"
       ]
     },
     {
       "file": "app/components/Package/WeeklyDownloadStats.vue",
       "diagnostics": [
         "error:6:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-sparkline' or its corresponding type declarations.",
-        "error:13:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:185:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:194:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:203:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
         "error:289:23 [TS7031] Binding element 'value' implicitly has an 'any' type."
       ]
     },
@@ -869,7 +844,6 @@
     {
       "file": "app/components/ReadmeTocDropdown.vue",
       "diagnostics": [
-        "error:3:50 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:73:17 [TS2304] Cannot find name 'useId'.",
         "error:109:30 [TS2304] Cannot find name 'useMediaQuery'."
       ]
@@ -990,17 +964,17 @@
     {
       "file": "app/components/Terminal/Execute.vue",
       "diagnostics": [
-        "error:67:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'."
+        "error:67:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)"
       ]
     },
     {
       "file": "app/components/Terminal/Install.vue",
       "diagnostics": [
         "error:76:35 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:234:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'.",
-        "error:264:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'.",
-        "error:329:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'.",
-        "error:372:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'."
+        "error:234:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)",
+        "error:264:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)",
+        "error:329:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)",
+        "error:372:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)"
       ]
     },
     {
@@ -1042,7 +1016,6 @@
     {
       "file": "app/components/VersionSelector.vue",
       "diagnostics": [
-        "error:2:32 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:3:25 [TS2307] Cannot find module 'verkit' or its corresponding type declarations."
       ]
     },
@@ -1100,7 +1073,7 @@
       "file": "app/pages/blog/index.vue",
       "diagnostics": [
         "error:2:23 [TS2307] Cannot find module '#blog/posts' or its corresponding type declarations.",
-        "error:34:37 [TS7006] Parameter 'a' implicitly has an 'any' type."
+        "error:34:37 [TS7006] Parameter 'a' implicitly has an 'any' type. (source: :key=\"`${post.authors.map(a => a.name).join('-')}-${post.title}`\")"
       ]
     },
     {
@@ -1131,20 +1104,18 @@
         "error:145:1 [TS2304] Cannot find name 'defineOgImage'.",
         "error:148:46 [TS7006] Parameter 'a' implicitly has an 'any' type.",
         "error:148:49 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:368:50 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:375:59 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:437:43 [TS7006] Parameter 'facet' implicitly has an 'any' type.",
-        "error:441:57 [TS7006] Parameter 'facet' implicitly has an 'any' type.",
-        "error:447:48 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:461:46 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:474:56 [TS7006] Parameter 'p' implicitly has an 'any' type."
+        "error:368:50 [TS7006] Parameter 'p' implicitly has an 'any' type. (source: (!packagesData || packagesData.every(p => p === null)))",
+        "error:375:59 [TS7006] Parameter 'p' implicitly has an 'any' type. (source: <div v-else-if=\"packagesData && packagesData.some(p => p !== null)\">; binding: v-else-if)",
+        "error:437:43 [TS7006] Parameter 'facet' implicitly has an 'any' type. (source: v-if=\"selectedFacets.some(facet => facet.chartable)\")",
+        "error:441:57 [TS7006] Parameter 'facet' implicitly has an 'any' type. (source: v-for=\"facet in selectedFacets.filter(facet => facet.chartable)\")",
+        "error:447:48 [TS7006] Parameter 'p' implicitly has an 'any' type. (source: :packages=\"packages.filter(p => p !== NO_DEPENDENCY_ID)\")",
+        "error:461:46 [TS7006] Parameter 'p' implicitly has an 'any' type. (source: :packages=\"packages.filter(p => p !== NO_DEPENDENCY_ID)\")",
+        "error:474:56 [TS7006] Parameter 'p' implicitly has an 'any' type. (source: <CompareLineChart :packages=\"packages.filter(p => p !== NO_DEPENDENCY_ID)\" />; binding: 'packages')"
       ]
     },
     {
       "file": "app/pages/diff/[[org]]/[packageName]/v/[versionRange].vue",
-      "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/index.vue",
@@ -1157,7 +1128,7 @@
       "diagnostics": [
         "error:20:43 [TS18047] 'leaderboardEntries.value' is possibly 'null'.",
         "error:21:41 [TS18047] 'leaderboardEntries.value' is possibly 'null'.",
-        "error:112:15 [TS18047] 'leaderboardEntries' is possibly 'null'."
+        "error:112:15 [TS18047] 'leaderboardEntries' is possibly 'null'. (source: v-if=\"leaderboardEntries.length === 0\")"
       ]
     },
     {
@@ -1204,7 +1175,6 @@
     {
       "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
       "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:19:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
         "error:216:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:347:1 [TS2304] Cannot find name 'defineOgImage'.",
@@ -1215,7 +1185,6 @@
     {
       "file": "app/pages/package-docs/[...path].vue",
       "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:3:35 [TS2307] Cannot find module 'h3' or its corresponding type declarations.",
         "error:126:1 [TS2304] Cannot find name 'defineOgImage'."
       ]
@@ -1231,7 +1200,6 @@
     {
       "file": "app/pages/package-timeline/[[org]]/[packageName].vue",
       "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:3:25 [TS2307] Cannot find module 'verkit' or its corresponding type declarations.",
         "error:60:64 [TS7006] Parameter 'nextVersion' implicitly has an 'any' type."
       ]
@@ -1265,32 +1233,18 @@
         "error:51:3 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
         "error:74:19 [TS7006] Parameter 'key' implicitly has an 'any' type.",
         "error:74:24 [TS7006] Parameter 'nuxtApp' implicitly has an 'any' type.",
-        "error:82:45 [TS7006] Parameter 'pkg' implicitly has an 'any' type.",
-        "error:90:46 [TS7031] Binding element 'version' implicitly has an 'any' type.",
-        "error:90:55 [TS7031] Binding element 'downloads' implicitly has an 'any' type.",
-        "error:134:47 [TS7006] Parameter 'v' implicitly has an 'any' type.",
-        "error:142:56 [TS7006] Parameter 'r' implicitly has an 'any' type.",
-        "error:145:13 [TS7006] Parameter 'r' implicitly has an 'any' type.",
-        "error:146:12 [TS7006] Parameter 'rowA' implicitly has an 'any' type.",
-        "error:146:18 [TS7006] Parameter 'rowB' implicitly has an 'any' type.",
-        "error:167:10 [TS7006] Parameter 'groupKey' implicitly has an 'any' type.",
-        "error:170:44 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:170:47 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:178:30 [TS7006] Parameter 'v' implicitly has an 'any' type.",
         "error:205:23 [TS2304] Cannot find name 'refDebounced'.",
-        "error:220:46 [TS7006] Parameter 'v' implicitly has an 'any' type.",
-        "error:226:10 [TS7006] Parameter 'group' implicitly has an 'any' type.",
-        "error:228:41 [TS7006] Parameter 'v' implicitly has an 'any' type.",
-        "error:231:13 [TS7006] Parameter 'group' implicitly has an 'any' type.",
-        "error:307:57 [TS7006] Parameter 't' implicitly has an 'any' type."
+        "error:220:46 [TS7006] Parameter 'v' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/pages/pds.vue",
       "diagnostics": [
         "error:25:1 [TS2304] Cannot find name 'defineOgImage'.",
-        "error:48:32 [TS7006] Parameter 'user' implicitly has an 'any' type.",
-        "error:52:32 [TS7006] Parameter 'user' implicitly has an 'any' type."
+        "error:48:10 [TS18047] 'pdsUsers.value' is possibly 'null'.",
+        "error:52:10 [TS18047] 'pdsUsers.value' is possibly 'null'.",
+        "error:55:38 [TS18047] 'pdsUsers.value' is possibly 'null'.",
+        "error:161:28 [TS18047] 'pdsUsers' is possibly 'null'. (source: <div v-else-if=\"!pdsUsers.length\" class=\"text-fg-subtle text-sm\">; binding: v-else-if)"
       ]
     },
     {
@@ -1302,7 +1256,6 @@
     {
       "file": "app/pages/profile/[identity]/index.vue",
       "diagnostics": [
-        "error:2:35 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:175:1 [TS2304] Cannot find name 'defineOgImage'."
       ]
     },
@@ -1315,20 +1268,16 @@
     {
       "file": "app/pages/search.vue",
       "diagnostics": [
-        "error:4:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:5:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
         "error:108:28 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:112:30 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:121:38 [TS7006] Parameter 'r' implicitly has an 'any' type.",
-        "error:155:31 [TS7006] Parameter 'k' implicitly has an 'any' type.",
+        "error:154:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
+        "error:193:17 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly algolia: 500; readonly npm: 500; }'.",
+        "error:202:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
         "error:379:44 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:388:5 [TS7006] Parameter 's' implicitly has an 'any' type.",
         "error:404:9 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:424:12 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:424:15 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:432:12 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:432:15 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:522:43 [TS7006] Parameter 'el' implicitly has an 'any' type.",
         "error:581:1 [TS2304] Cannot find name 'defineOgImage'.",
         "error:621:18 [TS2304] Cannot find name '$n'.",
         "error:630:18 [TS2304] Cannot find name '$n'.",
@@ -1358,17 +1307,6 @@
       "file": "app/pages/~[username]/index.vue",
       "diagnostics": [
         "error:2:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
-        "error:74:7 [TS7006] Parameter 'pkg' implicitly has an 'any' type.",
-        "error:83:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:83:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:90:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:90:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:93:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:93:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:97:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:97:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
-        "error:108:43 [TS7006] Parameter 'sum' implicitly has an 'any' type.",
-        "error:108:48 [TS7006] Parameter 'pkg' implicitly has an 'any' type.",
         "error:131:1 [TS2304] Cannot find name 'defineOgImage'."
       ]
     },
@@ -1381,7 +1319,7 @@
       ]
     }
   ],
-  "errorCount": 387,
+  "errorCount": 328,
   "warningCount": 0,
   "fileCount": 222
 }

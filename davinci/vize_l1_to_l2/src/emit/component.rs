@@ -30,7 +30,9 @@ use super::props_static;
 use super::props_static::PropHoistPosition as Position;
 use super::slots;
 
-pub(super) use entry::{emit_for_item, emit_fragment_root, emit_if_branch, emit_nested, emit_root};
+pub(super) use entry::{
+    emit_for_item, emit_fragment_root, emit_if_branch, emit_nested, emit_once, emit_root,
+};
 pub(super) use preamble::{collect_names, emit_resolves};
 
 pub(super) fn emit_call(
@@ -214,8 +216,6 @@ pub(super) fn emit_call(
                 skip_is,
                 for_item,
                 is_plain_element: false,
-                once_layout: false,
-                once_cache_initializer: false,
                 force_multiline: for_item && if_key.is_some() && has_component_root_slot,
             },
         )?;

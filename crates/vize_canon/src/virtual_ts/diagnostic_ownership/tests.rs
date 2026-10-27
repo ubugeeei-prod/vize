@@ -156,3 +156,52 @@ fn overlapping_primary_edits_remove_proof_and_same_offset_insertions_keep_order(
     valid.note_generated_insertion(20, 2);
     assert_eq!(ranges(valid), vec![(25..35, 22..27)]);
 }
+
+#[test]
+fn callback_protection_survives_actual_byte_insertions_and_deferred_rebases() {
+    for (at, expected) in [(0, 26..36), (20, 26..36), (25, 20..36), (30, 20..30)] {
+        let mut buffer = DiagnosticOwnership::default();
+        buffer.protect_callback_primary(20..30);
+        buffer.note_generated_insertion(at, "🧭\r\n".len());
+        let mut main = DiagnosticOwnership::default();
+        main.append_rebased(buffer, "日本".len());
+        assert_eq!(
+            main.take_callback_primaries(),
+            vec![expected.start + 6..expected.end + 6]
+        );
+        assert_eq!(main.take_callback_primaries(), Vec::<Range<usize>>::new());
+    }
+    let mut untouched = DiagnosticOwnership::default();
+    let mut edited = DiagnosticOwnership::default();
+    edited.protect_callback_primary(2..7);
+    edited.note_generated_insertion(2, 3);
+    edited.note_generated_insertion(2, 2);
+    assert_eq!(edited.take_callback_primaries(), vec![7..12]);
+    assert_eq!(
+        untouched.take_callback_primaries(),
+        Vec::<Range<usize>>::new()
+    );
+    assert_eq!(
+        ranges(edited),
+        vec![],
+        "protection alone cannot authorize hiding another expression"
+    );
+}
+
+#[test]
+fn deferred_publication_order_preserves_exact_owner_and_overlap_checks() {
+    for order in [[0, 1, 2, 3], [3, 2, 1, 0], [2, 0, 3, 1], [1, 3, 0, 2]] {
+        let mut ledger = DiagnosticOwnership::default();
+        let rows = [
+            (10..15, true),
+            (20..25, false),
+            (30..35, true),
+            (32..34, false),
+        ];
+        for index in order {
+            let (generated, inference) = &rows[index];
+            ledger.record(owner(), generated.clone(), 22..27, *inference);
+        }
+        assert_eq!(ranges(ledger), vec![(10..15, 22..27)]);
+    }
+}

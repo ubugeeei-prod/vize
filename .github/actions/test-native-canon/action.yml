@@ -119,6 +119,14 @@ runs:
           if (observations !== 1) throw new Error('exactly one first-world UI package observation required');
         }
         NODE
+    - name: Test config recovery guidance and no-config with the actual CLI
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- check_config_recovery_cli:: --nocapture
     - name: Test nested sibling narrowing with the actual CLI
       shell: bash
       env:

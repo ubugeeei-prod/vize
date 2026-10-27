@@ -15,10 +15,12 @@
 //! (indentation, text-block extents, `#[…]` bounds, the newline between
 //! piped lines) is pug's own. The Vue lowering
 //! (`vize_l1_to_l2::lower::pug`) replays pug's code generator over this
-//! tree; constructs that execute JavaScript at build time or link other
-//! files (mixins, includes, conditionals, iteration, filters, code) are
-//! recognised here with pug's patterns, kept verbatim as
-//! [`PugNode::Refused`], and refused there with diagnostics.
+//! tree; keyword constructs (mixin definitions, includes, conditionals,
+//! iteration, filters, code) are recognised here with pug's patterns and
+//! kept verbatim as [`PugNode::Refused`] heads with their blocks — the
+//! lowering runs what it can evaluate at build time and refuses the rest
+//! with diagnostics. Mixin calls are [`PugNode::Call`] nodes with a tag's
+//! tail.
 //!
 //! # The hole policy (pug)
 //!
@@ -52,9 +54,9 @@ use vize_l0::{Allocator, Vec};
 pub use error::{PugError, PugErrorCode};
 pub use render::{PugHoleCounts, check_pug_fidelity, pug_hole_counts, render_pug};
 pub use tree::{
-    PugAttr, PugAttrGroup, PugAttrItem, PugBlock, PugCode, PugComment, PugDotBlock, PugHtml,
-    PugHtmlItem, PugInline, PugInterpolation, PugNode, PugRefusal, PugRefused, PugTag, PugTagPart,
-    PugText, PugTextPiece, PugTree, PugUnexpected,
+    PugAttr, PugAttrGroup, PugAttrItem, PugBlock, PugCall, PugCode, PugComment, PugDotBlock,
+    PugHtml, PugHtmlItem, PugInline, PugInterpolation, PugNode, PugRefusal, PugRefused, PugTag,
+    PugTagPart, PugText, PugTextPiece, PugTree, PugUnexpected,
 };
 
 /// Parse pug template content (as it sits between the SFC's `<template

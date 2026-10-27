@@ -35,7 +35,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn v_once_single_space_between_nodes_keeps_the_string_argument() {
+fn v_once_single_space_between_nodes_drops_the_string_argument() {
     assert_eq!(
         assembled(r#"<div v-once><b>{{ title }}</b> <br><span v-html="html"></span></div>"#),
         "\
@@ -48,7 +48,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _setBlockTracking(-1, true),
     (_cache[0] = _createElementVNode(\"div\", null, [
       _createElementVNode(\"b\", null, _toDisplayString(title), 1 /* TEXT */),
-      _createTextVNode(\" \"),
+      _createTextVNode(),
       _hoisted_1,
       _createElementVNode(\"span\", { innerHTML: html }, null, 8 /* PROPS */, [\"innerHTML\"])
     ])).cacheIndex = 0,

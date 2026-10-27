@@ -13,9 +13,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CONFIG_FREE_PROJECT_SHAPES } from "./smoke-release-init-config-free.mjs";
+import { CONFIG_FREE_PROJECT_SHAPES } from "./smoke-release-init-config-free.ts";
 import { packedFileSpec, packedRedirects } from "./smoke-release-init-fresh.mjs";
-import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
+import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.ts";
 import {
   assertFreshProject,
   checkReport,
@@ -26,11 +26,13 @@ import {
   runGeneratedCheck,
   runManager,
   writeFiles,
-} from "./smoke-release-init-project.mjs";
-import { run } from "./smoke-process.mjs";
+} from "./smoke-release-init-project.ts";
+import { run } from "./smoke-process.ts";
 
 interface SmokeContext {
   readonly freshRoot: string;
+  readonly installDir: string;
+  readonly repoRoot: string;
   readonly packed: ReadonlyMap<string, string>;
   readonly peers: Readonly<Record<string, string>>;
   readonly tempDir: string;

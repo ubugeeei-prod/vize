@@ -104,7 +104,7 @@ pub(in crate::emit) fn emit_wrapped_handler(
 
 /// `options_api_handler_name`: the trimmed authored text is a simple
 /// identifier the binding table records as an Options API member.
-fn options_api_handler_name<'a>(cx: &EmitCx<'_>, expr: &ExprRef<'a>) -> Option<&'a str> {
+pub(super) fn options_api_handler_name<'a>(cx: &EmitCx<'_>, expr: &ExprRef<'a>) -> Option<&'a str> {
     let source = match expr {
         ExprRef::Js(js) => js.source,
         ExprRef::Opaque(opaque) => opaque.source,

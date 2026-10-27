@@ -1,0 +1,51 @@
+{
+  "schema": "vize.typescriptProjectConfigurationFixture.v1",
+  "issue": 10740,
+  "contract": "whole-tsserver-diagnostics-and-project-metadata-v1",
+  "inputs": [
+    {
+      "path": "src/Inherited.vue.txt",
+      "sha256": "bfb407f1299c232f69a428a3b2ebc2548a5015eed88396ae9fb38e03692c495f"
+    },
+    {
+      "path": "src/control.ts.txt",
+      "sha256": "963d2197898ace3298948205002012b00d31f755d5eaa2ae589a03563befd818"
+    },
+    {
+      "path": "inherited-before.json.txt",
+      "sha256": "18accd0b731fa5901df2d3c38396d8fa81b496b955e399864c2554a664ff43b2"
+    },
+    {
+      "path": "inherited-after.json.txt",
+      "sha256": "172ab57682f8e2c73950b879f1d20ea127eaa7224474f32cb14d7098a32dc0df"
+    },
+    {
+      "path": "tsconfig-6.0.json.txt",
+      "sha256": "981b1be9b5ce25cc1dbe457653945f5fe2fc6189132d64fe054f2aa9a98f1be7"
+    },
+    {
+      "path": "tsconfig-5.7.json.txt",
+      "sha256": "639f9cca79d3466fc27dbada1a213d26a83ee5f1c497bc3e29b1c56bb881a0d5"
+    },
+    {
+      "path": "expected.json",
+      "sha256": "97ef6c35cbb6cbb90f099d04ae3a54b851ac17920aece9cfaacac96ff2546242"
+    },
+    {
+      "path": "before-inputs.json",
+      "sha256": "8fedd5da81bb3f78ae01dbe525bfad594702933f5ad3ff05b270a719d70f0e43"
+    }
+  ],
+  "beforeWitness": {
+    "path": "before-witness.json",
+    "sha256": "462925989cfc5c1ec84b9ddcdabf175579059df648013acc25b00a5fcc316892",
+    "sourceRevision": "085b4753c45997744d477cd2be1a882c43704a79",
+    "run": 40226962544,
+    "artifact": 12610814625,
+    "nativeImage": {
+      "file": "vize-vitrine.linux-x64-gnu.node",
+      "sha256": "55a25ff4429caf278d17fea4d57374a129d342519d4bd5c58ff08ce3997dce98",
+      "nativeBuildToken": "3e7be840806f525796edb34eb7fc7a9e"
+    }
+  }
+}

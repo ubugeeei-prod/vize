@@ -1,6 +1,13 @@
 use std::sync::{Arc, Mutex};
 
-use super::{ContextFingerprint, ProjectMember, SessionCache, recover_lock};
+use super::{ContextFingerprint, ProjectMember, RevisionKey, SessionCache, recover_lock};
+
+fn host(source_path: std::path::PathBuf) -> RevisionKey {
+    RevisionKey {
+        source_path,
+        workspace: false,
+    }
+}
 use crate::corsa_bridge::vue_dependencies_alias::AliasContext;
 use vize_carton::{FxHashMap, FxHashSet, cstr};
 
@@ -24,7 +31,7 @@ fn cache_evicts_only_the_least_recently_used_context() {
         fingerprint.stamp(&context);
         cache.record_project_member(
             virtual_root.clone(),
-            path.clone(),
+            host(path.clone()),
             ProjectMember {
                 source_paths: Vec::new(),
                 expected_files: FxHashSet::default(),
@@ -42,12 +49,12 @@ fn cache_evicts_only_the_least_recently_used_context() {
     assert!(
         !cache
             .slots
-            .contains_key(std::path::Path::new("/workspace/0/App.vue"))
+            .contains_key(&host("/workspace/0/App.vue".into()))
     );
     assert!(
         cache
             .slots
-            .contains_key(std::path::Path::new("/workspace/8/App.vue"))
+            .contains_key(&host("/workspace/8/App.vue".into()))
     );
     assert_eq!(cache.project_members.len(), 8);
     assert_eq!(cache.project_snapshots.len(), 8);
@@ -80,7 +87,7 @@ fn context_eviction_preserves_members_of_a_live_native_project() {
         fingerprint.stamp(&context);
         cache.record_project_member(
             virtual_root.clone(),
-            path.clone(),
+            host(path.clone()),
             ProjectMember {
                 source_paths: Vec::new(),
                 expected_files: FxHashSet::from_iter([
@@ -99,7 +106,7 @@ fn context_eviction_preserves_members_of_a_live_native_project() {
     assert_eq!(cache.project_members[&virtual_root].len(), 12);
     let union = cache.project_union_snapshot(
         &virtual_root,
-        &root.path().join("Other.vue"),
+        &host(root.path().join("Other.vue")),
         ContextFingerprint::capture(
             &root.path().join("Other.vue"),
             "",
@@ -194,7 +201,7 @@ fn project_union_drops_members_with_stale_input_stamps() {
     let mut cache = SessionCache::default();
     cache.record_project_member(
         virtual_root.clone(),
-        source.clone(),
+        host(source.clone()),
         ProjectMember {
             source_paths: Vec::new(),
             expected_files: FxHashSet::from_iter([expected]),
@@ -208,15 +215,17 @@ fn project_union_drops_members_with_stale_input_stamps() {
         },
     );
 
-    let current = cache.project_union_snapshot(&virtual_root, &source, 7);
+    let current = cache.project_union_snapshot(&virtual_root, &host(source.clone()), 7);
     assert!(current.files.is_empty());
     assert!(!current.requires_arbitrary_extensions);
-    let union = cache.project_union_snapshot(&virtual_root, &root.path().join("Other.vue"), 7);
+    let union =
+        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 7);
     assert_eq!(union.package_links.get(&link), Some(&target));
     assert!(union.requires_arbitrary_extensions);
 
     std::fs::write(&manifest, "{\"version\":2}").unwrap();
-    let union = cache.project_union_snapshot(&virtual_root, &root.path().join("Other.vue"), 7);
+    let union =
+        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 7);
     assert!(union.files.is_empty());
     assert!(union.package_links.is_empty());
     assert!(union.query_paths.is_empty());
@@ -232,7 +241,7 @@ fn project_union_drops_members_from_a_closed_or_changed_overlay_epoch() {
     let mut cache = SessionCache::default();
     cache.record_project_member(
         virtual_root.clone(),
-        source,
+        host(source),
         ProjectMember {
             source_paths: Vec::new(),
             expected_files: FxHashSet::from_iter([expected.clone()]),
@@ -244,12 +253,14 @@ fn project_union_drops_members_from_a_closed_or_changed_overlay_epoch() {
         },
     );
 
-    let union = cache.project_union_snapshot(&virtual_root, &root.path().join("Other.vue"), 41);
+    let union =
+        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 41);
     assert!(union.files.contains(&expected));
     assert!(union.requires_arbitrary_extensions);
     assert_eq!(union.query_paths, vec![expected]);
 
-    let union = cache.project_union_snapshot(&virtual_root, &root.path().join("Other.vue"), 42);
+    let union =
+        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 42);
     assert!(union.files.is_empty());
     assert!(union.package_links.is_empty());
     assert!(union.query_paths.is_empty());

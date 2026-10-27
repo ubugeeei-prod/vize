@@ -346,7 +346,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 if is_dynamic {
                     ctx.skip_is_prop = true;
                 }
-                generate_props(ctx, &el.props);
+                ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
                 ctx.skip_is_prop = false;
             } else if !el.children.is_empty() || has_patch_info {
                 ctx.push(", null");
