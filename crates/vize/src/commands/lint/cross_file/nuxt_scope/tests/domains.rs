@@ -27,7 +27,7 @@ fn mixed_layout_and_page_locations_retain_the_whole_group() {
 fn repeated_locations_in_one_alternative_are_never_filtered() {
     let mut fixture = Fixture::new();
     fixture.source("src/pages/login.vue",
-        "<script setup>definePageMeta({layout:'bare'})</script><template><main><section id=\"auth-page\"/><aside id=\"auth-page\"/></main></template>");
+        "<script setup>definePageMeta({layout:'bare'})</script><template><main><section id=\"auth-page\"></section><aside id=\"auth-page\"></aside></main></template>");
     let mut analyzer = fixture.analyzer(&[]);
     assert!(fixture.prove(&mut analyzer).0);
     let result = analyzer.analyze();

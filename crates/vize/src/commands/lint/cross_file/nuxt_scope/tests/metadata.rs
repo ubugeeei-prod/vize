@@ -205,8 +205,7 @@ fn identical_root_and_src_directories_are_read_once() {
 #[test]
 fn a_config_borrowed_from_an_ancestor_does_not_authenticate_a_child_invocation() {
     let fixture = Fixture::new();
-    let nested = fixture.root.join("nested");
-    std::fs::create_dir(&nested).unwrap();
+    let nested = fixture.root.join("src");
     let dirs = crate::commands::project_nuxt::render_dirs(&nested).unwrap();
     assert!(!dirs.static_render_config);
 }

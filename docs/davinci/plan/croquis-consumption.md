@@ -78,6 +78,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `JsRuntime`                                | type  | `scope`                        |
 | `MacroTracker`                             | type  | `macros`                       |
 | `NonScriptSetupScopeData`                  | type  | `scope`                        |
+| `NuxtTemplateRenderFacts`                  | type  | `croquis::template`            |
 | `OptionGroup`                              | type  | `croquis`                      |
 | `OptionKey`                                | type  | `croquis`                      |
 | `OptionMember`                             | type  | `croquis`                      |
@@ -153,6 +154,8 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `Croquis.import_statements`                | field | `croquis`                      |
 | `Croquis.invalid_exports`                  | field | `croquis`                      |
 | `Croquis.macros`                           | field | `croquis`                      |
+| `Croquis.nuxt_render_template`             | field | `croquis`                      |
+| `Croquis.nuxt_static_render_script`        | field | `croquis`                      |
 | `Croquis.options_descriptor`               | field | `croquis`                      |
 | `Croquis.pattern_diagnostics`              | field | `croquis`                      |
 | `Croquis.provide_inject`                   | field | `croquis`                      |

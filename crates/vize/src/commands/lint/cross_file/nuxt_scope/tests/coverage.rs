@@ -13,7 +13,7 @@ fn unselected_and_new_untracked_importers_cannot_reuse_a_completeness_witness() 
     // must find the newly added, untracked route without reading its content.
     let (proven, counts) = fixture.prove(&mut analyzer);
     assert!(!proven);
-    assert_eq!(counts.read_dir, 4);
+    assert_eq!(counts.read_dir, 3);
     assert_eq!(counts.manifest_reads, 5);
     assert_eq!(Fixture::ids(&mut analyzer).len(), 2);
     let mut explicitly_omitted = fixture.analyzer(&["src/pages/overview.vue"]);

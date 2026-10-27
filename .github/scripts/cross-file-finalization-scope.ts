@@ -11,7 +11,11 @@ export const HISTORICAL_FINALIZATION_PATHS = [
   "crates/vize_croquis_cf/benches/cross_file.rs",
 ] as const;
 
-export function planFinalizationComparison(changedPaths: readonly string[], event: string) {
+export function planFinalizationComparison(
+  changedPaths: readonly string[],
+  event: string,
+  expectedPaths: readonly string[] = HISTORICAL_FINALIZATION_PATHS,
+) {
   assert.ok(
     event === "pull_request" || event === "workflow_dispatch",
     "unknown comparison trigger",
@@ -21,7 +25,16 @@ export function planFinalizationComparison(changedPaths: readonly string[], even
       (name) => typeof name === "string" && name.length > 0 && !name.includes("\0"),
     ),
   );
-  const expected = [...HISTORICAL_FINALIZATION_PATHS].sort();
+  assert.ok(expectedPaths.length > 0 && new Set(expectedPaths).size === expectedPaths.length);
+  assert.ok(
+    expectedPaths.every(
+      (name) =>
+        /^(?:crates|davinci)\/[A-Za-z0-9_./-]+\.rs$/u.test(name) &&
+        !name.split("/").some((part) => part === "." || part === ".." || part.length === 0),
+    ),
+    "historical source scope must contain unique relative Rust paths",
+  );
+  const expected = [...expectedPaths].sort();
   const actual = [...changedPaths].sort();
   const scopeMatches = JSON.stringify(actual) === JSON.stringify(expected);
   return {
@@ -32,14 +45,22 @@ export function planFinalizationComparison(changedPaths: readonly string[], even
     actualPaths: actual,
     reason: scopeMatches
       ? "historical changed-source scope matches"
-      : "outside the historical three-file changed-source certificate",
+      : expectedPaths === HISTORICAL_FINALIZATION_PATHS
+        ? "outside the historical three-file changed-source certificate"
+        : "outside the separately reviewed historical ordering source certificate",
     metricsProduced: false,
     measurementQualification:
       "not evaluated by the planner; the original comparator remains strict",
   };
 }
 
-export function main() {
+export function main(
+  options: {
+    expectedPaths?: readonly string[];
+    outputDirectory?: string;
+    summaryTitle?: string;
+  } = {},
+) {
   const base = process.env.BASE_SOURCE_SHA,
     head = process.env.EXPECTED_SOURCE_SHA;
   assert.match(base ?? "", /^[a-f0-9]{40}$/u);
@@ -57,9 +78,15 @@ export function main() {
     schemaVersion: 1,
     baseSource: base,
     headSource: head,
-    ...planFinalizationComparison(changed, process.env.GITHUB_EVENT_NAME ?? ""),
+    ...planFinalizationComparison(
+      changed,
+      process.env.GITHUB_EVENT_NAME ?? "",
+      options.expectedPaths,
+    ),
   };
-  const directory = resolve("target/vize-tests/cross-file-finalization-scope");
+  const directory = resolve(
+    options.outputDirectory ?? "target/vize-tests/cross-file-finalization-scope",
+  );
   mkdirSync(directory, { recursive: true });
   writeFileSync(resolve(directory, "scope.json"), JSON.stringify(plan, null, 2) + "\n");
   assert.ok(process.env.GITHUB_OUTPUT);
@@ -67,7 +94,7 @@ export function main() {
   if (process.env.GITHUB_STEP_SUMMARY)
     appendFileSync(
       process.env.GITHUB_STEP_SUMMARY,
-      `### Historical cross-file finalization comparison\n\nBase: ${base}\nHead: ${head}\n\n` +
+      `### ${options.summaryTitle ?? "Historical cross-file finalization comparison"}\n\nBase: ${base}\nHead: ${head}\n\n` +
         (plan.runComparison
           ? "The strict historical comparator will evaluate its original prerequisites and counters.\n"
           : "Not applicable to this changed-source scope. No performance measurements or performance pass are claimed.\n") +

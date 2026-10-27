@@ -13,7 +13,6 @@ fn full_inline_original_templates_and_static_page_meta_produce_private_facts() {
     for source in [
         "<template><main><slot /></main></template>",
         r#"<script setup lang="ts">definePageMeta({ layout: "bare" })</script><template><section id="auth-page">login</section></template>"#,
-        r#"<script></script><script setup>definePageMeta({ pageTransition: false, layoutTransition: false })</script><template><main /></template>"#,
     ] {
         let captured = analyze(source);
         assert_eq!(
@@ -40,6 +39,9 @@ fn full_inline_original_templates_and_static_page_meta_produce_private_facts() {
 #[test]
 fn transitions_runtime_scripts_original_errors_and_external_inputs_stay_unknown() {
     for source in [
+        // The specialized plain-script path has no original statement visitor.
+        // Even an empty ordinary block must keep that producer scope unknown.
+        r#"<script></script><script setup>definePageMeta({ pageTransition: false, layoutTransition: false })</script><template><main /></template>"#,
         r#"<script setup>definePageMeta({ pageTransition: { mode: "in-out" } })</script><template><div /></template>"#,
         "<script setup>definePageMeta({ layoutTransition: true })</script><template><div /></template>",
         "<script setup>const router = useRouter()</script><template><div /></template>",
