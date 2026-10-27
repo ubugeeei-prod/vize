@@ -29,7 +29,7 @@ defineExpose({ value });
 
 const imports = `import type { Assert, Exact, IsAny, IsNever, IsUnknown, IsReadonly } from './proofs';`;
 
-function proof(name: string, expected: string, readonly = true): string {
+export function proof(name: string, expected: string, readonly = true): string {
   return `type ${name}Value = typeof ${name}.value;
 type ${name}Exact = Assert<Exact<${name}Value, ${expected}>>;
 type ${name}Any = Assert<Exact<IsAny<${name}Value>, false>>;
@@ -38,7 +38,7 @@ type ${name}Never = Assert<Exact<IsNever<${name}Value>, false>>;
 type ${name}Readonly = Assert<Exact<IsReadonly<typeof ${name}, 'value'>, ${readonly}>>;`;
 }
 
-function sfc(script: string, template: string, crlf = false): string {
+export function sfc(script: string, template: string, crlf = false): string {
   // The emoji is before every script anchor: byte offsets are not UTF-16 columns.
   const source = `<script setup lang="ts">
 ${imports}
@@ -65,7 +65,12 @@ export type AdmissionCase = {
   mutations: AdmissionMutation[];
 };
 
-const member = (name: string, before: string, after: string, token: string): AdmissionMutation => ({
+export const member = (
+  name: string,
+  before: string,
+  after: string,
+  token: string,
+): AdmissionMutation => ({
   name,
   before,
   after,
