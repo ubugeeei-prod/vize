@@ -1,0 +1,71 @@
+name: Listbox ordinary module discovery
+run-name: Listbox module discovery @ ${{ github.sha }}
+on:
+  push:
+    branches: ["test/listbox-module-discovery-qualified-10925"]
+permissions: { contents: read }
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_HEAD: "6863bf5c253163f0ddaf129c774cb49021bb9a8c"
+jobs:
+  structure:
+    name: Unchanged module gate before and after
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 64, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Keep actual gate failure and success with unchanged oracles
+        env:
+          SOURCE_LENGTH_BASE_REF: b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd
+        run: node .github/scripts/listbox-module-discovery-proof.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: listbox-module-discovery-${{ github.run_id }}
+          path: ${{ runner.temp }}/listbox-module-layout.json
+          if-no-files-found: error
+          retention-days: 90
+  cli:
+    uses: ./.github/workflows/full-source-cli.yml
+  whole-cli-packets:
+    name: Keep all 298 whole CLI packets
+    needs: [cli, structure]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.cli.outputs.receipt-sha256 }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.cli.outputs) }}" }
+      - name: Preserve original whole positive and negative packets
+        run: node --test tests/tooling/lint-listbox-focus-10925.test.ts
+      - name: Record the unchanged runtime binary and exact source receipt
+        run: >-
+          node --input-type=module -e 'import fs from "node:fs";
+          const r=JSON.parse(fs.readFileSync("target/ci/vize.differential-build.json","utf8"));
+          const p={...r,baselineSource:"b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd",baselineBinarySha256:"6f69ee0ebb9f84dfef4f6cb568863274b483dedf99132cc387f1f24b32c177e0",sameRuntimeBinary:r.binarySha256==="6f69ee0ebb9f84dfef4f6cb568863274b483dedf99132cc387f1f24b32c177e0"};
+          fs.writeFileSync("target/differential/listbox-module-source-receipt.json",JSON.stringify(p,null,2)+"\n");
+          console.log(JSON.stringify(p));'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: listbox-module-whole-cli-${{ github.run_id }}
+          path: |
+            target/differential/lint-listbox-focus-10925.json
+            target/differential/listbox-module-source-receipt.json
+          if-no-files-found: error
+          retention-days: 90
