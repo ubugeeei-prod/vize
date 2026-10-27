@@ -68,10 +68,10 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
         exports,
         !ret.panicked && ret.diagnostics.is_empty(),
     );
-    if ret.diagnostics.is_empty() {
-        if let Some(origins) = result.value_binding_origins.as_mut() {
-            origins.admit();
-        }
+    if ret.diagnostics.is_empty()
+        && let Some(origins) = result.value_binding_origins.as_mut()
+    {
+        origins.admit();
     }
     if !ret.diagnostics.is_empty() {
         if let Some(origins) = result.value_binding_origins.as_mut() {

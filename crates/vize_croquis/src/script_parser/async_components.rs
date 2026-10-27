@@ -55,7 +55,11 @@ impl AsyncComponentBindings {
         let Some(factory) = factory_reference(scope, &call.callee) else {
             return;
         };
-        let Some(argument) = call.arguments[0].as_expression() else {
+        let Some(argument) = call
+            .arguments
+            .first()
+            .and_then(|argument| argument.as_expression())
+        else {
             return;
         };
         let Some(loader) = component_loader(scope, argument) else {

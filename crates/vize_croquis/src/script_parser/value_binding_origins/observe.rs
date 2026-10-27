@@ -111,13 +111,11 @@ pub(crate) fn note_expression_mutation(
         {
             origins.refuse()
         }
-        Expression::FunctionExpression(function) => {
-            // Named function-expression identity is local to the closure; the
-            // scope builder does not currently record that name as a binding.
-            // Refuse this domain rather than accidentally inheriting an import.
-            if function.id.is_some() {
-                origins.refuse();
-            }
+        // Named function-expression identity is local to the closure; the
+        // scope builder does not currently record that name as a binding.
+        // Refuse this domain rather than accidentally inheriting an import.
+        Expression::FunctionExpression(function) if function.id.is_some() => {
+            origins.refuse();
         }
         _ => {}
     }
