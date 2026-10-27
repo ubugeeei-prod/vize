@@ -123,18 +123,33 @@ void test("a retired-language file arriving or leaving anywhere selects the ledg
       "davinci/proofs/lean-toolchain",
     ]) {
       add(file);
-      assert.deepEqual(selected(file), [ratchet], file);
+      assert.ok(selected(file).includes(ratchet), file);
     }
     // A rename in arrives under the new name.
     add("tools/renamed.mjs");
-    assert.deepEqual(selected("tools/renamed.ts", "tools/renamed.mjs"), [ratchet]);
+    assert.ok(selected("tools/renamed.ts", "tools/renamed.mjs").includes(ratchet));
+    // A directly changed test keeps its own selection alongside the ratchet.
+    const direct = "tests/tooling/direct.test.ts";
+    add(direct);
+    const combined = selected("tools/renamed.mjs", direct);
+    assert.ok(combined.includes(ratchet));
+    assert.ok(combined.includes(direct));
     // Exempt test inputs and listed files edited in place never select it.
     add("tests/_fixtures/evidence/input.mjs");
-    assert.deepEqual(selected("tests/_fixtures/evidence/input.mjs", "tools/listed.mjs"), []);
+    assert.ok(
+      !selected("tests/_fixtures/evidence/input.mjs", "tools/listed.mjs").includes(ratchet),
+    );
     // A port that keeps the stale entry does.
     rmSync(join(f.cwd, "tools/listed.mjs"));
     add("tools/listed.ts");
-    assert.deepEqual(selected("tools/listed.mjs", "tools/listed.ts"), [ratchet]);
+    assert.ok(selected("tools/listed.mjs", "tools/listed.ts").includes(ratchet));
+    // Invalid or absent authority must keep the test selected to report it.
+    f.write("tools/config/retired-tooling-languages.json", "{");
+    assert.ok(selected("tools/renamed.mjs").includes(ratchet));
+    f.write("tools/config/retired-tooling-languages.json", JSON.stringify({ permanent: [] }));
+    assert.ok(selected("tools/renamed.mjs").includes(ratchet));
+    rmSync(join(f.cwd, "tools/config/retired-tooling-languages.json"));
+    assert.ok(selected("tools/renamed.mjs").includes(ratchet));
   } finally {
     f.cleanup();
   }
