@@ -37,8 +37,9 @@ const baseline = "3a3c8460f966fddbd8e1be4c083d460b24202f90",
   fixed = "91c25c1b4a2ea842705e4db321b6e92d2b70ba42";
 const before = JSON.parse(from(baseline, manifestPath)),
   current = JSON.parse(read(manifestPath));
-// Later ordinary compiler cases are not part of this CSS-only registration.
-const cssOnly = Buffer.from(JSON.stringify({ ...current, cases: before.cases }));
+// Keep the entire original envelope: future independent registrations cannot
+// become part of the historical CSS-only source permission.
+const cssOnly = Buffer.from(JSON.stringify({ ...before, cssApiCases: current.cssApiCases }));
 const side = (side, file) =>
   side === "base"
     ? from(baseline, file)

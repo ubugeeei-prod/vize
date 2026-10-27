@@ -41,6 +41,15 @@ const beforeSources = new Map(
     return [file, bytes];
   }),
 );
+// The immutable refined #10751 source closure; later compiler changes do not
+// inherit its permission. Full current output/runtime campaigns run separately.
+const admittedRevision = "b09ac660cd0684396c21d24249c4b1e2193e965a";
+const afterSources = new Map(
+  admission.sourceFiles.map(({ path: file }) => [
+    file,
+    execFileSync("git", ["show", `${admittedRevision}:${file}`], { maxBuffer: 8 * 1024 * 1024 }),
+  ]),
+);
 const sourcePaths = admission.sourceFiles.map((source) => source.path);
 // This complete ordinary case exists only in the in-memory gate control. The
 // production manifest receives no SSR case or whole-product native credit.
@@ -80,7 +89,7 @@ function observe({
         file = file.replace("/unit-only-ssr-control/", `/${originalRoot}/`);
       const actual = path.join(root, file);
       if (!fs.existsSync(actual)) return null;
-      const bytes = fs.readFileSync(actual);
+      const bytes = afterSources.get(file) ?? fs.readFileSync(actual);
       return future && file === sourcePaths[0] ? Buffer.concat([bytes, Buffer.from("\n")]) : bytes;
     },
   });

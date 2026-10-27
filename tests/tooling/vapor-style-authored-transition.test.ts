@@ -14,10 +14,16 @@ const root = new URL(
 );
 const directory = "authored-module-successor-10701/";
 const bytes = (file: string) => fs.readFileSync(new URL(file, root));
-const read = (file: string) => JSON.parse(bytes(file));
+const read = (file: string) => JSON.parse(bytes(file).toString("utf8"));
 const capture = read(`${directory}capture.json`);
 const groups: StylePacketGroup[] = ["main", "attribute-case", "review", "priority", "sfc"];
-const packet = (group: StylePacketGroup, side: "base" | "head") =>
+type StyleRow = Record<string, unknown> & {
+  family: string;
+  standalone: boolean;
+  fold: boolean;
+  output: Record<string, unknown> & { module: string; code: string; errors: string[] };
+};
+const packet = (group: StylePacketGroup, side: "base" | "head"): StyleRow[] =>
   read(
     group === "main"
       ? side === "base"
