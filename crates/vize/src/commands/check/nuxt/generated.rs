@@ -252,7 +252,7 @@ pub(super) fn collect_generated_template_globals(
 }
 
 fn is_configured_declaration(path: &Path, graph: Option<&FxHashSet<PathBuf>>) -> bool {
-    graph.is_none_or(|files| files.contains(&vize_carton::path::canonicalize_non_verbatim(path)))
+    graph.is_none_or(|files| files.contains(&vize_l0::path::canonicalize_non_verbatim(path)))
 }
 
 fn collect_i18n_template_globals(
