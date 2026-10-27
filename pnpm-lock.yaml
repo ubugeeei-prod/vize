@@ -471,6 +471,9 @@ importers:
       ajv:
         specifier: catalog:repo-tooling
         version: 8.20.0
+      chokidar-braces-oracle:
+        specifier: npm:chokidar@3.6.0
+        version: chokidar@3.6.0
       glob:
         specifier: catalog:repo-tooling
         version: 13.0.6
