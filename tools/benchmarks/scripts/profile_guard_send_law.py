@@ -38,6 +38,10 @@ def digest(path):
 
 
 def compile_probe(role, artifact, library, snippet, evidence):
+    dependency_dirs = {Path(name).parent for name in artifact["filenames"] if Path(name).parent.name == "deps"}
+    assert len(dependency_dirs) == 1, artifact
+    dependencies = next(iter(dependency_dirs))
+    assert dependencies.is_dir()
     destination = evidence / ("send-" + role)
     destination.mkdir()
     stdout = evidence / ("send-" + role + ".stdout")
@@ -46,7 +50,7 @@ def compile_probe(role, artifact, library, snippet, evidence):
         [
             "rustc", "+1.99.1", "--edition=2024", "--crate-name", "guard_send_probe",
             "--emit=metadata", "--error-format=json", "--out-dir", str(destination),
-            "--extern", "vize_l0=" + str(library), "-L", "dependency=" + str(library.parent),
+            "--extern", "vize_l0=" + str(library), "-L", "dependency=" + str(dependencies),
             str(snippet),
         ],
         stdout,
@@ -62,7 +66,7 @@ def compile_probe(role, artifact, library, snippet, evidence):
             diagnostics.append({"code": row["code"]["code"], "message": row["message"]})
     return {
         "returnCode": code, "diagnostics": diagnostics, "rlib": str(library),
-        "rlibSha256": digest(library), "artifact": artifact,
+        "rlibSha256": digest(library), "dependencyDirectory": str(dependencies), "artifact": artifact,
     }
 
 
