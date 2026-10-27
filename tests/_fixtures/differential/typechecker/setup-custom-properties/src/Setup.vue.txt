@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Box from './Box.vue'
+const label = 'x'
+</script>
+
+<template>
+  <span :title="isSP ? 'a' : 'b'">{{ appName.toUpperCase() }} {{ label }}</span>
+  <Box><template #text><i v-for="i in (isSP ? 5 : 4)" :key="i">{{ isSP }}</i></template></Box>
+</template>

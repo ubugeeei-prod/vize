@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"lib": [
+			"esnext",
+			"dom"
+		],
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"skipLibCheck": true,
+		"allowJs": true,
+		"declaration": true,
+		"noEmit": true,
+		"jsx": "preserve"
+	},
+	"vueCompilerOptions": {
+		"target": 99
+	},
+	"include": []
+}

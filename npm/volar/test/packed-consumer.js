@@ -153,7 +153,11 @@ for (const file of ["service.test.js", "service-harness.js"]) {
     sourceTest.replace('from "../src/index.js"', 'from "@vizejs/volar-plugin"'),
   );
 }
-for (const file of ["expected-packets", "expected-packets.provenance.json"])
+for (const file of [
+  "expected-packets",
+  "expected-packets.provenance.json",
+  "public-instance-reference.js",
+])
   fs.cpSync(path.join(root, "npm/volar/test", file), path.join(tests, file), {
     recursive: true,
   });

@@ -40,7 +40,9 @@ The following changes are deliberately separate from that import:
   zero as required by CSS Color 4. The cssparser-color assertion remains intact.
 - Style rules in an `@scope` body nested in a style rule parse relative to the
   scoping root instead of taking an implicit `&` (#10810). The body of each such
-  rule, and anything outside the scope body, keeps the original nesting.
+  rule, and anything outside the scope body, keeps the original nesting. Leading
+  combinators use a zero-specificity scope anchor; mixed lists preserve explicit
+  `:scope` and `&` without adding specificity.
 - Explicit Vize regression test registration and package provenance. The original
   ignored non-root release profile is removed; Vize's workspace profile applies.
 - A separate formatting-only compatibility commit wraps attributes/calls in

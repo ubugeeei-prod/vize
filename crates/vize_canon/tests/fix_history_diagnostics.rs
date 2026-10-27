@@ -820,6 +820,24 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
 }
 
 #[test]
+fn generic_slot_outlets_check_against_the_setup_parameters() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "generic-slot-outlet-10883",
+        "generic_slot_outlets_check_against_the_setup_parameters",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10883),
+        &[
+            "defaulted-parameter",
+            "constrained-parameter",
+            "wrong-payload",
+        ],
+    );
+}
+
+#[test]
 fn slot_host_guards_preserve_authored_impossible_comparisons() {
     if native_fixture_runtime_disabled() {
         return;
@@ -939,6 +957,17 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
+fn undeclared_instance_globals_report_at_every_read() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_report_at_every_read",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10617),
+        &["undeclared-dollar-globals"],
+    );
+}
+
+#[test]
 fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
     check_pack(
         "unicode-prop-bindings-10573",
@@ -1006,6 +1035,28 @@ fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
 }
 
 #[test]
+fn editor_alias_import_extension_styles_keep_native_diagnostics() {
+    check_pack(
+        "editor-alias-import-extension-10753",
+        "editor_alias_import_extension_styles_keep_native_diagnostics",
+        "377e5df97c4effa786a6426a62f61296ce16c750",
+        Some(10753),
+        &["authored-extension-styles"],
+    );
+}
+
+#[test]
+fn callback_render_position_preserves_complete_authored_diagnostics() {
+    check_pack(
+        "callback-render-position-10738",
+        "callback_render_position_preserves_complete_authored_diagnostics",
+        "78719553cf550bcffbf1d0fb891fda642f42de3a",
+        Some(10738),
+        &["type-query-before-delete"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",
@@ -1013,6 +1064,17 @@ fn experimental_page_import_preserves_published_path_diagnostics() {
         "a29d9c0b1961ada51037db402c3b74436a56d623",
         Some(10520),
         &["imported-define-page-unknown-path"],
+    );
+}
+
+#[test]
+fn experimental_route_props_follow_the_admitted_project_types() {
+    check_pack(
+        "experimental-router-props-10579",
+        "experimental_route_props_follow_the_admitted_project_types",
+        "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+        Some(10579),
+        &["required-component-prop", "route-params-as-props"],
     );
 }
 
@@ -1065,5 +1127,90 @@ fn undefined_context_keeps_complete_authored_diagnostics() {
         "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
         Some(10667),
         &["prop-used"],
+    );
+}
+
+#[test]
+fn options_api_reserved_props_resolve_dynamic_component_references() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "options-api-reserved-component-reference",
+        "options_api_reserved_props_resolve_dynamic_component_references",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "reserved-prop-dynamic-component",
+            "reserved-prop-dynamic-component-wrong-member",
+            "reserved-prop-authored-local-collision",
+        ],
+    );
+}
+
+#[test]
+fn empty_v_slot_expressions_keep_slot_scopes_checked() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "empty-v-slot-expression",
+        "empty_v_slot_expressions_keep_slot_scopes_checked",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "empty-expression",
+            "blank-expression",
+            "empty-expression-unknown-slot",
+        ],
+    );
+}
+
+#[test]
+fn custom_properties_resolve_on_the_template_instance() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "setup-custom-properties",
+        "custom_properties_resolve_on_the_template_instance",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "script-setup-custom-properties",
+            "script-setup-wrong-use-and-unknown-name",
+            "options-api-slot-loop-source",
+            "options-api-slot-loop-unknown-name",
+        ],
+    );
+}
+
+#[test]
+fn dependency_probe_histories_preserve_complete_diagnostics() {
+    check_pack(
+        "dependency-probe-history-10936",
+        "dependency_probe_histories_preserve_complete_diagnostics",
+        "1266cd3a014654bbdcf3378500b93447411b26d9",
+        Some(10936),
+        &[
+            "valid-precedence-and-alias",
+            "invalid-authored-model",
+            "repaired-authored-model",
+        ],
+    );
+}
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
+        ],
     );
 }

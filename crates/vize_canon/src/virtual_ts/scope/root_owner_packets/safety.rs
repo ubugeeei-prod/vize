@@ -186,6 +186,61 @@ fn pure_expression(expression: &Expression<'_>, identifier: &impl Fn(&str) -> bo
     }
 }
 
+/// A root callback owner may not pull an effectful sibling input ahead of its
+/// authored evaluation. Reuse retained syntax and the existing conservative
+/// value proof; a function's creation does not invoke its parameters or body.
+pub(super) fn callback_input_facts(element: &vize_relief::ElementNode<'_>) -> Option<bool> {
+    use vize_relief::{ExpressionNode, PropNode};
+    let mut callback = false;
+    for prop in &element.props {
+        let PropNode::Directive(directive) = prop else {
+            continue;
+        };
+        if directive.name == "on" {
+            // A static handler's body is deferred. A dynamic event name or
+            // argumentless event object is evaluated during rendering instead.
+            if !matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(arg)) if arg.is_static)
+            {
+                return None;
+            }
+            continue;
+        }
+        if directive.name != "bind"
+            || !matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(arg)) if arg.is_static)
+        {
+            return None;
+        }
+        let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+            return None;
+        };
+        let retained = expression.js_ast.and_then(|ast| ast.as_expression())?;
+        if retained.raw != expression.content || !stable_input_creation(retained.ast) {
+            return None;
+        }
+        let ExpressionNode::Simple(argument) = directive.arg.as_ref()? else {
+            return None;
+        };
+        callback |= !matches!(argument.content, "key" | "ref") && function_creation(retained.ast);
+    }
+    Some(callback)
+}
+
+fn function_creation(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => true,
+        Expression::ParenthesizedExpression(value) => function_creation(&value.expression),
+        _ => false,
+    }
+}
+
+fn stable_input_creation(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => true,
+        Expression::ParenthesizedExpression(value) => stable_input_creation(&value.expression),
+        _ => pure_expression(expression, &|_| true),
+    }
+}
+
 fn pure_arrow(arrow: &oxc_ast::ast::ArrowFunctionExpression<'_>) -> bool {
     if arrow.r#async
         || !arrow.expression

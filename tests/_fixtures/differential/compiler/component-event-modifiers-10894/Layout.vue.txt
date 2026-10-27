@@ -1,0 +1,4 @@
+<template>
+  <Box @submit.prevent="submit" @keydown.enter="key" />
+  <Pinger @ping.once="ping" />
+</template>

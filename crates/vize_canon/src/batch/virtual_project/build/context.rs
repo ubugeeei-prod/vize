@@ -25,7 +25,8 @@ pub(in crate::batch::virtual_project) struct VirtualBuildContext<'a> {
     pub(in crate::batch::virtual_project) virtual_root: &'a Path,
     pub(in crate::batch::virtual_project) virtual_ts_options: &'a VirtualTsOptions,
     pub(in crate::batch::virtual_project) virtual_ts_check_options: VirtualTsCheckOptions,
-    pub(in crate::batch::virtual_project) typed_router_root: Option<&'a Path>,
+    pub(in crate::batch::virtual_project) typed_router:
+        Option<super::super::typed_router::Config<'a>>,
     pub(in crate::batch::virtual_project) preserve_unused_diagnostics: bool,
     pub(in crate::batch::virtual_project) options_api: bool,
     pub(in crate::batch::virtual_project) legacy_vue2: bool,

@@ -1020,7 +1020,34 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> QualifiedRuleParser<'i> for
       is_nesting_allowed: true,
       options: &self.options,
     };
-    if self.is_in_style_rule && !self.is_scope_body {
+    if self.is_scope_body {
+      // Scoped rules accept relative selectors, but an implied scope anchor
+      // must not become an explicit :scope with higher specificity. Parse
+      // each list item independently so an authored :scope or & is untouched.
+      let lists = input.parse_comma_separated(|input| {
+        let state = input.state();
+        let leading_combinator = matches!(input.next(), Ok(Token::Delim('>' | '+' | '~')));
+        input.reset(&state);
+        if leading_combinator {
+          SelectorList::parse_relative(
+            &selector_parser,
+            input,
+            ParseErrorRecovery::DiscardList,
+            NestingRequirement::Implicit,
+          )
+        } else {
+          SelectorList::parse(
+            &selector_parser,
+            input,
+            ParseErrorRecovery::DiscardList,
+            NestingRequirement::None,
+          )
+        }
+      })?;
+      Ok(SelectorList::from_vec(
+        lists.into_iter().flat_map(|list| list.0).collect(),
+      ))
+    } else if self.is_in_style_rule {
       SelectorList::parse_relative(
         &selector_parser,
         input,

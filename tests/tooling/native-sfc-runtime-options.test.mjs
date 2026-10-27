@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
+import { closedSetupReference } from "./support/script-setup-default-expose.ts";
 
 const proof = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF
   ? resolve(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF)
@@ -568,42 +569,70 @@ await test("standalone single, files and statistics preserve code and maps", ski
   }
 });
 
-await test("whole default code, maps and DTOs equal the before-source native", skip, () => {
-  assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
-  const before = JSON.parse(readFileSync(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE));
-  assert.equal(before.length, 144);
-  const defaults = (rows) =>
-    rows.filter(
-      (row) =>
-        row.options.runtimeModuleName === undefined && row.options.runtimeGlobalName === undefined,
+await test(
+  "whole default packets equal the before-source native plus closed setup exposure",
+  skip,
+  () => {
+    assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
+    const before = JSON.parse(readFileSync(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE));
+    assert.equal(before.length, 144);
+    const defaults = (rows) =>
+      rows.filter(
+        (row) =>
+          row.options.runtimeModuleName === undefined &&
+          row.options.runtimeGlobalName === undefined,
+      );
+    const withoutTiming = (row) => {
+      if (!row) return row;
+      const { timeMs: _timeMs, ...rest } = row;
+      return rest;
+    };
+    const comparable = (row) => ({
+      target: row.target,
+      options: row.options,
+      single: row.single,
+      batch: withoutTiming(row.batch),
+      stats: withoutTiming(row.stats),
+      function: row.function,
+      functionBatch: withoutTiming(row.functionBatch),
+      functionStats: withoutTiming(row.functionStats),
+      syntax: row.syntax,
+    });
+    const advance = (row) => {
+      const out = structuredClone(row);
+      if (out.single)
+        out.single = out.single.map((packet, index) =>
+          closedSetupReference(packet, sourceFiles[index]),
+        );
+      if (out.batch)
+        out.batch.results = out.batch.results.map((packet, index) =>
+          closedSetupReference(packet, sourceFiles[index]),
+        );
+      if (out.stats) {
+        out.stats.outputBytes += out.single.reduce(
+          (bytes, packet, index) =>
+            bytes + Buffer.byteLength(packet.code) - Buffer.byteLength(row.single[index].code),
+          0,
+        );
+      }
+      return out;
+    };
+    assert.deepEqual(
+      defaults(completeCases()).map(comparable),
+      defaults(before).map(advance).map(comparable),
     );
-  const withoutTiming = (row) => {
-    if (!row) return row;
-    const { timeMs: _timeMs, ...rest } = row;
-    return rest;
-  };
-  const comparable = (row) => ({
-    target: row.target,
-    options: row.options,
-    single: row.single,
-    batch: withoutTiming(row.batch),
-    stats: withoutTiming(row.stats),
-    function: row.function,
-    functionBatch: withoutTiming(row.functionBatch),
-    functionStats: withoutTiming(row.functionStats),
-    syntax: row.syntax,
-  });
-  assert.deepEqual(defaults(completeCases()).map(comparable), defaults(before).map(comparable));
-});
+  },
+);
 
-await test("pinned default SSR module remains byte-identical", skip, () => {
+await test("pinned SSR module follows the closed setup exposure contract", skip, () => {
   completeCases();
   const fixture = new URL(
     "../_fixtures/differential/compiler/sfc-runtime-options-native/",
     import.meta.url,
   );
   assert.equal(readFileSync(new URL("Layout.vue.txt", fixture), "utf8"), sourceFiles[4]);
-  assert.equal(pinnedModule.code, readFileSync(new URL("module.expected.txt", fixture), "utf8"));
+  const preserved = { code: readFileSync(new URL("module.expected.txt", fixture), "utf8") };
+  assert.equal(pinnedModule.code, closedSetupReference(preserved, sourceFiles[4]).code);
   assert.deepEqual(pinnedModule.errors, []);
   assert.deepEqual(pinnedModule.warnings, []);
 });

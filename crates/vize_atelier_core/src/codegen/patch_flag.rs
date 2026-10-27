@@ -259,7 +259,10 @@ fn calculate_element_patch_info_inner(
                                         !crate::steps::expression::is_empty_dynamic_expression(
                                             expression,
                                         )
-                                    });
+                                    })
+                                    // A method reference reaches a component uncached.
+                                    && !(el.tag_type == ElementType::Component
+                                        && super::props::bypasses_component_cache(dir, bindings));
 
                                 // Only add PROPS flag if handler is neither const nor cached
                                 if !handler_is_const && !handler_is_cached {

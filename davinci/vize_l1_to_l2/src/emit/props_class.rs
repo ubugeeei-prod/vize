@@ -20,7 +20,7 @@ pub(super) fn emit_class_value(
         cx.buf.push(super::buf::Buf::normalize_class_alias());
         cx.buf.push("(");
     }
-    if let Some(static_class) = static_class_piece(pieces).filter(|_| cx.once_depth == 0) {
+    if let Some(static_class) = static_class_piece(pieces) {
         let before = static_class.span.start <= bind.span.start;
         let source = js_expr_source(js);
         let authored =

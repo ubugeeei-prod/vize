@@ -155,9 +155,12 @@ test(
             await t.test(project, async () => {
               const projectRoot = path.join(directory, "test-workspace/tsc", project);
               const capture =
-                project === "fallthroughAttributes"
+                project === "fallthroughAttributes" || project === "#3488"
                   ? {
-                      name: "upstream-original",
+                      name:
+                        project === "#3488"
+                          ? "upstream-instance-expect-error"
+                          : "upstream-original",
                       sources: fs
                         .readdirSync(projectRoot, { withFileTypes: true })
                         .filter((entry) => entry.isFile())

@@ -27,6 +27,7 @@ void test("closed sixteen-case CLI union preserves original thirteen and incomin
   const current = fs.readFileSync(path.join(root, manifest));
   const original = fs.readFileSync(path.join(root, asset));
   const main = fs.readFileSync(path.join(root, mainAsset));
+  const preservedId = JSON.parse(original.toString()).cases[0].id;
   assert.deepEqual(preservedDirectiveWidthCliManifest(root, pin, current), original);
   assert.equal(sha256(original), pin.sha256);
   assert.equal(preservedDirectiveWidthCliManifest(root, pin, original), null);
@@ -46,8 +47,12 @@ void test("closed sixteen-case CLI union preserves original thirteen and incomin
         (item) => item.id !== "formatter/sfc/directive-prefix-print-width",
       )),
     (copy) => copy.cases.reverse(),
-    (copy) => (copy.cases[0].inputs.files[0].sha256 = "0".repeat(64)),
-    (copy) => (copy.cases[0].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
+    // A new case can sort first without belonging to this historical proof.
+    (copy) =>
+      (copy.cases.find((item) => item.id === preservedId).inputs.files[0].sha256 = "0".repeat(64)),
+    (copy) =>
+      (copy.cases.find((item) => item.id === preservedId).expectations.legacy.artifacts[0].sha256 =
+        "0".repeat(64)),
     (copy) => (copy.adapterOptions.passes = 1),
   ]) {
     const copy = JSON.parse(current.toString());

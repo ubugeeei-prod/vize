@@ -5,7 +5,7 @@ use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
 
 use super::super::{
     context::CodegenContext,
-    expression::generate_event_handler,
+    expression::{generate_event_handler, is_member_handler},
     helpers::{camelize, capitalize_first},
 };
 use vize_l0::{FxHashSet, String, ToCompactString};
@@ -266,12 +266,36 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
     }
 }
 
-fn needs_von_handler_cache(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
+pub(super) fn needs_von_handler_cache(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
     ctx.cache_handlers_in_current_scope()
         && dir.exp.as_ref().is_some_and(|expression| {
             !crate::steps::expression::is_empty_dynamic_expression(expression)
         })
         && !is_setup_const_handler(ctx, dir)
+        && !is_component_method_handler(ctx, dir)
+}
+
+/// A method reference passed to a component stays uncached (vuejs/core#1541).
+pub(super) fn is_component_method_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
+    ctx.props_is_component && bypasses_component_cache(dir, ctx.options.binding_metadata.as_ref())
+}
+
+/// Whether a component receives this handler as the authored function rather
+/// than a cached wrapper. Options API refs keep their live-lookup wrapper.
+pub(crate) fn bypasses_component_cache(
+    dir: &DirectiveNode<'_>,
+    bindings: Option<&crate::options::BindingMetadata>,
+) -> bool {
+    let Some(ExpressionNode::Simple(simple)) = &dir.exp else {
+        return false;
+    };
+    let content = simple.content.trim();
+    let name = content.strip_prefix("$options.").unwrap_or(content);
+    let is_options_ref = crate::steps::is_simple_identifier(name)
+        && bindings
+            .and_then(|metadata| metadata.bindings.get(name))
+            .is_some_and(|binding| *binding == BindingType::Options);
+    !is_options_ref && is_member_handler(simple)
 }
 
 fn generate_options_api_handler_reference(ctx: &mut CodegenContext, name: &str) {

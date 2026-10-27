@@ -1,0 +1,1 @@
+const App = () => (<><input role="combobox" aria-activedescendant="a" aria-controls={listId} /><ul id={listId} role="listbox"><li id="a" role="option">A</li><li role="option">B</li></ul></>);

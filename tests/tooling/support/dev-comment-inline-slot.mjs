@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Window } from "happy-dom";
+import { historicalSetupCode } from "./script-setup-default-expose.ts";
 const window = new Window();
 for (const key of [
   "window",
@@ -54,7 +55,10 @@ function app(component) {
 }
 const html = await server.renderToString(app(await load(input.ssr.code)));
 const expected = manifest.inlineSlots.find((fixture) => fixture.fixture === input.fixture);
-assert.equal(createHash("sha256").update(input.ssr.code).digest("hex"), expected.ssrCodeSha256);
+assert.equal(
+  createHash("sha256").update(historicalSetupCode(input.ssr.code, input.source)).digest("hex"),
+  expected.ssrCodeSha256,
+);
 assert.equal(html, expected.html);
 const root = document.createElement("div");
 root.innerHTML = html;

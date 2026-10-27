@@ -24,7 +24,8 @@ export default /*@__PURE__*/_defineVaporComponent({
     tag: { type: String, required: false, default: "div" }
   },
   render: __vaporRender,
-  setup(__props: any) {
+  setup(__props: any, { expose: __expose }) {
+  __expose();
 
 
 const __returned__ = {  }

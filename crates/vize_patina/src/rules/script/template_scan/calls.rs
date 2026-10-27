@@ -11,7 +11,8 @@ use oxc_span::{SourceType, Span};
 pub(in crate::rules::script) struct TemplateCall<'a> {
     /// The callee identifier, e.g. `total` or `$emit`.
     pub(in crate::rules::script) callee: &'a str,
-    /// The first argument, when it is a string literal. `None` for a dynamic
+    /// The first argument, when it is a string literal or a template literal
+    /// without substitutions. `None` for a dynamic
     /// argument (`$emit(name)`) or no arguments at all — a value only the
     /// runtime knows cannot be checked against a declared set or a casing rule.
     pub(in crate::rules::script) first_string_argument: Option<TemplateStringArgument<'a>>,
@@ -94,6 +95,11 @@ impl<'a> Visit<'a> for CallCollector<'a> {
                 first_string_argument: match it.arguments.first() {
                     Some(Argument::StringLiteral(literal)) => {
                         Some((literal.value.as_str(), literal.span))
+                    }
+                    Some(Argument::TemplateLiteral(literal)) if literal.expressions.is_empty() => {
+                        literal
+                            .single_quasi()
+                            .map(|quasi| (quasi.as_str(), literal.span))
                     }
                     _ => None,
                 },

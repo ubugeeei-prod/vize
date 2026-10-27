@@ -6,8 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-import { isolateFixtureTypePackages } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation.mjs";
-import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
+import { isolateFixtureTypePackages } from "../../tools/support/compat/fixtures/typecheck-baseline-isolation.ts";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.ts";
 import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
 
 /**

@@ -65,7 +65,10 @@ export function defineConfig(
             ? vp.run
             : {
                 ...vp.run,
-                tasks: { ...createTasks(vp.run?.tasks, options.tasks), ...vp.run?.tasks },
+                tasks: {
+                  ...createTasks(vp.run?.tasks, options.tasks, options.taskCache),
+                  ...vp.run?.tasks,
+                },
               },
         [sourceConfigKey]: source,
         [taskConfigKey]: metadata,

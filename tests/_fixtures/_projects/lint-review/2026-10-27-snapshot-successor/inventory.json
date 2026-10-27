@@ -1,0 +1,12 @@
+[
+  {
+    "path": "snapshots.json.gz",
+    "bytes": 282872,
+    "sha256": "14907ece02b695717e98fec2fd3cf98b0ed7830d53a54f0699065ee9202f66cc"
+  },
+  {
+    "path": "source-witnesses.json.gz",
+    "bytes": 596543,
+    "sha256": "08524c4b389a7875bb702f9a2bd0db6aa47b3d952ee28f166c5e5636b3444411"
+  }
+]

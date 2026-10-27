@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+  "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "script-setup-custom-properties",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "source": "src/mixin.d.ts.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/Setup.vue",
+          "source": "src/Setup.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "script-setup-wrong-use-and-unknown-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "source": "src/mixin.d.ts.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/Setup.vue",
+          "source": "src/SetupWrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Setup.vue",
+          "line": 6,
+          "column": 29,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toFixed' does not exist on type 'boolean'."
+        },
+        {
+          "file": "src/Setup.vue",
+          "line": 7,
+          "column": 9,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        },
+        {
+          "file": "src/Setup.vue",
+          "line": 7,
+          "column": 23,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "options-api-slot-loop-source",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "source": "src/mixin.d.ts.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "src/Options.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "options-api-slot-loop-unknown-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/mixin.d.ts",
+          "source": "src/mixin.d.ts.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "src/OptionsWrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Options.vue",
+          "line": 3,
+          "column": 49,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        },
+        {
+          "file": "src/Options.vue",
+          "line": 4,
+          "column": 11,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        }
+      ]
+    }
+  ]
+}
