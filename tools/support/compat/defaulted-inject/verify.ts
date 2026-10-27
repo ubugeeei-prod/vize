@@ -26,6 +26,7 @@ type Input = {
   call: string;
   removed: number;
   required: number;
+  retainedSeverity?: number;
 };
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const output = process.env.VIZE_DEFAULTED_INJECT_PROOF;
@@ -84,6 +85,47 @@ for (const [name, call, removed, required, provider, outer] of [
   if (!outer)
     files["src/App.vue"] = files["src/App.vue"].replace("  <MyDivider />\n  <MyDivider />\n", "");
   cases.push({ name, files, call, removed, required });
+}
+for (const [name, call, prelude, removed, retainedSeverity] of [
+  ["empty-literal-spread", "inject(InListKey, ...[])", "", 0, 1],
+  ["empty-tuple-spread", "inject(InListKey, ...fallback)", "const fallback: [] = [];", 0, 1],
+  [
+    "unknown-tuple-spread",
+    "inject(InListKey, ...fallback)",
+    "declare const fallback: [] | [boolean];",
+    0,
+    1,
+  ],
+  [
+    "undefined-before-flags",
+    "inject(InListKey, undefined, ...flags)",
+    "const flags: [] = [];",
+    1,
+    undefined,
+  ],
+  [
+    "false-before-flags",
+    "inject(InListKey, false, ...flags)",
+    "const flags: [] = [];",
+    1,
+    undefined,
+  ],
+] as const) {
+  const files = structuredClone(originalFiles);
+  const divider = "src/components/MyDivider.vue";
+  assert.equal(files[divider].split(originalCall).length, 2);
+  assert.equal(files[divider].split("const inList =").length, 2);
+  files[divider] = files[divider]
+    .replace(originalCall, call)
+    .replace("const inList =", prelude + "\nconst inList =");
+  cases.push({
+    name,
+    files,
+    call,
+    removed,
+    required: retainedSeverity === undefined ? 0 : 1,
+    retainedSeverity,
+  });
 }
 const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-defaulted-inject-"));
 const hash = (source: string | Buffer) => createHash("sha256").update(source).digest("hex");
@@ -195,7 +237,7 @@ try {
     const expected = structuredClone(original);
     let removed = 0;
     for (const packet of expected) {
-      const targets = packet.messages.filter(optional);
+      const targets = input.retainedSeverity === undefined ? packet.messages.filter(optional) : [];
       if (targets.length > 0) {
         assert.equal(
           path.relative(workspace, path.resolve(workspace, packet.file)).replaceAll("\\", "/"),
@@ -219,7 +261,9 @@ try {
         }
       }
       removed += targets.length;
-      packet.messages = packet.messages.filter((message) => !optional(message));
+      packet.messages = packet.messages.filter(
+        (message) => input.retainedSeverity !== undefined || !optional(message),
+      );
       packet.warningCount -= targets.length;
     }
     assert.equal(removed, input.removed, input.name + ": original whole finding admission");
@@ -240,7 +284,7 @@ try {
       input.required,
       input.name + ": required injections retain errors",
     );
-    for (const message of required) assert.equal(message.severity, 2);
+    for (const message of required) assert.equal(message.severity, input.retainedSeverity ?? 2);
     if (input.removed === 0) {
       assert.deepEqual(
         JSON.parse(afterDoctor.stdout),
@@ -252,12 +296,12 @@ try {
     for (const [filename, source] of Object.entries(input.files))
       assert.equal(hash(fs.readFileSync(path.join(workspace, filename))), hash(source));
   }
-  assert.equal(evidence.cases.length, 9);
+  assert.equal(evidence.cases.length, 14);
   console.log(
     JSON.stringify({
       qualified: true,
-      fullLintPacketPairs: 9,
-      rawDoctorPairs: 9,
+      fullLintPacketPairs: 14,
+      rawDoctorPairs: 14,
       role: "source-candidate-against-public-0.602",
       source: identity,
     }),

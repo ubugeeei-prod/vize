@@ -163,7 +163,7 @@ pub(crate) fn analyze_provide_inject_with_index(
             });
             // An explicit fallback declares the provider optional. Keep every provider
             // branch and the type/reactivity checks; only required injects need this finding.
-            if unmatched_count > 0 && inject.default_value.is_none() {
+            if unmatched_count > 0 && (inject.default_value.is_none() || inject.default_is_spread) {
                 let diagnostic = unmatched_inject_diagnostic(
                     consumer_id,
                     inject,

@@ -122,6 +122,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             call.span.start,
                             call.span.end,
                         );
+                        injection::record_default_spread(result, call);
                         // Walk into the call's callback arguments to track nested scopes
                         walk_call_arguments(result, call, source);
                         // `inject()` can return either a plain value or a ref.
@@ -337,6 +338,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.span.start,
                         call.span.end,
                     );
+                    injection::record_default_spread(result, call);
                 }
             } else if let Some(call) = torefs_inject_call {
                 if let Some(key) = call
@@ -356,6 +358,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.span.start,
                         call.span.end,
                     );
+                    injection::record_default_spread(result, call);
                 }
             } else if let Some((inject_var, offset)) = indirect_inject_var {
                 // Indirect destructuring: const { count } = injectVar
@@ -579,6 +582,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.span.start,
                         call.span.end,
                     );
+                    injection::record_default_spread(result, call);
                 }
             } else if let Some(call) = torefs_inject_call {
                 if let Some(key) = call
@@ -598,6 +602,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.span.start,
                         call.span.end,
                     );
+                    injection::record_default_spread(result, call);
                 }
             } else if let Some((inject_var, offset)) = indirect_inject_var {
                 let mut destructured_items: Vec<CompactString> = Vec::new();
