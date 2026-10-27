@@ -131,3 +131,64 @@ fn native_build_info_outputs_do_not_write_through_existing_hardlinks() {
         b"{\"native\":\"new state\"}\n"
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn owner_lease_precedes_owned_directory_writes_and_blocks_gc() {
+    use std::fs::{File, FileTimes, OpenOptions, TryLockError};
+    use std::os::unix::fs::PermissionsExt;
+
+    let temporary = tempfile::tempdir().unwrap();
+    let storage = temporary
+        .path()
+        .join("canon/private-batch-v1")
+        .join(format!("{:064x}", u64::MAX));
+    let lease = super::prepare_persistent_storage(storage.clone(), |storage| {
+        assert!(storage.is_dir());
+        assert!(!storage.join("canon").exists());
+        let active = storage.with_file_name(format!(
+            "{}.active.lock",
+            storage.file_name().unwrap().to_str().unwrap()
+        ));
+        {
+            let _gc_guard =
+                super::super::super::cache_lock::try_acquire_exclusive(storage).unwrap();
+            let active = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(active)
+                .expect("the owner lease must precede the first owned directory");
+            assert!(matches!(active.try_lock(), Err(TryLockError::WouldBlock)));
+        }
+        // Make this owner independently eligible for eviction, then run the
+        // real bounded GC while initialization has not created its contexts.
+        File::open(storage)
+            .unwrap()
+            .set_times(FileTimes::new().set_modified(std::time::SystemTime::UNIX_EPOCH))
+            .unwrap();
+        let owners = storage.parent().unwrap();
+        for index in 0..27 {
+            std::fs::create_dir_all(owners.join(format!("{index:064x}"))).unwrap();
+        }
+        super::super::cache_gc::maintain_project_cache(&owners.join(format!("{:064x}", 26)));
+        assert!(storage.is_dir(), "GC must retain the initializing owner");
+    })
+    .unwrap();
+    assert!(storage.join("canon/projects").is_dir());
+    assert_eq!(
+        std::fs::metadata(&storage).unwrap().permissions().mode() & 0o777,
+        0o700
+    );
+    drop(lease);
+    let active = storage.with_file_name(format!(
+        "{}.active.lock",
+        storage.file_name().unwrap().to_str().unwrap()
+    ));
+    OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(active)
+        .unwrap()
+        .try_lock()
+        .unwrap();
+}

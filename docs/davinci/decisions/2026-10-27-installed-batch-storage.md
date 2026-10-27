@@ -16,7 +16,9 @@ If a cache redirect would put the private namespace inside the semantic source
 tree, the existing isolated installed-source lifetime is retained instead.
 Persistent namespaces never reuse ordinary project mirrors. Their parent is
 private to one owner, their context entries use the existing bounded Canon cache
-maintenance, and clean removes only the selected owner's storage. MaterializeLock
+maintenance. An owner's usage lease is acquired before its first owned directory
+is created, so concurrent GC cannot remove it during initialization or race its
+private permissions. Clean removes only the selected owner's storage. MaterializeLock
 covers validation, publication and native checking. Before writing, every owned
 path's directory ancestors are checked from the namespace down, without following
 old links. Stale links are removed as links and recreated as owned directories.

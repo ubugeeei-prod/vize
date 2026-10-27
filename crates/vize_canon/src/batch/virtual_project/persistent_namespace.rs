@@ -55,21 +55,32 @@ pub fn persistent_batch_virtual_root(
 }
 
 /// Only paths in a newly introduced private namespace may be reclaimed here.
+pub(in crate::batch) fn prepare_persistent_batch_root(owner: &Path) -> io::Result<fs::File> {
+    prepare_persistent_storage(
+        persistent_batch_storage_root(owner),
+        #[cfg(test)]
+        |_| {},
+    )
+}
+
+#[inline]
 #[expect(
     clippy::expect_used,
     reason = "private storage paths have a fixed minted shape"
 )]
-pub(in crate::batch) fn prepare_persistent_batch_root(owner: &Path) -> io::Result<fs::File> {
-    let storage = persistent_batch_storage_root(owner);
-    for path in [
-        storage
-            .parent()
-            .expect("private storage has a parent")
-            .to_path_buf(),
-        storage.clone(),
-        storage.join("canon"),
-        storage.join("canon/projects"),
-    ] {
+fn prepare_persistent_storage(
+    storage: PathBuf,
+    #[cfg(test)] owned_root_probe: impl FnOnce(&Path),
+) -> io::Result<fs::File> {
+    ensure_materialize_root(storage.parent().expect("private storage has a parent"))?;
+    // GC can retire an idle owner as soon as its first directory exists.
+    // Hold the owner lease before creating or changing any owned directory.
+    let lease = super::cache_gc::acquire_usage_lock(&storage)
+        .ok_or_else(|| io::Error::other("Cannot lock the private batch storage owner"))?;
+    ensure_materialize_root(&storage)?;
+    #[cfg(test)]
+    owned_root_probe(&storage);
+    for path in [storage.join("canon"), storage.join("canon/projects")] {
         ensure_materialize_root(&path)?;
     }
     #[cfg(unix)]
@@ -77,8 +88,6 @@ pub(in crate::batch) fn prepare_persistent_batch_root(owner: &Path) -> io::Resul
         use std::os::unix::fs::PermissionsExt;
         fs::set_permissions(&storage, fs::Permissions::from_mode(0o700))?;
     }
-    let lease = super::cache_gc::acquire_usage_lock(&storage)
-        .ok_or_else(|| io::Error::other("Cannot lock the private batch storage owner"))?;
     // Bound both the number of owners and each owner's contexts. A live
     // context holds this owner lease, so outer GC cannot retire another check.
     super::cache_gc::maintain_project_cache(&storage);
