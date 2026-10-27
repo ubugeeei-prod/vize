@@ -267,6 +267,6 @@ pub fn component_reference_name<'a>(croquis: &'a crate::Croquis, tag: &str) -> O
     croquis
         .value_binding_origins
         .as_deref()?
-        .component_binding_name(tag)?
+        .component_binding_name(tag)
         .flatten()
 }
