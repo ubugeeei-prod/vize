@@ -10,6 +10,8 @@ import {
   type HistoryVersion,
   type RegistrySnapshot,
   type ReleaseOwnership,
+  type ProducedCandidateProof,
+  type OwnedCrateSourceProof,
 } from "./types.ts";
 /** Enumerate the entire history; no date-order or first-page coverage inference. */
 export function inspectCrateQuota(
@@ -21,6 +23,8 @@ export function inspectCrateQuota(
   ownership: ReleaseOwnership | null,
   now: number,
   priorProof: RegistrySnapshot | null = null,
+  produced: ProducedCandidateProof | null = null,
+  sourceProof: OwnedCrateSourceProof | null = null,
 ): CrateQuotaObservation {
   requireValue(Number.isFinite(now), "invalid clock");
   requireValue(
@@ -90,6 +94,26 @@ export function inspectCrateQuota(
       ownership !== null && ownership.version === target && exactProof !== null,
       "existing candidate requires genuine producer and exact-version proof",
     );
+    requireValue(
+      produced !== null && sourceProof !== null,
+      "own version requires original producer artifact and public crate source proof",
+    );
+    const intended = produced.record;
+    requireValue(
+      intended.runId === ownership.runId &&
+        intended.workflowHead === ownership.workflowHead &&
+        intended.version === target &&
+        intended.candidateSha === ownership.candidateSha &&
+        intended.producerSource === ownership.producerSource &&
+        intended.nativeManifestGitBlob === ownership.nativeManifestGitBlob &&
+        intended.inventoryGitBlob === ownership.inventoryGitBlob,
+      "original producer candidate binding differs",
+    );
+    requireValue(
+      sourceProof.candidateSha === ownership.candidateSha &&
+        sourceProof.archiveSha256 === own.checksum,
+      "owned crate bytes/VCS do not match intended candidate",
+    );
     owns(own, ownership);
     const rawProof = evidence(exactProof, now),
       body = object(JSON.parse(exactProof.body) as unknown);
@@ -99,7 +123,12 @@ export function inspectCrateQuota(
       exact.id === own.id && exact.checksum === own.checksum && exact.createdAt === own.createdAt,
       "candidate exact-version checksum/identity mismatch",
     );
-    ownVersion = { checksum: own.checksum, proof: rawProof };
+    ownVersion = {
+      checksum: own.checksum,
+      producerProofSha256: produced.memberSha256,
+      source: sourceProof,
+      proof: rawProof,
+    };
   }
   const recent = versions.filter(
     (row) => row.timestamp >= now - CRATE_QUOTA_WINDOW_MS - CRATE_QUOTA_MARGIN_MS,

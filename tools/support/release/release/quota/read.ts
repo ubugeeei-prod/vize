@@ -1,3 +1,5 @@
+import { readProducedCandidate } from "./producer.ts";
+import { readOwnedCrateSource } from "./crate_source.ts";
 import { createHash } from "node:crypto";
 import { historyUrl, object, page, requireValue } from "./registry.ts";
 import { inspectCrateQuota } from "./inspect.ts";
@@ -12,6 +14,7 @@ import {
   type RegistrySnapshot,
   type RegistryReadReceipt,
   type ReleaseOwnership,
+  type ProducedCandidateProof,
 } from "./types.ts";
 async function boundedBody(response: Response): Promise<string> {
   requireValue(response.body, "registry body missing");
@@ -44,6 +47,8 @@ export async function readRollingCrateQuota(
     observations: CrateQuotaObservation[] = [],
     failures: CrateQuotaReport["failures"] = [];
   const requests: RegistryReadReceipt[] = [];
+  let producerRead: Promise<ProducedCandidateProof> | undefined;
+  let produced: ProducedCandidateProof | null = null;
   const get = async (url: string): Promise<RegistrySnapshot> => {
     const witness: RegistryReadReceipt = {
       url,
@@ -127,6 +132,29 @@ export async function readRollingCrateQuota(
                   `${ORIGIN}/api/v1/crates/${encodeURIComponent(crate)}/${encodeURIComponent(target)}?vize_quota_guard=${now}`,
                 )
               : null;
+            let sourceProof = null;
+            if (hasTarget) {
+              requireValue(
+                ownership !== null,
+                "existing candidate cannot waive new writes without genuine ownership",
+              );
+              produced = await (producerRead ??= readProducedCandidate(ownership, fetchImpl));
+              const existing = snapshots
+                .flatMap((s) => page(s, now).rows)
+                .map(object)
+                .find((row) => row.num === target);
+              requireValue(
+                existing !== undefined && typeof existing.checksum === "string",
+                "owned crate checksum required",
+              );
+              sourceProof = await readOwnedCrateSource(
+                crate,
+                target,
+                existing.checksum,
+                ownership.candidateSha,
+                fetchImpl,
+              );
+            }
             return {
               observation: inspectCrateQuota(
                 crate,
@@ -137,6 +165,8 @@ export async function readRollingCrateQuota(
                 ownership,
                 now,
                 priorProof,
+                produced,
+                sourceProof,
               ),
             };
           } catch (error) {
@@ -175,5 +205,6 @@ export async function readRollingCrateQuota(
     observations,
     failures,
     requests,
+    produced,
   };
 }

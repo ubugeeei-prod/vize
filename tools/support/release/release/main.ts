@@ -22,6 +22,7 @@ const USAGE = `Usage:
   main.ts cut [version]      CI only: stamp, commit and push a release candidate ref
   main.ts cadence            CI only: decide whether a scheduled run releases
   main.ts quota <version>    CI only: fresh publication admission
+  main.ts quota-prepare <version> CI only: refuse a cut without fresh admission
   main.ts quota-dry-run <version> CI only: read public quota without publishing
 `;
 
@@ -246,7 +247,9 @@ async function cadence(): Promise<number> {
       { release: false, reason: "next release version unavailable" },
       input.greenSha,
     );
-  const quotaDecision = rollingQuotaDecision(await releaseQuota(version));
+  const quotaDecision = rollingQuotaDecision(
+    await releaseQuota(version, false, input.greenSha ?? undefined),
+  );
   return finishCadence(quotaDecision ?? decision, input.greenSha);
 }
 
@@ -265,7 +268,8 @@ export async function release(args: readonly string[]): Promise<number> {
     case "cadence":
       return cadence();
     case "quota":
-    case "quota-dry-run": {
+    case "quota-dry-run":
+    case "quota-prepare": {
       if (nonEmptyEnv("GITHUB_ACTIONS") !== "true" || value === undefined) return fail(USAGE);
       const report = await releaseQuota(value, command === "quota");
       return command === "quota-dry-run"

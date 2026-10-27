@@ -1,3 +1,4 @@
+import { mockCrate, mockProduced, mockProducerResponse } from "./quota-fixtures.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -18,6 +19,9 @@ const owner: ReleaseOwnership = {
   workflowHead: "b".repeat(40),
   candidateSha: "c".repeat(40),
   producerSource: "d".repeat(40),
+  runAttempt: 1,
+  nativeManifestGitBlob: "e".repeat(40),
+  inventoryGitBlob: "f".repeat(40),
 };
 function url(crate = "alpha") {
   return `https://crates.io/api/v1/crates/${crate}/versions?sort=date&per_page=100&vize_quota_guard=${now}`;
@@ -29,7 +33,7 @@ function rows(count: number, crate = "alpha", own = false) {
     num: own && i === 0 ? "0.602.0" : i === (own ? 1 : 0) ? "0.601.0" : `0.600.${i}`,
     created_at: new Date(now - i * 30 * 60_000).toISOString(),
     yanked: i === 2,
-    checksum,
+    checksum: own && i === 0 ? mockCrate(crate, "0.602.0", owner.candidateSha).checksum : checksum,
     trustpub_data: {
       provider: "github",
       repository: "ubugeeei-prod/vize",
@@ -72,6 +76,9 @@ function inspect(
     proof,
     ownership,
     now,
+    null,
+    ownership === null ? null : mockProduced(ownership).proof,
+    ownership === null ? null : mockCrate("alpha", "0.602.0", ownership.candidateSha).proof,
   );
 }
 test("19-after-write policy counts yanked and prerelease versions", () => {
@@ -206,16 +213,29 @@ test("recovery requires independent exact-version checksum equality", () => {
   assert.equal(result.newWrites, 0);
   assert.equal(result.windowCount, 25);
   assert.equal(result.allowed, true);
-  assert.equal(result.ownVersion?.checksum, checksum);
+  assert.equal(result.ownVersion?.checksum, values[0]!.checksum);
 });
 const response = (body: string, status = 200) =>
   new Response(body, { status, headers: { Date: new Date(now).toUTCString() } });
-function mockRegistry(ownCrates: Set<string>, count = 25, badChecksum = false): typeof fetch {
-  return (async (input: string | URL | Request) => {
-    const request = new URL(String(input)),
-      crate = request.pathname.split("/")[4]!;
+function mockRegistry(
+  ownCrates: Set<string>,
+  count = 25,
+  badChecksum = false,
+  wrongVcs = false,
+): typeof fetch {
+  return (async (input: string | URL | Request, init?: RequestInit) => {
+    const produced = mockProducerResponse(owner, input, init);
+    if (produced) return produced;
+    const request = new URL(String(input));
+    const source = wrongVcs ? "0".repeat(40) : owner.candidateSha;
+    if (request.origin === "https://static.crates.io") {
+      const crate = request.pathname.split("/")[2]!;
+      return new Response(new Uint8Array(mockCrate(crate, "0.602.0", source).archive));
+    }
+    const crate = request.pathname.split("/")[4]!;
     const own = ownCrates.has(crate),
       values = rows(own ? count : Math.min(count, 19), crate, own);
+    if (own && wrongVcs) values[0]!.checksum = mockCrate(crate, "0.602.0", source).checksum;
     if (request.pathname.endsWith("/versions")) return response(snapshot(values).body);
     const candidate = values.find((row) => row.num === "0.602.0");
     assert.ok(candidate);
@@ -224,6 +244,7 @@ function mockRegistry(ownCrates: Set<string>, count = 25, badChecksum = false): 
     );
   }) as typeof fetch;
 }
+
 test("mixed recovery gates only missing crate writes; a mismatched proof refuses the whole cut", async () => {
   const mixed = await readRollingCrateQuota(
     ["alpha", "beta"],
@@ -406,4 +427,45 @@ test("build metadata and prereleases both consume rolling slots", () => {
   const values = rows(18);
   values[2]!.num = "0.600.2-rc.1+build.7";
   assert.equal(inspect(values).windowCount, 18);
+});
+
+test("same R/H/version and consistent registry checksums cannot waive a different intended C", async () => {
+  const result = await readRollingCrateQuota(
+    ["alpha"],
+    "0.601.0",
+    "0.602.0",
+    { ...owner, candidateSha: "9".repeat(40), producerSource: "8".repeat(40) },
+    mockRegistry(new Set(["alpha"])),
+    () => now,
+  );
+  assert.equal(result.kind, "unavailable");
+  assert.match(result.failures[0]?.message ?? "", /matching intended candidate/);
+});
+test("a genuine producer C still refuses consistent foreign archive bytes whose Cargo source is another C", async () => {
+  const result = await readRollingCrateQuota(
+    ["alpha"],
+    "0.601.0",
+    "0.602.0",
+    owner,
+    mockRegistry(new Set(["alpha"]), 25, false, true),
+    () => now,
+  );
+  assert.equal(result.kind, "unavailable");
+  assert.match(result.failures[0]?.message ?? "", /Cargo VCS source/);
+});
+test("own-number pure packets without a genuine producer and crate source proof grant no zero-write waiver", () => {
+  const values = rows(25, "alpha", true);
+  assert.throws(
+    () =>
+      inspectCrateQuota(
+        "alpha",
+        "0.601.0",
+        "0.602.0",
+        [snapshot(values)],
+        exact(values[0]!),
+        owner,
+        now,
+      ),
+    /original producer artifact/,
+  );
 });

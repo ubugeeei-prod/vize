@@ -90,11 +90,43 @@ jobs:
           [[ "$status" == ahead || "$status" == identical ]]
           git fetch --depth=1 origin "$RELEASE_SOURCE"
           git checkout --detach FETCH_HEAD
+      - name: Admit the requested source with current workflow tooling
+        id: admission
+        if: inputs.npm_resume_run == ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/prepare-quota/report.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
+          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
+          quota_main="$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts"
+          version="$RELEASE_VERSION"
+          if [[ -z "$version" ]]; then
+            version="$(node "$quota_main" next)"
+          fi
+          node "$quota_main" quota-prepare "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Stamp, commit and push the release candidate
         id: cut
         if: inputs.npm_resume_run == ''
-        env: { RELEASE_VERSION: "${{ inputs.version }}" }
+        env: { RELEASE_VERSION: "${{ steps.admission.outputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
+      - name: Emit the actual created candidate's original producer attestation
+        if: steps.cut.outputs.sha != ''
+        env:
+          RELEASE_VERSION: ${{ steps.cut.outputs.version }}
+          RELEASE_SHA: ${{ steps.cut.outputs.sha }}
+        run: node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/producer_identity.ts" "$RELEASE_VERSION" "$RELEASE_SHA" "$RUNNER_TEMP/release-producer-source/producer-candidate.json"
+      - name: Retain the original producer candidate artifact
+        if: steps.cut.outputs.sha != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-producer-source-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-producer-source/producer-candidate.json
+          archive: true
+          if-no-files-found: error
+          retention-days: 90
       - name: Select release platforms
         id: platforms
         if: steps.cut.outputs.ref != ''
@@ -340,7 +372,7 @@ jobs:
       RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
+        with: { ref: "${{ github.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Require a fresh rolling crate budget for the original producer
@@ -435,7 +467,11 @@ jobs:
           RELEASE_SHA: ${{ needs.version.outputs.sha }}
           RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
           RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/crate-quota/report.json
-        run: node tools/support/release/release/main.ts quota "$RELEASE_VERSION"
+        run: |
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
+          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
+          node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota "$RELEASE_VERSION"
       - uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
         id: crates-io-auth
       - name: Publish to crates.io

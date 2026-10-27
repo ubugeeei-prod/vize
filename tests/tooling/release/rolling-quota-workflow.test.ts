@@ -69,19 +69,19 @@ test("every initial registry writer requires the fresh post-build admission barr
 });
 test("failed-job crate recovery refreshes the same producer-bound quota immediately before publishing", () => {
   const steps = release.jobs["publish-crates"]!.steps;
-  const guard = steps.findIndex((s) => s.run?.includes("release/main.ts quota"));
+  const guard = steps.findIndex((s) => s.run?.match(/release\/main\.ts"? quota/));
   const publish = steps.findIndex((s) => s.run?.includes("publish_crates/main.ts"));
   assert.ok(guard >= 0 && guard < publish);
   const step = steps[guard]!;
   assert.equal(step.env?.RELEASE_SHA, "${{ needs.version.outputs.sha }}");
   assert.equal(step.env?.RELEASE_PRODUCER_RUN, "${{ inputs.npm_resume_run || github.run_id }}");
   assert.ok(
-    release.jobs["publication-quota"]!.steps.some((s) => s.run?.includes("release/main.ts quota")),
+    release.jobs["publication-quota"]!.steps.some((s) => s.run?.match(/release\/main\.ts"? quota/)),
   );
 });
 test("live dry-run is read-only and cannot enter npm verification or JSR publication", () => {
   const dry = verification.jobs["quota-dry-run"]!;
-  assert.deepEqual(dry.permissions, { contents: "read" });
+  assert.deepEqual(dry.permissions, { contents: "read", actions: "read" });
   assert.match(dry.if ?? "", /quota_dry_run == true/);
   assert.ok(dry.steps.some((s) => s.run?.includes("quota-dry-run")));
   assert.equal(
@@ -106,7 +106,7 @@ test("cadence and manual preparation both use the common guard before stamping",
     main.indexOf("async function cadence("),
     main.indexOf("export async function release("),
   );
-  assert.match(cadence, /releaseQuota\(version\)/);
+  assert.match(cadence, /releaseQuota\(version, false, input\.greenSha/);
 });
 
 test("runner output paths belong to step context rather than invalid job env context", () => {
@@ -115,8 +115,44 @@ test("runner output paths belong to step context rather than invalid job env con
       Object.values(job.env ?? {}).some((value) => value.includes("runner.")),
       false,
     );
-    const step = job.steps.find((item) => item.run?.includes("release/main.ts quota"));
+    const step = job.steps.find((item) => item.run?.match(/release\/main\.ts"? quota/));
     assert.ok(step);
     assert.match(step.env?.RELEASE_QUOTA_EVIDENCE ?? "", /^\$\{\{ runner\.temp \}\}\//);
   }
+});
+
+test("current H tooling admits historical S before stamping and remains separate from prepared C", () => {
+  const steps = release.jobs.version!.steps;
+  const admission = steps.findIndex((s) => s.run?.includes("quota-prepare"));
+  const cut = steps.findIndex((s) => s.run?.includes("main.ts cut"));
+  assert.ok(admission >= 0 && admission < cut);
+  assert.match(
+    steps[admission]!.run ?? "",
+    /git archive "\$GITHUB_SHA" package.json tools\/support\/release/,
+  );
+  assert.equal(steps[cut]!.env?.RELEASE_VERSION, "${{ steps.admission.outputs.version }}");
+  const crate = release.jobs["publish-crates"]!.steps.find((s) =>
+    s.run?.includes('git fetch --no-tags --depth=1 origin "$GITHUB_SHA"'),
+  );
+  assert.ok(crate);
+  assert.match(crate.run ?? "", /RUNNER_TEMP\/release-quota-tooling/);
+  const entry = readRepoFile("tools", "support", "release", "release", "quota_entry.ts");
+  assert.match(entry, /ownership\?\.candidateSha \?\? source/);
+  assert.doesNotMatch(entry, /import \{ publishedCrates \}/);
+});
+
+test("only actual new candidate creation uploads the original producer attestation", () => {
+  const steps = release.jobs.version!.steps as Array<
+    Step & { if?: string; with?: Record<string, unknown> }
+  >;
+  const capture = steps.find((s) => s.run?.includes("producer_identity.ts"));
+  const upload = steps.find(
+    (s) => s.with?.name === "release-producer-source-${{ github.run_attempt }}",
+  );
+  assert.ok(capture && upload);
+  assert.equal(capture.if, "steps.cut.outputs.sha != ''");
+  assert.equal(upload.if, "steps.cut.outputs.sha != ''");
+  assert.equal(upload.with?.archive, true);
+  assert.match(capture.run ?? "", /release-quota-tooling/);
+  assert.ok(steps.indexOf(capture) < steps.indexOf(upload));
 });

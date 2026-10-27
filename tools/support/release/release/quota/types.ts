@@ -13,6 +13,9 @@ export interface ReleaseOwnership {
   workflowHead: string;
   candidateSha: string;
   producerSource: string;
+  runAttempt?: number;
+  nativeManifestGitBlob?: string;
+  inventoryGitBlob?: string;
 }
 export interface RegistrySnapshot {
   url: string;
@@ -43,6 +46,8 @@ export interface CrateQuotaObservation {
   priorMissing: null | (Omit<RegistrySnapshot, "body"> & { bytes: number; sha256: string });
   ownVersion: null | {
     checksum: string;
+    producerProofSha256: string;
+    source: OwnedCrateSourceProof;
     proof: Omit<RegistrySnapshot, "body"> & { bytes: number; sha256: string };
   };
 }
@@ -67,4 +72,40 @@ export interface CrateQuotaReport {
   observations: CrateQuotaObservation[];
   failures: { crate: string; message: string }[];
   requests: RegistryReadReceipt[];
+  produced: ProducedCandidateProof | null;
+}
+
+export interface ProducerCandidateRecord {
+  schema: "vize.releaseProducerCandidate.v1";
+  repository: string;
+  runId: string;
+  runAttempt: number;
+  workflowHead: string;
+  version: string;
+  candidateSha: string;
+  producerSource: string;
+  nativeManifestGitBlob: string;
+  inventoryGitBlob: string;
+}
+export interface ProducedCandidateProof {
+  record: ProducerCandidateRecord;
+  artifactId: number;
+  artifactName: string;
+  artifactApi: string;
+  archiveBytes: number;
+  archiveSha256: string;
+  memberSha256: string;
+  memberBytes: number;
+  memberRawBase64: string;
+  metadata: unknown;
+}
+export interface OwnedCrateSourceProof {
+  candidateSha: string;
+  archiveUrl: string;
+  archiveBytes: number;
+  archiveSha256: string;
+  vcsPath: string;
+  vcsBytes: number;
+  vcsSha256: string;
+  vcsRawBase64: string;
 }

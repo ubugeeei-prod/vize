@@ -34,7 +34,11 @@ native, WASM and package-smoke builds, before any initial registry write.
 Every initial registry publisher depends on this shared admission. The crate
 publisher also checks immediately before writes, including a failed-job retry.
 The existing green-main, source, serialization and completeness checks remain
-in place.
+in place. Workflow tooling H is staged through git archive in RUNNER_TEMP before
+stamping source S and before crate writes from prepared commit C. Product files
+are never overlaid. The admitted version is frozen before the stamp. Publication
+and recovery read C's canonical crate cohort; cadence reads the selected green
+S's cohort, so a newer H cannot invent missing targets in an older immutable cut.
 
 A recovery version is not identified by its version number alone. The genuine
 original Release run, its workflow head, the requested producer source, and the
@@ -56,6 +60,9 @@ The read-only `quota_dry_run` input on `release-verify.yml` runs the mock
 admission controls and reads live histories. It neither stamps nor publishes;
 the ordinary npm verification and dependent JSR publication jobs are skipped.
 The target version is an admission calculation, not a claim that it exists.
+In dry-run mode the existing sha input selects a historical source ancestor of
+the workflow head; staged H tooling runs from that source checkout to prove the
+metadata closure without requiring new helper files inside the older source.
 
 Receipts retain request URLs, status, Date/Age, full-history counts, page byte
 counts and SHA-256 hashes, recent timestamps, producer identity, recovery
@@ -67,3 +74,17 @@ immutable cut. Cadence must only be enabled after the guard's exact-head
 qualification, normal checks, protected merge and operational review. The
 existing ten-minute interval is a burst limit; this rolling guard supplies
 the publication budget.
+
+## Original producer authority and legacy refusal
+
+Only the actual candidate-creation job emits the tiny
+`release-producer-source-<attempt>` artifact. Its original Actions run,
+workflow head, unique attempt/name, full ZIP digest and physical committed
+candidate/source/manifest/cohort identities must match. Registry agreement
+alone is never producer authority. Each owned crate also needs the complete
+public archive SHA-256 and its Cargo VCS source commit equal to that candidate.
+
+Automatic recovery of older releases without this genuine original artifact
+is unsupported and refuses explicitly. The read-only 0.602 control must retain
+that refusal; it never creates a retrospective producer artifact. Its public
+crate-byte/VCS checks are separate evidence and do not grant recovery admission.

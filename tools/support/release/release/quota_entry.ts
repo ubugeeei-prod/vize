@@ -1,11 +1,16 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { collectStdout, println } from "../command_io.ts";
-import { nonEmptyEnv } from "../command_runtime.ts";
-import { publishedCrates } from "../publish_crates/main.ts";
+import { nonEmptyEnv, readFileToString } from "../command_runtime.ts";
+import {
+  CRATE_INVENTORY_PATH,
+  decodeCrateInventoryFile,
+  releaseCrateInventory,
+} from "./quota/inventory.ts";
 import { highestReleaseVersion } from "./versions.ts";
 import { readRollingCrateQuota, type CrateQuotaReport } from "./quota.ts";
-import { readReleaseOwnership } from "./quota_ownership.ts";
+import { readReleaseIdentity } from "./quota_ownership.ts";
 
 function requireValue(value: unknown, message: string): asserts value {
   if (!value) throw new Error(message);
@@ -55,6 +60,7 @@ export function rollingQuotaDecision(report: CrateQuotaReport) {
 export async function releaseQuota(
   version: string,
   publication = false,
+  source?: string,
 ): Promise<CrateQuotaReport> {
   requireValue(/^\d+\.\d+\.\d+$/.test(version), "stable quota target required");
   const tags = await collectStdout("git", ["ls-remote", "--tags", "--refs", "origin", "v*"]);
@@ -79,13 +85,49 @@ export async function releaseQuota(
       candidate !== undefined && originalRun !== undefined,
       "immutable publication identity required",
     );
-    ownership = await readReleaseOwnership(version, candidate, originalRun, github);
+    ownership = await readReleaseIdentity(version, candidate, originalRun, github);
   }
-  const report = await readRollingCrateQuota(publishedCrates, previous, version, ownership);
+  const physical = await collectStdout("git", ["rev-parse", "HEAD"]);
+  requireValue(
+    physical.status === 0 && /^[a-f0-9]{40}$/.test(physical.stdout.trim()),
+    "physical source checkout unavailable",
+  );
+  const inventorySource = ownership?.candidateSha ?? source ?? physical.stdout.trim();
+  requireValue(/^[a-f0-9]{40}$/.test(inventorySource), "inventory source SHA required");
+  let content: string,
+    gitBlob: string | null = null;
+  if (ownership !== null || source !== undefined) {
+    const decoded = decodeCrateInventoryFile(
+      await github(`contents/${CRATE_INVENTORY_PATH}?ref=${inventorySource}`),
+    );
+    content = decoded.source;
+    gitBlob = decoded.gitBlob;
+  } else {
+    const local = readFileToString(CRATE_INVENTORY_PATH);
+    requireValue(local !== null, "physical product source inventory unavailable");
+    content = local;
+  }
+  const crates = releaseCrateInventory(content);
+  if (ownership !== null) {
+    requireValue(gitBlob !== null, "candidate cohort blob required");
+    ownership = { ...ownership, inventoryGitBlob: gitBlob };
+  }
+  const report = await readRollingCrateQuota(crates, previous, version, ownership);
   const receipt = {
     ...report,
     target: version,
     ownership,
+    crateInventory: {
+      source: inventorySource,
+      path: CRATE_INVENTORY_PATH,
+      gitBlob,
+      sha256: createHash("sha256").update(content).digest("hex"),
+      count: crates.length,
+    },
+    sourceContext: {
+      physicalCheckout: physical.stdout.trim(),
+      toolingWorkflowHead: nonEmptyEnv("GITHUB_SHA") ?? null,
+    },
     policy:
       "internal19-after-new-write; reserve1 below observed20; full history enumeration; public API is not a quota reservation",
   };
