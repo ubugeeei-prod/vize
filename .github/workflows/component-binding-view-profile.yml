@@ -129,7 +129,7 @@ jobs:
                   for mode in runtime-off allocation; do
                     name="$role-$shape-$count-$mode-$round"
                     export VIZE_COMPONENT_PROFILE_MODE="$mode" VIZE_COMPONENT_PROFILE_OUTPUT="$evidence/$name.json"
-                    taskset -c "$affinity" "$binary" --exact component_binding_generation_profile --nocapture > "$evidence/$name.stdout" 2> "$evidence/$name.stderr"
+                    taskset -c "$affinity" "$binary" --exact component_binding_generation_profile --ignored --nocapture > "$evidence/$name.stdout" 2> "$evidence/$name.stderr"
                   done
                 done
               done

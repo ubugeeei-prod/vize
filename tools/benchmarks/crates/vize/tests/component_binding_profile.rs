@@ -40,6 +40,7 @@ fn authored_source(count: usize, shape: &str) -> String {
 }
 
 #[test]
+#[ignore = "dedicated source profiling workflow supplies input, output, and common overlays"]
 fn component_binding_generation_profile() {
     let count = std::env::var("VIZE_COMPONENT_PROFILE_COUNT")
         .map(|value| value.parse::<usize>().unwrap())
