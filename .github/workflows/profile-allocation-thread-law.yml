@@ -15,9 +15,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   laws:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
+      CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
     steps:
@@ -36,6 +37,8 @@ jobs:
           mkdir -p evidence
           git rev-parse HEAD > evidence/source.sha
           rustc +1.99.1 -vV > evidence/rustc.txt
+          lscpu > evidence/cpu.txt
+          python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS","RAYON_NUM_THREADS","GOMAXPROCS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed correctness and source-counter law; no throughput comparison"}))' > evidence/resources.json
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --message-format json -- --nocapture 2>&1 | tee evidence/normal-law.log
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --features micro-profiling --message-format json -- --nocapture 2>&1 | tee evidence/instrumented-law.log
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --features micro-profiling --doc ProfileGuard 2>&1 | tee evidence/send-law.log
