@@ -69,7 +69,7 @@ test("source-pinned cohort requires canonical literal, unique names and authenti
 test("tampered ZIP digest and foreign artifact workflow cannot grant ownership", async () => {
   for (const kind of ["digest", "workflow"]) {
     const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
-      const url = new URL(String(input)),
+      const url = new URL(input instanceof Request ? input.url : input),
         response = mockProducerResponse(owner, input, init);
       assert.ok(response);
       if (url.pathname.endsWith("/artifacts/7")) {

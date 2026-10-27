@@ -226,7 +226,7 @@ function mockRegistry(
   return (async (input: string | URL | Request, init?: RequestInit) => {
     const produced = mockProducerResponse(owner, input, init);
     if (produced) return produced;
-    const request = new URL(String(input));
+    const request = new URL(input instanceof Request ? input.url : input);
     const source = wrongVcs ? "0".repeat(40) : owner.candidateSha;
     if (request.origin === "https://static.crates.io") {
       const crate = request.pathname.split("/")[2]!;

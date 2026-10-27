@@ -13,7 +13,7 @@ unique, all crate identities and timestamps must be valid, and creation order
 must be nonincreasing. All versions count, including prereleases and yanked
 versions, in the inclusive 24-hour window plus a two-minute margin.
 
-Requests have a 15-second timeout and a 2 MiB response limit. The complete
+History and identity metadata requests have a 15-second timeout and a 2 MiB response limit. The complete
 decision expires after two minutes. Response Date must agree with the local
 clock within two minutes; Age, when present, must be a nonnegative integer at
 most 60 seconds. Missing Age is retained as missing, rather than reported as
@@ -83,6 +83,10 @@ workflow head, unique attempt/name, full ZIP digest and physical committed
 candidate/source/manifest/cohort identities must match. Registry agreement
 alone is never producer authority. Each owned crate also needs the complete
 public archive SHA-256 and its Cargo VCS source commit equal to that candidate.
+Producer ZIPs are capped at 128 KiB with one record of at most 16 KiB. Public
+crate archives are capped at 32 MiB compressed and 128 MiB after inflation;
+the regular Cargo VCS member is at most 16 KiB. They are read in memory and
+never extracted.
 
 Automatic recovery of older releases without this genuine original artifact
 is unsupported and refuses explicitly. The read-only 0.602 control must retain

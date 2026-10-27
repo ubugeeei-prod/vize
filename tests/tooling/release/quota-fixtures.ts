@@ -55,7 +55,7 @@ export function mockProducerResponse(
   input: string | URL | Request,
   init?: RequestInit,
 ): Response | null {
-  const url = new URL(String(input)),
+  const url = new URL(input instanceof Request ? input.url : input),
     fixture = mockProduced(owner);
   if (url.origin === "https://api.github.com" && url.pathname.endsWith("/artifacts")) {
     return new Response(JSON.stringify({ total_count: 1, artifacts: [fixture.metadata] }));
