@@ -545,6 +545,58 @@ export {}
     )
     .unwrap();
 
+    // The original bytes configure only src/**/*: the hidden declaration is
+    // not part of that program. Preserve this as a complete negative control.
+    let expected_negative = serde_json::json!({
+        "files": [
+            {"file":"nuxt.config.ts","diagnostics":[]},
+            {"file":"src/App.vue","diagnostics":[
+                "error:29:20 [TS2304] Cannot find name 'computed'.",
+                "error:30:20 [TS2304] Cannot find name 'computed'.",
+                "error:31:24 [TS2304] Cannot find name 'computed'.",
+                "error:32:25 [TS7006] Parameter 'record' implicitly has an 'any' type."
+            ]}
+        ],
+        "programs":[{"root":".","tsconfig":"tsconfig.json",
+            "compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true},
+            "files":["nuxt.config.ts","src/App.vue"]}],
+        "errorCount":4,"warningCount":0,"fileCount":2
+    });
+    let unreferenced = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+    capture_nuxt_computed_membership_process(&project_root, "unreferenced-native", &unreferenced);
+    assert_eq!(unreferenced.status.code(), Some(1));
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&unreferenced.stdout).unwrap(),
+        expected_negative
+    );
+    assert_stock_nuxt_computed_membership(
+        &project_root,
+        "unreferenced-stock",
+        "src/App.vue(29,20): error TS2304: Cannot find name 'computed'.\nsrc/App.vue(30,20): error TS2304: Cannot find name 'computed'.\nsrc/App.vue(31,24): error TS2304: Cannot find name 'computed'.\nsrc/App.vue(32,25): error TS7006: Parameter 'record' implicitly has an 'any' type.\n",
+    );
+
+    // A real configured manifest references the same unchanged declaration.
+    std::fs::write(
+        project_root.join(".nuxt/nuxt.d.ts"),
+        "/// <reference path=\"./types/imports.d.ts\" />\n",
+    )
+    .unwrap();
+    let mut configured: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(project_root.join("tsconfig.json")).unwrap())
+            .unwrap();
+    configured["files"] = serde_json::json!([".nuxt/nuxt.d.ts"]);
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        serde_json::to_vec_pretty(&configured).unwrap(),
+    )
+    .unwrap();
+    assert_stock_nuxt_computed_membership(&project_root, "referenced-stock", "");
+
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
@@ -557,6 +609,17 @@ export {}
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
         panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
     });
+
+    capture_nuxt_computed_membership_process(&project_root, "referenced-native", &output);
+    let mut expected_positive = expected_negative;
+    expected_positive["files"][1]["diagnostics"] = serde_json::json!([]);
+    expected_positive["programs"][0]["files"] =
+        serde_json::json!([".nuxt/nuxt.d.ts", "nuxt.config.ts", "src/App.vue"]);
+    expected_positive["errorCount"] = serde_json::json!(0);
+    assert_eq!(
+        json, expected_positive,
+        "complete configured manifest contract"
+    );
 
     assert_eq!(
         output.status.code(),
@@ -3324,6 +3387,59 @@ fn unique_case_dir(name: &str) -> std::path::PathBuf {
         .join("vize-tests")
         .join("tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn capture_nuxt_computed_membership_process(
+    root: &Path,
+    name: &str,
+    output: &std::process::Output,
+) {
+    if let Some(artifacts) = std::env::var_os("VIZE_NUXT_MEMBERSHIP_ARTIFACTS") {
+        let artifacts = Path::new(&artifacts);
+        std::fs::create_dir_all(artifacts).unwrap();
+        std::fs::write(artifacts.join(format!("{name}.stdout")), &output.stdout).unwrap();
+        std::fs::write(artifacts.join(format!("{name}.stderr")), &output.stderr).unwrap();
+        std::fs::write(
+            artifacts.join(format!("{name}.status")),
+            format!("{:?}\n", output.status),
+        )
+        .unwrap();
+        for source in [
+            "tsconfig.json",
+            "src/App.vue",
+            ".nuxt/nuxt.d.ts",
+            ".nuxt/types/imports.d.ts",
+        ] {
+            if let Ok(bytes) = std::fs::read(root.join(source)) {
+                let path = artifacts.join(name).join(source);
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                std::fs::write(path, bytes).unwrap();
+            }
+        }
+    }
+}
+
+fn assert_stock_nuxt_computed_membership(root: &Path, name: &str, expected: &str) {
+    let Some(stock) = std::env::var_os("VIZE_TEST_STOCK_VUE_TSC") else {
+        assert!(
+            std::env::var_os("VIZE_NUXT_MEMBERSHIP_ARTIFACTS").is_none(),
+            "focused qualification requires independent stock vue-tsc"
+        );
+        return;
+    };
+    let output = Command::new("node")
+        .arg(stock)
+        .args(["--noEmit", "--pretty", "false", "-p", "tsconfig.json"])
+        .current_dir(root)
+        .output()
+        .unwrap();
+    capture_nuxt_computed_membership_process(root, name, &output);
+    assert_eq!(String::from_utf8_lossy(&output.stdout), expected);
+    assert_eq!(output.stderr, b"");
+    assert_eq!(
+        output.status.code(),
+        Some(if expected.is_empty() { 0 } else { 2 })
+    );
 }
 
 fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
