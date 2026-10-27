@@ -5,6 +5,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, symlinkSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  captureColdScale,
   prepareColdScale,
   verifyColdDiagnostics,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale.ts";
@@ -68,6 +69,76 @@ test("fixture preparation refuses to replace an existing evidence directory", ()
     writeFileSync(witness, "retained");
     assert.throws(() => prepareColdScale(root, root, 2500, false), { code: "ERR_ASSERTION" });
     assert.equal(readFileSync(witness, "utf8"), "retained");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("exported capture creates its own empty temporary directory before invoking the checker", () => {
+  const root = mkdtempSync(join(tmpdir(), "cold-scale-capture-"));
+  try {
+    const provider = join(root, "provider");
+    const native = `@typescript/typescript-${process.platform === "darwin" ? "darwin" : "linux"}-${process.arch}`;
+    for (const name of ["vue", "typescript", "typescript-native", native]) {
+      const dir = join(provider, "node_modules", name);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "package.json"), JSON.stringify({ name, version: "0.0.0" }));
+    }
+    const binary = join(root, "checker.cjs");
+    writeFileSync(
+      binary,
+      `#!${process.execPath}\nconst fs = require("node:fs");
+fs.writeFileSync(process.env.TMPDIR + "/probe", "fresh temporary directory");
+console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}));\n`,
+      { mode: 0o755 },
+    );
+    const out = join(root, "evidence");
+    // This stub verifies the capture API's filesystem contract, not product accuracy.
+    captureColdScale({ provider, out, files: 2000, tool: "cli", invalid: false, binary });
+    assert.equal(readFileSync(join(out, "tmp", "probe"), "utf8"), "fresh temporary directory");
+    const report = JSON.parse(readFileSync(join(out, "measurement.json"), "utf8"));
+    assert.equal(report.status, 0);
+    assert.equal(report.correctness.passed, true);
+    assert.equal(report.meetsColdTarget, false, "177 SFCs cannot satisfy the 2500-SFC target");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("manual Actions comparisons reject absent, mutable or identical baseline identities", () => {
+  const root = mkdtempSync(join(tmpdir(), "cold-scale-baseline-"));
+  try {
+    const workflow = readFileSync(
+      new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
+      "utf8",
+    );
+    const match =
+      /name: Validate the full SFC cohort\n\s+run: \|\n([\s\S]*?)(?=      - name:)/.exec(workflow);
+    assert.ok(match);
+    const script = match[1]
+      .split("\n")
+      .map((line) => line.replace(/^          /, ""))
+      .join("\n");
+    const cwd = new URL("../../", import.meta.url);
+    const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf8" });
+    assert.equal(head.status, 0, head.stderr);
+    for (const base of ["", "main", "a".repeat(39), head.stdout.trim(), "a".repeat(40)]) {
+      const envFile = join(
+        root,
+        "environment-" + base.length + (base === head.stdout.trim() ? "-head" : ""),
+      );
+      writeFileSync(envFile, "");
+      const result = spawnSync("bash", ["-euc", script], {
+        cwd,
+        env: { ...process.env, BASE_SHA: base, VIZE_BENCH_SFCS: "2500", GITHUB_ENV: envFile },
+        encoding: "utf8",
+      });
+      assert.equal(result.status === 0, base === "a".repeat(40), result.stderr);
+      assert.equal(
+        readFileSync(envFile, "utf8"),
+        base === "a".repeat(40) ? "VIZE_BENCH_FILES=4323\n" : "",
+      );
+    }
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

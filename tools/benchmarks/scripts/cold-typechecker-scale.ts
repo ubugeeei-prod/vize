@@ -196,7 +196,7 @@ export function captureColdScale(options: {
   binary?: string;
 }) {
   const { provider, out, files, tool, invalid } = options;
-  mkdirSync(out, { recursive: true });
+  mkdirSync(join(out, "tmp"), { recursive: true });
   const corpus = prepareColdScale(join(out, "project"), provider, files, invalid);
   const require = createRequire(join(provider, "package.json"));
   const nativePackage =
@@ -331,7 +331,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   });
   assert.ok(values.provider && values.out);
   assert.ok(["cli", "mapper", "vue-tsc", "profile"].includes(values.tool!));
-  mkdirSync(join(resolve(values.out), "tmp"), { recursive: true });
   captureColdScale({
     provider: resolve(values.provider),
     out: resolve(values.out),

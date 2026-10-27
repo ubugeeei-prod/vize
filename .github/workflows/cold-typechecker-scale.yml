@@ -2,6 +2,10 @@ name: Cold typechecker scale
 on:
   workflow_dispatch:
     inputs:
+      base_sha:
+        description: Immutable 40-hex baseline commit distinct from the dispatched source
+        type: string
+        required: true
       sfcs:
         description: Vue SFC count plus the complete authored package dependency graph
         type: choice
@@ -23,7 +27,7 @@ jobs:
     timeout-minutes: 90
     env:
       VIZE_BENCH_SFCS: ${{ inputs.sfcs || '2500' }}
-      BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       GOMAXPROCS: "8"
       RAYON_NUM_THREADS: "8"
@@ -43,6 +47,8 @@ jobs:
       - name: Validate the full SFC cohort
         run: |
           [[ "$VIZE_BENCH_SFCS" =~ ^(2500|10000|50000)$ ]]
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$BASE_SHA" != "$(git rev-parse HEAD)"
           bench_support_scripts=$(node --input-type=module -e 'import {coldScaleSupportScriptFiles} from "./tools/benchmarks/scripts/cold-typechecker-scale.ts"; console.log(coldScaleSupportScriptFiles);')
           printf 'VIZE_BENCH_FILES=%s\n' "$((VIZE_BENCH_SFCS + bench_support_scripts))" >> "$GITHUB_ENV"
       - name: Install fixed comparison providers
