@@ -14,6 +14,9 @@ const fixture = JSON.parse(
   ),
 ) as {
   packets: { source: string; before: ExposurePacket; after: ExposurePacket }[];
+  emptySetupModules: {
+    packets: { source: string; before: ExposurePacket; after: ExposurePacket }[];
+  };
 };
 
 test("the reviewed exposure edit preserves complete captured code, maps and descriptors", () => {
@@ -77,5 +80,13 @@ test("Rust structured source maps retain the same complete coordinate contract",
     const before = { ...row.before, map: JSON.parse(row.before.map as string) };
     const after = { ...row.after, map: JSON.parse(row.after.map as string) };
     assert.deepEqual(closedSetupReference(before, row.source), after);
+  }
+});
+
+test("empty setup returns preserve the complete three pinned SSR modules", () => {
+  assert.equal(fixture.emptySetupModules.packets.length, 3);
+  for (const row of fixture.emptySetupModules.packets) {
+    assert.deepEqual(closedSetupReference(row.before, row.source), row.after);
+    assert.equal(historicalSetupCode(row.after.code, row.source), row.before.code);
   }
 });

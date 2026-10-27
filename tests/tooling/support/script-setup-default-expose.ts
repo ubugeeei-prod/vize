@@ -12,7 +12,10 @@ export type ExposurePacket = {
 // segment, descriptor and diagnostic is still compared against this reference.
 export function closedSetupReference(packet: ExposurePacket, source: string): ExposurePacket {
   const out = structuredClone(packet);
-  if (!/<script\b[^>]*\bsetup\b/.test(source) || !packet.code.includes("const __returned__ = ")) {
+  if (
+    !/<script\b[^>]*\bsetup\b/.test(source) ||
+    !/(?:const __returned__ = |(?:^|\n)[ \t]*return \{\};?\n[ \t]*\})/.test(packet.code)
+  ) {
     return out;
   }
   const signature = /^([ \t]*)(async )?setup\((__props(?:: any)?)(?:, \{ ([^}]+) \})?\) \{\n/m;

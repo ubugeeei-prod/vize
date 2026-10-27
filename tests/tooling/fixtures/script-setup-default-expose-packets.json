@@ -144,5 +144,40 @@
         }
       }
     }
-  ]
+  ],
+  "emptySetupModules": {
+    "run": 40481679130,
+    "packets": [
+      {
+        "id": "compiler/sfc/package-import-prop-type-9894",
+        "source": "<script setup lang=\"ts\">\ntype Ripple = boolean | { center?: boolean } | null | undefined\nconst { ripple = undefined } = defineProps<{ ripple?: Ripple }>()\n</script>\n<template><span>{{ JSON.stringify(ripple) }}</span></template>\n",
+        "before": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(JSON.stringify($props.ripple))}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { ripple: {\n    type: [Boolean, Object],\n    required: false,\n    default: undefined\n  } },\n  ssrRender,\n  setup(__props) {\n    return {};\n  }\n};"
+        },
+        "after": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(JSON.stringify($props.ripple))}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { ripple: {\n    type: [Boolean, Object],\n    required: false,\n    default: undefined\n  } },\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    return {};\n  }\n};"
+        }
+      },
+      {
+        "id": "compiler/sfc/production-v-if-comment-9920",
+        "source": "<script setup>\ndefineProps({ open: Boolean })\n</script>\n\n<template>\n  <div class=\"toggle\">\n    <p v-if=\"open\">open</p>\n    <span>always</span>\n  </div>\n</template>\n",
+        "before": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"toggle\" }, _attrs))}>`)\n  if ($props.open) {\n    _push(`<p>open</p>`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`<span>always</span></div>`)\n}\n\nexport default {\n  __name: 'Layout',\n  props: { open: Boolean },\n  ssrRender: ssrRender,\n  setup(__props) {\n\n\nreturn {}\n}\n\n}"
+        },
+        "after": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"toggle\" }, _attrs))}>`)\n  if ($props.open) {\n    _push(`<p>open</p>`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`<span>always</span></div>`)\n}\n\nexport default {\n  __name: 'Layout',\n  props: { open: Boolean },\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nreturn {}\n}\n\n}"
+        }
+      },
+      {
+        "id": "compiler/sfc/root-text-patch-flag-10168",
+        "source": "<script setup lang=\"ts\">\ndefineProps<{ label: string }>();\n</script>\n\n<template>\n  <span class=\"badge\">{{ label }}</span>\n</template>\n",
+        "before": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_mergeProps({ class: \"badge\" }, _attrs))}>${_ssrInterpolate($props.label)}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { label: {\n    type: String,\n    required: true\n  } },\n  ssrRender,\n  setup(__props) {\n    return {};\n  }\n};"
+        },
+        "after": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_mergeProps({ class: \"badge\" }, _attrs))}>${_ssrInterpolate($props.label)}</span>`);\n}\nexport default {\n  __name: \"Layout\",\n  props: { label: {\n    type: String,\n    required: true\n  } },\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    return {};\n  }\n};"
+        }
+      }
+    ]
+  }
 }
