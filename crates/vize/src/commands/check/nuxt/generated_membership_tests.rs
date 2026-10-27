@@ -227,7 +227,7 @@ fn configured_pure_manifest_retains_imports_after_ambient_root_filtering() {
     );
     assert_eq!(
         files,
-        Vec::new(),
+        Vec::<std::path::PathBuf>::new(),
         "pure/import manifests are not ambient roots"
     );
     let mut options = VirtualTsOptions::default();
