@@ -62,6 +62,7 @@ jobs:
         run: >-
           node --test
           tests/tooling/release/npm-resume.test.ts
+          tests/tooling/release/public-consumer-guards.test.ts
           tests/tooling/release/release-workflow.test.ts
           tests/tooling/release/release-notes.test.ts
           tests/tooling/release/verify-published-registry.test.ts
@@ -78,7 +79,7 @@ jobs:
       - name: Target-aware editor publication
         run: node --test tests/tooling/publish-editor*.test.ts tests/tooling/publish-open-vsx-extension.test.ts tests/tooling/publish-vscode-extension*.test.ts
   public-release-contracts:
-    if: github.repository == 'ubugeeei-prod/vize' && inputs.candidate != '' && (inputs.phase == 'release-contracts' || inputs.phase == 'after')
+    if: github.repository == 'ubugeeei-prod/vize' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:

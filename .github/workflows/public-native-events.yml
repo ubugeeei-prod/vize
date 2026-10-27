@@ -98,7 +98,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   public-release-contracts:
-    if: github.repository == 'ubugeeei-prod/vize' && inputs.candidate != '' && (inputs.phase == 'release-contracts' || inputs.phase == 'after')
+    if: github.repository == 'ubugeeei-prod/vize' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
