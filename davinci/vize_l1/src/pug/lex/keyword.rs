@@ -1,4 +1,4 @@
-//! Line-head lexing: pug's keyword constructs (lexed whole, for refusal),
+//! Line-head lexing: pug's keyword constructs (lexed whole), mixin calls,
 //! tags, the `.class` / `#id` shorthands, code, and the one-byte markers.
 
 use super::{Lexer, Tk};
@@ -102,7 +102,8 @@ impl Lexer<'_, '_> {
         {
             (PugRefusal::Mixin, None)
         } else if line.first() == Some(&b'+') && is_call(input) {
-            (PugRefusal::Call, None)
+            self.call();
+            return true;
         } else if ["if", "unless", "else"]
             .iter()
             .any(|kw| starts_word(line, kw))
@@ -125,6 +126,57 @@ impl Lexer<'_, '_> {
         self.push(Tk::Keyword(refusal), self.pos, end);
         self.pos = end;
         true
+    }
+
+    /// pug's `call`: `^\+(\s*)(([-\w]+)|(#\{))`, then `^ *\(` arguments
+    /// unless they read as attributes (`^\s*[-\w]+ *=`). The rest of the
+    /// line lexes as a tag's tail; an unclosed `(` is left to `attrs`,
+    /// which reports it.
+    fn call(&mut self) {
+        let input = self.input().as_bytes();
+        let blanks = input
+            .get(1..)
+            .unwrap_or_default()
+            .iter()
+            .take_while(|&&b| is_js_blank(b))
+            .count();
+        let name_at = self.pos + 1 + blanks;
+        let rest = input.get(1 + blanks..).unwrap_or_default();
+        let end = if rest.starts_with(b"#{") {
+            let src = crate::slice::range(self.src, name_at, self.end);
+            match parse_until(self.allocator, src, b'}', 2) {
+                Ok(close) => name_at + close + 1,
+                Err(_) => {
+                    self.error(PugErrorCode::NoEndBracket, name_at);
+                    self.line_end().max(name_at)
+                }
+            }
+        } else {
+            name_at
+                + rest
+                    .iter()
+                    .take_while(|&&b| is_word(b) || b == b'-')
+                    .count()
+        };
+        self.push(Tk::Call, self.pos, end);
+        self.pos = end;
+        let spaces = self.input().bytes().take_while(|&b| b == b' ').count();
+        if !self
+            .input()
+            .as_bytes()
+            .get(spaces)
+            .is_some_and(|&b| b == b'(')
+        {
+            return;
+        }
+        let open = self.pos + spaces;
+        let src = crate::slice::range(self.src, open, self.end);
+        if let Ok(close) = parse_until(self.allocator, src, b')', 1)
+            && !names_an_attribute(src.get(1..close).unwrap_or_default().as_bytes())
+        {
+            self.push(Tk::CallArgs, open, open + close + 1);
+            self.pos = open + close + 1;
+        }
     }
 
     /// `^(\w(?:[-:\w]*\w)?)`.
@@ -291,7 +343,7 @@ impl Lexer<'_, '_> {
         true
     }
 
-    /// `^&attributes\b` + a bracket expression — refused downstream.
+    /// `^&attributes\b` + a bracket expression.
     pub(super) fn attributes_block(&mut self) -> bool {
         if !starts_word(self.input().as_bytes(), "&attributes") {
             return false;
@@ -334,13 +386,30 @@ impl Lexer<'_, '_> {
     }
 }
 
+/// The ASCII bytes of a regexp `\s`.
+fn is_js_blank(byte: u8) -> bool {
+    matches!(byte, b' ' | b'\t' | b'\n' | b'\r' | 0x0b | 0x0c)
+}
+
+/// `^\s*[-\w]+ *=`: call parentheses that hold attributes.
+fn names_an_attribute(src: &[u8]) -> bool {
+    let blanks = src.iter().take_while(|&&b| is_js_blank(b)).count();
+    let rest = src.get(blanks..).unwrap_or_default();
+    let name = rest
+        .iter()
+        .take_while(|&&b| is_word(b) || b == b'-')
+        .count();
+    let spaces = spaces_after(rest, name);
+    name > 0 && rest.get(name + spaces) == Some(&b'=')
+}
+
 /// `^\+(\s*)(([-\w]+)|(#\{))`.
 fn is_call(input: &[u8]) -> bool {
     let blanks = input
         .get(1..)
         .unwrap_or_default()
         .iter()
-        .take_while(|&&b| matches!(b, b' ' | b'\t' | b'\n' | b'\r' | 0x0b | 0x0c))
+        .take_while(|&&b| is_js_blank(b))
         .count();
     let rest = input.get(1 + blanks..).unwrap_or_default();
     rest.first().is_some_and(|&b| is_word(b) || b == b'-') || rest.starts_with(b"#{")

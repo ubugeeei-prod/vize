@@ -1520,6 +1520,20 @@ export declare function transformViteCssVarsForPipeline(
   productionFilename?: string | undefined | null,
 ): string;
 
+/** Canon's configuration identity and the exact files observed while resolving it. */
+export interface VueLanguageProjectMetadata {
+  configIdentity: string;
+  watchedFiles: Array<string>;
+}
+
+/**
+ * Snapshot the explicit project's existing Canon configuration resolver.
+ * An empty path denotes an inferred project and performs no file reads.
+ */
+export declare function getVueLanguageProjectMetadata(
+  configFileName: string,
+): VueLanguageProjectMetadata;
+
 /** Explicit options for the shared Canon language projection. */
 export interface VueLanguageCodeOptions {
   filename: string;

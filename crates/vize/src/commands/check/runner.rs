@@ -28,6 +28,7 @@ mod input_scope;
 mod invocation;
 mod nuxt_tsconfig;
 mod output;
+mod overlap;
 mod program_inputs;
 mod programs;
 mod resolve;
@@ -43,14 +44,14 @@ use crate::commands::check::imports::LocalImportSession;
 use collect::collect_check_files_with_ignores;
 use default_imports::{
     DefaultRunFileContext, ExplicitAmbientImportContext, LocalImportContext, canonical_file_set,
-    collect_default_run_files, register_ambient_declaration_files,
+    collect_default_roots, register_ambient_declaration_files,
     register_explicit_ambient_imports_with_session, register_transitive_local_imports_with_session,
 };
 #[cfg(test)]
 use diagnostics::is_suppressed_false_positive;
 pub(crate) use direct::run_direct;
 use execution::{
-    CheckerSettings, ProgramExecution, ProgramExecutionInput, ProgramPreparation, execute_program,
+    CheckerSettings, ProgramExecution, ProgramExecutionInput, ProgramPreparation, prepare_program,
 };
 use global_components::{
     GlobalComponentStubOptions, build_virtual_ts_options, collect_project_global_component_stubs,
@@ -96,18 +97,14 @@ fn collect_roots(
         include_jsx: jsx_typecheck,
     };
     if args.patterns.is_empty() {
-        let collected = collect_default_run_files(
-            DefaultRunFileContext {
-                project_root: invocation_project_root,
-                cwd,
-                tsconfig_path: invocation_tsconfig_path,
-                import_options,
-                check_ignore_set,
-            },
-            cache,
-            canonical_paths,
-            package_routes,
-        );
+        let context = DefaultRunFileContext {
+            project_root: invocation_project_root,
+            cwd,
+            tsconfig_path: invocation_tsconfig_path,
+            import_options,
+            check_ignore_set,
+        };
+        let collected = collect_default_roots(context, cache, canonical_paths, package_routes);
         exit_if_default_run_leaves_cwd(
             &collected.files,
             cwd,
@@ -136,7 +133,7 @@ fn collect_roots(
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
-fn prepare_and_execute(
+fn prepare_candidate(
     args: &CheckArgs,
     mut candidate: ProgramCandidate,
     cwd: &Path,
@@ -149,6 +146,7 @@ fn prepare_and_execute(
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     package_route_resolver: &mut vize_canon::PackageRouteResolver,
+    import_session: &mut LocalImportSession,
 ) -> Result<ProgramPreparation, vize_l0::String> {
     let initial_root = candidate
         .tsconfig_path
@@ -173,7 +171,7 @@ fn prepare_and_execute(
     let mut authored_imports = Vec::new();
     let mut explicit_program_declarations = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
-    let mut import_session = LocalImportSession::new(package_route_resolver);
+    import_session.begin_program(package_route_resolver);
     // Validate only the paths requested by the user. Their relative imports
     // may legitimately leave this root and still belong to the TS program.
     validate_inputs_in_root(explicit_input_root, &candidate.inputs, validate_inputs)?;
@@ -188,7 +186,7 @@ fn prepare_and_execute(
             },
             canonical_paths,
             package_route_resolver,
-            &mut import_session,
+            import_session,
         );
         import_time += import_start.elapsed();
         authored_imports = discovered.authored;
@@ -211,7 +209,7 @@ fn prepare_and_execute(
             },
             canonical_paths,
             package_route_resolver,
-            &mut import_session,
+            import_session,
         );
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
@@ -279,7 +277,7 @@ fn prepare_and_execute(
             cache,
             canonical_paths,
             package_route_resolver,
-            &mut import_session,
+            import_session,
         );
         import_time += import_start.elapsed();
         package_routes.extend(registered.package_routes);
@@ -316,7 +314,7 @@ fn prepare_and_execute(
     sort_package_route_bindings(&mut package_routes);
     let discover_global_component_declarations =
         !args.patterns.is_empty() && program_tsconfig_path.is_none();
-    let mut execution = execute_program(
+    let mut execution = prepare_program(
         ProgramExecutionInput {
             files: &candidate.files,
             reported_files: candidate.reported,

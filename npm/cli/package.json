@@ -110,7 +110,8 @@
     "contentMapper": {
       "compilerOptions": [
         "checkJs",
-        "noUnusedLocals"
+        "noUnusedLocals",
+        "rootDir"
       ],
       "dynamicConfig": true,
       "exec": [

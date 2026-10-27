@@ -372,6 +372,8 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.proofKind, "historical-composition-and-owned-checkout");
   assert.equal(report.currentSourceAcceptance, false);
   assert.equal(report.currentHostAcceptance, false);
+  assert.equal(report.currentBuildInputsSha256, null);
+  assert.equal(report.currentVsixInputsSha256, null);
   assert.deepEqual(
     contract.layers.map((layer) => layer.changes.length),
     [7, 2, 9],

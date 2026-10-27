@@ -1,0 +1,6 @@
+<template>
+  <!-- <img src="./missing-comment.png"> -->
+  <textarea><img src="./missing-raw.png"></textarea>
+  <div title='<img src="./quoted.png">'>ok</div>
+  <template v-if="true"><img src="./real.png"></template>
+</template>

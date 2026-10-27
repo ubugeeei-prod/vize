@@ -14,11 +14,37 @@ use vize_canon::{
     generate_vue_content_mapper_transform_with_options,
 };
 
-/// Explicit host-selected options. Source text always comes from the caller.
+/// Canon's configuration identity and the exact files observed while resolving it.
+#[napi(object)]
+pub struct VueLanguageProjectMetadata {
+    pub config_identity: String,
+    pub watched_files: Vec<String>,
+}
+
+/// Snapshot the explicit project's existing Canon configuration resolver.
+/// An empty path denotes an inferred project and performs no file reads.
+#[napi(js_name = "getVueLanguageProjectMetadata", catch_unwind)]
+pub fn get_vue_language_project_metadata(
+    config_file_name: String,
+) -> Result<VueLanguageProjectMetadata> {
+    let configuration = ContentMapperProjectConfiguration::load(Path::new(&config_file_name))
+        .map_err(|error| Error::from_reason(error.to_string()))?;
+    Ok(VueLanguageProjectMetadata {
+        config_identity: configuration.config_identity.to_string(),
+        watched_files: configuration
+            .watched_files
+            .into_iter()
+            .map(|path| path.to_string())
+            .collect(),
+    })
+}
+
+// Source text always comes from the caller.
+/// Explicit options for the shared Canon language projection.
 #[napi(object)]
 pub struct VueLanguageCodeOptions {
     pub filename: String,
-    /// An explicit tsconfig; omitted means no configuration file reads.
+    /// Explicit host-selected tsconfig; omitted performs no config file reads.
     pub config_file_name: Option<String>,
     pub options_api: Option<bool>,
     #[napi(js_name = "checkJavaScript")]
@@ -26,8 +52,10 @@ pub struct VueLanguageCodeOptions {
     pub preserve_unused_diagnostics: Option<bool>,
 }
 
-/// Serialize the existing UTF-8 Content Mapper protocol, without another emitter.
-#[napi(js_name = "generateVueLanguageCode")]
+// Serializes the existing protocol without another emitter. tsserver hosts
+// this binding, so a panic must reach JavaScript as an error.
+/// Canon's existing Content Mapper protocol JSON, with UTF-8 offsets.
+#[napi(js_name = "generateVueLanguageCode", catch_unwind)]
 pub fn generate_vue_language_code(
     source: String,
     options: VueLanguageCodeOptions,

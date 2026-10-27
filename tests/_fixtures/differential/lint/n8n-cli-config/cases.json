@@ -1210,8 +1210,7 @@
               "line": 4,
               "column": 1,
               "endLine": 6,
-              "endColumn": 10,
-              "help": "Recommended order: <script> -> <template> -> <style>"
+              "endColumn": 10
             }
           ],
           "errorCount": 1,
@@ -1328,8 +1327,7 @@
               "line": 4,
               "column": 1,
               "endLine": 6,
-              "endColumn": 12,
-              "help": "Recommended order: <template> -> <script> -> <style>"
+              "endColumn": 12
             }
           ],
           "errorCount": 1,

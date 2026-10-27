@@ -194,18 +194,21 @@ impl DiagnosticService {
         let mut documents = Vec::new();
         let mut finished = Vec::new();
         if is_art_file {
-            let Some(art_virtual) = Self::descriptor_for_collect(state, uri, &content)
-                .ok()
-                .and_then(|descriptor| {
-                    Self::generate_virtual_ts_for_art_with_dependencies(
-                        &content,
-                        &descriptor,
-                        &virtual_ts_options,
-                    )
-                })
-            else {
-                tracing::warn!("failed to generate virtual ts for {}", uri);
+            let Ok(descriptor) = Self::descriptor_for_collect(state, uri, &content) else {
+                tracing::warn!("failed to parse art sfc {}", uri);
                 return Ok(vec![]);
+            };
+            let Some(art_virtual) = Self::generate_virtual_ts_for_art_with_dependencies(
+                &content,
+                &descriptor,
+                &virtual_ts_options,
+            ) else {
+                tracing::warn!("failed to generate virtual ts for {}", uri);
+                return Ok(
+                    super::virtual_ts_art::invalid_art_diagnostic(&content, &descriptor)
+                        .into_iter()
+                        .collect(),
+                );
             };
             for variant in art_virtual.variants {
                 let (document, variant_finished, dependencies) =

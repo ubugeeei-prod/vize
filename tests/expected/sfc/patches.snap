@@ -451,13 +451,13 @@ const buttonProps = computed(() => ({ disabled: false, type: 'primary' }))
 return (_ctx, _cache) => {
   return (isActive.value)
       ? (_openBlock(), _createBlock(Button, _mergeProps({ key: 0 }, buttonProps.value, {
-        onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.handleClick && _ctx.handleClick(...args)))
+        onClick: _ctx.handleClick
       }), {
         default: _withCtx(() => [
           _createTextVNode(" Click me ")
         ]),
         _: 1 /* STABLE */
-      }, 16 /* FULL_PROPS */))
+      }, 16 /* FULL_PROPS */, ["onClick"]))
       : _createCommentVNode("v-if", true)
 }
 }
@@ -2063,8 +2063,8 @@ return (_ctx, _cache) => {
   const _component_ActionPanel = _resolveComponent("ActionPanel")
 
   return (_openBlock(), _createBlock(_component_ActionPanel, {
-      onSelectItem: _cache[0] || (_cache[0] = (...args) => (_unref(actionHandler).selectItem && _unref(actionHandler).selectItem(...args)))
-    }))
+      onSelectItem: _unref(actionHandler).selectItem
+    }, null, 8 /* PROPS */, ["onSelectItem"]))
 }
 }
 

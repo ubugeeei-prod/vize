@@ -177,6 +177,199 @@ void test("syntax and semantic packets preserve their channels while EXPECT sees
   );
 });
 
+void test("real TypeScript file references return only complete authored Vue spans", () => {
+  const file = "/src/Consumer.vue",
+    dependency = "/src/dep.ts";
+  const script = 'import { value } from "./dep";\nvalue;\n';
+  const before = '<script setup lang="ts">\n// 😀 日本語\n';
+  const source = before + script + "</script>";
+  const prefix = "declare const generatedHelper: unknown;\n".repeat(12);
+  const texts = { [file]: prefix + script, [dependency]: "export const value = 1;" };
+  const host = {
+    getScriptFileNames: () => Object.keys(texts),
+    getScriptVersion: () => "1",
+    getScriptSnapshot: (name) =>
+      texts[name] === undefined ? undefined : ts.ScriptSnapshot.fromString(texts[name]),
+    getCompilationSettings: () => ({
+      noLib: true,
+      allowNonTsExtensions: true,
+      module: ts.ModuleKind.ESNext,
+    }),
+    getCurrentDirectory: () => "/src",
+    getDefaultLibFileName: () => "/lib.d.ts",
+    getScriptKind: () => ts.ScriptKind.TS,
+    readFile: (name) => texts[name],
+    fileExists: (name) => Object.hasOwn(texts, name),
+    resolveModuleNames: (names) =>
+      names.map(() => ({ resolvedFileName: dependency, extension: ts.Extension.Ts })),
+  };
+  const original = ts.createLanguageService(host);
+  const projection = {
+    text: texts[file],
+    diagnostics: [],
+    mappings: [[prefix.length, script.length, before.length, script.length, 0, 0xfffff]],
+  };
+  const service = createMappedLanguageService(ts, original, {
+    engine: helper,
+    get: (name) => (name === file ? { source, projection } : undefined),
+  });
+  const raw = original.getFileReferences(dependency);
+  assert.equal(raw.length, 1);
+  assert(raw[0].textSpan.start > source.length, "the genuine TypeScript result is generated");
+  assert.deepEqual(service.getFileReferences(dependency), [
+    {
+      ...raw[0],
+      textSpan: { start: source.indexOf("./dep"), length: "./dep".length },
+      contextSpan: { start: before.length, length: script.split("\n")[0].length },
+    },
+  ]);
+});
+
+void test("unsupported SFC call-hierarchy followups never leak cross-file generated spans", () => {
+  const normal = {
+    from: { file: "/src/plain.ts", span: { start: 1, length: 2 } },
+    fromSpans: [{ start: 3, length: 1 }],
+  };
+  const unsafe = {
+    from: { file: "/src/Component.vue", span: { start: 2000, length: 20 } },
+    fromSpans: [{ start: 2010, length: 2 }],
+  };
+  const normalOutgoing = { to: normal.from, fromSpans: normal.fromSpans };
+  const unsafeOutgoing = { to: unsafe.from, fromSpans: unsafe.fromSpans };
+  const calls = [];
+  const raw = {
+    provideCallHierarchyIncomingCalls(...args) {
+      calls.push(args);
+      return [normal, unsafe];
+    },
+    provideCallHierarchyOutgoingCalls(...args) {
+      calls.push(args);
+      return [normalOutgoing, unsafeOutgoing];
+    },
+  };
+  const service = createMappedLanguageService(ts, raw, { engine: helper });
+  assert.deepEqual(service.provideCallHierarchyIncomingCalls("/src/Component.vue", 20), []);
+  assert.deepEqual(service.provideCallHierarchyOutgoingCalls("/src/Component.art", 20), []);
+  assert.deepEqual(calls, [], "unsupported authored positions never reach the generated service");
+  assert.deepEqual(service.provideCallHierarchyIncomingCalls("/src/plain.ts", 3), [normal]);
+  assert.deepEqual(service.provideCallHierarchyOutgoingCalls("/src/plain.ts", 3), [normalOutgoing]);
+  assert.equal(service.provideCallHierarchyIncomingCalls("/src/plain.ts", 3)[0], normal);
+  assert.deepEqual(calls, [
+    ["/src/plain.ts", 3],
+    ["/src/plain.ts", 3],
+    ["/src/plain.ts", 3],
+  ]);
+});
+
+for (const newline of ["\n", "\r\n"]) {
+  void test(
+    "component navigation uses current Program aliases and lexical ownership " +
+      JSON.stringify(newline),
+    () => {
+      const path = require("node:path");
+      const {
+        resolveVueImportDefinition,
+      } = require("../../npm/typescript-plugin/import-resolution.cjs");
+      const main = "/src/main.ts",
+        one = "/src/One.vue",
+        two = "/src/Two.vue";
+      const diskSource = [
+        'const compass = "😀 日本語";',
+        'import Card from "./One.vue";',
+        'import { default as Named } from "./One.vue";',
+        'import { Bridge } from "./bridge";',
+        "Card; Named; Bridge;",
+        "function shadow(Card: number) { return Card; }",
+        "const object = { Card: 1 }; object.Card;",
+        "const shorthand = { Card };",
+      ].join(newline);
+      const files = {
+        [main]: diskSource,
+        [one]: "declare const One: new () => {}; export default One;",
+        [two]: "declare const Two: new () => {}; export default Two;",
+        "/src/bridge.ts": 'export { default as Bridge } from "./One.vue";',
+      };
+      const overlays = new Map();
+      let version = 0;
+      const resolve = (name, containing) => {
+        const exact = path.posix.resolve(path.posix.dirname(containing), name);
+        const fileName = Object.hasOwn(files, exact + ".ts") ? exact + ".ts" : exact;
+        return Object.hasOwn(files, fileName)
+          ? { resolvedFileName: fileName, extension: ts.Extension.Ts }
+          : undefined;
+      };
+      const host = {
+        getScriptFileNames: () => [main],
+        getScriptVersion: () => String(version),
+        getProjectVersion: () => String(version),
+        getScriptSnapshot: (name) => {
+          const text = overlays.get(name) ?? files[name];
+          return text === undefined ? undefined : ts.ScriptSnapshot.fromString(text);
+        },
+        getCompilationSettings: () => ({
+          noLib: true,
+          allowNonTsExtensions: true,
+          module: ts.ModuleKind.ESNext,
+        }),
+        getCurrentDirectory: () => "/src",
+        getDefaultLibFileName: () => "/lib.d.ts",
+        getScriptKind: () => ts.ScriptKind.TS,
+        readFile: (name) => files[name],
+        fileExists: (name) => Object.hasOwn(files, name),
+        resolveModuleNames: (names, containing) => names.map((name) => resolve(name, containing)),
+      };
+      const service = ts.createLanguageService(host);
+      let adapterParseCalls = 0;
+      const adapterTs = {
+        ...ts,
+        createSourceFile(...args) {
+          adapterParseCalls++;
+          return ts.createSourceFile(...args);
+        },
+      };
+      const support = { virtual: { engine: helper, get: () => undefined, resolve } };
+      const query = (text, marker, offset = 1) =>
+        resolveVueImportDefinition(
+          adapterTs,
+          support,
+          main,
+          text.indexOf(marker) + offset,
+          service,
+        );
+      assert.equal(query(diskSource, "Card;").definition.fileName, one);
+      assert.equal(query(diskSource, "Named;").definition.fileName, one);
+      assert.equal(query(diskSource, "Bridge;").definition.fileName, one);
+      const opened = diskSource.replace('Card from "./One.vue"', 'Card from "./Two.vue"');
+      overlays.set(main, opened);
+      version++;
+      assert.equal(host.readFile(main), diskSource, "the real host's readFile remains disk text");
+      assert.equal(query(opened, "Card;").definition.fileName, two);
+      assert.equal(query(opened, '"./Two.vue"', 2).definition.fileName, two);
+      assert.equal(query(opened, "Card: number"), undefined);
+      assert.equal(query(opened, "return Card", "return ".length + 1), undefined);
+      assert.equal(query(opened, "Card: 1"), undefined);
+      assert.equal(query(opened, "object.Card", "object.".length + 1), undefined);
+      assert.equal(
+        query(opened, "{ Card }", 3).definition.fileName,
+        two,
+        "actual shorthand value ownership is preserved",
+      );
+      overlays.set(main, "");
+      version++;
+      assert.equal(
+        resolveVueImportDefinition(adapterTs, support, main, 0, service),
+        undefined,
+        "an unsaved empty buffer never uses stale disk imports",
+      );
+      assert.equal(
+        adapterParseCalls,
+        0,
+        "all navigation reuses the genuine Program; no second authored-source parse",
+      );
+    },
+  );
+}
+
 void test("suggestion packets never repeat the syntax and semantic checks", () => {
   const file = "/src/Suggest.vue";
   const projection = { text: "xy", mappings: [[0, 2, 8, 2, 0, 0xfffff]], diagnostics: [] };

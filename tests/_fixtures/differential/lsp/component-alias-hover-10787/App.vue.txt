@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { defineAsyncComponent } from "vue";
+import MyChild from "./MyChild.vue";
+const LazyChild = defineAsyncComponent(() => import("./MyChild.vue"));
+const Same = MyChild;
+</script>
+
+<template>
+  <LazyChild title="a" />
+  <Same title="b" />
+</template>

@@ -185,6 +185,38 @@ test("typecheck divergence separates a message-only divergence from a match", ()
   ]);
 });
 
+test("typecheck divergence compares template messages without Vize's source context", () => {
+  const result = compare(
+    [
+      {
+        file: "src/App.vue",
+        diagnostics: [
+          "error:8:21 [TS2551] Property 'lenght' does not exist on type 'Media[]'. Did you mean 'length'? (source: <div>{{ mediaList.lenght }}</div>)",
+          "error:9:14 [TS2339] Property 'nope' does not exist on type 'Media'. (source: <p :title=\"pick(item).nope\">x</p>; binding: 'title')",
+          "error:10:9 [TS2339] Property 'gone' does not exist on type '__VizeStrictTemplateContext'. (source: <p>{{ gone }}</p>)",
+        ],
+      },
+    ],
+    [
+      "src/App.vue(8,21): error TS2551: Property 'lenght' does not exist on type 'Media[]'. Did you mean 'length'?",
+      "src/App.vue(9,14): error TS2339: Property 'nope' does not exist on type 'Media'.",
+      "src/App.vue(10,9): error TS2339: Property 'gone' does not exist on type '{}'.",
+    ].join("\n"),
+  );
+
+  assert.equal(result.summary.sharedCount, 2);
+  assert.equal(result.summary.messageMismatchCount, 1);
+  assert.deepEqual(
+    result.messageMismatches.map(
+      (pair: { vizeMessage: string; baselineMessage: string }) =>
+        `${pair.vizeMessage} | ${pair.baselineMessage}`,
+    ),
+    [
+      "Property 'gone' does not exist on type '__VizeStrictTemplateContext'. | Property 'gone' does not exist on type '{}'.",
+    ],
+  );
+});
+
 test("typecheck divergence accepts a diagnostic-free baseline without NaN ratios", () => {
   const result = compare([{ file: "src/App.vue", diagnostics: [] }], "");
   assert.equal(result.summary.falsePositiveRatio, 0);

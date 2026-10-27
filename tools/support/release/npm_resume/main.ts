@@ -2,9 +2,11 @@ import { appendFileSync } from "node:fs";
 import { collectStdout, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs, nonEmptyEnv, readFileToString } from "../command_runtime.ts";
 import { npmRegistryPackagePath } from "../publish_npm_package/registry.ts";
+import { editorArtifactsForResume } from "../editor-platforms.ts";
 import {
   backfillTag,
   higherStableVersions,
+  releaseRunSource,
   validateResumePolicy,
   type ReleaseRunFacts,
 } from "./policy.ts";
@@ -15,6 +17,7 @@ interface GitHubRun {
   conclusion?: unknown;
   head_sha?: unknown;
   head_branch?: unknown;
+  display_title?: unknown;
   path?: unknown;
   repository?: { full_name?: unknown };
 }
@@ -122,7 +125,7 @@ async function visiblePackage(name: string, version: string): Promise<boolean> {
 
 async function npmResume(version: string, runId: string): Promise<number> {
   if (!/^\d+\.\d+\.\d+$/.test(version) || !/^[1-9]\d*$/.test(runId)) {
-    return fail("Usage: npm_resume/main.ts <stable-version> <failed-release-run-id>");
+    return fail("Usage: npm_resume/main.ts <stable-version> <release-run-id>");
   }
   if ((nonEmptyEnv("RELEASE_SOURCE_INPUT") ?? "") !== "") {
     return fail("source cannot be combined with npm resume");
@@ -169,6 +172,8 @@ async function npmResume(version: string, runId: string): Promise<number> {
     status: typeof runData.status === "string" ? runData.status : "",
     conclusion: typeof runData.conclusion === "string" ? runData.conclusion : null,
     headSha: typeof runData.head_sha === "string" ? runData.head_sha : "",
+    sourceSha:
+      typeof runData.display_title === "string" ? releaseRunSource(runData.display_title) : null,
   };
   const artifactNames = (artifactData.artifacts ?? [])
     .filter((artifact) => artifact.expired === false && typeof artifact.name === "string")
@@ -185,6 +190,18 @@ async function npmResume(version: string, runId: string): Promise<number> {
   });
   if (errors.length > 0) return fail(errors.join("\n"));
 
+  const taggedWorkflow = await collectStdout("git", [
+    "show",
+    `${tagSha}:.github/workflows/release.yml`,
+  ]);
+  if (taggedWorkflow.status !== 0) return fail("Failed to read immutable release workflow");
+  let editorPlatforms: boolean;
+  try {
+    editorPlatforms = editorArtifactsForResume(taggedWorkflow.stdout, artifactNames);
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : String(error));
+  }
+
   const publishTag = higherVersions.length === 0 ? "" : backfillTag(version);
   const output = nonEmptyEnv("GITHUB_OUTPUT");
   if (output === undefined) return fail("GITHUB_OUTPUT is required");
@@ -196,6 +213,7 @@ async function npmResume(version: string, runId: string): Promise<number> {
       `sha=${tagSha}`,
       `publish_tag=${publishTag}`,
       `allow_newer_tag=${higherVersions.length === 0 ? "" : "true"}`,
+      `editor_platform_artifacts=${editorPlatforms ? "1" : "0"}`,
     ].join("\n") + "\n",
   );
   println(

@@ -126,7 +126,7 @@ await test("manual identical main uses separate source and records the complete 
       assert(receipt.allowedInfrastructurePaths.includes(PREFIX + name));
     assert(
       receipt.allowedInfrastructurePaths.includes(
-        "tests/tooling/native-buildinfo-ownership.test.mjs",
+        "tests/tooling/native-buildinfo-ownership.test.ts",
       ),
     );
     assert(

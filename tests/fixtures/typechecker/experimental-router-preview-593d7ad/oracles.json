@@ -1,0 +1,65 @@
+{
+  "schema": "vize.router-preview-independent-oracles",
+  "version": 1,
+  "provenance": {
+    "runId": "40175166770",
+    "runAttempt": "1",
+    "headRevision": "cb2381db730ff1bf838a0fc1850d7740ee19e041",
+    "workflowSourceRevision": "41b3b0313656b919bc8ba0a7d28d50ecdc7d18c2",
+    "upstreamRevision": "593d7ad9ff99e95c24be28e962717df0fb2be763",
+    "providerArtifactId": 12591463630,
+    "manualArtifactId": 12591848241,
+    "providerReceiptSha256": "f4a0fb5f0434e3245d26d5696bbc492c9b1575ff6063388b53eaec9dc4bf21f5",
+    "manualArtifactSha256": "8cdd01a306e2d4ac501e03b09729be82b7ed2f8c059d8f4c61fd13c1a35e7d52",
+    "reference": "vue-tsc@3.3.13 + typescript@5.9.3",
+    "independentNativeControl": "vize@0.562.0",
+    "candidatePacketsAreOracles": false
+  },
+  "scope": {
+    "sourceBuiltProviderIsPublishedNpmArchive": false,
+    "manuallyExplicitRealHelpers": [
+      "defineProps<_RoutePropsForFilePath<PageFile>>()",
+      "definePage<PageFile, typeof import('./[id=int].vue').default>(...)"
+    ],
+    "checkedHosts": ["check"],
+    "controls": 20,
+    "processes": 60,
+    "automaticProjection": "not-qualified",
+    "mapper": "not-qualified",
+    "lsp": "not-qualified",
+    "templateErrorMutation": "not-qualified",
+    "nativeTransportAdmission": "programs[0].compilerOptions.rootDir only; all remaining process packet bytes exact"
+  },
+  "files": [
+    {
+      "path": "frozen/controls.json",
+      "bytes": 20493,
+      "sha256": "5ab0109e13515c6348b9ea33a54fcd1dbd9defadf3f8966e6dc0d6775eb90a43"
+    },
+    {
+      "path": "frozen/dependencies.json",
+      "bytes": 691,
+      "sha256": "7b743a16da483b32a30d6f8922ec232950d3b364949400a6410b4aa8c8fab0b2"
+    },
+    {
+      "path": "frozen/independent-processes.json",
+      "bytes": 87427,
+      "sha256": "8e136b7c23934be73d8af1060c98ee36313006d4dab22cbb0424d992df76a7a0"
+    },
+    {
+      "path": "frozen/installed-exports.json",
+      "bytes": 41185,
+      "sha256": "d6769be41ee506f9e34095303d022ea4bf57971c7ab20addda81d3b17d058602"
+    },
+    {
+      "path": "frozen/provider-package.json",
+      "bytes": 12649,
+      "sha256": "f6b9682f1fae104895d7bab0c785000b95de9be18b43cc16b9e019ab1c9200c3"
+    },
+    {
+      "path": "frozen/typed-router.d.ts.txt",
+      "bytes": 2746,
+      "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974"
+    }
+  ]
+}

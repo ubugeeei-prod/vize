@@ -10,8 +10,10 @@ use super::static_expr::is_static_bound_expr;
 use super::ts_view::ts_view;
 
 /// `is_const_handler`: the handler text the codegen reads is a lone
-/// constant binding name.
+/// constant binding name. A padded value is a compound expression in Vue,
+/// which is never constant.
 pub(in crate::emit) fn handler_is_constant(
+    file: &str,
     on: &vize_l2::op::OnOp<'_>,
     constant: &dyn Fn(&str) -> bool,
 ) -> bool {
@@ -23,7 +25,8 @@ pub(in crate::emit) fn handler_is_constant(
         vize_l2::expr::ExprRef::Opaque(opaque) => opaque.source,
         vize_l2::expr::ExprRef::Foreign(_) | vize_l2::expr::ExprRef::Filter(_) => return false,
     };
-    constant(source.trim())
+    let content = super::super::prefix::node_content(file, source, handler.span());
+    content.text.as_str() == source && constant(source)
 }
 
 /// `is_static_bound_expression` over the value the shipped codegen sees:

@@ -1,0 +1,20 @@
+<script setup lang="ts">
+// 手動の実ヘルパー 🍣
+import { definePage } from 'vue-router/experimental'
+import type { _RoutePropsForFilePath } from 'vue-router/experimental'
+type PageFile = 'src/pages/products/[id=int].vue'
+const props = defineProps<_RoutePropsForFilePath<PageFile>>()
+definePage<PageFile, typeof import('./[id=int].vue').default>({
+  params: {
+    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },
+    hash: { heading: {} },
+  },
+  props: true,
+})
+const id: number = props.id
+const page: number = props.page
+const tags: string[] | undefined = props.tags
+const at: Date | undefined = props.at
+const heading: string | undefined = props.heading
+</script>
+<template><div>{{ props.id.toFixed() }} {{ props.page.toFixed() }} {{ props.at?.toISOString() }}</div></template>

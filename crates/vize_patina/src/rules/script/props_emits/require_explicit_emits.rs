@@ -6,41 +6,22 @@
 //! rarely intended. Declaring emits documents the component's event surface.
 //!
 //! Port of
-//! [`vue/require-explicit-emits`](https://eslint.vuejs.org/rules/require-explicit-emits.html).
+//! [`vue/require-explicit-emits`](https://eslint.vuejs.org/rules/require-explicit-emits.html),
+//! with its scope:
 //!
-//! ## Sound subset
-//!
-//! The rule reports only what it can prove:
-//!
-//! * It reports only when a declaration **exists** and is **fully known**. With
-//!   no declaration, nothing is reported (the emits may be declared elsewhere, or
-//!   intentionally not at all) — flagging would be a false positive. An
-//!   untyped `defineEmits()` call likewise leaves the event surface unknown.
-//! * A declaration that cannot be fully enumerated — an array/object spread
-//!   (`defineEmits([...names])`), a computed object key, or a bare type reference
-//!   (`defineEmits<Emits>()`) — is treated as unknown, so nothing is reported.
-//! * Only string-literal emit names are checked; a dynamic name (`emit(name)`)
-//!   is skipped.
-//!
-//! Script call sites are the captured `defineEmits` binding (`emit('change')`)
-//! and `this.$emit('change')`. Captured calls must resolve to that same lexical
-//! binding; a shadowing parameter or local dispatcher belongs to another API.
-//! The declaration-resolution logic lives in the
-//! [`declared`] submodule.
-//!
-//! ## Template call sites
-//!
-//! A template dispatches the same events, through the built-in `$emit` helper
-//! (`@click="$emit('cancel')"`) or through the captured binding, which is
-//! template-visible as a top-level `<script setup>` binding. Both are checked.
-//! Recovering them *creates* findings from template evidence, so they come from
-//! the template AST and an oxc parse of each expression; see
-//! [`crate::rules::script::template_scan`] for the over-match analysis and the
-//! shadowing rules.
-//!
-//! The template half additionally requires the SFC to have a single script
-//! block: the declared set is a property of the whole component, and with both
-//! a `<script>` and a `<script setup>` each invocation sees only half of it.
+//! * A Vue object (see [`crate::rules::script::vue_object`]) declares what its
+//!   `emits` option lists, and nothing when the option is absent. Its
+//!   `this.$emit('x')` calls (also through `const vm = this`) and the `emit` of
+//!   its `setup(props, { emit })` / `setup(props, ctx)` are checked against it.
+//! * `<script setup>` declares what its `defineEmits` macro lists. Script calls
+//!   of the macro's binding after the macro are checked; without a macro the
+//!   script is not.
+//! * The template's `$emit('x')` (and a call of the `defineEmits` binding) is
+//!   checked against `<script setup>` when the SFC has one, and otherwise
+//!   against the exported (or last defined) component object.
+//! * A declaration that cannot be fully enumerated — a spread, a computed key, a
+//!   type imported from elsewhere, an untyped `defineEmits()` — declares every
+//!   event. Only literal event names are checked.
 //!
 //! ```ts
 //! const emit = defineEmits(['change'])
@@ -49,16 +30,30 @@
 //! ```
 
 mod declared;
+mod types;
 
-use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_ast::{
+    AstKind,
+    ast::{
+        Argument, BindingPattern, CallExpression, Expression, FormalParameters,
+        IdentifierReference, MemberExpression, ObjectExpression, ObjectPropertyKind, Program,
+        VariableDeclarationKind,
+    },
+};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_object_expression},
+};
 use oxc_semantic::{Semantic, SemanticBuilder};
 use oxc_span::Span;
+use oxc_syntax::symbol::SymbolId;
 
 use vize_l0::{CompactString, FxHashSet};
 
-use self::declared::{Declared, resolve_declared_emits};
+use self::declared::{Emits, define_emits, options_emits};
+use self::types::Resolver;
 use super::super::template_scan::{DOLLAR_EMIT, for_each_template_call};
+use super::super::vue_object::{VueObjectKind, VueObjects};
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -93,63 +88,85 @@ impl ScriptRule for RequireExplicitEmits {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        // Keep the parse-owning `check` path functional: without SFC context
-        // only the script call sites are observable.
         self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
     }
 
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        // Bail unless a declaration exists AND is fully known; a missing or
-        // partially-unknown declaration would make any report a false positive.
-        let Declared::Known {
-            names: declared,
-            binding,
-        } = resolve_declared_emits(program)
-        else {
-            return;
-        };
-
-        // Only captured setup dispatchers need lexical resolution. Options API
-        // instance dispatches keep their existing path without a semantic pass.
-        let built = binding.map(|_| SemanticBuilder::new().build(program));
-        if built
-            .as_ref()
-            .is_some_and(|built| !built.diagnostics.is_empty())
+        // `emit` covers `$emit` and `ctx.emit`; `Emits` a renamed macro binding.
+        if !source.contains("emit")
+            && !source.contains("Emits")
+            && !sfc
+                .template_source
+                .is_some_and(|template| template.contains("emit"))
         {
             return;
         }
-        let semantic = built.as_ref().map(|built| &built.semantic);
+        let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+        let semantic = &built.semantic;
+        let resolver = Resolver {
+            semantic,
+            program,
+            sibling: sfc.sibling_program,
+        };
+        let setup = sfc
+            .is_script_setup
+            .then(|| define_emits(&resolver))
+            .flatten();
+        let objects = VueObjects::collect(
+            program,
+            source,
+            semantic,
+            sfc.is_sfc && !sfc.is_script_setup,
+        );
         let mut visitor = EmitCallVisitor {
             semantic,
-            declared: &declared,
-            binding,
-            offset,
+            objects: &objects,
+            setup: setup.as_ref().map(|setup| SetupOwner {
+                start: setup.start,
+                emits: &setup.emits,
+                emit: setup.binding.and_then(|(_, symbol)| symbol),
+            }),
+            stack: Vec::new(),
+            component: None,
+            offset: offset as u32,
             result,
         };
         visitor.visit_program(program);
+        let component = visitor.component.take();
 
-        check_template(&declared, binding, sfc, result);
+        // The template sees `<script setup>` when there is one, and otherwise
+        // the component of the only script block.
+        if sfc.is_script_setup {
+            let empty = Emits::Known(FxHashSet::default());
+            let emits = setup.as_ref().map_or(&empty, |setup| &setup.emits);
+            let binding = setup
+                .as_ref()
+                .and_then(|setup| setup.binding)
+                .map(|(name, _)| name);
+            check_template(emits, binding, sfc, result);
+        } else if sfc.sole_script_block
+            && let Some((_, emits)) = component.as_ref()
+        {
+            check_template(emits, None, sfc, result);
+        }
     }
 }
 
-/// The template half: `$emit('x')` — or a call of the captured binding — naming
-/// an event the declaration does not contain.
+/// The template half: `$emit('x')` — or a call of the `defineEmits` binding —
+/// naming an event the declaration does not contain.
 fn check_template(
-    declared: &FxHashSet<CompactString>,
+    declared: &Emits,
     binding: Option<&str>,
     sfc: SfcScriptContext<'_>,
     result: &mut ScriptLintResult,
 ) {
-    if !sfc.sole_script_block {
-        return;
-    }
     let Some((root, template_offset)) = sfc.template_ast() else {
         return;
     };
@@ -160,48 +177,243 @@ fn check_template(
         let Some(event) = call.first_string_argument else {
             return;
         };
-        if declared.contains(event.value) {
-            return;
+        if !declared.declares(event.value) {
+            report(
+                event.value,
+                template_offset + event.start,
+                template_offset + event.end,
+                result,
+            );
         }
-        report(
-            event.value,
-            template_offset + event.start,
-            template_offset + event.end,
-            result,
-        );
     });
 }
 
-/// Walks the program reporting every string-literal emit whose name is absent
-/// from the declared set. Emit call sites are the captured `defineEmits` binding
-/// and `this.$emit(...)`.
-struct EmitCallVisitor<'a, 'result> {
-    semantic: Option<&'result Semantic<'a>>,
-    declared: &'result FxHashSet<CompactString>,
-    binding: Option<&'result str>,
-    offset: usize,
-    result: &'result mut ScriptLintResult,
+/// `<script setup>`'s declaration, live from its macro onwards.
+struct SetupOwner<'s> {
+    start: u32,
+    emits: &'s Emits,
+    emit: Option<SymbolId>,
 }
 
-impl<'a> Visit<'a> for EmitCallVisitor<'a, '_> {
+/// A Vue object being visited.
+struct ObjectOwner {
+    kind: VueObjectKind,
+    emits: Emits,
+    /// `setup(props, { emit })`.
+    emit: Option<SymbolId>,
+    /// `setup(props, ctx)`, dispatching through `ctx.emit`.
+    context: Option<SymbolId>,
+}
+
+struct EmitCallVisitor<'s, 'a> {
+    semantic: &'s Semantic<'a>,
+    objects: &'s VueObjects,
+    setup: Option<SetupOwner<'s>>,
+    stack: Vec<ObjectOwner>,
+    /// The object the template sees without `<script setup>`: the exported one,
+    /// or else the last marked or defined one to finish.
+    component: Option<(VueObjectKind, Emits)>,
+    offset: u32,
+    result: &'s mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for EmitCallVisitor<'_, 'a> {
+    fn visit_object_expression(&mut self, it: &ObjectExpression<'a>) {
+        let Some(kind) = self.objects.kind(it) else {
+            walk_object_expression(self, it);
+            return;
+        };
+        let (emit, context) = setup_context(it);
+        self.stack.push(ObjectOwner {
+            kind,
+            emits: options_emits(it),
+            emit,
+            context,
+        });
+        walk_object_expression(self, it);
+        let Some(owner) = self.stack.pop() else {
+            return;
+        };
+        let exported = matches!(self.component, Some((VueObjectKind::Export, _)));
+        if !exported && owner.kind != VueObjectKind::Instance {
+            self.component = Some((owner.kind, owner.emits));
+        }
+    }
+
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Some(event) = emitted_event(it, self.binding, self.semantic)
-            && !self.declared.contains(event.value)
-        {
-            self.report(event.value, event.span);
+        if let Some((name, span)) = literal_event(it) {
+            let callee = Callee::of(&it.callee);
+            let setup = self
+                .setup
+                .as_ref()
+                .filter(|setup| it.span.start > setup.start)
+                .filter(|setup| self.dispatches(callee, setup.emit, None))
+                .map(|setup| setup.emits);
+            if setup.is_some_and(|emits| !emits.declares(&name)) {
+                self.report(&name, span);
+            }
+            let owner = self
+                .stack
+                .last()
+                .filter(|owner| self.dispatches(callee, owner.emit, owner.context));
+            if owner.is_some_and(|owner| !owner.emits.declares(&name)) {
+                self.report(&name, span);
+            }
         }
         walk_call_expression(self, it);
     }
 }
 
-impl EmitCallVisitor<'_, '_> {
+impl<'a> EmitCallVisitor<'_, 'a> {
+    /// Whether `callee` dispatches the owner's events: its `emit` binding,
+    /// `ctx.emit`, or `this.$emit`.
+    fn dispatches(
+        &self,
+        callee: Option<Callee<'_, 'a>>,
+        emit: Option<SymbolId>,
+        context: Option<SymbolId>,
+    ) -> bool {
+        let member = match callee {
+            Some(Callee::Identifier(identifier)) => {
+                return emit.is_some() && self.symbol(identifier) == emit;
+            }
+            Some(Callee::Member(member)) => member,
+            None => return false,
+        };
+        let object = member.object().without_parentheses();
+        match member.static_property_name() {
+            Some("emit") => {
+                context.is_some()
+                    && matches!(object, Expression::Identifier(id) if self.symbol(id) == context)
+            }
+            Some("$emit") => self.is_this(object),
+            _ => false,
+        }
+    }
+
+    /// Upstream's `isThis`: `this`, or a `const` initialized to it.
+    fn is_this(&self, expression: &Expression<'a>) -> bool {
+        let identifier = match expression {
+            Expression::ThisExpression(_) => return true,
+            Expression::Identifier(identifier) => identifier,
+            _ => return false,
+        };
+        let Some(symbol) = self.symbol(identifier) else {
+            return false;
+        };
+        if !self
+            .semantic
+            .scoping()
+            .symbol_redeclarations(symbol)
+            .is_empty()
+        {
+            return false;
+        }
+        matches!(
+            self.semantic.symbol_declaration(symbol).kind(),
+            AstKind::VariableDeclarator(declarator)
+                if declarator.kind == VariableDeclarationKind::Const
+                    && matches!(declarator.id, BindingPattern::BindingIdentifier(_))
+                    && matches!(
+                        declarator.init.as_ref().map(Expression::without_parentheses),
+                        Some(Expression::ThisExpression(_))
+                    )
+        )
+    }
+
+    fn symbol(&self, identifier: &IdentifierReference<'a>) -> Option<SymbolId> {
+        let scoping = self.semantic.scoping();
+        scoping
+            .get_reference(identifier.reference_id.get()?)
+            .symbol_id()
+    }
+
     fn report(&mut self, name: &str, span: Span) {
         report(
             name,
-            self.offset as u32 + span.start,
-            self.offset as u32 + span.end,
+            self.offset + span.start,
+            self.offset + span.end,
             self.result,
         );
+    }
+}
+
+/// The `emit` binding and context parameter of the object's `setup` function.
+fn setup_context(object: &ObjectExpression<'_>) -> (Option<SymbolId>, Option<SymbolId>) {
+    let mut found = (None, None);
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.key.static_name().as_deref() != Some("setup") {
+            continue;
+        }
+        let params = match property.value.without_parentheses() {
+            Expression::FunctionExpression(function) => &function.params,
+            Expression::ArrowFunctionExpression(function) => &function.params,
+            _ => continue,
+        };
+        found = context_parameter(params);
+    }
+    found
+}
+
+fn context_parameter(params: &FormalParameters<'_>) -> (Option<SymbolId>, Option<SymbolId>) {
+    let Some(context) = params.items.get(1) else {
+        return (None, None);
+    };
+    if context.initializer.is_some() {
+        return (None, None);
+    }
+    match &context.pattern {
+        BindingPattern::BindingIdentifier(identifier) => (None, identifier.symbol_id.get()),
+        BindingPattern::ObjectPattern(pattern) => {
+            let emit = pattern
+                .properties
+                .iter()
+                .find(|property| property.key.static_name().as_deref() == Some("emit"));
+            match emit.map(|property| &property.value) {
+                Some(BindingPattern::BindingIdentifier(identifier)) => {
+                    (identifier.symbol_id.get(), None)
+                }
+                _ => (None, None),
+            }
+        }
+        _ => (None, None),
+    }
+}
+
+/// The literal first argument: a string, or a template without substitutions.
+fn literal_event(call: &CallExpression<'_>) -> Option<(CompactString, Span)> {
+    match call.arguments.first()? {
+        Argument::StringLiteral(literal) => {
+            Some((CompactString::new(literal.value.as_str()), literal.span))
+        }
+        Argument::TemplateLiteral(literal) if literal.expressions.is_empty() => Some((
+            CompactString::new(literal.single_quasi()?.as_str()),
+            literal.span,
+        )),
+        _ => None,
+    }
+}
+
+/// A call's callee through upstream's `skipChainExpression`; parentheses do
+/// not exist in ESTree.
+#[derive(Clone, Copy)]
+enum Callee<'b, 'a> {
+    Identifier(&'b IdentifierReference<'a>),
+    Member(&'b MemberExpression<'a>),
+}
+
+impl<'b, 'a> Callee<'b, 'a> {
+    fn of(expression: &'b Expression<'a>) -> Option<Self> {
+        match expression.without_parentheses() {
+            Expression::Identifier(identifier) => Some(Self::Identifier(identifier)),
+            Expression::ChainExpression(chain) => {
+                chain.expression.as_member_expression().map(Self::Member)
+            }
+            expression => expression.as_member_expression().map(Self::Member),
+        }
     }
 }
 
@@ -218,74 +430,6 @@ fn report(name: &str, start: u32, end: u32, result: &mut ScriptLintResult) {
              option) so the component's event surface is explicit.",
         );
     result.add_diagnostic(diagnostic);
-}
-
-/// The string-literal event name of an emit call, if `call` is one we track.
-struct EmittedEvent<'a> {
-    value: &'a str,
-    span: Span,
-}
-
-/// The emitted event of `call` when it is one we track: the captured
-/// `defineEmits` binding (`emit('x')`) or `this.$emit('x')`. Only a
-/// string-literal first argument yields an event.
-fn emitted_event<'a>(
-    call: &'a CallExpression<'a>,
-    binding: Option<&str>,
-    semantic: Option<&Semantic<'_>>,
-) -> Option<EmittedEvent<'a>> {
-    if !is_emit_callee(&call.callee, binding, semantic) {
-        return None;
-    }
-    match call.arguments.first()? {
-        Argument::StringLiteral(literal) => Some(EmittedEvent {
-            value: literal.value.as_str(),
-            span: literal.span,
-        }),
-        _ => None,
-    }
-}
-
-/// Whether `callee` is an emit dispatcher: the captured `defineEmits` binding
-/// (when one exists), or `this.$emit`. `other.$emit(...)` emits on another
-/// instance, so its events are not this component's to declare.
-fn is_emit_callee(
-    callee: &Expression<'_>,
-    binding: Option<&str>,
-    semantic: Option<&Semantic<'_>>,
-) -> bool {
-    match callee {
-        Expression::Identifier(identifier) => binding.is_some_and(|binding| {
-            let Some(semantic) = semantic else {
-                return false;
-            };
-            let scoping = semantic.scoping();
-            let root = scoping.get_binding(scoping.root_scope_id(), binding.into());
-            let resolved = identifier
-                .reference_id
-                .get()
-                .and_then(|reference| scoping.get_reference(reference).symbol_id());
-            root.is_some() && resolved == root
-        }),
-        expression if expression.is_member_expression() => expression
-            .as_member_expression()
-            .filter(|member| {
-                matches!(
-                    member.object().get_inner_expression(),
-                    Expression::ThisExpression(_)
-                )
-            })
-            .and_then(|member| member.static_property_name())
-            .is_some_and(|property| property == "$emit"),
-        // Look through wrappers so `(emit)('x')` / `(this.$emit)('x')` count.
-        Expression::ParenthesizedExpression(paren) => {
-            is_emit_callee(&paren.expression, binding, semantic)
-        }
-        Expression::TSAsExpression(ts) => is_emit_callee(&ts.expression, binding, semantic),
-        Expression::TSSatisfiesExpression(ts) => is_emit_callee(&ts.expression, binding, semantic),
-        Expression::TSNonNullExpression(ts) => is_emit_callee(&ts.expression, binding, semantic),
-        _ => false,
-    }
 }
 
 #[cfg(test)]

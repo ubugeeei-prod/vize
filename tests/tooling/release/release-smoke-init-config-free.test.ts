@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.mjs";
+import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.ts";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
-} from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
-import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-shapes.ts";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
-import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
+import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
 
 const CHANGED_FIELDS = new Set([
   "detection",

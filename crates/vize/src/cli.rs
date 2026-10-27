@@ -98,7 +98,21 @@ pub fn run_from_args(args: Vec<String>) {
     run(Cli::parse_from(args));
 }
 
+/// One-shot project commands reuse validated config evaluations; servers and
+/// diagnostics keep evaluating the live config.
+fn reuses_config_evaluations(command: Option<&Commands>) -> bool {
+    match command {
+        None | Some(Commands::Build(_) | Commands::Lint(_) | Commands::Check(_)) => true,
+        #[cfg(feature = "glyph")]
+        Some(Commands::Fmt(_) | Commands::Ready(_)) => true,
+        _ => false,
+    }
+}
+
 fn run(cli: Cli) {
+    if reuses_config_evaluations(cli.command.as_ref()) {
+        crate::config::enable_config_evaluation_cache();
+    }
     match cli.command {
         Some(Commands::Build(args)) => crate::commands::build::run(args),
         Some(Commands::Dump(args)) => crate::commands::dump::run(args),

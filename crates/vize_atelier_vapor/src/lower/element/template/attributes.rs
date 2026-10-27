@@ -145,7 +145,7 @@ pub(super) fn write_attributes(
                     || value.content.len() != value.loc.span.len() as usize
                     || source.as_bytes().get(start.wrapping_sub(1)) != Some(&b'"')
                 {
-                    template.push_linked(&super::escape_html_text(value.content), value.loc.span);
+                    super::push_escaped(template, value.content, value.loc.span);
                 } else {
                     template.push_linked(value.content, value.loc.span);
                 }

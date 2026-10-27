@@ -1,0 +1,12 @@
+<template>
+  <Box>
+    <template #text="">
+      <span>{{ label }}</span>
+    </template>
+  </Box>
+</template>
+
+<script setup lang="ts">
+import Box from './Box.vue'
+const label = 'x'
+</script>

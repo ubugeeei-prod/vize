@@ -448,6 +448,92 @@
       ],
       "beforeCss": "[data-list=\"a,b\"] .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}",
       "referenceCss": "[data-list=\"a,b\"],#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "nested-scope-start",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a{@scope (.start){.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a{@scope (.start){.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><section class=\"start\" data-v-nesting><i class=\"child target\" data-v-nesting></i></section></div>",
+      "competitor": ".target[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@scope (.start){.a .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting]{@scope (.start){.child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "nested-scope-limit",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a{@scope (.start) to (.end){.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a{@scope (.start) to (.end){.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><section class=\"start\" data-v-nesting><div class=\"end\" data-v-nesting><i class=\"child target\" data-v-nesting></i></div></section></div>",
+      "competitor": ".target[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "beforeCss": "@scope (.start) to (.end){.a .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting]{@scope (.start) to (.end){.child[data-v-nesting]{background:rgb(0,0,255)}}}",
+      "cascadeReason": "The scope limit excludes the target, so only the competitor applies."
+    },
+    {
+      "id": "nested-scope-ampersand",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a{@scope (.start){& .child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a{@scope (.start){& .child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><section class=\"start\" data-v-nesting><i class=\"child target\" data-v-nesting></i></section></div>",
+      "competitor": ".target[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@scope (.start){.a .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting]{@scope (.start){& .child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "nested-scope-root",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a{@scope (.start){:scope{background:rgb(0,0,255)}}}</style>",
+      "css": ".a{@scope (.start){:scope{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><section class=\"start target\" data-v-nesting></section></div>",
+      "competitor": ".target[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@scope (.start){.a[data-v-nesting] :scope{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting]{@scope (.start){[data-v-nesting]:scope{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "nested-scope-media",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a{@media (min-width:1px){@scope (.start){.child{background:rgb(0,0,255)}}}}</style>",
+      "css": ".a{@media (min-width:1px){@scope (.start){.child{background:rgb(0,0,255)}}}}",
+      "html": "<div class=\"a\" data-v-nesting><section class=\"start\" data-v-nesting><i class=\"child target\" data-v-nesting></i></section></div>",
+      "competitor": ".target[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@media (min-width:1px){@scope (.start){.a .child[data-v-nesting]{background:rgb(0,0,255)}}}",
+      "referenceCss": ".a[data-v-nesting]{@media (min-width:1px){@scope (.start){.child[data-v-nesting]{background:rgb(0,0,255)}}}}"
     }
   ],
   "beforeProvider": {

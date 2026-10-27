@@ -338,12 +338,12 @@ fn linked_positions(
     document: &corsa_support::CanonicalVirtualDocument,
     locations: &[vize_canon::LspLocation],
 ) -> FxHashSet<corsa_support::CanonicalSemanticPosition> {
+    let index = corsa_support::CanonicalUriIndex::new(ctx.state, document);
     locations
         .iter()
         .flat_map(|location| {
-            let mut positions = corsa_support::linked_semantic_positions(
-                ctx.state,
-                document,
+            let mut positions = corsa_support::indexed_linked_semantic_positions(
+                &index,
                 &location.uri,
                 &location.range,
             );

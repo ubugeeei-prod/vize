@@ -51,16 +51,16 @@ pub(crate) enum LegacyReason {
 impl LegacyReason {
     fn counter(self) -> &'static str {
         match self {
-            Self::Options => "davinci.s3_vapor.legacy.options",
-            Self::SurfaceSemantics => "davinci.s3_vapor.legacy.surface_semantics",
-            Self::Operation => "davinci.s3_vapor.legacy.operation",
-            Self::Element => "davinci.s3_vapor.legacy.element",
-            Self::Binding => "davinci.s3_vapor.legacy.binding",
-            Self::ExpressionOrEncoding => "davinci.s3_vapor.legacy.expression_or_encoding",
-            Self::Structure => "davinci.s3_vapor.legacy.structure",
-            Self::ControlFlow => "davinci.s3_vapor.legacy.control_flow",
-            Self::Component => "davinci.s3_vapor.legacy.component",
-            Self::Selected => "davinci.s3_vapor.legacy.selected",
+            Self::Options => "l3.vapor.legacy.options",
+            Self::SurfaceSemantics => "l3.vapor.legacy.surface_semantics",
+            Self::Operation => "l3.vapor.legacy.operation",
+            Self::Element => "l3.vapor.legacy.element",
+            Self::Binding => "l3.vapor.legacy.binding",
+            Self::ExpressionOrEncoding => "l3.vapor.legacy.expression_or_encoding",
+            Self::Structure => "l3.vapor.legacy.structure",
+            Self::ControlFlow => "l3.vapor.legacy.control_flow",
+            Self::Component => "l3.vapor.legacy.component",
+            Self::Selected => "l3.vapor.legacy.selected",
         }
     }
 }
@@ -336,8 +336,8 @@ pub(crate) fn record_rejected() {
     record(REJECTED);
 }
 
-const REJECTED: &str = "davinci.s3_vapor.rejected";
-const ACCEPTED: &str = "davinci.s3_vapor.accepted";
+const REJECTED: &str = "l3.vapor.rejected";
+const ACCEPTED: &str = "l3.vapor.accepted";
 
 fn record(counter: &'static str) {
     let profiler = global_profiler();

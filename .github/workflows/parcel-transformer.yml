@@ -69,7 +69,7 @@ jobs:
         working-directory: npm/builder/parcel
         run: vp pack
       - name: Validate geometry and configuration
-        run: node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs tools/support/compat/parcel/native-analysis.test.mjs tools/support/compat/parcel/native-target.test.mjs
+        run: node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.ts tools/support/compat/parcel/native-analysis.test.ts tools/support/compat/parcel/native-target.test.mjs
       - name: Install the fixture browser
         working-directory: npm/builder/parcel
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium

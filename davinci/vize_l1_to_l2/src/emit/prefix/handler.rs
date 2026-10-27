@@ -23,6 +23,16 @@ pub(super) fn process_inline_handler(
     retained: Option<Retained<'_, '_>>,
     scope: &mut PrefixScope<'_>,
 ) -> RewriteResult {
+    process_classified_handler(content, retained, scope).0
+}
+
+/// [`process_inline_handler`] plus whether the authored handler is a method
+/// reference: rewriting `fn` to `_unref(fn)` must not turn it into a statement.
+pub(super) fn process_classified_handler(
+    content: &str,
+    retained: Option<Retained<'_, '_>>,
+    scope: &mut PrefixScope<'_>,
+) -> (RewriteResult, bool) {
     // The function/reference shape is read off the TS-stripped text; the
     // retained AST still applies only while that text is the node's own
     // bytes. The *rewrite* below re-strips from the original.
@@ -36,12 +46,14 @@ pub(super) fn process_inline_handler(
         is_function_expression(shape_source)
     };
     if is_function {
-        return process(content, retained, scope);
+        return (process(content, retained, scope), false);
     }
     // Only the function check reads the stripped text; the reference check
     // is the shipped lane's, over the node's own bytes.
-    if is_simple_identifier(content) || is_event_handler_reference_node(content, retained) {
-        if is_simple_identifier(content) {
+    if is_reference(content, retained) {
+        // Inline render functions read setup bindings directly, so an
+        // identifier still needs its `_unref` / `.value` access.
+        if is_simple_identifier(content) && !scope.inline() {
             let code = match scope.identifier_prefix(content) {
                 Some(prefix) => {
                     let mut code = String::with_capacity(prefix.len() + content.len());
@@ -51,15 +63,16 @@ pub(super) fn process_inline_handler(
                 }
                 None => String::from(content),
             };
-            return RewriteResult {
+            let result = RewriteResult {
                 code,
                 used_unref: false,
                 used_is_ref: false,
                 has_identifier_references: true,
                 parse_error: false,
             };
+            return (result, true);
         }
-        return process(content, retained, scope);
+        return (process(content, retained, scope), true);
     }
     let mark = scope.mark();
     scope.push_event();
@@ -75,7 +88,7 @@ pub(super) fn process_inline_handler(
         code.push_str(rewritten.code.as_str());
         code.push(')');
     }
-    RewriteResult {
+    let result = RewriteResult {
         code,
         // The wrap is the shipped lane's `$event => (…)`; the helper the
         // rewritten *body* needed is still the transform's registration.
@@ -83,7 +96,13 @@ pub(super) fn process_inline_handler(
         used_is_ref: rewritten.used_is_ref,
         has_identifier_references: rewritten.has_identifier_references,
         parse_error: rewritten.parse_error,
-    }
+    };
+    (result, false)
+}
+
+/// A method reference over the node's own bytes (Vue's `isMemberExpression`).
+pub(super) fn is_reference(content: &str, retained: Option<Retained<'_, '_>>) -> bool {
+    is_simple_identifier(content) || is_event_handler_reference_node(content, retained)
 }
 
 /// The handler body itself: rewritten when identifiers are prefixed,
@@ -111,21 +130,24 @@ fn process(
 
 /// `generate_event_handler` over an `is_ref_transformed` node: strip the
 /// slot-param prefixes, then re-derive the shape from the processed text
-/// (the retained AST no longer applies to rewritten bytes).
+/// (the retained AST no longer applies to rewritten bytes). A method
+/// reference keeps the transform's classification.
 pub(super) fn finish_event_handler(
     processed: String,
     scope: &PrefixScope<'_>,
     for_caching: bool,
+    is_reference: bool,
 ) -> String {
     let processed = if scope.has_slot_params() {
         strip_scope_prefixes_for_slot_params(scope, processed.as_str())
     } else {
         processed
     };
-    if is_function_expression(processed.as_str()) {
+    if !is_reference && is_function_expression(processed.as_str()) {
         return processed;
     }
-    if is_simple_identifier(processed.as_str())
+    if is_reference
+        || is_simple_identifier(processed.as_str())
         || is_event_handler_reference_expression(processed.as_str())
     {
         // A cached reference is guarded and forwarded, so the slot holds

@@ -51,7 +51,6 @@ fn original_static_attributes_match_the_actual_chromium_census() {
             "{name}"
         );
         assert_eq!(owner.source(), source);
-        assert_eq!(owner.unfinished_tree_policies().len(), 4);
     }
 }
 

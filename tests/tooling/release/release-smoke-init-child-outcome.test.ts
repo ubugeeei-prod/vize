@@ -8,7 +8,7 @@ import {
   checkReport,
   projectLocalVizeBin,
   reportedDiagnostics,
-} from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
 
 const REPORT = {
   files: [

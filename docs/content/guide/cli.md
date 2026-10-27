@@ -347,8 +347,8 @@ vize clean path/to/project
 ```
 
 `vize clean` deletes the caches and reports Vize writes under `.vize` and `node_modules/.vize`:
-profile output, Musea reports and snapshots, lint sessions, config schemas, LSP logs, and the
-generated TypeScript project used by `vize check`.
+profile output, Musea reports and snapshots, lint sessions, config schemas, cached config
+evaluations, LSP logs, and the generated TypeScript project used by `vize check`.
 
 | Option                              | Description                                               |
 | ----------------------------------- | --------------------------------------------------------- |
@@ -427,3 +427,10 @@ vize <command> --help
 
 Project commands (`build`, `fmt`, `lint`, `check`, and `ready`) also accept
 `-c, --config <path>` to read a specific Vite config and `--no-config` to ignore project settings.
+
+These commands evaluate the Vite config through Node and cache the result in
+`node_modules/.vize/config-cache`. A cached result is used only while every input of that
+evaluation is unchanged: the imported files, files and directories read through `node:fs`, the
+resolved `node_modules` packages, the environment variables read, and the Node executable. Set
+`VIZE_CONFIG_CACHE=0` to always evaluate, for example when the config depends on a command
+or network result.

@@ -9,10 +9,10 @@ import {
   freshProjectLspShape,
   writePostBootstrapFiles,
 } from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
-import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
-import { NUXT_VUE_TS_SHAPE } from "../../../tools/support/compat/npm/smoke-release-init-nuxt-shape.mjs";
-import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
-import { FRESH_INIT_MATRIX } from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.ts";
+import { NUXT_VUE_TS_SHAPE } from "../../../tools/support/compat/npm/smoke-release-init-nuxt-shape.ts";
+import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
+import { FRESH_INIT_MATRIX } from "../../../tools/support/compat/npm/smoke-release-init-shapes.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 const manager = PACKAGE_MANAGERS.npm;

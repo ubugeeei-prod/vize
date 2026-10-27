@@ -1,6 +1,8 @@
 file	spelling
 crates/vize_canon/src/batch/type_checker/tests.rs	@click.stop
 crates/vize_canon/src/batch/type_checker/tests/generic_component_listener_payload.rs	@keydown.escape
+crates/vize_canon/src/batch/virtual_project/content_mapper/tests/diagnostic_ownership.rs	@click.stop
+crates/vize_canon/src/batch/virtual_project/content_mapper/tests/diagnostic_ownership.rs	@click.stop
 crates/vize_canon/src/projection/expr/tests.rs	@blur.stop
 crates/vize_canon/src/virtual_ts/tests.rs	@click.stop
 crates/vize_canon/src/virtual_ts/tests/component_spread_prop_order.rs	@keydown.esc.prevent

@@ -3,7 +3,7 @@
 //! Handles generating event handler expressions with proper arrow function
 //! wrapping, TypeScript stripping, and identifier prefixing.
 
-use crate::{CompoundExpressionChild, ExpressionNode};
+use crate::{CompoundExpressionChild, ExpressionNode, SimpleExpressionNode};
 
 use super::{
     super::context::CodegenContext,
@@ -17,6 +17,35 @@ use vize_l0::String;
 /// This includes forms like `_ctx.foo`, `$setup.bar`, and `_unref(store).save`.
 pub fn is_simple_member_expression(s: &str) -> bool {
     crate::steps::is_event_handler_reference_expression(s)
+}
+
+/// Content the transform already classified and rewrote.
+fn is_transformed_handler(simple: &SimpleExpressionNode<'_>) -> bool {
+    simple.is_ref_transformed && simple.is_handler_key
+}
+
+/// The transform's reference decision, read off the authored value like the
+/// L2 emitter does: `_unref(fn)` no longer parses as a reference. A
+/// synthesized `v-model` handler spans its directive and is never one.
+fn is_authored_reference(ctx: &CodegenContext, simple: &SimpleExpressionNode<'_>) -> bool {
+    let authored = simple.loc.span.slice(&ctx.source);
+    crate::steps::is_simple_identifier(authored)
+        || crate::steps::is_event_handler_reference_expression(authored)
+}
+
+/// Whether a `v-on` value is a method reference (`isMemberExpression` in
+/// `@vue/compiler-core`), as authored rather than as rewritten: `_unref(fn)`
+/// is still a reference to `fn`.
+pub(crate) fn is_member_handler(simple: &SimpleExpressionNode<'_>) -> bool {
+    if simple.is_static || simple.content.trim().is_empty() {
+        return false;
+    }
+    if is_transformed_handler(simple) {
+        // Inline statements and `v-model` updates leave as `$event => …`.
+        return !simple.content.trim_start().starts_with("$event =>")
+            && !crate::steps::expression::is_function_expression_node(simple);
+    }
+    crate::steps::expression::is_event_handler_reference_node(simple)
 }
 
 /// Generate event handler expression.
@@ -97,11 +126,14 @@ pub fn generate_event_handler(
             }
 
             // Check if it's a simple identifier or member expression (method name/reference)
-            let is_member_ref = if is_node_text {
-                crate::steps::expression::is_event_handler_reference_node(simple)
-            } else {
-                is_simple_member_expression(&processed)
-            };
+            let is_member_ref =
+                if is_transformed_handler(simple) && is_authored_reference(ctx, simple) {
+                    true
+                } else if is_node_text {
+                    crate::steps::expression::is_event_handler_reference_node(simple)
+                } else {
+                    is_simple_member_expression(&processed)
+                };
             if crate::steps::is_simple_identifier(&processed) || is_member_ref {
                 if for_caching {
                     ctx.push("(...args) => (");

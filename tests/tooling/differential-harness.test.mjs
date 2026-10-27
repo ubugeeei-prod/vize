@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  assertSortedCases,
   classifyNativeRow,
   loadProductManifest,
   readPinnedArtifact,
@@ -98,6 +99,21 @@ void test("manifest product and pinned input bytes cannot drift", () => {
     fs.appendFileSync(path.join(root, "input.vue"), " ");
     assert.throws(() => readPinnedArtifact(root, file), /SHA256 mismatch/);
   });
+});
+
+void test("planned cases stay sorted so concurrent registrations insert apart", () => {
+  const fixture = (id, pack) => ({ id, ...(pack ? { pack } : {}) });
+  assertSortedCases([fixture("compiler/sfc/a"), fixture("compiler/sfc/b")]);
+  assert.throws(
+    () => assertSortedCases([fixture("compiler/sfc/b"), fixture("compiler/sfc/a")]),
+    /sorted by id: compiler\/sfc\/a belongs before compiler\/sfc\/b/,
+  );
+  // Typechecker packs sort by name and keep their own order inside.
+  assertSortedCases([fixture("t/a/z", "a"), fixture("t/a/y", "a"), fixture("t/b/x", "b")]);
+  assert.throws(
+    () => assertSortedCases([fixture("t/a/z", "a"), fixture("t/b/x", "b"), fixture("t/a/y", "a")]),
+    /sorted by pack/,
+  );
 });
 
 void test("native credit requires a verified whole-product transcript and observation", () => {

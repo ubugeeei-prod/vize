@@ -4,7 +4,7 @@ const path = require("node:path");
 const { vueComponentDisplayParts } = require("./component-contracts.cjs");
 const { resolveVueImportDefinition } = require("./import-resolution.cjs");
 const { createMappedLanguageService } = require("./language-service.cjs");
-const { installVueVirtualModules } = require("./virtual-modules.cjs");
+const { installVueVirtualModules, isSfc } = require("./virtual-modules.cjs");
 const externalFiles = new WeakMap();
 const inactiveProjects = new WeakSet();
 
@@ -86,12 +86,18 @@ function createVueImportSupport(ts, info) {
     return undefined;
   }
 
+  const originalSnapshot = bind(host.getScriptSnapshot, host);
   const virtual = installVueVirtualModules(ts, info);
+  const readFile = (fileName) => {
+    if (isSfc(fileName)) return virtual?.readSource(fileName) ?? originalReadFile(fileName);
+    const snapshot = originalSnapshot?.(fileName);
+    return snapshot?.getText(0, snapshot.getLength()) ?? originalReadFile(fileName);
+  };
 
   return {
     virtual,
     fileExists: originalFileExists,
-    readFile: originalReadFile,
+    readFile,
   };
 }
 
@@ -103,14 +109,26 @@ function createLanguageServiceProxy(ts, languageService, support) {
   }
 
   proxy.getDefinitionAtPosition = (fileName, position) => {
-    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    const vueDefinition = resolveVueImportDefinition(
+      ts,
+      support,
+      fileName,
+      position,
+      languageService,
+    );
     return vueDefinition
       ? [vueDefinition.definition]
       : languageService.getDefinitionAtPosition(fileName, position);
   };
 
   proxy.getDefinitionAndBoundSpan = (fileName, position) => {
-    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    const vueDefinition = resolveVueImportDefinition(
+      ts,
+      support,
+      fileName,
+      position,
+      languageService,
+    );
     if (vueDefinition) {
       return {
         definitions: [vueDefinition.definition],
@@ -123,14 +141,26 @@ function createLanguageServiceProxy(ts, languageService, support) {
   };
 
   proxy.getTypeDefinitionAtPosition = (fileName, position) => {
-    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    const vueDefinition = resolveVueImportDefinition(
+      ts,
+      support,
+      fileName,
+      position,
+      languageService,
+    );
     return vueDefinition
       ? [vueDefinition.definition]
       : languageService.getTypeDefinitionAtPosition(fileName, position);
   };
 
   proxy.getQuickInfoAtPosition = (fileName, position) => {
-    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    const vueDefinition = resolveVueImportDefinition(
+      ts,
+      support,
+      fileName,
+      position,
+      languageService,
+    );
     const quickInfo = languageService.getQuickInfoAtPosition(fileName, position);
     if (!vueDefinition) {
       return quickInfo;

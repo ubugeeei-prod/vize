@@ -19,6 +19,26 @@ pub(crate) fn linked_semantic_positions(
     let Some((request_uri, result)) = super::virtual_result(state, document, uri) else {
         return Vec::new();
     };
+    positions(request_uri, result, range)
+}
+
+/// The same graph for many native locations that share one document index.
+pub(crate) fn indexed_linked_semantic_positions(
+    index: &super::super::CanonicalUriIndex<'_>,
+    uri: &str,
+    range: &LspRange,
+) -> Vec<CanonicalSemanticPosition> {
+    let Some((request_uri, result)) = index.virtual_result(uri) else {
+        return Vec::new();
+    };
+    positions(request_uri, result, range)
+}
+
+fn positions(
+    request_uri: &vize_l0::String,
+    result: &crate::ide::diagnostics::VirtualTsResult,
+    range: &LspRange,
+) -> Vec<CanonicalSemanticPosition> {
     let Some(start) =
         crate::ide::position_to_offset(&result.code, range.start.line, range.start.character)
     else {

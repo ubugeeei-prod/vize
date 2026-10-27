@@ -145,13 +145,39 @@ pub fn generate_vue_content_mapper_transform_with_options(
     content: &str,
     transform_options: ContentMapperTransformOptions,
 ) -> CorsaResult<ContentMapperTransform> {
-    transform_with_diagnostic_ownership(path, content, transform_options, Some(Default::default()))
+    generate_vue_content_mapper_transform_with_project_options(
+        path,
+        content,
+        transform_options,
+        None,
+    )
+}
+
+/// Generate a transform using configuration admitted when the host opened the project.
+/// The borrowed router root performs no configuration reads during transformation.
+pub fn generate_vue_content_mapper_transform_with_project_options(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router_root: Option<&Path>,
+) -> CorsaResult<ContentMapperTransform> {
+    vize_l0::profile!(
+        "canon.content_mapper.transform",
+        transform_with_diagnostic_ownership(
+            path,
+            content,
+            transform_options,
+            typed_router_root,
+            Some(Default::default()),
+        )
+    )
 }
 
 fn transform_with_diagnostic_ownership(
     path: &Path,
     content: &str,
     transform_options: ContentMapperTransformOptions,
+    typed_router_root: Option<&Path>,
     diagnostic_ownership: Option<
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
     >,
@@ -203,7 +229,7 @@ fn transform_with_diagnostic_ownership(
         VueCodegenOptions {
             diagnostic_ownership: diagnostic_ownership.as_ref(),
             check_options: transform_options.virtual_ts_check_options(),
-            typed_router_root: None,
+            typed_router_root,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
@@ -268,8 +294,12 @@ fn transform_with_diagnostic_ownership(
     }
     let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
-    let mut diagnostic_echoes = diagnostic_ownership
-        .map(|collector| collector.into_inner().into_echoes())
+    let (mut diagnostic_echoes, callback_primaries) = diagnostic_ownership
+        .map(|collector| {
+            let mut ownership = collector.into_inner();
+            let primaries = ownership.take_callback_primaries();
+            (ownership.into_echoes(), primaries)
+        })
         .unwrap_or_default();
     for echo in &mut diagnostic_echoes {
         echo.authored = authored.to_authored(echo.authored.clone());
@@ -284,7 +314,7 @@ fn transform_with_diagnostic_ownership(
                         sfc_diagnostic_directives(content, &descriptor, &spans, &diagnostic_echoes),
                         generic_copies.as_ref(),
                     );
-                    with_component_prop_echoes(directives, &code, &mappings)
+                    with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
                 })
                 .flatten(),
             &diagnostic_echoes,
@@ -585,3 +615,6 @@ mod unknown_options_tests;
 
 #[cfg(test)]
 mod directive_tests;
+
+#[cfg(test)]
+mod typed_router_profile_tests;

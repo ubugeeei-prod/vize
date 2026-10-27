@@ -27,7 +27,9 @@ const dependencyWorkflow = parse(
 test("docs-only dependency policy changes still run a mandatory metadata gate", () => {
   for (const policy of [
     "docs/davinci/plan/level-dependency-allowlist.json",
+    "docs/davinci/plan/product-dependency-allowlists/vize_canon.json",
     "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json",
+    "docs/davinci/plan/product-dependency-allowlists/vize_maestro.json",
     "docs/davinci/plan/product-dependency-allowlists/vize_patina.json",
   ])
     assert.deepEqual(planSourceChecks([policy]), {
@@ -71,7 +73,7 @@ test("dependency checks start without a package-manager bootstrap inside their f
   assert.equal(setup.with?.cache, undefined);
   assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
   for (const command of [
-    "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.mjs",
+    "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.ts",
     'node tools/support/compat/davinci/level-dependencies.ts --base "$DEPENDENCY_BASE"',
   ]) {
     assert.ok(steps.findIndex((step) => step.run === command) > setupIndex);

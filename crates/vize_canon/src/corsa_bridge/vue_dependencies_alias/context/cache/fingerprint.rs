@@ -12,6 +12,8 @@ pub(crate) struct ContextFingerprint {
     host_content: u64,
     overlays: u64,
     generation_options: u64,
+    /// Requested workspace sources are part of this revision.
+    workspace: bool,
     stamps: Vec<crate::package_route::stamp::InputStamp>,
 }
 
@@ -50,6 +52,7 @@ impl ContextFingerprint {
             host_content: host.finish(),
             overlays: overlay_hash.finish(),
             generation_options,
+            workspace: false,
             stamps: Vec::new(),
         }
     }
@@ -128,15 +131,20 @@ impl ContextFingerprint {
             source.hash(&mut hash);
         }
         self.host_content = hash.finish();
+        self.workspace = true;
+    }
+
+    pub(super) fn workspace(&self) -> bool {
+        self.workspace
     }
 
     pub(super) fn stamps_still_valid(
         &self,
-        observed: &mut crate::package_route::stamp::InputStampCache,
+        observed: &mut crate::package_route::stamp::InputStampValidation,
     ) -> bool {
         self.stamps
             .iter()
-            .all(|stamp| stamp.is_current_with_cache(observed))
+            .all(|stamp| observed.is_current(stamp, None))
     }
 
     pub(crate) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {
@@ -164,7 +172,9 @@ impl super::SessionCache {
         source_path: &Path,
     ) -> Option<Vec<crate::package_route::stamp::InputStamp>> {
         self.slots
-            .get(source_path)
-            .map(|cached| cached.fingerprint.input_stamps())
+            .iter()
+            .filter(|(key, _)| key.source_path == source_path)
+            .max_by_key(|(_, cached)| cached.last_used)
+            .map(|(_, cached)| cached.fingerprint.input_stamps())
     }
 }

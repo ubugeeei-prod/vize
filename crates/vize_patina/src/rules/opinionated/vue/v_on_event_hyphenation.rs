@@ -8,8 +8,10 @@
 //! event emitted as `my-event`. Hyphenating the listener (`@my-event`) keeps the
 //! template consistent with the kebab-case form that components emit.
 //!
-//! Only component listeners are checked. Native HTML elements use lowercase DOM
-//! event names, and dynamic arguments (`@[event]`) cannot be statically checked.
+//! Only custom component listeners are checked: a tag that is not a well-known
+//! element of its namespace (`<MyComponent>`, `<my-component>`), or a native tag
+//! cast with `is`. Native HTML elements use lowercase DOM event names, and
+//! dynamic arguments (`@[event]`) cannot be statically checked.
 //!
 //! ## Examples
 //!
@@ -17,6 +19,7 @@
 //! ```vue
 //! <MyComponent @myEvent="handler" />
 //! <MyComponent v-on:myEvent="handler" />
+//! <my-component @update:modelValue="handler" />
 //! ```
 //!
 //! ### Valid
@@ -29,8 +32,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::hyphenate;
-use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
+use vize_l0::{CompactString, is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, Namespace, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-on-event-hyphenation",
@@ -61,19 +64,44 @@ impl VOnEventHyphenation {
         Self { style }
     }
 
-    /// Whether `element` is a Vue component (and therefore receives custom,
-    /// kebab-case events rather than native lowercase DOM events).
-    ///
-    /// The parser sets `tag_type == Component` for built-in components and any
-    /// PascalCase tag; the explicit PascalCase check is a belt-and-braces guard
-    /// so the rule still targets components even if the tag type is unset.
+    /// Whether `element` receives custom events rather than native DOM events.
+    /// Matches eslint-plugin-vue's `isCustomComponent`: an `is` cast, or a tag
+    /// that is not a well-known element of its namespace. A kebab-case tag such
+    /// as `<va-select>` is a component even though the parser leaves it an
+    /// element.
     fn is_component(element: &ElementNode<'_>) -> bool {
-        element.tag_type == ElementType::Component
-            || element
-                .tag
-                .chars()
-                .next()
-                .is_some_and(|c| c.is_ascii_uppercase())
+        if element.props.iter().any(is_cast) {
+            return true;
+        }
+        // eslint-plugin-vue's element lists also know `<slot>` and a few newer
+        // HTML elements, and `a`/`script`/`style` inside SVG.
+        let tag = element.tag;
+        match element.ns {
+            Namespace::Html => {
+                !is_html_tag(tag)
+                    && !matches!(
+                        tag,
+                        "slot" | "fencedframe" | "geolocation" | "selectedcontent"
+                    )
+            }
+            Namespace::Svg => !is_svg_tag(tag) && !matches!(tag, "a" | "script" | "style"),
+            Namespace::MathMl => !is_math_ml_tag(tag),
+        }
+    }
+}
+
+/// `is="..."`, `:is="..."` or `v-is="..."`.
+fn is_cast(prop: &PropNode<'_>) -> bool {
+    match prop {
+        PropNode::Attribute(attr) => attr.name == "is",
+        PropNode::Directive(dir) => {
+            dir.name == "is"
+                || dir.name == "bind"
+                    && matches!(
+                        &dir.arg,
+                        Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "is"
+                    )
+        }
     }
 }
 
@@ -105,20 +133,15 @@ impl Rule for VOnEventHyphenation {
             Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
             _ => return,
         };
-        // `@vue:beforeMount` is a vnode lifecycle hook, not a component event.
-        if event_name.starts_with("vue:") {
-            return;
-        }
-
-        // camelCase if it contains an uppercase ASCII letter. (Native modifiers
-        // are stripped into `directive.modifiers`, so the arg is the bare name.)
+        // Modifiers are stripped into `directive.modifiers`, so the arg is the
+        // bare name. `@vue:beforeMount` hooks are checked too, as upstream does.
         match self.style {
             VOnEventHyphenationStyle::Always => {
-                if !event_name.bytes().any(|b| b.is_ascii_uppercase()) {
+                if event_name.to_lowercase() == event_name {
                     return;
                 }
 
-                let hyphenated = hyphenate(event_name);
+                let hyphenated = kebab_case(event_name);
                 ctx.warn_with_help(
                     ctx.t_fmt(
                         "vue/v-on-event-hyphenation.message",
@@ -144,6 +167,22 @@ impl Rule for VOnEventHyphenation {
             }
         }
     }
+}
+
+/// eslint-plugin-vue's `kebabCase`: `_` becomes `-`, a capital that follows
+/// a word character gets a `-` before it, and the result is lowercased.
+fn kebab_case(name: &str) -> CompactString {
+    let mut kebab = CompactString::with_capacity(name.len() + 4);
+    let mut after_word = false;
+    for character in name.chars() {
+        let character = if character == '_' { '-' } else { character };
+        if character.is_ascii_uppercase() && after_word {
+            kebab.push('-');
+        }
+        after_word = character.is_ascii_alphanumeric();
+        kebab.extend(character.to_lowercase());
+    }
+    kebab
 }
 
 #[cfg(test)]
@@ -204,6 +243,43 @@ mod tests {
     }
 
     #[test]
+    fn test_kebab_case_and_cast_components_are_checked() {
+        let result = create_linter().lint_template(
+            r#"<div><va-color-indicator @update:modelValue="a" /><table is="vue:my-row" @rowClick="b" /><button :is="c" @myEvent="d" /><svg><my-shape @shapeMove="e" /><circle @fooBar="f" /></svg><span @fooBar="g" /><slot @fooBar="h" /><svg><a @fooBar="i" /></svg></div>"#,
+            "test.vue",
+        );
+        let reported: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect();
+        // `@update:modelValue="a"`, `@rowClick="b"`, `@myEvent="d"`, `@shapeMove="e"`.
+        assert_eq!(reported, [(25, 47), (73, 86), (105, 117), (135, 149)]);
+    }
+
+    #[test]
+    fn test_sfc_kebab_case_component_listeners() {
+        let result = create_linter().lint_sfc(
+            include_str!(
+                "../../../../../../tests/_fixtures/differential/linter/v-on-hyphenation-custom-tags-10822/ColorPalette.vue.txt"
+            ),
+            "ColorPalette.vue",
+        );
+        let reported: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.rule_name, diagnostic.start, diagnostic.end))
+            .collect();
+        assert_eq!(
+            reported,
+            [
+                ("vue/v-on-event-hyphenation", 135, 172),
+                ("vue/v-on-event-hyphenation", 279, 311),
+            ]
+        );
+    }
+
+    #[test]
     fn test_dynamic_argument_is_skipped() {
         let linter = create_linter();
         let result =
@@ -240,17 +316,36 @@ mod tests {
     }
 
     #[test]
-    fn test_vnode_lifecycle_hooks_are_skipped() {
+    fn test_vnode_lifecycle_hooks_are_checked_like_events() {
         let always = create_linter().lint_template(
             r#"<MyComponent @vue:beforeMount="a" @vue:before-unmount="b" />"#,
             "test.vue",
         );
-        assert_eq!(always.warning_count, 0);
+        assert_eq!(always.diagnostics.len(), 1);
+        assert_eq!(
+            always.diagnostics[0].message,
+            "Custom event listeners on components should be hyphenated: use 'vue:before-mount'"
+        );
         let never = create_never_linter().lint_template(
             r#"<MyComponent @vue:beforeMount="a" @vue:before-unmount="b" />"#,
             "test.vue",
         );
-        assert_eq!(never.warning_count, 0);
+        assert_eq!(never.warning_count, 1);
+    }
+
+    #[test]
+    fn suggestions_follow_eslint_plugin_vue_kebab_case() {
+        for (name, kebab) in [
+            ("Change", "change"),
+            ("fooBar", "foo-bar"),
+            ("update:modelValue", "update:model-value"),
+            ("update:ModelValue", "update:model-value"),
+            ("my_event", "my-event"),
+            ("XMLHttp", "x-m-l-http"),
+            ("item2Click", "item2-click"),
+        ] {
+            assert_eq!(super::kebab_case(name), kebab, "{name}");
+        }
     }
 
     #[test]

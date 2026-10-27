@@ -257,7 +257,9 @@ fn generate_if_branch_component(
     let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
     ctx.push(", ");
-    generate_if_branch_props(ctx, el, branch, branch_index, is_dynamic);
+    ctx.with_component_props(|ctx| {
+        generate_if_branch_props(ctx, el, branch, branch_index, is_dynamic);
+    });
 
     ctx.skip_scope_id = prev_skip_scope_id;
 

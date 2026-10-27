@@ -116,6 +116,47 @@ fn native_editor_resolves_package_alias_from_monorepo_root() {
 }
 
 #[test]
+fn editor_alias_edges_keep_the_authored_extension_style() {
+    // #10753: a generated `.ts` suffix adds TS5097 to a valid authored edge.
+    let root = tempfile::tempdir().unwrap();
+    let host = root.path().join("src/App.vue");
+    let source = "<script setup lang=\"ts\">\nimport { greet } from '#lib/greet';\nimport { greet as js } from '#lib/greet/index.js';\nimport { greet as ts } from '#lib/greet/index.ts';\nconst message: string = greet(js(ts('vize')))\n</script>";
+    write(&host, source);
+    write(
+        &root.path().join("src/lib/greet/index.ts"),
+        "export const greet = (name: string): string => name;",
+    );
+    write(
+        &root.path().join("tsconfig.json"),
+        r##"{"compilerOptions":{"moduleResolution":"bundler","paths":{"#lib/*":["./src/lib/*"]}},"include":["src/**/*"]}"##,
+    );
+
+    let project =
+        build_vue_virtual_project(&host, source, CorsaVueVirtualDocumentOptions::default())
+            .unwrap();
+    let imports = project
+        .host
+        .code
+        .lines()
+        .filter(|line| line.starts_with("import { greet"))
+        .collect::<Vec<_>>();
+    let module = project
+        .session_project_root
+        .unwrap()
+        .join("src/lib/greet/index")
+        .to_string_lossy()
+        .replace('\\', "/");
+    assert_eq!(
+        imports,
+        [
+            vize_carton::cstr!("import {{ greet }} from '{module}';"),
+            vize_carton::cstr!("import {{ greet as js }} from '{module}.js';"),
+            vize_carton::cstr!("import {{ greet as ts }} from '{module}.ts';"),
+        ]
+    );
+}
+
+#[test]
 fn inferred_project_without_tsconfig_still_queries_an_importer_scoped_package_mirror() {
     let root = tempfile::tempdir().unwrap();
     let app = root.path().join("app");

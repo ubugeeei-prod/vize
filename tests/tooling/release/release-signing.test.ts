@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { editorPlatformAssets } from "../../../tools/support/release/editor-platforms.ts";
 
 const command = fileURLToPath(
   new URL("../../../tools/support/release/sign_release_artifacts.ts", import.meta.url),
@@ -91,7 +92,7 @@ interface Event {
   cacheExists: boolean;
   cacheMode: number;
 }
-function fixture() {
+function fixture(includePlatforms = false) {
   const root = mkdtempSync(path.join(tmpdir(), "vize-release-signing-"));
   const bin = path.join(root, "bin");
   mkdirSync(bin);
@@ -100,7 +101,8 @@ function fixture() {
   mkdirSync(temporary);
   mkdirSync(ambient);
   writeFileSync(path.join(ambient, "trusted-marker"), "ambient must remain unchanged\n");
-  for (const file of assets) {
+  const fixtureAssets = [...assets, ...(includePlatforms ? editorPlatformAssets() : [])].sort();
+  for (const file of fixtureAssets) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     const contents = `original bytes ${file}\n`;
     writeFileSync(path.join(root, file), contents);
@@ -137,6 +139,7 @@ function fixture() {
         TMPDIR: temporary,
         TUF_ROOT: ambient,
         FAKE_MODE: mode,
+        VIZE_EDITOR_PLATFORM_ARTIFACTS: includePlatforms ? "1" : "0",
         FAKE_TARGET: "cli-artifacts/vize-x86_64-apple-darwin.tar.gz",
         FAKE_EVENTS: events,
         FAKE_RELEASE: release,
@@ -166,6 +169,7 @@ function fixture() {
   }
   return {
     signer,
+    assets: fixtureAssets,
     root,
     rows,
     start,
@@ -261,6 +265,29 @@ test("four actual signers overlap, all sixteen original protocols and forty-eigh
       assert.equal(digest, hash(readFileSync(path.join(f.root, file))));
   } finally {
     f.clean();
+  }
+});
+
+test("platform signing includes every exact VSIX and provider receipt and refuses a missing target", async () => {
+  const f = fixture(true);
+  try {
+    const result = await f.start().closed;
+    assert.equal(result.code, 0, result.stderr);
+    const receipt = JSON.parse(result.stdout.trim().split("\n").at(-1)!);
+    assert.equal(f.assets.length, 32);
+    assert.deepEqual(Object.keys(receipt.inputs).sort(), f.assets);
+    assert.equal(Object.keys(receipt.outputs).length, 96);
+  } finally {
+    f.clean();
+  }
+  const missing = fixture(true);
+  try {
+    rmSync(path.join(missing.root, editorPlatformAssets()[0]));
+    const result = await missing.start().closed;
+    assert.notEqual(result.code, 0);
+    assert.equal(missing.rows().length, 0, "missing platform bytes must fail before any signer");
+  } finally {
+    missing.clean();
   }
 });
 

@@ -62,6 +62,18 @@ fn emit_for_scoped(
     key_alias: Option<&str>,
     index_alias: Option<&str>,
 ) -> Result<(), EmitError> {
+    let value_text = prefixed_alias(cx, value)?;
+    let value = value_text.as_deref().unwrap_or(value);
+    let key_text = key_alias
+        .map(|alias| prefixed_alias(cx, alias))
+        .transpose()?
+        .flatten();
+    let key_alias = key_text.as_deref().or(key_alias);
+    let index_text = index_alias
+        .map(|alias| prefixed_alias(cx, alias))
+        .transpose()?
+        .flatten();
+    let index_alias = index_text.as_deref().or(index_alias);
     let wrapper = id.and_then(|id| cx.for_wrappers.get(id));
     if let Some(span) = wrapper.and_then(|wrapper| wrapper.runtime_directive) {
         return Err(EmitError::unsupported_at(Reason::TemplateUnwrapShape, span));
@@ -287,6 +299,20 @@ fn plain_item_memo<'a>(ops: &'a [Op<'a>]) -> Option<&'a VueMemoOp<'a>> {
         [Op::Component(component)] => super::memo::first(&component.bindings),
         _ => None,
     }
+}
+
+/// Defaults and computed keys in an alias pattern read the component context;
+/// the caller has already entered the scope that keeps the pattern names local.
+pub(super) fn prefixed_alias(
+    cx: &EmitCx<'_>,
+    alias: &str,
+) -> Result<Option<vize_l0::String>, EmitError> {
+    if !cx.prefixing() {
+        return Ok(None);
+    }
+    super::for_bindings::rewrite_for_alias_expressions(alias, |expr| {
+        cx.prefixed_text(expr, Site::Expression)
+    })
 }
 
 pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<RawJs<'a>, EmitError> {

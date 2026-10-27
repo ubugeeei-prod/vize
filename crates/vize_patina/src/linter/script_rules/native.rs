@@ -1,7 +1,7 @@
 //! Resolve an actual configured instance without legacy parsing or semantics.
 
-use super::registry::{RULE_NO_GET_CURRENT_INSTANCE, RULE_NUXT_CONFIG_KEYS_ORDER};
-use super::{Linter, builtin_script_rule_entry, resolved_rule};
+use super::registry::RULE_NUXT_CONFIG_KEYS_ORDER;
+use super::{Linter, VAPOR_ONLY_SCRIPT_RULES, builtin_script_rule_entry, resolved_rule};
 use crate::rules::script::ScriptRule;
 
 pub(crate) fn configured<'o>(linter: &'o Linter, name: &str) -> Option<&'o dyn ScriptRule> {
@@ -13,8 +13,6 @@ pub(crate) fn configured<'o>(linter: &'o Linter, name: &str) -> Option<&'o dyn S
 /// These genuine catalog keys have original filename/activation policy that
 /// this new host has not authenticated. Offered callbacks cannot bypass it.
 pub(crate) fn requires_invocation_policy(instance: &dyn ScriptRule) -> bool {
-    matches!(
-        instance.meta().name,
-        RULE_NUXT_CONFIG_KEYS_ORDER | RULE_NO_GET_CURRENT_INSTANCE
-    )
+    let name = instance.meta().name;
+    name == RULE_NUXT_CONFIG_KEYS_ORDER || VAPOR_ONLY_SCRIPT_RULES.contains(&name)
 }

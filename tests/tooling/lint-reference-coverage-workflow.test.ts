@@ -121,7 +121,7 @@ test("native preset documentation earns its whole law without dropping earlier c
     "tests/tooling/lint-preset-default-warnings-source.test.mjs",
     "tests/tooling/patina-legacy-instance-api-reference.test.mjs",
     "tests/tooling/lint-divergence-processor.test.mjs",
-    "tests/tooling/lint-divergence-raw-errors.test.mjs",
+    "tests/tooling/lint-divergence-raw-errors.test.ts",
     "tests/tooling/lint-divergence-surface-classes.test.ts",
     "tests/tooling/lint-divergence-pug-surface.test.ts",
     "tests/tooling/lint-divergence-zero-vue-runner.test.ts",

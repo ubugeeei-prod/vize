@@ -83,8 +83,8 @@ const templateOnlyApp = `<template>
 
 const appDiagnostics = (line: number): string[] => [
   `error:${line}:20 [TS7006] Parameter 'row' implicitly has an 'any' type.`,
-  `error:${line + 7}:39 [TS2339] Property 'id' does not exist on type 'never'.`,
-  `error:${line + 7}:74 [TS2339] Property 'label' does not exist on type 'never'.`,
+  `error:${line + 7}:39 [TS2339] Property 'id' does not exist on type 'never'. (source: <li v-for="row in rows" :key="row.id" @click="selectRow(row)">{{ row.label }}</li>; binding: 'key')`,
+  `error:${line + 7}:74 [TS2339] Property 'label' does not exist on type 'never'. (source: <li v-for="row in rows" :key="row.id" @click="selectRow(row)">{{ row.label }}</li>)`,
 ];
 
 const vueTscAppDiagnostics = (file: string, line: number): string =>
@@ -145,7 +145,7 @@ const cases: Case[] = [
     files: { "TemplateOnly.vue": templateOnlyApp },
     diagnostics: {
       "TemplateOnly.vue": [
-        `error:2:26 [TS2322] Type '"yes"' is not assignable to type 'Booleanish | undefined'.`,
+        "error:2:26 [TS2322] Type '\"yes\"' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"'yes'\">go</button>; binding: 'disabled')",
       ],
     },
     vueTscOutput:

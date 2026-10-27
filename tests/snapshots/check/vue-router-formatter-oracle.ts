@@ -40,8 +40,9 @@ type BuildResult = CommandResult & {
 };
 
 test("Vue Router formatter converges without moving object v-bind spreads", async () => {
+  // This standalone consumer must not inherit the repository's target/** exclusion.
   await withPinnedFixtureWorkspace(
-    { fixtureId: "vue-router", includePaths: [appPath] },
+    { fixtureId: "vue-router", includePaths: [appPath], outsideRepository: true },
     async (fixture) => {
       const pinnedSource = fixture.read(appPath);
       const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;

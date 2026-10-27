@@ -1,10 +1,12 @@
 //! Source-owned binder facts shared with the native expression transformer.
 
 use vize_l0::{FxHashSet, String, id::NodeId};
-use vize_l1_to_l2::{TransformScopeMark, exceptional_for_binding_names};
+use vize_l1_to_l2::{
+    TransformScopeMark, exceptional_for_binding_names, rewrite_for_alias_expressions,
+};
 use vize_l2::op::ForOp;
 
-use super::Emitter;
+use super::{Emitter, Result};
 use crate::codegen::helpers::extract_destructure_params;
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
@@ -38,5 +40,24 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         }
         self.scoped_params.push(params);
         mark
+    }
+}
+
+impl Emitter<'_, '_, '_, '_, '_, '_> {
+    /// Alias patterns as emitted inside their own scope: defaults and computed
+    /// keys read the component context, the pattern's names stay local.
+    pub(super) fn for_alias_texts(
+        &self,
+        aliases: [Option<&str>; 3],
+    ) -> Result<[Option<String>; 3]> {
+        let [value, key, index] = aliases.map(|alias| {
+            alias
+                .map(|alias| {
+                    rewrite_for_alias_expressions(alias, |expr| self.text_expr(expr))
+                        .map(|text| text.unwrap_or_else(|| String::from(alias)))
+                })
+                .transpose()
+        });
+        Ok([value?, key?, index?])
     }
 }

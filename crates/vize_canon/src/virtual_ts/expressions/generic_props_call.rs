@@ -152,7 +152,9 @@ pub(super) fn generate_generic_props_call(
 /// is already emitted, mapped, against the child's prop checker, so an authored
 /// prop error is reported exactly once from there. A generated position with no
 /// mapping has no authored position and is dropped by the diagnostics path, so
-/// this construct is diagnostically inert by construction.
+/// this construct is diagnostically inert by construction. The content mapper
+/// host reports unmapped positions as they are, so these copies are recorded
+/// as inert echoes for it.
 ///
 /// The `v-if` guard is reproduced as a conditional *expression* rather than a
 /// statement so the narrowing that guard performs still applies to the props
@@ -190,7 +192,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context.inference_only(),
+        source_context.inert(),
         indent,
     );
     if usage.vif_guard.is_some() {
@@ -216,7 +218,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context.inference_only(),
+        source_context.inert(),
         indent,
     );
     if usage.vif_guard.is_some() {

@@ -181,6 +181,10 @@ impl ProjectContext {
             .flatten()
     }
 
+    pub(super) fn published_state(&self) -> Option<&Arc<ServerState>> {
+        self.state.get()
+    }
+
     pub(super) fn mark_retired(&self) {
         self.retired.store(true, Ordering::Release);
         #[cfg(feature = "retained-program")]

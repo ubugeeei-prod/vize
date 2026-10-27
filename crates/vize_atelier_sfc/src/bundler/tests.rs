@@ -1,6 +1,7 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::*;
 
+mod asset_markup;
 mod asset_names;
 
 #[test]

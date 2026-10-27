@@ -4,14 +4,19 @@ import process from "node:process";
 import { build } from "vite-plus";
 import { chromium } from "@playwright/test";
 import { mountEventFixture } from "./davinci-event-browser.mjs";
+import {
+  officialCompilerVapor,
+  vueVaporRuntimeEntry,
+  vueVaporVersion,
+} from "./vue-vapor-release.mjs";
 
 const require = createRequire(import.meta.url);
 const stable = require("@vue/compiler-dom");
-const sfc = require("@vue/compiler-sfc");
 const beta = createRequire(require.resolve("@vue/compiler-sfc"))("@vue/compiler-dom");
 const versions = {
   stable: require("@vue/compiler-dom/package.json").version,
   beta: require("@vue/compiler-sfc/package.json").version,
+  vapor: vueVaporVersion,
 };
 assert.equal(require("@vue/runtime-dom/package.json").version, versions.stable);
 assert.equal(require("vue/package.json").version, versions.beta);
@@ -36,6 +41,9 @@ async function runtimeUrl(entry) {
 const runtimes = {
   stable: await runtimeUrl(require.resolve("@vue/runtime-dom/dist/runtime-dom.esm-bundler.js")),
   beta: await runtimeUrl(require.resolve("vue/dist/vue.runtime.esm-bundler.js")),
+  // Vapor output only runs on the release Vize emits for: since 3.6.0-rc.6
+  // `on` wraps the handler itself, which beta runtimes do not.
+  vapor: await runtimeUrl(vueVaporRuntimeEntry),
 };
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
@@ -50,13 +58,6 @@ let nativeJavaScriptOracles = 0;
 try {
   for (const fixture of fixtures) {
     const options = { mode: "module", prefixIdentifiers: true };
-    const vapor = sfc.compileTemplate({
-      id: "event-contract",
-      filename: "Event.vue",
-      source: fixture.source,
-      vapor: true,
-    });
-    assert.deepEqual(vapor.errors, [], "official Vapor compilation");
     const engines = [
       {
         name: "Vue 3.5 VDOM",
@@ -75,15 +76,15 @@ try {
       {
         name: "Vue 3.6 Vapor",
         backend: "vapor",
-        code: vapor.code,
-        runtime: "beta",
+        code: officialCompilerVapor.compile(fixture.source, options).code,
+        runtime: "vapor",
         official: true,
       },
       ...fixture.compiled.map(({ backend, mode, code }) => ({
         name: `Vize ${backend}/${mode}`,
         backend,
         code,
-        runtime: "beta",
+        runtime: backend === "vapor" ? "vapor" : "beta",
       })),
     ];
     if (fixture.referenceExpected) {

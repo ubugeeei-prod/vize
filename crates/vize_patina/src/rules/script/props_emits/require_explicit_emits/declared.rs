@@ -1,99 +1,114 @@
 //! Declared-emit resolution for `script/require-explicit-emits`.
 //!
-//! Resolves a component's declared event set from `defineEmits` (`<script
-//! setup>`) or the Options API `emits` option, distinguishing a fully-known set
-//! from one that cannot be enumerated (so the rule can stay sound). See the
-//! parent module for the overall scope.
+//! Mirrors eslint-plugin-vue's `getComponentEmitsFromOptions` and
+//! `getComponentEmitsFromDefineEmits`: one entry that cannot be named (a
+//! spread, a computed key, an unresolved type) makes the whole set unknown, and
+//! an unknown set declares every event.
 
 use oxc_ast::ast::{
-    Argument, ArrayExpression, ArrayExpressionElement, BindingPattern, CallExpression, Expression,
-    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
-    TSCallSignatureDeclaration, TSLiteral, TSSignature, TSType,
+    Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression, ObjectExpression,
+    ObjectPropertyKind, PropertyKey, Statement,
 };
+use oxc_syntax::symbol::SymbolId;
+use vize_l0::{CompactString, FxHashSet, ToCompactString};
 
-use vize_l0::{CompactString, FxHashSet};
+use super::types::{Block, Resolver};
 
-use super::super::emits_source::{EmitsDeclaration, resolve_emits_declaration};
-
-/// The outcome of resolving a component's declared emits.
-pub(super) enum Declared<'a> {
-    /// The declared set is fully known. `binding` is the identifier the
-    /// `defineEmits` return value was assigned to, if any (used to match
-    /// `emit('x')` call sites in `<script setup>`).
-    Known {
-        names: FxHashSet<CompactString>,
-        binding: Option<&'a str>,
-    },
-    /// No declaration was found, or one was found but cannot be fully resolved
-    /// (spread / computed key / bare type reference). Either way, do not report.
+/// The events a component declares.
+pub(super) enum Emits {
+    Known(FxHashSet<CompactString>),
     Unknown,
 }
 
-impl<'a> Declared<'a> {
-    /// Map a collected name set (`None` = not fully enumerable) to a [`Declared`].
-    fn from_names(names: Option<FxHashSet<CompactString>>, binding: Option<&'a str>) -> Self {
-        match names {
-            Some(names) => Declared::Known { names, binding },
-            None => Declared::Unknown,
+impl Emits {
+    pub(super) fn declares(&self, name: &str) -> bool {
+        match self {
+            Emits::Known(names) => names.contains(name),
+            Emits::Unknown => true,
         }
     }
 }
 
-/// Resolve the declared emit names from `defineEmits` (`<script setup>`) or the
-/// Options API `emits` option. Returns [`Declared::Unknown`] when nothing is
-/// declared or when the declaration cannot be fully enumerated.
-pub(super) fn resolve_declared_emits<'a>(program: &'a Program<'a>) -> Declared<'a> {
-    if let Some(declaration) = find_define_emits(program) {
-        let names = collect_call_emits(declaration.call)
-            .and_then(|names| add_define_model_events(program, names));
-        return Declared::from_names(names, declaration.binding);
+#[derive(Default)]
+pub(super) struct Collect {
+    names: FxHashSet<CompactString>,
+    pub(super) unknown: bool,
+}
+
+impl Collect {
+    pub(super) fn push(&mut self, name: Option<CompactString>) {
+        match name {
+            Some(name) => {
+                self.names.insert(name);
+            }
+            None => self.unknown = true,
+        }
     }
 
-    // Options API: `export default { emits: [...] | { ... } }`. The captured
-    // binding is irrelevant here (events are emitted via `this.$emit`).
-    match resolve_emits_declaration(program) {
-        Some(EmitsDeclaration::Array(array)) => {
-            Declared::from_names(collect_array_emits(array), None)
+    pub(super) fn finish(self) -> Emits {
+        if self.unknown {
+            Emits::Unknown
+        } else {
+            Emits::Known(self.names)
         }
-        Some(EmitsDeclaration::Object(object)) => {
-            Declared::from_names(collect_object_emits(object), None)
-        }
-        None => Declared::Unknown,
     }
 }
 
-/// A resolved `defineEmits(...)` call and the binding it was assigned to.
-struct DefineEmitsDeclaration<'a> {
-    binding: Option<&'a str>,
-    call: &'a CallExpression<'a>,
+/// The `emits` option of a Vue object. No option declares nothing.
+pub(super) fn options_emits(object: &ObjectExpression<'_>) -> Emits {
+    let option = object
+        .properties
+        .iter()
+        .find_map(|property| match property {
+            ObjectPropertyKind::ObjectProperty(property)
+                if property_name(&property.key, property.computed).as_deref() == Some("emits") =>
+            {
+                Some(property)
+            }
+            _ => None,
+        });
+    match option {
+        None => Emits::Known(FxHashSet::default()),
+        Some(option) => define_value(&option.value).unwrap_or(Emits::Unknown),
+    }
 }
 
-/// Find the first top-level `defineEmits(...)` call, whether assigned to a
-/// binding (`const emit = defineEmits(...)`) or bare (`defineEmits(...)`).
-fn find_define_emits<'a>(program: &'a Program<'a>) -> Option<DefineEmitsDeclaration<'a>> {
-    for statement in &program.body {
+/// A top-level `defineEmits(...)` macro of `<script setup>`.
+pub(super) struct DefineEmits<'a> {
+    /// Calls before the macro are not checked, as upstream visits in order.
+    pub(super) start: u32,
+    /// `const emit = defineEmits(...)`: the template-visible name and symbol.
+    pub(super) binding: Option<(&'a str, Option<SymbolId>)>,
+    pub(super) emits: Emits,
+}
+
+pub(super) fn define_emits<'a>(resolver: &Resolver<'_, 'a, '_>) -> Option<DefineEmits<'a>> {
+    for statement in &resolver.program.body {
         match statement {
             Statement::VariableDeclaration(declaration) => {
                 for declarator in &declaration.declarations {
-                    let Some(call) = declarator.init.as_ref().and_then(unwrap_call) else {
+                    let Some(call) = declarator.init.as_ref().and_then(macro_call) else {
                         continue;
                     };
-                    if is_define_emits(call) {
-                        let binding = match &declarator.id {
-                            BindingPattern::BindingIdentifier(id) => Some(id.name.as_str()),
-                            _ => None,
-                        };
-                        return Some(DefineEmitsDeclaration { binding, call });
-                    }
+                    let binding = match &declarator.id {
+                        BindingPattern::BindingIdentifier(id) => {
+                            Some((id.name.as_str(), id.symbol_id.get()))
+                        }
+                        _ => None,
+                    };
+                    return Some(DefineEmits {
+                        start: call.span.start,
+                        binding,
+                        emits: call_emits(call, resolver),
+                    });
                 }
             }
-            Statement::ExpressionStatement(expression) => {
-                if let Some(call) = unwrap_call(&expression.expression)
-                    && is_define_emits(call)
-                {
-                    return Some(DefineEmitsDeclaration {
+            Statement::ExpressionStatement(statement) => {
+                if let Some(call) = macro_call(&statement.expression) {
+                    return Some(DefineEmits {
+                        start: call.span.start,
                         binding: None,
-                        call,
+                        emits: call_emits(call, resolver),
                     });
                 }
             }
@@ -103,175 +118,80 @@ fn find_define_emits<'a>(program: &'a Program<'a>) -> Option<DefineEmitsDeclarat
     None
 }
 
-/// Add the `update:<name>` event each top-level `defineModel(...)` declares.
-/// `None` when a model name is not a string literal, so the set is unknown.
-fn add_define_model_events(
-    program: &Program<'_>,
-    mut names: FxHashSet<CompactString>,
-) -> Option<FxHashSet<CompactString>> {
-    for statement in &program.body {
-        let calls: Vec<&CallExpression<'_>> = match statement {
-            Statement::VariableDeclaration(declaration) => declaration
-                .declarations
-                .iter()
-                .filter_map(|declarator| declarator.init.as_ref().and_then(unwrap_call))
-                .collect(),
-            Statement::ExpressionStatement(expression) => {
-                unwrap_call(&expression.expression).into_iter().collect()
-            }
-            _ => continue,
+fn macro_call<'b, 'a>(expression: &'b Expression<'a>) -> Option<&'b CallExpression<'a>> {
+    match expression.without_parentheses() {
+        Expression::CallExpression(call) if matches!(&call.callee, Expression::Identifier(id) if id.name == "defineEmits") => {
+            Some(call)
+        }
+        _ => None,
+    }
+}
+
+fn call_emits(call: &CallExpression<'_>, resolver: &Resolver<'_, '_, '_>) -> Emits {
+    if let Some(argument) = call.arguments.first() {
+        return match argument {
+            Argument::SpreadElement(_) => Emits::Unknown,
+            argument => argument
+                .as_expression()
+                .and_then(|expression| resolver.object_or_array(expression, Block::Own, 0))
+                .unwrap_or(Emits::Unknown),
         };
-        for call in calls {
-            if !matches!(&call.callee, Expression::Identifier(id) if id.name == "defineModel") {
-                continue;
-            }
-            let model = match call.arguments.first() {
-                None | Some(Argument::ObjectExpression(_)) => "modelValue",
-                Some(Argument::StringLiteral(name)) => name.value.as_str(),
-                Some(_) => return None,
-            };
-            let mut event = CompactString::new("update:");
-            event.push_str(model);
-            names.insert(event);
-        }
     }
-    Some(names)
+    call.type_arguments
+        .as_ref()
+        .and_then(|arguments| arguments.params.first())
+        .map_or(Emits::Unknown, |declared| resolver.type_emits(declared))
 }
 
-/// Collect the declared events from a `defineEmits(...)` call: its type literal
-/// (property / method / call signatures) or its runtime array/object argument.
-/// `None` means the declaration cannot be fully enumerated (bare type reference,
-/// spread, or computed/non-literal key), so the caller suppresses all reports.
-fn collect_call_emits(call: &CallExpression<'_>) -> Option<FxHashSet<CompactString>> {
-    if let Some(type_arguments) = &call.type_arguments {
-        let mut names = FxHashSet::default();
-        for type_param in &type_arguments.params {
-            let TSType::TSTypeLiteral(literal) = type_param else {
-                // `defineEmits<Emits>()` — the named type is not visible here.
-                return None;
-            };
-            for member in &literal.members {
-                // Index signatures etc. cannot be enumerated; treat as unknown.
-                if !collect_event_from_signature(member, &mut names) {
-                    return None;
+/// Upstream's `getComponentEmitsFromDefine` for an object or array literal.
+pub(super) fn define_value(expression: &Expression<'_>) -> Option<Emits> {
+    let mut collect = Collect::default();
+    match expression.without_parentheses() {
+        Expression::ObjectExpression(object) => {
+            for property in &object.properties {
+                collect.push(match property {
+                    ObjectPropertyKind::ObjectProperty(property) => {
+                        property_name(&property.key, property.computed)
+                    }
+                    ObjectPropertyKind::SpreadProperty(_) => None,
+                });
+            }
+        }
+        Expression::ArrayExpression(array) => {
+            for element in &array.elements {
+                match element {
+                    ArrayExpressionElement::Elision(_) => {}
+                    ArrayExpressionElement::SpreadElement(_) => collect.push(None),
+                    element => collect.push(element.as_expression().and_then(literal_value)),
                 }
             }
         }
-        return Some(names);
+        _ => return None,
     }
-
-    match call.arguments.first() {
-        Some(Argument::ArrayExpression(array)) => collect_array_emits(array),
-        Some(Argument::ObjectExpression(object)) => collect_object_emits(object),
-        // Untyped `defineEmits()` permits arbitrary event names; unlike an
-        // explicit empty array, it does not declare a known empty surface.
-        None => None,
-        // Any other argument shape (identifier, spread, call, ...) is unknown.
-        _ => None,
-    }
+    Some(collect.finish())
 }
 
-/// Collect string-literal names from an array declaration (`['a', 'b']`).
-/// Returns `None` if a spread or non-string element makes the set unknown.
-fn collect_array_emits(array: &ArrayExpression<'_>) -> Option<FxHashSet<CompactString>> {
-    let mut names = FxHashSet::default();
-    for element in &array.elements {
-        match element {
-            ArrayExpressionElement::StringLiteral(literal) => {
-                names.insert(CompactString::new(literal.value.as_str()));
-            }
-            // A hole (`[, 'a']`) declares nothing for that slot; skip it.
-            ArrayExpressionElement::Elision(_) => {}
-            // Spread or any non-string element: the set is no longer fully known.
-            _ => return None,
-        }
-    }
-    Some(names)
-}
-
-/// Collect names from an object declaration (`{ a: null, b: validator }`).
-/// Returns `None` if a spread or computed key makes the set unknown.
-fn collect_object_emits(object: &ObjectExpression<'_>) -> Option<FxHashSet<CompactString>> {
-    let mut names = FxHashSet::default();
-    for property in &object.properties {
-        match property {
-            ObjectPropertyKind::ObjectProperty(property) => {
-                if property.computed {
-                    return None;
-                }
-                let name = property_key_name(&property.key)?;
-                names.insert(CompactString::new(name));
-            }
-            // `{ ...others }`: the set is no longer fully known.
-            ObjectPropertyKind::SpreadProperty(_) => return None,
-        }
-    }
-    Some(names)
-}
-
-/// Extract an event name from a type-literal member. Returns `false` when the
-/// member is a shape we cannot enumerate (an index signature, a non-literal
-/// key/event), so the caller treats the whole declaration as unknown.
-fn collect_event_from_signature(
-    member: &TSSignature<'_>,
-    names: &mut FxHashSet<CompactString>,
-) -> bool {
-    let name = match member {
-        // `change: [id: number]`
-        TSSignature::TSPropertySignature(property) => property_key_name(&property.key),
-        // `change(id: number): void`
-        TSSignature::TSMethodSignature(method) => property_key_name(&method.key),
-        // `(e: 'change', id: number): void`
-        TSSignature::TSCallSignatureDeclaration(signature) => call_signature_event(signature),
-        // Index / construct signatures, etc.: unknown surface.
-        _ => None,
-    };
-    match name {
-        Some(name) => {
-            names.insert(CompactString::new(name));
-            true
-        }
-        None => false,
-    }
-}
-
-/// The string-literal event name of a call-signature whose first parameter is a
-/// `'event'` literal type, e.g. `(e: 'change', id: number): void`.
-fn call_signature_event<'a>(signature: &'a TSCallSignatureDeclaration<'a>) -> Option<&'a str> {
-    let first = signature.params.items.first()?;
-    let annotation = first.type_annotation.as_ref()?;
-    let TSType::TSLiteralType(literal_type) = &annotation.type_annotation else {
-        return None;
-    };
-    match &literal_type.literal {
-        TSLiteral::StringLiteral(string) => Some(string.value.as_str()),
-        _ => None,
-    }
-}
-
-/// Whether the callee is the bare `defineEmits` compiler macro.
-fn is_define_emits(call: &CallExpression<'_>) -> bool {
-    matches!(
-        &call.callee,
-        Expression::Identifier(identifier) if identifier.name.as_str() == "defineEmits"
-    )
-}
-
-fn unwrap_call<'a, 'b>(expression: &'b Expression<'a>) -> Option<&'b CallExpression<'a>> {
-    match expression {
-        Expression::CallExpression(call) => Some(call),
-        Expression::ParenthesizedExpression(paren) => unwrap_call(&paren.expression),
-        Expression::TSAsExpression(ts) => unwrap_call(&ts.expression),
-        Expression::TSSatisfiesExpression(ts) => unwrap_call(&ts.expression),
-        Expression::TSNonNullExpression(ts) => unwrap_call(&ts.expression),
-        _ => None,
-    }
-}
-
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+/// Upstream's `getStaticPropertyName` for a property.
+fn property_name(key: &PropertyKey<'_>, computed: bool) -> Option<CompactString> {
     match key {
-        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
-        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
+        PropertyKey::StaticIdentifier(identifier) if !computed => {
+            Some(identifier.name.to_compact_string())
+        }
+        key => literal_value(key.as_expression()?),
+    }
+}
+
+/// Upstream's `getStringLiteralValue`, which also stringifies other literals.
+fn literal_value(expression: &Expression<'_>) -> Option<CompactString> {
+    match expression.without_parentheses() {
+        Expression::StringLiteral(literal) => Some(literal.value.to_compact_string()),
+        Expression::TemplateLiteral(literal) if literal.expressions.is_empty() => literal
+            .single_quasi()
+            .map(|quasi| quasi.to_compact_string()),
+        Expression::NumericLiteral(literal) => Some(literal.value.to_compact_string()),
+        Expression::BooleanLiteral(literal) => Some(literal.value.to_compact_string()),
+        Expression::BigIntLiteral(literal) => Some(literal.value.to_compact_string()),
+        Expression::RegExpLiteral(literal) => Some(literal.regex.to_compact_string()),
         _ => None,
     }
 }

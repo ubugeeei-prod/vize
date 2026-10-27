@@ -1,11 +1,15 @@
-/// At-rules whose bodies contain selectors that require the SFC scope.
-pub(super) fn should_recurse_at_rule(statement: &str) -> bool {
-    let Some(keyword) = statement.strip_prefix('@').and_then(|rest| {
+fn keyword(statement: &str) -> Option<&str> {
+    statement.strip_prefix('@').and_then(|rest| {
         rest.split(|ch: char| {
             ch.is_ascii() && !ch.is_ascii_alphanumeric() && !matches!(ch, '-' | '_' | '\\')
         })
         .next()
-    }) else {
+    })
+}
+
+/// At-rules whose bodies contain selectors that require the SFC scope.
+pub(super) fn should_recurse_at_rule(statement: &str) -> bool {
+    let Some(keyword) = keyword(statement) else {
         return false;
     };
     [
@@ -19,6 +23,11 @@ pub(super) fn should_recurse_at_rule(statement: &str) -> bool {
     ]
     .iter()
     .any(|known| keyword.eq_ignore_ascii_case(known))
+}
+
+/// `@scope` resolves its prelude and `&` against the enclosing style rule.
+pub(super) fn is_scope_at_rule(statement: &str) -> bool {
+    keyword(statement).is_some_and(|keyword| keyword.eq_ignore_ascii_case("scope"))
 }
 
 #[cfg(test)]

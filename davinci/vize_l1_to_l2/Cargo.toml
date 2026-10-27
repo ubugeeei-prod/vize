@@ -49,7 +49,7 @@ oxc_parser = { workspace = true }
 oxc_semantic = { workspace = true }
 oxc_transformer = { workspace = true, optional = true }
 oxc_span = { workspace = true }
-oxc_syntax = { workspace = true }
+oxc_syntax = { workspace = true, features = ["to_js_string"] }
 smallvec = { workspace = true }
 vize_l0 = { workspace = true }
 vize_l3 = { workspace = true }

@@ -21,7 +21,7 @@ use vize_l0::{Allocator, String};
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};
 use crate::spread_children::reject_spread_children;
-use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
+use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source_with_compat};
 
 /// Options controlling JSX/TSX -> Vapor compilation.
 #[derive(Debug, Clone, Default)]
@@ -75,7 +75,26 @@ pub fn compile_to_vapor(
     lang: JsxLang,
     options: VaporCompileOptions,
 ) -> VaporOutput {
-    let lowered = lower_source(allocator, allocator.as_oxc(), source, lang);
+    let lowered = lower_source_with_compat(
+        allocator,
+        allocator.as_oxc(),
+        source,
+        lang,
+        crate::compat::JsxCompatMode::Native,
+        // Keep the generic lower_source entrypoint's existing default mode;
+        // AllVapor selects this one optimization independently. Other lazy
+        // lowering facts must not gain new authority in a composed backend.
+        JsxOutputMode::Vdom,
+        crate::lower::BabelLoweringOptions {
+            literal_styles: if options.ssr {
+                crate::lower::LiteralStyleTarget::Disabled
+            } else {
+                crate::lower::LiteralStyleTarget::AllVapor
+            },
+            ..Default::default()
+        },
+    )
+    .0;
     let mut diagnostics = lowered.diagnostics;
 
     // Park the analysis on the allocator so the transform can borrow it.

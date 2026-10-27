@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import type { BrowserContext } from "playwright";
 import { verifyRenderedRulePackets } from "./rule-render-assertions.ts";
 import { capturePageRender } from "./capture-page-render.ts";
@@ -14,6 +15,13 @@ import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
 import { verifyTableCodeReadability } from "./table-code-render-assertions.ts";
 import type { MeasureRenderPhase, RenderJob } from "./navigation-render-concurrency.ts";
 import { usesInstalledCjkFont } from "./japanese-font-usage.ts";
+
+// Entry pages render one card per `features:` item in the page frontmatter.
+function frontmatterGoalCount(page: string): number {
+  const source = readFileSync(new URL(`../content/${page}`, import.meta.url), "utf8");
+  const features = /^features:\n((?: {2}.*\n)+)/mu.exec(source)?.[1] ?? "";
+  return features.split("\n").filter((line) => line.startsWith("  - title:")).length;
+}
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -188,7 +196,9 @@ export async function verifyNavigationRenderJob(
       assert.equal(await sidebar.isVisible(), false, "Entry page sidebar must be hidden");
       const cards = page.locator(".feature-card");
       if (["/", "/ja", "/ja/"].includes(route)) {
-        assert.equal(await cards.count(), 6, "English/Japanese entry pages expose six goals");
+        const goals = frontmatterGoalCount(route === "/" ? "index.md" : "ja/index.md");
+        assert.ok(goals > 0, `${route}: frontmatter lists goals`);
+        assert.equal(await cards.count(), goals, "English/Japanese entry pages expose every goal");
       }
       for (const card of await cards.all()) {
         assert.equal(await card.isVisible(), true);

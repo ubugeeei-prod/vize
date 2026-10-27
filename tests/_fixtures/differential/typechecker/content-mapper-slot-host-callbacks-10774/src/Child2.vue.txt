@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ ctx: { request: () => string | undefined } | null; label: string }>();
+defineSlots<{ form(): any; footer(props: { total: number }): any }>();
+</script>
+
+<template>
+  <div><slot name="form" /><slot name="footer" :total="1" /></div>
+</template>

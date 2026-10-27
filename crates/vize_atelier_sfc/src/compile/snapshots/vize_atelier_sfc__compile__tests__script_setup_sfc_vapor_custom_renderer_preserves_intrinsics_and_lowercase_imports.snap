@@ -29,7 +29,8 @@ const visible = true
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',
   render: __vaporRender,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+  __expose();
 
 
 const __returned__ = { visible, Primitive }

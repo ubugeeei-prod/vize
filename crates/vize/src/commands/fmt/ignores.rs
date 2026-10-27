@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use super::files::FmtPattern;
+use super::files::{FmtPattern, normalize_fmt_pattern};
 use crate::config;
 
 pub(crate) struct FmtIgnoreSet {
@@ -27,6 +27,15 @@ impl FmtIgnoreSet {
             || self.patterns.iter().any(|pattern| pattern.matches(path)),
             |project| project.is_ignored(path),
         )
+    }
+
+    /// Existing files named on the command line that these patterns exclude.
+    pub(super) fn excluded_arguments(&self, arguments: &[impl AsRef<str>]) -> Vec<PathBuf> {
+        arguments
+            .iter()
+            .map(|argument| PathBuf::from(normalize_fmt_pattern(argument.as_ref()).as_str()))
+            .filter(|path| path.is_file() && self.is_ignored(path))
+            .collect()
     }
 }
 

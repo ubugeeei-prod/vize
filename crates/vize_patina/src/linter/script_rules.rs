@@ -35,12 +35,17 @@ use prefilter::{
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry, RULE_NO_DUPE_KEYS,
-    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_GET_CURRENT_INSTANCE,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_NEXT_TICK,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_RETURN_IN_EMITS_VALIDATOR,
 };
 
 #[cfg(test)]
 use registry::OPT_IN_SCRIPT_RULE_NAMES;
+
+/// Vapor-only script rules run on Vapor components, or anywhere when named
+/// explicitly. Presets alone never apply them to vdom code.
+pub(crate) const VAPOR_ONLY_SCRIPT_RULES: &[&str] =
+    &[RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_NEXT_TICK];
 
 pub fn builtin_script_rules() -> Vec<BuiltinScriptRuleMeta> {
     BUILTIN_SCRIPT_RULES
@@ -106,9 +111,9 @@ fn active_builtin_script_rule_entries(
         .copied()
         .filter(|rule_name| linter.is_rule_enabled(rule_name))
         .filter(move |rule_name| {
-            *rule_name != RULE_NO_GET_CURRENT_INSTANCE
-                || vapor_component
-                || linter.explicit_no_get_current_instance
+            vapor_component
+                || !VAPOR_ONLY_SCRIPT_RULES.contains(rule_name)
+                || linter.explicit_vapor_rules.contains(rule_name)
         })
         .filter_map(builtin_script_rule_entry)
 }
