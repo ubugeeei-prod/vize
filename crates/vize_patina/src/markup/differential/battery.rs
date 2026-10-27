@@ -289,6 +289,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // both are counted in the final `+ 2`.
     // Dynamic-role regression matrices (#10926) add two nonliteral calls;
     // all eleven inputs execute in focused tests while literal coverage stays exact.
+    // The pinned 37-case / 148-whole-packet listbox controller (#10925) adds
+    // one dynamic legacy.lint_template(&source) call and one scanner skip.
+    // All 913 existing literal fixtures remain; native/legacy host tests and
+    // 298 source CLI processes independently retain the complete new packets.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -297,8 +301,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 2
         + 2
-        + 2,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2,
+        + 2
+        + 1,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2 + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42,
     restructured: 0,

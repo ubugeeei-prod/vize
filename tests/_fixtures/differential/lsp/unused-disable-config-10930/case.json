@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "id": "lsp/regression/unused-disable-config-10930",
+  "provenance": {
+    "fixCommit": "3cc3b3808cf44a7aede215c12277803c57e0ea76",
+    "witnessPath": "tests/tooling/lint-unused-disable-config.test.ts",
+    "witnessTest": "editor publishes UTF16 unused pragma diagnostics after edits and configuration reload",
+    "inputOrigin": "minimal unused pragma with an astral prefix and enabled Vite linter setting",
+    "contractOrigin": "authored UTF16 pragma range and existing native unused-disable error"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "914d075b37d559a8e50afda93cad98039d3375de12c4573a0c9913918fc69b86"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "144a10e73b1b2079667ff88bb92ca29010661ee15ea5c9b74fdba2134192f624"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": false,
+    "lint": true,
+    "typecheck": false,
+    "ecosystem": false
+  },
+  "initialDiagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 8
+        },
+        "end": {
+          "line": 1,
+          "character": 46
+        }
+      },
+      "severity": 1,
+      "code": "vue/comment-directive",
+      "codeDescription": {
+        "href": "https://eslint.vuejs.org/rules/comment-directive.html"
+      },
+      "source": "vize/lint",
+      "message": "Unused eslint-disable directive (no problems were reported from 'vue/no-v-html')."
+    }
+  ],
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "scope": "The initial diagnostic packet is the regression contract; folding provides a completed request barrier. Dedicated source test consumes these bytes and tests didChange/configuration reload."
+}

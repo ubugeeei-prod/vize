@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { dirname, join, matchesGlob, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { retiredToolingDrift, retiredToolingLedgerTest } from "../../retired-tooling-languages.ts";
 import { cacheInputs } from "../../../config/vite-plus/task-inputs.ts";
 import {
   mergeOnlyToolingTests,
@@ -255,6 +256,9 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     }
     return referenceCache.get(member);
   };
+  // A retired-language file arriving or leaving anywhere, even outside every
+  // tooling input, can break the ledger ratchet (#8840).
+  const ledgerDrift = retiredToolingDrift(code, cwd);
   const typeProjects = new Map(
     toolingTypecheckProjects
       .filter(({ test }) => !unknown && !global && candidates.includes(test))
@@ -264,6 +268,7 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     if (tier === "merge") return true;
     if (mergeOnly.has(file)) return false;
     if (unknown || global || paths.includes(file)) return true;
+    if (ledgerDrift && file === retiredToolingLedgerTest) return true;
     if (typeProjects.has(file) && paths.some(typeProjects.get(file))) return true;
     const imports = closures.get(file);
     if (paths.some((path) => imports.files.includes(path))) return true;

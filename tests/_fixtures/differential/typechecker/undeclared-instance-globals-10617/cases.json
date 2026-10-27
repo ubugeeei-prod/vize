@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10617,
+  "regressionCommit": "42ca747027a86da7f94b473cff737cb330134d8c",
+  "sourceRevision": "42ca747027a86da7f94b473cff737cb330134d8c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "undeclared-dollar-globals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/augment.d.ts",
+          "source": "src/augment.d.ts.txt"
+        },
+        {
+          "file": "src/Globals.vue",
+          "source": "src/Globals.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 57,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 7,
+          "column": 14,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 7,
+          "column": 32,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 43,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ known: number; }'."
+        }
+      ]
+    }
+  ]
+}

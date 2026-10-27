@@ -81,6 +81,36 @@ void test("LSP manifest binds original complete contracts and every original req
   }
 });
 
+void test("configured initial diagnostics reject missing codes, messages and UTF16 ranges", () => {
+  const fixture = fixtureById("lsp/regression/unused-disable-config-10930");
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [
+    { requestId: 2, state: "equal" },
+  ]);
+  for (const mutation of ["missing", "code", "message", "range"]) {
+    const observation = referenceObservation(fixture);
+    rewriteFrames(observation, "server", (messages) => {
+      const publication = messages.find(
+        (message) => message.method === "textDocument/publishDiagnostics",
+      )!;
+      const params = publication.params as {
+        diagnostics: Array<{
+          code: string;
+          message: string;
+          range: { start: { character: number } };
+        }>;
+      };
+      if (mutation === "missing") params.diagnostics = [];
+      else if (mutation === "code") params.diagnostics[0]!.code = "vue/no-v-html";
+      else if (mutation === "message") params.diagnostics[0]!.message = "different";
+      else params.diagnostics[0]!.range.start.character += 1;
+    });
+    assert.throws(
+      () => inspectLspObservation(fixture, observation),
+      /complete configured initial diagnostic packet/,
+    );
+  }
+});
+
 void test("LSP inventory rejects dropped fixtures and requests", () => {
   assert.throws(
     () => lspFixtureInventory({ ...loaded, cases: loaded.cases.slice(1) }),
