@@ -93,6 +93,8 @@ export const TYPECHECKER_TESTS = {
   "planned-generic-syntax-route-10598":
     "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
+  "public-instance-ts-directives-10984":
+    "public_instance_ts_directives_preserve_owned_native_diagnostics",
   "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
   "quoted-generic-parameters-10540":
     "quoted_generic_parameters_preserve_complete_batch_diagnostics",
@@ -191,6 +193,7 @@ export const sourceRevisions = {
   "package-target-deletion-refresh": "13fa41356d075047a229f580014b637d3bbeb57f",
   "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+  "public-instance-ts-directives-10984": "c001dc27973a316351d1d45739ad84a7db544f11",
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "quoted-generic-parameters-10540": "711b56b2499b9136d8965a59c65713a2b78540f4",
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",

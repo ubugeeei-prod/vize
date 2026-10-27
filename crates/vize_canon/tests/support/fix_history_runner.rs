@@ -121,7 +121,8 @@ pub(crate) fn check_pack(
             | "editor-alias-import-extension-10753"
             | "options-api-reserved-component-reference"
             | "setup-custom-properties"
-            | "empty-v-slot-expression" => regression,
+            | "empty-v-slot-expression"
+            | "public-instance-ts-directives-10984" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -301,6 +302,9 @@ pub(crate) fn check_pack(
                 Default::default()
             },
             tsconfig_path: match name {
+                "public-instance-ts-directives-10984" => {
+                    Some(project_root.join("test-workspace/tsc/#3488/tsconfig.json"))
+                }
                 "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))

@@ -7046,6 +7046,162 @@
       ]
     },
     {
+      "id": "typechecker/public-instance-ts-directives-10984/original-expectation",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "public-instance-ts-directives-10984",
+      "case": "original-expectation",
+      "test": "public_instance_ts_directives_preserve_owned_native_diagnostics",
+      "regressionCommit": "c001dc27973a316351d1d45739ad84a7db544f11",
+      "sourceRevision": "c001dc27973a316351d1d45739ad84a7db544f11",
+      "packReference": {
+        "path": "public-instance-ts-directives-10984/cases.json",
+        "sha256": "f870aa1054fb240dc8c6364af3ec009e85905ee4b0bfacb03e1c29bf9fff2f57"
+      },
+      "inputs": [
+        {
+          "file": "test-workspace/tsconfig.base.json",
+          "path": "public-instance-ts-directives-10984/tsconfig.base.json.txt",
+          "sha256": "03699de82ec7ef479fa4258ea729a800fd8c7e02af7525d659cc5dd4d04f1c12"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/tsconfig.json",
+          "path": "public-instance-ts-directives-10984/tsconfig.json.txt",
+          "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "path": "public-instance-ts-directives-10984/original.vue.txt",
+          "sha256": "3459508328f318ba27310e2f219d184fd160b26c41d847dcd47ba5e3f984f3aa"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/public-instance-ts-directives-10984/no-directive-missing-member",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "public-instance-ts-directives-10984",
+      "case": "no-directive-missing-member",
+      "test": "public_instance_ts_directives_preserve_owned_native_diagnostics",
+      "regressionCommit": "c001dc27973a316351d1d45739ad84a7db544f11",
+      "sourceRevision": "c001dc27973a316351d1d45739ad84a7db544f11",
+      "packReference": {
+        "path": "public-instance-ts-directives-10984/cases.json",
+        "sha256": "f870aa1054fb240dc8c6364af3ec009e85905ee4b0bfacb03e1c29bf9fff2f57"
+      },
+      "inputs": [
+        {
+          "file": "test-workspace/tsconfig.base.json",
+          "path": "public-instance-ts-directives-10984/tsconfig.base.json.txt",
+          "sha256": "03699de82ec7ef479fa4258ea729a800fd8c7e02af7525d659cc5dd4d04f1c12"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/tsconfig.json",
+          "path": "public-instance-ts-directives-10984/tsconfig.json.txt",
+          "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "path": "public-instance-ts-directives-10984/no-directive.vue.txt",
+          "sha256": "56fdfc165132f3be39d9e34fc68cd013f2a6aa13fbd73097d2903c7ea7d0d725"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/public-instance-ts-directives-10984/valid-local-unused-expectation",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "public-instance-ts-directives-10984",
+      "case": "valid-local-unused-expectation",
+      "test": "public_instance_ts_directives_preserve_owned_native_diagnostics",
+      "regressionCommit": "c001dc27973a316351d1d45739ad84a7db544f11",
+      "sourceRevision": "c001dc27973a316351d1d45739ad84a7db544f11",
+      "packReference": {
+        "path": "public-instance-ts-directives-10984/cases.json",
+        "sha256": "f870aa1054fb240dc8c6364af3ec009e85905ee4b0bfacb03e1c29bf9fff2f57"
+      },
+      "inputs": [
+        {
+          "file": "test-workspace/tsconfig.base.json",
+          "path": "public-instance-ts-directives-10984/tsconfig.base.json.txt",
+          "sha256": "03699de82ec7ef479fa4258ea729a800fd8c7e02af7525d659cc5dd4d04f1c12"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/tsconfig.json",
+          "path": "public-instance-ts-directives-10984/tsconfig.json.txt",
+          "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+        },
+        {
+          "file": "test-workspace/tsc/#3488/main.vue",
+          "path": "public-instance-ts-directives-10984/valid-local.vue.txt",
+          "sha256": "0c2e46eaa4765faf0aab456edce2764de65aae2bc2f48d0dbf4879937a67232c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/pug-refusal-10430/refused-jade-with-valid-pug-sibling",
       "state": "active",
       "targets": ["batch"],

@@ -1173,3 +1173,18 @@ fn custom_properties_resolve_on_the_template_instance() {
         ],
     );
 }
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
+        ],
+    );
+}
