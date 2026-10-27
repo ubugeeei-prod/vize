@@ -202,6 +202,54 @@ async function checkInheritedConfiguration(workspace) {
     });
     assert.deepEqual(packet.fresh.body, expected.strict);
     assert.deepEqual(packet.controlAfter.body, expected.controlAfter);
+    const packageRoot = path.join(root, "node_modules/vize-config-priority");
+    const preferred = path.join(packageRoot, "preferred.json");
+    fs.mkdirSync(packageRoot, { recursive: true });
+    packet.packageInputs = {
+      base: '{"extends":"vize-config-priority"}',
+      packageJson: '{"tsconfig":"preferred"}',
+      fallback: JSON.stringify(inputs.before),
+      preferred: JSON.stringify(inputs.after),
+    };
+    fs.writeFileSync(path.join(packageRoot, "package.json"), packet.packageInputs.packageJson);
+    fs.writeFileSync(path.join(packageRoot, "tsconfig.json"), packet.packageInputs.fallback);
+    fs.writeFileSync(base, packet.packageInputs.base);
+    const pair = (key, controlBody, vueBody) =>
+      eventually(async () => {
+        const response = { control: await diagnostics(control), vue: await diagnostics(vue) };
+        packet[key] = response;
+        save();
+        assert.deepEqual(response.control.body, controlBody);
+        assert.deepEqual(response.vue.body, vueBody);
+        return response;
+      });
+    await pair("packageFallback", expected.controlBefore, expected.before);
+    // Only the previously absent preferred file is created. The root config,
+    // package selector, fallback and both authored files remain unchanged.
+    const packageFixed = [
+      ...fixed,
+      ...[
+        base,
+        path.join(packageRoot, "package.json"),
+        path.join(packageRoot, "tsconfig.json"),
+      ].map((file) => ({
+        file,
+        sha256: crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"),
+      })),
+    ];
+    packet.packageFixed = packageFixed;
+    fs.writeFileSync(preferred, packet.packageInputs.preferred);
+    await pair("packageWarm", expected.controlAfter, expected.strict);
+    for (const input of packageFixed)
+      assert.equal(
+        crypto.createHash("sha256").update(fs.readFileSync(input.file)).digest("hex"),
+        input.sha256,
+        "only the preferred package configuration is created",
+      );
+    await vscode.commands.executeCommand("typescript.restartTsServer");
+    await pair("packageFresh", expected.controlAfter, expected.strict);
+    assert.deepEqual(packet.packageWarm.control.body, packet.packageFresh.control.body);
+    assert.deepEqual(packet.packageWarm.vue.body, packet.packageFresh.vue.body);
     return packet;
   } finally {
     save();

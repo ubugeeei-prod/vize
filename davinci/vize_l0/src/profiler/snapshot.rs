@@ -38,6 +38,10 @@ impl Profiler {
 
     /// Clear all metrics.
     pub fn clear(&self) {
+        #[cfg(feature = "micro-profiling")]
+        if core::ptr::eq(self, super::global_profiler()) {
+            super::micro::clear();
+        }
         let _allocation_tracking = pause_allocation_tracking();
         for shard in &self.metrics {
             shard
