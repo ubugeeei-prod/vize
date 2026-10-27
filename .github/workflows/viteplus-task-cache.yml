@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "npm/builder/vite/src/vite-plus.ts"
-      - "npm/builder/vite/src/vite-plus/**"
-      - "npm/builder/vite/src/internal/vite-plus-task.ts"
+      - "npm/builder/vite/src/**"
+      - "npm/cli/src/config/**"
+      - "crates/vize_carton/src/config/loader/**"
       - "npm/builder/vite/scripts/check-task-cache.ts"
       - ".github/workflows/viteplus-task-cache.yml"
 
