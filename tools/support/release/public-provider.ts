@@ -27,15 +27,10 @@ export function validatePublicProvider(
   return { version, source, provider };
 }
 
-export async function verifyPublicProvider(
-  version: string,
-  source: string,
-  image: NativeImage,
-) {
+export async function verifyPublicProvider(version: string, source: string, image: NativeImage) {
   assert.match(version, /^[0-9]+\.[0-9]+\.[0-9]+$/);
   assert.match(source, /^[a-f0-9]{40}$/);
-  const target =
-    (process.platform === "win32" ? "win32" : process.platform) + "-" + process.arch;
+  const target = (process.platform === "win32" ? "win32" : process.platform) + "-" + process.arch;
   const url =
     "https://github.com/ubugeeei-prod/vize/releases/download/v" +
     version +

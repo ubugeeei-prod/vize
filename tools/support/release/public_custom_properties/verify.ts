@@ -28,11 +28,8 @@ assert.equal(identity.version, version);
 assert.equal(identity.requiredSource, "7c2f6f46172404a8f95335a79ee2b95094f6b7ee");
 assert.equal(identity.containsRequiredSource, true);
 assert.match(asString(identity.sourceSha), /^[0-9a-f]{40}$/);
-const sha256 = (bytes: string | Buffer): string =>
-  createHash("sha256").update(bytes).digest("hex");
-const manifest = readJsonRecord(
-  new URL("./immutable-input-manifest.json.txt", import.meta.url),
-);
+const sha256 = (bytes: string | Buffer): string => createHash("sha256").update(bytes).digest("hex");
+const manifest = readJsonRecord(new URL("./immutable-input-manifest.json.txt", import.meta.url));
 for (const [name, entry] of Object.entries(manifest)) {
   assert.equal(name.includes(".."), false);
   const record = asRecord(entry, name);
@@ -266,10 +263,7 @@ function check(label: string, directive: readonly string[], errorCount: number):
   );
   const packet = asRecord(parseJson(stdout));
   const files = asArray(packet.files).map((value) => asRecord(value));
-  assert.deepEqual(
-    files.map((file) => asString(file.file)).sort(),
-    Object.keys(expected).sort(),
-  );
+  assert.deepEqual(files.map((file) => asString(file.file)).sort(), Object.keys(expected).sort());
   for (const file of files) {
     const name = asString(file.file);
     const raw = asStringArray(file.diagnostics);

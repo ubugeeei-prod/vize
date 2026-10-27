@@ -106,10 +106,7 @@ test("selected public-consumer jobs reject missing, malformed, or mismatched can
       [candidate, "0".repeat(40), false],
       [candidate, candidate, true],
     ] as const) {
-      assert.equal(
-        enabled(job, context("workflow_dispatch", "release-contracts", value)),
-        true,
-      );
+      assert.equal(enabled(job, context("workflow_dispatch", "release-contracts", value)), true);
       const directory = mkdtempSync(path.join(tmpdir(), "vize-public-candidate-"));
       try {
         const result: SpawnSyncReturns<string> = spawnSync(
@@ -148,9 +145,7 @@ test("selected public-consumer jobs reject missing, malformed, or mismatched can
 });
 
 test("ordinary PR and manual release-unit checks remain enabled", () => {
-  const wrapper = workflows.find(
-    (entry) => entry.filename === "release-contracts.yml",
-  )?.workflow;
+  const wrapper = workflows.find((entry) => entry.filename === "release-contracts.yml")?.workflow;
   assert.ok(wrapper);
   const job = wrapper.jobs.contracts;
   assert.ok(job);

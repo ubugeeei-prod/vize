@@ -163,12 +163,12 @@ function execute(code: string, preamble: string | null) {
     const render =
       preamble === null
         ? compileFunction(code, ["Vue"])(runtime)
-        : compileFunction(`${preamble}\n${code}\nreturn render;`, [
-            "Vue",
-            "ok",
-            "pingA",
-            "pingB",
-          ])(runtime, ctx.ok, ctx.pingA, ctx.pingB);
+        : compileFunction(`${preamble}\n${code}\nreturn render;`, ["Vue", "ok", "pingA", "pingB"])(
+            runtime,
+            ctx.ok,
+            ctx.pingA,
+            ctx.pingB,
+          );
     return { state, vnode: view(render(ctx, [], {}, {}, {}, {}), ctx) };
   });
 }
@@ -238,11 +238,7 @@ const nativeImages = Object.keys(require.cache)
     const locked = lock.packages[lockKeys[0]];
     for (const key of lockKeys) {
       for (const field of ["version", "integrity", "resolved"]) {
-        assert.equal(
-          lock.packages[key][field],
-          locked[field],
-          "all historical lock aliases agree",
-        );
+        assert.equal(lock.packages[key][field], locked[field], "all historical lock aliases agree");
       }
     }
     assert.equal(locked.version, expectedVersion);
@@ -290,9 +286,7 @@ const receipt = {
 };
 writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + "\n", { flag: "wx" });
 if (phase === "before") {
-  const historicalBytes = readFileSync(
-    path.join(directory, "historical-public-0.599.0.json.txt"),
-  );
+  const historicalBytes = readFileSync(path.join(directory, "historical-public-0.599.0.json.txt"));
   assert.equal(
     sha256(historicalBytes),
     "aa05a1b783459b300d83e01e493b3f1fe5e6020832171e856ddf2fd967f1ce47",
@@ -320,11 +314,7 @@ if (phase === "before") {
     "exact historical failures and all neighboring controls remain frozen",
   );
 } else
-  assert.deepEqual(
-    failed,
-    [],
-    "the public release must satisfy every pinned independent packet",
-  );
+  assert.deepEqual(failed, [], "the public release must satisfy every pinned independent packet");
 console.log(
   JSON.stringify({
     phase,
