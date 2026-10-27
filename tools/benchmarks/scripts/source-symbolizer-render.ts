@@ -43,7 +43,7 @@ export function boundedCommand(
     ...process.env,
     ...execution?.env,
     LC_ALL: "C",
-    PERF_CONFIG: "/dev/null",
+    PERF_CONFIG: execution?.env?.PERF_CONFIG ?? "/dev/null",
     DEBUGINFOD_URLS: "",
     LLVM_ADDR2LINE_OPTS: "",
     LLVM_SYMBOLIZER_OPTS: "",
@@ -81,7 +81,47 @@ export function boundedCommand(
   writeFileSync(join(out, "invocation.json"), JSON.stringify(receipt, null, 2) + "\n");
   return { ...receipt, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
 }
-export function probeDecoders(binary: string, out: string, candidates: string[]) {
+export function numericSentinelScript(decoder: string) {
+  const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
+  return "#!/bin/sh\nset -e\n/usr/bin/sed -u 's/^,$/0/' | " + quote(decoder) + ' "$@"\n';
+}
+export function numericSentinelAdapter(out: string, decoder: string) {
+  assert.ok(existsSync(decoder));
+  mkdirSync(out, { recursive: true });
+  const path = join(out, "llvm-numeric-sentinel");
+  assert.ok(!existsSync(path));
+  // Only perf's otherwise-invalid comma request changes. LLVM then prints the
+  // numeric-zero GNU sentinel; function and source output pass through unchanged.
+  const script = numericSentinelScript(decoder);
+  writeFileSync(path, script, { mode: 0o755 });
+  writeFileSync(
+    join(out, "adapter.json"),
+    JSON.stringify(
+      {
+        decoder,
+        decoderSha256: digest(decoder),
+        wrapper: path,
+        wrapperSha256: digest(path),
+        inputChange: "a line containing exactly comma becomes numeric zero",
+        sourceOutputChange: "none",
+        script,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  return path;
+}
+export function probeDecoders(
+  binary: string,
+  out: string,
+  candidates: string[],
+  witness: { symbol: string; source: string; timeoutMs?: number } = {
+    symbol: "instruction_work",
+    source: "pmu_calibration.rs",
+  },
+) {
+  assert.match(witness.symbol, /^[A-Za-z_]+$/u);
   const dwarf = boundedCommand(
     join(out, "sections"),
     "readelf",
@@ -90,15 +130,24 @@ export function probeDecoders(binary: string, out: string, candidates: string[])
   );
   assert.equal(dwarf.status, 0);
   assert.ok(dwarf.stdout.includes(".debug_line"), "actual carrier lacks line tables");
+  const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
   const nm = boundedCommand(
     join(out, "symbols"),
-    "nm",
-    ["--defined-only", "--numeric-sort", binary],
+    "/bin/bash",
+    [
+      "-o",
+      "pipefail",
+      "-c",
+      "nm --defined-only --numeric-sort " +
+        quote(binary) +
+        " | awk " +
+        quote("/ [tT] .*" + witness.symbol + "/ { print; found=1 } END { if (!found) exit 1 }"),
+    ],
     10_000,
   );
   assert.equal(nm.status, 0);
-  const address = /^\s*([0-9a-f]+)\s+[tT]\s+\S*instruction_work\S*$/mu.exec(nm.stdout)?.[1];
-  assert.ok(address, "known original Rust function missing");
+  const address = /^\s*([0-9a-f]+)\s+[tT]\s+\S+$/mu.exec(nm.stdout)?.[1];
+  assert.ok(address, "known original Rust function missing: " + witness.symbol);
   const addresses = [1n, 16n, 32n].map((offset) => (BigInt("0x" + address) + offset).toString(16));
   return candidates.map((decoder, ordinal) => {
     if (!existsSync(decoder)) return { decoder, qualified: false, reason: "not installed" };
@@ -108,7 +157,7 @@ export function probeDecoders(binary: string, out: string, candidates: string[])
       join(root, "sentinel"),
       decoder,
       ["-e", binary, "-a", "-i", "-f"],
-      3000,
+      witness.timeoutMs ?? 3000,
       ",\n",
     );
     const known = boundedCommand(
@@ -126,7 +175,8 @@ export function probeDecoders(binary: string, out: string, candidates: string[])
       !sentinel.error &&
       !known.error &&
       style !== null &&
-      /pmu_calibration\.rs:[1-9]\d*/u.test(known.stdout);
+      known.stdout.includes(witness.source) &&
+      /\.rs:[1-9]\d*/u.test(known.stdout);
     return {
       decoder,
       qualified,
@@ -134,6 +184,10 @@ export function probeDecoders(binary: string, out: string, candidates: string[])
       style,
       version: version.stdout.trim(),
       knownAddresses: addresses,
+      sentinelWallMs: sentinel.wallMs,
+      knownQueryWallMs: known.wallMs,
+      firstDataLatencyMs: null,
+      ioScope: "completed request/EOF wall bounds; first-byte time is not sampled",
     };
   });
 }
@@ -161,6 +215,8 @@ export function renderSourceCpu(options: {
     options.totalSamples,
     "exact raw sample census must match the capture",
   );
+  const config = join(options.out, "perfconfig");
+  writeFileSync(config, "[core]\n\taddr2line-timeout = 10000\n");
   const before = digest(options.binary),
     dataSha256 = digest(options.data);
   const reports = Object.fromEntries(
@@ -196,10 +252,12 @@ export function renderSourceCpu(options: {
           options.data,
         ],
         options.reportTimeoutMs ?? 120_000,
+        undefined,
+        { env: { PERF_CONFIG: config } },
       );
       const parsed = parseFlatSourceReport(command.stdout);
       const protocolErrors =
-        /configuration failed|could not read first record|failed to read.*(?:DWARF|debug)|addr2line.*(?:failed|error)/iu.test(
+        /configuration failed|could not read (?:first|sentinel) record|unexpected record instead of sentinel|failed to read.*(?:DWARF|debug)|addr2line.*(?:failed|error)/iu.test(
           command.stderr,
         );
       return [
@@ -250,6 +308,8 @@ export function renderSourceCpu(options: {
     inclusiveScope:
       "per-thread call-chain ancestors; child-process CPU is not transferred into a parent function",
     displayThresholdPercent: 0,
+    addr2lineReadTimeoutMs: 10000,
+    reportTimeoutMs: options.reportTimeoutMs ?? 120_000,
     postProcessingOutsideMeasuredWindow: true,
   };
   writeFileSync(join(options.out, "source-cpu.json"), JSON.stringify(result, null, 2) + "\n");

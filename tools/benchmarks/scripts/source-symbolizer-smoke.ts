@@ -9,6 +9,7 @@ import { captureSourceOperationPerf } from "./source-operation-perf.ts";
 import {
   boundedCommand,
   digest,
+  numericSentinelAdapter,
   probeDecoders,
   renderSourceCpu,
 } from "./source-symbolizer-render.ts";
@@ -24,7 +25,14 @@ export function runCarrierSmoke(options: { perf: string; out: string; decoders: 
     out: join(options.out, "hardware-admission"),
     rounds: 1,
   });
-  const probes = probeDecoders(binary, join(options.out, "protocol-probes"), options.decoders);
+  const llvm = options.decoders.find(
+    (decoder) => decoder.includes("llvm-addr2line") && existsSync(decoder),
+  );
+  const adapter = llvm ? numericSentinelAdapter(join(options.out, "adapter"), llvm) : null;
+  const probes = probeDecoders(binary, join(options.out, "protocol-probes"), [
+    ...(adapter ? [adapter] : []),
+    ...options.decoders,
+  ]);
   writeFileSync(join(options.out, "probes.json"), JSON.stringify(probes, null, 2) + "\n");
   const selected = probes.find((probe) => probe.qualified)?.decoder;
   assert.ok(selected, "no decoder passed the exact sentinel plus original Rust source witness");
@@ -155,6 +163,15 @@ export function replayNormal(options: {
   );
   assert.equal(dwarf.status, 0);
   assert.ok(dwarf.stdout.includes(".debug_line"), "actual normal binary has no line tables");
+  const normalProbes = probeDecoders(binary, join(options.out, "normal-query"), [options.decoder], {
+    symbol: "generate_vue_virtual_ts",
+    source: ".rs:",
+  });
+  writeFileSync(
+    join(options.out, "normal-probes.json"),
+    JSON.stringify(normalProbes, null, 2) + "\n",
+  );
+  assert.ok(normalProbes[0]?.qualified, "normal first source query failed before full replay");
   const decoded = renderSourceCpu({
     binary,
     data: join(options.root, "record-head/direct-process/perf.data"),
@@ -162,6 +179,7 @@ export function replayNormal(options: {
     perf: options.perf,
     out: join(options.out, "decoded"),
     totalSamples: original.sampleCount,
+    reportTimeoutMs: 30_000,
   });
   const result = {
     schemaVersion: 1,
