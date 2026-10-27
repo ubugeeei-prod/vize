@@ -34,6 +34,7 @@ export function probeHiddenMembership(options: {
     "void __vizeHiddenProbe.toUpperCase();\n</script>",
   );
   const records: unknown[] = [];
+  const failures: { id: string; error: string }[] = [];
   try {
     fs.writeFileSync(main, source);
     for (const [index, name] of HIDDEN_NUXT_DECLARATIONS.entries()) {
@@ -100,14 +101,22 @@ export function probeHiddenMembership(options: {
             status: actual.status,
           });
           save(artifacts, "hidden-membership-mutations.json", records);
-          assert.equal(
-            stock.map((item) => item.stdout).join(""),
-            code ? `${relative}(${line},${column}): error TS${code}: ${message}\n` : "",
-          );
-          assert.ok(stock.every((item) => item.stderr === ""));
-          assert.equal(stock.filter((item) => item.status !== 0).length, code ? 1 : 0);
-          assert.equal(actual.status, code ? 1 : 0);
-          assert.deepEqual(report, expected);
+          try {
+            assert.equal(
+              stock.map((item) => item.stdout).join(""),
+              code ? `${relative}(${line},${column}): error TS${code}: ${message}\n` : "",
+            );
+            assert.ok(stock.every((item) => item.stderr === ""));
+            assert.equal(stock.filter((item) => item.status !== 0).length, code ? 1 : 0);
+            assert.equal(actual.status, code ? 1 : 0);
+            assert.deepEqual(report, expected);
+          } catch (error) {
+            failures.push({
+              id,
+              error: error instanceof Error ? (error.stack ?? error.message) : String(error),
+            });
+            save(artifacts, "hidden-membership-mismatches.json", failures);
+          }
         }
       } finally {
         fs.writeFileSync(file, bytes);
@@ -116,4 +125,5 @@ export function probeHiddenMembership(options: {
   } finally {
     fs.writeFileSync(main, originalMain);
   }
+  assert.deepEqual(failures, [], "all hidden declaration mutations must preserve typed visibility");
 }
