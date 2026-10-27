@@ -21,6 +21,11 @@
 
 extern crate alloc;
 
+#[cfg(all(test, feature = "profiling"))]
+#[global_allocator]
+static PROBE_MICRO_ALLOCATOR: vize_l0::profiler::ProfilingAllocator<mimalloc::MiMalloc> =
+    vize_l0::profiler::ProfilingAllocator::from_allocator(mimalloc::MiMalloc);
+
 pub mod render;
 
 mod commands;

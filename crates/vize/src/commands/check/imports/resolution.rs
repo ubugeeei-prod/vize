@@ -36,6 +36,7 @@ pub(crate) fn resolve_import_base(
     canonical_paths: &mut CanonicalPathCache,
     options: ImportFileOptions,
 ) -> Option<PathBuf> {
+    vize_l0::micro_count!("cli.imports.probe.untracked.calls", 1);
     probe_import_base(base, canonical_paths, options, None)
 }
 
@@ -44,7 +45,16 @@ pub(crate) fn resolve_import_base_with_inputs(
     canonical_paths: &mut CanonicalPathCache,
     options: ImportFileOptions,
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    let mut inputs = vec![base.to_path_buf()];
+    vize_l0::micro_count!("cli.imports.probe.history.calls", 1);
+    vize_l0::micro_count!("cli.imports.probe.history.path_entries", 1);
+    vize_l0::micro_count!(
+        "cli.imports.probe.history.path_encoded_bytes",
+        base.as_os_str().as_encoded_bytes().len()
+    );
+    let mut inputs = vize_l0::micro_span!(
+        "cli.imports.probe.history.initial_allocation",
+        vec![base.to_path_buf()]
+    );
     let resolved = probe_import_base(base, canonical_paths, options, Some(&mut inputs));
     (resolved, inputs)
 }
@@ -55,7 +65,8 @@ fn probe_import_base(
     options: ImportFileOptions,
     mut inputs: Option<&mut Vec<PathBuf>>,
 ) -> Option<PathBuf> {
-    if ImportFileOptions::path_has_typescript_source_extension(base) && base.is_file() {
+    vize_l0::micro_count!("cli.imports.probe.total.calls", 1);
+    if ImportFileOptions::path_has_typescript_source_extension(base) && probe_is_file(base) {
         return Some(canonical_paths.canonicalize(base));
     }
     if let Some(rewritten) = rewrite_js_to_ts(
@@ -66,20 +77,20 @@ fn probe_import_base(
     ) {
         return Some(rewritten);
     }
-    if options.javascript_extension_is_enabled(base) && base.is_file() {
+    if options.javascript_extension_is_enabled(base) && probe_is_file(base) {
         return Some(canonical_paths.canonicalize(base));
     }
     for ext in options.resolve_extensions() {
         let candidate = append_extension(base, ext);
         record_consulted(inputs.as_deref_mut(), &candidate);
-        if candidate.is_file() {
+        if probe_is_file(&candidate) {
             return Some(canonical_paths.canonicalize(&candidate));
         }
     }
     for ext in options.resolve_extensions() {
         let candidate = base.join(cstr_index(ext));
         record_consulted(inputs.as_deref_mut(), &candidate);
-        if candidate.is_file() {
+        if probe_is_file(&candidate) {
             return Some(canonical_paths.canonicalize(&candidate));
         }
     }
@@ -88,7 +99,15 @@ fn probe_import_base(
 
 fn record_consulted(inputs: Option<&mut Vec<PathBuf>>, candidate: &Path) {
     if let Some(inputs) = inputs {
-        inputs.push(candidate.to_path_buf());
+        vize_l0::micro_count!("cli.imports.probe.history.path_entries", 1);
+        vize_l0::micro_count!(
+            "cli.imports.probe.history.path_encoded_bytes",
+            candidate.as_os_str().as_encoded_bytes().len()
+        );
+        vize_l0::micro_span!(
+            "cli.imports.probe.history.push_allocation",
+            inputs.push(candidate.to_path_buf())
+        );
     }
 }
 
@@ -119,7 +138,7 @@ fn rewrite_js_to_ts(
     for ext in extensions {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));
         record_consulted(inputs.as_deref_mut(), &candidate);
-        if candidate.is_file() {
+        if probe_is_file(&candidate) {
             return Some(canonical_paths.canonicalize(&candidate));
         }
     }
@@ -148,4 +167,9 @@ fn append_extension(base: &Path, ext: &str) -> PathBuf {
 
 fn cstr_index(ext: &str) -> String {
     cstr!("index{ext}")
+}
+
+fn probe_is_file(path: &Path) -> bool {
+    vize_l0::micro_count!("cli.imports.probe.is_file.calls", 1);
+    path.is_file()
 }
