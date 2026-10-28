@@ -1,7 +1,7 @@
 //! Authored-document property requests retain their own project settings.
 
 use super::MaestroServer;
-use crate::ide::{DocumentHighlightService, DocumentLinkService, IdeContext, position_to_offset};
+use crate::ide::{DocumentHighlightService, DocumentLinkService, IdeContext};
 use tower_lsp::{
     jsonrpc::Result,
     lsp_types::{
@@ -26,12 +26,7 @@ impl MaestroServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = server.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::new(&server.state, uri, offset))
-        else {
+        let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
             return Ok(None);
         };
 
@@ -90,7 +85,7 @@ impl MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(content) = server.state.documents.text(uri) else {
+        let Some(content) = server.state.documents.text_snapshot(uri) else {
             return Ok(None);
         };
         let links = DocumentLinkService::get_links(&server.state, &content, uri);

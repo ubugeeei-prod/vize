@@ -116,6 +116,70 @@ fn uri(value: &str) -> Url {
     Url::parse(value).expect("fixture URI is valid")
 }
 
+#[cfg(feature = "micro-profiling")]
+fn assert_shared_text_snapshot_allocation_law() {
+    use std::sync::Arc;
+    use vize_l0::profiler::{
+        allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
+    };
+
+    const READS: u64 = 128;
+    let segment = "<template>\r\n<div title=\"日本😀\">value</div>\r\n</template>\r\n";
+    let source = segment.repeat(512 * 1024 / segment.len() + 1);
+    let payload_bytes = source.len() as u64;
+    let store = DocumentStore::new();
+    let document = uri("file:///fixture/Large.vue");
+    store.open(document.clone(), source, 1, String::from("vue"));
+
+    // Seed the revision's OnceLock outside both measured windows.
+    let resident = store
+        .text_snapshot(&document)
+        .expect("open document has a shared snapshot");
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let owned = store.text(&document).expect("open document has owned text");
+        std::hint::black_box(&owned);
+    }
+    let owned = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let shared = store
+            .text_snapshot(&document)
+            .expect("open document has a shared snapshot");
+        assert!(Arc::ptr_eq(&resident, &shared));
+        std::hint::black_box(&shared);
+    }
+    let shared = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    assert!(owned.allocation_calls() >= READS);
+    assert!(owned.requested_bytes() >= READS.saturating_mul(payload_bytes));
+    assert_eq!(shared.allocation_calls(), 0);
+    assert_eq!(shared.requested_bytes(), 0);
+    assert_eq!(shared.allocation_failures(), 0);
+    println!(
+        "document_text_snapshot_allocation={}",
+        serde_json::json!({
+            "reads": READS,
+            "payloadBytes": payload_bytes,
+            "owned": {
+                "allocationCalls": owned.allocation_calls(),
+                "requestedBytes": owned.requested_bytes(),
+            },
+            "shared": {
+                "allocationCalls": shared.allocation_calls(),
+                "requestedBytes": shared.requested_bytes(),
+            },
+            "law": "warm shared Arc clones allocate zero bytes",
+        })
+    );
+}
+
 #[test]
 fn snapshot_producers_keep_owned_results_and_exact_utf8_payloads() {
     let store = DocumentStore::new();
@@ -223,4 +287,7 @@ fn snapshot_producers_keep_owned_results_and_exact_utf8_payloads() {
     // The earlier returned strings remain owned after edits and renames.
     assert_eq!(original[0].1[0].1, "日本😀\r\n");
     assert_eq!(original[0].1[1].1, "abc\r\n");
+
+    #[cfg(feature = "micro-profiling")]
+    assert_shared_text_snapshot_allocation_law();
 }

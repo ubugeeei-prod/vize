@@ -13,7 +13,7 @@ use crate::ide::{
     DeclarationService, ImplementationService, JsxDeclarationService, JsxImplementationService,
     JsxService, JsxTypeDefinitionService, ScriptSymbolsService, TypeDefinitionService,
 };
-use crate::ide::{DefinitionService, IdeContext, position_to_offset};
+use crate::ide::{DefinitionService, IdeContext};
 
 pub(super) type ImplParams = GotoImplementationParams;
 pub(super) type ImplResponse = GotoImplementationResponse;
@@ -56,8 +56,8 @@ pub(super) async fn moniker(
         let Some(text) = server
             .state
             .documents
-            .text(&location.uri)
-            .or_else(|| std::fs::read_to_string(&path).ok())
+            .text_snapshot(&location.uri)
+            .or_else(|| std::fs::read_to_string(&path).ok().map(std::sync::Arc::new))
         else {
             continue;
         };
@@ -82,14 +82,7 @@ pub(super) async fn goto_definition(
     let uri = &params.text_document_position_params.text_document.uri;
     let position = params.text_document_position_params.position;
 
-    let Some(content) = server.state.documents.text(uri) else {
-        return Ok(None);
-    };
-    let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-        return Ok(None);
-    };
-
-    let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+    let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
         return Ok(None);
     };
 
@@ -142,14 +135,7 @@ pub(super) async fn goto_type_definition(
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = server.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+        let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
             return Ok(None);
         };
 
@@ -189,14 +175,7 @@ pub(super) async fn goto_declaration(
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = server.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+        let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
             return Ok(None);
         };
 
@@ -232,14 +211,7 @@ pub(super) async fn goto_implementation(
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = server.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+        let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
             return Ok(None);
         };
 

@@ -1,8 +1,8 @@
 //! Per-request IDE context shared by every language feature service.
 
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{Position, Url};
 use vize_incremental::SharedDescriptor;
 
 use super::standalone_html_block_at_offset;
@@ -20,7 +20,7 @@ pub struct IdeContext<'a> {
     /// Document URI
     pub uri: &'a Url,
     /// Document content
-    pub content: String,
+    pub content: Arc<String>,
     /// Cursor offset in the document
     pub offset: usize,
     /// Which block the cursor is in
@@ -48,9 +48,9 @@ impl<'a> IdeContext<'a> {
         state: &'a ServerState,
         uri: &'a Url,
         offset: usize,
-        content: String,
+        content: impl Into<Arc<String>>,
     ) -> Self {
-        Self::assemble(state, uri, offset, content, false)
+        Self::assemble(state, uri, offset, content.into(), false)
     }
 
     /// Consume the request's cursor snapshot, retaining completion insertion boundaries.
@@ -58,9 +58,42 @@ impl<'a> IdeContext<'a> {
         state: &'a ServerState,
         uri: &'a Url,
         offset: usize,
-        content: String,
+        content: impl Into<Arc<String>>,
     ) -> Self {
-        Self::assemble(state, uri, offset, content, true)
+        Self::assemble(state, uri, offset, content.into(), true)
+    }
+
+    /// Capture one exact open-document snapshot and convert the LSP position
+    /// with the resident Rope before releasing the document-store guard.
+    pub(crate) fn at_position(
+        state: &'a ServerState,
+        uri: &'a Url,
+        position: Position,
+    ) -> Option<Self> {
+        let snapshot = state.documents.snapshot_at(uri, position)?;
+        Some(Self::assemble(
+            state,
+            uri,
+            snapshot.offset,
+            snapshot.content,
+            false,
+        ))
+    }
+
+    /// [`Self::at_position`] while retaining completion insertion boundaries.
+    pub(crate) fn at_completion_position(
+        state: &'a ServerState,
+        uri: &'a Url,
+        position: Position,
+    ) -> Option<Self> {
+        let snapshot = state.documents.snapshot_at(uri, position)?;
+        Some(Self::assemble(
+            state,
+            uri,
+            snapshot.offset,
+            snapshot.content,
+            true,
+        ))
     }
 
     /// A buffer that is not an open document (another file's text, or a test
@@ -70,16 +103,16 @@ impl<'a> IdeContext<'a> {
         state: &'a ServerState,
         uri: &'a Url,
         offset: usize,
-        content: String,
+        content: impl Into<Arc<String>>,
     ) -> Self {
-        Self::assemble(state, uri, offset, content, false)
+        Self::assemble(state, uri, offset, content.into(), false)
     }
 
     /// Publish `content` as the open document and read the context back.
     /// Tests use this so the store, not a side string, is the source of text.
     pub fn testing(state: &'a ServerState, uri: &'a Url, offset: usize, content: String) -> Self {
         state.documents.open(uri.clone(), content, 0, "vue".into());
-        let content = state.documents.text(uri).unwrap_or_default();
+        let content = state.documents.text_snapshot(uri).unwrap_or_default();
         Self::assemble(state, uri, offset, content, false)
     }
 
@@ -91,12 +124,12 @@ impl<'a> IdeContext<'a> {
         content: String,
     ) -> Self {
         state.documents.open(uri.clone(), content, 0, "vue".into());
-        let content = state.documents.text(uri).unwrap_or_default();
+        let content = state.documents.text_snapshot(uri).unwrap_or_default();
         Self::assemble(state, uri, offset, content, true)
     }
 
     fn read(state: &'a ServerState, uri: &'a Url, offset: usize, completion: bool) -> Option<Self> {
-        let content = state.documents.text(uri)?;
+        let content = state.documents.text_snapshot(uri)?;
         Some(Self::assemble(state, uri, offset, content, completion))
     }
 
@@ -104,7 +137,7 @@ impl<'a> IdeContext<'a> {
         state: &'a ServerState,
         uri: &'a Url,
         offset: usize,
-        content: String,
+        content: Arc<String>,
         completion: bool,
     ) -> Self {
         let descriptor = OnceLock::new();

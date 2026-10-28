@@ -6,7 +6,7 @@ use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::{Position, TextDocumentIdentifier};
 
 use super::MaestroServer;
-use crate::ide::{AutoInsertService, IdeContext, position_to_offset};
+use crate::ide::{AutoInsertService, IdeContext};
 
 pub(super) const AUTO_INSERT_METHOD: &str = "volar/client/autoInsert";
 
@@ -36,15 +36,13 @@ impl MaestroServer {
                 }
 
                 let uri = &params.text_document.uri;
-                let Some(content) = server.state.documents.text(uri) else {
-                    return Ok(None);
-                };
-                let Some(selection_offset) =
-                    position_to_offset(&content, params.selection.line, params.selection.character)
+                let Some(ctx) = IdeContext::at_position(&server.state, uri, params.selection)
                 else {
                     return Ok(None);
                 };
-                let Some(range_offset) = utf16_offset_to_byte(&content, params.change.range_offset)
+                let content = &ctx.content;
+                let selection_offset = ctx.offset;
+                let Some(range_offset) = utf16_offset_to_byte(content, params.change.range_offset)
                 else {
                     return Ok(None);
                 };
@@ -69,9 +67,6 @@ impl MaestroServer {
                     return Ok(None);
                 }
 
-                let Some(ctx) = IdeContext::new(&server.state, uri, selection_offset) else {
-                    return Ok(None);
-                };
                 Ok(AutoInsertService::snippet(
                     &ctx,
                     selection_offset,

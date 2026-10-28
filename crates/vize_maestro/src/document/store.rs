@@ -50,18 +50,29 @@ pub struct Document {
     /// document version so per-request consumers (completion, definition, ...)
     /// never re-scan the content. Reset on every edit.
     petite_vue_detected: OnceLock<bool>,
+    /// Flat immutable text shared by every request for this exact revision.
+    ///
+    /// Rope remains the edit/coordinate owner. This snapshot exists because
+    /// request futures must release the `DashMap` guard before `.await`; an
+    /// `Arc` preserves that safety without flattening the same Rope once per
+    /// hover, completion, navigation, or rename request.
+    text_snapshot: OnceLock<Arc<String>>,
 }
 
 impl Document {
     /// Create a new document.
     pub fn new(uri: Url, content: String, version: i32, language_id: String) -> Self {
+        let content = Arc::new(content);
+        let text_snapshot = OnceLock::new();
+        let _ = text_snapshot.set(Arc::clone(&content));
         Self {
             uri,
             version,
-            content: DocumentText::new(&content),
+            content: DocumentText::new(content.as_str()),
             language_id,
             revision: next_revision(),
             petite_vue_detected: OnceLock::new(),
+            text_snapshot,
         }
     }
 
@@ -81,12 +92,26 @@ impl Document {
     pub fn petite_vue_detected(&self) -> bool {
         *self
             .petite_vue_detected
-            .get_or_init(|| vize_l0::dialect::detect_petite_vue_document(&self.text()))
+            .get_or_init(|| vize_l0::dialect::detect_petite_vue_document(self.flat_text()))
     }
 
     /// Get the document content as a string.
     pub fn text(&self) -> String {
-        self.content.to_string()
+        self.flat_text().to_owned()
+    }
+
+    /// Shared owned text for this exact document revision.
+    pub fn text_snapshot(&self) -> Arc<String> {
+        Arc::clone(
+            self.text_snapshot
+                .get_or_init(|| Arc::new(self.content.to_string())),
+        )
+    }
+
+    fn flat_text(&self) -> &str {
+        self.text_snapshot
+            .get_or_init(|| Arc::new(self.content.to_string()))
+            .as_str()
     }
 
     /// Get the number of lines in the document.
@@ -107,6 +132,7 @@ impl Document {
         self.version = new_version;
         self.revision = next_revision();
         self.petite_vue_detected = OnceLock::new();
+        self.text_snapshot = OnceLock::new();
 
         if let Some(range) = change.range {
             // Incremental change
@@ -129,8 +155,15 @@ impl Document {
         } else {
             // Full content replacement
             self.content = DocumentText::new(&change.text);
+            let _ = self.text_snapshot.set(Arc::new(change.text.clone()));
         }
     }
+}
+
+/// Guard-free request input captured from one exact document revision.
+pub(crate) struct DocumentPositionSnapshot {
+    pub(crate) content: Arc<String>,
+    pub(crate) offset: usize,
 }
 
 /// Thread-safe document store.
@@ -216,6 +249,8 @@ impl DocumentStore {
     pub fn get_mut(&self, uri: &Url) -> Option<dashmap::mapref::one::RefMut<'_, Url, Document>> {
         let mut document = self.documents.get_mut(uri)?;
         document.revision = next_revision();
+        document.petite_vue_detected = OnceLock::new();
+        document.text_snapshot = OnceLock::new();
         self.revision.fetch_add(1, Ordering::Release);
         Some(document)
     }
@@ -231,6 +266,30 @@ impl DocumentStore {
     /// can only release by being polled on that same parked thread (#3315).
     pub fn text(&self, uri: &Url) -> Option<String> {
         self.documents.get(uri).map(|document| document.text())
+    }
+
+    /// Shared immutable text for one exact revision, with no shard guard on
+    /// return. Cloning the `Arc` is allocation-free on a warm revision.
+    pub fn text_snapshot(&self, uri: &Url) -> Option<Arc<String>> {
+        self.documents
+            .get(uri)
+            .map(|document| document.text_snapshot())
+    }
+
+    /// Capture text and an exact UTF-16 LSP position under one document guard.
+    /// Ropey owns the coordinate conversion; requests avoid a second full-text
+    /// line scan and release the map guard before any async backend work.
+    pub(crate) fn snapshot_at(
+        &self,
+        uri: &Url,
+        position: tower_lsp::lsp_types::Position,
+    ) -> Option<DocumentPositionSnapshot> {
+        let document = self.documents.get(uri)?;
+        let offset = position_to_offset(&document.content, position)?;
+        Some(DocumentPositionSnapshot {
+            content: document.text_snapshot(),
+            offset,
+        })
     }
 
     /// Owned snapshot of a document's version, holding no lock on return.

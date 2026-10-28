@@ -30,14 +30,7 @@ pub(super) async fn prepare(
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = server.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+        let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
             return Ok(None);
         };
         if crate::utils::is_jsx_path(uri.path()) && !server.state.jsx_typecheck_enabled() {
@@ -124,8 +117,12 @@ fn context_for_item<'a>(
     let content = server
         .state
         .documents
-        .text(&item.uri)
-        .or_else(|| std::fs::read_to_string(item.uri.to_file_path().ok()?).ok())?;
+        .text_snapshot(&item.uri)
+        .or_else(|| {
+            std::fs::read_to_string(item.uri.to_file_path().ok()?)
+                .ok()
+                .map(std::sync::Arc::new)
+        })?;
     let offset = position_to_offset(
         &content,
         item.selection_range.start.line,
