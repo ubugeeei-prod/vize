@@ -129,27 +129,28 @@ import Child from './Child.vue'
         return;
     };
 
+    let normalized: Vec<_> = snapshot
+        .iter()
+        .map(|(file, code, message)| {
+            (
+                file.as_str(),
+                *code,
+                super::super::normalize_component_check_props_tail(message),
+            )
+        })
+        .collect();
     assert_eq!(
-        snapshot.len(),
-        1,
-        "both authored spellings must satisfy the raw key and only the missing usage may fail: {snapshot:#?}"
-    );
-    let (file, code, message) = &snapshot[0];
-    assert_eq!(file.as_str(), "src/Parent.vue");
-    assert_eq!(*code, Some(2345));
-    let normalized = super::super::normalize_component_check_props_tail(message);
-    assert_eq!(
-        normalized.lines().next(),
-        Some(
-            "8:4:error Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>'."
-        ),
-        "the exact missing-prop diagnostic must stay on the empty usage: {normalized}"
-    );
-    assert!(
-        normalized.contains("Property")
-            && normalized.contains("aria-label")
-            && normalized.contains("is missing in type '{}'")
-            && normalized.contains("but required in type"),
-        "the raw quoted key must remain required without being renamed: {normalized}"
+        normalized,
+        vec![(
+            "src/Parent.vue",
+            Some(2345),
+            String::from(concat!(
+                "8:4:error Argument of type '{}' is not assignable to parameter of type ",
+                "'__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>'.\n",
+                "Property '\"aria-label\"' is missing in type '{}' but required in type ",
+                "'{ readonly \"aria-label\": string; }'.",
+            )),
+        )],
+        "both spellings stay valid and the sole diagnostic remains the exact missing raw key"
     );
 }
