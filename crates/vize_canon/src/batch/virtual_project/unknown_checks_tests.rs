@@ -63,7 +63,7 @@ fn assert_unknown_checks(content: &str, enabled: bool) {
     let props = content.contains("import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs");
     let directive = content.contains("__vize_unknown_directive_");
     let open_tail = content.contains(
-        "type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
+        "type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
     assert_eq!(component, enabled, "{content}");
     assert_eq!(props, enabled, "{content}");
@@ -190,7 +190,7 @@ mod originals {
                 .lines()
                 .find(|line| line.starts_with("  type __VizeComponentCheckTail")),
             Some(
-                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;"
+                "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;"
             )
         );
         let absent = source(None, PARENT);
