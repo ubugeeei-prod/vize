@@ -91,33 +91,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     options: &VirtualTsOptions,
     generation_options: VirtualTsGenerationOptions<'_>,
 ) -> VirtualTsOutput {
-    super::script_facts::with_cached_bindings(summary, || {
-        generate_virtual_ts_with_prepared_bindings(
-            summary,
-            script_content,
-            template_ast,
-            script_offset,
-            template_offset,
-            options,
-            generation_options,
-        )
-    })
-}
-
-fn generate_virtual_ts_with_prepared_bindings(
-    summary: &Croquis,
-    script_content: Option<&str>,
-    template_ast: Option<&vize_relief::RootNode<'_>>,
-    script_offset: u32,
-    template_offset: u32,
-    options: &VirtualTsOptions,
-    generation_options: VirtualTsGenerationOptions<'_>,
-) -> VirtualTsOutput {
+    let _bindings_scope = super::script_facts::cache_bindings(summary);
     let check_options = generation_options.check_options;
     let check_props = check_options.check_props;
     let script_source_offset =
         |offset| generation_options.script_source_offset(script_offset, offset);
-    // Configured Vue dialect drives the Vue 2/3 template instance shape.
     let dialect = generation_options.dialect;
     let legacy_vue2 =
         generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);

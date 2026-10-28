@@ -4,7 +4,7 @@
 //! only way `virtual_ts` consults `Bindings` and `UndefinedRefs`, so the
 //! struct fields stay producer storage.
 
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
 
 use vize_croquis::facts::{
     Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, UndefinedRefs,
@@ -28,7 +28,7 @@ impl FactConsumer for CanonUndefinedRefs {
 
 struct CachedBindings {
     summary: *const Croquis,
-    table: Rc<FactTable<Bindings>>,
+    table: FactTable<Bindings>,
 }
 
 thread_local! {
@@ -53,7 +53,7 @@ fn preparation_count(increment: bool) -> usize {
 }
 
 /// Restores an outer projection's cache on normal return and unwinding.
-struct BindingsScope(Option<CachedBindings>);
+pub(super) struct BindingsScope(Option<CachedBindings>);
 
 impl Drop for BindingsScope {
     fn drop(&mut self) {
@@ -63,29 +63,25 @@ impl Drop for BindingsScope {
     }
 }
 
-fn prepare_bindings(summary: &Croquis) -> Option<Rc<FactTable<Bindings>>> {
+fn prepare_bindings(summary: &Croquis) -> Option<FactTable<Bindings>> {
     #[cfg(test)]
     preparation_count(true);
     vize_l0::micro_count!("canon.script_facts.prepare_bindings.calls", 1);
     let facts = CroquisFacts::new(summary);
     vize_l0::micro_span!(
         "canon.script_facts.prepare_bindings",
-        facts
-            .prepare_owned::<CanonBindings, Bindings>()
-            .ok()
-            .map(Rc::new)
+        facts.prepare_owned::<CanonBindings, Bindings>().ok()
     )
 }
 
-/// Run one virtual-TS projection with one bindings table for every consumer.
-pub(super) fn with_cached_bindings<T>(summary: &Croquis, body: impl FnOnce() -> T) -> T {
+/// Cache one bindings table until the returned projection scope is dropped.
+pub(super) fn cache_bindings(summary: &Croquis) -> BindingsScope {
     let current = CachedBindings {
         summary: std::ptr::from_ref(summary),
-        table: prepare_bindings(summary).unwrap_or_else(|| Rc::new(FactTable::default())),
+        table: prepare_bindings(summary).unwrap_or_default(),
     };
     let previous = CACHED_BINDINGS.with_borrow_mut(|cache| cache.replace(current));
-    let _scope = BindingsScope(previous);
-    body()
+    BindingsScope(previous)
 }
 
 /// Borrowed `Bindings` table. Methods are inherent so callers do not import the trait.
@@ -123,14 +119,16 @@ impl ScriptBindings<'_> {
 
 pub(super) fn with_bindings<T>(summary: &Croquis, body: impl FnOnce(ScriptBindings<'_>) -> T) -> T {
     vize_l0::micro_count!("canon.script_facts.with_bindings.calls", 1);
-    let cached = CACHED_BINDINGS.with_borrow(|cache| {
-        cache
+    CACHED_BINDINGS.with_borrow(|cache| {
+        if let Some(cached) = cache
             .as_ref()
             .filter(|cached| std::ptr::eq(cached.summary, summary))
-            .map(|cached| Rc::clone(&cached.table))
-    });
-    let table = cached.or_else(|| prepare_bindings(summary));
-    body(ScriptBindings(table.as_deref()))
+        {
+            return body(ScriptBindings(Some(&cached.table)));
+        }
+        let table = prepare_bindings(summary);
+        body(ScriptBindings(table.as_ref()))
+    })
 }
 
 pub(super) fn binding_type(summary: &Croquis, name: &str) -> Option<BindingType> {
@@ -168,7 +166,7 @@ pub(super) fn undefined_refs(summary: &Croquis) -> Vec<UndefinedRef> {
 
 #[cfg(test)]
 mod tests {
-    use super::{binding_type, preparation_count, with_cached_bindings};
+    use super::{binding_type, cache_bindings, preparation_count};
     use vize_croquis::{BindingType, Croquis};
 
     #[test]
@@ -179,16 +177,18 @@ mod tests {
         inner.bindings.add("inner", BindingType::SetupConst);
         let before = preparation_count(false);
 
-        with_cached_bindings(&outer, || {
+        {
+            let _outer_scope = cache_bindings(&outer);
             for _ in 0..100 {
                 assert_eq!(binding_type(&outer, "outer"), Some(BindingType::SetupRef));
             }
-            with_cached_bindings(&inner, || {
+            {
+                let _inner_scope = cache_bindings(&inner);
                 assert_eq!(binding_type(&inner, "inner"), Some(BindingType::SetupConst));
                 assert_eq!(binding_type(&inner, "outer"), None);
-            });
+            }
             assert_eq!(binding_type(&outer, "outer"), Some(BindingType::SetupRef));
-        });
+        }
 
         assert_eq!(preparation_count(false) - before, 2);
     }
