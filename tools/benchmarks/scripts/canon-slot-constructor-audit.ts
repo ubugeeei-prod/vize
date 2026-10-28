@@ -93,18 +93,27 @@ function semanticLinkContract(result: Record<string, unknown>) {
 export function auditPackets(before: Record<string, unknown>, after: Record<string, unknown>) {
   const baseText = text(before),
     headText = text(after),
-    call = "(...__vizeSlotConstructorFirstArgument<__VizeSlotConstructor<typeof WitnessChild>>()(",
+    call = "__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof WitnessChild>>()(",
     legacy = "__VizeSlotConstructor<typeof WitnessChild>)({",
     headSemanticLinks = semanticLinkContract(after);
-  assert.equal(headText.split(call).length - 1, 2, "both inference phases use the tuple helper");
+  assert.equal(
+    headText.split(call).length - 1,
+    2,
+    "both inference phases select the exact direct constructor branch",
+  );
   assert.ok(!headText.includes(legacy), "the unconditional first argument must be gone");
   assert.ok(
     headText.includes("type __VizeSlotConstructorArgumentLists<C> ="),
     "the complete constructor overload set is inspected",
   );
   assert.ok(
-    headText.includes("type __VizeSlotConstructorFirstArgument<C, P> ="),
-    "the conditional constructor tuple is emitted",
+    headText.includes("type __VizeSlotConstructorWithoutArguments<C> =") &&
+      headText.includes("type __VizeSlotConstructorWithArguments<C> ="),
+    "both structurally valid direct constructor branches are emitted",
+  );
+  assert.ok(
+    headText.includes("type __VizeNativeSlotsFactory<C> = [C] extends [new"),
+    "constructor unions use one non-distributive native factory",
   );
   assert.notEqual(headText, baseText, "the source repair must change the virtual program");
   assert.deepEqual(

@@ -66,8 +66,9 @@ fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signatu
     for helper in [
         "type __VizeSlotConstructorArgumentLists<C> =",
         "type __VizeSlotConstructorHasArguments<C> =",
-        "type __VizeSlotConstructorFirstArgument<C, P> =",
-        "declare function __vizeSlotConstructorFirstArgument<C>():",
+        "type __VizeSlotConstructorWithoutArguments<C> =",
+        "type __VizeSlotConstructorWithArguments<C> =",
+        "declare function __vizeSlotConstructorInstance<C>():",
     ] {
         assert_eq!(
             code.matches(helper).count(),
@@ -76,18 +77,18 @@ fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signatu
         );
     }
     assert_eq!(
+        code.matches("__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof el_badge>>()(",)
+            .count(),
+        1,
+        "the slot-host constructor must select the exact direct construction:\n{code}",
+    );
+    assert_eq!(
         code.matches(
-            "(...__vizeSlotConstructorFirstArgument<__VizeSlotConstructor<typeof el_badge>>()(",
+            "__VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof el_badge>>)(",
         )
         .count(),
         1,
-        "the slot-host constructor must use the conditional tuple:\n{code}",
-    );
-    assert_eq!(
-        code.matches("__VizeSlotConstructor<typeof el_badge>)({")
-            .count(),
-        0,
-        "the unconditional first argument must not survive:\n{code}",
+        "the non-empty branch must preserve the direct props construction:\n{code}",
     );
 }
 

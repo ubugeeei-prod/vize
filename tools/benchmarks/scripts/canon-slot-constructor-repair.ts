@@ -177,8 +177,8 @@ async function main() {
           "both repaired inference phases must still reject it",
         );
         for (const diagnostic of headGenerated) {
-          assert.equal(diagnostic.code, 2345);
-          assert.match(diagnostic.message, /^Argument of type /u);
+          assert.equal(diagnostic.code, 2741);
+          assert.match(diagnostic.message, /^Property 'internal' is missing /u);
           assert.match(diagnostic.message, /internal: string/u);
         }
       } else {
