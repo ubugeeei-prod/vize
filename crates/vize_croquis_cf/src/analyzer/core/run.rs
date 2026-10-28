@@ -6,6 +6,7 @@ use crate::rules;
 impl CrossFileAnalyzer {
     /// Run cross-file analysis.
     pub fn analyze(&mut self) -> CrossFileResult {
+        let nuxt_scope = std::mem::take(&mut self.nuxt_scope_once);
         // Note: std::time::Instant is not available in WASM, so we conditionally
         // compile time measurement only for non-WASM targets
         #[cfg(not(target_arch = "wasm32"))]
@@ -70,7 +71,17 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.unique_ids {
-            let (issues, diags) = rules::analyze_element_ids(&self.registry);
+            let (issues, diags) = if nuxt_scope {
+                rules::analyze_element_ids_with_nuxt_context(
+                    &self.registry,
+                    &self.graph,
+                    self.nuxt_dirs.as_ref(),
+                    true,
+                )
+            } else {
+                // Default/unknown hosts keep the original conservative entry.
+                rules::analyze_element_ids(&self.registry)
+            };
             result.unique_id_issues = issues;
             result.diagnostics.extend(diags);
         }

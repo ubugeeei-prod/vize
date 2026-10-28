@@ -1,0 +1,159 @@
+name: Script recovery cost
+on:
+  pull_request:
+    paths:
+      - .github/workflows/script-recovery-cost.yml
+      - crates/vize_croquis/src/script_parser/recovery.rs
+      - crates/vize_croquis/src/script_parser/recovery/**
+      - davinci/vize_l0/examples/source_recovery_benchmark.rs
+      - davinci/vize_l0/tests/source_probes/mod.rs
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Immutable first-parent baseline commit
+        type: string
+        required: true
+permissions: { contents: read }
+concurrency:
+  group: script-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    env:
+      DECLARED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      EVENT_KIND: ${{ github.event_name }}
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: script-recovery-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Preserve exact source identities and the shared benchmark carrier
+        run: |
+          set -euo pipefail
+          [[ "$DECLARED_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          mkdir -p evidence
+          printf '%s\n' "$DECLARED_BASE_SHA" > evidence/declared-base.sha
+          git rev-parse HEAD > evidence/head.sha
+          git cat-file commit HEAD > evidence/head.commit
+          python3 -c 'from pathlib import Path; h=Path("evidence/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); p=[x.split()[1].decode() for x in h if x.startswith(b"parent ")]; assert p; Path("evidence/first-parent.sha").write_text(p[0]+"\n")'
+          recovery_base_sha=$(cat evidence/first-parent.sha)
+          [[ "$recovery_base_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$recovery_base_sha" != "$(git rev-parse HEAD)"
+          if [[ "$EVENT_KIND" == workflow_dispatch ]]; then test "$DECLARED_BASE_SHA" = "$recovery_base_sha"; fi
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$recovery_base_sha"
+          git worktree add --detach "$RUNNER_TEMP/recovery-base" "$recovery_base_sha"
+          git -C "$RUNNER_TEMP/recovery-base" rev-parse HEAD > evidence/base.sha
+          test "$(cat evidence/base.sha)" = "$(cat evidence/first-parent.sha)"
+          git diff --name-status "$recovery_base_sha" HEAD > evidence/source-diff.txt
+          cp davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
+          sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
+          test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
+          rustc +1.99.1 -vV > evidence/rustc.txt
+          lscpu > evidence/cpu.txt
+      - name: Compare complete parser packets and exact source counter controls
+        run: |
+          set -euo pipefail
+          cargo +1.99.1 test --locked --profile ci -p vize_croquis script_parser::recovery 2>&1 | tee evidence/recovery-packets.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/callsite-controls.log
+      - name: Build independent baseline and candidate targets with equal flags
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            source="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
+            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --message-format json > "evidence/build-$role.jsonl"
+            cp "target/recovery-$role/ci-opt/examples/source_recovery_benchmark" "evidence/normal-$role"
+            sha256sum "$source/Cargo.lock" "$source/crates/vize_croquis/src/script_parser/recovery.rs" > "evidence/inputs-$role.sha256"
+          done
+          sha256sum evidence/normal-base evidence/normal-head > evidence/binaries.sha256
+          test "$(sha256sum evidence/normal-base | cut -d' ' -f1)" != "$(sha256sum evidence/normal-head | cut -d' ' -f1)"
+          python3 - <<'PYIDENTITY'
+          import hashlib, json, os, pathlib
+          evidence = pathlib.Path('evidence')
+          sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          receipt = {'declaredBase': (evidence/'declared-base.sha').read_text().strip(), 'base': (evidence/'base.sha').read_text().strip(), 'head': (evidence/'head.sha').read_text().strip(), 'firstParent': (evidence/'first-parent.sha').read_text().strip(), 'sourceDiff': (evidence/'source-diff.txt').read_text().splitlines(), 'roles': {}}
+          assert receipt['base'] == receipt['firstParent']
+          for role in ('base', 'head'):
+              source = pathlib.Path(os.environ['RUNNER_TEMP'])/'recovery-base' if role == 'base' else pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+              rows = [json.loads(x) for x in (evidence/f'build-{role}.jsonl').read_text().splitlines()]
+              artifacts = [x for x in rows if x.get('reason') == 'compiler-artifact']
+              croquis = [x for x in artifacts if x['target']['name'] == 'vize_croquis' and x['target']['kind'] == ['lib']]
+              carrier = [x for x in artifacts if x['target']['name'] == 'source_recovery_benchmark' and x['target']['kind'] == ['example']]
+              assert len(croquis) == len(carrier) == 1
+              assert pathlib.Path(croquis[0]['manifest_path']) == source/'crates/vize_croquis/Cargo.toml'
+              assert pathlib.Path(carrier[0]['target']['src_path']) == source/'davinci/vize_l0/examples/source_recovery_benchmark.rs'
+              executable = pathlib.Path(carrier[0]['executable'])
+              assert sha(executable) == sha(evidence/f'normal-{role}')
+              receipt['roles'][role] = {'sourceRoot': str(source), 'recoverySha256': sha(source/'crates/vize_croquis/src/script_parser/recovery.rs'), 'lockSha256': sha(source/'Cargo.lock'), 'carrierSha256': sha(source/'davinci/vize_l0/examples/source_recovery_benchmark.rs'), 'binarySha256': sha(executable), 'artifacts': [{k:x[k] for k in ('package_id', 'manifest_path', 'target', 'profile', 'features', 'fresh', 'executable')} for x in (croquis[0], carrier[0])]}
+          assert receipt['roles']['base']['carrierSha256'] == receipt['roles']['head']['carrierSha256']
+          assert receipt['roles']['base']['lockSha256'] == receipt['roles']['head']['lockSha256']
+          (evidence/'identity.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          PYIDENTITY
+      - name: Measure normal processes and separate instrumented allocation windows
+        run: |
+          set -euo pipefail
+          cpus=$(python3 -c 'import os;print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
+          printf '%s\n' "$cpus" > evidence/affinity.txt
+          for scenario in valid incomplete-member; do
+            for rows in 32 256 2048; do
+              for round in 1 2 3; do
+                order='base head'
+                if [[ "$round" == 2 ]]; then order='head base'; fi
+                for role in $order; do
+                  /usr/bin/time -v -o "evidence/time-$scenario-$role-$rows-$round.txt" taskset -c "$cpus" "evidence/normal-$role" 100 "$rows" normal "$scenario" > "evidence/normal-$scenario-$role-$rows-$round.json"
+                done
+              done
+            done
+          done
+          for role in base head; do
+            source="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
+            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --features micro-profiling
+            taskset -c "$cpus" "target/recovery-$role/ci-opt/examples/source_recovery_benchmark" 100 256 profile > "evidence/profile-$role.json"
+          done
+          python3 - <<'PY'
+          import json, pathlib, statistics
+          root = pathlib.Path('evidence')
+          summary = {'scope': 'repeated source parse+analysis, not cold whole-project time', 'normal': {}}
+          for scenario in ('valid', 'incomplete-member'):
+              summary['normal'][scenario] = {}
+              for rows in (32, 256, 2048):
+                  data = {role: [json.loads((root/f'normal-{scenario}-{role}-{rows}-{n}.json').read_text()) for n in (1,2,3)] for role in ('base','head')}
+                  assert len({(x['sourceHash'], x['sourceBytes'], x['checksum'], x['iterations'], x['scenario']) for samples in data.values() for x in samples}) == 1
+                  summary['normal'][scenario][rows] = {role: {'samplesNs': [x['elapsedNs'] for x in samples], 'medianNs': statistics.median(x['elapsedNs'] for x in samples)} for role,samples in data.items()}
+          profiles = {role: json.loads((root/f'profile-{role}.json').read_text()) for role in ('base','head')}
+          assert profiles['base']['sourceHash'] == profiles['head']['sourceHash']
+          for role, multiplier in (('base', 2), ('head', 1)):
+              sample = profiles[role]
+              entries = [x for x in sample['micro'] if x['name'] == 'croquis.oxc.recovery.bytes']
+              assert len(entries) == 1 and entries[0]['calls'] == sample['iterations'] * multiplier
+              assert entries[0]['units'] == sample['sourceBytes'] * sample['iterations'] * multiplier
+          assert profiles['head']['allocation']['requestedBytes'] < profiles['base']['allocation']['requestedBytes']
+          summary['allocation'] = {role: x['allocation'] for role,x in profiles.items()}
+          (root/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
+          print('comparisonReceipt='+json.dumps({'identity': json.loads((root/'identity.json').read_text()), 'comparison': summary}, separators=(',', ':')))
+          PY
+          rm evidence/normal-base evidence/normal-head
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: success()
+        with:
+          name: script-recovery-summary-${{ github.sha }}
+          path: |
+            evidence/summary.json
+            evidence/identity.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: script-recovery-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error

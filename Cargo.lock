@@ -4662,6 +4662,7 @@ dependencies = [
  "tempfile",
  "vize_atelier_sfc",
  "vize_carton",
+ "vize_croquis",
  "vize_l0_derive",
  "vize_l1",
  "vize_l1_to_l2",

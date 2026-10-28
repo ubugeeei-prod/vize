@@ -17,7 +17,7 @@ jobs:
     env: { CARGO_BUILD_JOBS: "4", RAYON_NUM_THREADS: "4", CARGO_INCREMENTAL: "0" }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { persist-credentials: false }
+        with: { persist-credentials: false, fetch-depth: 0 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -46,6 +46,8 @@ jobs:
               return hashlib.sha256(file.read_bytes()).hexdigest()
           source = git("rev-parse", "HEAD")
           tree = git("rev-parse", "HEAD^{tree}")
+          foundation = "8978c2d35133162cfb2bda80171beeed9959353c"
+          git("merge-base", "--is-ancestor", foundation, source)
           assert git("status", "--porcelain", "--untracked-files=no") == ""
           compiler = {}
           for command in ["cargo", "rustc"]:
@@ -170,6 +172,7 @@ jobs:
               qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
               wire = None
               wire_error = None
+              mutation_controls = None
               if (capture / "client-to-native.wire.bin").is_file() and (capture / "native-to-client.wire.bin").is_file():
                   try:
                       observed = run(["node",str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify-wire.ts"),str(capture),version], 60)
@@ -177,11 +180,17 @@ jobs:
                       (out / f"{version}.wire.stderr.txt").write_text(observed.stderr)
                       assert observed.returncode == 0, observed.stdout + observed.stderr
                       wire = json.loads(observed.stdout)
+                      controls = run(["node",str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify-mutation-controls.ts"),str(capture),version], 60)
+                      (out / f"{version}.mutation-controls.stdout.txt").write_text(controls.stdout)
+                      (out / f"{version}.mutation-controls.stderr.txt").write_text(controls.stderr)
+                      assert controls.returncode == 0, controls.stdout + controls.stderr
+                      mutation_controls = json.loads(controls.stdout)
+                      assert len(mutation_controls["controls"]) == 3 and mutation_controls["passed"] is True
                   except Exception as error:
                       wire_error = repr(error)
                       qualified = False
               carrier = json.loads((capture / "carrier-receipt.json").read_text()) if (capture / "carrier-receipt.json").exists() else None
-              row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"wire":wire,"wireError":wire_error,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
+              row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"wire":wire,"mutationControls":mutation_controls,"wireError":wire_error,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
               native_rows.append(row)
               print(json.dumps(row), flush=True)
               if not qualified:
@@ -193,14 +202,14 @@ jobs:
                   print("NATIVE_ORIGIN_WIRE_RECEIPT " + json.dumps(wire), flush=True)
               lean = out / "native-metadata" / version
               lean.mkdir(parents=True)
-              wanted = ["backend-version.json","actual-launch.json","carrier-receipt.json","raw-symbol-candidates.json","full-wire-symbol-packets.json","full-wire-receipt.json","native.stderr.txt"]
+              wanted = ["backend-version.json","actual-launch.json","carrier-receipt.json","raw-symbol-candidates.json","full-wire-symbol-packets.json","full-wire-receipt.json","semantic-mutation-wire.json","semantic-mutation-controls.json","native.stderr.txt"]
               for name in wanted:
                   if (capture / name).is_file():
                       shutil.copyfile(capture / name, lean / name)
-              for phase in ["valid","partial","repaired"]:
+              for phase in ["valid","partial","repaired","initializer-vue","initializer-custom","initializer-repaired"]:
                   phase_out = lean / phase
                   phase_out.mkdir()
-                  for name in ["baseline-normalized.json","cases-selected.json","cases-normalized.json","source-file-names.json","source-input-manifest.json","getSyntacticDiagnostics.json","getSemanticDiagnostics.json","phase-receipt.json","original-partial.ts"]:
+                  for name in ["baseline-normalized.json","cases-selected.json","cases-normalized.json","source-file-names.json","source-input-manifest.json","getSyntacticDiagnostics.json","getSemanticDiagnostics.json","phase-receipt.json","mutation-receipt.json","original-partial.ts"]:
                       if (capture / phase / name).is_file():
                           shutil.copyfile(capture / phase / name, phase_out / name)
               for name in ["probe.ts","tsconfig.json","custom.ts","custom-vue.ts","globals.d.ts","merged.d.ts","opaque-globals.ts","partial.ts"]:
@@ -214,7 +223,7 @@ jobs:
           assert digest(binary) == image_sha
           receipt = {
               "schema":"vize.binding-origin.source-laws.v1",
-              "sourceSha":source,"sourceTree":tree,
+              "sourceSha":source,"sourceTree":tree,"foundationSource":foundation,
               "requestedRef":os.environ.get("GITHUB_REF"),
               "eventSourceSha":os.environ.get("GITHUB_SHA"),
               "scope":"Unwired origin foundation plus test-only same-session native symbol/closure laws; not product CLI, mapper, LSP or performance qualification",

@@ -42,6 +42,7 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
     occurrences: bool,
     mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
+    vize_carton::micro_count!("croquis.setup.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
     let source_type = SourceType::from_path(path).unwrap_or_default();
@@ -118,6 +119,7 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     mut exports: Option<&mut ModuleExportCapture>,
     render_admitted: bool,
 ) -> ScriptParseResult {
+    vize_carton::micro_count!("croquis.setup.analysis_requests.bytes", source.len());
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
@@ -244,6 +246,7 @@ pub(crate) fn parse_script_with_options_source_type(
     unused: bool,
     mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
+    vize_carton::micro_count!("croquis.plain.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
 
     let ret = profile!(

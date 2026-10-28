@@ -30,6 +30,7 @@ const generators = [
   "croquis-consumers.ts",
   "lib/croquis-products.ts",
   "lib/croquis-analysis.ts",
+  "lib/croquis-gates.ts",
   "lib/croquis-render.ts",
   "lib/croquis-shards.ts",
 ].map((name) => {
@@ -51,6 +52,15 @@ const report = {
     fields: [...products.fieldProducts.keys()].sort(),
   },
   violations,
+  consumers: [...analysis.rows.values()]
+    .filter((row) => row.product === "Croquis.component_usages")
+    .map((row) => ({
+      product: row.product,
+      crate: row.crate,
+      sites: row.sites,
+      files: [...row.files].sort(),
+    }))
+    .sort((left, right) => left.crate.localeCompare(right.crate)),
   previous: {
     path: ARTIFACT_REL,
     blob: git("rev-parse", "HEAD:" + ARTIFACT_REL),

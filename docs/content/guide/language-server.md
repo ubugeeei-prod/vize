@@ -161,6 +161,14 @@ Send the profile switches (`lint`, `typecheck`, `editor`, `ecosystem`, or single
 
 ## Troubleshooting
 
+For a machine-readable session profile, launch the server with
+`vize lsp --profile-json /absolute/path/lsp-profile.json`. The report is written
+after the editor completes the normal shutdown/exit handshake; stdio remains
+reserved for LSP messages. Builds with `cargo build --release -p vize --features profiling`
+also report Rust allocation counts and requested bytes. Ordinary builds report
+`allocation: null`; allocator totals do not include the TypeScript child process
+and are separate from process-tree RSS.
+
 | Symptom                                    | Check                                                                          |
 | ------------------------------------------ | ------------------------------------------------------------------------------ |
 | No diagnostics at all                      | The profile is `off`, or no feature is enabled. In VS Code run **Vize: Show Status** |

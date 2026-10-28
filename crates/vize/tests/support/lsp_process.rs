@@ -54,6 +54,15 @@ impl LspProcess {
         Self::spawn_with_stderr(project_root, Stdio::piped())
     }
 
+    pub fn spawn_profiled(project_root: &Path, profile: &Path) -> Self {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+        command
+            .current_dir(project_root)
+            .args(["lsp", "--profile-json"])
+            .arg(profile);
+        Self::spawn_command(command, Stdio::piped())
+    }
+
     /// Spawns with a caller-chosen stderr (e.g. a pipe whose reader an editor
     /// already closed); only a piped stderr is captured for failure reports.
     pub fn spawn_with_stderr(project_root: &Path, stderr_target: Stdio) -> Self {

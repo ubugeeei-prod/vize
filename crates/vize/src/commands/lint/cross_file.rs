@@ -4,6 +4,7 @@ mod absent_props;
 mod component;
 mod directives;
 mod fallthrough;
+mod nuxt_scope;
 mod sfc;
 
 use super::routes::config::{CrossFileRuleSettings, RuleSetting, setting};
@@ -95,7 +96,8 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     let root = std::env::current_dir().unwrap_or_default();
     let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), &root);
     analyzer.set_ssr_enabled(super::super::project_ssr::ssr_enabled(&root));
-    analyzer.set_nuxt_render_dirs(super::super::project_nuxt::render_dirs(&root));
+    let nuxt_render_dirs = super::super::project_nuxt::render_dirs(&root);
+    analyzer.set_nuxt_render_dirs(nuxt_render_dirs.clone());
     let mut file_indexes: FxHashMap<FileId, usize> = FxHashMap::default();
     let mut source_offsets: FxHashMap<FileId, CrossFileSourceOffsets> = FxHashMap::default();
     let mut results: Vec<_> = files
@@ -132,6 +134,10 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
         .collect();
 
     analyzer.rebuild_import_edges();
+    let proven = nuxt_render_dirs
+        .as_ref()
+        .is_some_and(|dirs| nuxt_scope::admitted(&root, dirs, &analyzer));
+    analyzer.admit_nuxt_render_scope_once(proven);
     let cross_file_result = analyzer.analyze();
 
     for diagnostic in &cross_file_result.diagnostics {

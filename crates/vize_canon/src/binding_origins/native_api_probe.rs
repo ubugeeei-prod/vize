@@ -15,6 +15,7 @@ use vize_carton::{String, append, cstr};
 mod cases;
 mod coverage;
 mod fixture;
+mod mutation;
 mod transport;
 use transport::NativeTap;
 
@@ -120,6 +121,7 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
         phases.push(phase);
         drop(lease);
     }
+    let semantic_mutations = mutation::run(&mut session, &provider, &root, &output, &version);
     let dialect = session.client().dialect().unwrap().as_str();
     assert_eq!(
         dialect,
@@ -152,10 +154,10 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
         "backend":backend,"backendSha256":hash(&fs::read(&backend).unwrap()),
         "provider":provider,"launch":launch,"actualExecutable":executable,
         "actualStdin":stdin,"actualStdout":stdout,"dialect":dialect,
-        "phases":phases,"hashVectors":{"count":4,"oracle":"Node26 crypto and known SHA256 vectors"},
+        "phases":phases,"semanticMutationPhases":semantic_mutations,"hashVectors":{"count":4,"oracle":"Node26 crypto and known SHA256 vectors"},
         "forwardedClientBytes":forwarded,"observedNativeStdoutBytes":received,"fullWireCaptured":true,
         "managedSnapshotLeaseBytes":Value::Null,"nativeProgramCreationCount":Value::Null,"nativeBindCount":Value::Null,
-        "hostProjectSessionSpawns":1,"hostSnapshotRefreshes":2,"snapshotHandleTransfers":0,
+        "hostProjectSessionSpawns":1,"hostSnapshotRefreshes":5,"snapshotHandleTransfers":0,
         "currentBaseRelease":"observed wire only; derived current-base ownership may defer release",
         "originClassifierQualified":false,"hostWire":false,"passed":true
     });
