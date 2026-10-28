@@ -9,6 +9,7 @@ import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { createDualLspFixture } from "./support/dual-lsp-fixture.ts";
 import {
   diagnosticBarrierCount,
+  diagnosticDeadlineMs,
   diagnosticQuietMs,
   qualifyDocumentRevisions,
   runQualifiedOperationPacket,
@@ -208,6 +209,7 @@ async function main(): Promise<void> {
         warmSamplesPerProduct: config.warmSamples,
         schedule: "ABBA by round; both products receive byte-identical primary method/params sequences",
         diagnosticQuietMs,
+        diagnosticDeadlineMs,
         diagnosticBarriers: diagnosticBarrierCount,
       },
       tools: dualLspToolReceipt(),

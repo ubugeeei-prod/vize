@@ -182,6 +182,10 @@ export class DualLspProduct {
     ];
   }
 
+  get expectedDiagnosticWire(): DualLspWire {
+    return this.semantic ?? this.primary;
+  }
+
   get processIds(): number[] {
     return [this.primary.processId, ...(this.semantic ? [this.semantic.processId] : [])];
   }

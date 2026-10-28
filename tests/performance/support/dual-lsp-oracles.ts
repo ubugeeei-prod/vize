@@ -60,6 +60,16 @@ export type ProductRss = {
 const diagnosticMethod = "textDocument/publishDiagnostics";
 export const diagnosticQuietMs = 250;
 export const diagnosticBarrierCount = 2;
+export const diagnosticDeadlineMs = 60_000;
+
+type DiagnosticWaiter = {
+  waitForNotification(
+    method: string,
+    afterSequence: number,
+    predicate: (params: unknown) => boolean,
+    timeoutMs?: number,
+  ): Promise<unknown>;
+};
 
 function normalizeMessage(value: unknown): string {
   return String(value ?? "").replace(/\s+/g, " ").trim();
@@ -102,6 +112,19 @@ function publicationFingerprint(params: unknown): string | null {
   } catch {
     return "invalid";
   }
+}
+
+export async function waitForExpectedDiagnostic(
+  wire: DiagnosticWaiter,
+  afterSequence: number,
+  expected: string,
+): Promise<void> {
+  await wire.waitForNotification(
+    diagnosticMethod,
+    afterSequence,
+    (params) => publicationFingerprint(params) === expected,
+    diagnosticDeadlineMs,
+  );
 }
 
 function assertExactPublication(
@@ -151,9 +174,12 @@ async function qualifyRevision(
     wire,
     cursor: wire.notificationCursor,
   }));
+  const expectedWire = product.expectedDiagnosticWire;
+  const expectedCursor = expectedWire.notificationCursor;
   const expected = expectedDiagnostic(fixture.uri, source, version);
   const startedAt = performance.now();
   action();
+  await waitForExpectedDiagnostic(expectedWire, expectedCursor, expected);
   for (let barrier = 0; barrier < diagnosticBarrierCount; barrier += 1) {
     await product.diagnosticBarrier(fixture.uri);
   }

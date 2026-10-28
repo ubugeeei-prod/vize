@@ -12,8 +12,10 @@ import {
 import {
   assertExactProductDiagnostics,
   diagnosticBarrierCount,
+  diagnosticDeadlineMs,
   diagnosticQuietMs,
   expectedDiagnostic,
+  waitForExpectedDiagnostic,
 } from "../performance/support/dual-lsp-oracles.ts";
 import {
   commonInitializeParams,
@@ -71,6 +73,57 @@ test("diagnostic revisions have mutually exclusive complete fingerprints", () =>
   assert.match(v2, /Type 'number' is not assignable to type 'string'/);
   assert.ok(diagnosticQuietMs >= 250, "late diagnostics need a material quiescence window");
   assert.equal(diagnosticBarrierCount, 2);
+});
+
+test("a delayed exact diagnostic is awaited before qualification", async () => {
+  const uri = "file:///workspace/src/App.vue";
+  const expected = expectedDiagnostic(uri, sourceV2, 2);
+  const exact = JSON.parse(expected) as {
+    range: { start: unknown; end: unknown };
+    code: string;
+    message: string;
+  };
+  const publication = {
+    uri,
+    diagnostics: [
+      {
+        range: { end: exact.range.end, start: exact.range.start },
+        code: exact.code,
+        message: exact.message,
+        severity: 1,
+      },
+    ],
+  };
+  let release: (() => void) | undefined;
+  let predicate: ((params: unknown) => boolean) | undefined;
+  const waiter = {
+    waitForNotification(
+      method: string,
+      afterSequence: number,
+      candidate: (params: unknown) => boolean,
+      timeoutMs?: number,
+    ): Promise<unknown> {
+      assert.equal(method, "textDocument/publishDiagnostics");
+      assert.equal(afterSequence, 7);
+      assert.equal(timeoutMs, diagnosticDeadlineMs);
+      predicate = candidate;
+      return new Promise((resolve) => {
+        release = () => resolve({});
+      });
+    },
+  };
+  let settled = false;
+  const pending = waitForExpectedDiagnostic(waiter, 7, expected).then(() => {
+    settled = true;
+  });
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(settled, false);
+  assert.ok(predicate);
+  assert.equal(predicate(publication), true);
+  assert.ok(release);
+  release();
+  await pending;
+  assert.equal(settled, true);
 });
 
 test("diagnostic admission covers both halves of the Vue product", () => {
