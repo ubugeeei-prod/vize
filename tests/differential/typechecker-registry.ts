@@ -14,8 +14,6 @@ export const TYPECHECKER_TESTS = {
   "component-listener-prop-duplicate-10397": "required_prop_reports_once_with_or_without_listener",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-tag-aliases-11020": "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
-  "unknown-component-slot-payload-11027":
-    "unknown_component_slots_preserve_authored_type_diagnostics",
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
@@ -122,6 +120,8 @@ export const TYPECHECKER_TESTS = {
   "undeclared-instance-globals-10617": "undeclared_instance_globals_report_at_every_read",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
+  "unknown-component-slot-payload-11027":
+    "unknown_component_slots_preserve_authored_type_diagnostics",
   "v-for-component-source-original":
     "component_v_for_source_preserves_complete_original_diagnostics",
   "v-for-source-original": "v_for_source_callbacks_preserve_complete_original_diagnostics",
