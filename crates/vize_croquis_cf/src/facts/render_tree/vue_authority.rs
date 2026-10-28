@@ -531,7 +531,10 @@ mod tests {
 
     #[test]
     fn tsconfig_and_vite_files_redirect_only_the_vue_specifier() {
-        let root = std::env::temp_dir().join(format!("vize-vue-authority-{}", std::process::id()));
+        let root = std::env::temp_dir().join(vize_carton::cstr!(
+            "vize-vue-authority-{}",
+            std::process::id()
+        ));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         assert!(!vue_specifier_is_redirected(&root));
