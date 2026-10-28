@@ -67,6 +67,7 @@ export function supportsLspMethod(
 
 /** One strict JSON-RPC stdio transport shared by every measured server process. */
 export class DualLspWire {
+  readonly launch: WireLaunch;
   private readonly child: ChildProcessWithoutNullStreams;
   private readonly pending = new Map<
     number,
@@ -82,7 +83,8 @@ export class DualLspWire {
   private stderr = "";
   private capabilities: Record<string, unknown> = {};
 
-  constructor(readonly launch: WireLaunch) {
+  constructor(launch: WireLaunch) {
+    this.launch = launch;
     this.child = spawn(launch.command, launch.args, {
       cwd: launch.cwd,
       env: { ...process.env, ...launch.env },

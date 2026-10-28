@@ -129,14 +129,14 @@ function unwrapTuple(params: unknown): [number, string, unknown] {
 
 /** A product boundary: one Vize process, or the complete current Vue+TS stack. */
 export class DualLspProduct {
+  readonly kind: ProductKind;
+  private readonly primary: DualLspWire;
   private readonly semantic?: DualLspWire;
   private readonly bridgeFailures: Error[] = [];
 
-  private constructor(
-    readonly kind: ProductKind,
-    private readonly primary: DualLspWire,
-    semantic?: DualLspWire,
-  ) {
+  private constructor(kind: ProductKind, primary: DualLspWire, semantic?: DualLspWire) {
+    this.kind = kind;
+    this.primary = primary;
     this.semantic = semantic;
     if (semantic) this.installBridge(semantic);
   }
