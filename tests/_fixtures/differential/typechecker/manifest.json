@@ -10384,6 +10384,29 @@
       ]
     },
     {
+      "id": "typechecker/shorthand-double-diagnostic-10920",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [
+        {
+          "path": "shorthand-double-diagnostic-10920/Probe.vue.txt",
+          "sha256": "50c1cc8fdc58bdee66aa75e4827907f839255d537887ee2167e55186653c44c0",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
       "targets": [
         "batch"
