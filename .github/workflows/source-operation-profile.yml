@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_UI_OBSERVATION="$RUNNER_TEMP/ui-corsa-observation"
-          printf 'VIZE_UI_OBSERVATION=%s\\n' "$VIZE_UI_OBSERVATION" >> "$GITHUB_ENV"
+          printf 'VIZE_UI_OBSERVATION=%s\n' "$VIZE_UI_OBSERVATION" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/ui-corsa-observer" "$VIZE_UI_OBSERVATION"
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/40603481864/artifacts?per_page=100" > "$VIZE_UI_OBSERVATION/original-artifact-inventory.json"
           for pair in 'ui-corsa-rpc-proxy.ts:rpc-proxy.ts' 'ui-corsa-observer.ts:observer.ts' 'ui-corsa-case.ts:case.ts'; do
