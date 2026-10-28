@@ -50,6 +50,7 @@ struct SlotPayloadContext<'a> {
     /// scope, so each needs its own or the second would redeclare the first.
     binding_prefix: &'a str,
     indent: &'a str,
+    hoist_shared_preamble: bool,
     explicit_generics: &'a ExplicitGenerics,
 }
 
@@ -158,6 +159,7 @@ pub(super) fn generate_v_slot_scope(
             .with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
             binding_prefix: "__vize_slot_host_",
             indent,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             explicit_generics: ctx.explicit_generics,
         },
         scope,
@@ -257,6 +259,7 @@ pub(super) fn generate_v_slot_props_scope(
             source_context: ctx.source_context,
             binding_prefix: "__vize_slot_props_host_",
             indent,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             explicit_generics: ctx.explicit_generics,
         },
         scope,

@@ -58,6 +58,7 @@ pub(super) fn generate_empty_root_checks(
         source_context: ctx.source_context(),
         indent: "  ",
         typed_fallthrough_values: ctx.typed_fallthrough_values,
+        hoist_shared_preamble: ctx.hoist_shared_preamble,
         experimental_strict_slot_children: ctx.experimental_strict_slot_children,
         explicit_generics: ctx.explicit_generics,
     };
@@ -75,6 +76,7 @@ struct EmptyChecksContext<'a, 'template, 'b> {
     source_context: ComponentPropSource<'a>,
     indent: &'b str,
     typed_fallthrough_values: bool,
+    hoist_shared_preamble: bool,
     experimental_strict_slot_children: bool,
     explicit_generics: &'a ExplicitGenerics,
 }
@@ -204,6 +206,7 @@ pub(super) fn generate_scope_checks(
             source_context: ctx.source_context,
             indent,
             typed_fallthrough_values: ctx.typed_fallthrough_values,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
         };
