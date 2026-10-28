@@ -1,9 +1,9 @@
 //! Resolve a generic child's instantiated props before checking inline callbacks.
 
-use super::component_props::{
-    ComponentPropSource, collect_generated_class_bindings, is_checkable_prop,
-    merged_class_binding_value,
+use super::component_prop_bindings::{
+    collect_generated_class_bindings, merged_class_binding_value,
 };
+use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;

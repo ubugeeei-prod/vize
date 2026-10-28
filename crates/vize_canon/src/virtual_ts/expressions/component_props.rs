@@ -12,7 +12,7 @@ use super::super::scope::{
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, generated_prop_span_preserving_comments,
-    generated_prop_value, prop_name_source_range, prop_value_source_range,
+    prop_name_source_range, prop_value_source_range,
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::FxHashMap;
@@ -248,58 +248,6 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     }
 }
 
-pub(super) fn collect_generated_class_bindings<'a>(
-    usage: &'a ComponentUsage,
-    template_binding_access: &TemplateBindingAccess,
-) -> Vec<(&'a PassedProp, String)> {
-    collect_generated_named_bindings(usage, template_binding_access, "class")
-}
-
-pub(super) fn collect_generated_named_bindings<'a>(
-    usage: &'a ComponentUsage,
-    template_binding_access: &TemplateBindingAccess,
-    name: &str,
-) -> Vec<(&'a PassedProp, String)> {
-    usage
-        .props
-        .iter()
-        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == name)
-        .filter_map(|prop| {
-            generated_prop_value(prop, template_binding_access).map(|value| (prop, value))
-        })
-        .collect()
-}
-
-pub(super) fn merged_class_binding_value(
-    bindings: &[(&PassedProp, String)],
-    mut ranges: Option<&mut Vec<std::ops::Range<usize>>>,
-) -> Option<String> {
-    match bindings {
-        [] => None,
-        [(_, value)] => {
-            if let Some(ranges) = ranges.as_mut() {
-                ranges.push(0..value.len());
-            }
-            Some(value.clone())
-        }
-        _ => {
-            let mut value = String::default();
-            value.push('[');
-            for (index, (_, binding_value)) in bindings.iter().enumerate() {
-                if index > 0 {
-                    value.push_str(", ");
-                }
-                let generated = append_prop_value(&mut value, binding_value.as_str());
-                if let Some(ranges) = ranges.as_mut() {
-                    ranges.push(generated);
-                }
-            }
-            value.push(']');
-            Some(value)
-        }
-    }
-}
-
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
     ctx: &mut ComponentPropCheckContext<'_, '_>,
@@ -417,8 +365,16 @@ pub(crate) fn generate_component_prop_checks(
             let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
             super::callback_prop_resolution::append_prop_check_type(
                 ts,
-                (resolved_props.as_ref().filter(|_| inline_callback), ctx.hoist_shared_preamble),
-                (component_type_name.as_str(), idx, safe_prop_name.as_str(), prop.name.as_str()),
+                (
+                    resolved_props.as_ref().filter(|_| inline_callback),
+                    ctx.hoist_shared_preamble,
+                ),
+                (
+                    component_type_name.as_str(),
+                    idx,
+                    safe_prop_name.as_str(),
+                    prop.name.as_str(),
+                ),
             );
             let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
                 append_prop_value(ts, generated_value.text.as_str())

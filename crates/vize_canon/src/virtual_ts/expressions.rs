@@ -6,6 +6,7 @@
 mod callback_prop_resolution;
 #[cfg(test)]
 mod callback_prop_resolution_tests;
+mod component_prop_bindings;
 mod component_props;
 #[cfg(test)]
 mod component_props_tests;

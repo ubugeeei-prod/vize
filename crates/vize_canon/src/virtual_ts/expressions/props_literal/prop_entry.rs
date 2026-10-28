@@ -1,6 +1,5 @@
-use crate::virtual_ts::expressions::component_props::{
-    ComponentPropSource, merged_class_binding_value,
-};
+use crate::virtual_ts::expressions::component_prop_bindings::merged_class_binding_value;
+use crate::virtual_ts::expressions::component_props::ComponentPropSource;
 use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
