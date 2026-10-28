@@ -58,9 +58,9 @@ const overlayPaths = git("diff", "--name-only", productionCandidate, "HEAD", "--
   .split("\n")
   .filter(Boolean);
 assert.deepEqual(overlayPaths.toSorted(), [
-  "crates/vize/src/lib.rs",
   "crates/vize/src/commands/check/imports/registration/reachability/tests.rs",
   "crates/vize/src/commands/check/imports/registration/reachability/tests/normal.rs",
+  "crates/vize/src/lib.rs",
 ]);
 const overlayDiff = git("diff", productionCandidate, "HEAD", "--", "crates");
 const env = {
