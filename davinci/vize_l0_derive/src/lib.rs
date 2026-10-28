@@ -51,6 +51,7 @@
 )]
 
 mod codegen;
+mod emit_ts;
 mod model;
 
 use proc_macro::TokenStream;
@@ -69,4 +70,13 @@ pub fn derive_dump(input: TokenStream) -> TokenStream {
         Ok(model) => codegen::expand(&model).into(),
         Err(error) => error.to_compile_error().into(),
     }
+}
+
+/// Write a TypeScript template into a buffer without `format!`.
+///
+/// Static text is reserved and copied with `push_str`. `{expr}` writes a
+/// string or an integer. `{%expr}` uses `Display`. `{{` and `}}` are braces.
+#[proc_macro]
+pub fn emit_ts(input: TokenStream) -> TokenStream {
+    emit_ts::expand(input)
 }

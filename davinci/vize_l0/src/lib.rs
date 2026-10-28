@@ -72,6 +72,7 @@ pub mod span;
 pub mod string_builder;
 pub mod telegraph;
 pub mod template_globals;
+pub mod ts_emit;
 
 // Re-export allocator types
 pub use allocator::{Allocator, ArenaStamp};
@@ -90,6 +91,7 @@ pub use oxc_allocator::StringBuilder;
 pub use compact_str::CompactString;
 pub use compact_str::CompactString as String;
 pub use compact_str::ToCompactString;
+pub use vize_l0_derive::emit_ts;
 
 // Re-export smallvec for stack-optimized collections
 pub use smallvec::{SmallVec, smallvec};
