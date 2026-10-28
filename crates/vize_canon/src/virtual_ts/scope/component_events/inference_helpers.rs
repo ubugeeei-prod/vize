@@ -1,6 +1,8 @@
 use vize_carton::String;
 use vize_croquis::{Croquis, ScopeData};
 
+use crate::virtual_ts::helpers::shared_types::EMIT_PROPS;
+
 /// Resolve emitted payloads from the props written at this call site. Generated
 /// components expose their own/public keys separately from inherited root keys;
 /// validating each authored key preserves that priority even for index signatures.
@@ -10,7 +12,8 @@ use vize_croquis::{Croquis, ScopeData};
 const EMIT_INFERENCE_HELPERS: &str =
     include_str!("../../helpers/declarations/emit-inference.d.ts.txt");
 
-const LEGACY_EMIT_INFERENCE_HELPERS: &str = r#"declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
+const LEGACY_EMIT_INFERENCE_HELPERS_PREFIX: &str = r#"declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => "#;
+const LEGACY_EMIT_INFERENCE_HELPERS_SUFFIX: &str = r#"<E>;
 type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
 type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
 "#;
@@ -29,11 +32,45 @@ pub(crate) fn emit_event_inference_helpers(
             matches!(scope.data(), ScopeData::EventHandler(data) if data.target_component.is_some())
         });
     if needed && (!hoist_shared_preamble || legacy_vue2) {
-        ts.push_str(if legacy_vue2 {
-            LEGACY_EMIT_INFERENCE_HELPERS
+        if legacy_vue2 {
+            ts.push_str(LEGACY_EMIT_INFERENCE_HELPERS_PREFIX);
+            ts.push_str(EMIT_PROPS.select(hoist_shared_preamble));
+            ts.push_str(LEGACY_EMIT_INFERENCE_HELPERS_SUFFIX);
         } else {
-            EMIT_INFERENCE_HELPERS
-        });
+            ts.push_str(EMIT_INFERENCE_HELPERS);
+        }
     }
     needed
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn legacy_emit_props_identity_follows_helper_storage() {
+        for (hoisted, expected, rejected) in [
+            (
+                false,
+                ") => __EmitProps<E>;",
+                ") => import(\"vize:virtual-ts\").__EmitProps<E>;",
+            ),
+            (
+                true,
+                ") => import(\"vize:virtual-ts\").__EmitProps<E>;",
+                ") => __EmitProps<E>;",
+            ),
+        ] {
+            let mut output = String::default();
+            assert!(emit_event_inference_helpers(
+                &mut output,
+                &Croquis::default(),
+                true,
+                true,
+                hoisted,
+            ));
+            assert_eq!(output.matches(expected).count(), 1, "{output}");
+            assert_eq!(output.matches(rejected).count(), 0, "{output}");
+        }
+    }
 }

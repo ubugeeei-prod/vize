@@ -64,7 +64,7 @@ pub(super) fn retain(root: &Path, stage: &str, value: &Value) {
             target.join("result.json"),
             serde_json::to_vec_pretty(value)?,
         )?;
-        copy_inputs(&root.join("src"), &target.join("inputs/src"))?;
+        copy_project_sources(root, &target.join("inputs"))?;
         std::fs::copy(
             root.join("tsconfig.json"),
             target.join("inputs/tsconfig.json"),
@@ -89,6 +89,36 @@ pub(super) fn retain(root: &Path, stage: &str, value: &Value) {
     if let Err(error) = saved {
         panic!("compatibility capture failed: {error}");
     }
+}
+
+fn copy_project_sources(root: &Path, target: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(target)?;
+    let root_source = root.join("src");
+    if root_source.is_dir() {
+        copy_inputs(&root_source, &target.join("src"))?;
+    }
+    copy_nested_source_trees(root, root, target)
+}
+
+fn copy_nested_source_trees(root: &Path, current: &Path, target: &Path) -> std::io::Result<()> {
+    for item in std::fs::read_dir(current)? {
+        let item = item?;
+        if !item.file_type()?.is_dir() {
+            continue;
+        }
+        let name = item.file_name();
+        let path = item.path();
+        if path == root.join("src") || name == "node_modules" || name == ".git" {
+            continue;
+        }
+        if name == "src" {
+            let relative = path.strip_prefix(root).map_err(std::io::Error::other)?;
+            copy_inputs(&path, &target.join(relative))?;
+        } else {
+            copy_nested_source_trees(root, &path, target)?;
+        }
+    }
+    Ok(())
 }
 
 fn copy_inputs(source: &Path, target: &Path) -> std::io::Result<()> {
@@ -142,5 +172,42 @@ fn required_success_preserves_the_complete_value() {
     assert_eq!(
         finish(Ok(vec![("source", 2345, "whole message")]), true),
         Some(vec![("source", 2345, "whole message")])
+    );
+}
+
+#[test]
+fn source_capture_keeps_root_and_nested_package_trees() {
+    let nested_root = tempfile::tempdir().unwrap();
+    let nested_source = nested_root.path().join("packages/app/src");
+    std::fs::create_dir_all(&nested_source).unwrap();
+    std::fs::write(nested_source.join("App.vue"), "<template />\n").unwrap();
+    let ignored_dependency = nested_root.path().join("packages/app/node_modules/pkg");
+    std::fs::create_dir_all(&ignored_dependency).unwrap();
+    std::fs::write(ignored_dependency.join("index.d.ts"), "export {};\n").unwrap();
+    let nested_capture = tempfile::tempdir().unwrap();
+
+    copy_project_sources(nested_root.path(), nested_capture.path()).unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(nested_capture.path().join("packages/app/src/App.vue")).unwrap(),
+        "<template />\n"
+    );
+    assert!(
+        !nested_capture
+            .path()
+            .join("packages/app/node_modules")
+            .exists()
+    );
+
+    let root = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(root.path().join("src")).unwrap();
+    std::fs::write(root.path().join("src/main.ts"), "export {};\n").unwrap();
+    let capture = tempfile::tempdir().unwrap();
+
+    copy_project_sources(root.path(), capture.path()).unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(capture.path().join("src/main.ts")).unwrap(),
+        "export {};\n"
     );
 }

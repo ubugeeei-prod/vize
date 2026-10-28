@@ -7,10 +7,12 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use crate::batch::VirtualProject;
+use oxc_syntax::identifier::is_identifier_part;
 
 const CHILD: &str = r#"<script setup lang="ts">
 const props = defineProps<{
   value: string
+  ariaLabel?: string
   transform: (value: string) => string
 }>()
 const emit = defineEmits<{ save: [value: string] }>()
@@ -60,9 +62,12 @@ type __VizeSlotPayload = never
 type __VizeSlotHostSelector = never
 type __VizeSlotConstructor = never
 type __VizeSlotConstructorArgs = never
+type __VizeSlotConstructoré = never
+type __VizeSlotConstructor\u0041 = never
 type __VizeSlotsFactory = never
 type __VizeEmitPropsFactory = never
 type __VizeWidenTemplateRef = never
+type __VizeNotUndefined = never
 type __EmitProps = never
 export const moduleTypePoison = true
 </script>
@@ -78,11 +83,13 @@ import Child from './Child.vue'
 defineEmits<{{ local: [value: string] }}>()
 const spread = {{ value: {value} }}
 const literal = ref<'ok'>('ok')
+const ariaLabel = undefined as string | undefined
 </script>
 
 <template>
   <Child
     v-bind="spread"
+    :aria-label="ariaLabel"
     :transform="item => item.toUpperCase()"
     :ref="instance => instance?.focus()"
     @save="item => item.toUpperCase()"
@@ -110,6 +117,27 @@ import Child from './Child.vue'
 </template>
 "#
     )
+}
+
+fn exact_identifier_count(source: &str, identifier: &str) -> usize {
+    source
+        .split(|character: char| character != '\\' && !is_identifier_part(character))
+        .filter(|candidate| *candidate == identifier)
+        .count()
+}
+
+/// Keep prefix-related helper names independent (`Constructor` versus
+/// `ConstructorArgs`) so the custody assertion measures lexical capture.
+fn exact_qualified_count(source: &str, qualified: &str) -> usize {
+    source
+        .match_indices(qualified)
+        .filter(|&(start, matched)| {
+            source
+                .get(start + matched.len()..)
+                .and_then(|tail| tail.chars().next())
+                .is_none_or(|next| next != '\\' && !is_identifier_part(next))
+        })
+        .count()
 }
 
 #[test]
@@ -166,8 +194,8 @@ fn authored_module_types_cannot_capture_batch_helpers() {
     let mut activated = Vec::with_capacity(members.len());
     for member in members {
         let direct_reference = format!("import(\"vize:virtual-ts\").{member}");
-        let direct_count = generated.matches(direct_reference.as_str()).count();
-        let total_count = generated.matches(member).count();
+        let direct_count = exact_qualified_count(generated, direct_reference.as_str());
+        let total_count = exact_identifier_count(generated, member);
         assert_eq!(
             total_count,
             direct_count + 1,
@@ -178,6 +206,23 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         }
     }
     assert_eq!(activated, members);
+    assert_eq!(
+        exact_identifier_count(generated, "__VizeNotUndefined"),
+        1,
+        "only the authored poison may name __VizeNotUndefined in hoisted mode:\n{generated}"
+    );
+    assert_eq!(
+        generated
+            .matches("function __vizeComponentAriaPropValue")
+            .count(),
+        1,
+        "the ARIA present-value witness must precede the hoisted-helper early return:\n{generated}"
+    );
+    assert_eq!(
+        generated.matches("T extends undefined ? never : T").count(),
+        2,
+        "the ARIA witness must inline its collision-proof narrowing contract:\n{generated}"
+    );
     let _ = std::fs::remove_dir_all(&project_root);
 }
 

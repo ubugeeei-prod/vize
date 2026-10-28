@@ -64,6 +64,24 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     typed_fallthrough_values: bool,
     hoist_shared_preamble: bool,
 ) {
+    let needs_aria_prop_value = usages.iter().any(|(_, usage)| {
+        usage
+            .props
+            .iter()
+            .any(|prop| !prop.name_is_dynamic && prop.name.starts_with("aria-"))
+    });
+    if needs_aria_prop_value && hoist_shared_preamble {
+        // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
+        // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
+        // `string | undefined` value pass under exactOptionalPropertyTypes.
+        // The dedicated per-prop assignment owns the real value check. Keep
+        // the narrowing conditional inline: in hoisted batch programs an
+        // authored module alias named `__VizeNotUndefined` is otherwise the
+        // nearest lexical declaration and can capture this generated helper.
+        ts.push_str(
+            "  function __vizeComponentAriaPropValue<const T>(value: T): T extends undefined ? never : T { return value as (T extends undefined ? never : T); }\n",
+        );
+    }
     if hoist_shared_preamble {
         append_vue_public_component_attrs(ts);
         append_hoisted_component_check_policy(
@@ -75,12 +93,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         return;
     }
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
-    if usages.iter().any(|(_, usage)| {
-        usage
-            .props
-            .iter()
-            .any(|prop| !prop.name_is_dynamic && prop.name.starts_with("aria-"))
-    }) {
+    if needs_aria_prop_value {
         // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
         // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
         // `string | undefined` value pass under exactOptionalPropertyTypes.
