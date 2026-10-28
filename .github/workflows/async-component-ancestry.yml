@@ -56,6 +56,64 @@ jobs:
           set -euo pipefail
           npm install --prefix "$RUNNER_TEMP/async-component-runtime" --registry=https://registry.npmjs.org --no-audit --no-fund --save-exact vue@3.5.43 @vue/compiler-sfc@3.5.43
           echo "VIZE_ASYNC_RUNTIME_PACKAGE=$RUNNER_TEMP/async-component-runtime/package.json" >> "$GITHUB_ENV"
+      - name: Require the new mixed-demand control to fail at its exact parent production
+        if: matrix.role == 'candidate'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin 4c7211a42ef27ba8fc3bae4c220fc95cd6ac8278
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          parent = "4c7211a42ef27ba8fc3bae4c220fc95cd6ac8278"
+          paths = [
+              "crates/vize_croquis/src/script_parser/value_binding_origins.rs",
+              "crates/vize_croquis/src/script_parser/parse.rs",
+              "crates/vize_croquis/src/facts/components.rs",
+          ]
+          head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          assert head == os.environ["SOURCE_SHA"]
+          changed = subprocess.check_output(["git", "diff", "--name-only", parent, head, "--", "crates"], text=True).splitlines()
+          assert sorted(changed) == sorted(paths), changed
+          current = {p: pathlib.Path(p).read_bytes() for p in paths}
+          previous = {p: subprocess.check_output(["git", "show", parent + ":" + p]) for p in paths}
+          component = paths[-1]
+          new = current[component]
+          marker = b"    fn uncaptured_setup("
+          assert marker in new and marker not in previous[component]
+          tail = new[new.index(marker):new.rindex(b"\n}")]
+          old = previous[component]
+          rewritten = old[:old.rindex(b"\n}")] + b"\n" + tail + old[old.rindex(b"\n}"):]
+          proof = pathlib.Path("target/vize-tests/async-component")
+          receipt = {
+              "schema": "vize.asyncComponentMixedDemandBefore.v1",
+              "productionSource": parent,
+              "observer": head,
+              "test": "facts::components::tests::missing_setup_capture_cannot_reuse_plain_program_names",
+              "newTestTailSha256": hashlib.sha256(tail).hexdigest(),
+              "productionFiles": [{"path": p, "sha256": hashlib.sha256(b).hexdigest()} for p, b in previous.items()],
+              "claim": "pinned parent production with only the new regression tests; not a source SDK or public consumer",
+          }
+          (proof / "mixed-demand-parent.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          try:
+              for p, b in previous.items():
+                  pathlib.Path(p).write_bytes(rewritten if p == component else b)
+              run = subprocess.run(["cargo", "test", "--locked", "-p", "vize_croquis", receipt["test"], "--", "--exact", "--nocapture"], capture_output=True)
+              (proof / "mixed-demand-parent.stdout").write_bytes(run.stdout)
+              (proof / "mixed-demand-parent.stderr").write_bytes(run.stderr)
+              receipt["status"] = run.returncode
+              receipt["stdoutSha256"] = hashlib.sha256(run.stdout).hexdigest()
+              receipt["stderrSha256"] = hashlib.sha256(run.stderr).hexdigest()
+              (proof / "mixed-demand-parent.json").write_text(json.dumps(receipt, indent=2) + "\n")
+              assert run.returncode == 101, run.returncode
+              assert b"running 1 test" in run.stdout
+              assert b"test result: FAILED. 0 passed; 1 failed;" in run.stdout
+              assert b"assertion failed" in run.stderr and b"LocalComponentBinding::Opaque" in run.stderr
+          finally:
+              for p, b in current.items():
+                  pathlib.Path(p).write_bytes(b)
+              assert all(pathlib.Path(p).read_bytes() == b for p, b in current.items())
+          subprocess.run(["git", "diff", "--exit-code"], check=True)
+          PY
       - name: Require complete Croquis and cross-file unit suites
         if: matrix.role == 'candidate'
         shell: bash
