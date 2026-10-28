@@ -251,8 +251,7 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
   methods: { increment() { return ++this.count; } },
 };
 "#;
-    let template =
-        "<p>{{ label }}:{{ count }}:{{ doubled }}:{{ increment() }}:{{ missing }}</p>";
+    let template = "<p>{{ label }}:{{ count }}:{{ doubled }}:{{ increment() }}:{{ missing }}</p>";
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
@@ -271,14 +270,19 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
         assert_eq!(
             output
                 .code
-                .matches(&format!("__VizeOptionsBinding<typeof __default__, \"{name}\""))
+                .matches(&format!(
+                    "__VizeOptionsBinding<typeof __default__, \"{name}\""
+                ))
                 .count(),
             1,
             "missing lexical Options API binding for {name}:\n{}",
             output.code
         );
         assert_eq!(
-            output.code.matches(&format!("__vize_public_instance.{name}")).count(),
+            output
+                .code
+                .matches(&format!("__vize_public_instance.{name}"))
+                .count(),
             0,
             "Options API member {name} gained a public-instance read:\n{}",
             output.code
@@ -294,7 +298,10 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
         );
     }
     assert_eq!(
-        output.code.matches("void (__vize_public_instance.missing);").count(),
+        output
+            .code
+            .matches("void (__vize_public_instance.missing);")
+            .count(),
         1,
         "the undeclared negative control must retain its instance diagnostic:\n{}",
         output.code

@@ -7017,6 +7017,29 @@
       }
     },
     {
+      "id": "typechecker/options-api-lexical-members-11069",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [
+        {
+          "path": "options-api-lexical-members-11069/Options.vue.txt",
+          "sha256": "7831b78440cd5f971abbbd2a980ef94fb188742e1993437bdfdf3128a40891e8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/options-api-reserved-component-reference/reserved-prop-dynamic-component",
       "state": "active",
       "targets": [
