@@ -136,11 +136,31 @@ fn exact_registration<'a>(
 }
 
 fn imported_export<'a>(croquis: &'a Croquis, local: &str) -> Option<(&'a str, &'a str)> {
+    imported_export_with_owner(croquis, local, false)
+}
+
+fn setup_imported_export<'a>(croquis: &'a Croquis, local: &str) -> Option<(&'a str, &'a str)> {
+    imported_export_with_owner(croquis, local, true)
+}
+
+fn imported_export_with_owner<'a>(
+    croquis: &'a Croquis,
+    local: &str,
+    setup_only: bool,
+) -> Option<(&'a str, &'a str)> {
     let mut fallback = None;
     for scope in croquis.scopes.iter() {
         let ScopeData::ExternalModule(data) = scope.data() else {
             continue;
         };
+        if setup_only
+            && !scope
+                .parent()
+                .and_then(|parent| croquis.scopes.get_scope(parent))
+                .is_some_and(|parent| parent.kind == crate::scope::ScopeKind::ScriptSetup)
+        {
+            continue;
+        }
         if data.is_type_only {
             continue;
         }
@@ -230,12 +250,13 @@ fn metadata_binding_name<'a>(croquis: &'a Croquis, tag: &str) -> Option<&'a str>
 }
 
 fn unavailable_binding<'a>(croquis: &'a Croquis, tag: &str) -> LocalComponentBinding<'a> {
-    if croquis.source_program_count == 1 && imported_export(croquis, tag).is_some() {
+    let binding = metadata_binding_name(croquis, tag);
+    if binding.is_some_and(|name| setup_imported_export(croquis, name).is_some()) {
         // The existing authored static-import route does not depend on Vue
         // factory authority or alias/value provenance from the private store.
         return LocalComponentBinding::StaticImport;
     }
-    match metadata_binding_name(croquis, tag) {
+    match binding {
         Some(_) => LocalComponentBinding::Opaque,
         None => LocalComponentBinding::Absent,
     }
