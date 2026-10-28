@@ -204,12 +204,12 @@ pub(crate) fn generate_slot_host_binding(
             .select(true);
         append!(
             *ts,
-            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(\n{indent}  new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(),\n{indent}  new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)(",
+            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)(",
         );
     } else {
         append!(
             *ts,
-            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof {component_ref}>>()(\n{indent}  new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof {component_ref}>>)(),\n{indent}  new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof {component_ref}>>)(",
+            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof {component_ref}>>)(",
         );
     }
     let isolated_guard = usage

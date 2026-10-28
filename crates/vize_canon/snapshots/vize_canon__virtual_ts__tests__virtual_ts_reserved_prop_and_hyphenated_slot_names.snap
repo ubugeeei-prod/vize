@@ -182,9 +182,7 @@ function __setup() {
   // @vize-map: expr -> 20:25
 
   // v-slot scope: #area-gradient
-  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof TrendChart>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof TrendChart>>()(
-    new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof TrendChart>>)(),
-    new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof TrendChart>>)({
+  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof TrendChart>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof TrendChart>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof TrendChart>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof TrendChart>>)({
     "class": props["class"],
   }, ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof TrendChart>>))), (undefined as unknown as __VizeSlotsFactory<typeof TrendChart>)(TrendChart)({
     "class": props["class"],
@@ -260,9 +258,7 @@ function __setup() {
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #area-gradient
-  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof TrendChart>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof TrendChart>>()(
-    new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof TrendChart>>)(),
-    new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof TrendChart>>)({
+  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof TrendChart>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof TrendChart>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof TrendChart>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof TrendChart>>)({
     "class": props["class"],
   }, ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof TrendChart>>))), (undefined as unknown as __VizeSlotsFactory<typeof TrendChart>)(TrendChart)({
     "class": props["class"],

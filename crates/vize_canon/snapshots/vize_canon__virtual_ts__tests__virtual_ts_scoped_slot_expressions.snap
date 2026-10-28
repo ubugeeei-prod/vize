@@ -171,9 +171,7 @@ function __setup() {
   // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof MyList>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof MyList>>()(
-    new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof MyList>>)(),
-    new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof MyList>>)({
+  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof MyList>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof MyList>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof MyList>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof MyList>>)({
     "items": items,
   }, ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof MyList>>))), (undefined as unknown as __VizeSlotsFactory<typeof MyList>)(MyList)({
     "items": items,
@@ -249,9 +247,7 @@ function __setup() {
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #default
-  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof MyList>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof MyList>>()(
-    new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof MyList>>)(),
-    new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof MyList>>)({
+  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof MyList>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof MyList>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof MyList>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof MyList>>)({
     "items": items,
   }, ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof MyList>>))), (undefined as unknown as __VizeSlotsFactory<typeof MyList>)(MyList)({
     "items": items,
