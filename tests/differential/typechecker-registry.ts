@@ -1,3 +1,9 @@
+// Active #6852 pins are corpus inputs without a batch pack. Keep that manifest
+// distinction beside the pack registry instead of teaching every consumer it.
+export function packCases<T extends { pack?: unknown }>(cases: readonly T[]): T[] {
+  return cases.filter((fixture) => fixture.pack !== undefined);
+}
+
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",

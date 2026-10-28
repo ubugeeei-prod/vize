@@ -12,7 +12,7 @@ use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};
 
 mod alias;
-use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
+use alias::is_synthetic_content_mapper_identifier;
 
 mod protocol;
 use protocol::protocol_semantic_links;
@@ -524,16 +524,11 @@ fn candidate(
     }
 
     Some(SpanCandidate {
-        generated: generated_range,
+        generated: generated_range.clone(),
         original: original_range,
-        kind: if is_alias_projection(generated_text, original_text) {
-            ContentMapperSpanKind::Alias
-        } else {
-            ContentMapperSpanKind::Atom
-        },
+        kind: alias::span_kind(generated, generated_range, original_text),
     })
 }
-
 fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
     left.start < right.end && right.start < left.end
 }

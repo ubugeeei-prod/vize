@@ -8,7 +8,7 @@ import {
   validateResultEnvelope,
 } from "./harness.mjs";
 
-import { TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
+import { packCases, TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
 export { TYPECHECKER_TESTS } from "./typechecker-registry.ts";
 
 export type Artifact = { path: string; sha256: string };
@@ -212,7 +212,7 @@ export function loadTypecheckerManifest(manifestPath: string) {
   assert.equal(loaded.manifest.issue, 6879);
   const root = path.dirname(manifestPath);
   const packs = new Map<string, Pack>();
-  const cases = (loaded.cases as TypecheckerCase[]).map((fixture) => {
+  const cases = packCases(loaded.cases as TypecheckerCase[]).map((fixture) => {
     assert.deepEqual(fixture.targets, ["batch"]);
     assert.equal(fixture.adapters.legacy, "batch-typechecker-fixture-v1");
     assert.equal(fixture.adapters.native, null);
