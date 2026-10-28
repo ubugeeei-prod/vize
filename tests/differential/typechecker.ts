@@ -8,7 +8,7 @@ import {
   validateResultEnvelope,
 } from "./harness.mjs";
 
-import { TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
+import { packCases, TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
 export { TYPECHECKER_TESTS } from "./typechecker-registry.ts";
 
 export type Artifact = { path: string; sha256: string };
@@ -212,58 +212,55 @@ export function loadTypecheckerManifest(manifestPath: string) {
   assert.equal(loaded.manifest.issue, 6879);
   const root = path.dirname(manifestPath);
   const packs = new Map<string, Pack>();
-  // #6852 pins are active inputs without a batch pack, so they stay out of the oracle.
-  const cases = (loaded.cases as TypecheckerCase[])
-    .filter((fixture) => fixture.pack !== undefined)
-    .map((fixture) => {
-      assert.deepEqual(fixture.targets, ["batch"]);
-      assert.equal(fixture.adapters.legacy, "batch-typechecker-fixture-v1");
-      assert.equal(fixture.adapters.native, null);
-      assert.equal(fixture.state, "active");
-      assert(Object.hasOwn(TYPECHECKER_TESTS, fixture.pack), "unregistered test binary body");
-      assert.equal(fixture.test, TYPECHECKER_TESTS[fixture.pack]);
-      assert.equal(fixture.packReference.path, `${fixture.pack}/cases.json`);
-      const bytes = readPinnedArtifact(root, fixture.packReference);
-      const pack: Pack = JSON.parse(bytes.toString("utf8"));
-      assert.equal(pack.version, 1);
-      assert.equal(pack.issue, 6879);
-      assert.equal(pack.sourceRevision, sourceRevisions[fixture.pack]);
-      assert.equal(pack.sourceRevision, fixture.sourceRevision ?? loaded.manifest.baseRevision);
-      assert.deepEqual(pack.diagnosticContract, contract);
-      assert.deepEqual(
-        pack.checkerOptions,
-        fixture.pack === "options-api-any-instance" ||
-          fixture.pack === "options-api-reserved-component-reference" ||
-          fixture.pack === "setup-custom-properties"
-          ? { optionsApi: true }
-          : fixture.pack === "jsx-prop-token-ranges-10494"
-            ? { jsxTypecheck: true }
-            : undefined,
-        "the original explicit checker options must be retained",
-      );
-      assert.deepEqual(fixture.checkerOptions, pack.checkerOptions);
-      assert.deepEqual(
-        pack.projectOptions,
-        fixture.pack === "authored-unused-symbols" ? { vuePackage: "absent" } : undefined,
-        "the original absent Vue package must be retained",
-      );
-      assert.deepEqual(fixture.projectOptions, pack.projectOptions);
-      const original = pack.cases.find((item) => item.id === fixture.case);
-      assert(original, "case is absent from its immutable fixture pack");
-      assert.equal(fixture.id, `typechecker/${fixture.pack}/${fixture.case}`);
-      assert.equal(fixture.regressionCommit, pack.regressionCommit);
-      assert.deepEqual(
-        fixture.inputs.map((input) => [input.file, input.path]),
-        original.inputs.map((input) => [input.file, `${fixture.pack}/${input.source}`]),
-      );
-      assert.deepEqual(
-        fixture.dialectCoverage,
-        typecheckerDialectCoverage(root, fixture.inputs),
-        "dialect coverage must match the pinned authored sources",
-      );
-      packs.set(fixture.pack, pack);
-      return { ...fixture, diagnostics: original.diagnostics };
-    });
+  const cases = packCases(loaded.cases as TypecheckerCase[]).map((fixture) => {
+    assert.deepEqual(fixture.targets, ["batch"]);
+    assert.equal(fixture.adapters.legacy, "batch-typechecker-fixture-v1");
+    assert.equal(fixture.adapters.native, null);
+    assert.equal(fixture.state, "active");
+    assert(Object.hasOwn(TYPECHECKER_TESTS, fixture.pack), "unregistered test binary body");
+    assert.equal(fixture.test, TYPECHECKER_TESTS[fixture.pack]);
+    assert.equal(fixture.packReference.path, `${fixture.pack}/cases.json`);
+    const bytes = readPinnedArtifact(root, fixture.packReference);
+    const pack: Pack = JSON.parse(bytes.toString("utf8"));
+    assert.equal(pack.version, 1);
+    assert.equal(pack.issue, 6879);
+    assert.equal(pack.sourceRevision, sourceRevisions[fixture.pack]);
+    assert.equal(pack.sourceRevision, fixture.sourceRevision ?? loaded.manifest.baseRevision);
+    assert.deepEqual(pack.diagnosticContract, contract);
+    assert.deepEqual(
+      pack.checkerOptions,
+      fixture.pack === "options-api-any-instance" ||
+        fixture.pack === "options-api-reserved-component-reference" ||
+        fixture.pack === "setup-custom-properties"
+        ? { optionsApi: true }
+        : fixture.pack === "jsx-prop-token-ranges-10494"
+          ? { jsxTypecheck: true }
+          : undefined,
+      "the original explicit checker options must be retained",
+    );
+    assert.deepEqual(fixture.checkerOptions, pack.checkerOptions);
+    assert.deepEqual(
+      pack.projectOptions,
+      fixture.pack === "authored-unused-symbols" ? { vuePackage: "absent" } : undefined,
+      "the original absent Vue package must be retained",
+    );
+    assert.deepEqual(fixture.projectOptions, pack.projectOptions);
+    const original = pack.cases.find((item) => item.id === fixture.case);
+    assert(original, "case is absent from its immutable fixture pack");
+    assert.equal(fixture.id, `typechecker/${fixture.pack}/${fixture.case}`);
+    assert.equal(fixture.regressionCommit, pack.regressionCommit);
+    assert.deepEqual(
+      fixture.inputs.map((input) => [input.file, input.path]),
+      original.inputs.map((input) => [input.file, `${fixture.pack}/${input.source}`]),
+    );
+    assert.deepEqual(
+      fixture.dialectCoverage,
+      typecheckerDialectCoverage(root, fixture.inputs),
+      "dialect coverage must match the pinned authored sources",
+    );
+    packs.set(fixture.pack, pack);
+    return { ...fixture, diagnostics: original.diagnostics };
+  });
   // Both registries follow the sorted manifest packs, so new packs insert apart.
   assert.deepEqual([...packs.keys()], Object.keys(TYPECHECKER_TESTS));
   assert.deepEqual(Object.keys(sourceRevisions), Object.keys(TYPECHECKER_TESTS));
