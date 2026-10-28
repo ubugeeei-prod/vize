@@ -56,7 +56,7 @@ jobs:
           baseline_source="$RUNNER_TEMP/diagnostic-capacity-before-source"
           baseline_target="$RUNNER_TEMP/diagnostic-capacity-before-target"
           capture="$GITHUB_WORKSPACE/target/vize-tests/diagnostic-capacity-129"
-          control=crates/vize_maestro/src/server/initial_diagnostics/conservation_tests.rs
+          control=crates/vize_maestro/src/server/initial_diagnostics/tests/conservation_tests.rs
           tests=crates/vize_maestro/src/server/initial_diagnostics/tests.rs
           mkdir -p "$capture"
           test ! -e "$baseline_source"
@@ -65,8 +65,9 @@ jobs:
           git worktree add --detach "$baseline_source" "$baseline_sha"
           test "$(git -C "$baseline_source" rev-parse HEAD)" = "$baseline_sha"
           test "$(git -C "$baseline_source" hash-object crates/vize_maestro/src/server/initial_diagnostics.rs)" = 8e1bc289fc3e7cc32674764aff0581a46b7908dc
+          mkdir -p "$baseline_source/${control%/*}"
           cp "$control" "$baseline_source/$control"
-          printf '\n#[path = "conservation_tests.rs"]\nmod conservation_tests;\n' >> "$baseline_source/$tests"
+          printf '\nmod conservation_tests;\n' >> "$baseline_source/$tests"
           sha256sum "$control" "$baseline_source/$control" > "$capture/conservation-control.sha256"
           git -C "$baseline_source" diff -- "$tests" > "$capture/before-test-carrier.diff"
           git -C "$baseline_source" status --porcelain > "$capture/before-test-carrier.status"
