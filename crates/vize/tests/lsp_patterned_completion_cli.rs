@@ -42,7 +42,7 @@ fn labels(items: &[Value], include: &[&str], exclude: &[&str]) {
     }
     let helpers: Vec<_> = labels
         .iter()
-        .filter(|label| label.starts_with("__vize_match_") || label.starts_with("$VuePatterns"))
+        .filter(|label| label.starts_with("__vize_match_") || label.starts_with("$$HogePatterns"))
         .collect();
     assert_eq!(helpers, Vec::<&&str>::new(), "generated helper candidates");
 }

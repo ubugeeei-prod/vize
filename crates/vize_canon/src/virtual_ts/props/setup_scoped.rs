@@ -37,13 +37,13 @@ pub(crate) fn generate_setup_scoped_props_artifact(
 
     ts.push_str("\n  // Setup-scoped props type artifact\n");
     if models.is_empty() {
-        append!(*ts, "  type $VueSetupProps = {inner_type};\n");
+        append!(*ts, "  type $$HogeSetupProps = {inner_type};\n");
     } else {
-        append!(*ts, "  type $VueSetupProps = {inner_type} & ");
+        append!(*ts, "  type $$HogeSetupProps = {inner_type} & ");
         append_model_props_type_literal(ts, summary, models, generic_parameters);
         ts.push_str(";\n");
     }
-    ts.push_str("  const __vize_setup_props = undefined as unknown as $VueSetupProps;\n");
+    ts.push_str("  const __vize_setup_props = undefined as unknown as $$HogeSetupProps;\n");
 }
 
 pub(super) fn props_type_ref(

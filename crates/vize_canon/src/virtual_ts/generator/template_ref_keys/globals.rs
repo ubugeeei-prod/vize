@@ -9,7 +9,7 @@ impl TemplateRefUsage {
         if self.calls.iter().any(|call| call.imported) {
             append!(
                 *ts,
-                "  const {name} = (undefined as unknown as $VueUseTemplateRef);\n"
+                "  const {name} = (undefined as unknown as $$HogeUseTemplateRef);\n"
             );
         }
         if self.calls.iter().all(|call| call.imported) {
@@ -36,7 +36,7 @@ impl TemplateRefUsage {
         );
         append!(
             *ts,
-            "  type {name}Global = {name}IsVue extends true ? $VueUseTemplateRef : {name}Source;\n"
+            "  type {name}Global = {name}IsVue extends true ? $$HogeUseTemplateRef : {name}Source;\n"
         );
     }
 }

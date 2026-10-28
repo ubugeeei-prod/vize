@@ -5,7 +5,7 @@ use vize_carton::cstr;
 fn borrowed_aliases_preserve_complete_authored_arguments() {
     for (name, generic, arguments, expected) in [
         ("Emits", false, "T, U", "Emits"),
-        ("$VueSlots", true, "T, U", "$VueSlots<T, U>"),
+        ("$$HogeSlots", true, "T, U", "$$HogeSlots<T, U>"),
         ("Exposed", true, "", "Exposed<>"),
         ("Exposed", true, "項目, _Result", "Exposed<項目, _Result>"),
         (
@@ -30,11 +30,11 @@ fn signature_roles_share_exact_context_grammar_and_keep_the_ref_probe_open() {
     for (role, expected) in [
         (
             SignatureRole::Component,
-            "type $VueGenericComponent = <T extends string = 'a', 項目 = T>(props: $VueGenericContext<T, 項目>['props'], ctx?: Pick<$VueGenericContext<T, 項目>, 'attrs' | 'emit' | 'slots'>, expose?: $VueGenericContext<T, 項目>['expose']) => import('vue').VNode & { __ctx?: $VueGenericContext<T, 項目> };\n",
+            "type $$HogeGenericComponent = <T extends string = 'a', 項目 = T>(props: $$HogeGenericContext<T, 項目>['props'], ctx?: Pick<$$HogeGenericContext<T, 項目>, 'attrs' | 'emit' | 'slots'>, expose?: $$HogeGenericContext<T, 項目>['expose']) => import('vue').VNode & { __ctx?: $$HogeGenericContext<T, 項目> };\n",
         ),
         (
             SignatureRole::TemplateRefResolver,
-            "type $VueGenericRefResolver = <T extends string = 'a', 項目 = T>(props: $VueGenericContext<T, 項目>['props'] & Record<string, unknown>, ctx?: Pick<$VueGenericContext<T, 項目>, 'attrs' | 'emit' | 'slots'>, expose?: $VueGenericContext<T, 項目>['expose']) => import('vue').VNode & { __ctx?: $VueGenericContext<T, 項目> };\n",
+            "type $$HogeGenericRefResolver = <T extends string = 'a', 項目 = T>(props: $$HogeGenericContext<T, 項目>['props'] & Record<string, unknown>, ctx?: Pick<$$HogeGenericContext<T, 項目>, 'attrs' | 'emit' | 'slots'>, expose?: $$HogeGenericContext<T, 項目>['expose']) => import('vue').VNode & { __ctx?: $$HogeGenericContext<T, 項目> };\n",
         ),
     ] {
         assert_eq!(
@@ -55,7 +55,7 @@ fn signature_roles_share_exact_context_grammar_and_keep_the_ref_probe_open() {
 fn signature_views_preserve_multiline_parameters_and_quoted_defaults() {
     for newline in ["\n", "\r\n"] {
         let parameters = "<T extends 'a\\\"b',\nU = T>".replace('\n', newline);
-        let expected = "type $VueGenericComponent = <T extends 'a\\\"b',\nU = T>(props: $VueGenericContext<T, U>['props'], ctx?: Pick<$VueGenericContext<T, U>, 'attrs' | 'emit' | 'slots'>, expose?: $VueGenericContext<T, U>['expose']) => import('vue').VNode & { __ctx?: $VueGenericContext<T, U> };\n";
+        let expected = "type $$HogeGenericComponent = <T extends 'a\\\"b',\nU = T>(props: $$HogeGenericContext<T, U>['props'], ctx?: Pick<$$HogeGenericContext<T, U>, 'attrs' | 'emit' | 'slots'>, expose?: $$HogeGenericContext<T, U>['expose']) => import('vue').VNode & { __ctx?: $$HogeGenericContext<T, U> };\n";
         // Only the authored parameter list uses its original newline. The
         // generated declaration terminator remains the generator's LF.
         let expected = expected.replacen("b',\nU", &cstr!("b',{newline}U"), 1);
@@ -78,11 +78,11 @@ fn context_views_emit_complete_plain_and_refined_public_surfaces() {
     for (refined, expected) in [
         (
             false,
-            "type $VueGenericContext<T = any> = {\n  props: Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: {};\n  slots: $VueSlots;\n  expose: (exposed: import('vue').ShallowUnwrapRef<{}>) => void;\n};\n",
+            "type $$HogeGenericContext<T = any> = {\n  props: Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: {};\n  slots: $$HogeSlots;\n  expose: (exposed: import('vue').ShallowUnwrapRef<{}>) => void;\n};\n",
         ),
         (
             true,
-            "type $VueGenericContext<T = any> = {\n  props: Props<T> & __EmitProps<Emits<T>> & $VueJsxSlotProps<$VueSlots<T>> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: $VuePublicEmit<Emits<T>>;\n  slots: $VueSlots<T>;\n  expose: (exposed: import('vue').ShallowUnwrapRef<Exposed<T>> & { $el: Awaited<ReturnType<typeof __setup<T>>>['__vize_root_el'] } & { $refs: Awaited<ReturnType<typeof __setup<T>>>['__vize_refs'] }) => void;\n};\n",
+            "type $$HogeGenericContext<T = any> = {\n  props: Props<T> & __EmitProps<Emits<T>> & $$HogeJsxSlotProps<$$HogeSlots<T>> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: $$HogePublicEmit<Emits<T>>;\n  slots: $$HogeSlots<T>;\n  expose: (exposed: import('vue').ShallowUnwrapRef<Exposed<T>> & { $el: Awaited<ReturnType<typeof __setup<T>>>['__vize_root_el'] } & { $refs: Awaited<ReturnType<typeof __setup<T>>>['__vize_refs'] }) => void;\n};\n",
         ),
     ] {
         let context = GenericContext {
@@ -90,7 +90,7 @@ fn context_views_emit_complete_plain_and_refined_public_surfaces() {
             arguments: "<T>",
             props_type: "Props",
             emits: AliasReference::new("Emits", refined, "T"),
-            slots: AliasReference::new("$VueSlots", refined, "T"),
+            slots: AliasReference::new("$$HogeSlots", refined, "T"),
             exposed: AliasReference::new(if refined { "Exposed" } else { "{}" }, refined, "T"),
             emit_props: refined,
             jsx_slots: refined,

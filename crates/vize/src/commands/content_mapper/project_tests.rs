@@ -58,7 +58,7 @@ export default { data() { return { count: 1 } } }
         responses[2]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$VueOptionsBinding"),
+            .contains("$$HogeOptionsBinding"),
         "{}",
         responses[2]
     );
@@ -150,13 +150,13 @@ export default { data() { return { count: 1 } } }
         responses[2]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$VueOptionsBinding")
+            .contains("$$HogeOptionsBinding")
     );
     assert!(
         !responses[4]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$VueOptionsBinding")
+            .contains("$$HogeOptionsBinding")
     );
 }
 
@@ -208,7 +208,7 @@ fn host_selected_configs_keep_unknown_prop_checks_scoped_by_project_handle() {
     let loose_code = responses[4]["result"]["text"].as_str().unwrap();
     let tail = |code: &str| {
         code.lines()
-            .find(|line| line.contains("type $VueComponentCheckTail"))
+            .find(|line| line.contains("type $$HogeComponentCheckTail"))
             .unwrap()
             .to_owned()
     };

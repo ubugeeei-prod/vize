@@ -12,7 +12,7 @@ use vize_carton::{CompactString, cstr};
 use super::TypeProperty;
 
 pub(super) fn parse(segment: &str) -> Option<TypeProperty> {
-    let source = cstr!("type $VueMember = {{ {segment} }}");
+    let source = cstr!("type $$HogeMember = {{ {segment} }}");
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {

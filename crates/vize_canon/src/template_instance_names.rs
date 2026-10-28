@@ -7,7 +7,7 @@
 //! `TS2551`. Authored templates get the instance codes.
 //!
 //! A Vue 3 template without an Options API default export reads the names it
-//! cannot bind off the generated `$VueTemplateInstance` (the public instance
+//! cannot bind off the generated `$$HogeTemplateInstance` (the public instance
 //! with its `ComponentCustomProperties`); the missing-property diagnostic that
 //! names that generated type gets the same instance wording.
 
@@ -19,7 +19,7 @@ const CANNOT_FIND_NAME: &str = "Cannot find name '";
 const MISSING_PROPERTY: &str = "Property '";
 const DOES_NOT_EXIST_ON_TYPE: &str = "' does not exist on type '";
 /// The generated type a template reads its unknown names off.
-pub const TEMPLATE_INSTANCE_TYPE: &str = "$VueTemplateInstance";
+pub const TEMPLATE_INSTANCE_TYPE: &str = "$$HogeTemplateInstance";
 
 /// Whether TypeScript reports `code` for a lexical lookup that failed.
 pub const fn is_lexical_lookup_failure(code: u32) -> bool {
@@ -131,7 +131,7 @@ mod tests {
         assert_eq!(
             instance_diagnostic(
                 2339,
-                "Property 'missing' does not exist on type '$VueTemplateInstance'."
+                "Property 'missing' does not exist on type '$$HogeTemplateInstance'."
             ),
             Some((
                 2339,
@@ -141,7 +141,7 @@ mod tests {
         assert_eq!(
             instance_diagnostic(
                 2551,
-                "Property 'isSp' does not exist on type '$VueTemplateInstance'. Did you mean 'isSP'?"
+                "Property 'isSp' does not exist on type '$$HogeTemplateInstance'. Did you mean 'isSP'?"
             ),
             Some((
                 2551,
@@ -154,7 +154,7 @@ mod tests {
         assert_eq!(
             instance_diagnostic(
                 2339,
-                "Property 'missing' does not exist on type '$VueTemplateInstanceMember<\"x\">'."
+                "Property 'missing' does not exist on type '$$HogeTemplateInstanceMember<\"x\">'."
             ),
             None
         );
@@ -165,7 +165,7 @@ mod tests {
         assert_eq!(
             instance_diagnostic(
                 2322,
-                "Property 'missing' does not exist on type '$VueTemplateInstance'."
+                "Property 'missing' does not exist on type '$$HogeTemplateInstance'."
             ),
             None
         );

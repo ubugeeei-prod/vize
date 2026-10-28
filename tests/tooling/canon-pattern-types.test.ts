@@ -55,9 +55,9 @@ test("every upstream helper assertion checks the Canon declaration with library 
   // negative assertions, including invalid descriptor tags, unchanged.
   const source = readFileSync(fixture, "utf8")
     .replace("import '../../types/pattern-matching';", "")
-    .replaceAll("__VLS_MatchPattern", "$VuePatterns.Match")
-    .replaceAll("__VLS_SubtractPattern", "$VuePatterns.Subtract")
-    .replaceAll("__VLS_CheckMatchExhaustive", "$VuePatterns.Exhaustiveness");
+    .replaceAll("__VLS_MatchPattern", "$$HogePatterns.Match")
+    .replaceAll("__VLS_SubtractPattern", "$$HogePatterns.Subtract")
+    .replaceAll("__VLS_CheckMatchExhaustive", "$$HogePatterns.Exhaustiveness");
   for (const mutation of [false, true]) {
     const options: ts.CompilerOptions = {
       strict: true,

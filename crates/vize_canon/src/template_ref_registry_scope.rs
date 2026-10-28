@@ -29,11 +29,11 @@ const label = 'hi'
         .expect("type_check_sfc must produce virtual TypeScript");
 
     assert!(
-        !virtual_ts.contains("$VueTemplateRefs"),
+        !virtual_ts.contains("$$HogeTemplateRefs"),
         "registry must stay out of an SFC that never names useTemplateRef:\n{virtual_ts}"
     );
     assert!(
-        !virtual_ts.contains("$VueDomElement"),
+        !virtual_ts.contains("$$HogeDomElement"),
         "element helper must stay out with the registry:\n{virtual_ts}"
     );
 }
@@ -59,16 +59,16 @@ const img = useTemplateRef("img");
         .expect("type_check_sfc must produce virtual TypeScript");
 
     assert!(
-        virtual_ts.contains(r#""canvas": $VueDomElement<"canvas">;"#),
+        virtual_ts.contains(r#""canvas": $$HogeDomElement<"canvas">;"#),
         "canvas ref must stay typed as a native DOM element:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains(r#""img": $VueDomElement<"img">;"#),
+        virtual_ts.contains(r#""img": $$HogeDomElement<"img">;"#),
         "img ref must stay typed as a native DOM element:\n{virtual_ts}"
     );
     assert!(
-        !virtual_ts.contains("$VueTemplateComponentRef<typeof canvas>")
-            && !virtual_ts.contains("$VueTemplateComponentRef<typeof img>"),
+        !virtual_ts.contains("$$HogeTemplateComponentRef<typeof canvas>")
+            && !virtual_ts.contains("$$HogeTemplateComponentRef<typeof img>"),
         "same-named setup bindings must not turn native tags into component refs:\n{virtual_ts}"
     );
 }

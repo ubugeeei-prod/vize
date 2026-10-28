@@ -1,5 +1,5 @@
 import "vue";
-import type { $VueIsUnknown, $VueUsePublicInstance } from "../types/__vize_helpers.js";
+import type { $$HogeIsUnknown, $$HogeUsePublicInstance } from "../types/__vize_helpers.js";
 import Public from "../types/Public.vue";
 import Callable from "../types/Callable.vue";
 import RuntimeObject from "../types/RuntimeObject.vue";
@@ -20,12 +20,12 @@ type GenericComponentInstance<T> = T extends new (...args: any[]) => infer R ? R
 declare function usePrimitiveElement<T extends import("vue").ComponentPublicInstance>(): {
   primitiveElement: T | undefined;
 };
-const unknownUsesPublicInstance: true = null as unknown as $VueIsUnknown<unknown>;
-const anyIsAuthoredInput: false = null as unknown as $VueIsUnknown<any>;
-const neverIsAuthoredInput: false = null as unknown as $VueIsUnknown<never>;
-const objectIsAuthoredInput: false = null as unknown as $VueIsUnknown<{}>;
+const unknownUsesPublicInstance: true = null as unknown as $$HogeIsUnknown<unknown>;
+const anyIsAuthoredInput: false = null as unknown as $$HogeIsUnknown<any>;
+const neverIsAuthoredInput: false = null as unknown as $$HogeIsUnknown<never>;
+const objectIsAuthoredInput: false = null as unknown as $$HogeIsUnknown<{}>;
 const anyInstanceInferenceUsesPublicInstance: true =
-  null as unknown as $VueUsePublicInstance<any>;
+  null as unknown as $$HogeUsePublicInstance<any>;
 type PublicInstance = InstanceType<typeof Public>;
 declare const instance: PublicInstance;
 // @ts-expect-error Vue strict emits/slots are not an unconstrained ComponentPublicInstance
@@ -44,7 +44,7 @@ type PublicEmitParameters = Parameters<PublicEmit>;
 type PublicEmitWithoutThis = OmitThisParameter<PublicEmit>;
 type PublicEmitThis = ThisParameterType<PublicEmit>;
 declare const publicEmitWithoutThis: PublicEmitWithoutThis;
-const publicEmitThisIsUnknown: true = null as unknown as $VueIsUnknown<PublicEmitThis>;
+const publicEmitThisIsUnknown: true = null as unknown as $$HogeIsUnknown<PublicEmitThis>;
 
 // @ts-expect-error emitted required props stay required
 const missingProps: PublicInstance["$props"] = {};

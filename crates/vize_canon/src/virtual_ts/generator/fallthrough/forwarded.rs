@@ -1,6 +1,6 @@
 //! What a generic component forwards to its component root.
 //!
-//! The non-generic surface is `$VueComponentFallthroughProps<typeof Root>`,
+//! The non-generic surface is `$$HogeComponentFallthroughProps<typeof Root>`,
 //! a type of the root alone. A generic component instantiates its root with
 //! its own type parameters, so its forwarded props are read from the template
 //! scope instead (`scope::forwarded_roots`) and joined to the props every

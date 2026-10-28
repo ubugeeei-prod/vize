@@ -11,7 +11,7 @@ typechecker fixture history [#6879](https://github.com/ubugeeei-prod/vize/issues
   overlap, activate the union carrier. Other components keep existing emitted
   text without new aliases. Collection computes this flag once per component.
 - Generated outlet maps form a union directly. Each lexical child scope returns
-  the same carrier, and `$VueInferredSlots` gathers every payload for each name
+  the same carrier, and `$$HogeInferredSlots` gathers every payload for each name
   into one callable signature. There is no fixed overload sampling bound.
   Missing/optional payload keys stay optional; all common required keys retain
   their value union. Single payloads retain their original object type.

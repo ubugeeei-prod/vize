@@ -179,7 +179,7 @@ impl SetupHelperPlan {
         };
         append!(
             *ts,
-            "  const __vize_emit_calls_nav = undefined as unknown as $VueAuthoredEventMap{generic_suffix};\n"
+            "  const __vize_emit_calls_nav = undefined as unknown as $$HogeAuthoredEventMap{generic_suffix};\n"
         );
         for call in &self.emit_calls {
             ts.push_str("  void __vize_emit_calls_nav[");
@@ -231,7 +231,7 @@ fire(key, true);
         });
         assert_eq!(
             generated.as_str(),
-            "  const __vize_emit_calls_nav = undefined as unknown as $VueAuthoredEventMap;\n  void __vize_emit_calls_nav[\"change\"];\n  void __vize_emit_calls_nav['change'];\n"
+            "  const __vize_emit_calls_nav = undefined as unknown as $$HogeAuthoredEventMap;\n  void __vize_emit_calls_nav[\"change\"];\n  void __vize_emit_calls_nav['change'];\n"
         );
         let first_source = source.find("fire(\"change\"").unwrap() + 6;
         let second_source = source.find("fire('change'").unwrap() + 6;
@@ -300,7 +300,7 @@ fire(key, true);
         assert_eq!(
             (generated.as_str(), mappings),
             (
-                "  const __vize_emit_calls_nav = undefined as unknown as $VueAuthoredEventMap<T>;\n  void __vize_emit_calls_nav['change'];\n",
+                "  const __vize_emit_calls_nav = undefined as unknown as $$HogeAuthoredEventMap<T>;\n  void __vize_emit_calls_nav['change'];\n",
                 vec![crate::virtual_ts::VizeMapping::new(
                     generated_start..generated_start + 6,
                     source_start..source_start + 6,

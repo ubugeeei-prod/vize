@@ -99,7 +99,7 @@ fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
     cstr!("{specifier}.ts")
 }
 
-const TYPE_ANNOTATION_PREFIX: &str = "type $VueGeneratedType = ";
+const TYPE_ANNOTATION_PREFIX: &str = "type $$HogeGeneratedType = ";
 
 fn rewrite_import_type_specifiers(
     type_annotation: &str,

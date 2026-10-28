@@ -20,7 +20,7 @@ use vize_croquis::croquis::ComponentUsage;
 /// assembling the dynamic props into one object literal so TypeScript can infer
 /// the child's generic parameter(s) across the boundary. For a non-generic /
 /// built-in / library / `any` component the checker resolves to a
-/// `(props: any) => void` no-op (see `$VuePropChecker` in scope.rs), so this
+/// `(props: any) => void` no-op (see `$$HogePropChecker` in scope.rs), so this
 /// call reports nothing and the well-tested per-prop extraction above is the
 /// sole check. Each property value is mapped back to its source attribute so a
 /// `TS2322` from a wrongly-typed prop points at the offending binding.
@@ -81,7 +81,7 @@ pub(super) fn generate_generic_props_call(
     let fallthrough_argument_range = check_spread_values.then(|| {
         append!(
             *ts,
-            "{expr_indent}const $VueFallthroughProps_{idx} = ",
+            "{expr_indent}const $$HogeFallthroughProps_{idx} = ",
         );
         append_inference_props_literal(
             ts,
@@ -93,10 +93,10 @@ pub(super) fn generate_generic_props_call(
         ts.push_str(";\n");
         append!(
             *ts,
-            "{expr_indent}(undefined as unknown as $VueFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+            "{expr_indent}(undefined as unknown as $$HogeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
         );
         let start = ts.len();
-        append!(*ts, "$VueFallthroughProps_{idx}");
+        append!(*ts, "$$HogeFallthroughProps_{idx}");
         let range = start..ts.len();
         ts.push_str(");\n");
         range
@@ -177,7 +177,7 @@ pub(crate) fn generate_slot_host_binding(
     }
     append!(
         *ts,
-        "{indent}const {binding_name} = (undefined as unknown as $VueSlotHostSelector<typeof {component_ref}>)(new (undefined as unknown as $VueSlotConstructor<typeof {component_ref}>)(",
+        "{indent}const {binding_name} = (undefined as unknown as $$HogeSlotHostSelector<typeof {component_ref}>)(new (undefined as unknown as $$HogeSlotConstructor<typeof {component_ref}>)(",
     );
     let isolated_guard = usage
         .vif_guard
@@ -200,7 +200,7 @@ pub(crate) fn generate_slot_host_binding(
     }
     append!(
         *ts,
-        ", ...([] as unknown as $VueSlotConstructorArgs<$VueSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as $VueSlotsFactory<typeof {component_ref}>)({component_ref})(",
+        ", ...([] as unknown as $$HogeSlotConstructorArgs<$$HogeSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as $$HogeSlotsFactory<typeof {component_ref}>)({component_ref})(",
     );
     if let Some(guard) = isolated_guard.as_ref() {
         // The constructor's props literal inserts a newline. The factory's

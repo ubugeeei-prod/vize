@@ -81,7 +81,7 @@ defineProps<{ items: T[]; label?: string }>()
 ///
 /// This is the negative control for the resolved model's own helper choice.
 /// Routing this through `__DefineProps` applies
-/// `{ [K in $VueBooleanKey<T>]-?: boolean }`, and `$VueBooleanKey` cannot
+/// `{ [K in $$HogeBooleanKey<T>]-?: boolean }`, and `$$HogeBooleanKey` cannot
 /// decide `[ItemKeys<T> | undefined] extends [boolean | undefined]` while `T` is
 /// open, so TypeScript also considers the branch where `labelKey` *is* a boolean
 /// key and resolves it to `ItemKeys<T> & boolean`. The authored cast then fails

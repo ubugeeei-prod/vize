@@ -1,8 +1,8 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 pub(crate) fn normalize_component_check_props_tail(message: &str) -> std::string::String {
-    const START: &str = "$VueComponentCheckProps<Props, ";
-    const STABLE_TYPE: &str = "$VueComponentCheckProps<Props, $VueFallthroughAttrs>";
+    const START: &str = "$$HogeComponentCheckProps<Props, ";
+    const STABLE_TYPE: &str = "$$HogeComponentCheckProps<Props, $$HogeFallthroughAttrs>";
     let mut output = std::string::String::with_capacity(message.len());
     let mut rest = message;
     while let Some(start) = rest.find(START) {

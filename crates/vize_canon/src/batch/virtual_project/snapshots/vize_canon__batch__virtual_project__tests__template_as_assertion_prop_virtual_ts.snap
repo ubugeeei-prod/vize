@@ -63,11 +63,11 @@ function __setup() {
   const _as = props["as"];
   void _as;
 
-  const __vize_native_key_46: Partial<$VueNativeElement<"div">> = { "style": undefined as never };
+  const __vize_native_key_46: Partial<$$HogeNativeElement<"div">> = { "style": undefined as never };
   void __vize_native_key_46;
-  const __vize_native_prop_check_25: $VueNativeElementProp<$VueNativeElement<"div">, "data-value"> = ((value as any));
+  const __vize_native_prop_check_25: $$HogeNativeElementProp<$$HogeNativeElement<"div">, "data-value"> = ((value as any));
   void __vize_native_prop_check_25; // VBind
-  const __vize_native_prop_check_53: $VueNativeElementProp<$VueNativeElement<"div">, "style"> = ({
+  const __vize_native_prop_check_53: $$HogeNativeElementProp<$$HogeNativeElement<"div">, "style"> = ({
       ['--demo-value' as any]: value,
     });
   void __vize_native_prop_check_53; // VBind
@@ -87,18 +87,18 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type $VueSlots = {};
-export type { $VueSlots as Slots };
+type $$HogeSlots = {};
+export type { $$HogeSlots as Slots };
 
 // ========== Default Export ==========
-type $VueComponentInstance = {
+type $$HogeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: $VuePublicEmit<Emits>;
-  $slots: $VuePublicSlots<$VueSlots>;
-} & $VueComponentPublicBase;
-type $VueComponentConstructor = new <$VueAuthoredProps = unknown>(props?: $VueAuthoredProps & $VueComponentInput<Props, {}, $VueAuthoredProps>, ...args: any[]) => $VueUsePublicInstance<$VueAuthoredProps> extends true ? $VueComponentInstance : $VueReplaceComponentProps<$VueComponentInstance, $VueAuthoredKeyWitness<$VueAuthoredProps> & $VueComponentInputProps<Props, {}> & $VueComponentInputGuard<Props, {}, $VueAuthoredProps>>;
-type $VueVueComponentOptions = {
+  $emit: $$HogePublicEmit<Emits>;
+  $slots: $$HogePublicSlots<$$HogeSlots>;
+} & $$HogeComponentPublicBase;
+type $$HogeComponentConstructor = new <$$HogeAuthoredProps = unknown>(props?: $$HogeAuthoredProps & $$HogeComponentInput<Props, {}, $$HogeAuthoredProps>, ...args: any[]) => $$HogeUsePublicInstance<$$HogeAuthoredProps> extends true ? $$HogeComponentInstance : $$HogeReplaceComponentProps<$$HogeComponentInstance, $$HogeAuthoredKeyWitness<$$HogeAuthoredProps> & $$HogeComponentInputProps<Props, {}> & $$HogeComponentInputGuard<Props, {}, $$HogeAuthoredProps>>;
+type $$HogeVueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -123,5 +123,5 @@ type $VueVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $VueUnownedComponentAttrs<Partial<$VueNativeElement<"div">>, Props, {}>; } & $VueComponentConstructor & $VueVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$HogeUnownedComponentAttrs<Partial<$$HogeNativeElement<"div">>, Props, {}>; } & $$HogeComponentConstructor & $$HogeVueComponentOptions;
 export default __vize_component__;

@@ -218,14 +218,14 @@ fn emit_default_component(ts: &mut String, generic_decl: &str, generic_ref: &str
     ts.push_str("} : Record<string, any[]>;\n");
     ts.push_str("type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n");
     ts.push_str("type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n");
-    append!(*ts, "type $VueComponentInstance{generic_decl} = {{\n");
+    append!(*ts, "type $$HogeComponentInstance{generic_decl} = {{\n");
     append!(*ts, "  $props: {props_ref};\n");
     append!(*ts, "  $emit: __EmitFn<{emits_ref}>;\n");
     append!(*ts, "  $slots: {slots_ref};\n");
     ts.push_str("};\n");
     append!(
         *ts,
-        "declare const __vize_component__: new {generic_decl}(...args: any[]) => $VueComponentInstance{generic_ref};\n"
+        "declare const __vize_component__: new {generic_decl}(...args: any[]) => $$HogeComponentInstance{generic_ref};\n"
     );
     ts.push_str("export default __vize_component__;\n");
 }

@@ -42,14 +42,14 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains("type __R_count = $VueOptionsSetupBinding<\"count\">;"),
+            .contains("type __R_count = $$HogeOptionsSetupBinding<\"count\">;"),
         "setup return binding should be captured from the default component instance:\n{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("type __R_store = $VueOptionsSetupBinding<\"store\">;"),
+            .contains("type __R_store = $$HogeOptionsSetupBinding<\"store\">;"),
         "plain setup return binding should also be exposed through the instance:\n{}",
         output.code
     );
@@ -119,7 +119,7 @@ export default defineComponent({
     );
     assert!(
         output.code.contains(
-            "export type Props = $VueOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $$HogeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code
@@ -188,7 +188,7 @@ export default defineComponent({
     );
     assert!(
         output.code.contains(
-            "export type Props = $VueOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $$HogeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props should be derived from the setup-scoped identifier props artifact:\n{}",
         output.code
@@ -242,7 +242,7 @@ export default defineComponent({
     );
     assert!(
         output.code.contains(
-            "export type Props = $VueOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $$HogeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code
@@ -279,11 +279,11 @@ export default defineComponent({
 
     assert!(
         !output.code.contains("Options API typed instance bridge"),
-        "spread-only helpers should not emit an unused $VueThis bridge:\n{}",
+        "spread-only helpers should not emit an unused $$HogeThis bridge:\n{}",
         output.code
     );
     assert!(
-        !output.code.contains("$VueThis"),
+        !output.code.contains("$$HogeThis"),
         "spread-only helpers should not surface generated unused type aliases:\n{}",
         output.code
     );

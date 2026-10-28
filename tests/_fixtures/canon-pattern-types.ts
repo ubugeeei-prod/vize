@@ -1,8 +1,8 @@
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
-type Match<T, P extends $VuePatterns.Pattern> = $VuePatterns.Match<T, P>;
-type Subtract<T, P extends $VuePatterns.Pattern> = $VuePatterns.Subtract<T, P>;
-type Done<T> = $VuePatterns.Exhaustiveness<T>;
+type Match<T, P extends $$HogePatterns.Pattern> = $$HogePatterns.Match<T, P>;
+type Subtract<T, P extends $$HogePatterns.Pattern> = $$HogePatterns.Subtract<T, P>;
+type Done<T> = $$HogePatterns.Exhaustiveness<T>;
 type AnyPattern = ["any"];
 type Lit<V> = ["literal", V];
 type Obj<K extends PropertyKey, P> = ["object", [[K, P]]];

@@ -40,7 +40,7 @@ pub(super) fn append_model_update_check(
     let payload = vize_carton::cstr!("__{component_type_name}_{idx}_model_{safe_prop_name}");
     append!(
         *ts,
-        "{indent}type {payload} = $VueEmitListeners<__{component_type_name}_Component_{idx}> extends {{ ",
+        "{indent}type {payload} = $$HogeEmitListeners<__{component_type_name}_Component_{idx}> extends {{ ",
     );
     push_ts_string_literal(
         ts,

@@ -78,7 +78,7 @@ import OptionalProp from './OptionalProp.vue'
         })
         .collect();
 
-    let param_type = "$VueComponentCheckProps<Props, $VueFallthroughAttrs>";
+    let param_type = "$$HogeComponentCheckProps<Props, $$HogeFallthroughAttrs>";
     assert_eq!(
         snapshot,
         vec![

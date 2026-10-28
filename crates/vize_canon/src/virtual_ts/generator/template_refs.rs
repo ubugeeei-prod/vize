@@ -227,12 +227,12 @@ impl TemplateRefUnwraps {
                 "  // Options API setup return type captures (before template scope shadows them)\n",
             );
             ts.push_str(
-                "  type $VueOptionsSetupBinding<K extends string> = typeof __default__ extends abstract new (...args: any) => infer __I ? K extends keyof __I ? __I[K] : any : any;\n",
+                "  type $$HogeOptionsSetupBinding<K extends string> = typeof __default__ extends abstract new (...args: any) => infer __I ? K extends keyof __I ? __I[K] : any : any;\n",
             );
             for name in &self.options_api_setup_bindings {
                 append!(
                     ts,
-                    "  type __R_{name} = $VueOptionsSetupBinding<\"{name}\">;\n"
+                    "  type __R_{name} = $$HogeOptionsSetupBinding<\"{name}\">;\n"
                 );
             }
         }

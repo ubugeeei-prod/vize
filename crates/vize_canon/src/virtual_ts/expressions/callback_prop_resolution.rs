@@ -46,7 +46,7 @@ pub(super) fn generate_callback_props_resolution(
 
     append!(
         *ts,
-        "{expr_indent}const {resolved_props} = (undefined as unknown as $VueResolvedContextProps)((undefined as unknown as $VuePropsResolver<typeof {component_ref}>)({{\n",
+        "{expr_indent}const {resolved_props} = (undefined as unknown as $$HogeResolvedContextProps)((undefined as unknown as $$HogePropsResolver<typeof {component_ref}>)({{\n",
     );
 
     append_props_object(
@@ -60,7 +60,7 @@ pub(super) fn generate_callback_props_resolution(
     append!(*ts, "{expr_indent}}}));\n");
     append!(
         *ts,
-        "{expr_indent}const {selected_props} = (undefined as unknown as $VuePropsSelector<typeof {resolved_props}>)({{\n",
+        "{expr_indent}const {selected_props} = (undefined as unknown as $$HogePropsSelector<typeof {resolved_props}>)({{\n",
     );
     append_props_object(
         ts,

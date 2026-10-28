@@ -85,8 +85,8 @@ fn dollar_refs_read_the_registry_with_unmounted_components() {
         assert_eq!(
             (registry.body.as_str(), registry.dollar_body.as_str()),
             (
-                r#" "link": $VueDomElement<"a">; "child": $VueTemplateComponentRef<typeof Child>; "many": ($VueTemplateComponentRef<typeof Child> | null)[]; "#,
-                r#" "link": $VueDomElement<"a">; "child": $VueTemplateComponentRef<typeof Child> | null; "many": ($VueTemplateComponentRef<typeof Child> | null)[]; "#,
+                r#" "link": $$HogeDomElement<"a">; "child": $$HogeTemplateComponentRef<typeof Child>; "many": ($$HogeTemplateComponentRef<typeof Child> | null)[]; "#,
+                r#" "link": $$HogeDomElement<"a">; "child": $$HogeTemplateComponentRef<typeof Child> | null; "many": ($$HogeTemplateComponentRef<typeof Child> | null)[]; "#,
             )
         );
         assert!(!registry.includes_instantiated);
@@ -109,7 +109,7 @@ fn an_instantiated_component_ref_reads_the_template_record() {
     .unwrap();
     assert_eq!(
         registry.body.as_str(),
-        r#" "declared": $VueTemplateComponentRef<typeof Child>; "child": $VueTemplateRefInstance<typeof __vize_template.__vizeRefs, "24", typeof Child>; "#
+        r#" "declared": $$HogeTemplateComponentRef<typeof Child>; "child": $$HogeTemplateRefInstance<typeof __vize_template.__vizeRefs, "24", typeof Child>; "#
     );
     assert!(registry.includes_instantiated);
 }
@@ -138,7 +138,7 @@ fn typed_and_nested_calls_do_not_demand_inferred_ref_instances() {
 fn static_plain_element_refs_register_their_tag() {
     assert_eq!(
         registry_of(r#"<div ref="box" /><svg ref="pic" />"#).as_deref(),
-        Some(r#" "box": $VueDomElement<"div">; "pic": $VueDomElement<"svg", true>; "#)
+        Some(r#" "box": $$HogeDomElement<"div">; "pic": $$HogeDomElement<"svg", true>; "#)
     );
 }
 
@@ -146,15 +146,15 @@ fn static_plain_element_refs_register_their_tag() {
 fn svg_descendants_resolve_through_the_svg_tag_map() {
     assert_eq!(
         registry_of(r#"<a ref="html" /><svg><a ref="vector" /></svg>"#).as_deref(),
-        Some(r#" "html": $VueDomElement<"a">; "vector": $VueDomElement<"a", true>; "#)
+        Some(r#" "html": $$HogeDomElement<"a">; "vector": $$HogeDomElement<"a", true>; "#)
     );
     assert_eq!(
         registry_of(r#"<svg><foreignObject><a ref="escaped" /></foreignObject></svg>"#).as_deref(),
-        Some(r#" "escaped": $VueDomElement<"a">; "#)
+        Some(r#" "escaped": $$HogeDomElement<"a">; "#)
     );
     assert_eq!(
         registry_of(r#"<circle ref="shape" />"#).as_deref(),
-        Some(r#" "shape": $VueDomElement<"circle", true>; "#)
+        Some(r#" "shape": $$HogeDomElement<"circle", true>; "#)
     );
 }
 
@@ -162,7 +162,7 @@ fn svg_descendants_resolve_through_the_svg_tag_map() {
 fn ref_names_are_escaped_as_typescript_string_literals() {
     assert_eq!(
         registry_of(r#"<div ref="path\name" />"#).as_deref(),
-        Some(r#" "path\\name": $VueDomElement<"div">; "#)
+        Some(r#" "path\\name": $$HogeDomElement<"div">; "#)
     );
 }
 
@@ -177,15 +177,15 @@ fn a_dynamic_ref_binding_stays_out_of_the_registry() {
 fn looped_refs_are_arrays_and_repeated_names_are_unions() {
     assert_eq!(
         registry_of(r#"<li v-for="it in xs" :key="it" ref="rows" />"#).as_deref(),
-        Some(r#" "rows": $VueDomElement<"li">[]; "#)
+        Some(r#" "rows": $$HogeDomElement<"li">[]; "#)
     );
     assert_eq!(
         registry_of(r#"<ul><li v-for="it in xs" :key="it"><a ref="links" /></li></ul>"#).as_deref(),
-        Some(r#" "links": $VueDomElement<"a">[]; "#)
+        Some(r#" "links": $$HogeDomElement<"a">[]; "#)
     );
     assert_eq!(
         registry_of(r#"<div ref="dup" /><span ref="dup" />"#).as_deref(),
-        Some(r#" "dup": $VueDomElement<"div"> | $VueDomElement<"span">; "#)
+        Some(r#" "dup": $$HogeDomElement<"div"> | $$HogeDomElement<"span">; "#)
     );
 }
 
@@ -201,7 +201,7 @@ fn component_refs_register_the_component_public_instance() {
         )
         .map(|registry| registry.body)
         .as_deref(),
-        Some(r#" "child": $VueTemplateComponentRef<typeof Child>; "#)
+        Some(r#" "child": $$HogeTemplateComponentRef<typeof Child>; "#)
     );
 }
 
@@ -218,7 +218,7 @@ fn native_element_refs_do_not_become_component_refs_from_same_named_setup_bindin
         )
         .map(|registry| registry.body)
         .as_deref(),
-        Some(r#" "canvas": $VueDomElement<"canvas">; "img": $VueDomElement<"img">; "#)
+        Some(r#" "canvas": $$HogeDomElement<"canvas">; "img": $$HogeDomElement<"img">; "#)
     );
 }
 
@@ -235,7 +235,7 @@ fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bi
         )
         .map(|registry| registry.body)
         .as_deref(),
-        Some(r#" "shape": $VueDomElement<"shape", true>; "glyph": $VueDomElement<"glyph">; "#)
+        Some(r#" "shape": $$HogeDomElement<"shape", true>; "glyph": $$HogeDomElement<"glyph">; "#)
     );
 }
 
@@ -244,15 +244,15 @@ fn component_refs_record_component_helper_without_guessing_from_registry_text() 
     let mut summary = Croquis::default();
     summary.note_binding("Child", BindingType::SetupConst);
     let registry = registry_with_summary(
-        "import { useTemplateRef } from 'vue';\nimport Child from './Child.vue';\nconst tricky = useTemplateRef('$VueDomElement')",
-        r#"<Child ref="$VueDomElement" />"#,
+        "import { useTemplateRef } from 'vue';\nimport Child from './Child.vue';\nconst tricky = useTemplateRef('$$HogeDomElement')",
+        r#"<Child ref="$$HogeDomElement" />"#,
         &summary,
     )
     .expect("component ref registry");
 
     assert_eq!(
         registry.body.as_str(),
-        r#" "$VueDomElement": $VueTemplateComponentRef<typeof Child>; "#
+        r#" "$$HogeDomElement": $$HogeTemplateComponentRef<typeof Child>; "#
     );
     assert!(!registry.includes_dom_element);
     assert!(registry.includes_component);
@@ -270,7 +270,7 @@ fn kebab_case_component_refs_use_the_declared_component_binding() {
         )
         .map(|registry| registry.body)
         .as_deref(),
-        Some(r#" "widget": $VueTemplateComponentRef<typeof MyWidget>; "#)
+        Some(r#" "widget": $$HogeTemplateComponentRef<typeof MyWidget>; "#)
     );
 }
 
@@ -289,7 +289,7 @@ fn external_kebab_case_component_refs_use_the_declared_template_binding() {
         )
         .map(|registry| registry.body)
         .as_deref(),
-        Some(r#" "link": $VueTemplateComponentRef<typeof NuxtLink>; "#)
+        Some(r#" "link": $$HogeTemplateComponentRef<typeof NuxtLink>; "#)
     );
 }
 
@@ -299,7 +299,7 @@ fn unresolved_component_refs_keep_the_existing_any_component_fallback() {
         .expect("unresolved components are still registered through the setup fallback");
     assert_eq!(
         registry.as_str(),
-        r#" "fallback": $VueTemplateComponentRef<typeof MissingThing>; "#
+        r#" "fallback": $$HogeTemplateComponentRef<typeof MissingThing>; "#
     );
 }
 
@@ -308,7 +308,7 @@ fn conditional_branches_still_register() {
     assert_eq!(
         registry_of(r#"<div v-if="a" ref="only" /><section v-else><p ref="deep" /></section>"#)
             .as_deref(),
-        Some(r#" "only": $VueDomElement<"div">; "deep": $VueDomElement<"p">; "#)
+        Some(r#" "only": $$HogeDomElement<"div">; "deep": $$HogeDomElement<"p">; "#)
     );
 }
 
@@ -341,7 +341,7 @@ const inner = useTemplateRef("inner");
 
     assert_eq!(
         registry.body.as_str(),
-        r#" "inner": $VueTemplateComponentRef<typeof is>; "#
+        r#" "inner": $$HogeTemplateComponentRef<typeof is>; "#
     );
 
     let script = r#"import { computed, useTemplateRef } from "vue";
@@ -366,7 +366,7 @@ const inner = useTemplateRef("inner");
 
     assert_eq!(
         registry.body.as_str(),
-        r#" "inner": $VueTemplateComponentRef<import('vue').UnwrapRef<typeof current>["component"]>; "#
+        r#" "inner": $$HogeTemplateComponentRef<import('vue').UnwrapRef<typeof current>["component"]>; "#
     );
 }
 
@@ -397,7 +397,7 @@ const root = useTemplateRef("root");
 
     assert_eq!(
         registry.body.as_str(),
-        r#" "root": $VueTemplateComponentRef<typeof Child | "div">; "#
+        r#" "root": $$HogeTemplateComponentRef<typeof Child | "div">; "#
     );
 
     let code = generate_virtual_ts_with_offsets_and_checks(
@@ -410,7 +410,7 @@ const root = useTemplateRef("root");
         VirtualTsGenerationOptions::default(),
     )
     .code;
-    let registry_line = r#"  type $VueTemplateRefs = { "root": $VueTemplateComponentRef<typeof Child | "div">; };"#;
+    let registry_line = r#"  type $$HogeTemplateRefs = { "root": $$HogeTemplateComponentRef<typeof Child | "div">; };"#;
     let alias_line = "  const __vize_dynamic_is_0 = (condition ? Child : 'div');";
     assert_eq!(
         code.lines()

@@ -29,7 +29,7 @@ const DEFINE_COMPONENT_HELPER: &str =
 /// `__default__`, so the batch lane keeps the authored component alive for
 /// declaration emit (#4010). Unrelated to namespace relocation, but part of the
 /// region these assertions compare in full.
-const AUTHORED_COMPONENT_ALIASES: &str = "type $VueAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\ntype $VueAuthoredInstance = $VueAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n";
+const AUTHORED_COMPONENT_ALIASES: &str = "type $$HogeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\ntype $$HogeAuthoredInstance = $$HogeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n";
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);

@@ -176,7 +176,7 @@ async function stepComponentContractHoverSurfaces() {
   for (const value of Object.values(hovers).flatMap((hover) =>
     hover.flatMap((item) => item.contents),
   )) {
-    assert.doesNotMatch(value, /__vizeComponentMarker|__vizeRawProps|$VueComponentConstructor/);
+    assert.doesNotMatch(value, /__vizeComponentMarker|__vizeRawProps|$$HogeComponentConstructor/);
   }
 
   const definitions = await vscode.commands.executeCommand(

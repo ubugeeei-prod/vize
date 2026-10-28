@@ -71,7 +71,7 @@ pub(super) fn append_duplicate_style_modules(
     if !repeated {
         return;
     }
-    code.push_str("\ntype $VueStyleModuleDeclarations = {");
+    code.push_str("\ntype $$HogeStyleModuleDeclarations = {");
     for (name, span, block_type) in &modules {
         code.push(' ');
         let key_start = code.len();
@@ -85,7 +85,7 @@ pub(super) fn append_duplicate_style_modules(
         code.push_str(block_type.as_str());
         code.push(';');
     }
-    code.push_str(" };\nvoid ({} as $VueStyleModuleDeclarations);\n");
+    code.push_str(" };\nvoid ({} as $$HogeStyleModuleDeclarations);\n");
 }
 
 /// The authored bytes `vue-tsc` reports a module declaration at: the value

@@ -29,20 +29,20 @@ type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknow
 type __RuntimePropHasBoolean<T> = T extends BooleanConstructor ? true : T extends readonly (infer U)[] ? __RuntimePropHasBoolean<U> : T extends { type: infer U } ? __RuntimePropHasBoolean<U> : false;
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : __RuntimePropHasBoolean<T>;
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
-type $VueIsAny<T> = 0 extends (1 & T) ? true : false;
+type $$HogeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __DefaultFactory<T> = (props: any) => T; type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
-type $VueBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;
+type $$HogeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;
 type __DefineProps<T, __BKeys extends keyof T = never> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never, __Props = __LooseRequired<T>> = T extends unknown ? Omit<__Props, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__Props[K & keyof __Props], undefined> } : never;
 type __Ref<T> = { value: T };
 type __ShallowRef<T> = __Ref<T> & { readonly __v_isShallow?: true };
-type $VueKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $VueKebabCase<Tail, `${Acc}${Head}`> : $VueKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
-type $VueKebabProps<T> = { [K in keyof T & string as $VueKebabCase<K>]: T[K] };
-type $VueComponentProps<T> = T extends unknown ? T & Partial<$VueKebabProps<T>> : never;
-type $VueVue2LooseEventArg<T> = $VueIsAny<T> extends true ? any : [T] extends [Object] ? ([Object] extends [T] ? any : T) : T;
-declare type $VueVue2LooseEmitArgs<A extends readonly unknown[]> = { [K in keyof A]: $VueVue2LooseEventArg<A[K]> };
+type $$HogeKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $$HogeKebabCase<Tail, `${Acc}${Head}`> : $$HogeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
+type $$HogeKebabProps<T> = { [K in keyof T & string as $$HogeKebabCase<K>]: T[K] };
+type $$HogeComponentProps<T> = T extends unknown ? T & Partial<$$HogeKebabProps<T>> : never;
+type $$HogeVue2LooseEventArg<T> = $$HogeIsAny<T> extends true ? any : [T] extends [Object] ? ([Object] extends [T] ? any : T) : T;
+declare type $$HogeVue2LooseEmitArgs<A extends readonly unknown[]> = { [K in keyof A]: $$HogeVue2LooseEventArg<A[K]> };
 type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
 declare function __vForList<const T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import Vue from "vue"
@@ -53,7 +53,7 @@ export type Props = {};
 // ========== Setup Scope ==========
 function __setup() {
   // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$VueBooleanKey<_T>, keyof __LooseRequired<_T>>>;
+  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$$HogeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -102,15 +102,15 @@ function __setup() {
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
   // Options API template bindings
-  type $VueOptionsInstance<T> = T extends abstract new (...args: any) => infer I ? I : any;
-  type $VueOptionsBinding<T, K extends string> = K extends keyof $VueOptionsInstance<T> ? $VueOptionsInstance<T>[K] : any;
-  const $config: $VueOptionsBinding<typeof __default__, "$config"> = (void 0) as any;
-  const $fetchState: $VueOptionsBinding<typeof __default__, "$fetchState"> = (void 0) as any;
-  const $nuxt: $VueOptionsBinding<typeof __default__, "$nuxt"> = (void 0) as any;
-  const $route: $VueOptionsBinding<typeof __default__, "$route"> = (void 0) as any;
-  const $router: $VueOptionsBinding<typeof __default__, "$router"> = (void 0) as any;
-  const $store: $VueOptionsBinding<typeof __default__, "$store"> = (void 0) as any;
-  const message: $VueOptionsBinding<typeof __default__, "message"> = (void 0) as any;
+  type $$HogeOptionsInstance<T> = T extends abstract new (...args: any) => infer I ? I : any;
+  type $$HogeOptionsBinding<T, K extends string> = K extends keyof $$HogeOptionsInstance<T> ? $$HogeOptionsInstance<T>[K] : any;
+  const $config: $$HogeOptionsBinding<typeof __default__, "$config"> = (void 0) as any;
+  const $fetchState: $$HogeOptionsBinding<typeof __default__, "$fetchState"> = (void 0) as any;
+  const $nuxt: $$HogeOptionsBinding<typeof __default__, "$nuxt"> = (void 0) as any;
+  const $route: $$HogeOptionsBinding<typeof __default__, "$route"> = (void 0) as any;
+  const $router: $$HogeOptionsBinding<typeof __default__, "$router"> = (void 0) as any;
+  const $store: $$HogeOptionsBinding<typeof __default__, "$store"> = (void 0) as any;
+  const message: $$HogeOptionsBinding<typeof __default__, "message"> = (void 0) as any;
   void $config;void $fetchState;void $nuxt;void $route;void $router;void $store;void message;
   void (message); // Interpolation
   // @vize-map: expr -> 173:180
@@ -130,11 +130,11 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type $VueSlots = {};
-export type { $VueSlots as Slots };
+type $$HogeSlots = {};
+export type { $$HogeSlots as Slots };
 
 // ========== Default Export ==========
-type $VueVue2ComponentInstance = {
+type $$HogeVue2ComponentInstance = {
   $el: Element;
   $refs: Record<string, any>;
   $attrs: Record<string, any>;
@@ -159,13 +159,13 @@ type $VueVue2ComponentInstance = {
   $createElement: (...args: any[]) => any;
   _c: (...args: any[]) => any;
 };
-type $VueComponentInstance = {
-  $props: $VueComponentProps<Props>;
+type $$HogeComponentInstance = {
+  $props: $$HogeComponentProps<Props>;
   readonly __vizeRawProps?: Props;
   $emit: __EmitFn<Emits>;
-  $slots: $VueSlots;
-} & $VueVue2ComponentInstance;
-type $VueVue2ComponentConstructorStatics = {
+  $slots: $$HogeSlots;
+} & $$HogeVue2ComponentInstance;
+type $$HogeVue2ComponentConstructorStatics = {
   extend: (...args: any[]) => any;
   nextTick: (...args: any[]) => any;
   set: (...args: any[]) => any;
@@ -181,11 +181,11 @@ type $VueVue2ComponentConstructorStatics = {
   config: any;
   version: string;
 };
-type $VueComponentConstructor = {
+type $$HogeComponentConstructor = {
   new (...args: any[]): any;
-  new (...args: any[]): $VueComponentInstance;
-} & $VueVue2ComponentConstructorStatics;
-type $VueVueComponentOptions = {
+  new (...args: any[]): $$HogeComponentInstance;
+} & $$HogeVue2ComponentConstructorStatics;
+type $$HogeVueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -210,5 +210,5 @@ type $VueVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: $VueComponentConstructor & $VueVueComponentOptions;
+declare const __vize_component__: $$HogeComponentConstructor & $$HogeVueComponentOptions;
 export default __vize_component__;

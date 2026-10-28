@@ -409,12 +409,12 @@ fn replay_prior_runtime_tuple_read(
 // Exact suggestion vectors from the authenticated source qualification. These
 // are generated declarations, not arbitrary diagnostic-name exemptions.
 const EVENT_HINTS: &[&str] = &[
-    "$VueHasRawProps",
-    "$VueFallthroughValue",
-    "$VueNavigationSlots",
-    "$VueEmitPropsFactory",
+    "$$HogeHasRawProps",
+    "$$HogeFallthroughValue",
+    "$$HogeNavigationSlots",
+    "$$HogeEmitPropsFactory",
 ];
-const PROP_HINTS: &[&str] = &["$VueHasRawProps", "$VueNavigationSlots"];
+const PROP_HINTS: &[&str] = &["$$HogeHasRawProps", "$$HogeNavigationSlots"];
 
 fn known_hints(generated: &str, names: &[&str]) -> Vec<Value> {
     names

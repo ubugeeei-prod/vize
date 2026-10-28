@@ -105,7 +105,7 @@ fn visit(
             };
             append!(
                 *ts,
-                "  const __vize_native_key_{}: Partial<$VueNativeElement<{tag}>> = {{ ",
+                "  const __vize_native_key_{}: Partial<$$HogeNativeElement<{tag}>> = {{ ",
                 location.span.start
             );
             let key_start = ts.len();
@@ -169,7 +169,7 @@ fn emit_fragment_prop_names(
         };
         append!(
             *ts,
-            "  const __vize_fragment_prop_{}: Partial<$VueNativeElement<\"template\">> = {{ ",
+            "  const __vize_fragment_prop_{}: Partial<$$HogeNativeElement<\"template\">> = {{ ",
             location.span.start
         );
         let key_start = ts.len();

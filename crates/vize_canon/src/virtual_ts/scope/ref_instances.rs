@@ -34,7 +34,7 @@ pub(crate) const REFS_RETURN_KEY: &str = "__vizeRefs";
 /// with a `config` computed from `chart.value` would otherwise make `chart`
 /// depend on itself for every component, not only for the generic ones whose
 /// instance really is a function of their props.
-pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $VueRefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $VueTemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $VueTemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $VueTemplateComponentRef<_C> : $VueTemplateComponentRef<_C> : $VueTemplateComponentRef<_C> : $VueTemplateComponentRef<_C>;\n";
+pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $$HogeRefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $$HogeTemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $$HogeTemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $$HogeTemplateComponentRef<_C> : $$HogeTemplateComponentRef<_C> : $$HogeTemplateComponentRef<_C> : $$HogeTemplateComponentRef<_C>;\n";
 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.
@@ -161,7 +161,7 @@ fn emit_probe(
     );
     append!(
         *ts,
-        "{indent}var {name} = (undefined as unknown as $VueRefInstanceFactory<typeof {component}>)({component})({{\n"
+        "{indent}var {name} = (undefined as unknown as $$HogeRefInstanceFactory<typeof {component}>)({component})({{\n"
     );
     let mut emitted = FxHashSet::default();
     for prop in &usage.props {

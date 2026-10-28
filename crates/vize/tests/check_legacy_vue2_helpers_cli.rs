@@ -35,12 +35,12 @@ fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
     );
     assert!(
         stderr.contains(
-            "declare function __vizeDefineComponent<T>(options: T & $VueNuxt2PageOptions): T;"
+            "declare function __vizeDefineComponent<T>(options: T & $$HogeNuxt2PageOptions): T;"
         ),
         "expected per-file legacy defineComponent helper:\n{stderr}"
     );
     assert!(
-        stderr.contains("type $VueComponentProps<T>"),
+        stderr.contains("type $$HogeComponentProps<T>"),
         "legacy Vue 2 virtual TS must define component props helpers inline:\n{stderr}"
     );
     for vue3_only_helper in [
@@ -92,7 +92,7 @@ fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
     assert!(
-        !stdout.contains("$VueComponentProps"),
+        !stdout.contains("$$HogeComponentProps"),
         "targeted JSON check should not report missing component props helper:\n{stdout}"
     );
 
@@ -150,7 +150,7 @@ export default {
     );
     assert_eq!(json["fileCount"], 2, "stdout:\n{stdout}\nstderr:\n{stderr}");
     assert!(
-        !stdout.contains("$VueComponentProps"),
+        !stdout.contains("$$HogeComponentProps"),
         "full tsconfig check should not report missing component props helper:\n{stdout}"
     );
 

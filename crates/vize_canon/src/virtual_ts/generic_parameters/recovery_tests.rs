@@ -120,8 +120,8 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                     "export type Props<",
                     " = Props<T>",
                     "typeof __setup<T>",
-                    "$VueGenericComponent<T>",
-                    "type $VueGenericContext<",
+                    "$$HogeGenericComponent<T>",
+                    "type $$HogeGenericContext<",
                 ] {
                     assert_eq!(
                         result.text.match_indices(fabricated).count(),

@@ -198,7 +198,7 @@ function assertComponentHover(text: string, required: string[], extra: string[])
   for (const value of [...required, ...extra]) {
     assert.ok(text.includes(value), `missing ${value} in ${text}`);
   }
-  assert.doesNotMatch(text, /__vizeComponentMarker|__vizeRawProps|\$VueComponentConstructor/);
+  assert.doesNotMatch(text, /__vizeComponentMarker|__vizeRawProps|\$\$HogeComponentConstructor/);
 }
 
 function resolveTsgoBinary(): string | undefined {

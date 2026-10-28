@@ -128,18 +128,18 @@ void emit;
 
     let virtual_ts = generate_virtual_ts_from_sfc(source);
     for expected in [
-        "slots: $VueSlots<T>",
-        "emit: $VuePublicEmit<Emits<T>>",
+        "slots: $$HogeSlots<T>",
+        "emit: $$HogePublicEmit<Emits<T>>",
         "ShallowUnwrapRef<Exposed<T>>",
         "__EmitProps<Emits<T>>",
-        "type $VueGenericComponent = <T extends string = 'fallback'>",
+        "type $$HogeGenericComponent = <T extends string = 'fallback'>",
     ] {
         assert!(
             virtual_ts.contains(expected),
             "missing {expected}:\n{virtual_ts}"
         );
     }
-    assert!(!virtual_ts.contains("type $VueComponentConstructor"));
+    assert!(!virtual_ts.contains("type $$HogeComponentConstructor"));
 }
 
 #[test]
@@ -159,9 +159,9 @@ defineExpose<{ ready: boolean }>();
 </template>"#;
 
     let virtual_ts = generate_virtual_ts_from_sfc(source);
-    assert!(virtual_ts.contains("type $VueSlots = {"), "{virtual_ts}");
-    assert!(virtual_ts.contains("slots: $VueSlots;"), "{virtual_ts}");
-    assert!(!virtual_ts.contains("$VueSlots<T>"), "{virtual_ts}");
+    assert!(virtual_ts.contains("type $$HogeSlots = {"), "{virtual_ts}");
+    assert!(virtual_ts.contains("slots: $$HogeSlots;"), "{virtual_ts}");
+    assert!(!virtual_ts.contains("$$HogeSlots<T>"), "{virtual_ts}");
     assert!(!virtual_ts.contains("Exposed<T>"), "{virtual_ts}");
 }
 
@@ -174,7 +174,7 @@ defineEmits<{ 'change': [value: Value] }>()
 </script>"#;
     let virtual_ts = generate_virtual_ts_from_sfc(source);
     for expected in [
-        "type Value = $VueHoistedGeneric0<T>;",
+        "type Value = $$HogeHoistedGeneric0<T>;",
         "const __vize_typed_emits = undefined as unknown as { 'change': [value: Value] };",
         "export type Emits<T extends 'number' | 'text' = any> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_emits\"];",
         "__EmitProps<Emits<T>>",
@@ -212,7 +212,7 @@ function itemScope(index: number) {
     assert_eq!(
         virtual_ts
             .matches(
-                "type $VueSlots = Awaited<ReturnType<typeof __setup>>['__vize_typed_slots'] & { item?: unknown; };"
+                "type $$HogeSlots = Awaited<ReturnType<typeof __setup>>['__vize_typed_slots'] & { item?: unknown; };"
             )
             .count(),
         1,
@@ -220,7 +220,7 @@ function itemScope(index: number) {
     );
     assert_eq!(
         virtual_ts
-            .matches("type $VueSlots = { item?(scope: ReturnType<typeof itemScope>): unknown };")
+            .matches("type $$HogeSlots = { item?(scope: ReturnType<typeof itemScope>): unknown };")
             .count(),
         0,
         "a module-scope copy cannot resolve the setup-local function:\n{virtual_ts}"
@@ -238,8 +238,8 @@ function itemScope(value: T) { return { value }; }
 
     for expected in [
         "const __vize_typed_slots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };",
-        "type $VueSlots<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>['__vize_typed_slots'] & { item?: unknown; };",
-        "slots: $VueSlots<T>",
+        "type $$HogeSlots<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>['__vize_typed_slots'] & { item?: unknown; };",
+        "slots: $$HogeSlots<T>",
     ] {
         assert_eq!(
             virtual_ts.matches(expected).count(),
@@ -262,14 +262,14 @@ const modelValue = ref() as Ref<T | 'indeterminate'>
 
     assert_eq!(
         virtual_ts
-            .matches("__vizeSlotOutlet((undefined as unknown as $VueSlots<T>)[\"default\"])")
+            .matches("__vizeSlotOutlet((undefined as unknown as $$HogeSlots<T>)[\"default\"])")
             .count(),
         1,
         "the outlet must read the slots of this setup's T, not its default:\n{virtual_ts}"
     );
     assert_eq!(
         virtual_ts
-            .matches("__vizeSlotOutlet((undefined as unknown as $VueSlots)[")
+            .matches("__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[")
             .count(),
         0,
         "the bare alias collapses T to boolean:\n{virtual_ts}"

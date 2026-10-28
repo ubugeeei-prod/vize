@@ -9,7 +9,7 @@ use super::{
 
 pub(crate) fn component_reference_alias(template_name: &str) -> String {
     cstr!(
-        "$VueComponent_{}",
+        "$$HogeComponent_{}",
         to_safe_identifier_fragment(template_name).as_str()
     )
 }
@@ -76,7 +76,7 @@ fn resolved_component_binding_reference_with_bindings(
     // Value bindings win over a type-only PascalCase collision
     // (`chartComponent` vs `import type { ChartComponent }`).
     // Ambient `external_template_bindings` must not beat a type-only import of
-    // the same name: `import type { ElBadge }` still uses `$VueComponent_*`.
+    // the same name: `import type { ElBadge }` still uses `$$HogeComponent_*`.
     for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
         if let Some(binding_type) = bindings.binding_type(candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)

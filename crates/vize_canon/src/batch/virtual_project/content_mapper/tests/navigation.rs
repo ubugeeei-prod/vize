@@ -78,7 +78,7 @@ defineEmits<{ save: [value: number] }>();
     let result =
         generate_vue_content_mapper_transform(Path::new("Child.vue"), source).expect("transform");
     let original = source.find("save: [value").unwrap();
-    let event_map = result.text.find("type $VueAuthoredEventMap").unwrap();
+    let event_map = result.text.find("type $$HogeAuthoredEventMap").unwrap();
     let generated = event_map + result.text[event_map..].find("save:").unwrap();
 
     assert!(result.mappings.iter().any(|mapping| {
@@ -104,7 +104,7 @@ defineEmits<{ save: [value: number] }>();
     assert!(
         result
             .text
-            .contains("type $VueAuthoredEventMap = $VueStaticEventMap & {")
+            .contains("type $$HogeAuthoredEventMap = $$HogeStaticEventMap & {")
     );
     assert!(
         result
@@ -165,10 +165,10 @@ defineEmits<{ pick: [value: T] }>();
     let child =
         generate_vue_content_mapper_transform(Path::new("GenericChild.vue"), child).expect("child");
     for expected in [
-        "type $VueAuthoredEventMap<T extends string = string>",
-        "type $VueStaticEventMap<T extends string = string> = __EmitOptions<Emits<T>>",
+        "type $$HogeAuthoredEventMap<T extends string = string>",
+        "type $$HogeStaticEventMap<T extends string = string> = __EmitOptions<Emits<T>>",
         "__vizeResolveEvents?: <T extends string = string>",
-        "=> $VueAuthoredEventMap<T>",
+        "=> $$HogeAuthoredEventMap<T>",
     ] {
         assert!(child.text.contains(expected), "{}", child.text);
     }

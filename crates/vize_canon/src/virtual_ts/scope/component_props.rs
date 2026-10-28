@@ -284,7 +284,7 @@ fn generate_usage_declarations(
     } else {
         append!(
             *ts,
-            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ($VueIsAny<__F> extends true ? $VueComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : $VueComponentRawProps<typeof {component_ref}>;\n",
+            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ($$HogeIsAny<__F> extends true ? $$HogeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : $$HogeComponentRawProps<typeof {component_ref}>;\n",
         );
     }
 

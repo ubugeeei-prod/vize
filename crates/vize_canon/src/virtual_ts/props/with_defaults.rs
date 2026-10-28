@@ -34,10 +34,10 @@ pub(super) fn template_props_type_ref(
         );
     };
     let boolean_keys = if undefined_defaults.is_empty() {
-        cstr!("$VueBooleanKey<{base_type_ref}>")
+        cstr!("$$HogeBooleanKey<{base_type_ref}>")
     } else {
         let excluded = key_union(undefined_defaults);
-        cstr!("Exclude<$VueBooleanKey<{base_type_ref}>, {excluded}>")
+        cstr!("Exclude<$$HogeBooleanKey<{base_type_ref}>, {excluded}>")
     };
     cstr!(
         "__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>, {boolean_keys}>"

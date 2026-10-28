@@ -9,7 +9,7 @@ mod check_helpers;
 pub(super) use check_helpers::append_prop_check_helpers;
 
 /// Whether this prop's authored value is an inline function, which is the only
-/// shape that needs the `$VueCallableProp` fallback.
+/// shape that needs the `$$HogeCallableProp` fallback.
 ///
 /// The name filters mirror [`append_per_prop_aliases`] exactly, because the two
 /// must agree: emitting the helper for a prop the alias loop then skips leaves
@@ -75,7 +75,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// check without constructing every camel/kebab key combination. External
 /// components have no marker and continue to use their public `$props`.
 ///
-/// Only the **non-generic** branch of `$VuePropChecker` uses this type; a
+/// Only the **non-generic** branch of `$$HogePropChecker` uses this type; a
 /// generic child resolves through its own `__vizeCheck` signature and ignores
 /// it, so the generic inference path is untouched.
 ///
@@ -147,25 +147,25 @@ pub(super) fn append_prop_checker_alias(
     };
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $VueEmitListeners<__{component_type_name}_Component_{idx}> & $VueRequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
+        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $$HogeEmitListeners<__{component_type_name}_Component_{idx}> & $$HogeRequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
     );
     append!(
         *ts,
-        "  type __{component_type_name}_CheckTail_{idx} = $VueComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
+        "  type __{component_type_name}_CheckTail_{idx} = $$HogeComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
     );
     if force_value_props || usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,
-            "  type __{component_type_name}_ValueProps_{idx} = $VueIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $VueEmitListeners<__{component_type_name}_Component_{idx}> & $VuePublicComponentAttrs;\n",
+            "  type __{component_type_name}_ValueProps_{idx} = $$HogeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $$HogeEmitListeners<__{component_type_name}_Component_{idx}> & $$HogePublicComponentAttrs;\n",
         );
         append!(
             *ts,
-            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = $VueFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
+            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = $$HogeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
         );
     }
     append!(
         *ts,
-        "  type __{component_type_name}_Check_{idx} = $VuePropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
+        "  type __{component_type_name}_Check_{idx} = $$HogePropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
     );
 }
 
@@ -177,7 +177,7 @@ pub(super) fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 }
 
 ///
-/// An inline callback prop gets the `$VueCallableProp` fallback for a child
+/// An inline callback prop gets the `$$HogeCallableProp` fallback for a child
 /// without `__vizeResolveProps`. Vize generic children replace it at the value
 /// check with their instantiated resolver result. Every other prop keeps the
 /// statically extracted type.
@@ -189,10 +189,10 @@ pub(super) fn prop_alias_type(
     fallthrough_prop_name: &str,
 ) -> String {
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
-        return String::from("$VueComponentRefCallback");
+        return String::from("$$HogeComponentRefCallback");
     }
     let normalized = cstr!(
-        "$VuePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
+        "$$HogePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
     );
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
@@ -200,11 +200,11 @@ pub(super) fn prop_alias_type(
         normalized
     } else {
         cstr!(
-            "$VuePropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
+            "$$HogePropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
         )
     };
     if is_inline_callback_prop(prop) {
-        cstr!("$VueCallableProp<{resolved}>")
+        cstr!("$$HogeCallableProp<{resolved}>")
     } else {
         resolved
     }

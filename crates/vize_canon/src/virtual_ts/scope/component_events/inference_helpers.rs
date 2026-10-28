@@ -7,21 +7,21 @@ use vize_croquis::{Croquis, ScopeData};
 /// Unknown keys outside both surfaces remain the canonical prop checker's policy.
 /// External constructors retain higher-order inference, and generated business
 /// generics retain their existing resolver branches. Vue 2 has no root metadata.
-const EMIT_INFERENCE_HELPERS: &str = r#"type $VueEmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-type $VueEmitRequiredFields<T> = T extends unknown ? Pick<T, $VueEmitRequiredKeys<T>> : never;
-type $VueEmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
-type $VueEmitFallthrough<F> = $VueIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
-type $VueEmitOwnedKeys<C> = $VueComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
-type $VueEmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & $VueEmitRequiredFields<P> & $VueEmitRequiredFields<Omit<$VueEmitFiniteFields<F>, O>> : never : never;
+const EMIT_INFERENCE_HELPERS: &str = r#"type $$HogeEmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $$HogeEmitRequiredFields<T> = T extends unknown ? Pick<T, $$HogeEmitRequiredKeys<T>> : never;
+type $$HogeEmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
+type $$HogeEmitFallthrough<F> = $$HogeIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
+type $$HogeEmitOwnedKeys<C> = $$HogeComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
+type $$HogeEmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & $$HogeEmitRequiredFields<P> & $$HogeEmitRequiredFields<Omit<$$HogeEmitFiniteFields<F>, O>> : never : never;
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type $VueConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $VueEmitInput<P, $VueEmitFallthrough<F>, O, A>) => __EmitProps<E>;
-type $VueNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $VueConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $VueEmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
-type $VueEmitPropsFactory<C> = $VueIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeEmitPropsFactory<C> : $VueNativeEmitPropsFactory<C>;
+type $$HogeConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $$HogeEmitInput<P, $$HogeEmitFallthrough<F>, O, A>) => __EmitProps<E>;
+type $$HogeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $$HogeConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $$HogeEmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+type $$HogeEmitPropsFactory<C> = $$HogeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $$HogeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $$HogeNativeEmitPropsFactory<C> : $$HogeNativeEmitPropsFactory<C>;
 "#;
 
 const LEGACY_EMIT_INFERENCE_HELPERS: &str = r#"declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type $VueNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
-type $VueEmitPropsFactory<C> = $VueIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeEmitPropsFactory<C> : $VueNativeEmitPropsFactory<C>;
+type $$HogeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+type $$HogeEmitPropsFactory<C> = $$HogeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $$HogeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $$HogeNativeEmitPropsFactory<C> : $$HogeNativeEmitPropsFactory<C>;
 "#;
 
 /// `forwards_roots`: a generic component instantiates the listeners its root

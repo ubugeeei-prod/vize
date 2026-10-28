@@ -182,14 +182,14 @@ impl SetupImportPlan {
         if self.imports.iter().any(|import| import.slots)
             && let Some(slots) = &self.slots_type
         {
-            ts.push_str("  type $VueUseSlots = () => ");
+            ts.push_str("  type $$HogeUseSlots = () => ");
             slots.emit(ts, mappings, source_offset);
             ts.push_str(";\n");
         }
         if self.imports.iter().any(|import| import.attrs)
             && let Some(attrs) = &self.attrs_type
         {
-            append!(*ts, "  type $VueUseAttrs = () => {attrs};\n");
+            append!(*ts, "  type $$HogeUseAttrs = () => {attrs};\n");
         }
         for (index, import) in self.imports.iter().enumerate() {
             let ImportSpec {
@@ -224,15 +224,15 @@ impl SetupImportPlan {
                 let mut keys = Vec::new();
                 if *css {
                     keys.push("'useCssModule'");
-                    fields.push("useCssModule: $VueUseCssModule");
+                    fields.push("useCssModule: $$HogeUseCssModule");
                 }
                 if *slots {
                     keys.push("'useSlots'");
-                    fields.push("useSlots: $VueUseSlots");
+                    fields.push("useSlots: $$HogeUseSlots");
                 }
                 if *attrs {
                     keys.push("'useAttrs'");
-                    fields.push("useAttrs: $VueUseAttrs");
+                    fields.push("useAttrs: $$HogeUseAttrs");
                 }
                 append!(
                     *ts,
@@ -241,18 +241,18 @@ impl SetupImportPlan {
                     fields.join("; ")
                 );
             } else if *css {
-                ts.push_str("$VueUseCssModule;\n");
+                ts.push_str("$$HogeUseCssModule;\n");
             } else if *attrs {
-                ts.push_str("$VueUseAttrs;\n");
+                ts.push_str("$$HogeUseAttrs;\n");
             } else {
-                ts.push_str("$VueUseSlots;\n");
+                ts.push_str("$$HogeUseSlots;\n");
             }
         }
     }
 }
 
 fn emit_css_module_type(ts: &mut String, options: &VirtualTsOptions) {
-    ts.push_str("  type $VueStyleModules = {\n");
+    ts.push_str("  type $$HogeStyleModules = {\n");
     let mut has_default = false;
     for global in options
         .template_globals
@@ -268,9 +268,9 @@ fn emit_css_module_type(ts: &mut String, options: &VirtualTsOptions) {
         append!(*ts, "    {quoted}: Record<string, string>;\n");
         has_default |= name == "$style";
     }
-    ts.push_str("  };\n  type $VueUseCssModule = {\n");
+    ts.push_str("  };\n  type $$HogeUseCssModule = {\n");
     if has_default {
-        ts.push_str("    (): $VueStyleModules['$style'];\n");
+        ts.push_str("    (): $$HogeStyleModules['$style'];\n");
     }
-    ts.push_str("    <K extends Exclude<keyof $VueStyleModules, '$style'>>(name: K): $VueStyleModules[K];\n  };\n");
+    ts.push_str("    <K extends Exclude<keyof $$HogeStyleModules, '$style'>>(name: K): $$HogeStyleModules[K];\n  };\n");
 }

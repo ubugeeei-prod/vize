@@ -274,7 +274,7 @@ mod tests {
         bind_template_expressions(&mut document);
         assert_eq!(
             document.content.as_str(),
-            "  const __expr_0: $VueOptionsPropShape<typeof __vize_options_props>[\"isOpened\"] = isOpened; // VBind\n  const __expr_1 = type; // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
+            "  const __expr_0: $$HogeOptionsPropShape<typeof __vize_options_props>[\"isOpened\"] = isOpened; // VBind\n  const __expr_1 = type; // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
         );
         let generated = document.mapping.to_generated(4).expect("row");
         assert_eq!(

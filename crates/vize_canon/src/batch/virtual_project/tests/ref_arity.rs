@@ -2,7 +2,7 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
-const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $VueWidenTemplateRef<T['value']> : T : T;";
+const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$HogeWidenTemplateRef<T['value']> : T : T;";
 const LEGACY_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: infer __V } ? __V : T;";
 
 #[test]
@@ -66,8 +66,8 @@ const count = ref(0)
     assert!(!v2_content.contains("Ref<infer"));
     assert!(v2_content.contains("$listeners"));
     assert!(!default_content.contains("$listeners"));
-    assert!(v2_content.contains("type $VueVue2ComponentInstance = {\n  $el: Element;"));
-    assert!(!default_content.contains("$VueVue2ComponentInstance"));
+    assert!(v2_content.contains("type $$HogeVue2ComponentInstance = {\n  $el: Element;"));
+    assert!(!default_content.contains("$$HogeVue2ComponentInstance"));
     assert!(!v2_content.contains("Ref<infer V, any>"));
     assert!(!v2_content.contains("import('vue').Ref"));
     assert!(!v2_content.contains("import('vue').ComponentPublicInstance"));
@@ -168,16 +168,16 @@ export default {
         .clone();
     assert!(setup_content.contains(LEGACY_REF_UNWRAP_HELPER));
     for content in [setup_content.as_str(), options_content.as_str()] {
-        assert!(content.contains("type $VueVue2ComponentInstance = {\n  $el: Element;"));
+        assert!(content.contains("type $$HogeVue2ComponentInstance = {\n  $el: Element;"));
         assert!(content.contains("  $refs: Record<string, any>;"));
-        assert!(content.contains("} & $VueVue2ComponentInstance;"));
+        assert!(content.contains("} & $$HogeVue2ComponentInstance;"));
         assert!(!content.contains("import('vue').Ref"));
         assert!(!content.contains("import('vue').ShallowRef"));
         assert!(!content.contains("import('vue').ComponentPublicInstance"));
         assert!(!content.contains("import('vue').defineComponent"));
     }
     assert!(options_content.contains(
-        "declare function __vizeDefineComponent<T>(options: T & $VueNuxt2PageOptions): T;",
+        "declare function __vizeDefineComponent<T>(options: T & $$HogeNuxt2PageOptions): T;",
     ));
 
     project.materialize().unwrap();
@@ -195,7 +195,7 @@ export default {
 /// defeats its instantiation cache — the effect measured in #3443 and bisected in
 /// #3460.
 const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] =
-    &["type $VueIsUnion<", "type $VueWidenTemplateRef<"];
+    &["type $$HogeIsUnion<", "type $$HogeWidenTemplateRef<"];
 
 fn ref_sfc(binding: &str) -> vize_carton::String {
     vize_carton::cstr!(

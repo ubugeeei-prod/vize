@@ -166,7 +166,7 @@ pub(super) fn emit_match(
             let narrowed = emitter.name();
             append!(
                 *ts,
-                "{inner}type {pattern_type} = {descriptor};\n{inner}type {narrowed} = $VuePatterns.Match<{remaining}, {pattern_type}>;\n"
+                "{inner}type {pattern_type} = {descriptor};\n{inner}type {narrowed} = $$HogePatterns.Match<{remaining}, {pattern_type}>;\n"
             );
             if ctx.verification {
                 let marker = cstr!("{}unreachable", emitter.name());
@@ -181,7 +181,7 @@ pub(super) fn emit_match(
                 );
                 append!(
                     *ts,
-                    ": $VuePatterns.Reachable<{narrowed}> = true;\n{inner}void {marker};\n"
+                    ": $$HogePatterns.Reachable<{narrowed}> = true;\n{inner}void {marker};\n"
                 );
             }
             let condition = cstr!(
@@ -223,7 +223,7 @@ pub(super) fn emit_match(
                 let next = emitter.name();
                 append!(
                     *ts,
-                    "{inner}type {next} = $VuePatterns.Subtract<{remaining}, {pattern_type}>;\n"
+                    "{inner}type {next} = $$HogePatterns.Subtract<{remaining}, {pattern_type}>;\n"
                 );
                 remaining = next;
             }
@@ -242,7 +242,7 @@ pub(super) fn emit_match(
         );
         append!(
             *ts,
-            ": $VuePatterns.Exhaustiveness<{remaining}> = true;\n{inner}void {check};\n"
+            ": $$HogePatterns.Exhaustiveness<{remaining}> = true;\n{inner}void {check};\n"
         );
     }
     append!(*ts, "{indent}}}\n");

@@ -74,14 +74,14 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
 
     ts.push_str("  // Options API template bindings\n");
     ts.push_str(
-        "  type $VueOptionsInstance<T> = T extends abstract new (...args: any) => infer I ? I : any;\n",
+        "  type $$HogeOptionsInstance<T> = T extends abstract new (...args: any) => infer I ? I : any;\n",
     );
     ts.push_str(
-        "  type $VueOptionsBinding<T, K extends string> = K extends keyof $VueOptionsInstance<T> ? $VueOptionsInstance<T>[K] : any;\n",
+        "  type $$HogeOptionsBinding<T, K extends string> = K extends keyof $$HogeOptionsInstance<T> ? $$HogeOptionsInstance<T>[K] : any;\n",
     );
     if names.iter().any(|(name, _)| is_reserved_identifier(name)) {
         ts.push_str(
-            "  const __vize_options_instance = {} as $VueOptionsInstance<typeof __default__>;\n",
+            "  const __vize_options_instance = {} as $$HogeOptionsInstance<typeof __default__>;\n",
         );
     }
     for (name, mutable) in &names {
@@ -95,7 +95,7 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
             let local = options_api_reserved_binding_local(summary, options, name);
             append!(
                 ts,
-                "  const {local}: $VueOptionsBinding<typeof __default__, \"{name}\"> = (void 0) as any; void {local};\n"
+                "  const {local}: $$HogeOptionsBinding<typeof __default__, \"{name}\"> = (void 0) as any; void {local};\n"
             );
             ts.push_str("  void __vize_options_instance[\"");
             let start = ts.len();
@@ -106,7 +106,7 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
             let start = ts.len() + 3 + declaration.len();
             append!(
                 ts,
-                "  {declaration} {name}: $VueOptionsBinding<typeof __default__, \"{name}\"> = (void 0) as any;\n"
+                "  {declaration} {name}: $$HogeOptionsBinding<typeof __default__, \"{name}\"> = (void 0) as any;\n"
             );
             start
         };

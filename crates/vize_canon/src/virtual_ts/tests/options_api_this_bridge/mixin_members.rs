@@ -1,8 +1,8 @@
-//! `$VueThis` inherits `mixins:` / `extends:` members (#3609).
+//! `$$HogeThis` inherits `mixins:` / `extends:` members (#3609).
 //!
 //! Before this, the typed-instance bridge listed only the component's own
 //! option names, so a `methods`/`computed` body calling a mixin-provided
-//! member reported `TS2339 Property 'x' does not exist on type '$VueThis'`
+//! member reported `TS2339 Property 'x' does not exist on type '$$HogeThis'`
 //! on code `vue-tsc` accepts.
 
 use super::super::super::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -10,7 +10,7 @@ use super::super::analyze_options_api_script;
 use vize_carton::{String, cstr};
 
 /// The generated bridge from `// Options API typed instance bridge` through
-/// the `$VueThis` declaration, which is the whole surface these tests pin.
+/// the `$$HogeThis` declaration, which is the whole surface these tests pin.
 fn bridge_header(code: &str) -> String {
     let mut lines = Vec::new();
     let mut started = false;
@@ -42,7 +42,7 @@ fn legacy_bridge_header(script: &str) -> String {
     bridge_header(&output.code)
 }
 
-const HELPERS: &str = "  type $VueInheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n  interface $VueNoInheritedMembers {}\n  type $VueInheritedMembers<T, __I = $VueInheritedInstance<T>> = [$VueIsAny<__I>] extends [true] ? $VueNoInheritedMembers : __I;";
+const HELPERS: &str = "  type $$HogeInheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n  interface $$HogeNoInheritedMembers {}\n  type $$HogeInheritedMembers<T, __I = $$HogeInheritedInstance<T>> = [$$HogeIsAny<__I>] extends [true] ? $$HogeNoInheritedMembers : __I;";
 
 #[test]
 fn imported_mixin_and_extends_references_join_the_this_shape() {
@@ -66,11 +66,11 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $VueInherited0 = $VueInheritedMembers<typeof greeter>;\n\
-             \x20 type $VueInherited1 = $VueInheritedMembers<typeof counter>;\n\
-             \x20 type $VueThis = {{\n\
+             \x20 type $$HogeInherited0 = $$HogeInheritedMembers<typeof greeter>;\n\
+             \x20 type $$HogeInherited1 = $$HogeInheritedMembers<typeof counter>;\n\
+             \x20 type $$HogeThis = {{\n\
              \x20   shout: any;\n\
-             \x20 }} & $VueInherited0 & $VueInherited1;"
+             \x20 }} & $$HogeInherited0 & $$HogeInherited1;"
         )
     );
 }
@@ -105,10 +105,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $VueInherited0 = $VueInheritedMembers<typeof inlineGreeter>;\n\
-             \x20 type $VueThis = {{\n\
+             \x20 type $$HogeInherited0 = $$HogeInheritedMembers<typeof inlineGreeter>;\n\
+             \x20 type $$HogeThis = {{\n\
              \x20   double: any;\n\
-             \x20 }} & $VueInherited0;"
+             \x20 }} & $$HogeInherited0;"
         )
     );
 }
@@ -134,10 +134,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $VueInherited0 = $VueInheritedMembers<typeof shared.greeter>;\n\
-             \x20 type $VueThis = {{\n\
+             \x20 type $$HogeInherited0 = $$HogeInheritedMembers<typeof shared.greeter>;\n\
+             \x20 type $$HogeThis = {{\n\
              \x20   shout: any;\n\
-             \x20 }} & $VueInherited0;"
+             \x20 }} & $$HogeInherited0;"
         )
     );
 }
@@ -155,7 +155,7 @@ export default defineComponent({
     assert_eq!(
         legacy_bridge_header(script),
         "  // Options API typed instance bridge\n  \
-         type $VueThis = {\n    \
+         type $$HogeThis = {\n    \
          greet: any;\n    \
          shout: any;\n  };"
     );
@@ -177,10 +177,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $VueInherited0 = $VueInheritedMembers<typeof untyped>;\n\
-             \x20 type $VueThis = {{\n\
+             \x20 type $$HogeInherited0 = $$HogeInheritedMembers<typeof untyped>;\n\
+             \x20 type $$HogeThis = {{\n\
              \x20   own: any;\n\
-             \x20 }} & $VueInherited0;"
+             \x20 }} & $$HogeInherited0;"
         )
     );
 }

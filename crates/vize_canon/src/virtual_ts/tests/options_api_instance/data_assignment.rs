@@ -41,7 +41,7 @@ fn data_template_bindings_emit_var_while_static_options_stay_const() {
     let declarations = output
         .code
         .lines()
-        .filter(|line| line.contains("$VueOptionsBinding"))
+        .filter(|line| line.contains("$$HogeOptionsBinding"))
         .filter(|line| {
             let trimmed = line.trim_start();
             trimmed.starts_with("const ") || trimmed.starts_with("var ")
@@ -50,10 +50,10 @@ fn data_template_bindings_emit_var_while_static_options_stay_const() {
     assert_eq!(
         declarations,
         [
-            "  const close: $VueOptionsBinding<typeof __default__, \"close\"> = (void 0) as any;",
-            "  const initial: $VueOptionsBinding<typeof __default__, \"initial\"> = (void 0) as any;",
-            "  const label: $VueOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
-            "  var open: $VueOptionsBinding<typeof __default__, \"open\"> = (void 0) as any;",
+            "  const close: $$HogeOptionsBinding<typeof __default__, \"close\"> = (void 0) as any;",
+            "  const initial: $$HogeOptionsBinding<typeof __default__, \"initial\"> = (void 0) as any;",
+            "  const label: $$HogeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var open: $$HogeOptionsBinding<typeof __default__, \"open\"> = (void 0) as any;",
         ]
     );
 }

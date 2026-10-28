@@ -5,10 +5,10 @@ import type { VNodeProps, AllowedComponentProps, ComponentCustomProps } from 'vu
 // fallthroughAttributes:false admits no implicit native-root attributes.
 // No global HTML attribute intersection belongs to this opt-in contract.
 // Keep all three genuine native rows and their full messages.
-interface $VuePublicComponentAttrs extends VNodeProps, AllowedComponentProps, ComponentCustomProps {}
+interface $$HogePublicComponentAttrs extends VNodeProps, AllowedComponentProps, ComponentCustomProps {}
 type Props = { label: string };
-type $VueComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-declare const check: (props: $VueComponentCheckProps<Props, $VuePublicComponentAttrs>) => void;
+type $$HogeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+declare const check: (props: $$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs>) => void;
 check({ "label": "ok", "unknownProp": 1 });
 const { "NotImported": missingComponent } = {} as {};
 const { "vNotADirective": missingDirective } = {} as {};

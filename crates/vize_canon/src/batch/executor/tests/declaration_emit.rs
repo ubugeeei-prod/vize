@@ -7,8 +7,8 @@ declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeRawProps?: Props;
     readonly __vizeHasFallthroughProps: true;
-    readonly __vizeFallthroughProps?: Partial<$VueNativeElement<\"button\">>;
-} & $VueComponentConstructor;
+    readonly __vizeFallthroughProps?: Partial<$$HogeNativeElement<\"button\">>;
+} & $$HogeComponentConstructor;
 ";
 
     let stripped = strip_internal_vue_declaration_fields(source).unwrap();
@@ -18,7 +18,7 @@ declare const __vize_component__: {
         "\
 declare const __vize_component__: {
     readonly __vizeRawProps?: Props;
-} & $VueComponentConstructor;
+} & $$HogeComponentConstructor;
 "
     );
 }
@@ -30,10 +30,10 @@ declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeHasFallthroughProps: true;
     readonly __vizeFallthroughProps?:
-        Partial<$VueNativeElement<\"button\">> &
-        Partial<$VueNativeElement<\"a\">>;
+        Partial<$$HogeNativeElement<\"button\">> &
+        Partial<$$HogeNativeElement<\"a\">>;
     readonly __vizeRawProps?: Props;
-} & $VueComponentConstructor;
+} & $$HogeComponentConstructor;
 ";
 
     let stripped = strip_internal_vue_declaration_fields(source).unwrap();
@@ -43,7 +43,7 @@ declare const __vize_component__: {
         "\
 declare const __vize_component__: {
     readonly __vizeRawProps?: Props;
-} & $VueComponentConstructor;
+} & $$HogeComponentConstructor;
 "
     );
 }
@@ -54,7 +54,7 @@ fn strips_internal_marker_from_raw_props_vue_declarations() {
 declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeRawProps?: Props;
-} & $VueComponentConstructor;
+} & $$HogeComponentConstructor;
 ";
 
     let stripped = strip_internal_vue_declaration_fields(source).unwrap();
@@ -64,7 +64,7 @@ declare const __vize_component__: {
         "\
 declare const __vize_component__: {
     readonly __vizeRawProps?: Props;
-} & $VueComponentConstructor;
+} & $$HogeComponentConstructor;
 "
     );
 }

@@ -1,4 +1,4 @@
-//! Typed `mixins:` and `extends:` members belong to legacy `$VueThis` (#3609).
+//! Typed `mixins:` and `extends:` members belong to legacy `$$HogeThis` (#3609).
 
 use super::super::{
     BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,

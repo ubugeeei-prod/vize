@@ -48,7 +48,7 @@ function __setup() {
   type __R_count = typeof count;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $VueWidenTemplateRef<T['value']> : T : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$HogeWidenTemplateRef<T['value']> : T : T;
     var count: __U<__R_count> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
@@ -81,18 +81,18 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type $VueSlots = {};
-export type { $VueSlots as Slots };
+type $$HogeSlots = {};
+export type { $$HogeSlots as Slots };
 
 // ========== Default Export ==========
-type $VueComponentInstance = {
+type $$HogeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: $VuePublicEmit<Emits>;
-  $slots: $VuePublicSlots<$VueSlots>;
-} & $VueComponentPublicBase;
-type $VueComponentConstructor = new <$VueAuthoredProps = unknown>(props?: $VueAuthoredProps & $VueComponentInput<Props, {}, $VueAuthoredProps>, ...args: any[]) => $VueUsePublicInstance<$VueAuthoredProps> extends true ? $VueComponentInstance : $VueReplaceComponentProps<$VueComponentInstance, $VueAuthoredKeyWitness<$VueAuthoredProps> & $VueComponentInputProps<Props, {}> & $VueComponentInputGuard<Props, {}, $VueAuthoredProps>>;
-type $VueVueComponentOptions = {
+  $emit: $$HogePublicEmit<Emits>;
+  $slots: $$HogePublicSlots<$$HogeSlots>;
+} & $$HogeComponentPublicBase;
+type $$HogeComponentConstructor = new <$$HogeAuthoredProps = unknown>(props?: $$HogeAuthoredProps & $$HogeComponentInput<Props, {}, $$HogeAuthoredProps>, ...args: any[]) => $$HogeUsePublicInstance<$$HogeAuthoredProps> extends true ? $$HogeComponentInstance : $$HogeReplaceComponentProps<$$HogeComponentInstance, $$HogeAuthoredKeyWitness<$$HogeAuthoredProps> & $$HogeComponentInputProps<Props, {}> & $$HogeComponentInputGuard<Props, {}, $$HogeAuthoredProps>>;
+type $$HogeVueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -117,5 +117,5 @@ type $VueVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $VueUnownedComponentAttrs<Partial<$VueNativeElement<"div">>, Props, {}>; } & $VueComponentConstructor & $VueVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$HogeUnownedComponentAttrs<Partial<$$HogeNativeElement<"div">>, Props, {}>; } & $$HogeComponentConstructor & $$HogeVueComponentOptions;
 export default __vize_component__;

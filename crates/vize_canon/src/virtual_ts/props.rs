@@ -84,7 +84,7 @@ pub(crate) fn generate_props_type(
     if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
     } else if imported_props_would_collide {
         if let Some(inner_type) = define_props_inner_type {
-            ts.push_str("type $VueResolvedProps = ");
+            ts.push_str("type $$HogeResolvedProps = ");
             ts.push_str(inner_type);
             if has_models {
                 ts.push_str(" & ");
@@ -92,7 +92,7 @@ pub(crate) fn generate_props_type(
             }
             ts.push_str(";\n");
         } else if has_props || has_models {
-            ts.push_str("type $VueResolvedProps = ");
+            ts.push_str("type $$HogeResolvedProps = ");
             append_macro_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         } else if let Some(options_api_props) = options_api_props {
@@ -100,7 +100,7 @@ pub(crate) fn generate_props_type(
                 ts,
                 &generic_decl,
                 options_api_props,
-                "$VueResolvedProps",
+                "$$HogeResolvedProps",
                 false,
             );
         }
@@ -108,14 +108,14 @@ pub(crate) fn generate_props_type(
         if let Some(inner_type) =
             define_props_inner_type.filter(|_| hoisted_props_alias_replaced(summary))
         {
-            append!(*ts, "type $VueResolvedProps{generic_decl} = {inner_type}");
+            append!(*ts, "type $$HogeResolvedProps{generic_decl} = {inner_type}");
             if has_models {
                 ts.push_str(" & ");
                 append_model_props_type_literal(ts, summary, models, generic_param);
             }
             ts.push_str(";\n");
         } else if has_models {
-            ts.push_str("type $VueResolvedProps = Props & ");
+            ts.push_str("type $$HogeResolvedProps = Props & ");
             append_model_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         }
@@ -347,13 +347,13 @@ mod tests {
         let no_undefined = FxHashSet::default();
         assert_eq!(
             template_props_type_ref("Props", &names, Some(&no_undefined)),
-            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, $VueBooleanKey<Props>>"#
+            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, $$HogeBooleanKey<Props>>"#
         );
         let mut undefined: FxHashSet<String> = FxHashSet::default();
         undefined.insert("open".into());
         assert_eq!(
             template_props_type_ref("Props", &names, Some(&undefined)),
-            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, Exclude<$VueBooleanKey<Props>, "open">>"#
+            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, Exclude<$$HogeBooleanKey<Props>, "open">>"#
         );
     }
 

@@ -60,7 +60,7 @@ fn json_vue_script_diagnostic_stays_concise() {
 
 #[test]
 fn missing_required_prop_hides_setup_props_type() {
-    let message = "Argument of type '{ items: number[]; }' is not assignable to parameter of type '$VueSetupProps<{ readonly headers: string[]; readonly items: number[]; }, $VuePublicComponentAttrs & { zoomAndPan?: string; }>'.\nProperty 'headers' is missing in type '{ items: number[]; }' but required in type '{ readonly headers: string[]; readonly items: number[]; }'.";
+    let message = "Argument of type '{ items: number[]; }' is not assignable to parameter of type '$$HogeSetupProps<{ readonly headers: string[]; readonly items: number[]; }, $$HogePublicComponentAttrs & { zoomAndPan?: string; }>'.\nProperty 'headers' is missing in type '{ items: number[]; }' but required in type '{ readonly headers: string[]; readonly items: number[]; }'.";
 
     assert_eq!(
         user_facing_type_message(true, message),
@@ -70,7 +70,7 @@ fn missing_required_prop_hides_setup_props_type() {
 
 #[test]
 fn missing_required_prop_hides_component_check_props_type() {
-    let message = "Argument of type '{}' is not assignable to parameter of type '$VueComponentCheckProps<{ readonly text: string; }, $VuePublicComponentAttrs>'.\nProperty 'text' is missing in type '{}' but required in type '{ readonly text: string; }'.";
+    let message = "Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<{ readonly text: string; }, $$HogePublicComponentAttrs>'.\nProperty 'text' is missing in type '{}' but required in type '{ readonly text: string; }'.";
 
     assert_eq!(
         user_facing_type_message(true, message),
@@ -82,7 +82,7 @@ fn missing_required_prop_hides_component_check_props_type() {
 fn type_message_simplification_is_narrow() {
     let ordinary_message =
         "Property 'headers' is missing in type '{}' but required in type '{ headers: string[]; }'.";
-    let plural_message = "Argument of type '{}' is not assignable to parameter of type '$VueComponentCheckProps<{}>'. Type '{}' is missing the following properties: headers, items";
+    let plural_message = "Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<{}>'. Type '{}' is missing the following properties: headers, items";
 
     assert_eq!(
         user_facing_type_message(true, ordinary_message),
@@ -91,9 +91,9 @@ fn type_message_simplification_is_narrow() {
     assert_eq!(
         user_facing_type_message(
             false,
-            "$VueSetupProps Property 'headers' is missing in type {}"
+            "$$HogeSetupProps Property 'headers' is missing in type {}"
         ),
-        "$VueSetupProps Property 'headers' is missing in type {}"
+        "$$HogeSetupProps Property 'headers' is missing in type {}"
     );
     assert_eq!(
         user_facing_type_message(true, plural_message),

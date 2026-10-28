@@ -170,10 +170,10 @@ fn directive_helpers_preserve_hooks_without_a_vue_type_dependency() {
         crate::virtual_ts::SHARED_PREAMBLE_DTS,
         crate::virtual_ts::helpers::VUE_TYPE_HELPERS,
     ] {
-        assert!(!text.contains("$VueDirectiveValue"));
+        assert!(!text.contains("$$HogeDirectiveValue"));
         assert!(!text.contains("import('vue').Directive<"));
         assert!(text.contains("declare function __vizeDirective<D>"));
-        assert!(text.contains("$VueDirectiveHook<D>"));
+        assert!(text.contains("$$HogeDirectiveHook<D>"));
         assert!(text.contains("declare function __vizeDirectiveTail<"));
     }
 }

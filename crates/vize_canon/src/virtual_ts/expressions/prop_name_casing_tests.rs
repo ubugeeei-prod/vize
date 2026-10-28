@@ -59,7 +59,7 @@ fn a_snake_case_prop_keeps_its_name() {
 
     assert!(
         code.contains(
-            "$VuePropValue<__Child_ValueProps_0, 'my_prop', __Child_FallthroughValue_0<'my_prop'>>"
+            "$$HogePropValue<__Child_ValueProps_0, 'my_prop', __Child_FallthroughValue_0<'my_prop'>>"
         ),
         "an underscore was treated as a separator:\n{code}"
     );
@@ -78,7 +78,7 @@ fn a_prop_named_template_keeps_its_case_everywhere_it_is_emitted() {
     // prop check reports it missing while the parent clearly bound it.
     assert!(
         code.contains(
-            "$VuePropValue<__Child_ValueProps_0, 'Template', __Child_FallthroughValue_0<'Template'>>"
+            "$$HogePropValue<__Child_ValueProps_0, 'Template', __Child_FallthroughValue_0<'Template'>>"
         ),
         "prop alias type lost the declared casing:\n{code}"
     );
@@ -105,7 +105,7 @@ fn kebab_case_attributes_still_resolve_to_their_camel_case_prop() {
 
     assert!(
         code.contains(
-            "$VuePropValue<__Child_ValueProps_0, 'my-prop', $VuePropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>>"
+            "$$HogePropValue<__Child_ValueProps_0, 'my-prop', $$HogePropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>>"
         ),
         "literal own prop must precede its camel alias and fallthrough lookup:\n{code}"
     );

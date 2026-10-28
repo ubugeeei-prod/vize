@@ -15,11 +15,11 @@ const baseline = JSON.parse(
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 const navigationDeclaration =
-  "  type $VueEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $VueIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $VueIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n  type $VueNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $VueIsAny<InstanceType<C>> extends true ? $VueEmptyVueNavigationSlots<C> : $VueIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n  type $VueNavigationSlots<C> = $VueIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $VueIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $VueNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $VueNativeNavigationSlots<C>;\n";
+  "  type $$HogeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $$HogeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $$HogeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n  type $$HogeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $$HogeIsAny<InstanceType<C>> extends true ? $$HogeEmptyVueNavigationSlots<C> : $$HogeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n  type $$HogeNavigationSlots<C> = $$HogeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $$HogeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $$HogeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $$HogeNativeNavigationSlots<C>;\n";
 const navigationNames = [
-  "$VueEmptyVueNavigationSlots",
-  "$VueNativeNavigationSlots",
-  "$VueNavigationSlots",
+  "$$HogeEmptyVueNavigationSlots",
+  "$$HogeNativeNavigationSlots",
+  "$$HogeNavigationSlots",
 ];
 const baselineBytes = readFileSync(
   "tests/_fixtures/differential/typechecker/template-dollar-emit/projection-baseline.json",

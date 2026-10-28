@@ -36,9 +36,9 @@ pub(in crate::virtual_ts::generator) fn generic_instance_suffix(
     };
 
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
-        cstr!("}} & $VueVue2ComponentInstance & $VueShallowUnwrapRef<Exposed<{args}>>;\n")
+        cstr!("}} & $$HogeVue2ComponentInstance & $$HogeShallowUnwrapRef<Exposed<{args}>>;\n")
     } else {
-        cstr!("}} & $VueComponentPublicBase & $VueShallowUnwrapRef<Exposed<{args}>>;\n")
+        cstr!("}} & $$HogeComponentPublicBase & $$HogeShallowUnwrapRef<Exposed<{args}>>;\n")
     }
 }
 
@@ -54,22 +54,22 @@ pub(in crate::virtual_ts::generator) fn instance_suffix(
     if (has_root_el || has_refs) && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         return match (has_root_el, has_refs, has_exposed_type) {
             (true, false, true) => {
-                "} & Omit<$VueComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] } & $VueShallowUnwrapRef<Exposed>;\n"
+                "} & Omit<$$HogeComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] } & $$HogeShallowUnwrapRef<Exposed>;\n"
             }
             (true, false, false) => {
-                "} & Omit<$VueComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] };\n"
+                "} & Omit<$$HogeComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] };\n"
             }
             (false, _, true) => {
-                "} & Omit<$VueComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $VueShallowUnwrapRef<Exposed>;\n"
+                "} & Omit<$$HogeComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $$HogeShallowUnwrapRef<Exposed>;\n"
             }
             (false, _, false) => {
-                "} & Omit<$VueComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
+                "} & Omit<$$HogeComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
             }
             (true, true, true) => {
-                "} & Omit<$VueComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $VueShallowUnwrapRef<Exposed>;\n"
+                "} & Omit<$$HogeComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $$HogeShallowUnwrapRef<Exposed>;\n"
             }
             (true, true, false) => {
-                "} & Omit<$VueComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
+                "} & Omit<$$HogeComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
             }
         };
     }
@@ -77,9 +77,9 @@ pub(in crate::virtual_ts::generator) fn instance_suffix(
         needs_legacy_vue2_helpers(legacy_vue2, dialect),
         has_exposed_type,
     ) {
-        (true, true) => "} & $VueVue2ComponentInstance & $VueShallowUnwrapRef<Exposed>;\n",
-        (true, false) => "} & $VueVue2ComponentInstance;\n",
-        (false, true) => "} & $VueComponentPublicBase & $VueShallowUnwrapRef<Exposed>;\n",
-        (false, false) => "} & $VueComponentPublicBase;\n",
+        (true, true) => "} & $$HogeVue2ComponentInstance & $$HogeShallowUnwrapRef<Exposed>;\n",
+        (true, false) => "} & $$HogeVue2ComponentInstance;\n",
+        (false, true) => "} & $$HogeComponentPublicBase & $$HogeShallowUnwrapRef<Exposed>;\n",
+        (false, false) => "} & $$HogeComponentPublicBase;\n",
     }
 }

@@ -132,7 +132,7 @@ pub(super) fn generate_inferred_emit_args(
     if first_listener {
         append!(
             *ts,
-            "{}type {resolver_type} = $VueEmitPropsFactory<typeof {}>;\n",
+            "{}type {resolver_type} = $$HogeEmitPropsFactory<typeof {}>;\n",
             ctx.indent,
             ctx.component_ref,
         );

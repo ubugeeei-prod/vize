@@ -237,7 +237,7 @@ child.value?.hide();
     // TS2339 diagnostic.
     assert_eq!(
         diagnostics_for(&report, "src/Broken.vue"),
-        ["error:7:14 [TS2339] Property 'hide' does not exist on type '$VueComponentInstance'."],
+        ["error:7:14 [TS2339] Property 'hide' does not exist on type '$$HogeComponentInstance'."],
         "{report}"
     );
 

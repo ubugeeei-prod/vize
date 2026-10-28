@@ -176,7 +176,7 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                 // remaining complete packet and independently enumerated echoes.
                 for index in 0..3 {
                     let statement = format!(
-                        "  const __vize_prop_check_{index}_validate_form_field_on: $VueResolvedProp<typeof __vize_resolved_GenericForm_props_{index}, typeof __vize_selected_GenericForm_props_{index}, 'validateFormFieldOn', __GenericForm_{index}_prop_validate_form_field_on> = (field) => !!field;\n"
+                        "  const __vize_prop_check_{index}_validate_form_field_on: $$HogeResolvedProp<typeof __vize_resolved_GenericForm_props_{index}, typeof __vize_selected_GenericForm_props_{index}, 'validateFormFieldOn', __GenericForm_{index}_prop_validate_form_field_on> = (field) => !!field;\n"
                     );
                     let start = before["text"].as_str().unwrap().find(&statement).unwrap();
                     let end = start + statement.len();
@@ -387,7 +387,7 @@ fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
         let start = text.find("void Child3;").expect("mapped component tag") + "void ".len();
         // Required-slot checks are diagnostics owned by the same opening tag,
         // after its props call. Do not truncate EXPECT at the last prop entry.
-        let required_slot_check = "  const __vize_required_slots_0: $VueRequiredSlots<$VueSlotContract_0, { readonly \"header\": true; }> = {};\n  void __vize_required_slots_0;\n";
+        let required_slot_check = "  const __vize_required_slots_0: $$HogeRequiredSlots<$$HogeSlotContract_0, { readonly \"header\": true; }> = {};\n  void __vize_required_slots_0;\n";
         let end = text
             .find(required_slot_check)
             .expect("complete independently authored required-slot check")

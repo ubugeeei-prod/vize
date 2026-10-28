@@ -1,4 +1,4 @@
-type $VueNuxt2Context = {
+type $$HogeNuxt2Context = {
   app: any;
   route: any;
   params: Record<string, string>;
@@ -12,10 +12,10 @@ type $VueNuxt2Context = {
   isDev?: boolean;
   isHMR?: boolean;
 } & Record<string, any>;
-type $VueNuxt2PageOptions = ThisType<any> & {
-  validate?: (context: $VueNuxt2Context) => unknown;
-  asyncData?: (context: $VueNuxt2Context) => any;
-  fetch?: (context: $VueNuxt2Context) => any;
+type $$HogeNuxt2PageOptions = ThisType<any> & {
+  validate?: (context: $$HogeNuxt2Context) => unknown;
+  asyncData?: (context: $$HogeNuxt2Context) => any;
+  fetch?: (context: $$HogeNuxt2Context) => any;
   head?: any;
   layout?: any;
   layoutTransition?: any;
@@ -24,4 +24,4 @@ type $VueNuxt2PageOptions = ThisType<any> & {
   scrollToTop?: any;
   transition?: any;
 };
-declare function __vizeDefineComponent<T>(options: T & $VueNuxt2PageOptions): T;
+declare function __vizeDefineComponent<T>(options: T & $$HogeNuxt2PageOptions): T;

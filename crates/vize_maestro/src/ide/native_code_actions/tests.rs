@@ -121,7 +121,7 @@ fn quick_fixes_are_atomic_versioned_and_do_not_leak_backend_commands() {
             7,
             &quickfix,
             make_action(vec![TextEdit {
-                new_text: "$VueAuthoredName".to_string(),
+                new_text: "$$HogeAuthoredName".to_string(),
                 ..edit
             }])
         )

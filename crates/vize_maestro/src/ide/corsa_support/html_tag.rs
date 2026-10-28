@@ -26,8 +26,8 @@ pub(crate) fn html_tag_virtual_document(tag_name: &str) -> Option<HtmlTagVirtual
         "/// <reference lib=\"es2022\" />\n\
          /// <reference lib=\"dom\" />\n\
          /// <reference lib=\"dom.iterable\" />\n\
-         type $VueDomElement = {type_expression};\n\
-         declare const __vizeDomElement: $VueDomElement;\n\
+         type $$HogeDomElement = {type_expression};\n\
+         declare const __vizeDomElement: $$HogeDomElement;\n\
          __vizeDomElement;\n"
     );
     let definition_symbol = dom_definition_symbol(tag_name)?;
@@ -210,7 +210,7 @@ mod tests {
 
         assert!(
             doc.content
-                .contains("type $VueDomElement = MathMLElement;")
+                .contains("type $$HogeDomElement = MathMLElement;")
         );
         assert_eq!(
             &doc.content[doc.definition_offset..doc.definition_offset + "MathMLElement".len()],

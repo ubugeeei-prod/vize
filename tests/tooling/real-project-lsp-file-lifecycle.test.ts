@@ -97,8 +97,8 @@ const childValue = 1
       session.events.some((event) => event.endsWith(":stale-delete-skipped")),
       "delete diagnostics wait must skip stale same-version payloads",
     );
-    assert.equal(fs.existsSync(path.join(workspace, "$VueOracleChild.vue")), false);
-    assert.equal(fs.existsSync(path.join(workspace, "$VueOracleRenamedChild.vue")), false);
+    assert.equal(fs.existsSync(path.join(workspace, "$$HogeOracleChild.vue")), false);
+    assert.equal(fs.existsSync(path.join(workspace, "$$HogeOracleRenamedChild.vue")), false);
     assertOrderedEvents(session.events, [
       ["workspace/didCreateFiles", "workspace/symbol"],
       ["workspace/didCreateFiles", "textDocument/didChange:2"],
@@ -190,13 +190,13 @@ function fixtureOracle(): LspAuthoredOracle {
       tagName: "Child",
     },
     fileLifecycle: {
-      copiedFile: "$VueOracleChild.vue",
-      copiedImportSpecifier: "./$VueOracleChild.vue",
+      copiedFile: "$$HogeOracleChild.vue",
+      copiedImportSpecifier: "./$$HogeOracleChild.vue",
       markerInsertionAnchor: '<script setup lang="ts">\n',
       markerSymbol: "__vizeFileLifecycleMarker__",
       originalImportSpecifier: "./Child.vue",
-      renamedFile: "$VueOracleRenamedChild.vue",
-      renamedImportSpecifier: "./$VueOracleRenamedChild.vue",
+      renamedFile: "$$HogeOracleRenamedChild.vue",
+      renamedImportSpecifier: "./$$HogeOracleRenamedChild.vue",
     },
     templateBinding: {
       declarationAnchor: "childValue = 1",

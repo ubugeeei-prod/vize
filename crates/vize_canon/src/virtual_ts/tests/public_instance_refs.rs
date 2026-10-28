@@ -7,10 +7,10 @@
 use super::{TemplateGlobal, VirtualTsOptions};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
-const PRELUDE: &str = "  type $VueTemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };";
-const MEMBER_ALIAS: &str = "  type $VueTemplateInstanceMember<__K extends string> = __K extends keyof $VueTemplateInstance ? $VueTemplateInstance[__K] : any;";
+const PRELUDE: &str = "  type $$HogeTemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };";
+const MEMBER_ALIAS: &str = "  type $$HogeTemplateInstanceMember<__K extends string> = __K extends keyof $$HogeTemplateInstance ? $$HogeTemplateInstance[__K] : any;";
 const INSTANCE: &str =
-    "  const __vize_public_instance = undefined as unknown as $VueTemplateInstance;";
+    "  const __vize_public_instance = undefined as unknown as $$HogeTemplateInstance;";
 
 fn setup_output(
     script: &str,
@@ -58,7 +58,7 @@ fn script_setup_reads_an_unknown_name_off_the_public_instance_once_per_use() {
     assert_eq!(
         count_lines(
             &code,
-            "  var isSP!: $VueTemplateInstanceMember<\"isSP\">; void (isSP);"
+            "  var isSP!: $$HogeTemplateInstanceMember<\"isSP\">; void (isSP);"
         ),
         1,
         "{code}"
@@ -116,7 +116,7 @@ fn a_declared_template_global_keeps_its_context_binding() {
     assert_eq!(
         count_lines(
             &code,
-            "  var appName!: $VueTemplateInstanceMember<\"appName\">; void (appName);"
+            "  var appName!: $$HogeTemplateInstanceMember<\"appName\">; void (appName);"
         ),
         0,
         "{code}"
@@ -148,7 +148,7 @@ fn a_script_declared_type_only_name_is_not_read_off_the_instance() {
     assert_eq!(
         count_lines(
             &code,
-            "  var Bare!: $VueTemplateInstanceMember<\"Bare\">; void (Bare);"
+            "  var Bare!: $$HogeTemplateInstanceMember<\"Bare\">; void (Bare);"
         ),
         0,
         "{code}"

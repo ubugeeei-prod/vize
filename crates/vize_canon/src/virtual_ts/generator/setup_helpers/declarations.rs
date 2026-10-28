@@ -207,12 +207,12 @@ fn shadowed_helpers(
 }
 
 const GENERIC_PROPS_HOISTED: &str = r#"  const defineProps = __vize_defineProps as {
-    <_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$VueDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
+    <_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$$HogeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
     <const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
     <const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   };
 "#;
-const GENERIC_PROPS_EMBEDDED: &str = r#"  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$VueDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
+const GENERIC_PROPS_EMBEDDED: &str = r#"  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$$HogeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }

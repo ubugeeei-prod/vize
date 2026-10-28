@@ -74,7 +74,7 @@ fn unsaved_required_prop_edit_reports_one_authored_diagnostic() {
     assert!(
         diagnostics
             .iter()
-            .all(|diagnostic| !diagnostic.message.contains("$VueComponentCheckProps")),
+            .all(|diagnostic| !diagnostic.message.contains("$$HogeComponentCheckProps")),
         "generated checker types must not leak into duplicate editor diagnostics: {diagnostics:#?}",
     );
 }
@@ -93,7 +93,7 @@ fn required_prop_dedup_preserves_other_type_errors() {
         range: Range::new(Position::new(5, 2), Position::new(5, 8)),
         source: Some(sources::TYPE_CHECKER.into()),
         code: Some(NumberOrString::Number(2345)),
-        message: "Argument of type '{}' is not assignable to $VueComponentCheckProps. Property 'extra' is missing".into(),
+        message: "Argument of type '{}' is not assignable to $$HogeComponentCheckProps. Property 'extra' is missing".into(),
         ..Default::default()
     };
     let real_type_error = Diagnostic {

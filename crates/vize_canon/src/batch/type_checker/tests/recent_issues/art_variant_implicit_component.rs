@@ -91,7 +91,7 @@ defineArt("./MyCard.vue", { title: "MyCard" });
         normalize_native_attribute_pretty_print(diagnostic_body(&explicit_missing.2, "7:28:"));
     let missing_title = concat!(
         "error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
-        "'$VueComponentCheckProps<Props, $VuePublicComponentAttrs & <native attributes>>'.\n",
+        "'$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & <native attributes>>'.\n",
         "Property 'title' is missing in type '{ elevated: true; }' but required in type ",
         "'{ readonly title: string; readonly elevated?: boolean | undefined; }'.",
     );
@@ -108,7 +108,7 @@ fn diagnostic_body<'a>(message: &'a str, site: &str) -> &'a str {
 fn normalize_native_attribute_pretty_print(message: &str) -> String {
     const PREFIX: &str = concat!(
         "error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
-        "'$VueComponentCheckProps<Props, $VuePublicComponentAttrs",
+        "'$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs",
     );
     const SUFFIX: &str = ">'.\n";
     let body = message
@@ -124,7 +124,7 @@ fn normalize_native_attribute_pretty_print(message: &str) -> String {
 fn native_attribute_pretty_print_normalization_keeps_the_exact_prop_error() {
     const PREFIX: &str = concat!(
         "error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
-        "'$VueComponentCheckProps<Props, $VuePublicComponentAttrs",
+        "'$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs",
     );
     const PROPERTY: &str = concat!(
         "Property 'title' is missing in type '{ elevated: true; }' but required in type ",

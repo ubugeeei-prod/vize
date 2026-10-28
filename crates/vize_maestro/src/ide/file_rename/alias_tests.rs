@@ -150,11 +150,11 @@ fn nuxt_alias_rename_edits_use_the_open_importer_buffer() {
         "<script setup lang=\"ts\">\nimport Result from '~/components/list/Original.vue'\n</script>\n",
     )
     .unwrap();
-    let copied = components.join("$VueOracleResult.vue");
-    let renamed = components.join("$VueOracleRenamedResult.vue");
+    let copied = components.join("$$HogeOracleResult.vue");
+    let renamed = components.join("$$HogeOracleRenamedResult.vue");
     fs::write(&copied, "<template />\n").unwrap();
 
-    let open_source = "<script setup lang=\"ts\">\nimport Result from '~/components/list/$VueOracleResult.vue'\n</script>\n";
+    let open_source = "<script setup lang=\"ts\">\nimport Result from '~/components/list/$$HogeOracleResult.vue'\n</script>\n";
     let canonical_uri = tower_lsp::lsp_types::Url::from_file_path(&importer).unwrap();
     let importer_uri = tower_lsp::lsp_types::Url::parse(
         &canonical_uri
@@ -184,7 +184,7 @@ fn nuxt_alias_rename_edits_use_the_open_importer_buffer() {
     {
       "app/pages/[[server]]/list/[list]/index/accounts.vue": [
         {
-          "newText": "~/components/list/$VueOracleRenamedResult.vue",
+          "newText": "~/components/list/$$HogeOracleRenamedResult.vue",
           "range": {
             "end": {
               "character": 60,
@@ -223,11 +223,11 @@ fn nuxt_alias_rename_edits_work_before_generated_tsconfig_exists() {
     let importer = pages.join("accounts.vue");
     fs::write(
         &importer,
-        "<script setup lang=\"ts\">\nimport Result from '~/components/list/$VueOracleResult.vue'\n</script>\n",
+        "<script setup lang=\"ts\">\nimport Result from '~/components/list/$$HogeOracleResult.vue'\n</script>\n",
     )
     .unwrap();
-    let copied = components.join("$VueOracleResult.vue");
-    let renamed = components.join("$VueOracleRenamedResult.vue");
+    let copied = components.join("$$HogeOracleResult.vue");
+    let renamed = components.join("$$HogeOracleRenamedResult.vue");
     fs::write(&copied, "<template />\n").unwrap();
 
     let state = ServerState::new();
@@ -247,7 +247,7 @@ fn nuxt_alias_rename_edits_work_before_generated_tsconfig_exists() {
     {
       "app/pages/[[server]]/list/[list]/index/accounts.vue": [
         {
-          "newText": "~/components/list/$VueOracleRenamedResult.vue",
+          "newText": "~/components/list/$$HogeOracleRenamedResult.vue",
           "range": {
             "end": {
               "character": 60,

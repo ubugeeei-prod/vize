@@ -34,14 +34,14 @@ pub(super) fn emit_slots_type(
                 .unwrap_or_default();
             append!(
                 *ts,
-                "type $VueSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_typed_slots']"
+                "type $$HogeSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_typed_slots']"
             );
             mappings.emit_slot_key_witnesses(ts, &summary.macros);
             ts.push_str(";\n");
             generic_injection.is_some()
         } else {
             let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-            append!(*ts, "type $VueSlots{suffix} = ");
+            append!(*ts, "type $$HogeSlots{suffix} = ");
             let start = ts.len();
             ts.push_str(inner_type);
             let end = ts.len();
@@ -55,15 +55,15 @@ pub(super) fn emit_slots_type(
             .unwrap_or_default();
         append!(
             *ts,
-            "type $VueSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_template_slots'];\n"
+            "type $$HogeSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_template_slots'];\n"
         );
         generic_injection.is_some()
     } else {
-        ts.push_str("type $VueSlots = {};\n");
+        ts.push_str("type $$HogeSlots = {};\n");
         false
     };
     if export_slots {
-        ts.push_str("export type { $VueSlots as Slots };\n");
+        ts.push_str("export type { $$HogeSlots as Slots };\n");
     }
     is_generic
 }

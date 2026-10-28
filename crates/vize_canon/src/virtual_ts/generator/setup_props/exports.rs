@@ -19,7 +19,7 @@ impl SetupPropsPlan {
                 })
                 .unwrap_or_default();
             let (export, name) = if self.module_scope_declares_props {
-                ("", "$VueResolvedProps")
+                ("", "$$HogeResolvedProps")
             } else {
                 ("export ", "Props")
             };
@@ -38,11 +38,11 @@ impl SetupPropsPlan {
             };
             if self.module_scope_declares_props {
                 ts.push_str(
-                    "type $VueResolvedProps = $VueOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>",
+                    "type $$HogeResolvedProps = $$HogeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>",
                 );
             } else {
                 ts.push_str(
-                    "export type Props = $VueOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>",
+                    "export type Props = $$HogeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>",
                 );
             }
             append_default_props(ts, source);

@@ -203,9 +203,9 @@ impl<'a> GlobalComponentPlan<'a> {
             if !has_header {
                 ts.push_str(concat!(
                     "\n// Global component stubs (vue module augmentations)\n",
-                    "type $VueGlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
+                    "type $$HogeGlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
                     "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;\n",
-                    "type $VueGlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
+                    "type $$HogeGlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
                 ));
                 has_header = true;
             }
@@ -255,14 +255,14 @@ fn append_global_component_stub(
 ) {
     append!(
         *ts,
-        "declare const {component_ref}: $VueGlobalComponent<\"{name}\""
+        "declare const {component_ref}: $$HogeGlobalComponent<\"{name}\""
     );
     if pascal_name == name {
-        ts.push_str("> & $VueGlobalComponentFallback;\n");
+        ts.push_str("> & $$HogeGlobalComponentFallback;\n");
     } else {
         append!(
             *ts,
-            ", \"{pascal_name}\"> & $VueGlobalComponentFallback;\n"
+            ", \"{pascal_name}\"> & $$HogeGlobalComponentFallback;\n"
         );
     }
 }

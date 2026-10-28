@@ -47,7 +47,7 @@ const direction = ref<'rtl'>('rtl')
     let hoisted_code = generate_template_code(script, template, true);
     let embedded_code = generate_template_code(script, template, false);
 
-    const WIDEN_HELPER: &str = "type $VueWidenTemplateRef<T> = $VueIsAny<T> extends true ? T : $VueIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
+    const WIDEN_HELPER: &str = "type $$HogeWidenTemplateRef<T> = $$HogeIsAny<T> extends true ? T : $$HogeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
     assert_eq!(
         exact_line_count(SHARED_PREAMBLE_DTS, WIDEN_HELPER),
         1,

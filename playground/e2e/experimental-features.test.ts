@@ -133,7 +133,7 @@ const status = 'ready'
     });
     expect(off.virtualTs).not.toContain("const __vize_slot_children_");
     expect(on.virtualTs).toContain("const __vize_slot_children_");
-    expect(on.virtualTs).toContain("$VueProvidedSlotChildren<[HTMLInputElement]>");
+    expect(on.virtualTs).toContain("$$HogeProvidedSlotChildren<[HTMLInputElement]>");
     expect(
       wasm.typeCheck(source, { includeVirtualTs: true, experimentalStrictSlotChildren: false })
         .virtualTs,

@@ -1,4 +1,4 @@
-type $VueComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$VueComponentAttrCamel<__T>>}` : S;
-type $VueComponentNativeAttrNames = { [K in keyof $VueNativeElements & string]: keyof $VueNativeElements[K] }[keyof $VueNativeElements & string] & string;
-type $VueComponentGlobalHtmlAttrs = $VueIsAny<$VueNativeElements> extends true ? {} : { [K in $VueComponentNativeAttrNames as K | $VueComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
-declare function __vizeComponentGlobalHtmlAttrs(value: $VueComponentGlobalHtmlAttrs): void;
+type $$HogeComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$$HogeComponentAttrCamel<__T>>}` : S;
+type $$HogeComponentNativeAttrNames = { [K in keyof $$HogeNativeElements & string]: keyof $$HogeNativeElements[K] }[keyof $$HogeNativeElements & string] & string;
+type $$HogeComponentGlobalHtmlAttrs = $$HogeIsAny<$$HogeNativeElements> extends true ? {} : { [K in $$HogeComponentNativeAttrNames as K | $$HogeComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
+declare function __vizeComponentGlobalHtmlAttrs(value: $$HogeComponentGlobalHtmlAttrs): void;

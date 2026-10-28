@@ -54,7 +54,7 @@ fn content_mapper_musea_art_project_preserves_bound_component_diagnostics() {
                 Some(2345),
                 concat!(
                     "6:28:error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
-                    "'$VueComponentCheckProps<Props, $VuePublicComponentAttrs & { [x: string]: unknown; } & ",
+                    "'$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & { [x: string]: unknown; } & ",
                     "{ [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & ",
                     "Record<string, unknown>>'.\n",
                     "Property 'title' is missing in type '{ elevated: true; }' but required in type ",

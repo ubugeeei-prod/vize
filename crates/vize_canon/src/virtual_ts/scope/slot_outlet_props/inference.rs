@@ -11,15 +11,15 @@ use crate::virtual_ts::helpers::push_ts_string_literal;
 /// keeps one call signature, whose payload contains every contributing outlet.
 /// Lexical child scopes return the same carrier, so no overload sampling or
 /// arbitrary signature bound is needed at the parent component boundary.
-const INFERRED_SLOT_HELPERS: &str = r#"  type $VueInferredSlotKeys<U> = U extends any ? keyof U : never;
-  type $VueInferredSlotOptionalKeys<U> = U extends any ? { [K in keyof U]-?: {} extends Pick<U, K> ? K : never }[keyof U] : never;
-  type $VueInferredSlotRequiredKeys<U> = Exclude<keyof U, $VueInferredSlotOptionalKeys<U>>;
-  type $VueInferredSlotValue<U, K extends PropertyKey> = U extends any ? (K extends keyof U ? U[K] : never) : never;
-  type $VueInferredSlotMerge<U> = { [K in $VueInferredSlotRequiredKeys<U>]: $VueInferredSlotValue<U, K> } & { [K in Exclude<$VueInferredSlotKeys<U>, $VueInferredSlotRequiredKeys<U>>]?: $VueInferredSlotValue<U, K> };
-  type $VueInferredSlotIntersection<U> = (U extends any ? (member: U) => void : never) extends (member: infer I) => void ? I : never;
-  type $VueInferredSlotUnify<P> = $VueIsAny<P> extends true ? P : [P] extends [$VueInferredSlotIntersection<P>] ? P : $VueInferredSlotMerge<P>;
-  type $VueInferredSlotPayload<S, K extends PropertyKey> = S extends any ? K extends keyof S ? NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never : never : never;
-  type $VueInferredSlots<S> = [$VueInferredSlotKeys<S>] extends [never] ? {} : $VueInferredSlotIntersection<{ [K in $VueInferredSlotKeys<S>]: { [N in K]?: (props: $VueInferredSlotUnify<$VueInferredSlotPayload<S, K>>) => any } }[$VueInferredSlotKeys<S>]>;
+const INFERRED_SLOT_HELPERS: &str = r#"  type $$HogeInferredSlotKeys<U> = U extends any ? keyof U : never;
+  type $$HogeInferredSlotOptionalKeys<U> = U extends any ? { [K in keyof U]-?: {} extends Pick<U, K> ? K : never }[keyof U] : never;
+  type $$HogeInferredSlotRequiredKeys<U> = Exclude<keyof U, $$HogeInferredSlotOptionalKeys<U>>;
+  type $$HogeInferredSlotValue<U, K extends PropertyKey> = U extends any ? (K extends keyof U ? U[K] : never) : never;
+  type $$HogeInferredSlotMerge<U> = { [K in $$HogeInferredSlotRequiredKeys<U>]: $$HogeInferredSlotValue<U, K> } & { [K in Exclude<$$HogeInferredSlotKeys<U>, $$HogeInferredSlotRequiredKeys<U>>]?: $$HogeInferredSlotValue<U, K> };
+  type $$HogeInferredSlotIntersection<U> = (U extends any ? (member: U) => void : never) extends (member: infer I) => void ? I : never;
+  type $$HogeInferredSlotUnify<P> = $$HogeIsAny<P> extends true ? P : [P] extends [$$HogeInferredSlotIntersection<P>] ? P : $$HogeInferredSlotMerge<P>;
+  type $$HogeInferredSlotPayload<S, K extends PropertyKey> = S extends any ? K extends keyof S ? NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never : never : never;
+  type $$HogeInferredSlots<S> = [$$HogeInferredSlotKeys<S>] extends [never] ? {} : $$HogeInferredSlotIntersection<{ [K in $$HogeInferredSlotKeys<S>]: { [N in K]?: (props: $$HogeInferredSlotUnify<$$HogeInferredSlotPayload<S, K>>) => any } }[$$HogeInferredSlotKeys<S>]>;
 "#;
 
 pub(super) fn emit_inferred_slot_helpers(ts: &mut String) {
@@ -175,7 +175,7 @@ impl SlotOutletChecks {
         if types.is_empty() {
             String::from("{}")
         } else if self.merge_payloads {
-            cstr!("$VueInferredSlots<{}>", types.join(" | "))
+            cstr!("$$HogeInferredSlots<{}>", types.join(" | "))
         } else {
             types.join(" & ").into()
         }

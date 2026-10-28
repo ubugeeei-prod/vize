@@ -5,7 +5,7 @@ use super::helpers::{
 use vize_carton::config::VueVersion;
 
 const PUBLIC_BASE_GUARD: &str = "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.";
-const PUBLIC_BASE_ALIAS: &str = "type $VueComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;";
+const PUBLIC_BASE_ALIAS: &str = "type $$HogeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;";
 const TEMPLATE_CONTEXT_GUARD: &str = "    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.";
 const TEMPLATE_CONTEXT_ALIAS: &str = "    type __Ctx = import('vue').ComponentPublicInstance;";
 
@@ -17,16 +17,16 @@ fn vue_public_input_contract_reaches_embedded_hoisted_and_declaration_helpers() 
         ("declarations", DECLARATION_HELPERS_DTS),
     ] {
         assert_eq!(
-            text.matches("type $VuePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;")
+            text.matches("type $$HogePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;")
                 .count(),
             1,
             "{name} must use Vue's single public prop authority"
         );
         assert!(
-            text.contains("$VueFallthroughAttrs<T & Declared> & $VuePublicComponentInputProps"),
+            text.contains("$$HogeFallthroughAttrs<T & Declared> & $$HogePublicComponentInputProps"),
             "{name} must include that contract in listener inputs"
         );
-        assert!(!text.contains("$VueReservedComponentInputProps"));
+        assert!(!text.contains("$$HogeReservedComponentInputProps"));
     }
 
     let script = "defineProps<{ value: string }>()";
@@ -41,7 +41,7 @@ fn vue_public_input_contract_reaches_embedded_hoisted_and_declaration_helpers() 
         &VirtualTsOptions::default(),
     );
     assert!(!output.code.contains("import('vue').PublicProps"));
-    assert!(!output.code.contains("$VuePublicComponentInputProps"));
+    assert!(!output.code.contains("$$HogePublicComponentInputProps"));
 }
 
 #[test]
@@ -115,10 +115,10 @@ fn listener_input_metadata_is_modern_only_and_legacy_keeps_constructor_inference
     assert!(
         modern
             .code
-            .contains("type $VueEmitOwnedKeys<C> = $VueComponentOwnKeys<")
+            .contains("type $$HogeEmitOwnedKeys<C> = $$HogeComponentOwnKeys<")
     );
-    assert!(modern.code.contains("type $VueComponentOwnKeys<P = {}, E = {}> = keyof $VuePublicComponentInputProps | $VueComponentMetadataKeys<P> | $VueComponentMetadataKeys<E>;"));
-    assert!(modern.code.contains("<A>(props: $VueEmitInput<P,"));
+    assert!(modern.code.contains("type $$HogeComponentOwnKeys<P = {}, E = {}> = keyof $$HogePublicComponentInputProps | $$HogeComponentMetadataKeys<P> | $$HogeComponentMetadataKeys<E>;"));
+    assert!(modern.code.contains("<A>(props: $$HogeEmitInput<P,"));
     assert!(
         legacy
             .code
@@ -129,7 +129,7 @@ fn listener_input_metadata_is_modern_only_and_legacy_keeps_constructor_inference
             .code
             .contains("? typeof __vizeConstructorEmitProps :")
     );
-    assert!(!legacy.code.contains("$VueEmitOwnedKeys"));
-    assert!(!legacy.code.contains("$VueEmitInput<"));
-    assert!(!legacy.code.contains("$VuePublicComponentInputProps"));
+    assert!(!legacy.code.contains("$$HogeEmitOwnedKeys"));
+    assert!(!legacy.code.contains("$$HogeEmitInput<"));
+    assert!(!legacy.code.contains("$$HogePublicComponentInputProps"));
 }

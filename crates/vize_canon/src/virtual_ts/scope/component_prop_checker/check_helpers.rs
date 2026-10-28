@@ -17,24 +17,24 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     strict_component_attrs: bool,
     typed_fallthrough_values: bool,
 ) {
-    ts.push_str("  type $VueIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    ts.push_str("  type $$HogeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
     ts.push_str(
-        "  type $VueComponentNavigationProps<P> = $VueIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n",
+        "  type $$HogeComponentNavigationProps<P> = $$HogeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n",
     );
     // Inline parameter shapes keep `TS2345` messages close to `vue-tsc` while
     // preserving optionality and contextual typing. The strict tail is used
     // only when Vize knows the generated child's fallthrough surface.
     ts.push_str(
-        "  type $VueEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? $VueIsAny<__E> extends true ? {} : NonNullable<__E> : {};\n",
+        "  type $$HogeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? $$HogeIsAny<__E> extends true ? {} : NonNullable<__E> : {};\n",
     );
     ts.push_str(
-        "  type $VueIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;\n",
+        "  type $$HogeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;\n",
     );
     ts.push_str(
-        "  type $VueHasFallthroughProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;\n",
+        "  type $$HogeHasFallthroughProps<C> = $$HogeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;\n",
     );
     ts.push_str(
-        "  type $VueFallthroughProps<C> = $VueHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};\n",
+        "  type $$HogeFallthroughProps<C> = $$HogeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $$HogeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};\n",
     );
     // Only a child generated under `checkRequiredFallthroughAttributes` has
     // non-optional fallthrough props; every other child's surface is
@@ -44,23 +44,23 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     // type, so the intersection it joins still displays as the child's `Props`
     // in diagnostics, the way `vue-tsc` prints it.
     ts.push_str(
-        "  type $VueRequiredFallthroughProps<C, __F = $VueFallthroughProps<C>, __K = $VueRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };\n",
+        "  type $$HogeRequiredFallthroughProps<C, __F = $$HogeFallthroughProps<C>, __K = $$HogeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };\n",
     );
-    ts.push_str("  type $VueVueVNodeProps = import('vue').VNodeProps;\n");
-    ts.push_str("  type $VueVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
-    ts.push_str("  type $VueVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
+    ts.push_str("  type $$HogeVueVNodeProps = import('vue').VNodeProps;\n");
+    ts.push_str("  type $$HogeVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
+    ts.push_str("  type $$HogeVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
     ts.push_str(
-        "  interface $VuePublicComponentAttrs extends $VueVueVNodeProps, $VueVueAllowedComponentProps, $VueVueComponentCustomProps {}\n",
+        "  interface $$HogePublicComponentAttrs extends $$HogeVueVNodeProps, $$HogeVueAllowedComponentProps, $$HogeVueComponentCustomProps {}\n",
     );
     if check_unknown_props {
         if strict_component_attrs {
             // Standard strict attrs accept Vue public attrs and only keys the
             // child's enabled fallthrough producer actually declares.
             ts.push_str(
-                "  type $VueAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $VueFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $VuePublicComponentAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
+                "  type $$HogeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$HogeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$HogePublicComponentAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
             );
             ts.push_str(
-                "  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & $VueAllowedFallthroughAttrs<C> : $VuePublicComponentAttrs;\n"
+                "  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & $$HogeAllowedFallthroughAttrs<C> : $$HogePublicComponentAttrs;\n"
             );
         } else {
             // Real HTML attributes are valid Vue fallthrough on any component, so
@@ -76,51 +76,51 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             // Already accepted public/HTML keys need no extra mapped intersection;
             // the no-extra-key case remains literal `{}` in diagnostic type display.
             ts.push_str(if check_unknown_fallthrough_props {
-                "  type $VueAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $VueFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $VuePublicComponentAttrs | keyof $VueComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
+                "  type $$HogeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$HogeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$HogePublicComponentAttrs | keyof $$HogeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
             } else {
-                "  type $VueAllowedFallthroughAttrs<C> = $VueHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
+                "  type $$HogeAllowedFallthroughAttrs<C> = $$HogeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
             });
             ts.push_str(
-                "  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs & $VueAllowedFallthroughAttrs<C> : $VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs;\n",
+                "  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & $$HogeComponentGlobalHtmlAttrs & $$HogeAllowedFallthroughAttrs<C> : $$HogePublicComponentAttrs & $$HogeComponentGlobalHtmlAttrs;\n",
             );
         }
     } else {
         ts.push_str(
-            "  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
+            "  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
         );
     }
     ts.push_str(
-        "  type $VueComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n",
+        "  type $$HogeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n",
     );
     // Abstract component constructors carry the same instance props as concrete
     // constructors. Only an authored `any` instance has no prop contract; keep
     // typed instances closed rather than opening every constructor's attrs.
     ts.push_str(
-        "  type $VuePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $VueIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};\n",
+        "  type $$HogePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $$HogeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};\n",
     );
     ts.push_str(
-        "  type $VueInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $VueIsAny<__P> extends true ? $VuePublicProps<C> : __P : $VuePublicProps<C>;\n",
+        "  type $$HogeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $$HogeIsAny<__P> extends true ? $$HogePublicProps<C> : __P : $$HogePublicProps<C>;\n",
     );
     ts.push_str(
-        "  type $VueStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $VueIsAny<__P> extends true ? $VuePublicProps<C> : __P : $VuePublicProps<C>;\n",
+        "  type $$HogeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $$HogeIsAny<__P> extends true ? $$HogePublicProps<C> : __P : $$HogePublicProps<C>;\n",
     );
     ts.push_str(
-        "  type $VueHasInstanceRawProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $VueIsAny<__P> extends true ? false : true : false : false;\n",
+        "  type $$HogeHasInstanceRawProps<C> = $$HogeIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $$HogeIsAny<__P> extends true ? false : true : false : false;\n",
     );
     ts.push_str(
-        "  type $VueHasStaticRawProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $VueIsAny<__P> extends true ? false : true : false : false;\n",
+        "  type $$HogeHasStaticRawProps<C> = $$HogeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $$HogeIsAny<__P> extends true ? false : true : false : false;\n",
     );
     // An empty options object matches an optional-only shape and infers
     // `unknown`. Trust raw metadata only when its generated identity is proven,
     // otherwise use the public component contract (including the empty one).
     ts.push_str(
-        "  type $VueComponentRawProps<C, __P = $VueHasInstanceRawProps<C> extends true ? $VueInstanceRawProps<C> : $VueHasStaticRawProps<C> extends true ? $VueStaticRawProps<C> : $VuePublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;\n",
+        "  type $$HogeComponentRawProps<C, __P = $$HogeHasInstanceRawProps<C> extends true ? $$HogeInstanceRawProps<C> : $$HogeHasStaticRawProps<C> extends true ? $$HogeStaticRawProps<C> : $$HogePublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;\n",
     );
     ts.push_str(
-        "  type $VueHasRawProps<C> = $VueHasInstanceRawProps<C> extends true ? true : $VueHasStaticRawProps<C>;\n",
+        "  type $$HogeHasRawProps<C> = $$HogeHasInstanceRawProps<C> extends true ? true : $$HogeHasStaticRawProps<C>;\n",
     );
     ts.push_str(
-        "  type $VueFallthroughValue<C, K extends PropertyKey> = $VueHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? unknown : $VuePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;\n",
+        "  type $$HogeFallthroughValue<C, K extends PropertyKey> = $$HogeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $$HogeIsAny<__F> extends true ? unknown : $$HogePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;\n",
     );
     if usages.iter().any(|(_, usage)| {
         usage
@@ -129,13 +129,13 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             .any(|event| !event.name_is_dynamic && !event.name.is_empty())
     }) {
         ts.push_str(
-            "  type $VueEventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | $VueKebabCase<Uncapitalize<E>> : never;\n",
+            "  type $$HogeEventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | $$HogeKebabCase<Uncapitalize<E>> : never;\n",
         );
         ts.push_str(
-            "  type $VueKebabEventAliases<E> = { [K in keyof E & string as $VueKebabCase<K> extends K ? never : $VueKebabCase<K>]: E[K] };\n",
+            "  type $$HogeKebabEventAliases<E> = { [K in keyof E & string as $$HogeKebabCase<K> extends K ? never : $$HogeKebabCase<K>]: E[K] };\n",
         );
         ts.push_str(
-            "  type $VueComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & $VueKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as $VueEventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };\n",
+            "  type $$HogeComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & $$HogeKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as $$HogeEventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };\n",
         );
     }
     // A generic SFC compiled by vue-tsc (a library such as reka-ui) is a
@@ -143,13 +143,13 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     // instantiates the generics with their constraints, so it is called
     // directly instead, as vue-tsc does, and TypeScript infers them.
     ts.push_str(
-        "  type $VueIsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
+        "  type $$HogeIsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
     );
     ts.push_str(
-        "  type $VuePropChecker<C, P, T = $VueComponentCheckTail<C>> = $VueIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $VueIsAny<__F> extends true ? (props: $VueComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $VueComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $VueComponentCheckProps<P, T>) => void : $VueIsLibraryGenericExport<C> extends true ? C : (props: $VueComponentCheckProps<P, T>) => void;\n",
+        "  type $$HogePropChecker<C, P, T = $$HogeComponentCheckTail<C>> = $$HogeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $$HogeIsAny<__F> extends true ? (props: $$HogeComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $$HogeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $$HogeComponentCheckProps<P, T>) => void : $$HogeIsLibraryGenericExport<C> extends true ? C : (props: $$HogeComponentCheckProps<P, T>) => void;\n",
     );
     ts.push_str(
-        "  type $VuePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
+        "  type $$HogePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
     );
     if typed_fallthrough_values
         && usages
@@ -157,13 +157,13 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             .any(|(_, usage)| !usage.spread_props.is_empty())
     {
         ts.push_str(
-            "  type $VueInvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $VueKebabProps<P> ? never : K extends keyof F ? $VueIsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
+            "  type $$HogeInvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $$HogeKebabProps<P> ? never : K extends keyof F ? $$HogeIsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
         );
         ts.push_str(
-            "  type $VueFallthroughSpreadGuard<C, P, A, __K = $VueInvalidFallthroughSpreadKeys<P, $VueFallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };\n",
+            "  type $$HogeFallthroughSpreadGuard<C, P, A, __K = $$HogeInvalidFallthroughSpreadKeys<P, $$HogeFallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };\n",
         );
         ts.push_str(
-            "  type $VueFallthroughSpreadChecker<C, P> = <A>(props: A & $VueFallthroughSpreadGuard<C, P, NoInfer<A>>) => A;\n",
+            "  type $$HogeFallthroughSpreadChecker<C, P> = <A>(props: A & $$HogeFallthroughSpreadGuard<C, P, NoInfer<A>>) => A;\n",
         );
     }
     // Emitted only when a usage actually binds an inline callback, because
@@ -179,9 +179,9 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     // resolves to `unknown`. An inline callback prop annotated `unknown` has
     // no contextual type, so `strict` reports TS7006 on parameters that are
     // in fact contextually typed by the checker call below — a new error on
-    // correct code (#3446). `$VueCallableProp` remains the safe fallback for
+    // correct code (#3446). `$$HogeCallableProp` remains the safe fallback for
     // components without Vize's resolver. A generic Vize child is invoked once
-    // through `$VuePropsResolver`; `$VueResolvedProp` then selects the
+    // through `$$HogePropsResolver`; `$$HogeResolvedProp` then selects the
     // instantiated callback type so return errors surface inside the authored
     // body, at the same leaf byte as vue-tsc. `any` is excluded from the
     // fallback so a genuinely `any` prop stays assignable from a non-function
@@ -191,28 +191,28 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         .any(|(_, usage)| usage.props.iter().any(is_inline_callback_prop))
     {
         ts.push_str(
-            "  type $VueCallableProp<T> = $VueIsAny<T> extends true ? T : unknown extends T ? (...args: any[]) => any : T;\n",
+            "  type $$HogeCallableProp<T> = $$HogeIsAny<T> extends true ? T : unknown extends T ? (...args: any[]) => any : T;\n",
         );
         ts.push_str(
-            "  type $VuePropsResolver<C> = C extends { __vizeResolveProps?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => {}) : $VueIsLibraryGenericExport<C> extends true ? C : (props: any) => {};\n",
+            "  type $$HogePropsResolver<C> = C extends { __vizeResolveProps?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => {}) : $$HogeIsLibraryGenericExport<C> extends true ? C : (props: any) => {};\n",
         );
         // A vue-tsc library export returns its instantiated context; its props
         // are what the callback is resolved against.
         ts.push_str(
-            "  type $VueResolvedContextProps = <R>(resolved: R) => R extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : R : R;\n",
+            "  type $$HogeResolvedContextProps = <R>(resolved: R) => R extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : R : R;\n",
         );
         ts.push_str(
-            "  type $VuePropsSelector<R> = <A extends Partial<R> & Record<string, unknown>>(props: A) => A;\n",
+            "  type $$HogePropsSelector<R> = <A extends Partial<R> & Record<string, unknown>>(props: A) => A;\n",
         );
-        ts.push_str("  type $VueMissingProp = { readonly __vizeMissingProp: unique symbol };\n");
+        ts.push_str("  type $$HogeMissingProp = { readonly __vizeMissingProp: unique symbol };\n");
         ts.push_str(
-            "  type $VueResolvedPropEntry<R, K extends PropertyKey> = R extends unknown ? K extends keyof R ? { value: R[K] } : $VueMissingProp : never;\n",
-        );
-        ts.push_str(
-            "  type $VueSelectedProps<R, A> = R extends unknown ? A extends Partial<R> ? R : never : never;\n",
+            "  type $$HogeResolvedPropEntry<R, K extends PropertyKey> = R extends unknown ? K extends keyof R ? { value: R[K] } : $$HogeMissingProp : never;\n",
         );
         ts.push_str(
-            "  type $VueResolvedProp<R, A, K extends PropertyKey, F, __S = $VueSelectedProps<R, A>, __E = $VueResolvedPropEntry<__S, K>, __A = $VueResolvedPropEntry<R, K>, __P = Extract<__E, { value: unknown }>> = [__S] extends [never] ? F : [__P] extends [never] ? [Extract<__A, { value: unknown }>] extends [never] ? F : never : __P extends { value: infer V } ? V : never;\n",
+            "  type $$HogeSelectedProps<R, A> = R extends unknown ? A extends Partial<R> ? R : never : never;\n",
+        );
+        ts.push_str(
+            "  type $$HogeResolvedProp<R, A, K extends PropertyKey, F, __S = $$HogeSelectedProps<R, A>, __E = $$HogeResolvedPropEntry<__S, K>, __A = $$HogeResolvedPropEntry<R, K>, __P = Extract<__E, { value: unknown }>> = [__S] extends [never] ? F : [__P] extends [never] ? [Extract<__A, { value: unknown }>] extends [never] ? F : never : __P extends { value: infer V } ? V : never;\n",
         );
     }
     append_ref_callback_helper(ts, usages);

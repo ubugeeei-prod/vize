@@ -54,14 +54,14 @@ pub(crate) fn generate_template_context(
         ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
     }
     if needs_global_helper {
-        ctx.push_str("    type $VueGlobalContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $VueGlobalContextProperty<T, F> = $VueGlobalContextIsAny<T> extends true ? T : unknown extends T ? F : T;\n    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? $VueGlobalContextProperty<__Ctx[K], F> : F;\n");
+        ctx.push_str("    type $$HogeGlobalContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $$HogeGlobalContextProperty<T, F> = $$HogeGlobalContextIsAny<T> extends true ? T : unknown extends T ? F : T;\n    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? $$HogeGlobalContextProperty<__Ctx[K], F> : F;\n");
     }
     // A prop or authored binding may be named `undefined` in this scope.
     // Operator literals never read that lexical binding when creating placeholders.
     ctx.push_str("    const __ctx = (void 0) as unknown as __Ctx;\n");
     if options.strict_instance_globals {
         ctx.push_str(
-            "    type $VueStrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $VueStrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type $VueStrictContextProperty<T> = [T] extends [never] ? never : $VueStrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type $VueStrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as $VueStrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: $VueStrictContextProperty<__Ctx[__K]>;\n    };\n    type $VueStrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & $VueStrictPublicInstanceGlobals;\n    const __vize_strict_template_context = (void 0) as unknown as $VueStrictTemplateContext;\n",
+            "    type $$HogeStrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $$HogeStrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type $$HogeStrictContextProperty<T> = [T] extends [never] ? never : $$HogeStrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type $$HogeStrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as $$HogeStrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: $$HogeStrictContextProperty<__Ctx[__K]>;\n    };\n    type $$HogeStrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & $$HogeStrictPublicInstanceGlobals;\n    const __vize_strict_template_context = (void 0) as unknown as $$HogeStrictTemplateContext;\n",
         );
     }
 

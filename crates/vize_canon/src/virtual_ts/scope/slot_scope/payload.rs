@@ -5,15 +5,15 @@ use vize_croquis::{Croquis, Scope, ScopeData, analysis::ComponentUsage};
 /// named and dynamic slot scopes, including functional components.
 /// An unknown host must retain a regular payload fallback: inventing `any`
 /// here would select the silent error type and hide authored diagnostics.
-const SLOT_RESOLVER_HELPERS: &str = r#"type $VueSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
+const SLOT_RESOLVER_HELPERS: &str = r#"type $$HogeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
-type $VueNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => $VueSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => $VueSlotHostSlots<C>;
-type $VueSlotsFactory<C> = $VueIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $VueSlotHostSlots<C> : $VueNativeSlotsFactory<C>;
-type $VueHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
-type $VueDirectSlotConstructor<C> = $VueIsAny<C> extends true ? never : $VueHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
-type $VueSlotConstructor<C> = [$VueDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : $VueDirectSlotConstructor<C>;
-type $VueSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
-type $VueSlotHostSelector<C> = [$VueDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
+type $$HogeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => $$HogeSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => $$HogeSlotHostSlots<C>;
+type $$HogeSlotsFactory<C> = $$HogeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $$HogeNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $$HogeSlotHostSlots<C> : $$HogeNativeSlotsFactory<C>;
+type $$HogeHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
+type $$HogeDirectSlotConstructor<C> = $$HogeIsAny<C> extends true ? never : $$HogeHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
+type $$HogeSlotConstructor<C> = [$$HogeDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : $$HogeDirectSlotConstructor<C>;
+type $$HogeSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
+type $$HogeSlotHostSelector<C> = [$$HogeDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 "#;
 
 /// Only names admitted by the authored key contribute payloads. A literal union
@@ -32,7 +32,7 @@ type $VueSlotHostSelector<C> = [$VueDirectSlotConstructor<C>] extends [never] ? 
 /// unknown tag through a missing registry key, so its payloads are silent in
 /// exactly this way. The component itself stays `any`: listener and prop
 /// checks rely on conditional types an error type would collapse.
-const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype $VueSilentAny = {}[\"__vizeSilentAny\"];\ntype $VueNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\ntype $VueSlotPayload<__S, __N> = $VueIsAny<__S> extends true ? $VueSilentAny : string extends __N ? string extends keyof __S ? $VueNamedSlotPayload<__S, __N> : any : $VueNamedSlotPayload<__S, __N>;\n";
+const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype $$HogeSilentAny = {}[\"__vizeSilentAny\"];\ntype $$HogeNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\ntype $$HogeSlotPayload<__S, __N> = $$HogeIsAny<__S> extends true ? $$HogeSilentAny : string extends __N ? string extends keyof __S ? $$HogeNamedSlotPayload<__S, __N> : any : $$HogeNamedSlotPayload<__S, __N>;\n";
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping
 /// unused aliases out also preserves `noUnusedLocals` declaration consumers.

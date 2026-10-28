@@ -17,7 +17,7 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     assert!(
         output
             .code
-            .contains("type $VueNativeElements = import('vue').NativeElements;"),
+            .contains("type $$HogeNativeElements = import('vue').NativeElements;"),
         "native check should derive the element from Vue's native element contract:\n{}",
         output.code
     );
@@ -30,7 +30,7 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     );
     assert!(
         output.code.contains(
-            "$VueNativeElementProp<$VueNativeElement<\"button\">, \"disabled\"> = (disabledFlag);"
+            "$$HogeNativeElementProp<$$HogeNativeElement<\"button\">, \"disabled\"> = (disabledFlag);"
         ),
         "bound disabled should be assigned to the exact Vue prop type:\n{}",
         output.code
@@ -131,7 +131,7 @@ fn native_prop_check_covers_every_static_attribute_name() {
 
     for name in ["href", "tabindex"] {
         let expected = vize_carton::cstr!(
-            "$VueNativeElementProp<$VueNativeElement<\"a\">, \"{name}\"> = (value);"
+            "$$HogeNativeElementProp<$$HogeNativeElement<\"a\">, \"{name}\"> = (value);"
         );
         assert!(
             output.code.contains(expected.as_str()),
@@ -174,16 +174,16 @@ fn native_prop_check_ignores_dynamic_names_and_components() {
 ///   helpers file. `vize check` drops that (the helpers text maps to no authored
 ///   source) while `vize check --declaration` treats Corsa's non-zero exit as
 ///   fatal, so it aborted the whole emit. `// @ts-ignore` covers this one.
-/// - `TS6196` "declared but never used" on `$VueNativeElement` and
-///   `$VueNativeElementProp` for a program that binds no native prop, which
+/// - `TS6196` "declared but never used" on `$$HogeNativeElement` and
+///   `$$HogeNativeElementProp` for a program that binds no native prop, which
 ///   reached `check-server` clients as unmapped hints. `@ts-ignore` does *not*
 ///   cover this one — it filters errors, not the suggestion channel — so the
 ///   ambient `__vizeNativeElementProp` declaration keeps both aliases referenced.
 #[test]
 fn native_element_table_is_guarded_and_kept_referenced() {
     const GUARD: &str = "// @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.";
-    const ALIAS: &str = "type $VueNativeElements = import('vue').NativeElements;";
-    const REFERENCE: &str = "declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $VueNativeElementProp<$VueNativeElement<__Tag>, __Prop>): void;";
+    const ALIAS: &str = "type $$HogeNativeElements = import('vue').NativeElements;";
+    const REFERENCE: &str = "declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $$HogeNativeElementProp<$$HogeNativeElement<__Tag>, __Prop>): void;";
 
     for (name, text) in [
         (
@@ -319,7 +319,7 @@ fn legacy_vue2_template_fragments_carry_no_element_prop_check() {
 /// The ambient `__vizeNativeElementProp` declaration names the same aliases with
 /// type parameters instead of string literals, so the quote anchors exclude it.
 fn native_prop_checks(code: &str) -> Vec<(&str, &str)> {
-    const PREFIX: &str = "$VueNativeElementProp<$VueNativeElement<\"";
+    const PREFIX: &str = "$$HogeNativeElementProp<$$HogeNativeElement<\"";
     const SEPARATOR: &str = "\">, \"";
     const SUFFIX: &str = "\">";
 
@@ -378,8 +378,8 @@ fn later_static_class_or_style_replaces_the_bound_value() {
     assert_eq!(
         checks,
         [
-            r#"const __vize_native_prop_check_56: $VueNativeElementProp<$VueNativeElement<"p">, "class"> = (flag);"#,
-            r#"const __vize_native_prop_check_113: $VueNativeElementProp<$VueNativeElement<"b">, "title"> = (flag);"#,
+            r#"const __vize_native_prop_check_56: $$HogeNativeElementProp<$$HogeNativeElement<"p">, "class"> = (flag);"#,
+            r#"const __vize_native_prop_check_113: $$HogeNativeElementProp<$$HogeNativeElement<"b">, "title"> = (flag);"#,
         ],
         "{}",
         output.code

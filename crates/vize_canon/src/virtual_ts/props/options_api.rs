@@ -62,12 +62,12 @@ pub(super) fn emit_options_api_props_type(
 ) {
     if source.captures_default {
         ts.push_str(
-            "type $VueDefaultProps<T> = $VueIsAny<T> extends true ? {} : T extends abstract new (...args: any[]) => { $props: infer P } ? P : {};\n",
+            "type $$HogeDefaultProps<T> = $$HogeIsAny<T> extends true ? {} : T extends abstract new (...args: any[]) => { $props: infer P } ? P : {};\n",
         );
     }
     match source.direct.as_ref() {
         Some(DirectOptionsApiPropsSource::DeferredObject(_)) => ts.push_str(
-            "type $VueOptionsPropRequired<T> = T extends { required: true } ? true : false;\ntype $VueOptionsPropShape<T extends Record<string, any>> = { [K in keyof T as $VueOptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as $VueOptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
+            "type $$HogeOptionsPropRequired<T> = T extends { required: true } ? true : false;\ntype $$HogeOptionsPropShape<T extends Record<string, any>> = { [K in keyof T as $$HogeOptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as $$HogeOptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
         ),
         Some(DirectOptionsApiPropsSource::Names(names)) => {
             if exported {
@@ -86,12 +86,12 @@ pub(super) fn emit_options_api_props_type(
             if exported {
                 append!(
                     *ts,
-                    "export type {type_name}{generic_decl} = $VueDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
+                    "export type {type_name}{generic_decl} = $$HogeDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
                 );
             } else {
                 append!(
                     *ts,
-                    "type {type_name} = $VueDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
+                    "type {type_name} = $$HogeDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
                 );
             }
         }
@@ -100,6 +100,6 @@ pub(super) fn emit_options_api_props_type(
 
 pub(crate) fn append_default_props(ts: &mut String, source: &OptionsApiPropsSource) {
     if source.captures_default {
-        ts.push_str(" & $VueDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>");
+        ts.push_str(" & $$HogeDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>");
     }
 }

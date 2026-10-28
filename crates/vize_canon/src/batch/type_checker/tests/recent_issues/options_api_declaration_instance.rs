@@ -216,9 +216,9 @@ fn options_api_declarations_expose_the_authored_public_instance() {
     let options_dts = std::fs::read_to_string(out_dir.join("Options.vue.d.ts")).unwrap();
     assert!(
         options_dts.contains(
-            "type $VueAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];"
+            "type $$HogeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];"
         ) && options_dts.contains(
-            "type $VueComponentInstance = Omit<$VueAuthoredInstance, '$props' | '$emit' | '$slots'> & {"
+            "type $$HogeComponentInstance = Omit<$$HogeAuthoredInstance, '$props' | '$emit' | '$slots'> & {"
         ) && options_dts.contains("count: number;"),
         "the emitted instance must keep the authored Options API members:\n{options_dts}"
     );
@@ -306,7 +306,7 @@ fn options_api_setting_moves_template_participation_only() {
 /// This covers the `defineComponent` shape only. A Vue 2.7 SFC that exports a
 /// bare options object is wrapped by the legacy `__vizeDefineComponent`, which
 /// returns the options object rather than a constructor, so
-/// `$VueAuthoredInstance` collapses to `{}` and its members stay invisible to
+/// `$$HogeAuthoredInstance` collapses to `{}` and its members stay invisible to
 /// consumers — a separate gap that needs Vue 2's `ThisType` instance resolution
 /// and is tracked apart from #4010.
 #[test]
@@ -325,7 +325,7 @@ fn vue2_options_api_declarations_expose_the_authored_public_instance() {
     );
     let legacy_dts = std::fs::read_to_string(out_dir.join("Legacy.vue.d.ts")).unwrap();
     assert!(
-        legacy_dts.contains("type $VueComponentInstance = $VueAuthoredInstance & {")
+        legacy_dts.contains("type $$HogeComponentInstance = $$HogeAuthoredInstance & {")
             && legacy_dts.contains("count: number;"),
         "the Vue 2.7 instance must keep the authored Options API members:\n{legacy_dts}"
     );

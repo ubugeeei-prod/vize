@@ -33,86 +33,86 @@ type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknow
 type __RuntimePropHasBoolean<T> = T extends BooleanConstructor ? true : T extends readonly (infer U)[] ? __RuntimePropHasBoolean<U> : T extends { type: infer U } ? __RuntimePropHasBoolean<U> : false;
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : __RuntimePropHasBoolean<T>;
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
-type $VueIsAny<T> = 0 extends (1 & T) ? true : false;
+type $$HogeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
-type $VueBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = $VueBooleanKey<T>> = Readonly<T> & { readonly [K in __BKeys]-?: boolean };
-type $VueIfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
-type $VueNotUndefined<T> = T extends undefined ? never : T;
-type $VueMappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
-type $VueDefaultNativeType = null | number | string | boolean | symbol | Function;
-type $VueInferDefault<P, T> = ((props: P) => T & {}) | (T extends $VueDefaultNativeType ? T : never);
-type __WithDefaultsArgs<T> = { [K in keyof T]?: $VueInferDefault<T, T[K]> };
-type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<$VueMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? $VueIfAny<D[K], $VueNotUndefined<T[K]>, T[K]> : $VueNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
+type $$HogeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = $$HogeBooleanKey<T>> = Readonly<T> & { readonly [K in __BKeys]-?: boolean };
+type $$HogeIfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
+type $$HogeNotUndefined<T> = T extends undefined ? never : T;
+type $$HogeMappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
+type $$HogeDefaultNativeType = null | number | string | boolean | symbol | Function;
+type $$HogeInferDefault<P, T> = ((props: P) => T & {}) | (T extends $$HogeDefaultNativeType ? T : never);
+type __WithDefaultsArgs<T> = { [K in keyof T]?: $$HogeInferDefault<T, T[K]> };
+type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<$$HogeMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? $$HogeIfAny<D[K], $$HogeNotUndefined<T[K]>, T[K]> : $$HogeNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
-type $VueKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $VueKebabCase<Tail, `${Acc}${Head}`> : $VueKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
-type $VueKebabProps<T> = { [K in keyof T & string as $VueKebabCase<K>]: T[K] };
-type $VueRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-type $VueDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
-type $VueFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown } & Omit<$VueDomListenerProps, keyof Owned>;
+type $$HogeKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $$HogeKebabCase<Tail, `${Acc}${Head}`> : $$HogeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
+type $$HogeKebabProps<T> = { [K in keyof T & string as $$HogeKebabCase<K>]: T[K] };
+type $$HogeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $$HogeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
+type $$HogeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown } & Omit<$$HogeDomListenerProps, keyof Owned>;
 // Match Vue's public prop contract, including runtime-core module augmentations.
-type $VuePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
-type $VueComponentMetadataKeys<T> = $VueIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
-type $VueComponentOwnKeys<P = {}, E = {}> = keyof $VuePublicComponentInputProps | $VueComponentMetadataKeys<P> | $VueComponentMetadataKeys<E>;
-type $VueUnownedComponentAttrs<F, P = {}, E = {}> = $VueIsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $VueComponentOwnKeys<P, E> ? never : K]: F[K] } : never;
-type $VuePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
-type $VueComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? {} : NonNullable<__F> : {});
-type $VueComponentFallthroughProps<C> = { [K in keyof $VueComponentFallthroughSurface<C>]: $VueComponentFallthroughSurface<C>[K] };
-type $VueComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<$VueKebabProps<T>> & Declared & $VueFallthroughAttrs<T & Declared> & $VuePublicComponentInputProps : never;
-type $VueMissingRequiredInputKeys<T, Authored, K extends $VueRequiredKeys<T> & string = $VueRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : $VueKebabCase<K> extends keyof Authored ? never : K : never;
-type $VueIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
-type $VueIsSinglePropKey<T> = [T] extends [never] ? false : $VueIsPropKeyUnion<T> extends true ? false : true;
-type $VueRelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $VueIsSinglePropKey<$VueRequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
-type $VueExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $VueRelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
-type $VueComponentMissingInputGuard<T, Authored> = T extends unknown ? [$VueMissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $VueMissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
-type $VueComponentInputGuardFor<T, Declared, Authored, Allowed> = [$VueMissingRequiredInputKeys<T, Authored> | $VueExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $VueMissingRequiredInputKeys<T, Authored>; readonly extra: $VueExtraInputKeys<T, Declared, Authored, Allowed>; } };
-type $VueComponentInputGuard<T, Declared, Authored> = $VueUsePublicInstance<Authored> extends true ? {} : T extends unknown ? $VueComponentInputGuardFor<T, Declared, Authored, $VueComponentInputProps<T, Declared>> : never;
-type $VueComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $VueComponentInputGuardFor<T, Declared, Authored, Allowed>;
-type $VueComponentInput<T, Declared, Authored> = $VueUsePublicInstance<Authored> extends true ? $VueComponentInputProps<T, Declared> : T extends unknown ? $VueComponentInputFor<T, Declared, Authored, $VueComponentInputProps<T, Declared>> : never;
-type $VueAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
-type $VueIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
-type $VueUsePublicInstance<T> = $VueIsAny<T> extends true ? true : $VueIsUnknown<T>;
-type $VueLiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
-type $VueReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$VueLiteralKeys<T>, '$props'>> & { $props: P };
-type $VuePublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
-type $VuePublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
+type $$HogePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
+type $$HogeComponentMetadataKeys<T> = $$HogeIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
+type $$HogeComponentOwnKeys<P = {}, E = {}> = keyof $$HogePublicComponentInputProps | $$HogeComponentMetadataKeys<P> | $$HogeComponentMetadataKeys<E>;
+type $$HogeUnownedComponentAttrs<F, P = {}, E = {}> = $$HogeIsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $$HogeComponentOwnKeys<P, E> ? never : K]: F[K] } : never;
+type $$HogePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
+type $$HogeComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? $$HogeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
+type $$HogeComponentFallthroughProps<C> = { [K in keyof $$HogeComponentFallthroughSurface<C>]: $$HogeComponentFallthroughSurface<C>[K] };
+type $$HogeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<$$HogeKebabProps<T>> & Declared & $$HogeFallthroughAttrs<T & Declared> & $$HogePublicComponentInputProps : never;
+type $$HogeMissingRequiredInputKeys<T, Authored, K extends $$HogeRequiredKeys<T> & string = $$HogeRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : $$HogeKebabCase<K> extends keyof Authored ? never : K : never;
+type $$HogeIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
+type $$HogeIsSinglePropKey<T> = [T] extends [never] ? false : $$HogeIsPropKeyUnion<T> extends true ? false : true;
+type $$HogeRelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $$HogeIsSinglePropKey<$$HogeRequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
+type $$HogeExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $$HogeRelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
+type $$HogeComponentMissingInputGuard<T, Authored> = T extends unknown ? [$$HogeMissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $$HogeMissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
+type $$HogeComponentInputGuardFor<T, Declared, Authored, Allowed> = [$$HogeMissingRequiredInputKeys<T, Authored> | $$HogeExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $$HogeMissingRequiredInputKeys<T, Authored>; readonly extra: $$HogeExtraInputKeys<T, Declared, Authored, Allowed>; } };
+type $$HogeComponentInputGuard<T, Declared, Authored> = $$HogeUsePublicInstance<Authored> extends true ? {} : T extends unknown ? $$HogeComponentInputGuardFor<T, Declared, Authored, $$HogeComponentInputProps<T, Declared>> : never;
+type $$HogeComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $$HogeComponentInputGuardFor<T, Declared, Authored, Allowed>;
+type $$HogeComponentInput<T, Declared, Authored> = $$HogeUsePublicInstance<Authored> extends true ? $$HogeComponentInputProps<T, Declared> : T extends unknown ? $$HogeComponentInputFor<T, Declared, Authored, $$HogeComponentInputProps<T, Declared>> : never;
+type $$HogeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+type $$HogeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
+type $$HogeUsePublicInstance<T> = $$HogeIsAny<T> extends true ? true : $$HogeIsUnknown<T>;
+type $$HogeLiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
+type $$HogeReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$$HogeLiteralKeys<T>, '$props'>> & { $props: P };
+type $$HogePublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
+type $$HogePublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type $VueComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
+type $$HogeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
-type $VueNativeElements = import('vue').NativeElements;
-type $VueNativeElement<Tag extends PropertyKey> = Tag extends keyof $VueNativeElements ? $VueNativeElements[Tag] : unknown;
-type $VueNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
-declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $VueNativeElementProp<$VueNativeElement<__Tag>, __Prop>): void;
-type $VueComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$VueComponentAttrCamel<__T>>}` : S;
-type $VueComponentNativeAttrNames = { [K in keyof $VueNativeElements & string]: keyof $VueNativeElements[K] }[keyof $VueNativeElements & string] & string;
-type $VueComponentGlobalHtmlAttrs = $VueIsAny<$VueNativeElements> extends true ? {} : { [K in $VueComponentNativeAttrNames as K | $VueComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
-declare function __vizeComponentGlobalHtmlAttrs(value: $VueComponentGlobalHtmlAttrs): void;
-declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type $VueDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
-type $VueDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }) => void : H : never;
-declare function __vizeDirective<D>(directive: D): $VueDirectiveCall<$VueDirectiveHook<D>>;
+type $$HogeNativeElements = import('vue').NativeElements;
+type $$HogeNativeElement<Tag extends PropertyKey> = Tag extends keyof $$HogeNativeElements ? $$HogeNativeElements[Tag] : unknown;
+type $$HogeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
+declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $$HogeNativeElementProp<$$HogeNativeElement<__Tag>, __Prop>): void;
+type $$HogeComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$$HogeComponentAttrCamel<__T>>}` : S;
+type $$HogeComponentNativeAttrNames = { [K in keyof $$HogeNativeElements & string]: keyof $$HogeNativeElements[K] }[keyof $$HogeNativeElements & string] & string;
+type $$HogeComponentGlobalHtmlAttrs = $$HogeIsAny<$$HogeNativeElements> extends true ? {} : { [K in $$HogeComponentNativeAttrNames as K | $$HogeComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
+declare function __vizeComponentGlobalHtmlAttrs(value: $$HogeComponentGlobalHtmlAttrs): void;
+declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type $$HogeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
+type $$HogeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }) => void : H : never;
+declare function __vizeDirective<D>(directive: D): $$HogeDirectiveCall<$$HogeDirectiveHook<D>>;
 // @ts-ignore TS2694/TS2307: a `vue` without `GlobalDirectives` must degrade registered directives to unchecked, never error.
-type $VueGlobalDirectives = import('vue').GlobalDirectives;
+type $$HogeGlobalDirectives = import('vue').GlobalDirectives;
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade registered directives to unchecked, never error.
-type $VueOwnDirectives<D> = D extends infer L & Record<string, import('vue').Directive> ? L : D;
-type $VueLocalDirectives<C> = C extends { directives?: infer D } ? { [K in keyof $VueOwnDirectives<NonNullable<D>> & string as string extends K ? never : `v${Capitalize<K>}`]: $VueOwnDirectives<NonNullable<D>>[K] } : {};
-declare function __vizeRegisteredDirective<C, K extends string>(): K extends keyof $VueLocalDirectives<C> ? $VueLocalDirectives<C>[K] : K extends keyof $VueGlobalDirectives ? $VueGlobalDirectives[K] : unknown;
+type $$HogeOwnDirectives<D> = D extends infer L & Record<string, import('vue').Directive> ? L : D;
+type $$HogeLocalDirectives<C> = C extends { directives?: infer D } ? { [K in keyof $$HogeOwnDirectives<NonNullable<D>> & string as string extends K ? never : `v${Capitalize<K>}`]: $$HogeOwnDirectives<NonNullable<D>>[K] } : {};
+declare function __vizeRegisteredDirective<C, K extends string>(): K extends keyof $$HogeLocalDirectives<C> ? $$HogeLocalDirectives<C>[K] : K extends keyof $$HogeGlobalDirectives ? $$HogeGlobalDirectives[K] : unknown;
 declare function __vizeVaporDirective<D>(directive: D): D extends (...args: any[]) => any ? D : (node: unknown, value?: () => unknown, argument?: unknown, modifiers?: unknown) => void;
 declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modifiers: any; dir: any };
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
 
-type $VueSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
+type $$HogeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
-type $VueNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => $VueSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => $VueSlotHostSlots<C>;
-type $VueSlotsFactory<C> = $VueIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $VueSlotHostSlots<C> : $VueNativeSlotsFactory<C>;
-type $VueHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
-type $VueDirectSlotConstructor<C> = $VueIsAny<C> extends true ? never : $VueHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
-type $VueSlotConstructor<C> = [$VueDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : $VueDirectSlotConstructor<C>;
-type $VueSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
-type $VueSlotHostSelector<C> = [$VueDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
+type $$HogeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => $$HogeSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => $$HogeSlotHostSlots<C>;
+type $$HogeSlotsFactory<C> = $$HogeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $$HogeNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $$HogeSlotHostSlots<C> : $$HogeNativeSlotsFactory<C>;
+type $$HogeHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
+type $$HogeDirectSlotConstructor<C> = $$HogeIsAny<C> extends true ? never : $$HogeHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
+type $$HogeSlotConstructor<C> = [$$HogeDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : $$HogeDirectSlotConstructor<C>;
+type $$HogeSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
+type $$HogeSlotHostSelector<C> = [$$HogeDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
-type $VueSilentAny = {}["__vizeSilentAny"];
-type $VueNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
-type $VueSlotPayload<__S, __N> = $VueIsAny<__S> extends true ? $VueSilentAny : string extends __N ? string extends keyof __S ? $VueNamedSlotPayload<__S, __N> : any : $VueNamedSlotPayload<__S, __N>;
+type $$HogeSilentAny = {}["__vizeSilentAny"];
+type $$HogeNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+type $$HogeSlotPayload<__S, __N> = $$HogeIsAny<__S> extends true ? $$HogeSilentAny : string extends __N ? string extends keyof __S ? $$HogeNamedSlotPayload<__S, __N> : any : $$HogeNamedSlotPayload<__S, __N>;
 import { ref } from 'vue'
 import MyList from './MyList.vue'
 
@@ -122,7 +122,7 @@ export type Props = {};
 // ========== Setup Scope ==========
 function __setup() {
   // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$VueBooleanKey<_T>, keyof __LooseRequired<_T>>>;
+  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$$HogeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -150,9 +150,9 @@ function __setup() {
   type __R_items = typeof items;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type $VueIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
-    type $VueWidenTemplateRef<T> = $VueIsAny<T> extends true ? T : $VueIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $VueWidenTemplateRef<T['value']> : T : T;
+    type $$HogeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type $$HogeWidenTemplateRef<T> = $$HogeIsAny<T> extends true ? T : $$HogeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$HogeWidenTemplateRef<T['value']> : T : T;
     var items: __U<__R_items> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
@@ -168,13 +168,13 @@ function __setup() {
   // @vize-map: expr -> 161:166
 
   // v-slot scope: #default
-  const __vize_slot_host_8 = (undefined as unknown as $VueSlotHostSelector<typeof MyList>)(new (undefined as unknown as $VueSlotConstructor<typeof MyList>)({
+  const __vize_slot_host_8 = (undefined as unknown as $$HogeSlotHostSelector<typeof MyList>)(new (undefined as unknown as $$HogeSlotConstructor<typeof MyList>)({
     "items": items,
-  }, ...([] as unknown as $VueSlotConstructorArgs<$VueSlotConstructor<typeof MyList>>)), (undefined as unknown as $VueSlotsFactory<typeof MyList>)(MyList)({
+  }, ...([] as unknown as $$HogeSlotConstructorArgs<$$HogeSlotConstructor<typeof MyList>>)), (undefined as unknown as $$HogeSlotsFactory<typeof MyList>)(MyList)({
     "items": items,
   }));
   void __vize_slot_host_8;
-  void function _slot_default_8({ item, index }: $VueSlotPayload<typeof __vize_slot_host_8, "default">) {
+  void function _slot_default_8({ item, index }: $$HogeSlotPayload<typeof __vize_slot_host_8, "default">) {
     void item;
     void index;
     void (index); // Interpolation
@@ -184,67 +184,67 @@ function __setup() {
   };
 
   // v-slot scope: #header
-  const __vize_slot_host_9 = (undefined as unknown as $VueSlotHostSelector<typeof MyList>)(new (undefined as unknown as $VueSlotConstructor<typeof MyList>)({
+  const __vize_slot_host_9 = (undefined as unknown as $$HogeSlotHostSelector<typeof MyList>)(new (undefined as unknown as $$HogeSlotConstructor<typeof MyList>)({
     "items": items,
-  }, ...([] as unknown as $VueSlotConstructorArgs<$VueSlotConstructor<typeof MyList>>)), (undefined as unknown as $VueSlotsFactory<typeof MyList>)(MyList)({
+  }, ...([] as unknown as $$HogeSlotConstructorArgs<$$HogeSlotConstructor<typeof MyList>>)), (undefined as unknown as $$HogeSlotsFactory<typeof MyList>)(MyList)({
     "items": items,
   }));
   void __vize_slot_host_9;
-  void function _slot_header_9({ title }: $VueSlotPayload<typeof __vize_slot_host_9, "header">) {
+  void function _slot_header_9({ title }: $$HogeSlotPayload<typeof __vize_slot_host_9, "header">) {
     void title;
     void (title); // Interpolation
     // @vize-map: expr -> 318:323
   };
 
   // Component props type declarations
-  type $VueIsAny<T> = 0 extends (1 & T) ? true : false;
-  type $VueComponentNavigationProps<P> = $VueIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;
-  type $VueEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? $VueIsAny<__E> extends true ? {} : NonNullable<__E> : {};
-  type $VueIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
-  type $VueHasFallthroughProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
-  type $VueFallthroughProps<C> = $VueHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
-  type $VueRequiredFallthroughProps<C, __F = $VueFallthroughProps<C>, __K = $VueRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
-  type $VueVueVNodeProps = import('vue').VNodeProps;
-  type $VueVueAllowedComponentProps = import('vue').AllowedComponentProps;
-  type $VueVueComponentCustomProps = import('vue').ComponentCustomProps;
-  interface $VuePublicComponentAttrs extends $VueVueVNodeProps, $VueVueAllowedComponentProps, $VueVueComponentCustomProps {}
-  type $VueAllowedFallthroughAttrs<C> = $VueHasFallthroughProps<C> extends true ? Record<string, unknown> : {};
-  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs & $VueAllowedFallthroughAttrs<C> : $VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs;
-  type $VueComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-  type $VuePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $VueIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
-  type $VueInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $VueIsAny<__P> extends true ? $VuePublicProps<C> : __P : $VuePublicProps<C>;
-  type $VueStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $VueIsAny<__P> extends true ? $VuePublicProps<C> : __P : $VuePublicProps<C>;
-  type $VueHasInstanceRawProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $VueIsAny<__P> extends true ? false : true : false : false;
-  type $VueHasStaticRawProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $VueIsAny<__P> extends true ? false : true : false : false;
-  type $VueComponentRawProps<C, __P = $VueHasInstanceRawProps<C> extends true ? $VueInstanceRawProps<C> : $VueHasStaticRawProps<C> extends true ? $VueStaticRawProps<C> : $VuePublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;
-  type $VueHasRawProps<C> = $VueHasInstanceRawProps<C> extends true ? true : $VueHasStaticRawProps<C>;
-  type $VueFallthroughValue<C, K extends PropertyKey> = $VueHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? unknown : $VuePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
-  type $VueIsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
-  type $VuePropChecker<C, P, T = $VueComponentCheckTail<C>> = $VueIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $VueIsAny<__F> extends true ? (props: $VueComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $VueComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $VueComponentCheckProps<P, T>) => void : $VueIsLibraryGenericExport<C> extends true ? C : (props: $VueComponentCheckProps<P, T>) => void;
-  type $VuePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
-  type $VueStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
-  type $VueEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $VueIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $VueIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
-  type $VueNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $VueIsAny<InstanceType<C>> extends true ? $VueEmptyVueNavigationSlots<C> : $VueIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
-  type $VueNavigationSlots<C> = $VueIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $VueIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $VueNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $VueNativeNavigationSlots<C>;
-  type $VueRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
-  type $VueMissingRequiredSlots<__S, __P> = Exclude<$VueRequiredSlotKeys<__S>, keyof __P>;
-  type $VueRequiredSlots<__S, __P> = $VueIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$VueMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $VueMissingRequiredSlots<__S, __P> };
+  type $$HogeIsAny<T> = 0 extends (1 & T) ? true : false;
+  type $$HogeComponentNavigationProps<P> = $$HogeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;
+  type $$HogeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? $$HogeIsAny<__E> extends true ? {} : NonNullable<__E> : {};
+  type $$HogeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
+  type $$HogeHasFallthroughProps<C> = $$HogeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
+  type $$HogeFallthroughProps<C> = $$HogeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $$HogeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
+  type $$HogeRequiredFallthroughProps<C, __F = $$HogeFallthroughProps<C>, __K = $$HogeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
+  type $$HogeVueVNodeProps = import('vue').VNodeProps;
+  type $$HogeVueAllowedComponentProps = import('vue').AllowedComponentProps;
+  type $$HogeVueComponentCustomProps = import('vue').ComponentCustomProps;
+  interface $$HogePublicComponentAttrs extends $$HogeVueVNodeProps, $$HogeVueAllowedComponentProps, $$HogeVueComponentCustomProps {}
+  type $$HogeAllowedFallthroughAttrs<C> = $$HogeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};
+  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & $$HogeComponentGlobalHtmlAttrs & $$HogeAllowedFallthroughAttrs<C> : $$HogePublicComponentAttrs & $$HogeComponentGlobalHtmlAttrs;
+  type $$HogeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+  type $$HogePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $$HogeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+  type $$HogeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $$HogeIsAny<__P> extends true ? $$HogePublicProps<C> : __P : $$HogePublicProps<C>;
+  type $$HogeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $$HogeIsAny<__P> extends true ? $$HogePublicProps<C> : __P : $$HogePublicProps<C>;
+  type $$HogeHasInstanceRawProps<C> = $$HogeIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $$HogeIsAny<__P> extends true ? false : true : false : false;
+  type $$HogeHasStaticRawProps<C> = $$HogeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $$HogeIsAny<__P> extends true ? false : true : false : false;
+  type $$HogeComponentRawProps<C, __P = $$HogeHasInstanceRawProps<C> extends true ? $$HogeInstanceRawProps<C> : $$HogeHasStaticRawProps<C> extends true ? $$HogeStaticRawProps<C> : $$HogePublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;
+  type $$HogeHasRawProps<C> = $$HogeHasInstanceRawProps<C> extends true ? true : $$HogeHasStaticRawProps<C>;
+  type $$HogeFallthroughValue<C, K extends PropertyKey> = $$HogeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $$HogeIsAny<__F> extends true ? unknown : $$HogePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
+  type $$HogeIsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+  type $$HogePropChecker<C, P, T = $$HogeComponentCheckTail<C>> = $$HogeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $$HogeIsAny<__F> extends true ? (props: $$HogeComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $$HogeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $$HogeComponentCheckProps<P, T>) => void : $$HogeIsLibraryGenericExport<C> extends true ? C : (props: $$HogeComponentCheckProps<P, T>) => void;
+  type $$HogePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
+  type $$HogeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
+  type $$HogeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $$HogeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $$HogeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
+  type $$HogeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $$HogeIsAny<InstanceType<C>> extends true ? $$HogeEmptyVueNavigationSlots<C> : $$HogeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
+  type $$HogeNavigationSlots<C> = $$HogeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $$HogeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $$HogeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $$HogeNativeNavigationSlots<C>;
+  type $$HogeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
+  type $$HogeMissingRequiredSlots<__S, __P> = Exclude<$$HogeRequiredSlotKeys<__S>, keyof __P>;
+  type $$HogeRequiredSlots<__S, __P> = $$HogeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$$HogeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $$HogeMissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 145:168
-  type __MyList_Props_0 = typeof MyList extends { __vizeCheck: infer __F } ? ($VueIsAny<__F> extends true ? $VueComponentRawProps<typeof MyList> : Record<string, unknown>) : $VueComponentRawProps<typeof MyList>;
+  type __MyList_Props_0 = typeof MyList extends { __vizeCheck: infer __F } ? ($$HogeIsAny<__F> extends true ? $$HogeComponentRawProps<typeof MyList> : Record<string, unknown>) : $$HogeComponentRawProps<typeof MyList>;
   type __MyList_Component_0 = typeof MyList;
-  type __MyList_CheckProps_0 = __MyList_Props_0 & $VueEmitListeners<__MyList_Component_0> & $VueRequiredFallthroughProps<__MyList_Component_0>;
-  type __MyList_CheckTail_0 = $VueComponentCheckTail<__MyList_Component_0>;
-  type __MyList_ValueProps_0 = $VueIsLibraryGenericExport<__MyList_Component_0> extends true ? Record<string, any> : __MyList_Props_0 & $VueEmitListeners<__MyList_Component_0> & $VuePublicComponentAttrs;
-  type __MyList_FallthroughValue_0<K extends PropertyKey> = $VueFallthroughValue<__MyList_Component_0, K>;
-  type __MyList_Check_0 = $VuePropChecker<__MyList_Component_0, __MyList_CheckProps_0, __MyList_CheckTail_0>;
-  type __MyList_0_prop_items = $VuePropValue<__MyList_ValueProps_0, 'items', __MyList_FallthroughValue_0<'items'>>;
+  type __MyList_CheckProps_0 = __MyList_Props_0 & $$HogeEmitListeners<__MyList_Component_0> & $$HogeRequiredFallthroughProps<__MyList_Component_0>;
+  type __MyList_CheckTail_0 = $$HogeComponentCheckTail<__MyList_Component_0>;
+  type __MyList_ValueProps_0 = $$HogeIsLibraryGenericExport<__MyList_Component_0> extends true ? Record<string, any> : __MyList_Props_0 & $$HogeEmitListeners<__MyList_Component_0> & $$HogePublicComponentAttrs;
+  type __MyList_FallthroughValue_0<K extends PropertyKey> = $$HogeFallthroughValue<__MyList_Component_0, K>;
+  type __MyList_Check_0 = $$HogePropChecker<__MyList_Component_0, __MyList_CheckProps_0, __MyList_CheckTail_0>;
+  type __MyList_0_prop_items = $$HogePropValue<__MyList_ValueProps_0, 'items', __MyList_FallthroughValue_0<'items'>>;
 
   // Component template navigation references
   void MyList;
-  const { } = undefined as unknown as $VueComponentNavigationProps<__MyList_Props_0>;
+  const { } = undefined as unknown as $$HogeComponentNavigationProps<__MyList_Props_0>;
   const __vize_props_nav_0 = undefined as unknown as __MyList_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.items;
-  const __vize_slots_nav_0 = undefined as unknown as $VueNavigationSlots<typeof MyList>;
+  const __vize_slots_nav_0 = undefined as unknown as $$HogeNavigationSlots<typeof MyList>;
   const { default: __vize_slot_nav_0_0 } = __vize_slots_nav_0;
   void __vize_slot_nav_0_0;
   const { header: __vize_slot_nav_0_1 } = __vize_slots_nav_0;
@@ -257,30 +257,30 @@ function __setup() {
   (undefined as unknown as __MyList_Check_0)({
     "items": items,
   });
-  type $VueSlotContract_0 = $VueStructuralSlots<typeof MyList>;
-  const __vize_required_slots_0: $VueRequiredSlots<$VueSlotContract_0, { readonly "default": true; readonly "header": true; }> = {};
+  type $$HogeSlotContract_0 = $$HogeStructuralSlots<typeof MyList>;
+  const __vize_required_slots_0: $$HogeRequiredSlots<$$HogeSlotContract_0, { readonly "default": true; readonly "header": true; }> = {};
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #default
-  const __vize_slot_props_host_8 = (undefined as unknown as $VueSlotHostSelector<typeof MyList>)(new (undefined as unknown as $VueSlotConstructor<typeof MyList>)({
+  const __vize_slot_props_host_8 = (undefined as unknown as $$HogeSlotHostSelector<typeof MyList>)(new (undefined as unknown as $$HogeSlotConstructor<typeof MyList>)({
     "items": items,
-  }, ...([] as unknown as $VueSlotConstructorArgs<$VueSlotConstructor<typeof MyList>>)), (undefined as unknown as $VueSlotsFactory<typeof MyList>)(MyList)({
+  }, ...([] as unknown as $$HogeSlotConstructorArgs<$$HogeSlotConstructor<typeof MyList>>)), (undefined as unknown as $$HogeSlotsFactory<typeof MyList>)(MyList)({
     "items": items,
   }));
   void __vize_slot_props_host_8;
-  void function _slot_props_default_8({ item, index }: $VueSlotPayload<typeof __vize_slot_props_host_8, "default">) {
+  void function _slot_props_default_8({ item, index }: $$HogeSlotPayload<typeof __vize_slot_props_host_8, "default">) {
     void item;
     void index;
   };
 
   // Component props in v-slot scope: #header
-  const __vize_slot_props_host_9 = (undefined as unknown as $VueSlotHostSelector<typeof MyList>)(new (undefined as unknown as $VueSlotConstructor<typeof MyList>)({
+  const __vize_slot_props_host_9 = (undefined as unknown as $$HogeSlotHostSelector<typeof MyList>)(new (undefined as unknown as $$HogeSlotConstructor<typeof MyList>)({
     "items": items,
-  }, ...([] as unknown as $VueSlotConstructorArgs<$VueSlotConstructor<typeof MyList>>)), (undefined as unknown as $VueSlotsFactory<typeof MyList>)(MyList)({
+  }, ...([] as unknown as $$HogeSlotConstructorArgs<$$HogeSlotConstructor<typeof MyList>>)), (undefined as unknown as $$HogeSlotsFactory<typeof MyList>)(MyList)({
     "items": items,
   }));
   void __vize_slot_props_host_9;
-  void function _slot_props_header_9({ title }: $VueSlotPayload<typeof __vize_slot_props_host_9, "header">) {
+  void function _slot_props_header_9({ title }: $$HogeSlotPayload<typeof __vize_slot_props_host_9, "header">) {
     void title;
   };
 
@@ -296,18 +296,18 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type $VueSlots = {};
-export type { $VueSlots as Slots };
+type $$HogeSlots = {};
+export type { $$HogeSlots as Slots };
 
 // ========== Default Export ==========
-type $VueComponentInstance = {
+type $$HogeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: $VuePublicEmit<Emits>;
-  $slots: $VuePublicSlots<$VueSlots>;
-} & $VueComponentPublicBase;
-type $VueComponentConstructor = new <$VueAuthoredProps = unknown>(props?: $VueAuthoredProps & $VueComponentInput<Props, {}, $VueAuthoredProps>, ...args: any[]) => $VueUsePublicInstance<$VueAuthoredProps> extends true ? $VueComponentInstance : $VueReplaceComponentProps<$VueComponentInstance, $VueAuthoredKeyWitness<$VueAuthoredProps> & $VueComponentInputProps<Props, {}> & $VueComponentInputGuard<Props, {}, $VueAuthoredProps>>;
-type $VueVueComponentOptions = {
+  $emit: $$HogePublicEmit<Emits>;
+  $slots: $$HogePublicSlots<$$HogeSlots>;
+} & $$HogeComponentPublicBase;
+type $$HogeComponentConstructor = new <$$HogeAuthoredProps = unknown>(props?: $$HogeAuthoredProps & $$HogeComponentInput<Props, {}, $$HogeAuthoredProps>, ...args: any[]) => $$HogeUsePublicInstance<$$HogeAuthoredProps> extends true ? $$HogeComponentInstance : $$HogeReplaceComponentProps<$$HogeComponentInstance, $$HogeAuthoredKeyWitness<$$HogeAuthoredProps> & $$HogeComponentInputProps<Props, {}> & $$HogeComponentInputGuard<Props, {}, $$HogeAuthoredProps>>;
+type $$HogeVueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -332,5 +332,5 @@ type $VueVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $VueUnownedComponentAttrs<Record<string, unknown>, Props, {}>; } & $VueComponentConstructor & $VueVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$HogeUnownedComponentAttrs<Record<string, unknown>, Props, {}>; } & $$HogeComponentConstructor & $$HogeVueComponentOptions;
 export default __vize_component__;

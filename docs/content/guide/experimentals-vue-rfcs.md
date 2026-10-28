@@ -320,7 +320,7 @@ Children are then checked against it:
 ```
 
 Vize represents the default slot above as
-`$VueProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` and lets TypeScript compare it with
+`$$HogeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` and lets TypeScript compare it with
 the slot's return type. A wrong child becomes a TypeScript error:
 
 ```vue
@@ -350,7 +350,7 @@ the slot's return type. A wrong child becomes a TypeScript error:
 
 Limits:
 
-- `$VueProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]` when the slot
+- `$$HogeProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]` when the slot
   accepts one child type.
 - Open slot index signatures and `any` degrade to `any`, so there is no strict check there.
 - Built-ins, dynamic components, `KeepAlive`, `Teleport`, `Transition`, `TransitionGroup`, and

@@ -510,18 +510,18 @@ defineProps<{ itemTitle?: string }>()
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
-        !stdout.contains("TS2304") && !stdout.contains("$VueComponentInputProps"),
-        "project check should keep $VueComponentInputProps visible:\n{stdout}"
+        !stdout.contains("TS2304") && !stdout.contains("$$HogeComponentInputProps"),
+        "project check should keep $$HogeComponentInputProps visible:\n{stdout}"
     );
 
     let helpers = std::fs::read_to_string(
         vize_canon::project_virtual_root(&project_root).join("__vize_helpers.d.ts"),
     )
     .unwrap();
-    let has_input = helpers.contains("type $VueComponentInputProps<T, Declared = {}>");
+    let has_input = helpers.contains("type $$HogeComponentInputProps<T, Declared = {}>");
     assert!(has_input, "{helpers}");
-    let dead_props = helpers.contains("type $VueComponentProps<T>");
-    let dead_kebab = helpers.contains("type $VueKebabOptionalKeys<T>");
+    let dead_props = helpers.contains("type $$HogeComponentProps<T>");
+    let dead_kebab = helpers.contains("type $$HogeKebabOptionalKeys<T>");
     assert!(!dead_props && !dead_kebab, "{helpers}");
 
     let _ = std::fs::remove_dir_all(&project_root);

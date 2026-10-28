@@ -33,7 +33,7 @@ fn format_long_type(source: &str) -> Option<String> {
     use oxc_ast_visit::Visit;
     use oxc_span::GetSpan;
 
-    let input = format!("type $VueHover = {source};");
+    let input = format!("type $$HogeHover = {source};");
     let options = vize_glyph::FormatOptions {
         print_width: 78,
         quote_props: vize_glyph::QuoteProps::Preserve,
@@ -49,7 +49,7 @@ fn format_long_type(source: &str) -> Option<String> {
     let Statement::TSTypeAliasDeclaration(alias) = parsed.program.body.first()? else {
         return None;
     };
-    if alias.id.name != "$VueHover" {
+    if alias.id.name != "$$HogeHover" {
         return None;
     }
     let span = alias.type_annotation.span();

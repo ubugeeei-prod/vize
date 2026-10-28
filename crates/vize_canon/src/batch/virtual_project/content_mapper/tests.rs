@@ -84,9 +84,9 @@ const café = ref(<span />)
 fn component_input_diagnostics_use_public_display_names() {
     let source = r#"<script setup lang="ts">
 import Child from './Child.vue'
-const $VueComponentCheckProps = 1
+const $$HogeComponentCheckProps = 1
 </script>
-<template><Child :count="$VueComponentCheckProps" /></template>
+<template><Child :count="$$HogeComponentCheckProps" /></template>
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("App.vue"), source)
         .expect("content mapper transform");
@@ -94,7 +94,7 @@ const $VueComponentCheckProps = 1
     assert_eq!(
         result
             .text
-            .matches("const $VueComponentCheckProps = 1")
+            .matches("const $$HogeComponentCheckProps = 1")
             .count(),
         1,
         "authored identifiers must remain byte-identical:\n{}",
@@ -119,11 +119,11 @@ const $VueComponentCheckProps = 1
         (
             result
                 .text
-                .matches("type $VueComponentCheckProps<")
+                .matches("type $$HogeComponentCheckProps<")
                 .count(),
             result
                 .text
-                .matches("interface $VuePublicComponentAttrs")
+                .matches("interface $$HogePublicComponentAttrs")
                 .count(),
         ),
         (0, 0),
@@ -135,8 +135,8 @@ const $VueComponentCheckProps = 1
 #[test]
 fn authored_reference_packages_keep_internal_spellings() {
     let source = r#"<script setup lang="ts">
-/// <reference types="$VueComponentCheckProps" />
-/// <reference types="$VuePublicComponentAttrs" />
+/// <reference types="$$HogeComponentCheckProps" />
+/// <reference types="$$HogePublicComponentAttrs" />
 </script>
 <template><div /></template>
 "#;
@@ -151,8 +151,8 @@ fn authored_reference_packages_keep_internal_spellings() {
     assert_eq!(
         references,
         [
-            "\"$VueComponentCheckProps\" />",
-            "\"$VuePublicComponentAttrs\" />",
+            "\"$$HogeComponentCheckProps\" />",
+            "\"$$HogePublicComponentAttrs\" />",
         ],
         "authored reference packages must remain byte-identical:\n{}",
         result.text
@@ -259,9 +259,9 @@ const TEMPLATE_SCOPE: &str = "  ;(function __template() {\n";
 /// The first four lines the template scope emits for a Vue 3 component that has
 /// a setup binding to shadow, when the shared preamble is not hoisted.
 const TEMPLATE_REF_UNWRAP_PRELUDE: &str = r#"    // Auto-unwrap Vue refs in template scope
-    type $VueIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
-    type $VueWidenTemplateRef<T> = $VueIsAny<T> extends true ? T : $VueIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $VueWidenTemplateRef<T['value']> : T : T;
+    type $$HogeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type $$HogeWidenTemplateRef<T> = $$HogeIsAny<T> extends true ? T : $$HogeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$HogeWidenTemplateRef<T['value']> : T : T;
 "#;
 
 fn template_scope_of(text: &str) -> &str {
@@ -292,7 +292,7 @@ const message = ref('hello')
         .take(4)
         .collect::<std::string::String>();
     assert_eq!(prelude, TEMPLATE_REF_UNWRAP_PRELUDE);
-    for declaration in ["type $VueIsUnion<", "type $VueWidenTemplateRef<"] {
+    for declaration in ["type $$HogeIsUnion<", "type $$HogeWidenTemplateRef<"] {
         assert_eq!(
             result.text.matches(declaration).count(),
             1,
@@ -311,8 +311,8 @@ fn a_component_without_setup_bindings_declares_no_widening_helpers() {
 
     for declaration in [
         "type __U<",
-        "type $VueIsUnion<",
-        "type $VueWidenTemplateRef<",
+        "type $$HogeIsUnion<",
+        "type $$HogeWidenTemplateRef<",
     ] {
         assert_eq!(
             result.text.matches(declaration).count(),
@@ -447,9 +447,9 @@ export default {
     assert!(
         enabled
             .text
-            .contains("var count: $VueOptionsBinding<typeof __default__, \"count\">")
+            .contains("var count: $$HogeOptionsBinding<typeof __default__, \"count\">")
     );
-    assert!(!disabled.text.contains("$VueOptionsBinding"));
+    assert!(!disabled.text.contains("$$HogeOptionsBinding"));
 }
 
 #[test]
@@ -483,7 +483,7 @@ export default { data() { return { count: 1 } } }
     let result = generate_vue_content_mapper_transform(Path::new("DefaultOptions.vue"), source)
         .expect("transform");
 
-    assert!(result.text.contains("$VueOptionsBinding"));
+    assert!(result.text.contains("$$HogeOptionsBinding"));
 }
 
 #[test]
@@ -682,16 +682,16 @@ import Child from "./Child.vue";
         let text = result.text.as_str();
         assert_eq!(
             text.matches(
-                "import type { VizeComponentAttrCamel as $VueComponentAttrCamel, VizeComponentGlobalHtmlAttrs as $VueComponentGlobalHtmlAttrs } from \"vize/content-mapper-helpers\";"
+                "import type { VizeComponentAttrCamel as $$HogeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as $$HogeComponentGlobalHtmlAttrs } from \"vize/content-mapper-helpers\";"
             )
             .count(),
             1,
             "{text}"
         );
         for duplicated in [
-            "type $VueComponentAttrCamel<",
-            "type $VueComponentNativeAttrNames =",
-            "type $VueComponentGlobalHtmlAttrs =",
+            "type $$HogeComponentAttrCamel<",
+            "type $$HogeComponentNativeAttrNames =",
+            "type $$HogeComponentGlobalHtmlAttrs =",
         ] {
             assert_eq!(
                 text.matches(duplicated).count(),
@@ -706,7 +706,7 @@ import Child from "./Child.vue";
     assert_eq!(
         self_contained
             .text
-            .matches("type $VueComponentNativeAttrNames =")
+            .matches("type $$HogeComponentNativeAttrNames =")
             .count(),
         1,
         "standalone transforms must not require an installed vize package"

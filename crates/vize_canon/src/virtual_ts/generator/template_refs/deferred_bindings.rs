@@ -56,7 +56,7 @@ pub(super) fn collect_deferred_setup_bindings(
 ) -> Vec<String> {
     // Only `<script setup>` puts its bindings in the template's lexical scope.
     // A plain `<script>` reaches the template through the component instance,
-    // and the Options API through the `$VueOptionsSetupBinding` type query,
+    // and the Options API through the `$$HogeOptionsSetupBinding` type query,
     // which never runs control-flow analysis to begin with.
     if !crate::virtual_ts::script_facts::is_script_setup(summary) {
         return Vec::new();
