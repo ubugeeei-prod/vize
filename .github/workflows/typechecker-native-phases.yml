@@ -6,8 +6,8 @@ on:
       role:
         required: true
         type: choice
-        options: [slot-error-type]
-permissions: { contents: read }
+        options: [slot-error-type, recover]
+permissions: { contents: read, actions: read }
 jobs:
   semantics:
     if: github.ref == 'refs/heads/debug/canon-slot-silent-any-11027' && inputs.role == 'slot-error-type'
@@ -59,4 +59,44 @@ jobs:
         with:
           name: slot-silent-any-raw-${{ github.sha }}
           path: ${{ runner.temp }}/slot-silent-any-raw.tgz
+          retention-days: 14
+  recover:
+    if: github.ref == 'refs/heads/debug/canon-slot-silent-any-11027' && inputs.role == 'recover'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 1, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Read only the immutable existing raw campaign in Actions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/slot-silent-any-recovered"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12783338444 > "$RUNNER_TEMP/slot-silent-any-recovered/artifact.json"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12783338444/zip > "$RUNNER_TEMP/slot-silent-any-recovered/raw.zip"
+          python3 - <<'PY'
+          import os,pathlib,hashlib,io,zipfile,tarfile,json
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"slot-silent-any-recovered"
+          body=(root/"raw.zip").read_bytes()
+          assert len(body)==321984 and hashlib.sha256(body).hexdigest()=="7cb2f00519d51425f844430065a06ccb3167bd487cbae879229669505d893028"
+          metadata=json.loads((root/"artifact.json").read_text())
+          assert metadata["workflow_run"]["id"]==40612314261 and metadata["workflow_run"]["head_sha"]=="921bd721d813268c1f4f2ae906b0c294b32896d3"
+          with zipfile.ZipFile(io.BytesIO(body)) as z:
+            assert z.namelist()==["slot-silent-any-raw.tgz"]
+            with tarfile.open(fileobj=io.BytesIO(z.read(z.namelist()[0])),mode="r:gz") as t:
+              members=t.getmembers()
+              assert all((m.isfile() or m.isdir()) and not m.name.startswith("/") and ".." not in pathlib.PurePosixPath(m.name).parts and m.name.startswith("slot-silent-any") for m in members)
+              t.extractall(root,filter="data")
+          PY
+          node tools/benchmarks/scripts/canon-slot-silent-any-recover.ts "$RUNNER_TEMP/slot-silent-any-recovered/slot-silent-any" "$RUNNER_TEMP/slot-silent-any-recovered/summary.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: slot-silent-any-recovered-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/slot-silent-any-recovered/summary.json
+            ${{ runner.temp }}/slot-silent-any-recovered/artifact.json
           retention-days: 14
