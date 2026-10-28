@@ -385,14 +385,7 @@ mod tests {
             },
         )
         .code;
-        assert!(
-            code.contains("_ctx.document.activeElement"),
-            "host global must resolve through the proxy:\n{code}"
-        );
-        assert!(
-            !code.contains("_ctx.event") && !code.contains("_ctx.emit"),
-            "parameters and setup bindings stay bare:\n{code}"
-        );
+        insta::assert_snapshot!("typed_handler_component_proxy", code);
         let ctx = CodegenContext::new(CodegenOptions {
             prefix_identifiers: true,
             inline: true,
@@ -402,17 +395,9 @@ mod tests {
         });
         let prefixed =
             prefix_identifiers_with_context_node(&expression_node(source, &allocator, false), &ctx);
-        assert!(
-            prefixed.contains("_ctx.document.activeElement"),
-            "codegen prefix must route document through the proxy: {prefixed}"
-        );
-        assert!(
-            !prefixed.contains("_ctx.emit") && !prefixed.contains("_ctx.event"),
-            "parameters and setup bindings stay bare: {prefixed}"
-        );
-        assert!(
-            !prefixed.contains("MouseEvent"),
-            "the type annotation is not a value: {prefixed}"
+        assert_eq!(
+            prefixed,
+            "(event) => {\n\tif (_ctx.document.activeElement !== event.currentTarget) return;\n\temit(\"press\");\n}"
         );
         assert_eq!(
             prefix_identifiers_with_context_node(
