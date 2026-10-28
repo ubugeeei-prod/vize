@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { identify, run, save, hash } from "./canon-instance-directives-io.ts";
 import { isRecord, packet } from "./canon-instance-directives-model.ts";
@@ -141,15 +141,26 @@ async function main(): Promise<void> {
     "utf8",
   );
   assert.ok(helpers.includes('export type * from "./generated/content-mapper-types.js"'));
-  const catalog = fs.readFileSync(coreFile, "utf8");
-  const coreNames = [...catalog.matchAll(/^export type (__[A-Za-z_0-9]+)/gmu)].map((match) =>
-    string(match[1]),
+  const expectedImport = fs.readFileSync(
+    fileURLToPath(
+      new URL(
+        "../../support/release/public_canonical_sdk/fixtures/core-import.txt",
+        import.meta.url,
+      ),
+    ),
+    "utf8",
   );
-  assert.equal(coreNames.length, 53);
-  const expectedImport =
-    "import type {\n" +
-    coreNames.map((name) => "  " + name + ",\n").join("") +
-    '} from "vize/content-mapper-helpers";';
+  assert.equal(Buffer.byteLength(expectedImport), 1403);
+  assert.equal(
+    hash(expectedImport),
+    "3013f8412ac2a46c5fb98e5e7cf6b618d5f03bd6db51a00972e1836a455f471c",
+  );
+  assert.equal([...expectedImport.matchAll(/^  __[A-Za-z0-9_]+,$/gmu)].length, 53);
+  assert.equal(
+    hash(fs.readFileSync(coreFile)),
+    "eb11e7d6783f8d0a4b64ddb9ba8d4c7a10d08771306bcc9a7a220d4b861ce6e8",
+  );
+  assert.equal(hash(helpers), "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0");
   const emitted: ObjectValue[] = [];
   for (const row of rows) {
     const root = path.join(project, row.id),

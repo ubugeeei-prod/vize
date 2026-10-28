@@ -27,7 +27,8 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$SOURCE_BASE" == cc257997ac8a2bc96d1b67e5714e119406059c12 ]]
-          [[ "$(git rev-parse HEAD^1)" == "$SOURCE_BASE" ]]
+          git merge-base --is-ancestor "$SOURCE_BASE" HEAD
+          git diff --exit-code "$SOURCE_BASE" HEAD -- crates npm
           mkdir "$RUNNER_TEMP/slot-silent-any-provider"
           cd "$RUNNER_TEMP/slot-silent-any-provider"
           node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","typescript-native-legacy":"npm:@typescript/typescript-linux-x64@7.0.2","vue-tsc":"3.3.13"},overrides:{"@vue/compiler-dom":"3.5.42","@vue/compiler-core":"3.5.42","@vue/compiler-sfc":"3.5.42","@vue/shared":"3.5.42"}}));'
