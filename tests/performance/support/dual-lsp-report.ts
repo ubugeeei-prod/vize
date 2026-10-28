@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-import type { OperationSample } from "./dual-lsp-oracles.ts";
+import type { DiagnosticEvidence, OperationSample } from "./dual-lsp-oracles.ts";
 import type { ProductKind } from "./dual-lsp-product.ts";
 
 export type Distribution = {
@@ -15,7 +15,9 @@ export type Distribution = {
 };
 
 export type MeasuredSample = OperationSample & {
-  qualifiedFreshProcessMs?: number;
+  startupMs?: number;
+  diagnosticV1QualificationMs?: number;
+  diagnosticV2QualificationMs?: number;
 };
 
 export function distribution(values: readonly number[]): Distribution {
@@ -42,12 +44,31 @@ export function summarizeSamples(samples: readonly MeasuredSample[]): Record<str
   for (const lane of [...lanes].sort()) {
     result[`${lane}Ms`] = distribution(samples.map((sample) => sample.timingsMs[lane]));
   }
-  if (samples.every((sample) => sample.qualifiedFreshProcessMs != null)) {
-    result.qualifiedFreshProcessMs = distribution(
-      samples.map((sample) => sample.qualifiedFreshProcessMs!),
-    );
+  for (const metric of [
+    "startupMs",
+    "diagnosticV1QualificationMs",
+    "diagnosticV2QualificationMs",
+  ] as const) {
+    if (samples.every((sample) => sample[metric] != null)) {
+      result[metric] = distribution(samples.map((sample) => sample[metric]!));
+    }
   }
   return result;
+}
+
+export function summarizeDiagnostics(
+  samples: ReadonlyArray<{ v1: DiagnosticEvidence; v2: DiagnosticEvidence }>,
+): Record<string, Distribution> {
+  return {
+    v1PublicationLatencyMs: distribution(
+      samples.map((sample) => sample.v1.publicationLatencyMs),
+    ),
+    v1QualificationMs: distribution(samples.map((sample) => sample.v1.qualificationMs)),
+    v2PublicationLatencyMs: distribution(
+      samples.map((sample) => sample.v2.publicationLatencyMs),
+    ),
+    v2QualificationMs: distribution(samples.map((sample) => sample.v2.qualificationMs)),
+  };
 }
 
 export function writeDualLspReport(outputDir: string, report: Record<string, unknown>): void {
@@ -90,7 +111,7 @@ function renderSummary(report: Record<string, unknown>): string {
     "",
     `Status: **${String(report.status)}**`,
     "",
-    "Only correctness-qualified samples are present. Fresh means a new complete product process tree; warm means repeated operations on one initialized product. Vue Language Tools includes both Vue LS and TypeScript LS process trees.",
+    "Only correctness-qualified samples are present. Fresh means a new complete product process tree; warm means repeated operations on one initialized product. startupMs ends after initialize, diagnostic qualification metrics end after product-wide barriers and quiescence, and totalMs contains only the six query operations. Vue Language Tools includes both Vue LS and TypeScript LS process trees.",
     "",
     "`PublishDiagnosticsParams.version` is absent from TypeScript Language Server. The Vue row therefore records `reportedVersion: null` and `provenVersion: 2` after mutually exclusive content fingerprints, a post-change barrier, and quiescence. This is not version-field parity.",
     "",

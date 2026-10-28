@@ -28,12 +28,19 @@ type DiagnosticPublication = {
   diagnostics?: unknown;
 };
 
+export type ObservedDiagnosticPublication = {
+  provider: string;
+  receivedAtMs: number;
+  params: unknown;
+};
+
 export type DiagnosticEvidence = {
   expectedVersion: number;
   provenVersion: number;
   reportedVersion: number | null;
   fingerprint: string;
-  latencyMs: number;
+  publicationLatencyMs: number;
+  qualificationMs: number;
   publicationsObserved: number;
   protocolLimitation: string | null;
 };
@@ -112,6 +119,23 @@ function assertExactPublication(
   return { reportedVersion: typeof publication.version === "number" ? publication.version : null };
 }
 
+export function assertExactProductDiagnostics(
+  kind: ProductKind,
+  observed: readonly ObservedDiagnosticPublication[],
+  expected: string,
+  version: number,
+): { match: ObservedDiagnosticPublication; reportedVersion: number | null } {
+  const nonEmpty = observed.filter((item) => publicationFingerprint(item.params) !== "empty");
+  assert.equal(
+    nonEmpty.length,
+    1,
+    `complete product diagnostics were missing, duplicated, stale, or extra: ${JSON.stringify(observed)}`,
+  );
+  const match = nonEmpty[0];
+  const { reportedVersion } = assertExactPublication(kind, match.params, expected, version);
+  return { match, reportedVersion };
+}
+
 async function qualifyRevision(
   product: DualLspProduct,
   fixture: DualLspFixture,
@@ -119,34 +143,45 @@ async function qualifyRevision(
   version: 1 | 2,
   action: () => void,
 ): Promise<DiagnosticEvidence> {
-  const wire = product.diagnosticWire;
-  const cursor = wire.notificationCursor;
+  const wires = product.diagnosticWires.map(({ provider, wire }) => ({
+    provider,
+    wire,
+    cursor: wire.notificationCursor,
+  }));
   const expected = expectedDiagnostic(fixture.uri, source, version);
   const startedAt = performance.now();
   action();
-  const match = await wire.waitForNotification(
-    diagnosticMethod,
-    cursor,
-    (params) => publicationFingerprint(params) === expected,
-  );
-  const latencyMs = performance.now() - startedAt;
-  const { reportedVersion } = assertExactPublication(product.kind, match.params, expected, version);
-
   for (let barrier = 0; barrier < diagnosticBarrierCount; barrier += 1) {
     await product.diagnosticBarrier(fixture.uri);
   }
-  await wire.observeQuiet(diagnosticMethod, cursor, diagnosticQuietMs, 5_000);
-  const observed = wire.notificationsSince(diagnosticMethod, cursor);
-  const nonEmpty = observed.filter((item) => publicationFingerprint(item.params) !== "empty");
-  assert.equal(nonEmpty.length, 1, `diagnostics were missing, duplicated, stale, or late: ${JSON.stringify(observed)}`);
-  assertExactPublication(product.kind, nonEmpty[0].params, expected, version);
+  await Promise.all(
+    wires.map(({ wire, cursor }) =>
+      wire.observeQuiet(diagnosticMethod, cursor, diagnosticQuietMs, 5_000),
+    ),
+  );
+  const observed = wires.flatMap(({ provider, wire, cursor }) =>
+    wire.notificationsSince(diagnosticMethod, cursor).map((item) => ({
+      provider,
+      receivedAtMs: item.receivedAtMs,
+      params: item.params,
+    })),
+  );
+  const { match, reportedVersion } = assertExactProductDiagnostics(
+    product.kind,
+    observed,
+    expected,
+    version,
+  );
+  const publicationLatencyMs = match.receivedAtMs - startedAt;
+  assert.ok(publicationLatencyMs >= 0, "diagnostic publication preceded its document revision");
 
   return {
     expectedVersion: version,
     provenVersion: version,
     reportedVersion,
     fingerprint: expected,
-    latencyMs,
+    publicationLatencyMs,
+    qualificationMs: performance.now() - startedAt,
     publicationsObserved: observed.length,
     protocolLimitation:
       product.kind === "vue-language-tools" && reportedVersion == null

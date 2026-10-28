@@ -10,6 +10,7 @@ import {
   wordRanges,
 } from "../performance/support/dual-lsp-fixture.ts";
 import {
+  assertExactProductDiagnostics,
   diagnosticBarrierCount,
   diagnosticQuietMs,
   expectedDiagnostic,
@@ -19,7 +20,10 @@ import {
   productOrder,
   stableOperationTranscript,
 } from "../performance/support/dual-lsp-product.ts";
-import { distribution } from "../performance/support/dual-lsp-report.ts";
+import {
+  distribution,
+  summarizeSamples,
+} from "../performance/support/dual-lsp-report.ts";
 import { supportsLspMethod } from "../performance/support/dual-lsp-wire.ts";
 
 const sourceRoot = path.join(
@@ -67,6 +71,90 @@ test("diagnostic revisions have mutually exclusive complete fingerprints", () =>
   assert.match(v2, /Type 'number' is not assignable to type 'string'/);
   assert.ok(diagnosticQuietMs >= 250, "late diagnostics need a material quiescence window");
   assert.equal(diagnosticBarrierCount, 2);
+});
+
+test("diagnostic admission covers both halves of the Vue product", () => {
+  const uri = "file:///workspace/src/App.vue";
+  const expected = expectedDiagnostic(uri, sourceV2, 2);
+  const exact = JSON.parse(expected) as {
+    uri: string;
+    range: unknown;
+    code: string;
+    message: string;
+  };
+  const publication = {
+    uri,
+    diagnostics: [
+      { range: exact.range, code: exact.code, message: exact.message, severity: 1 },
+    ],
+  };
+  const emptyPrimary = {
+    provider: "vue-language-server",
+    receivedAtMs: 1,
+    params: { uri, diagnostics: [] },
+  };
+  const semanticExact = {
+    provider: "typescript-language-server",
+    receivedAtMs: 2,
+    params: publication,
+  };
+  assert.equal(
+    assertExactProductDiagnostics(
+      "vue-language-tools",
+      [emptyPrimary, semanticExact],
+      expected,
+      2,
+    ).reportedVersion,
+    null,
+  );
+  assert.throws(() =>
+    assertExactProductDiagnostics(
+      "vue-language-tools",
+      [
+        {
+          provider: "vue-language-server",
+          receivedAtMs: 1,
+          params: {
+            uri,
+            diagnostics: [
+              {
+                ...JSON.parse(expectedDiagnostic(uri, sourceV1, 1)),
+                severity: 1,
+              },
+            ],
+          },
+        },
+        semanticExact,
+      ],
+      expected,
+      2,
+    ),
+  );
+  assert.throws(() =>
+    assertExactProductDiagnostics(
+      "vue-language-tools",
+      [semanticExact, { ...semanticExact, provider: "vue-language-server" }],
+      expected,
+      2,
+    ),
+  );
+});
+
+test("startup, diagnostics, and query packets remain separate distributions", () => {
+  const summary = summarizeSamples([
+    {
+      startupMs: 10,
+      diagnosticV1QualificationMs: 20,
+      diagnosticV2QualificationMs: 30,
+      totalMs: 40,
+      timingsMs: { hover: 5, rename: 35 },
+      rss: { totalKiB: 50, processes: 2, roots: [] },
+    },
+  ]);
+  assert.equal(summary.startupMs.p50, 10);
+  assert.equal(summary.diagnosticV1QualificationMs.p50, 20);
+  assert.equal(summary.diagnosticV2QualificationMs.p50, 30);
+  assert.equal(summary.totalMs.p50, 40);
 });
 
 test("the isolated provider pins every process in the Vue stack", () => {

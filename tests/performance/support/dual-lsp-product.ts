@@ -175,8 +175,11 @@ export class DualLspProduct {
     return product;
   }
 
-  get diagnosticWire(): DualLspWire {
-    return this.semantic ?? this.primary;
+  get diagnosticWires(): ReadonlyArray<{ provider: string; wire: DualLspWire }> {
+    return [
+      { provider: this.primary.launch.name, wire: this.primary },
+      ...(this.semantic ? [{ provider: this.semantic.launch.name, wire: this.semantic }] : []),
+    ];
   }
 
   get processIds(): number[] {

@@ -22,6 +22,8 @@ import {
   type ProductKind,
 } from "./support/dual-lsp-product.ts";
 import {
+  distribution,
+  summarizeDiagnostics,
   summarizeSamples,
   writeDualLspReport,
   type MeasuredSample,
@@ -33,6 +35,7 @@ type ProductEvidence = {
   warm: MeasuredSample[];
   freshDiagnostics: Array<{ v1: DiagnosticEvidence; v2: DiagnosticEvidence }>;
   warmDiagnostics: Array<{ v1: DiagnosticEvidence; v2: DiagnosticEvidence }>;
+  warmStartupMs: number[];
 };
 
 type Options = {
@@ -105,11 +108,14 @@ async function collectFresh(
         let product: DualLspProduct | undefined;
         let failure: unknown;
         try {
-          const startedAt = performance.now();
+          const startupStartedAt = performance.now();
           product = await DualLspProduct.start(kind, fixture.workspaceDir);
+          const startupMs = performance.now() - startupStartedAt;
           const diagnostics = await qualifyDocumentRevisions(product, fixture);
           const sample = (await runQualifiedOperationPacket(product, fixture)) as MeasuredSample;
-          sample.qualifiedFreshProcessMs = performance.now() - startedAt;
+          sample.startupMs = startupMs;
+          sample.diagnosticV1QualificationMs = diagnostics.v1.qualificationMs;
+          sample.diagnosticV2QualificationMs = diagnostics.v2.qualificationMs;
           evidence[kind].freshDiagnostics.push(diagnostics);
           evidence[kind].fresh.push(sample);
           pairTranscripts.set(kind, stableOperationTranscript(product.primaryOperations()));
@@ -142,7 +148,9 @@ async function collectWarm(
   let failure: unknown;
   try {
     for (const kind of productOrder(0)) {
+      const startupStartedAt = performance.now();
       const product = await DualLspProduct.start(kind, fixture.workspaceDir);
+      evidence[kind].warmStartupMs.push(performance.now() - startupStartedAt);
       sessions.set(kind, product);
       evidence[kind].warmDiagnostics.push(await qualifyDocumentRevisions(product, fixture));
     }
@@ -181,7 +189,7 @@ async function main(): Promise<void> {
   const evidence = Object.fromEntries(
     products.map((kind) => [
       kind,
-      { fresh: [], warm: [], freshDiagnostics: [], warmDiagnostics: [] },
+      { fresh: [], warm: [], freshDiagnostics: [], warmDiagnostics: [], warmStartupMs: [] },
     ]),
   ) as Record<ProductKind, ProductEvidence>;
   const transcriptHashes: string[] = [];
@@ -229,6 +237,14 @@ async function main(): Promise<void> {
             ...evidence[kind],
             freshSummary: summarizeSamples(evidence[kind].fresh),
             warmSummary: summarizeSamples(evidence[kind].warm),
+            startupSummary: {
+              freshMs: distribution(evidence[kind].fresh.map((sample) => sample.startupMs!)),
+              warmSessionMs: distribution(evidence[kind].warmStartupMs),
+            },
+            diagnosticSummary: {
+              fresh: summarizeDiagnostics(evidence[kind].freshDiagnostics),
+              warmSession: summarizeDiagnostics(evidence[kind].warmDiagnostics),
+            },
           },
         ]),
       ),

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { performance } from "node:perf_hooks";
 
 type JsonRpcMessage = {
   jsonrpc: "2.0";
@@ -26,6 +27,7 @@ export type ClientOperation = {
 
 export type WireNotification = {
   sequence: number;
+  receivedAtMs: number;
   method: string;
   params: unknown;
 };
@@ -301,6 +303,7 @@ export class DualLspWire {
     }
     const notification = {
       sequence: ++this.notificationSequence,
+      receivedAtMs: performance.now(),
       method: message.method,
       params: message.params,
     };
