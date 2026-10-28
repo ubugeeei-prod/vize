@@ -36,6 +36,7 @@ const reviewedBuildPaths = [
 const historicalDirectory =
   "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934";
 const contractPath = "editors/vscode/test/css-hover-source-custody.json";
+const currentCheckoutPath = "editors/vscode/test/css-hover-current-checkout.json";
 // These are complete module/fixture memberships, not a list of changed files.
 // A new or renamed input inside an owned module must require a new review.
 const ownedSourcePaths = [
@@ -69,13 +70,6 @@ const reviewedLayers = [
     name: "selected-color-hover-10556",
     baseRevision: "bdaf6d4d547fdf74ba93ceff0f1853abe32588f2",
     reviewedRevision: "c71cc41310fef3b3bb7669de2a48165ee8e2a2f2",
-  },
-];
-const reviewedCurrentCheckoutLayers = [
-  {
-    name: "shared-document-snapshots-11054",
-    baseRevision: "cc8e49af9193f6ccdcd319c937c8bca62743307b",
-    reviewedRevision: "60dab6f4083c49176760783d5e6a5fcfcc3be39b",
   },
 ];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -141,6 +135,7 @@ export function assertCssSnapshotProvenance(
       ...ownedSourcePaths,
       ...ownedFixturePaths,
       contractPath,
+      currentCheckoutPath,
     ),
     "",
     "dirty, staged or untracked owned CSS inputs",
@@ -238,6 +233,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     readGitTree(repoRoot, revision, paths, recursive);
   const contractBytes = fs.readFileSync(path.join(directory, "css-hover-source-custody.json"));
   const contract = JSON.parse(contractBytes);
+  const currentCheckoutBytes = fs.readFileSync(
+    path.join(directory, "css-hover-current-checkout.json"),
+  );
+  const currentCheckout = JSON.parse(currentCheckoutBytes);
   assert.equal(contract.schema, "vize.css-hover.source-custody");
   assert.equal(contract.version, 1);
   assert.equal(contract.historicalBaselineRevision, historicalBaselineRevision);
@@ -333,15 +332,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   );
   assert.equal(contract.productSnapshot.cratesEntries, expected.length);
   const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
-  const currentCheckoutLayers = contract.currentCheckoutLayers;
-  assert.deepEqual(
-    currentCheckoutLayers.map(({ name, baseRevision, reviewedRevision }) => ({
-      name,
-      baseRevision,
-      reviewedRevision,
-    })),
-    reviewedCurrentCheckoutLayers,
-  );
+  assert.equal(currentCheckout.schema, "vize.css-hover.current-checkout");
+  assert.equal(currentCheckout.version, 1);
+  const currentCheckoutLayers = currentCheckout.layers;
+  assert.equal(currentCheckoutLayers[0]?.name, "shared-document-snapshots-11054");
   assert.deepEqual(
     currentCheckoutLayers.flatMap((layer) => layer.changes.map(({ path: name }) => name)),
     [
@@ -350,6 +344,11 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     ],
   );
   const currentExpected = composeReviewedCssTrees(expected, currentCheckoutLayers);
+  assert.equal(
+    hash(git("show", `HEAD:${currentCheckoutPath}`)),
+    hash(currentCheckoutBytes),
+    "current committed checkout contract differs from the loaded contract",
+  );
   if (pinnedProduct)
     assertCssSnapshotProvenance(
       repoRoot,

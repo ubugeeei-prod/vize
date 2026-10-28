@@ -300,6 +300,11 @@ await test("merged main integration rejects altered postimages, modes, preimages
       new URL("../../editors/vscode/test/css-hover-source-custody.json", import.meta.url),
     ),
   );
+  const currentCheckout = JSON.parse(
+    fs.readFileSync(
+      new URL("../../editors/vscode/test/css-hover-current-checkout.json", import.meta.url),
+    ),
+  );
   const entries = (revision) =>
     execFileSync("git", ["ls-tree", "-r", "-z", revision, "--", "crates"], {
       cwd: root,
@@ -321,7 +326,7 @@ await test("merged main integration rejects altered postimages, modes, preimages
     contract.layers.slice(1),
   );
   const pinnedProduct = composeReviewedCssTrees(reviewedCss, [contract.currentContracts]);
-  const currentProduct = composeReviewedCssTrees(pinnedProduct, contract.currentCheckoutLayers);
+  const currentProduct = composeReviewedCssTrees(pinnedProduct, currentCheckout.layers);
   for (const [preimage, layer, actual] of [
     [p1, contract.mergedMain.integrationLayer, entries(contract.mergedMain.sourceRevision)],
     [
@@ -330,7 +335,7 @@ await test("merged main integration rejects altered postimages, modes, preimages
       entries(contract.successorMain.sourceRevision),
     ],
     [reviewedCss, contract.currentContracts, pinnedProduct],
-    [pinnedProduct, contract.currentCheckoutLayers[0], currentProduct],
+    [pinnedProduct, currentCheckout.layers[0], currentProduct],
   ]) {
     for (const mutation of ["blob", "mode", "preimage", "extra"]) {
       const mutated = structuredClone(layer);
