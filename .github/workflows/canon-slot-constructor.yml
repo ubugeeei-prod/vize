@@ -96,12 +96,13 @@ jobs:
           root=provider/'node_modules/vize'; manifest=json.loads((root/'package.json').read_text())
           assert manifest['version']=='0.603.0' and manifest['bin']['vize']=='bin/vize'
           entries=[]
-          for file in sorted(path for path in root.rglob('*') if path.is_file()):
+          for file in sorted(path for path in root.rglob('*') if path.is_file() and 'node_modules' not in path.relative_to(root).parts):
             data=file.read_bytes()
             entries.append({'path':file.relative_to(root).as_posix(),'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
           encoded=json.dumps(entries,separators=(',',':')).encode()
-          tree={'files':len(entries),'bytes':sum(entry['bytes'] for entry in entries),'sha256':hashlib.sha256(encoded).hexdigest()}
-          assert tree=={'files':78,'bytes':737358,'sha256':'d7cdc31d3cd55b8495a3649598971950819b95becbcbd85c5bf6a088a6189d1e'}
+          tree_identity={'files':len(entries),'bytes':sum(entry['bytes'] for entry in entries),'sha256':hashlib.sha256(encoded).hexdigest()}
+          assert tree_identity=={'files':78,'bytes':737358,'sha256':'d7cdc31d3cd55b8495a3649598971950819b95becbcbd85c5bf6a088a6189d1e'}
+          tree={**tree_identity,'scope':'published vize package-owned files; nested dependencies are pinned by package-lock'}
           binary=root/'bin/vize'; binary_bytes=binary.read_bytes()
           entrypoint={'path':str(binary),'bytes':len(binary_bytes),'sha256':hashlib.sha256(binary_bytes).hexdigest()}
           assert entrypoint['sha256']=='c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54'
