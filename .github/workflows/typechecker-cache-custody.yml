@@ -80,6 +80,8 @@ jobs:
           for p in ("crates/vize/Cargo.toml","crates/vize_canon/Cargo.toml"):
            assert tomllib.loads(source_files[QA][p].decode())["features"]["default"]==tomllib.loads(source_files[BASE][p].decode())["features"]["default"]
           assert not b"cache-custody" in source_files[BASE]["crates/vize/Cargo.toml"]
+          source_version=tomllib.loads(source_files[QA]["Cargo.toml"].decode())["workspace"]["package"]["version"]
+          assert tomllib.loads(source_files[QA]["crates/vize_canon/Cargo.toml"].decode())["package"]["version"]["workspace"] is True
           
           prefix=a["retained"][0]["runtime"]["context"]["outputParentPhysical"]
           full={};metrics=[];pids=set();sourcepids=set();vtscounts=[];capture_pairs=0;source_roots=set();virtual_roots=set()
@@ -141,7 +143,9 @@ jobs:
                assert path not in used;used.add(path)
                assert packet["schema"]=="vize.cache-runtime-custody" and packet["version"]==2 and packet["metadataOnly"] and packet["timingEligible"] is False and packet["errors"]==[]
                assert packet["compiledSourceRevision"]==QA==builds[role]["compilerSourceSeal"]
-               assert packet["crateVersion"]=="0.603.0" and packet["virtualRoot"]==packet["actualCwd"]==virtual and os.path.isabs(packet["projectRoot"])
+               assert packet["crateVersion"]==source_version,("crate-version",packet["crateVersion"],source_version)
+               assert packet["virtualRoot"]==packet["actualCwd"]==virtual,("virtual-cwd",packet["virtualRoot"],packet["actualCwd"],virtual)
+               assert os.path.isabs(packet["projectRoot"]),("semantic-root",packet["projectRoot"])
                source_roots.add(packet["projectRoot"])
                assert packet["invokedProgram"]==packet["resolvedInvokedProgram"]==row["wrapper"]["path"] and packet["invokedProgramSha256"]==row["wrapper"]["sha256"]!=row["actualGo"]["sha256"]
                assert packet["invokedPid"] is None and "descendant executable/hash/PID" in packet["unobserved"]
@@ -163,6 +167,7 @@ jobs:
           assert len(a["retained"])==9
           report={"status":"independently-accepted-tiny-carrier","run":RUN,"job":122551006712,"attempt":1,"sourceHead":QA,"baseActualMain":BASE,"artifact":{"id":AID,"zipBytes":len(raw),"zipSha256":sha(raw),"tgzSha256":sha(tg),"files":len(files)},"builds":[{"role":v["role"],"revision":v["revision"],"binarySha256":v["binarySha256"],"bytes":v["binaryBytes"],"compilerSourceSeal":v["compilerSourceSeal"],"sourceTree":v["sourceTree"]} for v in b["builds"]],"normalBinaryByteIdentical":b["normalBinaryByteIdentical"],"normalDefaultCaptureReceipts":0,"moduleUnitControls":6,"freshOneSfcExecutions":9,"fullCliVtsBackendPacketsEqual":True,"actualGoElfSha256":"a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70","actualGoPids":sorted(pids),"actualSourceCliPids":sorted(sourcepids),"directSemanticRoots":list(source_roots),"sourceCustodyRequestedCompletedPairs":capture_pairs,"freshBuildInfoAll9":True,"emittedTypeScript":vtscounts,"toyObservationsOnly":metrics,"acceptanceSha256":sha(files["functional/acceptance.json"]),"buildReceiptSha256":sha(files["build/builds.json"]),"qualificationScope":"one public SFC functional observer only; not full corpus, shipping/cold500ms or causal CPU/RSS overhead evidence","localFilesWritten":0}
           
+          report["sourceWorkspaceVersion"]=source_version
           report["backendExitCodesPerRole"]={"normal-base":[0,2,0],"normal-head":[0,2,0],"observer":[0,2,0]}
           report["rustExitCodesPerRole"]={"normal-base":[0,1,0],"normal-head":[0,1,0],"observer":[0,1,0]}
           report["rustExitAuthority"]="same-invocation frozen harness runtime assertion and successful workflow; no separate raw Rust-status receipt"
