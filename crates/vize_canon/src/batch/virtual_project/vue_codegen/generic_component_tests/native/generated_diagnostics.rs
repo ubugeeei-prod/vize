@@ -419,9 +419,12 @@ const EVENT_HOISTED_HELPERS: &[&str] = &[
 const PROP_HOISTED_HELPERS: &[&str] = &["__VizeHasRawProps", "__VizeNavigationSlots"];
 
 fn hoisted_helper_hints(generated: &str, names: &[&str]) -> Vec<Value> {
-    assert!(
-        generated.contains("Shared preamble hoisted to the program-wide __vize_helpers.d.ts"),
-        "batch output must declare its ambient helper ownership"
+    assert_eq!(
+        generated
+            .matches("Shared preamble hoisted to the program-wide __vize_helpers.d.ts")
+            .count(),
+        1,
+        "batch output must declare its ambient helper ownership exactly once"
     );
     for name in names {
         let declaration = cstr!("type {name}<");
