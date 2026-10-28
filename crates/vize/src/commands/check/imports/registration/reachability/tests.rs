@@ -285,3 +285,5 @@ fn cross_program_alias_agreement_keeps_equal_winners_with_distinct_proof_paths_a
         "cross-program scan agreement must be unchanged"
     );
 }
+
+mod normal;

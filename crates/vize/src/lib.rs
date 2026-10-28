@@ -21,6 +21,11 @@
 
 extern crate alloc;
 
+// Bench-only allocator parity with the unprofiled native CLI entrypoint.
+#[cfg(all(test, not(feature = "profiling")))]
+#[global_allocator]
+static NORMAL_SOURCE_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 pub mod render;
 
 mod commands;
