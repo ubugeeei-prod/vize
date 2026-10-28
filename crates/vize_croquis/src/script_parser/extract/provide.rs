@@ -276,6 +276,9 @@ export function useFormField() {
 export const useArrowField = () => {
   const form = inject(ArrowKey)
 }
+export const ordinaryArrow = () => {
+  const form = inject(ArrowHelperKey)
+}
 export function ordinaryHelper() {
   const form = inject(HelperKey)
 }

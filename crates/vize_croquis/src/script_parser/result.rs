@@ -141,6 +141,9 @@ pub struct ScriptParseResult {
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
     /// Value import source by local binding name.
     pub import_sources: FxHashMap<CompactString, CompactString>,
+    /// Non-`use*` local aliases whose imported identity is a composable.
+    /// Empty for the common case, so ordinary analysis pays no allocation.
+    pub(crate) imported_composable_aliases: FxHashSet<CompactString>,
     /// Normal `<script>` value exports that canon re-emits at module scope.
     /// Type exports may reference these through `typeof` without being
     /// demoted into `__setup()`.
@@ -371,4 +374,8 @@ pub(crate) fn is_composable_name(name: &str) -> bool {
     name.strip_prefix("use")
         .and_then(|suffix| suffix.as_bytes().first())
         .is_some_and(|first| first.is_ascii_uppercase() || first.is_ascii_digit())
+}
+
+pub(crate) fn is_local_module_specifier(specifier: &str) -> bool {
+    specifier.starts_with('.') || specifier.starts_with("@/") || specifier.starts_with('/')
 }

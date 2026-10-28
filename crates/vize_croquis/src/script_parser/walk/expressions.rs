@@ -293,6 +293,10 @@ pub(in crate::script_parser) fn walk_expression_with_closure_name(
     source: &str,
     name: &str,
 ) {
+    if !super::super::result::is_composable_name(name) {
+        walk_expression(result, expr, source);
+        return;
+    }
     match expr {
         Expression::ArrowFunctionExpression(arrow) => {
             refuse_expression_type_reads(result, expr);

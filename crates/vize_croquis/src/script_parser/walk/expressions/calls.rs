@@ -174,9 +174,22 @@ fn record_imported_composable_call(result: &mut ScriptParseResult, call: &CallEx
         return;
     };
     let local_name = identifier.name.as_str();
-    let Some(source) = result.import_sources.get(local_name).cloned() else {
+    if !super::super::super::result::is_composable_name(local_name)
+        && (result.imported_composable_aliases.is_empty()
+            || !result.imported_composable_aliases.contains(local_name))
+    {
+        return;
+    }
+    if !result.records_setup_composable_call() {
+        return;
+    }
+    let Some(source) = result.import_sources.get(local_name) else {
         return;
     };
+    if !super::super::super::result::is_local_module_specifier(source.as_str()) {
+        return;
+    }
+    let source = source.clone();
     let Some(exported_name) = result
         .types
         .definitions()
@@ -186,10 +199,6 @@ fn record_imported_composable_call(result: &mut ScriptParseResult, call: &CallEx
     else {
         return;
     };
-    if !result.records_setup_composable_call() {
-        return;
-    }
-
     result.provide_inject.add_composable(
         exported_name,
         source,
