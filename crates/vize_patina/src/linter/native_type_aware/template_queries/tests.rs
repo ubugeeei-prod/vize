@@ -250,9 +250,7 @@ const ids: number[] = [1]
         let at = query.generated_offset as usize;
         let identifier = format!("__expr_{index}");
         assert_eq!(
-            document
-                .content
-                .get(at + 1 - identifier.len()..at + 1),
+            document.content.get(at + 1 - identifier.len()..at + 1),
             Some(identifier.as_str()),
             "comment {comment:?} must probe the exact inferred identifier"
         );
