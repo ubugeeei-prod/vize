@@ -57,7 +57,7 @@ pub(super) async fn moniker(
             .state
             .documents
             .text_snapshot(&location.uri)
-            .or_else(|| std::fs::read_to_string(&path).ok().map(std::sync::Arc::new))
+            .or_else(|| std::fs::read_to_string(&path).ok().map(Into::into))
         else {
             continue;
         };

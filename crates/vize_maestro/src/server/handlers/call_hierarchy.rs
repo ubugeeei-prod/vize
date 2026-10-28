@@ -121,7 +121,7 @@ fn context_for_item<'a>(
         .or_else(|| {
             std::fs::read_to_string(item.uri.to_file_path().ok()?)
                 .ok()
-                .map(std::sync::Arc::new)
+                .map(Into::into)
         })?;
     let offset = position_to_offset(
         &content,

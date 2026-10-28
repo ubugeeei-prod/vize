@@ -111,6 +111,7 @@ export function assertCssSnapshotProvenance(
   expectedCrates,
   snapshot,
   fixtures,
+  expectedCheckoutCrates = expectedCrates,
 ) {
   const loadedContract = JSON.parse(contractBytes);
   assert.deepEqual(snapshot, loadedContract.productSnapshot, "foreign product snapshot identity");
@@ -127,7 +128,7 @@ export function assertCssSnapshotProvenance(
   );
   assertExactCssTree(
     readGitTree(repoRoot, "HEAD", ownedSourcePaths),
-    expectedCrates.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
+    expectedCheckoutCrates.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
   );
   assert.ok(fixtures.every(({ path: name }) => belongsTo(name, ownedFixturePaths)));
   assertExactCssTree(readGitTree(repoRoot, "HEAD", ownedFixturePaths), fixtures);
@@ -331,14 +332,6 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     "foreign product snapshot",
   );
   assert.equal(contract.productSnapshot.cratesEntries, expected.length);
-  if (pinnedProduct)
-    assertCssSnapshotProvenance(
-      repoRoot,
-      contractBytes,
-      expected,
-      contract.productSnapshot,
-      contract.reviewedFixtures,
-    );
   const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
   const currentCheckoutLayers = contract.currentCheckoutLayers;
   assert.deepEqual(
@@ -357,6 +350,15 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     ],
   );
   const currentExpected = composeReviewedCssTrees(expected, currentCheckoutLayers);
+  if (pinnedProduct)
+    assertCssSnapshotProvenance(
+      repoRoot,
+      contractBytes,
+      expected,
+      contract.productSnapshot,
+      contract.reviewedFixtures,
+      currentExpected,
+    );
   // A current checkout must carry the reviewed owned CSS inputs exactly. Other
   // crates, build and VSIX inputs follow main; the build receipt binds the
   // capture to this exact clean HEAD, so they are not frozen here.
