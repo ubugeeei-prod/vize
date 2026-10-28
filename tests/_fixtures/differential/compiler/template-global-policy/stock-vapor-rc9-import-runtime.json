@@ -1,0 +1,28 @@
+{
+  "compiler": "3.6.0-rc.9",
+  "plugin": "6.0.7",
+  "classification": "Additive independent imported-binding control; original16RC9 observations remain unchanged.",
+  "archive": {
+    "path": "stock-import-reference.json.gz.b64.txt",
+    "rawBytes": 843675,
+    "rawSha256": "80f75f9c14292653afb729b22f8706b51913e6da4e503c4180a69c797e6e0b9b",
+    "gzipBytes": 121448,
+    "gzipSha256": "5a390c38508aeaa665a80e473763ae17a715a400b17be49ddef02bb2d305a04a"
+  },
+  "observations": [
+    {
+      "id": "import",
+      "inline": false,
+      "html": "<button data-from=\"imported\">press</button>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "import",
+      "inline": true,
+      "html": "<button data-from=\"imported\">press</button>",
+      "emitted": 0,
+      "errors": []
+    }
+  ]
+}

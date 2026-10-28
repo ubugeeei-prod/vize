@@ -1,0 +1,190 @@
+name: Plain-script import ref runtime
+on:
+  pull_request:
+    paths:
+      - .github/workflows/plain-script-import-ref.yml
+      - tools/support/compat/plain-script-import-ref.ts
+      - tests/_fixtures/differential/compiler/plain-script-import-10903/**
+      - crates/vize_atelier_sfc/src/**
+      - crates/vize_atelier_core/src/codegen/**
+      - npm/builder/vite/**
+      - npm/native/**
+      - Cargo.lock
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: plain-script-import-ref-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_BUILD_JOBS: "4"
+  RAYON_NUM_THREADS: "2"
+jobs:
+  public-before:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0" }
+      - name: Preserve public 0.589.0 failure and official Vue controls
+        env:
+          VIZE10903_MODE: public
+          VIZE10903_EXPECT: before
+          VIZE10903_PROOF: /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/public-before
+        run: node tools/support/compat/plain-script-import-ref.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: plain-script-public-before-${{ github.run_id }}
+          path: |
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/public-before/*.json
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/public-before/host/package*.json
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/public-before/projects/*/src/
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/public-before/actual-vite-native/
+          if-no-files-found: error
+          retention-days: 30
+  source-before:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      SOURCE_SHA: db5c35c12124086f034563b6800dbdab8605cdc0
+      VIZE10903_MODE: source
+      VIZE10903_EXPECT: before
+      VIZE10903_PROOF: /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/source-before
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: db5c35c12124086f034563b6800dbdab8605cdc0, persist-credentials: false }
+      - name: Read qualification sources separately from the frozen compiler
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualification
+          persist-credentials: false
+          sparse-checkout: |
+            tools/support/compat/plain-script-import-ref.ts
+            tests/_fixtures/differential/compiler/plain-script-import-10903
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          {
+            version: latest,
+            node-version: "26.6.0",
+            run-install: false,
+            cache: true,
+            cache-save: false,
+          }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          { key: plain-script-import-ref, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build the unchanged baseline native image and real Vite adapter
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+          vp run --workspace-root build:native:test
+          vp run --workspace-root build:vite-plugin
+          GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+          git diff --exit-code -- crates davinci vendor npm/builder/vite/src
+      - name: Capture the actual baseline regression before candidate acceptance
+        env:
+          VIZE10903_FIXTURES: ${{ github.workspace }}/qualification/tests/_fixtures/differential/compiler/plain-script-import-10903
+        run: node qualification/tools/support/compat/plain-script-import-ref.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: plain-script-source-before-${{ github.run_id }}
+          path: |
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/source-before/*.json
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/source-before/host/package*.json
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/source-before/projects/*/src/
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/source-before/actual-vite-native/
+          if-no-files-found: error
+          retention-days: 30
+  candidate:
+    needs: [public-before, source-before]
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIZE10903_MODE: source
+      VIZE10903_EXPECT: after
+      VIZE10903_PROOF: /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          {
+            version: latest,
+            node-version: "26.6.0",
+            run-install: false,
+            cache: true,
+            cache-save: false,
+          }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          { key: plain-script-import-ref, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build the exact candidate native image and real Vite adapter
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+          vp run --workspace-root build:native:test
+          vp run --workspace-root build:vite-plugin
+          GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+          git diff --exit-code -- crates davinci vendor npm/builder/vite/src
+      - name: Verify exact import classifications and merge flags
+        run: |
+          mkdir -p "$VIZE10903_PROOF"
+          cargo test -p vize_atelier_sfc --lib compile::bindings::tests::normal_script_imports_preserve_vue_ref_boundaries -- --exact 2>&1 | tee "$VIZE10903_PROOF/classification-test.log"
+          node -e 'const assert = require("node:assert/strict"); const fs = require("node:fs"); assert(fs.readFileSync(process.env.VIZE10903_PROOF + "/classification-test.log", "utf8").includes("1 passed; 0 failed"));'
+      - name: Verify full modules maps and original production/dev browser behavior
+        run: node tools/support/compat/plain-script-import-ref.ts
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: plain-script-source-before-${{ github.run_id }}
+          path: /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/before-evidence
+      - name: Record same-work performance without a speed threshold
+        env:
+          BEFORE: /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/before-evidence/performance.json
+        run: |
+          node --input-type=module -e '
+          import assert from "node:assert/strict";
+          import { readFileSync, writeFileSync } from "node:fs";
+          const priorPackets = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "full-module-packets.json")));
+          const nextPackets = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/full-module-packets.json"));
+          assert.equal(priorPackets.length, nextPackets.length);
+          for (let i = 0; i < priorPackets.length; i++) {
+            const prior = priorPackets[i], next = nextPackets[i];
+            for (const key of ["case", "filename", "source", "sourceSha256", "options", "official"]) assert.deepEqual(prior[key], next[key]);
+            if (!prior.options.inlineTemplate || prior.filename === "src/Child.vue" || prior.case === "constant-controls") assert.deepEqual(prior.native, next.native);
+          }
+          const before = JSON.parse(readFileSync(process.env.BEFORE));
+          const after = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/performance.json"));
+          for (const key of ["inputSha256", "options", "warmup", "iterations"]) assert.deepEqual(before[key], after[key]);
+          assert.notEqual(before.source, after.source);
+          writeFileSync(process.env.VIZE10903_PROOF + "/same-work-comparison.json", JSON.stringify({ before, after, policy: "observation only" }, null, 2) + "\n");
+          '
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: plain-script-candidate-${{ github.run_id }}
+          path: |
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate/*.json
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate/*.log
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate/host/package*.json
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate/projects/*/src/
+            /tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate/actual-vite-native/
+          if-no-files-found: error
+          retention-days: 30

@@ -60,11 +60,19 @@ async function api(path: string): Promise<Json> {
   return (await response.json()) as Json;
 }
 
-/** Whether release.yml has a queued or running run. */
-export async function releaseRunning(): Promise<boolean> {
-  for (const status of ["queued", "in_progress", "waiting", "pending"]) {
-    const runs = await api(`actions/workflows/release.yml/runs?status=${status}&per_page=1`);
-    if (Number(runs.total_count) > 0) return true;
+/** Refuse another cut while Release or its JSR publisher is pending or active. */
+export async function releaseRunning(
+  read: (path: string) => Promise<Json> = api,
+): Promise<boolean> {
+  for (const workflow of ["release.yml", "release-jsr.yml"]) {
+    for (const status of ["queued", "in_progress", "waiting", "pending", "requested"]) {
+      const runs = await read(`actions/workflows/${workflow}/runs?status=${status}&per_page=1`);
+      const count = runs.total_count;
+      if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+        throw new Error("Publisher inventory count unavailable: " + workflow + "/" + status);
+      }
+      if (count > 0) return true;
+    }
   }
   return false;
 }
@@ -88,7 +96,7 @@ export async function readCadenceInput(lastTag: string | null): Promise<CadenceI
   const compare = await api(`compare/${releasedSha}...${greenSha}`);
   const subjects = ((compare.commits as Json[] | undefined) ?? []).map((commit) => {
     const message = (commit.commit as Json | undefined)?.message;
-    return typeof message === "string" ? message.split("\n")[0] : "";
+    return typeof message === "string" ? (message.split("\n")[0] ?? "") : "";
   });
   return { greenSha, releasedSha, subjects, releasedAt };
 }

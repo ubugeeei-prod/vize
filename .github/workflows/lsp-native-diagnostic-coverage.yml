@@ -1,0 +1,123 @@
+name: LSP native diagnostic coverage
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-native-diagnostic-coverage.yml"
+      - "tests/tooling/lsp-diagnostic-capacity*.test.ts"
+      - "tests/tooling/support/lsp/diagnostic-capacity*.ts"
+      - "crates/vize_maestro/src/server/open_document.rs"
+      - "crates/vize_maestro/src/server/diagnostic_publishing.rs"
+      - "crates/vize_maestro/src/server/diagnostic_publishing/**"
+      - "crates/vize_maestro/src/server/document_changes.rs"
+      - "crates/vize_maestro/src/document/store.rs"
+      - "crates/vize_maestro/src/server/state/corsa_requests.rs"
+      - "crates/vize_maestro/src/server/initial_diagnostics/**"
+      - "crates/vize_maestro/src/server/initial_diagnostics.rs"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lsp-native-diagnostic-coverage-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  coverage:
+    name: Every one of 129 independent native diagnostics and repairs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_BUILD_JOBS: "4"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+      VIZE_TRACE_EDITOR_PREPARATION: "1"
+      VIZE_CAPACITY_FILES: "129"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - run: vp install --frozen-lockfile --prefer-offline
+      - run: rustup toolchain install || rustup show active-toolchain
+      - name: Verify exact token, version, UTF16 and duplicate controls
+        run: >-
+          vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts
+          tests/tooling/lsp-diagnostic-capacity-socket.test.ts
+          tests/tooling/lsp-diagnostic-capacity-workflow.test.ts
+      - name: Prove the same conservation law fails on the original scheduler
+        run: |
+          set -euo pipefail
+          baseline_sha=49dc7684234a6ae723e1201c3d2bcb7c0039dbac
+          baseline_source="$RUNNER_TEMP/diagnostic-capacity-before-source"
+          baseline_target="$RUNNER_TEMP/diagnostic-capacity-before-target"
+          capture="$GITHUB_WORKSPACE/target/vize-tests/diagnostic-capacity-129"
+          control=crates/vize_maestro/src/server/initial_diagnostics/conservation_tests.rs
+          tests=crates/vize_maestro/src/server/initial_diagnostics/tests.rs
+          mkdir -p "$capture"
+          test ! -e "$baseline_source"
+          test ! -e "$baseline_target"
+          git fetch --no-tags --depth=1 origin "$baseline_sha"
+          git worktree add --detach "$baseline_source" "$baseline_sha"
+          test "$(git -C "$baseline_source" rev-parse HEAD)" = "$baseline_sha"
+          test "$(git -C "$baseline_source" hash-object crates/vize_maestro/src/server/initial_diagnostics.rs)" = 8e1bc289fc3e7cc32674764aff0581a46b7908dc
+          cp "$control" "$baseline_source/$control"
+          printf '\n#[path = "conservation_tests.rs"]\nmod conservation_tests;\n' >> "$baseline_source/$tests"
+          sha256sum "$control" "$baseline_source/$control" > "$capture/conservation-control.sha256"
+          git -C "$baseline_source" diff -- "$tests" > "$capture/before-test-carrier.diff"
+          git -C "$baseline_source" status --porcelain > "$capture/before-test-carrier.status"
+          if (
+            cd "$baseline_source"
+            CARGO_TARGET_DIR="$baseline_target" cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics::tests::conservation_tests::every_open_uri_retains_its_latest_job_at_65_129_and_2500_documents -- --exact
+          ) > "$capture/before-scheduler.log" 2>&1
+          then
+            cat "$capture/before-scheduler.log"
+            echo "The original source unexpectedly passed the conservation law" >&2
+            exit 1
+          else
+            result=$?
+            test "$result" -eq 101
+          fi
+          cat "$capture/before-scheduler.log"
+          python3 -c 'import pathlib,re,sys; text=pathlib.Path(sys.argv[1]).read_text(); required=[r"running 1 test",r"test result: FAILED[.] 0 passed; 1 failed; 0 ignored",r"accepted distinct URIs cannot be evicted",r"left:\s*64",r"right:\s*65"]; missing=[pattern for pattern in required if re.search(pattern,text) is None]; assert not missing,missing; print("Original source conservation: exact named failure 64 != 65 verified")' "$capture/before-scheduler.log"
+      - name: Build the exact source once in its own target
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          target_dir="$RUNNER_TEMP/diagnostic-capacity-$SOURCE_SHA"
+          test ! -e "$target_dir"
+          export CARGO_TARGET_DIR="$target_dir"
+          cargo build --locked --profile ci -p vize
+          mkdir -p target/ci
+          cp "$target_dir/ci/vize" target/ci/vize
+          vp exec node tests/differential/build-receipt.ts
+          echo "CARGO_TARGET_DIR=$target_dir" >> "$GITHUB_ENV"
+          echo "VIZE_LSP_BIN=$GITHUB_WORKSPACE/target/ci/vize" >> "$GITHUB_ENV"
+      - name: Preserve scheduler/version/cancellation laws
+        run: |
+          set -euo pipefail
+          capture="$GITHUB_WORKSPACE/target/vize-tests/diagnostic-capacity-129"
+          cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics:: 2>&1 | tee "$capture/scheduler-current.log"
+          python3 -c 'import pathlib,re,sys; text=pathlib.Path(sys.argv[1]).read_text(); result=re.search(r"test result: ok[.] ([0-9]+) passed; 0 failed; 0 ignored",text); assert result and int(result[1])>0,"nonzero scheduler laws with zero ignored tests are required"' "$capture/scheduler-current.log"
+      - name: Observe all native errors, complete repairs and checked idle
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        run: >-
+          vp exec node --test --test-concurrency=1 tests/tooling/lsp-diagnostic-capacity.test.ts
+          tests/tooling/lsp-diagnostic-capacity-reopen.test.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: lsp-native-diagnostic-coverage-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            target/ci/vize.differential-build.json
+            target/vize-tests/diagnostic-capacity-129/
+            target/differential/lsp-sessions/
+          if-no-files-found: error
+          retention-days: 30

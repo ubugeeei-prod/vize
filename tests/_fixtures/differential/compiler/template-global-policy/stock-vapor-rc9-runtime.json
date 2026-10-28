@@ -1,0 +1,134 @@
+{
+  "compiler": "3.6.0-rc.9",
+  "plugin": "6.0.7",
+  "classification": "Independent upstream observation; native Vapor follows the explicit Vue 3.5.41 global policy, so this is not a native parity oracle.",
+  "observations": [
+    {
+      "id": "focus",
+      "inline": false,
+      "html": "<button>press</button>",
+      "emitted": 0,
+      "errors": [
+        {
+          "name": "TypeError",
+          "message": "Cannot read properties of undefined (reading 'activeElement')"
+        }
+      ]
+    },
+    {
+      "id": "focus",
+      "inline": true,
+      "html": "<button>press</button>",
+      "emitted": 1,
+      "errors": []
+    },
+    {
+      "id": "explicit",
+      "inline": false,
+      "html": "<button>press</button>",
+      "emitted": 0,
+      "errors": [
+        {
+          "name": "TypeError",
+          "message": "Cannot read properties of undefined (reading 'document')"
+        }
+      ]
+    },
+    {
+      "id": "explicit",
+      "inline": true,
+      "html": "<button>press</button>",
+      "emitted": 1,
+      "errors": []
+    },
+    {
+      "id": "allowed",
+      "inline": false,
+      "html": "<button>press</button>",
+      "emitted": 1,
+      "errors": []
+    },
+    {
+      "id": "allowed",
+      "inline": true,
+      "html": "<button>press</button>",
+      "emitted": 1,
+      "errors": []
+    },
+    {
+      "id": "callback",
+      "inline": false,
+      "html": "<button>press</button>",
+      "emitted": 1,
+      "errors": []
+    },
+    {
+      "id": "callback",
+      "inline": true,
+      "html": "<button>press</button>",
+      "emitted": 1,
+      "errors": []
+    },
+    {
+      "id": "setup",
+      "inline": false,
+      "html": "<button>press</button>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "setup",
+      "inline": true,
+      "html": "<button>press</button>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "loop",
+      "inline": false,
+      "html": "<div><button>press</button><!--for--></div>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "loop",
+      "inline": true,
+      "html": "<div><button>press</button><!--for--></div>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "render-unknown",
+      "inline": false,
+      "html": "",
+      "emitted": 0,
+      "errors": [
+        {
+          "name": "TypeError",
+          "message": "Cannot read properties of undefined (reading 'activeElement')"
+        }
+      ]
+    },
+    {
+      "id": "render-unknown",
+      "inline": true,
+      "html": "<p>&lt;body&gt;&lt;div&gt;&lt;/div&gt;&lt;/body&gt;2</p>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "render-setup",
+      "inline": false,
+      "html": "<p>setup2</p>",
+      "emitted": 0,
+      "errors": []
+    },
+    {
+      "id": "render-setup",
+      "inline": true,
+      "html": "<p>setup2</p>",
+      "emitted": 0,
+      "errors": []
+    }
+  ]
+}

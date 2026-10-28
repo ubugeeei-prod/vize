@@ -1,0 +1,174 @@
+### Area
+
+Compiler (SFC with both `<script>` and `<script setup>`, `inlineTemplate`, i.e. what `@vizejs/vite-plugin` emits for
+`vite build`). Dev output (non-inline render through `$setup`) is correct.
+
+### Version
+
+`vize` / `@vizejs/native` / `@vizejs/vite-plugin` 0.589.0 (0.574.0 emits the same code), Vue 3.5.41, Vite 8.2.0,
+macOS arm64, Node 26.6.0. Control: `@vitejs/plugin-vue` 6.0.8 / `@vue/compiler-sfc` 3.5.41.
+
+### Summary
+
+#10777 (fixed in #10800) made the inline render read `<script setup>` bindings of unknown kind through `unref`.
+Imports declared in the **plain** `<script>` block are still read as plain constants. `@vue/compiler-sfc` registers
+every user import, from either block, as `setup-maybe-ref` (except imports from `vue` and default imports of `.vue`
+files), so it reads them through `unref`:
+
+```js
+// @vue/compiler-sfc (inline)
+_createBlock(Child, { text: _unref(label), onPing: _unref(onPing) })
+
+// Vize 0.589.0 (inline)
+_createBlock(Child, { text: label, onPing: onPing })
+
+// Vize 0.589.0 (dev, non-inline) — correct, proxyRefs unwraps
+_createBlock($setup.Child, { text: $setup.label, onPing: $setup.onPing })
+```
+
+The same import moved into `<script setup>` is read as `_unref(label)` by Vize too, so only the plain-`<script>`
+import path skips it. When the imported binding is a ref, the production build passes the ref object: the prop gets
+an object instead of the value, and the listener is a ref (Vue's emit silently skips non-functions in production).
+
+### Minimal reproduction
+
+`package.json`
+
+```json
+{ "private": true, "type": "module" }
+```
+
+`vite.config.ts`
+
+```ts
+import vize from "@vizejs/vite-plugin";
+import vue from "@vitejs/plugin-vue";
+
+// COMPILER=vue → @vitejs/plugin-vue (control)
+export default {
+  plugins: [process.env.COMPILER === "vue" ? vue() : vize()],
+  logLevel: "warn"
+};
+```
+
+`index.html`
+
+```html
+<!doctype html>
+<html><body><div id="app"></div><script type="module" src="/src/main.ts"></script></body></html>
+```
+
+`src/main.ts`
+
+```ts
+import { createApp } from "vue";
+import App from "./App.vue";
+
+(window as unknown as { pings: number }).pings = 0;
+createApp(App).mount("#app");
+```
+
+`src/store.ts`
+
+```ts
+import { ref } from "vue";
+
+// a ref exported from a plain module
+export const label = ref("from ref");
+export const onPing = ref((): void => {
+  (window as unknown as { pings: number }).pings++;
+});
+```
+
+`src/Child.vue`
+
+```vue
+<script setup lang="ts">
+defineProps<{ text: unknown }>();
+defineEmits<{ ping: [] }>();
+</script>
+
+<template>
+  <button id="child" @click="$emit('ping')">{{ typeof text === "string" ? text : "NOT A STRING: " + typeof text }}</button>
+</template>
+```
+
+`src/App.vue`
+
+```vue
+<script lang="ts">
+// imported in the plain <script> block, used by the <script setup> template
+import { label, onPing } from "./store";
+</script>
+
+<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+
+<template>
+  <Child :text="label" @ping="onPing" />
+</template>
+```
+
+`run.mjs` (`vite build` + `vite preview`, or `MODE=dev` for `vite dev`; reads the child's text and clicks it in Chromium)
+
+```js
+import { build, preview, createServer } from "vite";
+import { chromium } from "playwright";
+let server, url;
+if (process.env.MODE === "dev") {
+  server = await createServer({ root: import.meta.dirname, server: { port: 0 }, logLevel: "warn" });
+  await server.listen();
+  url = server.resolvedUrls.local[0];
+} else {
+  await build({ root: import.meta.dirname, logLevel: "warn" });
+  server = await preview({ root: import.meta.dirname, preview: { port: 0 }, logLevel: "warn" });
+  url = server.resolvedUrls.local[0];
+}
+const browser = await chromium.launch();
+const page = await browser.newPage();
+const errors = [];
+page.on("pageerror", e => errors.push(e.message.split("\n")[0]));
+page.on("console", m => m.type() === "error" && errors.push(m.text().split("\n")[0]));
+await page.goto(url);
+await page.waitForSelector("#child");
+const text = await page.textContent("#child");
+await page.click("#child");
+await page.waitForTimeout(100);
+const pings = await page.evaluate(() => window.pings);
+console.log(`${process.env.COMPILER ?? "vize"} (${process.env.MODE ?? "build"}): text ${JSON.stringify(text)}, pings ${pings} (expected "from ref", 1)${errors.length ? " errors: " + JSON.stringify(errors) : ""}`);
+await browser.close();
+await server.close();
+```
+
+```sh
+node run.mjs                          # @vizejs/vite-plugin, production build
+COMPILER=vue node run.mjs             # @vitejs/plugin-vue
+MODE=dev node run.mjs                 # vite dev
+MODE=dev COMPILER=vue node run.mjs
+```
+
+### Actual
+
+```text
+vize (build): text "NOT A STRING: object", pings 0 (expected "from ref", 1)
+vize (dev): text "from ref", pings 1 (expected "from ref", 1)
+vue (build): text "from ref", pings 1 (expected "from ref", 1)
+vue (dev): text "from ref", pings 1 (expected "from ref", 1)
+```
+
+### Expected
+
+`text "from ref", pings 1` in the production build too: in the inline render function, a user import from the plain
+`<script>` block is read the same way as one from `<script setup>` (`_unref(label)`), as `@vue/compiler-sfc` does.
+
+### Notes
+
+- Found by comparing, name by name, how the production (inline) render functions that `@vue/compiler-sfc` and Vize
+  produce for ~260 SFCs read each binding (`_unref(x)` / `x.value` / `__props.x` / bare `x`). After #10800, the only
+  names left where `@vue/compiler-sfc` unwraps and Vize does not are imports in a plain `<script>` block (3 names in
+  2 SFCs there, all plain objects, so that app is not affected).
+- `{{ label }}` alone does not show it: `toDisplayString` unwraps refs. Props, `v-bind`, `v-if` conditions and
+  handlers do.
+- Same family as #10777: dev builds and anything that runs the dev server (component tests, screenshot tests) cannot
+  see it.

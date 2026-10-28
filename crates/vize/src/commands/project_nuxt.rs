@@ -3,6 +3,8 @@
 //! Only literal values count. Anything dynamic reads as unknown so callers can
 //! keep their conservative default.
 
+mod static_render;
+
 use std::{
     fs,
     path::{Component, Path, PathBuf},
@@ -76,6 +78,7 @@ pub(super) enum Lookup<'a> {
 pub(super) struct ConfigObject<'a> {
     object: &'a ObjectExpression<'a>,
     root: bool,
+    closed_program: bool,
 }
 
 impl<'a> ConfigObject<'a> {
@@ -84,6 +87,7 @@ impl<'a> ConfigObject<'a> {
             Expression::ObjectExpression(object) => Some(Self {
                 object,
                 root: false,
+                closed_program: false,
             }),
             _ => None,
         }
@@ -174,6 +178,17 @@ pub(super) fn read<T>(
             _ => None,
         })?;
     let expression = unwrap(export.declaration.as_expression()?);
+    let closed_program = parsed.program.body.len() == 1
+        && match expression {
+            Expression::ObjectExpression(_) => true,
+            Expression::CallExpression(call) => {
+                matches!(&call.callee, Expression::Identifier(name) if name.name == "defineNuxtConfig")
+                    && !call.optional
+                    && call.arguments.len() == 1
+                    && call.type_arguments.is_none()
+            }
+            _ => false,
+        };
     let expression = match expression {
         Expression::CallExpression(call) if matches!(&call.callee, Expression::Identifier(name) if name.name == "defineNuxtConfig") =>
         {
@@ -189,32 +204,43 @@ pub(super) fn read<T>(
     let Expression::ObjectExpression(object) = expression else {
         return None;
     };
-    read(&ConfigObject { object, root: true })
+    read(&ConfigObject {
+        object,
+        root: true,
+        closed_program,
+    })
 }
 
 /// `srcDir`, `dir.pages` and `dir.layouts`, relative to `root` like doctor sources.
 pub(super) fn render_dirs(root: &Path) -> Option<NuxtRenderDirs> {
     let config = find(root)?;
-    let (src_dir, pages, layouts, pages_enabled) = read(config.source.as_deref()?, |object| {
-        let src_dir = optional_path(object.get("srcDir"))?;
-        let (pages, layouts) = match object.get("dir") {
-            Lookup::Absent => (None, None),
-            Lookup::Value(value) => {
-                let dir = ConfigObject::nested(value)?;
-                (
-                    optional_path(dir.get("pages"))?,
-                    optional_path(dir.get("layouts"))?,
-                )
-            }
-            Lookup::Unknown => return None,
-        };
-        let pages_enabled = match object.get("pages") {
-            Lookup::Absent | Lookup::Value(Expression::ObjectExpression(_)) => true,
-            Lookup::Value(Expression::BooleanLiteral(value)) => value.value,
-            _ => return None,
-        };
-        Some((src_dir, pages, layouts, pages_enabled))
-    })?;
+    let (src_dir, pages, layouts, pages_enabled, static_render_config) =
+        read(config.source.as_deref()?, |object| {
+            let src_dir = optional_path(object.get("srcDir"))?;
+            let (pages, layouts) = match object.get("dir") {
+                Lookup::Absent => (None, None),
+                Lookup::Value(value) => {
+                    let dir = ConfigObject::nested(value)?;
+                    (
+                        optional_path(dir.get("pages"))?,
+                        optional_path(dir.get("layouts"))?,
+                    )
+                }
+                Lookup::Unknown => return None,
+            };
+            let pages_enabled = match object.get("pages") {
+                Lookup::Absent | Lookup::Value(Expression::ObjectExpression(_)) => true,
+                Lookup::Value(Expression::BooleanLiteral(value)) => value.value,
+                _ => return None,
+            };
+            Some((
+                src_dir,
+                pages,
+                layouts,
+                pages_enabled,
+                static_render::admitted(object),
+            ))
+        })?;
     let src = match src_dir {
         Some(src_dir) => config.dir.join(src_dir),
         // Nuxt 4 defaults `srcDir` to `app/` unless `app.vue` stays at the root.
@@ -238,6 +264,7 @@ pub(super) fn render_dirs(root: &Path) -> Option<NuxtRenderDirs> {
         layouts: relative(src.join(layouts.as_deref().unwrap_or("layouts")))?,
         src: relative(src)?,
         pages_enabled,
+        static_render_config,
     })
 }
 
@@ -347,12 +374,19 @@ mod tests {
         render_dirs(project.path())
     }
 
-    fn dirs(src: &str, pages: &str, layouts: &str, pages_enabled: bool) -> Option<NuxtRenderDirs> {
+    fn dirs(
+        src: &str,
+        pages: &str,
+        layouts: &str,
+        pages_enabled: bool,
+        static_render_config: bool,
+    ) -> Option<NuxtRenderDirs> {
         Some(NuxtRenderDirs {
             src: PathBuf::from(src),
             pages: PathBuf::from(pages),
             layouts: PathBuf::from(layouts),
             pages_enabled,
+            static_render_config,
         })
     }
 
@@ -363,21 +397,21 @@ mod tests {
                 r#"export default defineNuxtConfig({ srcDir: "./src", dir: { layouts: "nuxt/layouts", pages: "nuxt/pages", app: "nuxt/app" }, $development: { devtools: { enabled: false } } })"#,
                 &[],
             ),
-            dirs("src", "src/nuxt/pages", "src/nuxt/layouts", true)
+            dirs("src", "src/nuxt/pages", "src/nuxt/layouts", true, false)
         );
         assert_eq!(
             dirs_for(
                 "export default defineNuxtConfig({ pages: false })",
                 &["app/pages/a.vue"]
             ),
-            dirs("app", "app/pages", "app/layouts", false)
+            dirs("app", "app/pages", "app/layouts", false, true)
         );
         assert_eq!(
             dirs_for(
                 "export default defineNuxtConfig({})",
                 &["app.vue", "app/router.options.ts"]
             ),
-            dirs("", "pages", "layouts", true)
+            dirs("", "pages", "layouts", true, true)
         );
     }
 

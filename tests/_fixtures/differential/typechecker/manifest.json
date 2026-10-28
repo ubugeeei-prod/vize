@@ -8838,6 +8838,182 @@
       }
     },
     {
+      "id": "typechecker/template-ref-signatures-10948/valid-imported-signatures",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-ref-signatures-10948",
+      "case": "valid-imported-signatures",
+      "test": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+      "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "packReference": {
+        "path": "template-ref-signatures-10948/cases.json",
+        "sha256": "c317cd1ab3ed8c9ed33136e8850b5f147eb69bf81ebbcda4eaa867efaa6daec3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-signatures-10948/tsconfig.json.txt",
+          "sha256": "f799251cc94f1c9a82b8bfdead1e08bf9c5f7f2a7a32f86da3bf0bf1952044ff"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "path": "template-ref-signatures-10948/NestedReadonly-valid.vue.txt",
+          "sha256": "cd805ea2c70e49a3ad41a42c3d50495cbde9a74c4cc48fa2d43f2ad7841a885a"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "path": "template-ref-signatures-10948/NestedUnknown-valid.vue.txt",
+          "sha256": "0610a48ab03c071a5eece860fb5aacedf3e5978aae7cb480a899c88442eab8a3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/template-ref-signatures-10948/invalid-original-operations",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-ref-signatures-10948",
+      "case": "invalid-original-operations",
+      "test": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+      "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "packReference": {
+        "path": "template-ref-signatures-10948/cases.json",
+        "sha256": "c317cd1ab3ed8c9ed33136e8850b5f147eb69bf81ebbcda4eaa867efaa6daec3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-signatures-10948/tsconfig.json.txt",
+          "sha256": "f799251cc94f1c9a82b8bfdead1e08bf9c5f7f2a7a32f86da3bf0bf1952044ff"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "path": "template-ref-signatures-10948/NestedReadonly.vue.txt",
+          "sha256": "1634fe69ef6cbe73db588afbe6b3e1af40734003e5f141e40959f183585e1906"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "path": "template-ref-signatures-10948/NestedUnknown.vue.txt",
+          "sha256": "31dc7ebacec99b1e3e7ce1a13f76c22d037ce09ece193e258706014023e9cdfa"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/NestedReadonly.vue",
+          "line": 5,
+          "column": 11,
+          "severity": 1,
+          "code": 2540,
+          "message": "Cannot assign to 'value' because it is a read-only property."
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "line": 5,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingNestedUnknown' does not exist on type '{}'."
+        }
+      ]
+    },
+    {
+      "id": "typechecker/template-ref-signatures-10948/repaired-imported-signatures",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-ref-signatures-10948",
+      "case": "repaired-imported-signatures",
+      "test": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+      "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+      "packReference": {
+        "path": "template-ref-signatures-10948/cases.json",
+        "sha256": "c317cd1ab3ed8c9ed33136e8850b5f147eb69bf81ebbcda4eaa867efaa6daec3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-signatures-10948/tsconfig.json.txt",
+          "sha256": "f799251cc94f1c9a82b8bfdead1e08bf9c5f7f2a7a32f86da3bf0bf1952044ff"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "path": "template-ref-signatures-10948/NestedReadonly-valid.vue.txt",
+          "sha256": "cd805ea2c70e49a3ad41a42c3d50495cbde9a74c4cc48fa2d43f2ad7841a885a"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "path": "template-ref-signatures-10948/NestedUnknown-valid.vue.txt",
+          "sha256": "0610a48ab03c071a5eece860fb5aacedf3e5978aae7cb480a899c88442eab8a3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
       "id": "typechecker/template-suppression-original/complete-original-template-suppression",
       "state": "active",
       "targets": ["batch"],
@@ -10155,12 +10331,12 @@
         {
           "selector": "checkInheritedConfig",
           "source": "tests/typescript-plugin/inherited-config.ts",
-          "sha256": "17b8c03fae46c3c3d34e41d27e7901cc3b1969e1c43b13d6c5c1eceb18ec30d0"
+          "sha256": "fbdd2e93fdf74b15d84c1232f60401a1a042870b8f37d484206ad1b054486320"
         },
         {
           "selector": "createOrdinaryHostFrontier",
           "source": "tests/typescript-plugin/ordinary-host-frontier.ts",
-          "sha256": "d05c9afd2e0f0db0f1818f4ee4bd65790ebb38bdf352212fcba2e193faa7dc76"
+          "sha256": "d6cd8d770f74d488bbe251aecb87d940271cac91740c374613eb627c7d6cc8f4"
         },
         {
           "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
@@ -10169,13 +10345,13 @@
         },
         {
           "selector": "packed-consumer",
-          "source": "tests/typescript-plugin/packed-consumer.mjs",
-          "sha256": "daf6932d21e43514e02eb41a2b4dd17c04a3396e07482d8c568e6d5e74641d30"
+          "source": "tests/typescript-plugin/packed-consumer.ts",
+          "sha256": "7a1d073b558da95a4b3491b5b9599618209b13861f22e73d323c9e70663ef8d5"
         },
         {
           "selector": "startTsserver",
-          "source": "tests/typescript-plugin/tsserver-client.mjs",
-          "sha256": "03a93ea537ad511f17b6b2ef35030098c3e8f6bdac3ef2657d5cec8e4fb3b2af"
+          "source": "tests/typescript-plugin/tsserver-client.ts",
+          "sha256": "77b8970dfb6e528a4f5b8955ab4fb4b436c66b0ec9916007be2cdbb2ec0bf8e5"
         },
         {
           "selector": "checkInheritedConfiguration",
@@ -10190,7 +10366,7 @@
         {
           "selector": "TypeScript 5.7.3 and 6.0.3",
           "source": ".github/workflows/typescript-plugin.yml",
-          "sha256": "d4ea39e3bd3a68224bce2303304d7b82cf872cef559894d6b882d56d1f262905"
+          "sha256": "734f5482d5cacd69668dad12e43a43985823cad8c56322dd674c0a4dbce2d288"
         },
         {
           "selector": "Linux and Windows physical VSIX",

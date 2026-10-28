@@ -1,0 +1,35 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
+import { mergeProps as _mergeProps } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<button${_ssrRenderAttrs(_mergeProps({ "data-values": [
+    _ctx.document,
+    _ctx.window,
+    _ctx.navigator,
+    _ctx.globalThis,
+    _ctx.Promise,
+    _ctx.Proxy,
+    _ctx.Function,
+    _ctx.Reflect,
+    _ctx.WeakMap,
+    _ctx.WeakSet,
+    _ctx.module,
+    _ctx.exports,
+    _ctx.TypeError,
+    _ctx.Uint8Array
+  ] }, _attrs))}>${_ssrInterpolate(Math.max(1, 2))}${_ssrInterpolate(Intl.NumberFormat().format(1))}</button>`);
+}
+export default {
+  __name: "Layout",
+  emits: ["press"],
+  ssrRender,
+  setup(__props, { expose: __expose, emit: __emit }) {
+    __expose();
+    const emit = __emit;
+    const __returned__ = { emit };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};

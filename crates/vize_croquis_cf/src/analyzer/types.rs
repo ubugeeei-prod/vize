@@ -284,4 +284,7 @@ pub struct NuxtRenderDirs {
     /// routes and no `app.vue` in `src`, Nuxt's built-in app renders
     /// `<NuxtLayout><NuxtPage /></NuxtLayout>`.
     pub pages_enabled: bool,
+    /// Object-wide literal config certainty from the original config parse.
+    /// This does not establish complete input coverage or render exclusivity.
+    pub static_render_config: bool,
 }

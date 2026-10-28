@@ -9,6 +9,7 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences as capture_sfc},
     parse_sfc,
 };
+use vize_croquis::croquis::NuxtTemplateRenderFacts;
 use vize_croquis::{
     Croquis, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_sfc_scripts,
 };
@@ -85,11 +86,13 @@ pub(super) fn analyze_sfc_for_cross_file(
         offsets.script = script.loc.start as u32;
     }
 
-    let analysis = if let Some(template) = descriptor.template.as_ref() {
+    let mut template_admitted = false;
+    let mut analysis = if let Some(template) = descriptor.template.as_ref() {
         offsets.template = template.loc.start as u32;
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
         let parser = Parser::new(&allocator, template.content.as_ref());
         let (root, parse_errors) = parser.parse();
+        template_admitted = parse_errors.is_empty();
         let template_ast = if parse_errors.iter().any(|error| !error.is_recoverable()) {
             None
         } else {
@@ -104,6 +107,39 @@ pub(super) fn analyze_sfc_for_cross_file(
             .0
             .croquis
     };
+
+    // Use the descriptor and template admission already produced above. Missing
+    // analysis is never promoted into a proof; external/preprocessed sources and
+    // custom blocks retain the existing conservative duplicate-ID behavior.
+    let inline_template = descriptor.template.as_ref().is_some_and(|template| {
+        template.src.is_none() && matches!(template.lang.as_deref(), None | Some("html"))
+    });
+    let inline_scripts = [descriptor.script.as_ref(), descriptor.script_setup.as_ref()]
+        .into_iter()
+        .flatten()
+        .all(|script| {
+            script.src.is_none() && matches!(script.lang.as_deref(), None | Some("js" | "ts"))
+        });
+    if !template_admitted
+        || !inline_template
+        || !inline_scripts
+        || !descriptor.custom_blocks.is_empty()
+        || !descriptor.css_vars.is_empty()
+    {
+        analysis.nuxt_static_render_script = Some(false);
+        if let Some(facts) = analysis.nuxt_render_template.as_mut() {
+            facts.admitted = false;
+        }
+    } else {
+        // The successful full original template parse above also proves zero
+        // elements for an empty template; this is explicit descriptor evidence.
+        let template_facts: &mut NuxtTemplateRenderFacts =
+            analysis.nuxt_render_template.get_or_insert_default();
+        template_facts.admitted = true;
+        if descriptor.script.is_none() && descriptor.script_setup.is_none() {
+            analysis.nuxt_static_render_script = Some(true);
+        }
+    }
 
     if offsets.fallthrough_root.is_some() || analysis.template_info.inherit_attrs_disabled {
         offsets.script_uses_attrs = descriptor.script.as_ref().is_some_and(|script| {
@@ -197,3 +233,6 @@ fn has_root_directive(child: &TemplateChildNode<'_>, names: &[&str]) -> bool {
         matches!(prop, PropNode::Directive(directive) if names.contains(&directive.name))
     }))
 }
+
+#[cfg(test)]
+mod nuxt_render_tests;

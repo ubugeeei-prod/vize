@@ -43,15 +43,12 @@ pub(super) struct TemplateRefRegistry {
     pub(super) includes_instantiated: bool,
 }
 
-/// Whether anything reads the registry: `useTemplateRef` in the script, or a
-/// `$refs` the project asked to be typed by it.
+/// Whether an owned untyped call or a configured `$refs` reads the registry.
 pub(in crate::virtual_ts::generator) fn registers_template_refs(
-    script: Option<&str>,
+    infer_template_refs: bool,
     checks: VirtualTsCheckOptions,
 ) -> bool {
-    checks.infer_template_dollar_refs
-        || checks.infer_component_dollar_refs
-        || script.is_some_and(|script| script.contains("useTemplateRef"))
+    checks.infer_template_dollar_refs || checks.infer_component_dollar_refs || infer_template_refs
 }
 
 enum RegisteredRefKind {
@@ -80,12 +77,12 @@ enum RegisteredRefKind {
 pub(super) fn template_ref_registry(
     summary: &Croquis,
     options: &VirtualTsOptions,
-    script_content: Option<&str>,
+    infer_template_refs: bool,
     template_ast: Option<&RootNode<'_>>,
     syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
     (checks, record): (VirtualTsCheckOptions, &TemplateRecord),
 ) -> Option<TemplateRefRegistry> {
-    if !registers_template_refs(script_content, checks) {
+    if !registers_template_refs(infer_template_refs, checks) {
         return None;
     }
     let root = template_ast?;

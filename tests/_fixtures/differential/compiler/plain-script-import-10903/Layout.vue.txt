@@ -1,0 +1,12 @@
+<script lang="ts">
+// imported in the plain <script> block, used by the <script setup> template
+import { label, onPing } from "./store";
+</script>
+
+<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+
+<template>
+  <Child :text="label" @ping="onPing" />
+</template>

@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import {spawnSync} from "node:child_process";
+const [workspace,version,out] = process.argv.slice(2);
+assert.match(version,/^0\.\d+\.0$/);
+fs.mkdirSync(workspace,{recursive:true});fs.mkdirSync(out,{recursive:true});
+assert.equal(fs.existsSync(path.join(workspace,"node_modules")),false,"consumer must be fresh");
+const manifest={name:"vize-public-release-acceptance",private:true,type:"module",dependencies:{vize:version,"@vizejs/native":version,"@vizejs/wasm":version,vue:"3.6.0-rc.13"}};
+fs.writeFileSync(path.join(workspace,"package.json"),JSON.stringify(manifest,null,2));
+const config=path.join(workspace,".npmrc");fs.writeFileSync(config,"registry=https://registry.npmjs.org/\n");
+const args=["install","--ignore-scripts","--legacy-peer-deps","--no-audit","--no-fund","--prefer-online","--userconfig",config,"--cache",path.join(workspace,".npm-cache")];
+const r=spawnSync("npm",args,{cwd:workspace,encoding:"utf8",timeout:480000,maxBuffer:8*1024*1024});
+fs.writeFileSync(path.join(out,"install-packet.json"),JSON.stringify({manifest,command:["npm",...args],status:r.status,signal:r.signal,error:r.error?.message??null,stdout:r.stdout,stderr:r.stderr},null,2));
+process.stdout.write(r.stdout??"");process.stderr.write(r.stderr??"");assert.equal(r.status,0);assert.equal(r.signal,null);
