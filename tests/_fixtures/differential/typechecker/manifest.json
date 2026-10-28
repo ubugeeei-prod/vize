@@ -237,7 +237,7 @@
       },
       "pack": "aria-kebab-prop-11048",
       "case": "declared-kebab-and-optional-valid-with-wrong-control",
-      "test": "declared_kebab_aria_props_preserve_batch_diagnostics",
+      "test": "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
       "regressionCommit": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
       "sourceRevision": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
       "packReference": {
@@ -3463,7 +3463,7 @@
       },
       "pack": "content-mapper-vue-generic-11051",
       "case": "reporter-valid",
-      "test": "content_mapper_vue_generic_preserves_explicit_type_arguments",
+      "test": "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
       "regressionCommit": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
       "sourceRevision": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
       "packReference": {
@@ -3515,7 +3515,7 @@
       },
       "pack": "content-mapper-vue-generic-11051",
       "case": "invalid-value-control",
-      "test": "content_mapper_vue_generic_preserves_explicit_type_arguments",
+      "test": "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
       "regressionCommit": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
       "sourceRevision": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
       "packReference": {

@@ -1,7 +1,8 @@
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
-  "aria-kebab-prop-11048": "declared_kebab_aria_props_preserve_batch_diagnostics",
+  "aria-kebab-prop-11048":
+    "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -53,7 +54,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-unknown-options-10218":
     "content_mapper_unknown_options_preserve_requested_diagnostics",
   "content-mapper-vue-generic-11051":
-    "content_mapper_vue_generic_preserves_explicit_type_arguments",
+    "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
   "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
