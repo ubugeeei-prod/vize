@@ -128,9 +128,16 @@ jobs:
         if: ${{ always() && steps.public_before.outcome == 'success' }}
         run: |
           vp node tests/tooling/support/nuxt-render-foundation-parity.ts --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-foundation-parity.json"
+      - name: Select a supported Node host after preserving the original research packets
+        id: nuxt_node
+        if: ${{ always() && steps.public_before.outcome == 'success' }}
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.22.1"
+          package-manager-cache: false
       - name: Install the genuine pinned Nuxt runtime and unsupported-version control once
         id: nuxt_runtime
-        if: ${{ always() && steps.public_before.outcome == 'success' }}
+        if: ${{ always() && steps.public_before.outcome == 'success' && steps.nuxt_node.outcome == 'success' }}
         run: |
           mkdir -p "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime"
           npm view --registry=https://registry.npmjs.org nuxt@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/nuxt-registry.json"
@@ -146,7 +153,7 @@ jobs:
         env:
           VIZE_NUXT_SCOPE_AUTHORED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          vp node --experimental-import-meta-resolve tests/tooling/support/nuxt-render-scope-acceptance.ts --runtime "$RUNNER_TEMP/nuxt-runtime-10919" --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-scope"
+          node --experimental-import-meta-resolve tests/tooling/support/nuxt-render-scope-acceptance.ts --runtime "$RUNNER_TEMP/nuxt-runtime-10919" --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-scope"
       - name: Preserve all original producer inputs, processes and output packets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

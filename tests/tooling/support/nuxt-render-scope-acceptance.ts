@@ -58,11 +58,17 @@ const output = option("--output");
 const beforeBytes = fs.readFileSync(beforeFile);
 const before = JSON.parse(beforeBytes.toString("utf8")) as {
   qualified: false;
+  node: string;
   failures: unknown[];
   provenance: unknown;
   cases: { on: ProcessPacket }[];
 };
 assert.equal(before.qualified, false);
+assert.equal(before.node, "v24.14.0", "The original research host remains frozen");
+assert.equal(
+  sha256(beforeBytes),
+  "17c31bc94405545edd82c45c2799cc25206c92a9f25d4314bbf369e3806e5d43",
+);
 assert.deepEqual(before.failures, []);
 assert.equal(before.cases.length, 13);
 const publicCli = before.cases[0].on.command;
@@ -87,6 +93,13 @@ const corpus = JSON.parse(corpusBytes.toString("utf8")) as {
 fs.mkdirSync(output, { recursive: true });
 const runtimePackages = observeRuntime(runtime);
 requireSupported(runtimePackages);
+const nuxtEngineRange = "^22.22.3 || ^24.15.0 || >=26.0.0";
+assert.deepEqual(runtimePackages[0].body.engines, { node: nuxtEngineRange });
+assert.equal(
+  process.version,
+  "v24.22.1",
+  "The actual Nuxt host must satisfy its published Node engine",
+);
 const unsupportedKit = fs.realpathSync(path.join(runtime, "node_modules/nuxt-kit-unsupported"));
 const unsupportedManifest = JSON.parse(
   fs.readFileSync(path.join(unsupportedKit, "package.json"), "utf8"),
@@ -119,6 +132,13 @@ const report = {
   platform: process.platform,
   runtime: {
     packages: runtimePackages,
+    host: {
+      node: process.version,
+      executable: process.execPath,
+      nuxtEngineRange,
+      supported: true,
+      baselineSdkInvocation: { node: process.execPath, cli: publicCli },
+    },
     lockSha256: sha256(installLock),
     registryAuthority,
     unsupportedKit: unsupportedManifest,
@@ -259,14 +279,16 @@ for (const spec of specs) {
     const plainOff = ["lint", "-f", "plain", "--no-config", ...patterns];
     const sourceProfilePath = path.join(output, spec.id + ".profile.json");
     const beforeProfilePath = path.join(output, spec.id + ".before-profile.json");
+    const publicProcess = (args: string[]): ProcessPacket =>
+      run(process.execPath, [publicCli, ...args], cwd, env);
     // Capture every subprocess and whole doctor packet before evaluating the oracle.
-    row.processes.beforeOn = run(publicCli, [...on, "--profile-json", beforeProfilePath], cwd, env);
+    row.processes.beforeOn = publicProcess([...on, "--profile-json", beforeProfilePath]);
     row.processes.sourceOn = run(sourceCli, [...on, "--profile-json", sourceProfilePath], cwd, env);
-    row.processes.beforeOff = run(publicCli, off, cwd, env);
+    row.processes.beforeOff = publicProcess(off);
     row.processes.sourceOff = run(sourceCli, off, cwd, env);
-    row.processes.beforePlain = run(publicCli, plain, cwd, env);
+    row.processes.beforePlain = publicProcess(plain);
     row.processes.sourcePlain = run(sourceCli, plain, cwd, env);
-    if (spec.exclusive) row.processes.beforePlainOff = run(publicCli, plainOff, cwd, env);
+    if (spec.exclusive) row.processes.beforePlainOff = publicProcess(plainOff);
     if (spec.exclusive)
       row.processes.genuineNuxtConfig = run(
         process.execPath,
@@ -292,7 +314,7 @@ for (const spec of specs) {
         env,
       );
     const doctor = ["doctor", "src", "--format", "json", "--exit-zero"];
-    row.processes.beforeDoctor = run(publicCli, doctor, cwd, env);
+    row.processes.beforeDoctor = publicProcess(doctor);
     row.processes.sourceDoctor = run(sourceCli, doctor, cwd, env);
     row.after = row.inputs.map((input) => ({
       path: input.path,
