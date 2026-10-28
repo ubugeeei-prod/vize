@@ -7,6 +7,7 @@ import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { run, save, identify, hash } from "./canon-instance-directives-io.ts";
 import { isRecord, jsonValue, packet } from "./canon-instance-directives-model.ts";
+import { boundaryCases } from "./canon-slot-framework-boundaries.ts";
 import { sourceCandidateColumn } from "./canon-slot-framework-candidate.ts";
 type Case = { id: string; component: string; source: string; requiresAuthoredError: boolean };
 function cases(value: unknown): value is Case[] {
@@ -97,6 +98,7 @@ async function main() {
       });
     }
   }
+  rows.push(...boundaryCases(zero));
   const project = path.join(out, "project");
   fs.mkdirSync(project);
   fs.symlinkSync(path.join(provider, "node_modules"), path.join(project, "node_modules"), "dir");

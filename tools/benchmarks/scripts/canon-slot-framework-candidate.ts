@@ -5,6 +5,7 @@ import path from "node:path";
 import { identify, run, save, wrapperSource } from "./canon-instance-directives-io.ts";
 import { isRecord, jsonValue, packet, type Diagnostic } from "./canon-instance-directives-model.ts";
 import { sdk, native, type Row } from "./canon-slot-constructor-audit.ts";
+import { boundaryEvidence } from "./canon-slot-framework-boundaries.ts";
 type Case = { id: string; component: string; source: string; requiresAuthoredError: boolean };
 type Located = { file: string; line: number; column: number; code: number | null };
 const key = (row: Located) => JSON.stringify([row.file, row.line, row.column, row.code]);
@@ -137,12 +138,14 @@ export function sourceCandidateColumn(
       }
       if (missing.length) missingAuthored.push({ id: row.id, mode: route.mode, missing });
     }
+  const boundaries = boundaryEvidence(originalProject, provider, out, rows);
   const report = {
     sourceImage,
     nativeImage,
     sourceSdkManifest: manifest,
     inputs,
     byCase,
+    boundaries,
     missingAuthored,
     timingUsable: false,
     releaseQualified: false,
