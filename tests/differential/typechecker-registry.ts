@@ -14,6 +14,8 @@ export const TYPECHECKER_TESTS = {
   "component-listener-prop-duplicate-10397": "required_prop_reports_once_with_or_without_listener",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-tag-aliases-11020": "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
+  "unknown-component-slot-payload-11027":
+    "unknown_component_slots_preserve_authored_type_diagnostics",
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
@@ -224,6 +226,7 @@ export const sourceRevisions = {
   "undeclared-instance-globals-10617": "42ca747027a86da7f94b473cff737cb330134d8c",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "unicode-reserved-props": originalFixtureRevision,
+  "unknown-component-slot-payload-11027": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
   "v-for-component-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "v-for-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
