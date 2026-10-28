@@ -46,6 +46,7 @@ await test(
       "public baseline cannot load a source override",
     );
     mkdirSync(proof, { recursive: true });
+    mkdirSync(join(proof, "packets"), { recursive: true });
     const fromUi = createRequire(new URL("../../npm/ui/package.json", import.meta.url));
     const { Window } = await import(fromUi.resolve("happy-dom"));
     const window = new Window();
@@ -183,6 +184,7 @@ await test(
       18,
     );
     const rows: Row[] = [];
+    const packetFiles = new Map<string, string>();
     const persist = () => {
       const wholeArchive = JSON.stringify(rows, null, 2) + "\n";
       writeFileSync(join(proof, "whole-observations.json"), wholeArchive);
@@ -207,6 +209,31 @@ await test(
                 Object.entries(row.producers).map(([name, value]) => [
                   name,
                   {
+                    wholePacket: (() => {
+                      assert.match(row.id, /^[a-z0-9-]+$/);
+                      const file = `packets/${row.id}-${row.target}-${row.inlineTemplate}-${name}.json`;
+                      const raw =
+                        JSON.stringify(
+                          {
+                            id: row.id,
+                            source: row.source,
+                            target: row.target,
+                            inlineTemplate: row.inlineTemplate,
+                            options: row.options,
+                            authoredModules: row.authoredModules,
+                            packet: value.packet,
+                            resolvedWholeCode: value.resolvedWholeCode,
+                          },
+                          null,
+                          2,
+                        ) + "\n";
+                      const sha256 = createHash("sha256").update(raw).digest("hex");
+                      if (packetFiles.get(file) !== sha256) {
+                        writeFileSync(join(proof, file), raw);
+                        packetFiles.set(file, sha256);
+                      }
+                      return { file, bytes: Buffer.byteLength(raw), sha256 };
+                    })(),
                     packetSha256: createHash("sha256")
                       .update(JSON.stringify(value.packet))
                       .digest("hex"),
