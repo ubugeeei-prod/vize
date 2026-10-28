@@ -194,8 +194,16 @@ export default {
 /// hands TypeScript a distinct declaration to instantiate for each one, which
 /// defeats its instantiation cache — the effect measured in #3443 and bisected in
 /// #3460.
-const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] =
-    &["type __VizeIsUnion<", "type __VizeWidenTemplateRef<"];
+const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] = &[
+    "type __VizeIsUnion<",
+    "type __VizeWidenTemplateRef<",
+    "type __VizeSlotHostSlots<",
+    "type __VizeSlotPayload<",
+    "type __VizeEmitRequiredKeys<",
+    "type __EmitProps<",
+    "type __VizeShallowUnwrapRef<",
+    "type __VizeComponentNavigationProps<",
+];
 
 fn ref_sfc(binding: &str) -> vize_carton::String {
     vize_carton::cstr!(
@@ -212,7 +220,7 @@ const {binding} = ref('')
 }
 
 #[test]
-fn template_ref_widening_helpers_are_hoisted_once_per_program() {
+fn static_template_helpers_are_hoisted_once_per_program() {
     let case_dir = unique_case_dir("shared-helper-hoisting");
     let _ = fs::remove_dir_all(&case_dir);
     let src_dir = case_dir.join("src");

@@ -37,7 +37,8 @@ const MODERN_REF_UNWRAP_HELPER: &str =
 /// (#3443, #3460).
 const MODERN_HOISTED_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref<any> ? T['value'] : T : T;\n";
-const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
+const MODERN_EXPOSED_UNWRAP_HELPER: &str =
+    include_str!("../helpers/declarations/exposed-unwrap.d.ts.txt");
 const LEGACY_DEFINE_COMPONENT_HELPER: &str =
     include_str!("../helpers/declarations/vue2-define-component.d.ts.txt");
 pub(super) const LEGACY_COMPONENT_INSTANCE_HELPER: &str =
@@ -82,9 +83,15 @@ pub(super) fn ref_unwrap_helper_for_template(
     }
 }
 
-pub(super) fn exposed_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
+pub(super) fn exposed_unwrap_helper(
+    legacy_vue2: bool,
+    dialect: VueVersion,
+    hoist_shared_preamble: bool,
+) -> &'static str {
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         LEGACY_EXPOSED_UNWRAP_HELPER
+    } else if hoist_shared_preamble {
+        ""
     } else {
         MODERN_EXPOSED_UNWRAP_HELPER
     }

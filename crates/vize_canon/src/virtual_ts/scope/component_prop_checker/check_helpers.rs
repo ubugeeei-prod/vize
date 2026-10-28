@@ -6,6 +6,40 @@ use vize_croquis::croquis::ComponentUsage;
 use super::super::component_ref_props::append_ref_callback_helper;
 use super::is_inline_callback_prop;
 
+/// Emit only the policy aliases whose shape depends on project options. Every
+/// other component-check helper is ambient in batch projects, so TypeScript can
+/// reuse one declaration identity and its instantiation cache across all SFCs.
+fn append_hoisted_component_check_policy(
+    ts: &mut String,
+    check_unknown_props: bool,
+    check_unknown_fallthrough_props: bool,
+    strict_component_attrs: bool,
+) {
+    if check_unknown_props {
+        if strict_component_attrs {
+            ts.push_str(
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n",
+            );
+            ts.push_str(
+                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs;\n",
+            );
+        } else {
+            ts.push_str(if check_unknown_fallthrough_props {
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
+            } else {
+                "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
+            });
+            ts.push_str(
+                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;\n",
+            );
+        }
+    } else {
+        ts.push_str(
+            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
+        );
+    }
+}
+
 /// The shared type helpers every per-usage prop check resolves through, emitted
 /// once per template scope that has at least one checkable component usage.
 /// Keep this set small; the child's own props type carries the contract.
@@ -16,7 +50,17 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     check_unknown_fallthrough_props: bool,
     strict_component_attrs: bool,
     typed_fallthrough_values: bool,
+    hoist_shared_preamble: bool,
 ) {
+    if hoist_shared_preamble {
+        append_hoisted_component_check_policy(
+            ts,
+            check_unknown_props,
+            check_unknown_fallthrough_props,
+            strict_component_attrs,
+        );
+        return;
+    }
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
     if usages.iter().any(|(_, usage)| {
         usage

@@ -64,8 +64,8 @@ fn expected() -> (Value, Value) {
         members.extend(entries);
     }
     assert_eq!(members.len(), 86);
-    // Authenticate the original ordered reference unchanged, then retain the
-    // declared current source-owned helper postimage as separate provenance.
+    // Authenticate the original ordered reference unchanged, then retain each
+    // declared source-owned helper postimage as separate provenance.
     let update =
         fs::read(support::corpus().join("malformed-membership/helper-update-10423.json")).unwrap();
     assert_eq!(
@@ -86,6 +86,26 @@ fn expected() -> (Value, Value) {
     );
     *helper = update["after"].clone();
     manifest["provenance"]["currentHelperUpdate"] = update;
+    let helper_hoist =
+        fs::read(support::corpus().join("malformed-membership/helper-update-11049.json")).unwrap();
+    assert_eq!(
+        support::hash(&helper_hoist),
+        "c2a50f37b254efd6cd847e5079a5aaab7d0d24e00e37178c54320d4e82bc6e77"
+    );
+    let helper_hoist: Value = serde_json::from_slice(&helper_hoist).unwrap();
+    assert_eq!(helper_hoist["version"], 1);
+    assert_eq!(helper_hoist["pullRequest"], 11049);
+    assert_eq!(helper_hoist["entry"], 82);
+    assert_eq!(helper_hoist["deltaBytes"], 13_809);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, helper_hoist["before"]);
+    assert_eq!(helper_hoist["before"][0], helper_hoist["after"][0]);
+    assert_eq!(
+        helper_hoist["after"][1].as_u64().unwrap() - helper_hoist["before"][1].as_u64().unwrap(),
+        13_809
+    );
+    *helper = helper_hoist["after"].clone();
+    manifest["provenance"]["currentHelperHoistUpdate"] = helper_hoist;
     let context =
         fs::read(support::corpus().join("malformed-membership/context-update-10667.json")).unwrap();
     assert_eq!(

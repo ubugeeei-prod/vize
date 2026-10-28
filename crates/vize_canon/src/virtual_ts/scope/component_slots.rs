@@ -23,7 +23,14 @@ pub(super) struct ComponentSlotCheckMeta<'a, 'template> {
     pub(super) experimental_strict_slot_children: bool,
 }
 
-pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_children: bool) {
+pub(super) fn append_component_slot_check_helpers(
+    ts: &mut String,
+    strict_children: bool,
+    hoist_shared_preamble: bool,
+) {
+    if hoist_shared_preamble {
+        return;
+    }
     // `$slots` declarations in third-party component libraries frequently
     // describe callable slot names, not whether the parent must provide them.
     // Required-slot checks therefore trust only Vize's own explicit marker.

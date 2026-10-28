@@ -206,11 +206,11 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
                     message,
                 ));
             }
-            expected_raw.extend(known_hints(
+            expected_raw.extend(hoisted_helper_hints(
                 &app.content,
                 match case {
-                    "inferred-data-attribute" => PROP_HINTS,
-                    "empty-event" | "authored-tuple" | "authored-property" => EVENT_HINTS,
+                    "inferred-data-attribute" => PROP_HOISTED_HELPERS,
+                    "empty-event" | "authored-tuple" | "authored-property" => EVENT_HOISTED_HELPERS,
                     _ => panic!("unknown reference case"),
                 },
             ));
@@ -372,7 +372,7 @@ fn replay_prior_runtime_tuple_read(
         .iter()
         .flat_map(|(_, diagnostics)| diagnostics)
         .collect();
-    assert_eq!(diagnostics.len(), EVENT_HINTS.len() + 1, "{raw:#?}");
+    assert_eq!(diagnostics.len(), 1, "{raw:#?}");
     let diagnostic = diagnostics.first().unwrap();
     assert_eq!(diagnostic.code, Some(json!(2493)));
     assert_eq!(diagnostic.severity, Some(1));
@@ -402,37 +402,36 @@ fn replay_prior_runtime_tuple_read(
         1,
         "Tuple type '[]' of length '0' has no element at index '0'.",
     )];
-    expected.extend(known_hints(&replay, EVENT_HINTS));
+    expected.extend(hoisted_helper_hints(&replay, EVENT_HOISTED_HELPERS));
     assert_eq!(json!(raw), json!([[uri, expected]]));
 }
 
-// Exact suggestion vectors from the authenticated source qualification. These
-// are generated declarations, not arbitrary diagnostic-name exemptions.
-const EVENT_HINTS: &[&str] = &[
+// These helpers used to be emitted as local declarations and therefore
+// produced exact TS6196 suggestions in this fixture. Batch projects now own
+// them once in the ambient shared preamble, so the generated SFC must contain
+// neither the declarations nor their old unmapped suggestion vector.
+const EVENT_HOISTED_HELPERS: &[&str] = &[
     "__VizeHasRawProps",
     "__VizeFallthroughValue",
     "__VizeNavigationSlots",
     "__VizeEmitPropsFactory",
 ];
-const PROP_HINTS: &[&str] = &["__VizeHasRawProps", "__VizeNavigationSlots"];
+const PROP_HOISTED_HELPERS: &[&str] = &["__VizeHasRawProps", "__VizeNavigationSlots"];
 
-fn known_hints(generated: &str, names: &[&str]) -> Vec<Value> {
-    names
-        .iter()
-        .map(|name| {
-            let declaration = cstr!("type {name}<");
-            assert_eq!(generated.matches(declaration.as_str()).count(), 1);
-            let start = generated.find(declaration.as_str()).unwrap() + "type ".len();
-            native_diagnostic(
-                generated,
-                start,
-                start + name.len(),
-                6196,
-                4,
-                &cstr!("'{name}' is declared but never used."),
-            )
-        })
-        .collect()
+fn hoisted_helper_hints(generated: &str, names: &[&str]) -> Vec<Value> {
+    assert!(
+        generated.contains("Shared preamble hoisted to the program-wide __vize_helpers.d.ts"),
+        "batch output must declare its ambient helper ownership"
+    );
+    for name in names {
+        let declaration = cstr!("type {name}<");
+        assert_eq!(
+            generated.matches(declaration.as_str()).count(),
+            0,
+            "{name} must not be redeclared in a generated SFC"
+        );
+    }
+    Vec::new()
 }
 
 fn native_diagnostic(

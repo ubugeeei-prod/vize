@@ -90,7 +90,7 @@ pub(crate) const LEGACY_CONTENT_MAPPER_TYPE_HELPERS: &str =
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
 /// Vue's `EmitsToProps` keys handlers as `on${Capitalize<K>}` (`onScroll-top`);
 /// the camelized key is the spelling templates bind, so both are accepted.
-pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };\n";
+pub(crate) const EMIT_PROPS_HELPER: &str = include_str!("declarations/emit-props.d.ts.txt");
 
 pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
 
@@ -98,7 +98,13 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     include_str!("declarations/shared-header.d.ts.txt"),
     vue_type_helpers_text!(),
     include_str!("declarations/shared-template-refs.d.ts.txt"),
+    include_str!("declarations/slot-resolver.d.ts.txt"),
+    include_str!("declarations/slot-payload.d.ts.txt"),
     emit_overload_helpers_text!(),
+    include_str!("declarations/emit-props.d.ts.txt"),
+    include_str!("declarations/emit-inference.d.ts.txt"),
+    include_str!("declarations/exposed-unwrap.d.ts.txt"),
+    include_str!("declarations/component-checks.d.ts.txt"),
     include_str!("declarations/shared-macros.d.ts.txt"),
     include_str!("pattern_matching.d.ts")
 );

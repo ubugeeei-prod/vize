@@ -71,8 +71,13 @@ pub(super) fn generate_component_props(
         ctx.check_unknown_fallthrough_props,
         ctx.strict_component_attrs,
         ctx.typed_fallthrough_values,
+        ctx.hoist_shared_preamble,
     );
-    append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
+    append_component_slot_check_helpers(
+        ts,
+        ctx.experimental_strict_slot_children,
+        ctx.hoist_shared_preamble,
+    );
 
     let shared_contracts = shared_component_contracts(ctx, checkable_usages);
 

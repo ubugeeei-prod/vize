@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "pullRequest": 11049,
+  "sourceRevision": "088fd968c774e2a0c714d23013f315caa38021ca",
+  "testedMerge": "b567825917785b39f063e781ee573b392d4a2901",
+  "observedRun": 40669403522,
+  "observedJob": 122752327464,
+  "artifact": 12807981685,
+  "wholePacketSha256": "854d34e2ff119861bd10bf812e2213b7815685c76a15a0738a76ed0a931a52e5",
+  "entry": 82,
+  "before": [
+    "project/__vize_helpers.d.ts",
+    29481,
+    "625dc10265f167fdd02dc69c484b9b045abc468a29cde6b47f31f8ab30928615"
+  ],
+  "after": [
+    "project/__vize_helpers.d.ts",
+    43290,
+    "97b4acdb3a728284b5e027987053ddc2a26f86e106412234c14f0765931922ff"
+  ],
+  "deltaBytes": 13809,
+  "scope": "Declared current generated helper body after hoisting static typecheck helpers once per project; the authenticated prior membership remains separate provenance.",
+  "proof": "The actual native run retained all 86 rooted members in order. The helper body is the only changed member relative to the authenticated prior roster; complete length and SHA256 comparison remains mandatory."
+}

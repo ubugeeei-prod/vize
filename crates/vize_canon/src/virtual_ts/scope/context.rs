@@ -105,6 +105,9 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
         Option<&'a crate::virtual_ts::generic_parameters::GenericParameters>,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
+    /// The batch project provides one ambient helper file for every generated
+    /// module. Standalone editor/content-mapper documents keep helpers local.
+    pub(crate) hoist_shared_preamble: bool,
     /// Names already declared by the conservative Options API setup-spread fallback.
     /// Instance-global generation shares the same template scope and must not redeclare them.
     pub(crate) setup_spread_bindings: &'a [String],
@@ -206,6 +209,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,
+    pub(super) hoist_shared_preamble: bool,
     pub(super) preserve_event_navigation: bool,
     pub(super) check_unknown_events: bool,
     pub(super) strict_v_model: bool,

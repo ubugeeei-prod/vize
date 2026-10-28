@@ -43,7 +43,7 @@ use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
 use self::component_public_types::{emit_exposed_type, emit_slots_type};
-use self::emits::{emit_emit_props_helper, emit_emits_type};
+use self::emits::emit_emits_type;
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api,
@@ -722,6 +722,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             generic_parameters,
                             check_options,
                             virtual_ts_options: options,
+                            hoist_shared_preamble,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
                             keyed_prop_bindings: &keyed_prop_bindings,
                             syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
@@ -829,9 +830,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
     let forwards = template_record.forwarded.emit_helpers(&mut ts);
-    let event_inference =
-        super::scope::emit_event_inference_helpers(&mut ts, summary, forwards, legacy_vue2);
-    emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
+    let emit_mode = (legacy_vue2, hoist_shared_preamble);
+    emits_info.emit(&mut ts, summary, forwards, emit_mode);
     let generic_component_params =
         setup_props_plan.generic_component_params(generic_parameters, authored_generic);
     let public_component_type = emit_component_constructors(
@@ -856,6 +856,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .map(|raw| if raw.trim().is_empty() { "" } else { raw }),
         legacy_vue2,
         dialect,
+        hoist_shared_preamble,
     );
     emit_default_export_declaration(
         &mut ts,
@@ -877,13 +878,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             check_options,
         ),
     );
-    let component_name_is_setup_binding = generation_options
-        .component_name
-        .is_some_and(|name| super::script_facts::contains_binding(summary, name));
-    component_export::emit_component_default_export(
+    component_export::emit_component_default_export_for_generation(
         &mut ts,
-        generation_options.component_name,
-        component_name_is_setup_binding,
+        summary,
+        generation_options,
         script_content,
     );
     binding_output::publish(
