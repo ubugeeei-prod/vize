@@ -54,6 +54,7 @@ pub(crate) fn check_pack(
             | "v-for-component-source-original"
             | "declared-prop-names-original"
             | "template-suppression-original"
+            | "template-ref-signatures-10948"
             | "native-pointer-events-original"
             | "cache-maintenance-9860"
             | "workspace-alias-cache-10063"

@@ -1,0 +1,70 @@
+name: TypeScript plugin packed consumer
+on:
+  pull_request:
+    paths:
+      - .github/workflows/typescript-plugin.yml
+      - npm/typescript-plugin/**
+      - npm/native/index.*
+      - npm/native/language-projection.*
+      - npm/native/package.json
+      - crates/vize_canon/**
+      - crates/vize_vitrine/src/napi/language_code.rs
+      - editors/vscode/package.json
+      - editors/vscode/.vscodeignore
+      - tests/typescript-plugin/**
+      - tests/tooling/vscode-typescript*
+      - tools/commands/editors/vscode/assert-vsix-package.rs
+      - tools/commands/editors/vscode/sync-typescript-plugin.rs
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: typescript-plugin-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  packed-consumer:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Retain the attempted source even if setup fails
+        run: |
+          mkdir -p "$RUNNER_TEMP/typescript-plugin"
+          git rev-parse HEAD > "$RUNNER_TEMP/typescript-plugin/attempted-source.txt"
+      - uses: ./.github/actions/setup-js-package-tests
+      - uses: ./.github/actions/setup-rust-script
+      - name: Exercise plugin boundaries and canonical staging
+        run: vp node --test npm/native/test/language-projection.test.cjs tests/typescript-plugin/mapped-language-service.test.cjs tests/typescript-plugin/project-configuration.test.cjs tests/typescript-plugin/package-options.test.cjs tests/typescript-plugin/host-boundaries.test.cjs tests/tooling/vscode-typescript-vue-plugin.test.ts tests/tooling/vscode-typescript-vue-plugin-types.test.ts tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts tests/tooling/vscode-typescript-plugin-staging.test.ts tests/tooling/vscode-vsix-policy.test.ts
+      - name: Build the exact-source native producer
+        run: vp run --filter './npm/native' build:ci
+      - name: Measure the installed package with real tsserver packets
+        env:
+          VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin
+        run: vp node tests/typescript-plugin/packed-consumer.mjs
+      - name: Measure the supported TypeScript 5 server
+        env:
+          VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT: "5.7.3"
+          VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin-5
+        run: vp node tests/typescript-plugin/packed-consumer.mjs
+      - name: Package the same canonical plugin in a production VSIX
+        env:
+          VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin
+        run: |
+          vp run --workspace-root package:vscode-extension
+          vp node tests/typescript-plugin/assert-vsix.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typescript-plugin-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/typescript-plugin
+            ${{ runner.temp }}/typescript-plugin-5
+            editors/vscode/dist/vize.vsix
+          if-no-files-found: error
+          retention-days: 7

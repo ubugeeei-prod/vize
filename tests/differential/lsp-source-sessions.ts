@@ -6,6 +6,10 @@ import { isDeepStrictEqual } from "node:util";
 import { readPinnedArtifact, sha256 } from "./harness.mjs";
 import { decodeFrames } from "./lsp-wire.ts";
 import type { FixtureData, LspRow } from "./lsp-types.ts";
+import {
+  NATIVE_CAPACITY_UNSUPPORTED_REASON,
+  type NativeCapacitySourceSession,
+} from "./lsp-native-capacity-contract.ts";
 
 export const LOCAL_RESOLVE_SESSION_ID = "lsp/source-session/local-completion-resolve-10592";
 export const LOCAL_RESOLVE_SESSION_DIRECTORY =
@@ -13,7 +17,7 @@ export const LOCAL_RESOLVE_SESSION_DIRECTORY =
 export const SOURCE_SESSION_UNSUPPORTED_REASON =
   "The initial-document adapter cannot execute this pinned multi-root configuration transition; the dedicated source executor supplies its own full wire and source custody.";
 
-export type LspSourceSession = {
+type LocalResolveSourceSession = {
   kind: "local-completion-resolve-v1";
   state: "source-inspected";
   executor: "tests/tooling/lsp-local-completion-resolve.test.ts";
@@ -26,12 +30,22 @@ export type LspSourceSession = {
   capabilities: "protocol/initialize-capabilities.json";
 };
 
-export function sourceSessionUnsupportedLegacy(): LspRow["legacy"] {
+export type LspSourceSession = LocalResolveSourceSession | NativeCapacitySourceSession;
+
+export function sourceSessionUnsupportedLegacy(session?: LspSourceSession): LspRow["legacy"] {
+  assert.ok(
+    session === undefined ||
+      session.kind === "local-completion-resolve-v1" ||
+      session.kind === "native-diagnostic-capacity-v1",
+  );
   return {
     state: "unsupported",
     verdict: "unsupported-transition",
     comparator: "source-inspected-session",
-    reason: SOURCE_SESSION_UNSUPPORTED_REASON,
+    reason:
+      session?.kind === "native-diagnostic-capacity-v1"
+        ? NATIVE_CAPACITY_UNSUPPORTED_REASON
+        : SOURCE_SESSION_UNSUPPORTED_REASON,
   };
 }
 
@@ -167,19 +181,21 @@ export function validateLocalResolveSourceSession(
     folders.map(({ name }) => name),
     spec.workspaceFolders,
   );
+  const firstFolder = folders[0];
+  assert.ok(firstFolder);
   const opened = client.filter((entry) => entry.method === "textDocument/didOpen");
   assert.equal(opened.length, 2);
   for (const [index, packet] of opened.entries()) {
-    const relative = spec.documentPaths[index].slice(2);
+    const documentPath: string | undefined = spec.documentPaths[index];
+    const folder: { uri: string; name: string } | undefined = folders[index];
+    assert.ok(documentPath && folder);
+    const relative = documentPath.slice(2);
     assert.deepEqual(packet.params, {
       textDocument: {
-        uri: new URL(
-          relative.split("/").map(encodeURIComponent).join("/"),
-          `${folders[index].uri}/`,
-        ).href,
+        uri: new URL(relative.split("/").map(encodeURIComponent).join("/"), `${folder.uri}/`).href,
         languageId: "vue",
         version: 1,
-        text: read(spec.documentPaths[index]).toString("utf8"),
+        text: read(documentPath).toString("utf8"),
       },
     });
   }
@@ -188,7 +204,7 @@ export function validateLocalResolveSourceSession(
     {
       changes: [
         {
-          uri: new URL("vite.config.mjs", `${folders[0].uri}/`).href,
+          uri: new URL("vite.config.mjs", `${firstFolder.uri}/`).href,
           type: spec.transition.eventType,
         },
       ],

@@ -140,7 +140,7 @@ export function referenceReport(
       if (fixture.data.sourceSession)
         return {
           id: fixture.id,
-          legacy: sourceSessionUnsupportedLegacy(),
+          legacy: sourceSessionUnsupportedLegacy(fixture.data.sourceSession),
           native: { state: "unsupported", reason: NATIVE_REASON },
           comparison: { state: "not-compared", reason: NATIVE_REASON },
         };

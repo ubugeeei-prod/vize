@@ -9,6 +9,7 @@ fn custom_dirs() -> NuxtRenderDirs {
         pages: PathBuf::from("src/nuxt/pages"),
         layouts: PathBuf::from("src/nuxt/layouts"),
         pages_enabled: true,
+        static_render_config: false,
     }
 }
 

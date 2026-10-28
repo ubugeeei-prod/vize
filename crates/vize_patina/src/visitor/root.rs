@@ -58,7 +58,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// context up-front. Directive kinds that emit diagnostics (Todo, Fixme,
     /// Deprecated) are intentionally NOT processed here; they rely on the
     /// existing ordering that runs during the main traversal.
-    fn prescan_suppression_directives(&mut self, root: &RootNode<'a>) {
+    pub(crate) fn prescan_suppression_directives(&mut self, root: &RootNode<'a>) {
         let mut forget_next_child = false;
         self.prescan_suppression_in_children(&root.children, &mut forget_next_child);
     }

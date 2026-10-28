@@ -489,6 +489,42 @@
       }
     },
     {
+      "id": "linter/cross-file-directives-10912",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "cross-file-directives-10912",
+        "files": [
+          {
+            "path": "original/src/Editor.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "240acdb1362ed71863cce0d4aad9800a55ffdfe9e19413433aa183a93a113a01"
+          },
+          {
+            "path": "original/src/PageA.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "9daff2c17a056a03f85325b83ba04fcf4af33d22e62d8e42a7633e3c9969c6b2"
+          },
+          {
+            "path": "original/src/PageB.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "96b829042c822870854281d11e3438786fbb715f452a1d5d5f7a2451f5fc71a1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/attribute-hyphenation-aria-data-camel-props",
       "state": "active",
       "targets": ["lint"],

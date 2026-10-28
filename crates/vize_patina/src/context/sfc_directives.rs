@@ -152,6 +152,32 @@ impl SfcDirectiveState {
         Some(state)
     }
 
+    /// Named project rules share the lexical admission used for normal SFC diagnostics.
+    pub(super) fn unused_named(
+        &self,
+        is_active: impl Fn(&str) -> bool,
+    ) -> Vec<super::eslint_directive::UnusedDirective> {
+        let mut unused = Vec::new();
+        for block in &self.blocks {
+            block.inline_suppressions.import_usage(&block.file_regions);
+            unused.extend(
+                block
+                    .inline_suppressions
+                    .unused(&is_active)
+                    .into_iter()
+                    .filter(|directive| directive.rule.is_some()),
+            );
+        }
+        if let Some(root) = &self.root {
+            unused.extend(
+                root.unused(&is_active)
+                    .into_iter()
+                    .filter(|directive| directive.rule.is_some()),
+            );
+        }
+        unused
+    }
+
     pub(super) fn offset_to_line(&self, offset: u32) -> u32 {
         match self.line_offsets.binary_search(&offset) {
             Ok(line) => (line + 1) as u32,
@@ -210,7 +236,12 @@ impl BlockDirectiveState {
                 .strip_suffix('\n')
                 .map_or(raw_line, |line| line.strip_suffix('\r').unwrap_or(line));
             let markers = scan_line(line, source.get(offset..).unwrap_or_default());
-            self.scan_eslint_directive(line, line_number, markers.eslint);
+            self.scan_eslint_directive(
+                line,
+                line_number,
+                self.start + offset as u32,
+                markers.eslint,
+            );
             self.scan_vize_directive(line, line_number, markers.vize);
             offset += raw_line.len();
         }
@@ -231,13 +262,25 @@ impl BlockDirectiveState {
         self.file_regions.is_disabled_at(rule_name, u32::MAX)
     }
 
-    fn scan_eslint_directive(&mut self, line: &str, line_number: u32, index: Option<usize>) {
+    fn scan_eslint_directive(
+        &mut self,
+        line: &str,
+        line_number: u32,
+        line_start: u32,
+        index: Option<usize>,
+    ) {
         let Some(index) = index else {
             return;
         };
         let Some(directive) = line.get(index..).and_then(parse_eslint_disable_comment) else {
             return;
         };
+        let text = line.get(index..).unwrap_or_default();
+        let text = text.split_once("*/").map_or(text, |(comment, _)| comment);
+        let marker = Some((
+            line_start + index as u32,
+            line_start + index as u32 + text.trim_end().len() as u32,
+        ));
         // ESLint accepts region pragmas only in block comments; in a line
         // comment they are not directives and must not reach the template.
         let before = line.get(..index).unwrap_or_default();
@@ -256,9 +299,10 @@ impl BlockDirectiveState {
                 kind: directive.kind,
                 rules: directive.rules.clone(),
             };
-            self.file_regions.record(region, line_number);
+            self.file_regions.record_at(region, line_number, marker);
         }
-        self.inline_suppressions.record(directive, line_number);
+        self.inline_suppressions
+            .record_at(directive, line_number, marker);
     }
 
     fn scan_vize_directive(&mut self, line: &str, line_number: u32, index: Option<usize>) {

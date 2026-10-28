@@ -1,0 +1,45 @@
+name: Workspace route identity admission
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/workspace-route-identity.yml
+      - tools/benchmarks/scripts/workspace-route-identity-admission.ts
+      - crates/vize_canon/src/batch/virtual_project/project/package_routes.rs
+      - crates/vize_canon/src/batch/virtual_project/project/package_routes/identity/**
+permissions: { contents: read }
+concurrency:
+  group: workspace-route-identity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  laws:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env: { CARGO_BUILD_JOBS: "4", RAYON_NUM_THREADS: "4" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build one fresh Canon test image and run eight exact source laws
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/workspace-route-identity-admission.ts --source-root "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/workspace-identity"
+      - name: Package source and test receipts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/workspace-identity"
+          tar --exclude=cargo-target -czf "$RUNNER_TEMP/workspace-identity.tgz" -C "$RUNNER_TEMP" workspace-identity
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: workspace-route-identity-${{ github.sha }}
+          path: ${{ runner.temp }}/workspace-identity.tgz
+          retention-days: 14

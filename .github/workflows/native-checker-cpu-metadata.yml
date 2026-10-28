@@ -1,0 +1,91 @@
+name: Native checker CPU attribution
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/native-checker-cpu-metadata.yml
+      - tools/benchmarks/scripts/native-checker-cpu-*.ts
+      - tests/tooling/native-checker-cpu-metadata.test.ts
+  workflow_dispatch:
+    inputs:
+      capture_run_id: { type: string, default: "40526358411" }
+      capture_artifact_id: { type: string, default: "12745086928" }
+permissions: { contents: read, actions: read }
+concurrency:
+  group: native-checker-cpu-metadata-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  identity-controls:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - run: node --test tests/tooling/native-checker-cpu-metadata.test.ts
+  metadata:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: identity-controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c
+        with: { go-version: "1.27.2", cache: false }
+      - name: Install offline tools and the fixed public SDK image
+        env:
+          CAPTURE_RUN: ${{ inputs.capture_run_id }}
+          CAPTURE_ARTIFACT: ${{ inputs.capture_artifact_id }}
+        run: |
+          set -euo pipefail
+          [[ "$CAPTURE_RUN" =~ ^[0-9]+$ && "$CAPTURE_ARTIFACT" =~ ^[0-9]+$ ]]
+          sudo apt-get update -qq
+          sudo apt-get install -y linux-tools-generic binutils
+          shopt -s nullglob
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then
+              echo "NATIVE_PERF=$candidate" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+          provider="$RUNNER_TEMP/checker-sdk"
+          mkdir "$provider"
+          node -e 'process.stdout.write(JSON.stringify({private:true,dependencies:{"@typescript/typescript-linux-x64":"7.1.0-beta"}}))' > "$provider/package.json"
+          npm install --prefix "$provider" --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ inputs.capture_artifact_id }}
+          run-id: ${{ inputs.capture_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/checker-capture
+      - name: Resolve recorded checker CPU through the byte-matched SDK
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find "$RUNNER_TEMP/checker-capture" -type f -name '*.tgz')
+          [[ "${#archives[@]}" == 1 ]]
+          restore=/home/runner/_work/_temp
+          [[ ! -e "$restore/cold-scale" ]]
+          mkdir -p "$restore"
+          tar -xzf "${archives[0]}" -C "$restore" \
+            cold-scale/record-head/direct-process/perf.data \
+            cold-scale/record-head/direct-process/receipt.json \
+            cold-scale/binaries/normal-head/vize \
+            cold-scale/builds/normal-head.json
+          node tools/benchmarks/scripts/native-checker-cpu-metadata.ts \
+            --root "$restore/cold-scale" --out "$RUNNER_TEMP/checker-metadata" \
+            --provider "$RUNNER_TEMP/checker-sdk" --perf "$NATIVE_PERF" --go "$(command -v go)"
+      - name: Preserve SDK build IDs, verified PC conversion, and function self samples
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-checker-metadata-${{ github.run_id }}
+          path: ${{ runner.temp }}/checker-metadata
+          if-no-files-found: warn
+          retention-days: 14

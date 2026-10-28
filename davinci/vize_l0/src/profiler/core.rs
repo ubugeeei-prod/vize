@@ -34,9 +34,23 @@ struct ProfileFrame {
 
 /// RAII guard for nested global profiling spans.
 #[derive(Debug)]
+#[cfg_attr(
+    feature = "micro-profiling",
+    doc = r#"
+Profiling allocation scopes must stay on their source thread.
+
+```compile_fail
+use vize_l0::profiler::ProfileGuard;
+fn require_send<T: Send>() {}
+require_send::<ProfileGuard>();
+```
+"#
+)]
 pub struct ProfileGuard {
     profiler: &'static Profiler,
     active: bool,
+    #[cfg(feature = "micro-profiling")]
+    _same_thread: std::marker::PhantomData<std::rc::Rc<()>>,
 }
 
 impl ProfileGuard {
@@ -63,6 +77,8 @@ impl ProfileGuard {
         Self {
             profiler,
             active: true,
+            #[cfg(feature = "micro-profiling")]
+            _same_thread: std::marker::PhantomData,
         }
     }
 }

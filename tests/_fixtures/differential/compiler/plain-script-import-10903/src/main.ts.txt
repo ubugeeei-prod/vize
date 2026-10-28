@@ -1,0 +1,5 @@
+import { createApp } from "vue";
+import App from "./App.vue";
+
+(window as unknown as { pings: number }).pings = 0;
+createApp(App).mount("#app");

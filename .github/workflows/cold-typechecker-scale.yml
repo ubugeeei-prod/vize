@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   profile:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
       VIZE_BENCH_SFCS: ${{ inputs.sfcs || '2500' }}
