@@ -83,6 +83,19 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         if !self.state.reuse_failed_type_argument_subproblems {
             return parse(self);
         }
+        let Some(key) = self.begin_failed_speculative_subproblem(production) else {
+            return Dummy::dummy(self.allocator());
+        };
+        let value = parse(self);
+        self.finish_failed_speculative_subproblem(key);
+        value
+    }
+
+    // Share transaction code across AST result types and parse callbacks.
+    fn begin_failed_speculative_subproblem(
+        &mut self,
+        production: SpeculativeProduction,
+    ) -> Option<FailedSubproblemKey> {
         let key = FailedSubproblemKey {
             production,
             token: self.token,
@@ -104,9 +117,12 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
             {
                 self.state.subproblem_reuses += 1;
             }
-            return Dummy::dummy(self.allocator());
+            return None;
         }
-        let value = parse(self);
+        Some(key)
+    }
+
+    fn finish_failed_speculative_subproblem(&mut self, key: FailedSubproblemKey) {
         // Parser checkpoints deliberately retain some state (comments, module
         // records, cover grammar tables and deferred diagnostics). Never skip
         // a subproblem which wrote any of it. Monotonic revisions also detect
@@ -126,7 +142,6 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
                 },
             );
         }
-        value
     }
 }
 
