@@ -248,7 +248,7 @@ fn transform_with_diagnostic_ownership(
             (!authored.is_derived())
                 .then(|| {
                     let directives = with_generic_echoes(
-                        sfc_diagnostic_directives(content, &descriptor, &spans, &diagnostic_echoes),
+                        sfc_diagnostic_directives(content, &code, &descriptor, &spans, &diagnostic_echoes),
                         generic_copies.as_ref(),
                     );
                     with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
