@@ -24,7 +24,10 @@ export function createDualLspFixture(): DualLspFixture {
   const sourceV1 = fs.readFileSync(path.join(fixtureRoot, "sources/App.v1.vue.txt"), "utf8");
   const sourceV2 = fs.readFileSync(path.join(fixtureRoot, "sources/App.v2.vue.txt"), "utf8");
   fs.copyFileSync(path.join(fixtureRoot, "package.json"), path.join(workspaceDir, "package.json"));
-  fs.copyFileSync(path.join(fixtureRoot, "tsconfig.json"), path.join(workspaceDir, "tsconfig.json"));
+  fs.copyFileSync(
+    path.join(fixtureRoot, "tsconfig.json"),
+    path.join(workspaceDir, "tsconfig.json"),
+  );
   fs.mkdirSync(path.join(workspaceDir, "src"));
   const appPath = path.join(workspaceDir, "src/App.vue");
   fs.writeFileSync(appPath, sourceV1, "utf8");
@@ -60,7 +63,10 @@ export function offsetToPosition(source: string, offset: number): Position {
 }
 
 export function positionToOffset(source: string, position: Position): number {
-  assert.ok(position.line >= 0 && position.character >= 0, `invalid position ${JSON.stringify(position)}`);
+  assert.ok(
+    position.line >= 0 && position.character >= 0,
+    `invalid position ${JSON.stringify(position)}`,
+  );
   let offset = 0;
   for (let line = 0; line < position.line; line += 1) {
     const newline = source.indexOf("\n", offset);
@@ -69,7 +75,10 @@ export function positionToOffset(source: string, position: Position): number {
   }
   const result = offset + position.character;
   const lineEnd = source.indexOf("\n", offset);
-  assert.ok(result <= (lineEnd < 0 ? source.length : lineEnd), `character is outside line ${position.line}`);
+  assert.ok(
+    result <= (lineEnd < 0 ? source.length : lineEnd),
+    `character is outside line ${position.line}`,
+  );
   return result;
 }
 

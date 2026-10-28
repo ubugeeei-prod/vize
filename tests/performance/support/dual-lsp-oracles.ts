@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import fs from "node:fs";
 import { performance } from "node:perf_hooks";
 
-import { processTreeRss } from "./process-metrics.ts";
+import { processTreeRss, type ProcessRss } from "./process-metrics.ts";
 import type { DualLspProduct, ProductKind, ProductResponse } from "./dual-lsp-product.ts";
 import {
   compareRange,
@@ -54,7 +56,23 @@ export type OperationSample = {
 export type ProductRss = {
   totalKiB: number;
   processes: number;
-  roots: Array<{ rootPid: number; totalKiB: number; processes: number }>;
+  roots: Array<{
+    rootPid: number;
+    totalKiB: number;
+    processes: number;
+    members: LinuxProcessIdentity[];
+  }>;
+};
+
+export type LinuxProcessIdentity = {
+  role: "root" | "descendant";
+  pid: number;
+  parentPid: number;
+  birthTicks: string;
+  executable: string;
+  command: string[];
+  commandSha256: string;
+  sampledRssKiB: number;
 };
 
 const diagnosticMethod = "textDocument/publishDiagnostics";
@@ -72,7 +90,9 @@ type DiagnosticWaiter = {
 };
 
 function normalizeMessage(value: unknown): string {
-  return String(value ?? "").replace(/\s+/g, " ").trim();
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function asRange(value: unknown): Range {
@@ -134,14 +154,21 @@ function assertExactPublication(
   version: number,
 ): { reportedVersion: number | null } {
   const publication = params as DiagnosticPublication;
-  assert.equal(publicationFingerprint(params), expected, `diagnostic multiset is not exact: ${JSON.stringify(params)}`);
+  assert.equal(
+    publicationFingerprint(params),
+    expected,
+    `diagnostic multiset is not exact: ${JSON.stringify(params)}`,
+  );
   const diagnostics = publication.diagnostics as Diagnostic[];
   assert.equal(diagnostics[0]?.severity, 1, "TS2322 must remain an error");
   if (kind === "vize") {
     assert.equal(publication.version, version, "Vize must report the exact open-document version");
     return { reportedVersion: version };
   }
-  assert.ok(publication.version == null || publication.version === version, "Vue stack reported a stale version");
+  assert.ok(
+    publication.version == null || publication.version === version,
+    "Vue stack reported a stale version",
+  );
   return { reportedVersion: typeof publication.version === "number" ? publication.version : null };
 }
 
@@ -228,7 +255,11 @@ export async function qualifyDocumentRevisions(
   });
   const v1Fingerprint = v1.fingerprint;
   const v2Fingerprint = expectedDiagnostic(fixture.uri, fixture.sourceV2, 2);
-  assert.notEqual(v1Fingerprint, v2Fingerprint, "diagnostic revision fingerprints must be exclusive");
+  assert.notEqual(
+    v1Fingerprint,
+    v2Fingerprint,
+    "diagnostic revision fingerprints must be exclusive",
+  );
   const v2 = await qualifyRevision(product, fixture, fixture.sourceV2, 2, () => {
     product.change(fixture.uri, fixture.sourceV2, 2);
   });
@@ -237,7 +268,11 @@ export async function qualifyDocumentRevisions(
 
 function completionItems(result: unknown): Array<Record<string, unknown>> {
   if (Array.isArray(result)) return result;
-  if (result && typeof result === "object" && Array.isArray((result as { items?: unknown }).items)) {
+  if (
+    result &&
+    typeof result === "object" &&
+    Array.isArray((result as { items?: unknown }).items)
+  ) {
     return (result as { items: Array<Record<string, unknown>> }).items;
   }
   return [];
@@ -253,32 +288,34 @@ function hoverText(result: unknown): string {
 
 function hoverTextPart(value: unknown): string {
   if (typeof value === "string") return value;
-  if (value && typeof value === "object" && "value" in value) return String((value as { value: unknown }).value);
+  if (value && typeof value === "object" && "value" in value)
+    return String((value as { value: unknown }).value);
   return "";
 }
 
 type Location = { uri: string; range: Range };
 
-function locations(result: unknown): Location[] {
+export function authoredLocations(result: unknown): Location[] {
   const values = result == null ? [] : Array.isArray(result) ? result : [result];
   return values.map((value) => {
-    const item = value as {
-      uri?: string;
-      range?: Range;
-      targetUri?: string;
-      targetRange?: Range;
-      targetSelectionRange?: Range;
-    };
+    if (value == null || typeof value !== "object") {
+      throw new TypeError(`location must be an object: ${JSON.stringify(value)}`);
+    }
+    const item = value as Record<string, unknown>;
     const uri = item.targetUri ?? item.uri;
     const range = item.targetSelectionRange ?? item.targetRange ?? item.range;
-    assert.equal(typeof uri, "string", `location lacks an authored URI: ${JSON.stringify(value)}`);
+    if (typeof uri !== "string" || uri.length === 0) {
+      throw new TypeError(`location lacks an authored URI: ${JSON.stringify(value)}`);
+    }
     return { uri, range: asRange(range) };
   });
 }
 
 function dedupeLocations(values: Location[]): Location[] {
   const byKey = new Map(values.map((item) => [`${item.uri}:${rangeKey(item.range)}`, item]));
-  return [...byKey.values()].sort((left, right) => left.uri.localeCompare(right.uri) || compareRange(left.range, right.range));
+  return [...byKey.values()].sort(
+    (left, right) => left.uri.localeCompare(right.uri) || compareRange(left.range, right.range),
+  );
 }
 
 type TextEdit = { range: Range; newText: string };
@@ -291,7 +328,10 @@ function workspaceEdits(result: unknown, expectedUri: string): TextEdit[] {
   };
   const entries: Array<[string, TextEdit[]]> = Object.entries(edit.changes ?? {});
   for (const change of edit.documentChanges ?? []) {
-    assert.ok(change.textDocument?.uri && Array.isArray(change.edits), `unsupported workspace edit: ${JSON.stringify(change)}`);
+    assert.ok(
+      change.textDocument?.uri && Array.isArray(change.edits),
+      `unsupported workspace edit: ${JSON.stringify(change)}`,
+    );
     entries.push([change.textDocument.uri, change.edits]);
   }
   const resultEdits: TextEdit[] = [];
@@ -334,15 +374,71 @@ async function timed<T>(operation: () => Promise<T>): Promise<{ elapsedMs: numbe
 }
 
 function sampleRss(product: DualLspProduct): ProductRss {
+  assert.equal(process.platform, "linux", "dual-server process identity receipts require Linux");
   const roots = product.processIds.map((rootPid) => {
     const sample = processTreeRss(rootPid);
     assert.ok(sample, `process-tree RSS unavailable for root ${rootPid}`);
-    return { rootPid, totalKiB: sample.totalKiB, processes: sample.processes };
+    const members = sample.members.map((member) => linuxProcessIdentity(member, rootPid));
+    assert.equal(
+      members.length,
+      sample.processes,
+      `process-tree ${rootPid} identity count drifted`,
+    );
+    assert.equal(
+      members.filter((member) => member.role === "root").length,
+      1,
+      `process-tree ${rootPid} lost its root identity`,
+    );
+    return {
+      rootPid,
+      totalKiB: sample.totalKiB,
+      processes: sample.processes,
+      members,
+    };
   });
   return {
     totalKiB: roots.reduce((sum, item) => sum + item.totalKiB, 0),
     processes: roots.reduce((sum, item) => sum + item.processes, 0),
     roots,
+  };
+}
+
+function procIdentity(pid: number): { parentPid: number; birthTicks: string } {
+  const stat = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+  const fields = stat
+    .slice(stat.lastIndexOf(") ") + 2)
+    .trim()
+    .split(/\s+/u);
+  assert.match(fields[1], /^\d+$/u);
+  assert.match(fields[19], /^\d+$/u);
+  return { parentPid: Number(fields[1]), birthTicks: fields[19] };
+}
+
+export function linuxProcessIdentity(member: ProcessRss, rootPid: number): LinuxProcessIdentity {
+  const before = procIdentity(member.pid);
+  assert.equal(
+    before.parentPid,
+    member.parentPid,
+    `process ${member.pid} changed parent during RSS custody`,
+  );
+  const executable = fs.realpathSync(`/proc/${member.pid}/exe`);
+  const command = fs
+    .readFileSync(`/proc/${member.pid}/cmdline`)
+    .toString("utf8")
+    .split("\0")
+    .filter((entry) => entry !== "");
+  assert.ok(command.length > 0, `process ${member.pid} has no command identity`);
+  const after = procIdentity(member.pid);
+  assert.deepEqual(after, before, `process ${member.pid} identity changed during RSS custody`);
+  return {
+    role: member.pid === rootPid ? "root" : "descendant",
+    pid: member.pid,
+    parentPid: member.parentPid,
+    birthTicks: before.birthTicks,
+    executable,
+    command,
+    commandSha256: createHash("sha256").update(command.join("\0")).digest("hex"),
+    sampledRssKiB: member.rssKiB,
   };
 }
 
@@ -363,15 +459,33 @@ export async function runQualifiedOperationPacket(
     product.requestAll("textDocument/completion", { textDocument: { uri }, position }),
   );
   timingsMs.completion = completion.elapsedMs;
-  const completionLabels = new Set(flatten(completion.value).flatMap(completionItems).map((item) => String(item.label)));
-  assert.ok(completionLabels.has("message"), `completion omitted message: ${[...completionLabels].join(", ")}`);
-  assert.equal([...completionLabels].some((label) => label.startsWith("__VLS_")), false, "virtual names leaked");
+  const completionLabels = new Set(
+    flatten(completion.value)
+      .flatMap(completionItems)
+      .map((item) => String(item.label)),
+  );
+  assert.ok(
+    completionLabels.has("message"),
+    `completion omitted message: ${[...completionLabels].join(", ")}`,
+  );
+  assert.equal(
+    [...completionLabels].some((label) => label.startsWith("__VLS_")),
+    false,
+    "virtual names leaked",
+  );
 
-  const hover = await timed(() => product.requestAll("textDocument/hover", { textDocument: { uri }, position }));
+  const hover = await timed(() =>
+    product.requestAll("textDocument/hover", { textDocument: { uri }, position }),
+  );
   timingsMs.hover = hover.elapsedMs;
   const hovers = flatten(hover.value);
   assert.ok(hovers.length > 0, "hover was missing");
-  assert.ok(hovers.some((item) => /message/.test(hoverText(item)) && /string|Template binding/.test(hoverText(item))), JSON.stringify(hovers));
+  assert.ok(
+    hovers.some(
+      (item) => /message/.test(hoverText(item)) && /string|Template binding/.test(hoverText(item)),
+    ),
+    JSON.stringify(hovers),
+  );
   for (const item of hovers) {
     const range = (item as { range?: unknown }).range;
     if (range != null) assert.deepEqual(asRange(range), target, "hover escaped the authored token");
@@ -381,7 +495,9 @@ export async function runQualifiedOperationPacket(
     product.requestAll("textDocument/definition", { textDocument: { uri }, position }),
   );
   timingsMs.definition = definition.elapsedMs;
-  assert.deepEqual(dedupeLocations(flatten(definition.value).flatMap(locations)), [{ uri, range: declaration }]);
+  assert.deepEqual(dedupeLocations(flatten(definition.value).flatMap(authoredLocations)), [
+    { uri, range: declaration },
+  ]);
 
   const references = await timed(() =>
     product.requestAll("textDocument/references", {
@@ -392,7 +508,7 @@ export async function runQualifiedOperationPacket(
   );
   timingsMs.references = references.elapsedMs;
   assert.deepEqual(
-    dedupeLocations(flatten(references.value).flatMap(locations)),
+    dedupeLocations(flatten(references.value).flatMap(authoredLocations)),
     ranges.map((range) => ({ uri, range })),
   );
 
@@ -404,17 +520,27 @@ export async function runQualifiedOperationPacket(
     asRange((value as { range?: unknown }).range ?? value),
   );
   assert.ok(preparedRanges.length > 0, "prepareRename was missing");
-  assert.ok(preparedRanges.every((range) => rangeKey(range) === rangeKey(target)), JSON.stringify(preparedRanges));
+  assert.ok(
+    preparedRanges.every((range) => rangeKey(range) === rangeKey(target)),
+    JSON.stringify(preparedRanges),
+  );
 
   const rename = await timed(() =>
-    product.requestAll("textDocument/rename", { textDocument: { uri }, position, newName: "title" }),
+    product.requestAll("textDocument/rename", {
+      textDocument: { uri },
+      position,
+      newName: "title",
+    }),
   );
   timingsMs.rename = rename.elapsedMs;
   const edits = flatten(rename.value).flatMap((value) => workspaceEdits(value, uri));
-  const uniqueEdits = [...new Map(edits.map((edit) => [`${rangeKey(edit.range)}:${edit.newText}`, edit])).values()].sort(
-    (left, right) => compareRange(left.range, right.range),
+  const uniqueEdits = [
+    ...new Map(edits.map((edit) => [`${rangeKey(edit.range)}:${edit.newText}`, edit])).values(),
+  ].sort((left, right) => compareRange(left.range, right.range));
+  assert.deepEqual(
+    uniqueEdits.map((edit) => edit.range),
+    ranges,
   );
-  assert.deepEqual(uniqueEdits.map((edit) => edit.range), ranges);
   assert.ok(uniqueEdits.every((edit) => edit.newText === "title"));
   assert.equal(applyEdits(source, uniqueEdits), source.replaceAll(/\bmessage\b/g, "title"));
 

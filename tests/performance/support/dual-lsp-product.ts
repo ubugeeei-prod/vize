@@ -34,7 +34,9 @@ function resolveTools(): ResolvedTools {
   const require = createRequire(path.join(dualLspProviderRoot, "package.json"));
   const pluginRoot = path.dirname(require.resolve("@vue/typescript-plugin/package.json"));
   const vuePackageRoot = path.dirname(require.resolve("@vue/language-server/package.json"));
-  const tsLanguageServerRoot = path.dirname(require.resolve("typescript-language-server/package.json"));
+  const tsLanguageServerRoot = path.dirname(
+    require.resolve("typescript-language-server/package.json"),
+  );
   const typescriptRoot = path.dirname(require.resolve("typescript/package.json"));
   return {
     pluginRoot,
@@ -44,7 +46,10 @@ function resolveTools(): ResolvedTools {
   };
 }
 
-export function commonInitializeParams(workspaceDir: string, tsdk: string): Record<string, unknown> {
+export function commonInitializeParams(
+  workspaceDir: string,
+  tsdk: string,
+): Record<string, unknown> {
   const rootUri = pathToFileURL(workspaceDir).href;
   return {
     processId: process.pid,
@@ -90,7 +95,10 @@ function profiledNodeArgs(script: string, args: string[]): string[] {
 
 function vizeLaunch(workspaceDir: string): WireLaunch {
   const binary = process.env.VIZE_LSP_BIN;
-  assert.ok(binary && path.isAbsolute(binary), "VIZE_LSP_BIN must be an absolute source-built binary");
+  assert.ok(
+    binary && path.isAbsolute(binary),
+    "VIZE_LSP_BIN must be an absolute source-built binary",
+  );
   const args = ["lsp"];
   const profileDir = process.env.LSP_DUAL_VIZE_PROFILE_DIR;
   if (profileDir) {
@@ -120,8 +128,12 @@ function vueLaunches(workspaceDir: string, tools: ResolvedTools): [WireLaunch, W
 
 function unwrapTuple(params: unknown): [number, string, unknown] {
   const outer = params as unknown[];
-  const tuple = Array.isArray(outer) && outer.length === 1 && Array.isArray(outer[0]) ? outer[0] : outer;
-  assert.ok(Array.isArray(tuple) && tuple.length >= 3, `invalid tsserver/request tuple: ${JSON.stringify(params)}`);
+  const tuple =
+    Array.isArray(outer) && outer.length === 1 && Array.isArray(outer[0]) ? outer[0] : outer;
+  assert.ok(
+    Array.isArray(tuple) && tuple.length >= 3,
+    `invalid tsserver/request tuple: ${JSON.stringify(params)}`,
+  );
   assert.equal(typeof tuple[0], "number");
   assert.equal(typeof tuple[1], "string");
   return [tuple[0] as number, tuple[1] as string, tuple[2]];
@@ -209,7 +221,11 @@ export class DualLspProduct {
     this.semantic?.notify("textDocument/didChange", params, false);
   }
 
-  async requestAll(method: string, params: unknown, timeoutMs = 60_000): Promise<ProductResponse[]> {
+  async requestAll(
+    method: string,
+    params: unknown,
+    timeoutMs = 60_000,
+  ): Promise<ProductResponse[]> {
     this.assertBridgeHealthy();
     assert.ok(this.primary.supports(method), `${this.kind} primary did not advertise ${method}`);
     const requests = [
@@ -300,7 +316,9 @@ export function dualLspToolReceipt(): Record<string, unknown> {
   const require = createRequire(path.join(dualLspProviderRoot, "package.json"));
   const tools = resolveTools();
   const packageVersion = (name: string) => {
-    const manifest = JSON.parse(fs.readFileSync(require.resolve(`${name}/package.json`), "utf8")) as {
+    const manifest = JSON.parse(
+      fs.readFileSync(require.resolve(`${name}/package.json`), "utf8"),
+    ) as {
       version: string;
     };
     return manifest.version;

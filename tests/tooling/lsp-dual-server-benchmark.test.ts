@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -10,28 +11,31 @@ import {
   wordRanges,
 } from "../performance/support/dual-lsp-fixture.ts";
 import {
+  authoredLocations,
   assertExactProductDiagnostics,
   diagnosticBarrierCount,
   diagnosticDeadlineMs,
   diagnosticQuietMs,
   expectedDiagnostic,
+  linuxProcessIdentity,
   waitForExpectedDiagnostic,
 } from "../performance/support/dual-lsp-oracles.ts";
 import {
   commonInitializeParams,
+  dualLspToolReceipt,
   productOrder,
   stableOperationTranscript,
 } from "../performance/support/dual-lsp-product.ts";
 import {
+  assertRevisionReceiptReachability,
   distribution,
+  summarizeScheduleReceipt,
   summarizeSamples,
 } from "../performance/support/dual-lsp-report.ts";
 import { supportsLspMethod } from "../performance/support/dual-lsp-wire.ts";
+import { processTreeRss } from "../performance/support/process-metrics.ts";
 
-const sourceRoot = path.join(
-  repoRoot,
-  "tests/_fixtures/performance/lsp-dual-server/sources",
-);
+const sourceRoot = path.join(repoRoot, "tests/_fixtures/performance/lsp-dual-server/sources");
 const sourceV1 = fs.readFileSync(path.join(sourceRoot, "App.v1.vue.txt"), "utf8");
 const sourceV2 = fs.readFileSync(path.join(sourceRoot, "App.v2.vue.txt"), "utf8");
 
@@ -39,6 +43,20 @@ test("ABBA scheduling reverses every adjacent product pair", () => {
   assert.deepEqual(productOrder(0), ["vize", "vue-language-tools"]);
   assert.deepEqual(productOrder(1), ["vue-language-tools", "vize"]);
   assert.deepEqual(productOrder(2), productOrder(0));
+  const receipt = summarizeScheduleReceipt(
+    Array.from({ length: 100 }, (_, sampleIndex) => ({
+      sampleIndex,
+      order: productOrder(sampleIndex),
+    })),
+  );
+  assert.equal(receipt.samples, 100);
+  assert.equal(receipt.vizeFirst, 50);
+  assert.equal(receipt.vueFirst, 50);
+  assert.match(String(receipt.sha256), /^[0-9a-f]{64}$/u);
+  assert.throws(
+    () => summarizeScheduleReceipt([{ sampleIndex: 0, order: ["vue-language-tools", "vize"] }]),
+    /must preserve the ABBA product order/u,
+  );
 });
 
 test("nearest-rank distributions retain p50, p95, and p99", () => {
@@ -62,6 +80,18 @@ test("fixture anchors use UTF-16 positions and exact authored reference sets", (
     start: { line: 5, character: 6 },
     end: { line: 5, character: 12 },
   });
+});
+
+test("definition and reference locations require an authored URI", () => {
+  const range = rangeForNeedle(sourceV2, "message");
+  assert.deepEqual(authoredLocations({ uri: "file:///workspace/src/App.vue", range }), [
+    { uri: "file:///workspace/src/App.vue", range },
+  ]);
+  assert.throws(() => authoredLocations({ range }), /location lacks an authored URI/u);
+  assert.throws(
+    () => authoredLocations({ targetUri: 42, targetSelectionRange: range }),
+    /location lacks an authored URI/u,
+  );
 });
 
 test("diagnostic revisions have mutually exclusive complete fingerprints", () => {
@@ -157,12 +187,8 @@ test("diagnostic admission covers both halves of the Vue product", () => {
     params: publication,
   };
   assert.equal(
-    assertExactProductDiagnostics(
-      "vue-language-tools",
-      [emptyPrimary, semanticExact],
-      expected,
-      2,
-    ).reportedVersion,
+    assertExactProductDiagnostics("vue-language-tools", [emptyPrimary, semanticExact], expected, 2)
+      .reportedVersion,
     null,
   );
   assert.throws(() =>
@@ -202,6 +228,7 @@ test("startup, diagnostics, and query packets remain separate distributions", ()
   const summary = summarizeSamples([
     {
       startupMs: 10,
+      revisionReceiptSha256: "a".repeat(64),
       diagnosticV1QualificationMs: 20,
       diagnosticV2QualificationMs: 30,
       totalMs: 40,
@@ -214,6 +241,46 @@ test("startup, diagnostics, and query packets remain separate distributions", ()
   assert.equal(summary.diagnosticV2QualificationMs.p50, 30);
   assert.equal(summary.totalMs.p50, 40);
 });
+
+test("all warm packets reach their shared unchanged-revision receipt", () => {
+  const receipt = "a".repeat(64);
+  const samples = Array.from({ length: 100 }, () => ({
+    revisionReceiptSha256: receipt,
+    totalMs: 1,
+    timingsMs: { hover: 1 },
+    rss: { totalKiB: 1, processes: 1, roots: [] },
+  }));
+  assert.deepEqual(assertRevisionReceiptReachability(samples, [receipt]), {
+    samples: 100,
+    availableReceipts: 1,
+    referencedReceipts: 1,
+  });
+  assert.throws(() =>
+    assertRevisionReceiptReachability(
+      [{ ...samples[0], revisionReceiptSha256: "b".repeat(64) }],
+      [receipt],
+    ),
+  );
+});
+
+test(
+  "Linux process-tree receipts bind birth, executable, command, and sampled RSS",
+  { skip: process.platform !== "linux" },
+  () => {
+    const tree = processTreeRss(process.pid);
+    assert.ok(tree);
+    const member = tree.members.find((entry) => entry.pid === process.pid);
+    assert.ok(member);
+    const identity = linuxProcessIdentity(member, process.pid);
+    assert.equal(identity.role, "root");
+    assert.equal(identity.pid, process.pid);
+    assert.match(identity.birthTicks, /^\d+$/u);
+    assert.ok(path.isAbsolute(identity.executable));
+    assert.ok(identity.command.length > 0);
+    assert.match(identity.commandSha256, /^[0-9a-f]{64}$/u);
+    assert.equal(identity.sampledRssKiB, member.rssKiB);
+  },
+);
 
 test("the isolated provider pins every process in the Vue stack", () => {
   const provider = path.join(sourceRoot, "../provider");
@@ -233,6 +300,12 @@ test("the isolated provider pins every process in the Vue stack", () => {
   ]) {
     assert.ok(lock.includes(receipt), `isolated lock omitted ${receipt}`);
   }
+  assert.match(createHash("sha256").update(lock).digest("hex"), /^[0-9a-f]{64}$/u);
+  const tools = dualLspToolReceipt();
+  assert.equal((tools.vueLanguageTools as { version: string }).version, "3.3.13");
+  assert.equal((tools.typescriptLanguageServer as { version: string }).version, "6.0.2");
+  assert.equal((tools.vueTypescriptPlugin as { version: string }).version, "3.3.13");
+  assert.equal((tools.typescript as { version: string }).version, "6.0.3");
 });
 
 test("prepareRename requires the explicit prepare capability", () => {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -15,10 +16,62 @@ export type Distribution = {
 };
 
 export type MeasuredSample = OperationSample & {
+  revisionReceiptSha256: string;
   startupMs?: number;
   diagnosticV1QualificationMs?: number;
   diagnosticV2QualificationMs?: number;
 };
+
+export type SampleOrderReceipt = {
+  sampleIndex: number;
+  order: readonly ProductKind[];
+};
+
+export function summarizeScheduleReceipt(
+  rows: readonly SampleOrderReceipt[],
+): Record<string, unknown> {
+  let vizeFirst = 0;
+  let vueFirst = 0;
+  rows.forEach((row, index) => {
+    assert.equal(row.sampleIndex, index, "schedule sample indices must be contiguous");
+    const expectedOrder: readonly ProductKind[] =
+      index % 2 === 0 ? ["vize", "vue-language-tools"] : ["vue-language-tools", "vize"];
+    assert.deepEqual(
+      row.order,
+      expectedOrder,
+      `sample ${index} must preserve the ABBA product order`,
+    );
+    if (row.order[0] === "vize") vizeFirst += 1;
+    else vueFirst += 1;
+  });
+  return {
+    samples: rows.length,
+    vizeFirst,
+    vueFirst,
+    rows,
+    sha256: createHash("sha256").update(JSON.stringify(rows)).digest("hex"),
+  };
+}
+
+export function assertRevisionReceiptReachability(
+  samples: readonly MeasuredSample[],
+  receiptIds: readonly string[],
+): Record<string, number> {
+  const available = new Set(receiptIds);
+  assert.ok(available.size > 0, "at least one revision receipt is required");
+  for (const [sampleIndex, sample] of samples.entries()) {
+    assert.match(sample.revisionReceiptSha256, /^[0-9a-f]{64}$/u);
+    assert.ok(
+      available.has(sample.revisionReceiptSha256),
+      `sample ${sampleIndex} cannot reach its revision receipt`,
+    );
+  }
+  return {
+    samples: samples.length,
+    availableReceipts: available.size,
+    referencedReceipts: new Set(samples.map((sample) => sample.revisionReceiptSha256)).size,
+  };
+}
 
 export function distribution(values: readonly number[]): Distribution {
   assert.ok(values.length > 0, "a distribution requires at least one sample");
@@ -60,13 +113,9 @@ export function summarizeDiagnostics(
   samples: ReadonlyArray<{ v1: DiagnosticEvidence; v2: DiagnosticEvidence }>,
 ): Record<string, Distribution> {
   return {
-    v1PublicationLatencyMs: distribution(
-      samples.map((sample) => sample.v1.publicationLatencyMs),
-    ),
+    v1PublicationLatencyMs: distribution(samples.map((sample) => sample.v1.publicationLatencyMs)),
     v1QualificationMs: distribution(samples.map((sample) => sample.v1.qualificationMs)),
-    v2PublicationLatencyMs: distribution(
-      samples.map((sample) => sample.v2.publicationLatencyMs),
-    ),
+    v2PublicationLatencyMs: distribution(samples.map((sample) => sample.v2.publicationLatencyMs)),
     v2QualificationMs: distribution(samples.map((sample) => sample.v2.qualificationMs)),
   };
 }

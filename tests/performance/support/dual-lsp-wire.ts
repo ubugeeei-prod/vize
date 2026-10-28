@@ -37,10 +37,7 @@ type NotificationObserver = (notification: WireNotification) => void | Promise<v
 const defaultTimeoutMs = 60_000;
 const stderrLimit = 64 * 1024;
 
-export function supportsLspMethod(
-  capabilities: Record<string, unknown>,
-  method: string,
-): boolean {
+export function supportsLspMethod(capabilities: Record<string, unknown>, method: string): boolean {
   const capability =
     method === "textDocument/completion"
       ? "completionProvider"
@@ -73,7 +70,12 @@ export class DualLspWire {
   private readonly child: ChildProcessWithoutNullStreams;
   private readonly pending = new Map<
     number,
-    { method: string; resolve: (value: unknown) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }
+    {
+      method: string;
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+      timer: NodeJS.Timeout;
+    }
   >();
   private readonly notifications: WireNotification[] = [];
   private readonly notificationObservers: NotificationObserver[] = [];
@@ -132,9 +134,9 @@ export class DualLspWire {
   }
 
   async initialize(params: unknown, track = true): Promise<unknown> {
-    const result = (await this.request("initialize", params, defaultTimeoutMs, track)) as
-      | { capabilities?: Record<string, unknown> }
-      | null;
+    const result = (await this.request("initialize", params, defaultTimeoutMs, track)) as {
+      capabilities?: Record<string, unknown>;
+    } | null;
     this.capabilities = result?.capabilities ?? {};
     this.notify("initialized", {}, track);
     return result;
@@ -155,7 +157,9 @@ export class DualLspWire {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`${this.launch.name} timed out waiting for ${method}\n${this.stderr}`.trim()));
+        reject(
+          new Error(`${this.launch.name} timed out waiting for ${method}\n${this.stderr}`.trim()),
+        );
       }, timeoutMs);
       this.pending.set(id, { method, resolve, reject, timer });
       this.send({ jsonrpc: "2.0", id, method, params });
@@ -190,7 +194,8 @@ export class DualLspWire {
         );
       }, timeoutMs);
       observer = (item) => {
-        if (item.sequence <= afterSequence || item.method !== method || !predicate(item.params)) return;
+        if (item.sequence <= afterSequence || item.method !== method || !predicate(item.params))
+          return;
         clearTimeout(timer);
         const index = this.notificationObservers.indexOf(observer);
         if (index >= 0) this.notificationObservers.splice(index, 1);
@@ -273,7 +278,8 @@ export class DualLspWire {
       if (headerEnd < 0) return;
       const header = this.buffer.subarray(0, headerEnd).toString("ascii");
       const match = /(?:^|\r\n)Content-Length:\s*(\d+)/i.exec(header);
-      if (!match) throw new Error(`${this.launch.name} emitted an LSP frame without Content-Length`);
+      if (!match)
+        throw new Error(`${this.launch.name} emitted an LSP frame without Content-Length`);
       const length = Number(match[1]);
       const bodyStart = headerEnd + 4;
       if (this.buffer.length < bodyStart + length) return;
@@ -284,13 +290,19 @@ export class DualLspWire {
   }
 
   private dispatch(message: JsonRpcMessage): void {
-    if (message.id != null && ("result" in message || message.error != null) && message.method == null) {
+    if (
+      message.id != null &&
+      ("result" in message || message.error != null) &&
+      message.method == null
+    ) {
       const pending = this.pending.get(message.id);
       if (!pending) return;
       clearTimeout(pending.timer);
       this.pending.delete(message.id);
       if (message.error) {
-        pending.reject(new Error(`${this.launch.name} ${pending.method}: ${JSON.stringify(message.error)}`));
+        pending.reject(
+          new Error(`${this.launch.name} ${pending.method}: ${JSON.stringify(message.error)}`),
+        );
       } else {
         pending.resolve(message.result);
       }
@@ -317,7 +329,8 @@ export class DualLspWire {
   private async answerServerRequest(message: JsonRpcMessage): Promise<void> {
     let result: unknown = null;
     if (message.method === "workspace/configuration") {
-      const items = (message.params as { items?: Array<{ section?: string }> } | undefined)?.items ?? [];
+      const items =
+        (message.params as { items?: Array<{ section?: string }> } | undefined)?.items ?? [];
       result = items.map((item) =>
         item.section === "formattingOptions" ? { insertSpaces: true, tabSize: 2 } : null,
       );
@@ -345,7 +358,10 @@ export class DualLspWire {
   private async waitForExit(timeoutMs: number): Promise<void> {
     if (this.child.exitCode != null || this.child.signalCode != null) return;
     await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error(`${this.launch.name} did not exit`)), timeoutMs);
+      const timer = setTimeout(
+        () => reject(new Error(`${this.launch.name} did not exit`)),
+        timeoutMs,
+      );
       this.child.once("exit", () => {
         clearTimeout(timer);
         resolve();
