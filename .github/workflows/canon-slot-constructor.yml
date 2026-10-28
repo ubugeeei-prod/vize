@@ -65,7 +65,7 @@ jobs:
           assert receipt['parents'][1]==receipt['prHead']
           (root/'head-build.json').write_text(json.dumps(receipt,indent=2))
           PY
-      - name: Validate tuple emission, snapshots and complete constructor packets
+      - name: Validate direct constructor emission, snapshots and complete constructor packets
         run: |
           set -euo pipefail
           export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
@@ -93,7 +93,7 @@ jobs:
           PY
           mkdir "$RUNNER_TEMP/slot-provider"
           cd "$RUNNER_TEMP/slot-provider"
-          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}));'
+          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.603.0","@vizejs/native":"0.603.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}));'
           npm install --ignore-scripts --no-audit --no-fund
           cp package.json package-lock.json "$RUNNER_TEMP/slot-evidence/"
       - name: Require the pinned batch diagnostic fixture through the native provider
@@ -117,7 +117,7 @@ jobs:
           receipt={'test':'zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics','passed':1,'failed':0,'ignored':0,'caseIds':case_ids,'packSha256':hashlib.sha256(pack).hexdigest(),'stdoutSha256':hashlib.sha256(stdout).hexdigest(),'stderrSha256':hashlib.sha256(stderr).hexdigest(),'nativeDisablePresent':False,'nativeRequired':True,'timingUsable':False}
           (root/'fix-history.json').write_text(json.dumps(receipt,indent=2)+'\n')
           PY
-      - name: Require exact native negative and repair admission
+      - name: Require exact native negative, real-project, and repair admission
         run: |
           set -euo pipefail
           node tools/benchmarks/scripts/canon-slot-constructor-repair.ts "$RUNNER_TEMP/slot-provider" "$RUNNER_TEMP/slot-base/target/ci/vize" "$RUNNER_TEMP/slot-head" "$RUNNER_TEMP/slot-evidence/native"

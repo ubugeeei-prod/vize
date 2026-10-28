@@ -1,4 +1,4 @@
-/** Exact mapper/CLI admission for slot-constructor argument tuples. This is not a speed benchmark. */
+/** Exact mapper/CLI admission for direct slot constructors and the reported real paths. */
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -10,11 +10,187 @@ import { packet, isRecord } from "./canon-instance-directives-model.ts";
 import {
   auditPackets,
   cliContract,
+  installedSdk,
   native,
   sdk,
   selectSdk,
   type Row,
 } from "./canon-slot-constructor-audit.ts";
+
+const realProjectFixture = path.resolve(
+  "tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/real-project",
+);
+const realProjectFiles = [
+  ["QSplitter.ts.txt", "src/components/QSplitter.ts"],
+  ["SongEditor.vue.txt", "src/components/Song/SongEditor.vue"],
+  ["ToolBar.vue.txt", "src/components/Song/ToolBar/ToolBar.vue"],
+  ["tsconfig.json.txt", "tsconfig.json"],
+] as const;
+
+function lines(source: string): number {
+  return source.split(/\r\n|[\r\n\u2028\u2029]/u).length;
+}
+
+function screenshotKey(row: Pick<Row, "file" | "code" | "message">): string {
+  return `${row.file}\u0000${row.code}\u0000${row.message}`;
+}
+
+function captureRealProject(
+  provider: string,
+  head: string,
+  checker: string,
+  output: string,
+) {
+  const root = path.join(output, "real-project"),
+    project = path.join(root, "project"),
+    inputs = path.join(root, "inputs");
+  fs.mkdirSync(project, { recursive: true });
+  const sourceLines = new Map<string, number>(),
+    inputIdentities: Record<string, ReturnType<typeof identify>> = {};
+  for (const [fixtureName, projectName] of realProjectFiles) {
+    const source = fs.readFileSync(path.join(realProjectFixture, fixtureName), "utf8"),
+      projectFile = path.join(project, projectName),
+      inputFile = path.join(inputs, projectName);
+    fs.mkdirSync(path.dirname(projectFile), { recursive: true });
+    fs.mkdirSync(path.dirname(inputFile), { recursive: true });
+    fs.writeFileSync(projectFile, source);
+    fs.writeFileSync(inputFile, source);
+    inputIdentities[projectName] = identify(inputFile);
+    if (projectName.endsWith(".vue")) sourceLines.set(projectName, lines(source));
+  }
+  const config: unknown = JSON.parse(fs.readFileSync(path.join(project, "tsconfig.json"), "utf8"));
+  assert.ok(isRecord(config));
+  save(path.join(project, "tsconfig.mapper.json"), {
+    ...config,
+    contentMappers: [{ package: "vize", extensions: [".vue"] }],
+  });
+  fs.copyFileSync(
+    path.join(project, "tsconfig.mapper.json"),
+    path.join(inputs, "tsconfig.mapper.json"),
+  );
+  inputIdentities["tsconfig.mapper.json"] = identify(path.join(inputs, "tsconfig.mapper.json"));
+  const provenanceFile = path.join(realProjectFixture, "screenshot-provenance.json"),
+    provenanceBytes = fs.readFileSync(provenanceFile),
+    provenance: unknown = JSON.parse(provenanceBytes.toString("utf8"));
+  fs.writeFileSync(path.join(inputs, "screenshot-provenance.json"), provenanceBytes);
+  inputIdentities["screenshot-provenance.json"] = identify(
+    path.join(inputs, "screenshot-provenance.json"),
+  );
+  assert.ok(isRecord(provenance) && Array.isArray(provenance.diagnostics));
+  const screenshotDiagnostics = provenance.diagnostics.map((value: unknown) => {
+    assert.ok(isRecord(value));
+    const { file, line, column, code, message, location } = value;
+    assert.ok(
+      typeof file === "string" &&
+        typeof line === "number" &&
+        typeof column === "number" &&
+        typeof code === "number" &&
+        typeof message === "string" &&
+        location === "virtual-only",
+    );
+    return { file, line, column, code, message, location };
+  });
+  assert.equal(provenance.kind, "user-supplied-v0.603.0-screenshot");
+  installedSdk(project, provider);
+  const packageFile = path.join(project, "node_modules/vize/package.json"),
+    publishedManifest: unknown = JSON.parse(fs.readFileSync(packageFile, "utf8"));
+  assert.ok(isRecord(publishedManifest));
+  assert.equal(publishedManifest.version, "0.603.0");
+  fs.copyFileSync(packageFile, path.join(inputs, "published-vize-package.json"));
+  const publishedPackageIdentity = identify(path.join(inputs, "published-vize-package.json"));
+  inputIdentities["published-vize-package.json"] = publishedPackageIdentity;
+  const args = [
+      "--runExternalCode",
+      "--checkers",
+      "1",
+      "--noEmit",
+      "--pretty",
+      "false",
+      "--project",
+      "tsconfig.mapper.json",
+    ],
+    execute = (role: string) => {
+      const destination = path.join(root, role),
+        env = {
+          ...process.env,
+          TMPDIR: path.join(destination, "tmp"),
+          XDG_CACHE_HOME: path.join(destination, "cache"),
+        };
+      fs.mkdirSync(env.TMPDIR, { recursive: true });
+      const result = run(destination, "mapper", checker, args, project, env);
+      return native(result.stdout, result.status, project);
+    },
+    baseline = execute("published-v0.603.0");
+  assert.ok(baseline.length > 0, "the published project must reproduce the screenshot failure");
+  for (const diagnostic of baseline) {
+    assert.equal(diagnostic.code, 2554);
+    assert.equal(diagnostic.message, "Expected 0 arguments, but got 1.");
+    const sourceLineCount = sourceLines.get(diagnostic.file);
+    assert.ok(sourceLineCount !== undefined, `unexpected diagnostic file ${diagnostic.file}`);
+    assert.ok(
+      diagnostic.line > sourceLineCount,
+      `published ${diagnostic.file} diagnostic must be virtual-only`,
+    );
+  }
+  const expectedScreenshotMultiset = screenshotDiagnostics
+      .map(screenshotKey)
+      .sort(),
+    observedScreenshotDiagnostics = [
+      ...new Map(
+        baseline.map((diagnostic) => [
+          screenshotKey(diagnostic),
+          {
+            file: diagnostic.file,
+            code: diagnostic.code,
+            message: diagnostic.message,
+          },
+        ]),
+      ).values(),
+    ].sort((left, right) => left.file.localeCompare(right.file)),
+    observedScreenshotMultiset = observedScreenshotDiagnostics.map(screenshotKey).sort();
+  assert.deepEqual(
+    observedScreenshotMultiset,
+    expectedScreenshotMultiset,
+    "the published Corsa surface must reproduce both exact screenshot paths and TS2554 messages",
+  );
+  selectSdk(project, head);
+  const repaired = execute("head");
+  assert.deepEqual(repaired, [], "the repaired real project must have no virtual-only diagnostics");
+  const receipt = {
+    id: "real-v0.603.0-qsplitter-screenshot",
+    passed: true,
+    timingUsable: false,
+    providerLock: identify(path.join(provider, "package-lock.json")),
+    publishedPackage: {
+      manifest: publishedPackageIdentity,
+      version: publishedManifest.version,
+    },
+    head: identify(head),
+    checker: identify(checker),
+    provenance,
+    inputs: inputIdentities,
+    sourceLines: Object.fromEntries(sourceLines),
+    published: {
+      rawDiagnostics: baseline,
+      exactScreenshotMultiset: observedScreenshotDiagnostics,
+      inferenceEchoMultiplicity: observedScreenshotDiagnostics.map((diagnostic) => ({
+        ...diagnostic,
+        count: baseline.filter((row) => screenshotKey(row) === screenshotKey(diagnostic)).length,
+      })),
+      virtualOnly: true,
+    },
+    repaired: {
+      rawDiagnostics: repaired,
+      exactTs2554Multiset: [],
+      virtualOnlyDiagnostics: [],
+    },
+    scope:
+      "real-path Corsa semantic oracle; published and head binaries differ; no timing comparison",
+  };
+  save(path.join(root, "acceptance.json"), receipt);
+  return receipt;
+}
+
 async function main() {
   const [providerArg, baseArg, headArg, outputArg] = process.argv.slice(2);
   assert.ok(providerArg && baseArg && headArg && outputArg);
@@ -242,9 +418,21 @@ async function main() {
       save(path.join(root, "failure.json"), failure);
     }
   }
+  let realProject: unknown = null;
+  try {
+    realProject = captureRealProject(provider, head, checker, output);
+  } catch (error) {
+    const failure = {
+      id: "real-v0.603.0-qsplitter-screenshot",
+      error: error instanceof Error ? (error.stack ?? error.message) : String(error),
+    };
+    failures.push(failure);
+    save(path.join(output, "real-project/failure.json"), failure);
+  }
   assert.deepEqual(identify(path.join(provider, "package-lock.json")), providerBefore);
   save(path.join(output, "acceptance.json"), {
     entries,
+    realProject,
     failures,
     passed: failures.length === 0,
     timingUsable: false,

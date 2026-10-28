@@ -171,7 +171,7 @@ export function native(stdout: Buffer, status: number | null, project: string): 
   return rows;
 }
 
-export function sdk(project: string, provider: string, binary: string) {
+function materializeSdk(project: string, provider: string, binary: string | null) {
   const modules = path.join(project, "node_modules");
   fs.mkdirSync(modules);
   for (const name of fs.readdirSync(path.join(provider, "node_modules")))
@@ -188,8 +188,17 @@ export function sdk(project: string, provider: string, binary: string) {
       isRecord(manifest.typescript) &&
       isRecord(manifest.typescript.contentMapper),
   );
-  manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
+  if (binary !== null) manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
   save(path.join(target, "package.json"), manifest);
+}
+
+export function sdk(project: string, provider: string, binary: string) {
+  materializeSdk(project, provider, binary);
+}
+
+/** Preserve the installed package's own content-mapper entrypoint for the public baseline. */
+export function installedSdk(project: string, provider: string) {
+  materializeSdk(project, provider, null);
 }
 
 export function selectSdk(project: string, binary: string) {
