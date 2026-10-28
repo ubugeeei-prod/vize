@@ -7,6 +7,7 @@ use crate::scope::{ScopeChain, ScopeId, ScopeKind};
 mod observe;
 mod resolution;
 pub(crate) use observe::{note_expression_mutation, note_loop_left};
+pub(crate) use resolution::component_binding_reference;
 
 use oxc_ast::ast::{
     BindingPattern, Expression, ImportDeclaration, ImportDeclarationSpecifier,
@@ -89,7 +90,6 @@ pub struct ValueBindingOrigins {
     key_names: FxHashMap<ValueBindingKey, CompactString>,
     canonical_keys: FxHashMap<ValueBindingKey, Option<ValueBindingKey>>,
     canonical_member_writes: FxHashSet<ValueBindingKey>,
-    component_names: FxHashMap<CompactString, Option<CompactString>>,
     writes: Vec<(ValueReference, bool)>,
     mutated: FxHashSet<ValueBindingKey>,
     member_mutated: FxHashSet<ValueBindingKey>,
@@ -370,19 +370,6 @@ impl ValueBindingOrigins {
         }
         if !self.refused {
             self.finalize_identities();
-        }
-        let names: Vec<_> = self
-            .root
-            .and_then(|root| self.declarations.get(&root))
-            .into_iter()
-            .flat_map(|table| table.keys().cloned())
-            .collect();
-        for name in names {
-            let normalized = CompactString::new(crate::naming::to_pascal_case(name.as_str()));
-            self.component_names
-                .entry(normalized)
-                .and_modify(|previous| *previous = None)
-                .or_insert(Some(name));
         }
     }
 

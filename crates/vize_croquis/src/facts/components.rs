@@ -220,18 +220,13 @@ pub fn local_component_binding<'a>(
 // Missing capture or another Program's root is not proof that a setup name
 // is absent. Reuse the existing declared inventory with bounded hash lookups.
 fn metadata_binding_name<'a>(croquis: &'a Croquis, tag: &str) -> Option<&'a str> {
-    let bindings = &croquis.bindings.bindings;
-    if let Some((name, _)) = bindings.get_key_value(tag) {
-        return Some(name.as_str());
-    }
-    let camel = crate::naming::camelize(tag);
-    if let Some((name, _)) = bindings.get_key_value(camel.as_str()) {
-        return Some(name.as_str());
-    }
-    let pascal = crate::naming::capitalize(camel.as_str());
-    bindings
-        .get_key_value(pascal.as_str())
-        .map(|(name, _)| name.as_str())
+    crate::script_parser::value_binding_origins::component_binding_reference(tag, |candidate| {
+        croquis
+            .bindings
+            .bindings
+            .get_key_value(candidate)
+            .map(|(name, _)| name.as_str())
+    })
 }
 
 fn unavailable_binding<'a>(croquis: &'a Croquis, tag: &str) -> LocalComponentBinding<'a> {
@@ -384,5 +379,52 @@ mod tests {
             local_component_binding(&captured, "Child"),
             LocalComponentBinding::StaticImport
         ));
+    }
+    #[test]
+    fn component_binding_spelling_follows_vue_lookup_order() {
+        use super::{LocalComponentBinding, local_component_binding};
+        let both = "import { defineAsyncComponent as dac } from 'vue'; const childWidget = dac(() => import('./Camel.vue')); const ChildWidget = dac(() => import('./Pascal.vue'));";
+        for (source, tag, expected) in [
+            (both, "child-widget", Some("./Camel.vue")),
+            (both, "ChildWidget", Some("./Pascal.vue")),
+            (both, "childWidget", Some("./Camel.vue")),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const Child_Widget = dac(() => import('./Local.vue'));",
+                "ChildWidget",
+                None,
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const lower = dac(() => import('./Local.vue'));",
+                "Lower",
+                None,
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const ChildWidget = dac(() => import('./Pascal.vue'));",
+                "child-widget",
+                Some("./Pascal.vue"),
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const CaféWidget = dac(() => import('./Pascal.vue'));",
+                "café-widget",
+                Some("./Pascal.vue"),
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const CafeÉclair = dac(() => import('./Local.vue'));",
+                "cafe-éclair",
+                None,
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const SSbox = dac(() => import('./Local.vue'));",
+                "ßbox",
+                None,
+            ),
+        ] {
+            let analysis = crate::script_parser::parse_script_setup(source).into_croquis();
+            let actual = match local_component_binding(&analysis, tag) {
+                LocalComponentBinding::Async(module) => Some(module),
+                _ => None,
+            };
+            assert_eq!(actual, expected, "{source} {tag}");
+        }
     }
 }

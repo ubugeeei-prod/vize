@@ -5,7 +5,7 @@ use super::{
 };
 use crate::scope::ScopeId;
 use oxc_span::Span;
-use vize_carton::{CompactString, FxHashSet};
+use vize_carton::FxHashSet;
 
 impl ValueBindingOrigins {
     pub(crate) fn declaration_key(&self, scope: ScopeId, span: Span) -> Option<ValueBindingKey> {
@@ -142,13 +142,10 @@ impl ValueBindingOrigins {
 
     pub(crate) fn component_binding_name(&self, tag: &str) -> Option<Option<&str>> {
         let root = self.declarations.get(&self.root?)?;
-        if let Some((name, _)) = root.get_key_value(tag) {
-            return Some(Some(name.as_str()));
-        }
-        let normalized = CompactString::new(crate::naming::to_pascal_case(tag));
-        self.component_names
-            .get(&normalized)
-            .map(|name| name.as_deref())
+        component_binding_reference(tag, |candidate| {
+            root.get_key_value(candidate).map(|(name, _)| name.as_str())
+        })
+        .map(Some)
     }
 
     pub(crate) fn root_reference(&self, name: &str) -> Option<ValueReference> {
@@ -158,4 +155,32 @@ impl ValueBindingOrigins {
             Span::new(u32::MAX, u32::MAX),
         ))
     }
+}
+
+/// Match source-owned component bindings without populating a global name cache.
+/// Valid tag starts use Vue's exact/camel/Pascal order. A Unicode expression
+/// identifier retains its direct hit; a missing expression is never case-guessed.
+pub(crate) fn component_binding_reference<'a>(
+    tag: &str,
+    mut lookup: impl FnMut(&str) -> Option<&'a str>,
+) -> Option<&'a str> {
+    if let Some(name) = lookup(tag) {
+        return Some(name);
+    }
+    let camel = tag.contains('-').then(|| crate::naming::camelize(tag));
+    let candidate = camel.as_ref().map_or(tag, |name| name.as_str());
+    if candidate != tag
+        && let Some(name) = lookup(candidate)
+    {
+        return Some(name);
+    }
+    let mut chars = candidate.chars();
+    let first = chars.next()?;
+    if !first.is_ascii_lowercase() {
+        return None;
+    }
+    let mut capitalized = vize_carton::String::with_capacity(candidate.len());
+    capitalized.push(first.to_ascii_uppercase());
+    capitalized.push_str(chars.as_str());
+    lookup(capitalized.as_str())
 }

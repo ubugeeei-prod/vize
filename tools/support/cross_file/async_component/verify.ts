@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { actualTemplateShadows } from "./template-shadow.ts";
+import { actualComponentSpelling } from "./component-spelling.ts";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -294,6 +295,11 @@ const actualTemplateShadowRuntime = await actualTemplateShadows(runtimePackage);
 writeFileSync(
   join(output, "actual-template-shadows.json"),
   JSON.stringify(actualTemplateShadowRuntime, null, 2) + "\n",
+);
+const actualSpelling = await actualComponentSpelling(runtimePackage);
+writeFileSync(
+  join(output, "actual-component-spelling.json"),
+  JSON.stringify(actualSpelling, null, 2) + "\n",
 );
 const actualOriginal = observe("original", original.files);
 assert.deepEqual(actualOriginal.statuses, role === "before" ? [1, 1, 1, 0] : [0, 0, 0, 0]);
