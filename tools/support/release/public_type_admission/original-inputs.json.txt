@@ -1,0 +1,220 @@
+{
+  "schema": "vize.template-ref.public-capsule.v1",
+  "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
+  "requiredPullRequest": 10950,
+  "eligibility": "first actual published tag containing83e3;0.602 and0.603 ineligible; hosted mapper uses explicit isolated7.1 SDK",
+  "files": [
+    {
+      "originalPath": "tests/tooling/support/type-admission-fixtures.ts",
+      "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
+      "gitBlob": "8a6b1b2aa19bda0be1b89cd0cf38d4d09c5bacd9",
+      "sha256": "4bd0210b733aafc2b4a6d719d6986657ad0534b900b8bf7e1b9266028538002d",
+      "bytes": 10873,
+      "name": "type-admission-fixtures.ts"
+    },
+    {
+      "originalPath": "tests/tooling/support/type-admission-ref-edges.ts",
+      "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
+      "gitBlob": "c1b157c4ca49eda800f77a033218bf2dc4fcf2a3",
+      "sha256": "d18d9e9967958808f954648e2f7bb20bd0d40db7cb1c8945beea760b08d9c2c8",
+      "bytes": 4847,
+      "name": "type-admission-ref-edges.ts"
+    },
+    {
+      "originalPath": "tests/tooling/support/type-admission-project.ts",
+      "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
+      "gitBlob": "d6bbf83aa7637f9fa9a3dd106c54d5181828547d",
+      "sha256": "48bac41b0727f754c6fdfe169110fb9101f3b001739d3b6d35035f1f40dc2b7e",
+      "bytes": 1236,
+      "name": "type-admission-project.ts"
+    },
+    {
+      "originalPath": "tests/tooling/support/type-admission-mutation.ts",
+      "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
+      "gitBlob": "2832996fd33942538c36d7de2438b345d9ebed6a",
+      "sha256": "da1591cd3fe347796a4fa62feb8d5abaf4b10db1a4f1641947008d7472fd785f",
+      "bytes": 797,
+      "name": "type-admission-mutation.ts"
+    },
+    {
+      "originalPath": "tests/tooling/support/type-admission-global-fixtures.ts",
+      "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
+      "gitBlob": "d03b88256bd10999720fc785f383883141274193",
+      "sha256": "22183748e6a5811e774a2957039e68b09363e5c21461913f1953151417bbbd90",
+      "bytes": 4758,
+      "name": "type-admission-global-fixtures.ts"
+    }
+  ],
+  "driverFiles": [
+    {
+      "name": "model.ts",
+      "bytes": 5513,
+      "sha256": "26056c888d99d086bd448152febdd4e62f846ef0bc58739a5480d14c997d2302",
+      "gitBlob": "3affa1f0ee940427fbf7e29b9fd82fa44b298a91"
+    },
+    {
+      "name": "fixtures.ts",
+      "bytes": 5319,
+      "sha256": "e87ec1bd0b07513541fb0539aec6591face4545b3f885e79ebcc0fa69cf84718",
+      "gitBlob": "8d612fe8de8b1ca50cbe277c7c863a8e2c07f674"
+    },
+    {
+      "name": "process.ts",
+      "bytes": 3852,
+      "sha256": "5fab5390bfea3d9a728c9785cce1e65e832bd5dfe5e8c7ba6f18f8687dcc2841",
+      "gitBlob": "dfe0c5d2e24a652f92b47259c9d01533ea91640e"
+    },
+    {
+      "name": "observer.ts",
+      "bytes": 2344,
+      "sha256": "2abf61247374b8cde4c9747b2b6e88e4ae08bb648c6d28ff6824733477a65f26",
+      "gitBlob": "3eb8500fef7154168d7af7e3e6ec7d2e30580fc5"
+    },
+    {
+      "name": "lsp.ts",
+      "bytes": 8327,
+      "sha256": "9c503d39a027f162477a91c730c6300f2680f20a5bf3eb0f704809cb85c4b2de",
+      "gitBlob": "2732d442a1e4a22f101518c5ec5fc92496f27e23"
+    },
+    {
+      "name": "lsp-probes.ts",
+      "bytes": 6775,
+      "sha256": "7074f6f0394d889a3295c775665ad1407936eb8f786fc75c12a0c62cfacaeba6",
+      "gitBlob": "142a0738b05de05c12eb20366acdea4fe18d0d05"
+    },
+    {
+      "name": "identity.ts",
+      "bytes": 2562,
+      "sha256": "453ca1a0158e17eadb91aaa36078b0d0caa3af29e964917bda401beca2de7cea",
+      "gitBlob": "a4c3bd8f07630db7d9f7193cd57de1fed0397e18"
+    },
+    {
+      "name": "run.ts",
+      "bytes": 5343,
+      "sha256": "cedf2cda971cd8ba1065e9134ca12c24acb2fb79719c6cb59103179002fdbb2f",
+      "gitBlob": "973ee3f1b4428509e235ac7a0fe9fd5d19ba128c"
+    },
+    {
+      "name": "source-admission.ts",
+      "bytes": 1502,
+      "sha256": "de470e0a42ad9c104f3e2be8f6efd03053a734083fbdac24e7dd15a55e552f39",
+      "gitBlob": "1c7652d294884a96852fa40676e21d202d3178b5"
+    },
+    {
+      "name": "mapper-host.ts",
+      "bytes": 5504,
+      "sha256": "332d4d8b4c942eda8bbb40d1d216b6ac3b89dd2ec90154092d8493997607ce16",
+      "gitBlob": "4f390bbcc56dd95e2689ce68784ef9fa6767b379"
+    },
+    {
+      "name": "installed-runtime.ts",
+      "bytes": 5436,
+      "sha256": "45d38d8242a0e05757a70a01033f4522caaa3b34af798cbebdaa3c1f2d8c0fe5",
+      "gitBlob": "c6f1a4c259e79571acc123f592827218fc96b2b5"
+    },
+    {
+      "name": "capability.ts",
+      "bytes": 3587,
+      "sha256": "bdaa4b69e00ad7b2475beffdb0a241f5cbe209ceeacf5d2db64ffd0fd7bdbbc1",
+      "gitBlob": "7b5f4bce2b454f0a7215c5aa64decbdd7d432a3a"
+    }
+  ],
+  "sharedFiles": [
+    {
+      "relative": "../public-provider.ts",
+      "bytes": 1694,
+      "sha256": "c7b8e854f3dce5fea55a826b57e71936cf82eb1d35eb1af16c7340638ed86879",
+      "gitBlob": "8c58f64e4d6ff081a00cfa9da9f947c359be3869",
+      "source": "c002c78f40965ec4e7b8f643a269f6c1538fc146"
+    },
+    {
+      "relative": "../../json-value.ts",
+      "bytes": 2365,
+      "sha256": "7a9b15e4fb965fe91720537db828e6cfe7cba2cec1ee0bcb49d574be195d5370",
+      "gitBlob": "4197bd7ccc74051bdb1015370b6e434ba45d6f29",
+      "source": "c002c78f40965ec4e7b8f643a269f6c1538fc146"
+    }
+  ],
+  "actualMergedSource": "83e3ff318fb772340663b5688624dac2ad37e2b1",
+  "sourceAdmission": {
+    "schema": "vize.template-ref.source-admission.v1",
+    "scope": "Source and merge-queue execution; public acceptance is recorded separately by this capsule.",
+    "pullRequest": 10950,
+    "requiredSource": "83e3ff318fb772340663b5688624dac2ad37e2b1",
+    "pullRequestHead": "a5ef4d8ebb68619db22f397e95825df1676f6af1",
+    "mergeQueue": {
+      "runId": 40603113935,
+      "jobId": 122536275919,
+      "source": "83e3ff318fb772340663b5688624dac2ad37e2b1",
+      "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/40603113935",
+      "jobUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/40603113935/job/122536275919",
+      "nativePackage": "@typescript/typescript-linux-x64",
+      "nativeVersion": "7.0.2",
+      "requiredEnvironment": {
+        "VIZE_TEST_REQUIRE_TSGO": "1"
+      },
+      "testsRun": 3359,
+      "testsPassed": 3359,
+      "testsSkipped": 612,
+      "binariesRun": 72,
+      "binariesSkipped": 642,
+      "criticalTests": [
+        "batch::type_checker::tests::batch_type_checker_uses_workspace_vue_runtime_without_node_modules",
+        "batch::type_checker::tests::template_ref_runtime_import::workspace_vue_runtime_preserves_missing_import_then_repair"
+      ]
+    },
+    "scalePullRequest": {
+      "number": 10987,
+      "mergeSource": "91560a59584e71f24cb2070e99c2f99ae652861c",
+      "runId": 40603117010
+    },
+    "explicitlyExcludedVersions": [
+      "0.602.0",
+      "0.603.0"
+    ],
+    "globalOriginIssue": 10980,
+    "globalOriginQualified": false
+  },
+  "supersedesUnexecutedDriverTree": "55116fa7a8215a904c0e6ccd6339d55bda2cbeeb",
+  "driverRevision": "dual-native-host-v2",
+  "runtimeRoutes": {
+    "cli": {
+      "sdk": "7.0.2",
+      "stages": 32,
+      "graph": "existing CPP"
+    },
+    "lsp": {
+      "sdk": "7.0.2",
+      "diagnosticPackets": 117,
+      "typedHovers": 4,
+      "graph": "existing CPP"
+    },
+    "contentMapper": {
+      "sdk": "7.1.0-beta",
+      "platform": "linux-x64",
+      "stages": 32,
+      "graph": "isolated native SDK; Vize/NAPI resolved from CPP fixture graph"
+    }
+  },
+  "historicalProofScopes": {
+    "sourceAdmission": {
+      "source": "4834900d965b17efa53ec56dd951826eddef38ff",
+      "run": 40523513452,
+      "job": 122270622510,
+      "cliPackets": 32,
+      "vueOraclePackets": 32,
+      "lspResponses": 117,
+      "hovers": 4
+    },
+    "originalMapperCounterexample": {
+      "issue": 10948,
+      "vize": "0.596.0",
+      "nativeSdk": "7.1.0-beta",
+      "route": "--runExternalCode hosted mapper"
+    },
+    "laterThreeMapperPositive": {
+      "qualified": false,
+      "identity": null
+    }
+  }
+}
