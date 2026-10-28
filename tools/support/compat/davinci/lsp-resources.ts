@@ -12,6 +12,8 @@ import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resour
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
 import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
+import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
+import { finalizeLspResources } from "./lib/lsp-resource-finalize.ts";
 
 interface RunResult {
   run: number;
@@ -37,6 +39,8 @@ interface RunResult {
   rss_peak_mib?: number;
   peak_processes?: ProcessEntry[];
   resource_samples?: number;
+  profile_json?: { path: string; bytes: number; sha256: string };
+  finalization_error?: string;
 }
 
 interface Measurement {
@@ -89,6 +93,8 @@ async function measure() {
       warmProviders % 2 === 0,
   );
   const server = fs.realpathSync(flag("--server", "target/ci-opt/vize"));
+  const profileDirectoryArgument = flag("--profile-json-dir", "");
+  const profileDirectory = profileDirectoryArgument ? path.resolve(profileDirectoryArgument) : null;
   process.env.VIZE_LSP_BIN = server;
   const measurement: Measurement = {
     scope: "production Maestro LSP with all descendants, including Corsa; harness excluded",
@@ -122,6 +128,10 @@ async function measure() {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-real-lsp-resource-"));
     const started = performance.now();
     const dependencies = prepareWorkspace(workspace, files);
+    const profilePath = profileDirectory && path.join(profileDirectory, `run-${run + 1}.json`);
+    process.env.VIZE_LSP_BIN = profilePath
+      ? profiledLauncher(server, workspace, profilePath)
+      : server;
     const session = new LspSession();
     const sampler = createSampler(session.processId);
     const result: RunResult = {
@@ -238,9 +248,17 @@ async function measure() {
       result.resource_samples = samples;
       measurement.per_run.push(result);
       delete measurement.active_run;
-      save();
-      await session.shutdown().catch(async () => session.kill());
-      fs.rmSync(workspace, { force: true, recursive: true });
+      await finalizeLspResources({
+        session,
+        profilePath,
+        workloadFailed: result.error !== undefined,
+        result,
+        cleanup() {
+          process.env.VIZE_LSP_BIN = server;
+          fs.rmSync(workspace, { force: true, recursive: true });
+        },
+        persist: save,
+      });
     }
     measurement.completed_runs++;
     save();

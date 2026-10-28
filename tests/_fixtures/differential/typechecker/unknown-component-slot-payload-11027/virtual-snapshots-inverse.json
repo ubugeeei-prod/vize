@@ -1,0 +1,81 @@
+{
+  "schema": "vize.slotUnknownVirtualSnapshotsInverse.v1",
+  "base": "57a64c88a04e45f2ed6a498674336397d4f53db3",
+  "snapshots": [
+    {
+      "path": "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap",
+      "oldBlob": "7f25e8b4474e00e391de17d1d9ab66ae900aed90",
+      "newBlob": "19274f8c4683eb977d4ad32b101f780428fd420e",
+      "oldSha256": "b59fff4c16641a5b23810ded8cd7c64ff45dabbdde288ff53d05fc75bb1ca93f",
+      "newSha256": "d9ac7908c3eab305e24a59c1ee0b3f1f037fb58b4747f98bca7e438ce173d7e8",
+      "editByte": 13907,
+      "comments": [
+        {
+          "oldGenerated": [
+            18160,
+            18206
+          ],
+          "newGenerated": [
+            18164,
+            18210
+          ],
+          "authored": [
+            0,
+            97
+          ]
+        }
+      ],
+      "exactOldInverse": true
+    },
+    {
+      "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap",
+      "oldBlob": "b0ced73adfea8604273a713d66308ce701dbc8ff",
+      "newBlob": "4830c9a21362402ab5e0b69568b36bb44f655df9",
+      "oldSha256": "540813c8889a1a96c084504db9b35882010df131bed6e8f806f223e6d3838d66",
+      "newSha256": "fd2ebc9a45e3f26c057aa6696fcc492304f83ad4f1d2441159add48b7089fc53",
+      "editByte": 13907,
+      "comments": [
+        {
+          "oldGenerated": [
+            18134,
+            18164
+          ],
+          "newGenerated": [
+            18138,
+            18168
+          ],
+          "authored": [
+            0,
+            59
+          ]
+        }
+      ],
+      "exactOldInverse": true
+    },
+    {
+      "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap",
+      "oldBlob": "b2ee22fb65f7d75b4e1e4864766b942abba97d9b",
+      "newBlob": "b471572b7a68f6580ca6cf49dbcea50d941e6ce9",
+      "oldSha256": "bfb116644cfc384529dc7fcb5d0566c0aee50269fe3123af756f44c62e3062d5",
+      "newSha256": "0c9e828233592fd5f8f6805ead2ac72f6af9c451740b376fc7d27affced06377",
+      "editByte": 13907,
+      "comments": [
+        {
+          "oldGenerated": [
+            18160,
+            18205
+          ],
+          "newGenerated": [
+            18164,
+            18209
+          ],
+          "authored": [
+            0,
+            78
+          ]
+        }
+      ],
+      "exactOldInverse": true
+    }
+  ]
+}
