@@ -53,7 +53,7 @@ jobs:
       - name: Check observer types and preserve transport source identity
         run: |
           set -euo pipefail
-          vp exec tsc --noEmit --strict --noUncheckedIndexedAccess --erasableSyntaxOnly --target ESNext --module NodeNext --moduleResolution NodeNext --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" "$RUNNER_TEMP/ui-corsa-observer/rpc-proxy.ts" "$RUNNER_TEMP/ui-corsa-observer/observer.ts" "$RUNNER_TEMP/ui-corsa-observer/case.ts"
+          vp exec tsc --ignoreConfig --noEmit --strict --noUncheckedIndexedAccess --erasableSyntaxOnly --target ESNext --module NodeNext --moduleResolution NodeNext --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" "$RUNNER_TEMP/ui-corsa-observer/rpc-proxy.ts" "$RUNNER_TEMP/ui-corsa-observer/observer.ts" "$RUNNER_TEMP/ui-corsa-observer/case.ts"
           node --input-type=module -e 'import fs from "node:fs"; import {stripTypeScriptTypes} from "node:module"; import {createHash} from "node:crypto"; const dir=process.env.RUNNER_TEMP+"/ui-corsa-observer"; const rows={}; for(const name of ["rpc-proxy","observer","case"]){const source=fs.readFileSync(dir+"/"+name+".ts","utf8"); const js=stripTypeScriptTypes(source); fs.writeFileSync(dir+"/"+name+".js",js,{mode:0o755}); rows[name]={sourceSha256:createHash("sha256").update(source).digest("hex"),javascriptSha256:createHash("sha256").update(js).digest("hex")};} fs.writeFileSync(process.env.VIZE_UI_OBSERVATION+"/observer-source.json",JSON.stringify(rows,null,2)+"\n");'
       - name: Build one fresh normal source NAPI image with original features
         env: { VIZE_NATIVE_CI_FORMATTER_HISTORY: "1" }
