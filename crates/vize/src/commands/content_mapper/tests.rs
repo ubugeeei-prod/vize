@@ -100,6 +100,43 @@ fn rejects_transform_before_initialize() {
 }
 
 #[test]
+fn explicit_generic_arguments_use_tsx_arrow_syntax() {
+    let source = r#"<script setup lang="ts">
+import Picker from "./Picker.vue";
+</script>
+<template>
+  <!-- @vue-generic {"a" | "b"} -->
+  <Picker value="a" />
+</template>
+"#;
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, source),
+    ]));
+    let text = responses[2]["result"]["text"].as_str().unwrap();
+
+    assert_eq!(
+        text.matches("const __vizeExplicitGeneric = <C,>(component: C)")
+            .count(),
+        1,
+        "{text}"
+    );
+    assert_eq!(
+        text.matches("__vizeExplicitGeneric(Picker<\"a\" | \"b\">)")
+            .count(),
+        1,
+        "{text}"
+    );
+    assert_eq!(
+        text.matches("const __vizeExplicitGeneric = <C>(component: C)")
+            .count(),
+        0,
+        "{text}"
+    );
+}
+
+#[test]
 fn transform_honors_options_api_project_option() {
     let source = r#"<script lang="ts">
 export default { data() { return { count: 1 } } }

@@ -12,11 +12,11 @@ mod support {
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
 }
+mod aria_kebab_prop_11048;
+mod content_mapper_vue_generic_11051;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;
 use support::fix_history_runner::native_fixture_runtime_disabled;
-#[path = "support/aria_kebab_prop_11048.rs"]
-mod aria_kebab_prop_11048;
 
 #[test]
 fn contextual_prop_anchors_preserve_authored_diagnostics() {
