@@ -3,8 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-const root = fileURLToPath(new URL("../../", import.meta.url));
-
 // Controlled protocol fixtures never execute the stand-in binary or claim native
 // acceptance. Real source/Rust/TS40 observations remain an Actions obligation.
 import { execFileSync, spawnSync } from "node:child_process";
@@ -23,6 +21,7 @@ import {
 } from "../differential/typechecker-workspace.ts";
 import { normalizeWorkspaceInventory } from "../../tools/support/compat/github/rust-workspace-inventory.ts";
 
+const root = fileURLToPath(new URL("../../", import.meta.url));
 const execution = { runId: 53, runAttempt: 2 };
 const names = Object.values(TYPECHECKER_TESTS);
 const ts40Names = [
@@ -304,7 +303,6 @@ function controlled(t: { after: (callback: () => void) => void }) {
     complete,
   };
 }
-
 type Fixture = ReturnType<typeof controlled>;
 const artifact = (f: Fixture, name: string) => path.join(f.resultDir, name);
 void test("workspace producer/consumer bind physical bytes, all registered bodies, complete JUnit and raw TS40 without native credit", (t) => {
