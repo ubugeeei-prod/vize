@@ -2,9 +2,7 @@ use criterion::{BatchSize, Criterion};
 use std::{hint::black_box, path::PathBuf, time::Duration};
 use vize_canon::batch::{CompositeSourceMap, VirtualFile};
 use vize_carton::{FxHashMap, String};
-#[path = "partition_weight/baseline.rs"]
 mod baseline;
-#[path = "partition_weight/candidate.rs"]
 mod candidate;
 type Bins = Vec<(usize, Vec<usize>)>;
 type Kernel = fn(&[&VirtualFile], FxHashMap<usize, Vec<usize>>, usize) -> Option<Bins>;

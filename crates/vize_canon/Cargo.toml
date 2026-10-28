@@ -115,6 +115,7 @@ harness = false
 
 [[bench]]
 name = "partition_weight"
+path = "benches/partition_weight/main.rs"
 harness = false
 
 [lints]
