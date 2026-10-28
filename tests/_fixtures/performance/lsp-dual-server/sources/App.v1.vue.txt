@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 const message = ref("hello");
 const broken: number = "cold-error";
+void broken;
 </script>
 
 <template>
