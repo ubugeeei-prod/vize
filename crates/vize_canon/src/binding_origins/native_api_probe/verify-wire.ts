@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { array, canonical, first, frames, integer, object, text } from "./verify-codec.ts";
 import { strictJson } from "./verify-json.ts";
+import { verifyMutations } from "./verify-mutations.ts";
 import type { ObjectValue } from "./verify-codec.ts";
 
 type Version = "7.0.2" | "7.1.0-beta";
@@ -128,12 +129,13 @@ export function verifyBuffers(
   }
   const baselines = Array.from(grouped.values()).filter((group) => group.length === 3);
   assert.equal(baselines.length, 3);
+  const hasMutation = carrier.semanticMutationPhases !== undefined;
   for (const [method, expected] of [
-    ["getSymbolAtPosition", 54],
-    ["getAliasedSymbol", 15],
-    ["getTypeOfSymbol", 3],
-    ["getSymbolOfType", 3],
-    ["getSourceFileNames", 3],
+    ["getSymbolAtPosition", hasMutation ? 63 : 54],
+    ["getAliasedSymbol", hasMutation ? 20 : 15],
+    ["getTypeOfSymbol", hasMutation ? 6 : 3],
+    ["getSymbolOfType", hasMutation ? 6 : 3],
+    ["getSourceFileNames", hasMutation ? 6 : 3],
   ] as const)
     assert.equal(counts.get(method), expected);
   for (const request of requests) {
@@ -171,6 +173,8 @@ export function verifyBuffers(
       id(symbol.id);
     }
   }
+  const mutation = verifyMutations(carrier, requests, result, version);
+  if (mutation !== undefined) emit("semantic-mutation-wire.json", mutation);
   const controls: unknown[] = [];
   for (const group of baselines) {
     const values = group.map((request) => result(request));
@@ -230,6 +234,7 @@ export function verifyBuffers(
     nativeWireBytes: nativeBytes.length,
     nativeWireSha256: sha(nativeBytes),
     sameSnapshotRepeatGroups: 3,
+    ...(mutation === undefined ? {} : { requestedMutation: mutation }),
     rawSymbolPacketsRetained: retained.length,
     versionBoundFixtureRefControls: controls,
     nodeRefTagIsNotPortableASTSyntaxKind: true,
