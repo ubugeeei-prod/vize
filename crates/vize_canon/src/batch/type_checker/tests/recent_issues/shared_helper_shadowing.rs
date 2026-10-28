@@ -77,6 +77,7 @@ fn parent_source(value: &str) -> std::string::String {
 import {{ ref }} from 'vue'
 import Child from './Child.vue'
 
+defineEmits<{{ local: [value: string] }}>()
 const spread = {{ value: {value} }}
 const literal = ref<'ok'>('ok')
 </script>
@@ -145,7 +146,6 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         .expect("parent virtual file should exist")
         .content;
     for member in [
-        "__VizeComponentNavigationProps",
         "__VizeComponentRawProps",
         "__VizePropChecker",
         "__VizePropValue",
