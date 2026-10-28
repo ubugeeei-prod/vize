@@ -100,6 +100,18 @@ impl Document {
         self.flat_text().to_owned()
     }
 
+    /// Whether `source` is byte-identical to this document revision.
+    #[inline]
+    pub fn has_text(&self, source: &str) -> bool {
+        self.flat_text() == source
+    }
+
+    /// UTF-8 byte length without flattening the resident rope.
+    #[inline]
+    pub fn byte_len(&self) -> usize {
+        self.content.len_bytes()
+    }
+
     /// Shared owned text for this exact document revision.
     pub fn text_snapshot(&self) -> Arc<String> {
         Arc::clone(

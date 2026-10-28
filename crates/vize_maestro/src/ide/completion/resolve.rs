@@ -57,7 +57,9 @@ impl CompletionService {
         character: u32,
     ) -> Vec<CompletionItem> {
         let revision = ctx.state.documents.get(ctx.uri).and_then(|document| {
-            (document.content == ctx.content.as_str()).then(|| document.revision())
+            document
+                .has_text(ctx.content.as_str())
+                .then(|| document.revision())
         });
         let Some(revision) = revision else {
             return vec![];
