@@ -22,7 +22,19 @@ pub fn parse_program_for_analysis<'a>(
     source: &'a str,
     source_type: SourceType,
 ) -> ParserReturn<'a> {
-    let original = Parser::new(allocator, source, source_type).parse();
+    vize_carton::micro_count!("croquis.oxc.original.bytes", source.len());
+    let original = vize_carton::micro_span!(
+        "croquis.oxc.original",
+        Parser::new(allocator, source, source_type).parse()
+    );
+    vize_carton::micro_count!(
+        "croquis.oxc.original.diagnostic_entries",
+        original.diagnostics.len()
+    );
+    vize_carton::micro_count!(
+        "croquis.oxc.original.panicked",
+        if original.panicked { 1 } else { 0 }
+    );
     if !original.panicked && original.diagnostics.is_empty() {
         return original;
     }
@@ -38,7 +50,11 @@ pub fn parse_program_for_analysis<'a>(
     }
     for _ in 0..4 {
         let view = allocator.alloc_str(&analysis);
-        let mut parsed = Parser::new(allocator, view, source_type).parse();
+        vize_carton::micro_count!("croquis.oxc.recovery.bytes", view.len());
+        let mut parsed = vize_carton::micro_span!(
+            "croquis.oxc.recovery",
+            Parser::new(allocator, view, source_type).parse()
+        );
         if !parsed.panicked {
             // The recovered AST only borrows the repaired view to establish
             // structure. Its spans are byte-for-byte compatible with the

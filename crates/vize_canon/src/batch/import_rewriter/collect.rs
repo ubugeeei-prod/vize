@@ -30,9 +30,16 @@ pub(super) fn collect_specifier_spans(
     source: &str,
     source_type: SourceType,
 ) -> Vec<(u32, u32, String, crate::PackageResolutionMode)> {
+    vize_carton::micro_count!("canon.import_facts.collect_spans.calls", 1);
+    vize_carton::micro_count!(
+        "canon.import_facts.collect_spans.source_bytes",
+        source.len()
+    );
     let allocator = Allocator::default();
-    let result =
-        vize_croquis::script_parser::parse_program_for_analysis(&allocator, source, source_type);
+    let result = vize_carton::micro_span!(
+        "canon.import_facts.collect_spans.parse",
+        vize_croquis::script_parser::parse_program_for_analysis(&allocator, source, source_type)
+    );
     let mut collector = ModuleSpecifierCollector::new();
     collector.visit_program(&result.program);
     if result.panicked {
@@ -62,7 +69,15 @@ pub(super) fn collect_specifier_spans(
             let Some(prefix) = source.get(..line_end + 1) else {
                 continue;
             };
-            let parsed = Parser::new(&allocator, prefix, source_type).parse();
+            vize_carton::micro_count!("canon.import_facts.collect_spans.recovery_parse.calls", 1);
+            vize_carton::micro_count!(
+                "canon.import_facts.collect_spans.recovery_parse.source_bytes",
+                prefix.len()
+            );
+            let parsed = vize_carton::micro_span!(
+                "canon.import_facts.collect_spans.recovery_parse",
+                Parser::new(&allocator, prefix, source_type).parse()
+            );
             if parsed.panicked || !parsed.diagnostics.is_empty() {
                 continue;
             }

@@ -20,7 +20,10 @@ struct ModuleSpecifierFacts {
 
 impl ModuleSpecifierFacts {
     fn parse(source: &str, source_type: SourceType) -> Self {
+        vize_carton::micro_count!("canon.import_facts.cache.parse.calls", 1);
+        vize_carton::micro_count!("canon.import_facts.cache.parse.source_bytes", source.len());
         let spans = collect_specifier_spans(source, source_type);
+        vize_carton::micro_count!("canon.import_facts.cache.parse.spans", spans.len());
         let mut occurrences = Vec::new();
         let mut specifiers = Vec::new();
         let mut seen_occurrences = FxHashSet::default();
@@ -79,6 +82,11 @@ impl ModuleSpecifierFactsCache {
         source: &str,
         source_type: SourceType,
     ) -> Vec<(String, PackageResolutionMode)> {
+        vize_carton::micro_count!("canon.import_facts.view.occurrences.calls", 1);
+        vize_carton::micro_count!(
+            "canon.import_facts.view.occurrences.source_bytes",
+            source.len()
+        );
         self.facts(source, source_type).occurrences.clone()
     }
 
@@ -87,6 +95,11 @@ impl ModuleSpecifierFactsCache {
         source: &str,
         source_type: SourceType,
     ) -> Vec<String> {
+        vize_carton::micro_count!("canon.import_facts.view.specifiers.calls", 1);
+        vize_carton::micro_count!(
+            "canon.import_facts.view.specifiers.source_bytes",
+            source.len()
+        );
         self.facts(source, source_type).specifiers.clone()
     }
 
@@ -95,6 +108,8 @@ impl ModuleSpecifierFactsCache {
         source: &str,
         source_type: SourceType,
     ) -> &[SpanOccurrence] {
+        vize_carton::micro_count!("canon.import_facts.view.spans.calls", 1);
+        vize_carton::micro_count!("canon.import_facts.view.spans.source_bytes", source.len());
         &self.facts(source, source_type).spans
     }
 
@@ -108,6 +123,7 @@ impl ModuleSpecifierFactsCache {
         }
         let sources = self.sources.entry(source_type).or_default();
         if !sources.contains_key(source) {
+            vize_carton::micro_count!("canon.import_facts.cache.misses", 1);
             sources.insert(
                 source.into(),
                 ModuleSpecifierFacts::parse(source, source_type),
@@ -117,6 +133,7 @@ impl ModuleSpecifierFactsCache {
                 self.parses += 1;
             }
         } else {
+            vize_carton::micro_count!("canon.import_facts.cache.hits", 1);
             #[cfg(test)]
             {
                 self.hits += 1;
@@ -192,13 +209,13 @@ mod tests {
         use PackageResolutionMode::{Contextual, Import, Require};
 
         let source = r#"
-import A from 'same';
-export { A } from 'same';
-const required = require('same');
-const dynamic = import('same');
-type Explicit = import('typed', { with: { 'resolution-mode': 'require' } });
-import type { Type } from 'typed' with { 'resolution-mode': 'import' };
-"#;
+    import A from 'same';
+    export { A } from 'same';
+    const required = require('same');
+    const dynamic = import('same');
+    type Explicit = import('typed', { with: { 'resolution-mode': 'require' } });
+    import type { Type } from 'typed' with { 'resolution-mode': 'import' };
+    "#;
         let source_type = SourceType::ts();
         let mut cache = ModuleSpecifierFactsCache::default();
         let occurrences = cache.collect_occurrences(source, source_type);
@@ -284,11 +301,11 @@ import type { Type } from 'typed' with { 'resolution-mode': 'import' };
     #[test]
     fn cached_rewrite_reinvokes_resolver_for_every_literal_and_preserves_unicode_maps() {
         let source = r#"const label = '日本語🍣';
-import A from 'same'; export { A } from 'same';
-const required = require('same'); const dynamic = import('same');
-import escaped from '\u0073ame';
-const sentinel = label;
-"#;
+    import A from 'same'; export { A } from 'same';
+    const required = require('same'); const dynamic = import('same');
+    import escaped from '\u0073ame';
+    const sentinel = label;
+    "#;
         let source_type = SourceType::ts();
         let rewriter = ImportRewriter::new();
         let mut cache = ModuleSpecifierFactsCache::default();
@@ -416,11 +433,11 @@ const sentinel = label;
         for incomplete in ["items.value.", "pick("] {
             let source = format!(
                 r#"import Button from './MyButton.vue';
-import type {{ Item }} from './types';
-const items = {{}} as {{ value: Item[] }};
-{incomplete}
-const selected = null;
-"#
+    import type {{ Item }} from './types';
+    const items = {{}} as {{ value: Item[] }};
+    {incomplete}
+    const selected = null;
+    "#
             );
             let source_type = SourceType::ts();
             let rewriter = ImportRewriter::new();
@@ -458,11 +475,11 @@ const selected = null;
                 cached.code,
                 format!(
                     r#"import Button from './MyButton.vue.ts';
-import type {{ Item }} from './types';
-const items = {{}} as {{ value: Item[] }};
-{incomplete}
-const selected = null;
-"#
+    import type {{ Item }} from './types';
+    const items = {{}} as {{ value: Item[] }};
+    {incomplete}
+    const selected = null;
+    "#
                 ),
                 "{incomplete}",
             );

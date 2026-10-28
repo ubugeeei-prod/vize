@@ -205,11 +205,36 @@ impl VirtualProject {
         let mut canonical_keys: FxHashMap<PathBuf, Option<PathBuf>> = FxHashMap::default();
 
         while let Some(importer) = queue.pop() {
+            vize_carton::micro_count!("canon.dependency_scan.importers.popped", 1);
             let Some((virtual_content, virtual_path, generated_sfc)) =
                 self.find_by_original(&importer).map(|file| {
+                    let content = self.module_source(file).unwrap_or(&file.content);
+                    vize_carton::micro_count!("canon.dependency_scan.content.clone.calls", 1);
+                    vize_carton::micro_count!(
+                        "canon.dependency_scan.content.clone.source_bytes",
+                        content.len()
+                    );
+                    vize_carton::micro_count!(
+                        "canon.dependency_scan.content.generated_source_bytes",
+                        if file.source_map.sfc_map.is_some() {
+                            content.len()
+                        } else {
+                            0
+                        }
+                    );
+                    vize_carton::micro_count!(
+                        "canon.dependency_scan.virtual_path.clone.encoded_bytes",
+                        file.virtual_path.as_os_str().as_encoded_bytes().len()
+                    );
                     (
-                        self.module_source(file).unwrap_or(&file.content).clone(),
-                        file.virtual_path.clone(),
+                        vize_carton::micro_span!(
+                            "canon.dependency_scan.content.clone",
+                            content.clone()
+                        ),
+                        vize_carton::micro_span!(
+                            "canon.dependency_scan.virtual_path.clone",
+                            file.virtual_path.clone()
+                        ),
                         file.source_map.sfc_map.is_some(),
                     )
                 })
@@ -258,10 +283,32 @@ impl VirtualProject {
                 SourceType::ts()
             };
             let occurrences = match facts.as_deref_mut() {
-                Some(facts) => facts.collect_occurrences(&virtual_content, source_type),
-                None => self
-                    .rewriter()
-                    .collect_all_specifier_occurrences(&virtual_content, source_type),
+                Some(facts) => {
+                    vize_carton::micro_count!("canon.dependency_scan.occurrences.cached.calls", 1);
+                    vize_carton::micro_count!(
+                        "canon.dependency_scan.occurrences.cached.source_bytes",
+                        virtual_content.len()
+                    );
+                    vize_carton::micro_span!(
+                        "canon.dependency_scan.occurrences.cached",
+                        facts.collect_occurrences(&virtual_content, source_type)
+                    )
+                }
+                None => {
+                    vize_carton::micro_count!(
+                        "canon.dependency_scan.occurrences.uncached.calls",
+                        1
+                    );
+                    vize_carton::micro_count!(
+                        "canon.dependency_scan.occurrences.uncached.source_bytes",
+                        virtual_content.len()
+                    );
+                    vize_carton::micro_span!(
+                        "canon.dependency_scan.occurrences.uncached",
+                        self.rewriter()
+                            .collect_all_specifier_occurrences(&virtual_content, source_type)
+                    )
+                }
             };
             let specifiers = occurrences
                 .into_iter()

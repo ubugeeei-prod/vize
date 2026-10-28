@@ -136,7 +136,15 @@ impl ImportRewriter {
         capture: impl FnOnce(&Program<'_>) -> Vec<std::ops::Range<usize>>,
     ) -> (RewriteResult, Vec<std::ops::Range<usize>>) {
         let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, source, SourceType::d_ts()).parse();
+        vize_carton::micro_count!("canon.import_rewriter.declaration_parse.calls", 1);
+        vize_carton::micro_count!(
+            "canon.import_rewriter.declaration_parse.source_bytes",
+            source.len()
+        );
+        let parsed = vize_carton::micro_span!(
+            "canon.import_rewriter.declaration_parse",
+            Parser::new(&allocator, source, SourceType::d_ts()).parse()
+        );
         let ranges = if parsed.panicked || !parsed.diagnostics.is_empty() {
             Vec::new()
         } else {
@@ -208,10 +216,18 @@ impl ImportRewriter {
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
         let allocator = Allocator::default();
-        let result = vize_croquis::script_parser::parse_program_for_analysis(
-            &allocator,
-            source,
-            source_type,
+        vize_carton::micro_count!("canon.import_rewriter.rewrite_parse.calls", 1);
+        vize_carton::micro_count!(
+            "canon.import_rewriter.rewrite_parse.source_bytes",
+            source.len()
+        );
+        let result = vize_carton::micro_span!(
+            "canon.import_rewriter.rewrite_parse",
+            vize_croquis::script_parser::parse_program_for_analysis(
+                &allocator,
+                source,
+                source_type
+            )
         );
 
         if result.panicked {
