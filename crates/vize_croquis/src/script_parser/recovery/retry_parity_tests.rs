@@ -208,3 +208,33 @@ fn vector_line_breaks_keep_huge_irreparable_authored_programs() {
         assert!(same_packet(&source, SourceType::ts()));
     }
 }
+
+#[test]
+fn hybrid_line_breaks_keep_offsets_across_the_single_scalar_tail() {
+    for source in [
+        "\r\nhead\u{2028}\u{2009}middle\r\ntail\u{2029}",
+        "\u{2014}early\r\nthen ascii\n",
+        "ascii\r\nthen late\u{2014}\r\n",
+        "\u{2028}\u{2029}\r\n\u{2028}\u{2029}",
+        "\u{2009}\u{2014}\u{2027}\r\n\u{2028}\u{2029}",
+    ] {
+        let expected = source
+            .char_indices()
+            .filter_map(|(offset, character)| {
+                matches!(character, '\n' | '\r' | '\u{2028}' | '\u{2029}').then_some(offset)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            super::line_break_offsets(source).collect::<Vec<_>>(),
+            expected
+        );
+        let source = format!("const prefix = {source:?};\r\nconsume(\r\nconst done = 1;");
+        assert_eq!(
+            super::incomplete_call_before_declaration(&source),
+            incomplete_call_before_declaration(&source)
+        );
+        for kind in [SourceType::ts(), SourceType::tsx(), SourceType::mjs()] {
+            same_packet(&source, kind);
+        }
+    }
+}

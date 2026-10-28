@@ -83,13 +83,28 @@ pub fn parse_program_for_analysis<'a>(
     original
 }
 
-// Preserve the existing four-scalar break set while searching encoded bytes.
-// Non-break E2 sequences remain ordinary source text.
+// Search ASCII breaks as bytes, then use the original scalar scan for the
+// remaining suffix after the first E2 sequence that is not a line separator.
 fn line_break_offsets(source: &str) -> impl Iterator<Item = usize> + '_ {
     let bytes = source.as_bytes();
-    memchr::memchr3_iter(b'\n', b'\r', 0xe2, bytes).filter(move |&offset| {
-        bytes[offset] != 0xe2
-            || matches!(bytes.get(offset + 1..offset + 3), Some([0x80, 0xa8 | 0xa9]))
+    let mut candidates = memchr::memchr3_iter(b'\n', b'\r', 0xe2, bytes);
+    let mut scalar_tail = None::<(usize, std::str::CharIndices<'_>)>;
+    std::iter::from_fn(move || {
+        loop {
+            if let Some((base, characters)) = &mut scalar_tail {
+                return characters.find_map(|(offset, character)| {
+                    matches!(character, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+                        .then_some(*base + offset)
+                });
+            }
+            let offset = candidates.next()?;
+            if bytes[offset] != 0xe2
+                || matches!(bytes.get(offset + 1..offset + 3), Some([0x80, 0xa8 | 0xa9]))
+            {
+                return Some(offset);
+            }
+            scalar_tail = Some((offset, source[offset..].char_indices()));
+        }
     })
 }
 
