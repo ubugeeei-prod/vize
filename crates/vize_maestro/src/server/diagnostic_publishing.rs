@@ -13,6 +13,8 @@ use super::MaestroServer;
 mod complete;
 #[cfg(all(test, feature = "native", unix))]
 mod configuration_failure_tests;
+#[cfg(feature = "native")]
+mod pending_hint;
 #[cfg(all(test, feature = "native", unix))]
 mod retry_tests;
 #[cfg(feature = "native")]
@@ -203,8 +205,7 @@ impl MaestroServer {
         {
             return;
         }
-        let mut diagnostics = sync.to_vec();
-        diagnostics.push(crate::ide::diagnostics::typecheck_pending_hint());
+        let diagnostics = pending_hint::with_typecheck_pending_hint(sync);
         let notification = self
             .client
             .publish_diagnostics(uri.clone(), diagnostics, None);

@@ -1,0 +1,95 @@
+name: LSP source operations and allocations
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-source-profile.yml"
+      - "crates/vize/src/commands/lsp.rs"
+      - "crates/vize/tests/lsp_profile_cli.rs"
+      - "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
+      - "tools/support/compat/davinci/lsp-resources.ts"
+      - "tools/support/compat/davinci/lib/lsp-profile-launch.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-finalize.ts"
+      - "tests/tooling/lsp-resource-finalize.test.ts"
+      - "tests/tooling/support/lsp/session.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-source-profile-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source:
+    name: Fresh-process LSP source counts (100, 500, 2500 SFCs)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_TERM_COLOR: always
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify profile failure cleanup and primary error preservation
+        run: vp exec node --test tests/tooling/lsp-resource-finalize.test.ts
+      - name: Install the repository Rust toolchain
+        run: rustup toolchain install || rustup show active-toolchain
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-source-profile
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build the separately instrumented server
+        run: >-
+          cargo build --profile ci-opt -p vize --features profiling
+          --message-format=json-render-diagnostics > "${RUNNER_TEMP}/source-build.jsonl"
+      - name: Verify real stdio profiling with the instrumented allocator
+        run: >-
+          cargo test --profile ci-opt -p vize --features profiling
+          --test integration lsp_profile_cli::lsp_exports_profile_after_graceful_stdio_shutdown
+          -- --exact
+      - name: Record the instrumented binary identity
+        run: >-
+          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
+          target/ci-opt/vize ci-opt "${RUNNER_TEMP}/source-build.jsonl"
+          "${RUNNER_TEMP}/source-build-identity.json"
+      - name: Collect the complete residency oracle and source profiles
+        run: |
+          set -euo pipefail
+          for files in 100 500 2500; do
+            vp exec node tools/support/compat/davinci/lsp-resources.ts \
+              --server target/ci-opt/vize --files "$files" --warm-providers 16 --runs 1 --idle-seconds 10 \
+              --build 'ci-opt with profiling allocator and source-operation counters; observation only' \
+              --profile-json-dir "${RUNNER_TEMP}/source-${files}" \
+              --out "${RUNNER_TEMP}/source-${files}.json"
+          done
+      - name: Summarize the scope of these observations
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '### LSP source operations and Rust allocation requests'
+            echo 'Every size starts a new server process; no persisted Vize cache is reused.'
+            echo 'Synthetic SFCs; complete residency witnesses, 16 providers and controlled edits.'
+            echo 'Source counts and allocator requested bytes are instrumented observations.'
+            echo 'Allocator totals cover Rust only; sampled RSS also includes Corsa children.'
+            echo 'These measurements do not qualify TS-44 latency or the private canonical cold-check goal.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: lsp-source-operations-linux-x64
+          path: |
+            ${{ runner.temp }}/source-build-identity.json
+            ${{ runner.temp }}/source-*.json
+            ${{ runner.temp }}/source-*/run-*.json
+          retention-days: 30

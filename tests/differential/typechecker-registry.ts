@@ -120,6 +120,8 @@ export const TYPECHECKER_TESTS = {
   "undeclared-instance-globals-10617": "undeclared_instance_globals_report_at_every_read",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
+  "unknown-component-slot-payload-11027":
+    "unknown_component_slots_preserve_authored_type_diagnostics",
   "v-for-component-source-original":
     "component_v_for_source_preserves_complete_original_diagnostics",
   "v-for-source-original": "v_for_source_callbacks_preserve_complete_original_diagnostics",
@@ -224,6 +226,7 @@ export const sourceRevisions = {
   "undeclared-instance-globals-10617": "42ca747027a86da7f94b473cff737cb330134d8c",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "unicode-reserved-props": originalFixtureRevision,
+  "unknown-component-slot-payload-11027": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
   "v-for-component-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "v-for-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",

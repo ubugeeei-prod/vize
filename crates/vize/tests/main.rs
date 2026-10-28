@@ -265,6 +265,7 @@ mod lsp_patterned_completion_cli;
 mod lsp_patterned_navigation_cli;
 mod lsp_patterned_template_cli;
 mod lsp_plain_script_diagnostics_cli;
+mod lsp_profile_cli;
 mod lsp_prop_rename_ts_consumers_cli;
 mod lsp_reactive_diagnostics_cli;
 mod lsp_reactive_prop_style_rename_cli;

@@ -9,7 +9,9 @@
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/default-policy",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -51,7 +53,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -60,7 +66,9 @@
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/explicit-opt-in",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -102,7 +110,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -111,7 +123,9 @@
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/declaration-generated-routes",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -148,7 +162,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -157,7 +175,9 @@
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/generated-external-script-route",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -194,7 +214,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -203,7 +228,9 @@
     {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -245,7 +272,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -254,7 +285,9 @@
     {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-subject-avoids-unknown-global-diagnostics",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -291,7 +324,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -300,7 +337,9 @@
     {
       "id": "typechecker/authored-unused-symbols/original-locals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -335,7 +374,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -344,7 +387,9 @@
     {
       "id": "typechecker/authored-unused-symbols/inherited-locals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -384,7 +429,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -393,7 +442,9 @@
     {
       "id": "typechecker/authored-unused-symbols/disabled-locals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -433,7 +484,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -442,7 +497,9 @@
     {
       "id": "typechecker/authored-unused-symbols/parameters-only",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -482,7 +539,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -491,7 +552,9 @@
     {
       "id": "typechecker/authored-unused-symbols/default-locals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -526,7 +589,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -535,7 +602,9 @@
     {
       "id": "typechecker/authored-unused-symbols/parameters-disabled",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -580,7 +649,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -589,7 +662,9 @@
     {
       "id": "typechecker/cache-maintenance-9860/bounded-maintenance",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -621,7 +696,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -630,7 +709,9 @@
     {
       "id": "typechecker/cache-maintenance-9860/fresh-helper-handoff",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -667,7 +748,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -676,7 +762,9 @@
     {
       "id": "typechecker/callback-render-position-10738/type-query-before-delete",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -713,7 +801,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -723,7 +815,9 @@
     {
       "id": "typechecker/component-event-tuples/unresolved-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -759,7 +853,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -768,7 +866,9 @@
     {
       "id": "typechecker/component-event-tuples/resolved-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -804,7 +904,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -813,7 +917,9 @@
     {
       "id": "typechecker/component-event-tuples/inline-tuple-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -849,7 +955,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -858,7 +968,9 @@
     {
       "id": "typechecker/component-event-tuples/resolved-first-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -894,7 +1006,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -903,7 +1019,9 @@
     {
       "id": "typechecker/component-event-tuples/native-extra-required-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -934,7 +1052,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -943,7 +1065,9 @@
     {
       "id": "typechecker/component-event-tuples/resolved-second-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -979,7 +1103,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -988,7 +1116,9 @@
     {
       "id": "typechecker/component-event-tuples/inline-second-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1024,7 +1154,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1033,7 +1167,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/art-generic-form-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1075,7 +1211,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1084,7 +1224,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/art-generic-form-repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1126,7 +1268,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1135,7 +1281,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/slot-prop-without-children-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1172,7 +1320,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1181,7 +1333,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/slot-prop-named-child-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1218,7 +1372,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1227,7 +1385,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/slot-prop-two-named-children-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1264,7 +1424,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1273,7 +1437,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/slot-prop-named-child-repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1310,7 +1476,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1319,7 +1489,9 @@
     {
       "id": "typechecker/component-input-diagnostic-owners-10607/two-files-same-offset-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1361,7 +1533,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1370,7 +1546,9 @@
     {
       "id": "typechecker/component-listener-alias-scope-10112/sibling-guarded-listeners",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1412,7 +1590,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1421,7 +1603,9 @@
     {
       "id": "typechecker/component-listener-alias-scope-10112/reopened-guard-block",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1463,7 +1647,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1472,7 +1660,9 @@
     {
       "id": "typechecker/component-listener-prop-duplicate-10397/required-boolean-with-listener",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1509,7 +1699,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1519,7 +1713,9 @@
     {
       "id": "typechecker/component-render-h-props-9855/missing-and-wrong-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1556,7 +1752,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1565,7 +1765,9 @@
     {
       "id": "typechecker/component-tag-aliases-11020/valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1602,7 +1804,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1611,7 +1817,9 @@
     {
       "id": "typechecker/component-tag-aliases-11020/invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1648,7 +1856,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1657,7 +1869,9 @@
     {
       "id": "typechecker/component-tag-aliases-11020/repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1694,7 +1908,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1703,7 +1921,9 @@
     {
       "id": "typechecker/component-v-bind-duplicate-diagnostic-10069/wrong-prop-with-spread-and-listener",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1740,7 +1960,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1749,7 +1973,9 @@
     {
       "id": "typechecker/content-mapper-const-enum-import/imported-const-enum-value",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1786,7 +2012,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1795,7 +2025,9 @@
     {
       "id": "typechecker/content-mapper-define-slots-typeof-10197/setup-function",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1827,7 +2059,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1837,7 +2073,9 @@
     {
       "id": "typechecker/content-mapper-diagnostics-10187/duplicate-and-missing-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1879,7 +2117,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1889,7 +2131,9 @@
     {
       "id": "typechecker/content-mapper-duplicate-attributes-10184/listener-and-template-ref-class-style",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1926,7 +2170,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1935,7 +2183,9 @@
     {
       "id": "typechecker/content-mapper-dynamic-template-ref-10198/component-typed-and-member-values",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -1972,7 +2222,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -1981,7 +2235,9 @@
     {
       "id": "typechecker/content-mapper-dynamic-template-ref-scope-10251/conditional-target-stays-in-registry-scope",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2018,7 +2274,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2027,7 +2287,9 @@
     {
       "id": "typechecker/content-mapper-dynamic-template-ref-union-10251/conditional-component-and-native-targets",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2064,7 +2326,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2073,7 +2339,9 @@
     {
       "id": "typechecker/content-mapper-experimental-router-10526/published-page-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2125,7 +2393,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2135,7 +2407,9 @@
     {
       "id": "typechecker/content-mapper-experimental-router-10526/published-page-invalid-number",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2187,7 +2461,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2206,7 +2484,9 @@
     {
       "id": "typechecker/content-mapper-filename-globals-10190/error-and-map-globals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2243,7 +2523,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2253,7 +2537,9 @@
     {
       "id": "typechecker/content-mapper-global-component-10185/unimported-framework-global-with-children",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2290,7 +2576,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2300,7 +2590,9 @@
     {
       "id": "typechecker/content-mapper-javascript-checkjs-10217/plain-javascript-unchecked",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2362,7 +2654,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2371,7 +2668,9 @@
     {
       "id": "typechecker/content-mapper-merged-class-10788/dynamic-component-class",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2403,7 +2702,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2438,7 +2741,9 @@
     {
       "id": "typechecker/content-mapper-multiline-callback-10191/contextual-parameter",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2475,7 +2780,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2485,7 +2794,9 @@
     {
       "id": "typechecker/content-mapper-musea-art-10186/bound-component-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2522,7 +2833,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2531,7 +2846,9 @@
     {
       "id": "typechecker/content-mapper-nested-vfor-guard-10216/else-if",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2568,7 +2885,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2578,7 +2899,9 @@
     {
       "id": "typechecker/content-mapper-nuxt-emit-10195/nuxt-pattern-injection-attribute-listener",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2620,7 +2943,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2629,7 +2956,9 @@
     {
       "id": "typechecker/content-mapper-props-binding-10196/authored-props-binding-with-unassigned-define-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2666,7 +2995,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2675,7 +3008,9 @@
     {
       "id": "typechecker/content-mapper-slot-host-callbacks-10774/function-prop-with-named-slot",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2712,7 +3047,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2731,7 +3070,9 @@
     {
       "id": "typechecker/content-mapper-template-expression-syntax/authored-errors",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2768,7 +3109,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2777,7 +3122,9 @@
     {
       "id": "typechecker/content-mapper-template-expression-syntax/syntax-error-keeps-sfc-module",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2824,7 +3171,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2833,7 +3184,9 @@
     {
       "id": "typechecker/content-mapper-type-only-import-use/inferred-type-only-imports",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2880,7 +3233,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2889,7 +3246,9 @@
     {
       "id": "typechecker/content-mapper-unknown-options-10218/unknown-component-and-directive",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2921,7 +3280,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2930,7 +3293,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/original-from",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -2967,7 +3332,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -2976,7 +3345,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/all-keyword-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3013,7 +3384,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3022,7 +3397,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/authored-contextual-locals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3059,7 +3436,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3068,7 +3449,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/authored-prop-shadow-imports",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3105,7 +3488,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3114,7 +3501,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/reactive-prop-destructure",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3151,7 +3540,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3160,7 +3553,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/const-enum-import",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3197,7 +3592,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3206,7 +3605,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/unicode-identities",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3243,7 +3644,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3252,7 +3657,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/authored-ts2552-retained",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3289,7 +3696,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3298,7 +3709,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/non-colliding-keyword-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3335,7 +3748,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3344,7 +3761,9 @@
     {
       "id": "typechecker/contextual-prop-anchors-10661/authored-undefined-shadow",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3381,7 +3800,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3390,7 +3813,9 @@
     {
       "id": "typechecker/declared-prop-names-original/complete-original-declared-prop-names",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3437,7 +3862,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3446,7 +3875,9 @@
     {
       "id": "typechecker/dependency-probe-history-10936/valid-precedence-and-alias",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3493,7 +3924,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3502,7 +3938,9 @@
     {
       "id": "typechecker/dependency-probe-history-10936/invalid-authored-model",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3549,7 +3987,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3558,7 +4001,9 @@
     {
       "id": "typechecker/dependency-probe-history-10936/repaired-authored-model",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3605,7 +4050,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3614,7 +4064,9 @@
     {
       "id": "typechecker/dynamic-component-union-listener-10026/native-element-union",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3646,7 +4098,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3655,7 +4111,9 @@
     {
       "id": "typechecker/dynamic-directive-expression-mapping-10182/dynamic-slot-and-prop",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3687,7 +4145,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3696,7 +4158,9 @@
     {
       "id": "typechecker/dynamic-directive-expression-mapping-10182/dependency-json-module",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3748,7 +4212,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3757,7 +4223,9 @@
     {
       "id": "typechecker/editor-alias-import-extension-10753/authored-extension-styles",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3794,7 +4262,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3813,7 +4285,9 @@
     {
       "id": "typechecker/empty-generic-public-contract-10540/frozen-root-element-contract",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3865,7 +4339,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3875,7 +4353,9 @@
     {
       "id": "typechecker/empty-v-slot-expression/empty-expression",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3912,7 +4392,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3922,7 +4406,9 @@
     {
       "id": "typechecker/empty-v-slot-expression/blank-expression",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -3959,7 +4445,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -3969,7 +4459,9 @@
     {
       "id": "typechecker/empty-v-slot-expression/empty-expression-unknown-slot",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4006,7 +4498,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4025,7 +4521,9 @@
     {
       "id": "typechecker/escaped-import-literals-10763/original-quoted-alias-graph",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4062,7 +4560,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4072,7 +4574,9 @@
     {
       "id": "typechecker/escaped-import-literals-10763/quoted-alias-with-authored-type-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4109,7 +4613,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4128,7 +4636,9 @@
     {
       "id": "typechecker/event-handler-narrowing/component-sibling-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4164,7 +4674,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4173,7 +4687,9 @@
     {
       "id": "typechecker/event-handler-narrowing/native-sibling-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4204,7 +4720,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4213,7 +4733,9 @@
     {
       "id": "typechecker/event-handler-narrowing/handler-assignment-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4249,7 +4771,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4257,7 +4783,9 @@
     },
     {
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4268,7 +4796,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4318,7 +4850,9 @@
     },
     {
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4329,7 +4863,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4384,7 +4922,9 @@
     },
     {
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4395,7 +4935,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4442,7 +4986,9 @@
     {
       "id": "typechecker/generic-constructor-slots-10416/props-infer-plain-and-covariant-slots",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4484,7 +5030,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4494,7 +5044,9 @@
     {
       "id": "typechecker/generic-fallthrough-spread-9956/broad-index-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4536,7 +5088,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4545,7 +5101,9 @@
     {
       "id": "typechecker/generic-slot-outlet-10883/defaulted-parameter",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4577,7 +5135,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4587,7 +5149,9 @@
     {
       "id": "typechecker/generic-slot-outlet-10883/constrained-parameter",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4619,7 +5183,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4629,7 +5197,9 @@
     {
       "id": "typechecker/generic-slot-outlet-10883/wrong-payload",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4661,7 +5231,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4680,7 +5254,9 @@
     {
       "id": "typechecker/global-scope-build-info-10819/imported-global-declaration",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4727,7 +5303,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4737,7 +5317,9 @@
     {
       "id": "typechecker/global-scope-build-info-10819/edited-global-declaration",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4774,7 +5356,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4793,7 +5379,9 @@
     {
       "id": "typechecker/import-literal-geometry-10762/original-alias-graph",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4840,7 +5428,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4850,7 +5442,9 @@
     {
       "id": "typechecker/import-literal-geometry-10762/after-import-type-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4897,7 +5491,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4916,7 +5514,9 @@
     {
       "id": "typechecker/incomplete-script-setup-recovery-10200/relative-imports-before-incomplete-member",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4958,7 +5558,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -4967,7 +5571,9 @@
     {
       "id": "typechecker/inferred-project-tsconfig-9718/owned-strict",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -4999,7 +5605,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5008,7 +5618,9 @@
     {
       "id": "typechecker/inferred-project-tsconfig-9718/inferred-defaults",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5035,7 +5647,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5044,7 +5660,9 @@
     {
       "id": "typechecker/jsx-prop-token-ranges-10494/tsx-invalid-and-valid-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5084,7 +5702,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5093,7 +5716,9 @@
     {
       "id": "typechecker/jsx-prop-token-ranges-10494/jsx-invalid-and-valid-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5133,7 +5758,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts", "jsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "jsx"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5142,7 +5772,9 @@
     {
       "id": "typechecker/listener-attribute-parity-9852/class-style-and-spread-listeners",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5189,7 +5821,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5197,7 +5833,9 @@
     },
     {
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5208,7 +5846,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5249,7 +5891,9 @@
     },
     {
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5260,7 +5904,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5311,7 +5959,9 @@
     {
       "id": "typechecker/long-prop-kebab-case-10423/static-and-async-with-listeners",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5353,7 +6003,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5363,7 +6017,9 @@
     {
       "id": "typechecker/misskey-generated-inference-9516/inference-probes-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5415,7 +6071,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5424,7 +6084,9 @@
     {
       "id": "typechecker/misskey-generated-inference-9516/authored-unknown-prop-control",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5466,7 +6128,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5475,7 +6141,9 @@
     {
       "id": "typechecker/narrowed-slot-host-guard-10660/explicit-default",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5512,7 +6180,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5522,7 +6194,9 @@
     {
       "id": "typechecker/narrowed-slot-host-guard-10660/authored-impossible-comparison",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5559,7 +6233,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5578,7 +6256,9 @@
     {
       "id": "typechecker/native-completion-order-10747/imported-identifier-project",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5615,7 +6295,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5625,7 +6307,9 @@
     {
       "id": "typechecker/native-expect-error-10413/strict-owned-and-ordinary-permissive",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5657,7 +6341,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5667,7 +6354,9 @@
     {
       "id": "typechecker/native-inline-event-handler-9835/native-mousedown-arrow",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5699,7 +6388,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5708,7 +6401,9 @@
     {
       "id": "typechecker/native-pointer-events-original/click-pointer-handler",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5740,7 +6435,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5749,7 +6448,9 @@
     {
       "id": "typechecker/native-pointer-events-original/auxclick-pointer-handler",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5781,7 +6482,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5790,7 +6495,9 @@
     {
       "id": "typechecker/native-pointer-events-original/vue3-intrinsic-attribute",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5822,7 +6529,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5831,7 +6542,9 @@
     {
       "id": "typechecker/native-pointer-events-original/vue3-target-intrinsic-attributes",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5863,7 +6576,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5872,7 +6589,9 @@
     {
       "id": "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5902,7 +6621,9 @@
     {
       "id": "typechecker/nuxt-unknown-template-options-10013/generated-paths-explicit-unknown-checks",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5949,7 +6670,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -5958,7 +6683,9 @@
     {
       "id": "typechecker/optional-fallthrough-spread-10170/optional-valid-invalid-control",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -5995,7 +6722,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6004,7 +6735,9 @@
     {
       "id": "typechecker/options-api-any-instance/typed-props-control",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6044,7 +6777,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6053,7 +6790,9 @@
     {
       "id": "typechecker/options-api-any-instance/loose-and-concrete-mixins",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6098,7 +6837,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6107,7 +6850,9 @@
     {
       "id": "typechecker/options-api-reserved-component-reference/reserved-prop-dynamic-component",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6147,7 +6892,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6157,7 +6906,9 @@
     {
       "id": "typechecker/options-api-reserved-component-reference/reserved-prop-dynamic-component-wrong-member",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6192,7 +6943,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6211,7 +6966,9 @@
     {
       "id": "typechecker/options-api-reserved-component-reference/reserved-prop-authored-local-collision",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6251,7 +7008,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6261,7 +7022,9 @@
     {
       "id": "typechecker/package-target-deletion-refresh/missing-target",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6298,7 +7061,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6317,7 +7083,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/lf-valid-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6359,7 +7127,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6368,7 +7140,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/lf-broken-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6410,7 +7184,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6419,7 +7197,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/lf-repaired-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6461,7 +7241,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6470,7 +7254,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/lf-both-repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6512,7 +7298,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6521,7 +7311,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/crlf-valid-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6563,7 +7355,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6572,7 +7368,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/crlf-broken-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6614,7 +7412,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6623,7 +7425,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/crlf-repaired-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6665,7 +7469,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6674,7 +7482,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/crlf-both-repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6716,7 +7526,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6725,7 +7539,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-lf-valid-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6767,7 +7583,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6776,7 +7596,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-lf-broken-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6818,7 +7640,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6827,7 +7653,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-lf-repaired-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6869,7 +7697,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6878,7 +7710,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-lf-both-repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6920,7 +7754,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6929,7 +7767,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-crlf-valid-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -6971,7 +7811,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -6980,7 +7824,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-crlf-broken-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7022,7 +7868,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7031,7 +7881,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-crlf-repaired-generic-body-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7073,7 +7925,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7082,7 +7938,9 @@
     {
       "id": "typechecker/planned-generic-syntax-route-10598/unicode-crlf-both-repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7124,7 +7982,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7133,7 +7995,9 @@
     {
       "id": "typechecker/portable-pug-10434/refused-jade-with-valid-pug-sibling",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7170,7 +8034,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7189,7 +8057,9 @@
     {
       "id": "typechecker/public-instance-ts-directives-10984/original-expectation",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7226,7 +8096,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7235,7 +8109,9 @@
     {
       "id": "typechecker/public-instance-ts-directives-10984/no-directive-missing-member",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7272,7 +8148,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7281,7 +8161,9 @@
     {
       "id": "typechecker/public-instance-ts-directives-10984/valid-local-unused-expectation",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7318,7 +8200,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7327,7 +8213,9 @@
     {
       "id": "typechecker/pug-refusal-10430/refused-jade-with-valid-pug-sibling",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7364,7 +8252,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7383,7 +8275,9 @@
     {
       "id": "typechecker/quoted-generic-parameters-10540/literal-comma-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7425,7 +8319,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7434,7 +8332,9 @@
     {
       "id": "typechecker/quoted-generic-parameters-10540/numeric-prop-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7476,7 +8376,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7485,7 +8389,9 @@
     {
       "id": "typechecker/quoted-generic-parameters-10540/repaired-literal-prop-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7527,7 +8433,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7536,7 +8446,9 @@
     {
       "id": "typechecker/reactive-props-destructure-10008/unused-binding",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7568,7 +8480,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7577,7 +8493,9 @@
     {
       "id": "typechecker/reactive-props-destructure-10008/used-rest-binding",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7609,7 +8527,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7618,7 +8540,9 @@
     {
       "id": "typechecker/relative-sibling-storage-10934/typed-sibling-error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7680,7 +8604,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7689,7 +8616,9 @@
     {
       "id": "typechecker/relative-sibling-storage-10934/repaired-sibling-import",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7751,7 +8680,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7760,7 +8692,9 @@
     {
       "id": "typechecker/reopen-repaired-diagnostics-10730/error",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7797,7 +8731,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7816,7 +8754,9 @@
     {
       "id": "typechecker/reopen-repaired-diagnostics-10730/repaired",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7853,7 +8793,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7863,7 +8807,9 @@
     {
       "id": "typechecker/required-props-edges/complete-attribute-boundaries",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7924,7 +8870,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7933,7 +8883,9 @@
     {
       "id": "typechecker/reserved-expression-shapes/valid-expression-shapes",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -7964,7 +8916,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -7973,7 +8929,9 @@
     {
       "id": "typechecker/reserved-expression-shapes/invalid-expression-shapes",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8004,7 +8962,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8013,7 +8975,9 @@
     {
       "id": "typechecker/runtime-props-report-10100-10101/imported-helper-spread",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8050,7 +9014,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8059,7 +9027,9 @@
     {
       "id": "typechecker/runtime-props-report-10100-10101/object-factory-assertion",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8096,7 +9066,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8105,7 +9079,9 @@
     {
       "id": "typechecker/setup-custom-properties/script-setup-custom-properties",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8150,7 +9126,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8160,7 +9140,9 @@
     {
       "id": "typechecker/setup-custom-properties/script-setup-wrong-use-and-unknown-name",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8205,7 +9187,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8240,7 +9226,9 @@
     {
       "id": "typechecker/setup-custom-properties/options-api-slot-loop-source",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8285,7 +9273,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8295,7 +9287,9 @@
     {
       "id": "typechecker/setup-custom-properties/options-api-slot-loop-unknown-name",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8340,7 +9334,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8366,7 +9364,9 @@
     },
     {
       "id": "typechecker/slot-outlet-key/declared-and-inferred-key-payload",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8409,7 +9409,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8418,7 +9422,9 @@
     {
       "id": "typechecker/split-script-original/complete-original-split-script",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8450,7 +9456,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8459,7 +9468,9 @@
     {
       "id": "typechecker/strict-fallthrough-default-7856/native-single-root-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8496,7 +9507,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8505,7 +9520,9 @@
     {
       "id": "typechecker/template-context-undefined-10667/prop-used",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8537,7 +9554,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8547,7 +9568,9 @@
     {
       "id": "typechecker/template-definite-assignment/vue3-complete-project",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8668,7 +9691,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8677,7 +9704,9 @@
     {
       "id": "typechecker/template-definite-assignment/tsx-deferred-template",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8713,7 +9742,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -8898,7 +9932,9 @@
     {
       "id": "typechecker/template-suppression-original/complete-original-template-suppression",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -8930,7 +9966,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9080,7 +10120,9 @@
     },
     {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9118,7 +10160,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9127,7 +10173,9 @@
     {
       "id": "typechecker/undeclared-instance-globals-10617/undeclared-dollar-globals",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9164,7 +10212,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9207,7 +10259,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/reported-optional-unused",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9239,7 +10293,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9249,7 +10307,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/unicode-ascii-collision",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9281,7 +10341,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9291,7 +10355,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/unicode-ascii-number",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9323,7 +10389,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9333,7 +10403,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/quoted-cooked-unicode",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9365,7 +10437,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9375,7 +10451,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/escaped-identifier",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9407,7 +10485,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9417,7 +10499,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/supplementary-crlf",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9449,7 +10533,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9459,7 +10547,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/runtime-japanese",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9491,7 +10581,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9501,7 +10595,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/defaulted-unicode",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9533,7 +10629,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9543,7 +10643,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/keyed-unicode",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9575,7 +10677,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9585,7 +10691,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/reserved-hyphen-ascii",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9617,7 +10725,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9627,7 +10739,9 @@
     {
       "id": "typechecker/unicode-prop-bindings-10573/unicode-continue",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9659,7 +10773,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9669,7 +10787,9 @@
     {
       "id": "typechecker/unicode-reserved-props/literal-values-valid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9700,7 +10820,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9709,7 +10833,9 @@
     {
       "id": "typechecker/unicode-reserved-props/literal-values-invalid",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9740,7 +10866,531 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "valid",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-known.ts.txt",
+          "sha256": "132f378229a3b9f9fdbb6f2b4fb393d0644ffd665683bdb0c667d99b9b846226"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/unknown",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "unknown",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-unknown.ts.txt",
+          "sha256": "bd97c9a6176a4665e987fbb25a9a413f6c23a9e0be96b68af6b172753838b04e"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/unknown-union",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "unknown-union",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-union.ts.txt",
+          "sha256": "72460eb83c093ad49e6de3b320094a40a9499f23d909949f1abac664938e2114"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/repaired",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "repaired",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-known.ts.txt",
+          "sha256": "132f378229a3b9f9fdbb6f2b4fb393d0644ffd665683bdb0c667d99b9b846226"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/unresolved-tag",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "unresolved-tag",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-known.ts.txt",
+          "sha256": "132f378229a3b9f9fdbb6f2b4fb393d0644ffd665683bdb0c667d99b9b846226"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/unresolved.vue.txt",
+          "sha256": "818ee976435d670725e08cf91060c8c5fe21474dc40e4a94fc0512f36498747c"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/slot-any",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "slot-any",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-slot-any.ts.txt",
+          "sha256": "5da519c97bda521c8431decac20f18a2cd65c2a527c825c15e98950efd3d0eb0"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/slot-unknown",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "slot-unknown",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-slot-unknown.ts.txt",
+          "sha256": "794d6c2c8793f518d997c3bd3a64b4becfd4f23b02a08b97eac7ea8dcf0d2296"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/slot-never",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "slot-never",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-slot-never.ts.txt",
+          "sha256": "b0a0a70e9aa0d0364a0f6ceacba866c7743381d2165e147f3a6a79fa825bdbbc"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/slot-string",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "slot-string",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-slot-string.ts.txt",
+          "sha256": "ade7bd3460152472c7ef408da64e3c2d041e796e9d4bf802dba6479076c1c489"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/source.vue.txt",
+          "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unknown-component-slot-payload-11027/unicode-crlf-unknown",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unknown-component-slot-payload-11027",
+      "case": "unicode-crlf-unknown",
+      "test": "unknown_component_slots_preserve_authored_type_diagnostics",
+      "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+      "packReference": {
+        "path": "unknown-component-slot-payload-11027/cases.json",
+        "sha256": "3f0f0b29e3ed2ad7239347ea57839553a830538af72abcc77ddb25c05cf18a23"
+      },
+      "inputs": [
+        {
+          "file": "component.ts",
+          "path": "unknown-component-slot-payload-11027/component-unknown.ts.txt",
+          "sha256": "bd97c9a6176a4665e987fbb25a9a413f6c23a9e0be96b68af6b172753838b04e"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "path": "unknown-component-slot-payload-11027/unicode-crlf.vue.txt",
+          "sha256": "c380359c7209e59b9e35acc7b2579b9633d3bbb6d2a611a9030251da37a14d2f"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "unknown-component-slot-payload-11027/tsconfig.json.txt",
+          "sha256": "aa9dff4fee4b0b28855108b59ae8c8e363ebcc13126ebaaa2b7ad84c41c174a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9749,7 +11399,9 @@
     {
       "id": "typechecker/v-for-component-source-original/complete-original-component-callback",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9786,7 +11438,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9795,7 +11451,9 @@
     {
       "id": "typechecker/v-for-source-original/complete-original-html-callback",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9827,7 +11485,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9836,7 +11498,9 @@
     {
       "id": "typechecker/valueless-directive-import-3140/imported-valueless-directive",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9873,7 +11537,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9882,7 +11550,9 @@
     {
       "id": "typechecker/workspace-alias-cache-10063/second-package-selection",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -9959,7 +11629,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -9968,7 +11642,9 @@
     {
       "id": "typechecker/workspace-alias-cache-10063/repaired-private-package-identity",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -10060,7 +11736,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -10069,7 +11747,9 @@
     {
       "id": "typechecker/workspace-package-import-alias-10175/package-import-and-workspace-package",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "adapters": {
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
@@ -10146,7 +11826,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -10158,7 +11842,9 @@
       "id": "typechecker/protocol/native-shutdown-completion-10524",
       "state": "active",
       "adapter": "native-shutdown-wire-v1",
-      "targets": ["native-shutdown"],
+      "targets": [
+        "native-shutdown"
+      ],
       "inputs": [
         {
           "path": "native-shutdown-completion-10524/completion-envelopes.json",
@@ -10192,7 +11878,9 @@
       "id": "typechecker/protocol/native-provider-pairs-10599",
       "state": "active",
       "adapter": "native-shutdown-wire-v1",
-      "targets": ["native-shutdown"],
+      "targets": [
+        "native-shutdown"
+      ],
       "inputs": [
         {
           "path": "native-provider-pairs-10599/provider-pairs.json",
@@ -10231,7 +11919,9 @@
       "id": "typechecker/protocol/native-beta-provider-pairs-10741",
       "state": "active",
       "adapter": "native-shutdown-wire-v1",
-      "targets": ["native-shutdown"],
+      "targets": [
+        "native-shutdown"
+      ],
       "inputs": [
         {
           "path": "native-beta-provider-pairs-10741/provider-pairs.json",
@@ -10272,7 +11962,10 @@
       "id": "typechecker/language-project/inherited-configuration-10740",
       "state": "active",
       "adapter": "typescript-project-configuration-v1",
-      "targets": ["typescript-project", "vscode-typescript"],
+      "targets": [
+        "typescript-project",
+        "vscode-typescript"
+      ],
       "inputs": [
         {
           "path": "typescript-project-configuration-10740/case.json",

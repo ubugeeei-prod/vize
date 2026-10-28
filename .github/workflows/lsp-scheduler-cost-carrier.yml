@@ -1,0 +1,77 @@
+name: LSP indexed scheduler source cost carrier
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lsp-indexed-scheduler-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  census:
+    name: Actual untimed selector visits and synchronous allocations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: "4"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIZE_SCHEDULER_COST_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIZE_SCHEDULER_COST_EVIDENCE: ${{ github.workspace }}/scheduler-evidence/indexed-scheduler-cost.json
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - run: rustup toolchain install || rustup show active-toolchain
+      - name: Preserve exact source and allocator custody
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir scheduler-evidence
+          base=c9b5765af21160460b251bf9e42df42ff9b053d4
+          git merge-base --is-ancestor "$base" HEAD
+          test "$(git show "$base:crates/vize_maestro/src/server/initial_diagnostics/pending.rs" | git hash-object --stdin)" = 06f98a9c70c884c0b19ed032560573f78e23a1eb
+          if git grep -n '#\[global_allocator\]' "$base" -- crates/vize_maestro/src; then
+            echo "An existing Maestro allocator requires a new isolation audit" >&2
+            exit 1
+          else
+            result=$?
+            test "$result" -eq 1
+          fi
+          git diff "$base" HEAD -- crates/vize_maestro > scheduler-evidence/test-instrumentation.diff
+          git status --porcelain > scheduler-evidence/source-status.txt
+          git show -s --format=fuller HEAD > scheduler-evidence/commit.txt
+          rustc -vV > scheduler-evidence/rustc.txt
+          nproc > scheduler-evidence/cpus.txt
+          target_dir="$RUNNER_TEMP/indexed-scheduler-$SOURCE_SHA"
+          test ! -e "$target_dir"
+          echo "CARGO_TARGET_DIR=$target_dir" >> "$GITHUB_ENV"
+      - name: Calibrate then count exactly one synchronous Rust carrier
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci -p vize_maestro --features micro-profiling --lib server::initial_diagnostics::indexed_cost_carrier::indexed_scheduler_cost_carrier -- --exact --nocapture --test-threads=1 2>&1 | tee scheduler-evidence/carrier.log
+          python3 -c 'import pathlib,re; s=pathlib.Path("scheduler-evidence/carrier.log").read_text(); assert re.search(r"test result: ok[.] 1 passed; 0 failed; 0 ignored",s),"one actual unignored carrier must pass"'
+          test -s "$VIZE_SCHEDULER_COST_EVIDENCE"
+      - name: Preserve all original twenty laws and indexed queue laws without profiling
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics:: -- --test-threads=1 2>&1 | tee scheduler-evidence/normal-laws.log
+          python3 -c 'import pathlib,re; s=pathlib.Path("scheduler-evidence/normal-laws.log").read_text(); assert re.search(r"test result: ok[.] 24 passed; 0 failed; 0 ignored",s),"all twenty original and four new scheduler laws must pass without the carrier feature"'
+      - name: Compile normal library with test hooks and operands absent
+        run: |
+          set -euo pipefail
+          cargo check --locked --profile ci -p vize_maestro --lib 2>&1 | tee scheduler-evidence/normal-library.log
+          cargo check --locked --profile ci -p vize_maestro --lib --features micro-profiling 2>&1 | tee scheduler-evidence/normal-library-micro-feature.log
+      - name: Check shipped library without lint exceptions
+        run: |
+          set -euo pipefail
+          cargo clippy --locked --profile ci -p vize_maestro --lib -- -D warnings 2>&1 | tee scheduler-evidence/normal-clippy.log
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: lsp-indexed-scheduler-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: scheduler-evidence/
+          if-no-files-found: error
+          retention-days: 30
