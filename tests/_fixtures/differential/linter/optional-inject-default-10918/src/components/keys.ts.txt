@@ -1,0 +1,3 @@
+import type { InjectionKey } from "vue";
+/** set by `MyList`; a divider outside a list gets the default `false` */
+export const InListKey: InjectionKey<boolean> = Symbol("in-list");

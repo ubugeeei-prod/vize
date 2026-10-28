@@ -1,0 +1,3 @@
+$ vize lint -f plain --no-config --cross-file "src/**/*.vue"
+  src/Editor.vue:7:26 error cross-file vize:croquis/cf/spread-breaks-reactivity: Spreading 'initial' creates a non-reactive copy
+  src/PageB.vue:3:8 warning cross-file vize:croquis/cf/duplicate-id: Element ID 'panel' is used in 2 different locations across files

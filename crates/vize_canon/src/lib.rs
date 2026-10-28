@@ -43,6 +43,7 @@
 //! ```
 
 mod authored_sfc;
+pub mod binding_origins;
 mod checker;
 mod context;
 #[cfg(feature = "native")]

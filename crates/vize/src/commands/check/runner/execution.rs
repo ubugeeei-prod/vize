@@ -119,6 +119,7 @@ pub(super) fn prepare_program(
         &mut virtual_ts_options,
         input.nuxt_project_root,
         input.tsconfig_path.as_deref(),
+        input.tsconfig_path.as_ref().map(|_| input.files),
         legacy_vue2,
         dialect,
     );

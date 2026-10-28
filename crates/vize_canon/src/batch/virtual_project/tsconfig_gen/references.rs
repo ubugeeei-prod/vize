@@ -10,11 +10,12 @@ use std::path::{Path, PathBuf};
 use rayon::prelude::*;
 
 pub(super) mod graph;
-mod implicit_exclude;
 mod ownership;
 mod spec;
+mod wildcard;
 
 pub use ownership::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
+pub use wildcard::{TsconfigWildcard, TsconfigWildcardUsage};
 
 use super::super::tsconfig_paths::{
     normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,
@@ -125,3 +126,5 @@ pub(in super::super) fn effective_config_for_source(
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod wildcard_tests;

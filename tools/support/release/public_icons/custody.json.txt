@@ -1,0 +1,49 @@
+{
+  "schema": "vize.public-icons.typed-port-custody.v1",
+  "issue": 10928,
+  "requiredMerge": "d38ab7e48514566f1776f25439e8777a9856b5a6",
+  "originalPublicVersion": "0.599.0",
+  "expectedVersion": "first release containing requiredMerge",
+  "originalWarnings": 6,
+  "addedWarnings": [
+    {
+      "tag": "<i class=\"mdi mdi-close\" />",
+      "sourceLine": 3
+    },
+    {
+      "tag": "<i class=\"ri-home-line\" />",
+      "sourceLine": 8
+    }
+  ],
+  "semanticNormalization": "none",
+  "files": [
+    {
+      "path": "tools/support/release/public_icons/verify.ts",
+      "bytes": 2948,
+      "sha256": "7668662d9ec8d137673e4014169691536429fcfff6fda2b22b397ac412f65210"
+    },
+    {
+      "path": "tools/support/release/public_icons/before-public-0.599.0.json.txt",
+      "bytes": 5944,
+      "sha256": "c205b3deee856416cbf26181b729a1143df51c111600670ec395fa2f8542aebf"
+    },
+    {
+      "path": "tools/support/release/public_icons/original-sources/public-icon-classes-10928.mjs.txt",
+      "bytes": 1442,
+      "sha256": "4d94ca66b118d3a306a55721e724ebdc272528aab091fa20a412efb5e402ce9e"
+    }
+  ],
+  "portValidation": {
+    "typescript": "6.0.3",
+    "strictDiagnostics": 0,
+    "noUncheckedIndexedAccess": true,
+    "wholeOutputReplay": {
+      "vectors": 3,
+      "matchingOutputs": 3,
+      "counterfactuals": [
+        "missing MDI diagnostic",
+        "historical help-field drift"
+      ]
+    }
+  }
+}

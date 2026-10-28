@@ -88,19 +88,19 @@ fn unconfigured_discovery_keeps_filesystem_ignore_rules() {
 fn configured_walk_prunes_wildcard_packages_but_retains_literal_package_paths() {
     use super::{collect::skip_implicit_package_directory, spec::GlobSpec};
     let root = Path::new("/fixture");
-    let wildcard = [GlobSpec::new(root, "**/*").unwrap()];
+    let wildcard = [GlobSpec::include(root, "**/*").unwrap()];
     for name in ["node_modules", "bower_components", "jspm_packages"] {
         assert!(skip_implicit_package_directory(&root.join(name), &wildcard));
         assert!(skip_implicit_package_directory(
             &root.join("packages/a").join(name),
             &wildcard
         ));
-        let literal = [GlobSpec::new(root, &cstr!("packages/*/{name}/selected/*.ts")).unwrap()];
+        let literal = [GlobSpec::include(root, &cstr!("packages/*/{name}/selected/*.ts")).unwrap()];
         assert!(!skip_implicit_package_directory(
             &root.join("packages/a").join(name),
             &literal
         ));
-        let uppercase = [GlobSpec::new(
+        let uppercase = [GlobSpec::include(
             root,
             &cstr!("packages/*/{}/selected/*.ts", name.to_ascii_uppercase()),
         )
@@ -110,7 +110,7 @@ fn configured_walk_prunes_wildcard_packages_but_retains_literal_package_paths() 
             !cfg!(windows),
             "literal package retention follows the platform glob case policy"
         );
-        let anchored = [GlobSpec::new(&root.join(name).join("selected"), "**/*").unwrap()];
+        let anchored = [GlobSpec::include(&root.join(name).join("selected"), "**/*").unwrap()];
         assert!(!skip_implicit_package_directory(
             &root.join(name),
             &anchored
@@ -148,7 +148,7 @@ fn directory_pruning_preserves_original_generated_root_and_codegen_declaration_s
             .as_array()
             .unwrap()
             .iter()
-            .map(|pattern| GlobSpec::new(&root, pattern.as_str().unwrap()).unwrap())
+            .map(|pattern| GlobSpec::include(&root, pattern.as_str().unwrap()).unwrap())
             .collect::<Vec<_>>();
         let files = relative(
             &root,

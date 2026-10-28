@@ -1,23 +1,24 @@
 use std::path::{Path, PathBuf};
 
-use glob::{MatchOptions, Pattern};
 use serde_json::Value;
-use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
+use vize_carton::{FxHashMap, FxHashSet};
 
 use super::{
-    graph, implicit_exclude::wildcard_hits_package_folder, ownership::TsconfigSourceKind,
+    graph,
+    ownership::TsconfigSourceKind,
     parse_jsonc_value, resolve_extended_tsconfig_path,
+    wildcard::{TsconfigWildcard, TsconfigWildcardUsage},
 };
 
 #[derive(Clone)]
 pub(super) struct OwnershipSpec {
     /// `**/*` under the config directory, used when no `include` is inherited.
-    default_include: Option<GlobSpec>,
+    default_include: Option<TsconfigWildcard>,
     files: Option<Vec<PathBuf>>,
-    includes: Option<Vec<GlobSpec>>,
-    excludes: Option<Vec<GlobSpec>>,
-    out_dir: Option<Option<GlobSpec>>,
-    declaration_dir: Option<Option<GlobSpec>>,
+    includes: Option<Vec<TsconfigWildcard>>,
+    excludes: Option<Vec<TsconfigWildcard>>,
+    out_dir: Option<Option<TsconfigWildcard>>,
+    declaration_dir: Option<Option<TsconfigWildcard>>,
     pub(super) allow_js: Option<bool>,
 }
 
@@ -43,12 +44,12 @@ impl OwnershipSpec {
         let included = match self.includes.as_ref() {
             Some(includes) => includes
                 .iter()
-                .any(|include| include.matches_include(source_path, case_sensitive)),
+                .any(|include| include.matches(source_path, case_sensitive)),
             None if self.files.is_some() => false,
             None => self
                 .default_include
                 .as_ref()
-                .is_some_and(|include| include.matches_include(source_path, case_sensitive)),
+                .is_some_and(|include| include.matches(source_path, case_sensitive)),
         };
         if !included {
             return false;
@@ -117,7 +118,7 @@ impl SpecCache {
         let config = parse_jsonc_value(&content).ok()?;
         let base = config_path.parent().unwrap_or(Path::new("."));
         let mut effective = OwnershipSpec {
-            default_include: GlobSpec::new(base, "**/*"),
+            default_include: TsconfigWildcard::new(base, "**/*", TsconfigWildcardUsage::Include),
             files: None,
             includes: None,
             excludes: None,
@@ -146,7 +147,9 @@ impl SpecCache {
             effective.includes = Some(
                 includes
                     .into_iter()
-                    .filter_map(|include| GlobSpec::new(base, include))
+                    .filter_map(|include| {
+                        TsconfigWildcard::new(base, include, TsconfigWildcardUsage::Include)
+                    })
                     .collect(),
             );
         }
@@ -154,7 +157,9 @@ impl SpecCache {
             effective.excludes = Some(
                 excludes
                     .into_iter()
-                    .filter_map(|exclude| GlobSpec::new(base, exclude))
+                    .filter_map(|exclude| {
+                        TsconfigWildcard::new(base, exclude, TsconfigWildcardUsage::Exclude)
+                    })
                     .collect(),
             );
         }
@@ -180,7 +185,15 @@ impl SpecCache {
                 .and_then(|options| options.get(name))
                 .and_then(Value::as_str)
             {
-                *target = Some(GlobSpec::output_dir(base, output_dir));
+                // `tsc` skips an empty directory; its default exclude is the raw
+                // option value.
+                *target = Some(
+                    (!output_dir.is_empty())
+                        .then(|| {
+                            TsconfigWildcard::new(base, output_dir, TsconfigWildcardUsage::Exclude)
+                        })
+                        .flatten(),
+                );
             }
         }
         Some(effective)
@@ -202,93 +215,6 @@ fn string_array<'a>(config: &'a Value, name: &str) -> Option<Vec<&'a str>> {
         .map(|entries| entries.iter().filter_map(Value::as_str).collect())
 }
 
-#[derive(Clone)]
-struct GlobSpec {
-    base: PathBuf,
-    pattern: Pattern,
-    normalized: CompactString,
-}
-
-impl GlobSpec {
-    fn new(base: &Path, raw: &str) -> Option<Self> {
-        let (base, normalized) = normalize_glob_base(base, raw);
-        Pattern::new(normalized.as_str()).ok().map(|pattern| Self {
-            base: graph::normalize_path(&base),
-            pattern,
-            normalized,
-        })
-    }
-
-    fn output_dir(base: &Path, raw: &str) -> Option<Self> {
-        if raw.is_empty() {
-            return None;
-        }
-        let raw = Path::new(raw);
-        let resolved = if raw.is_absolute() {
-            raw.to_path_buf()
-        } else {
-            base.join(raw)
-        };
-        Self::new(&resolved, "**/*")
-    }
-
-    fn matches(&self, path: &Path, case_sensitive: bool) -> bool {
-        self.matched_relative(path, case_sensitive).is_some()
-    }
-
-    fn matches_include(&self, path: &Path, case_sensitive: bool) -> bool {
-        self.matched_relative(path, case_sensitive)
-            .is_some_and(|relative| {
-                !wildcard_hits_package_folder(self.normalized.as_str(), &relative, case_sensitive)
-            })
-    }
-
-    fn matched_relative(&self, path: &Path, case_sensitive: bool) -> Option<PathBuf> {
-        let relative = relative_to(path, &self.base, case_sensitive)?;
-        let normalized = relative.to_string_lossy().replace('\\', "/");
-        self.pattern
-            .matches_with(
-                &normalized,
-                MatchOptions {
-                    case_sensitive,
-                    require_literal_separator: true,
-                    require_literal_leading_dot: false,
-                },
-            )
-            .then_some(relative)
-    }
-}
-
-fn normalize_glob_base(base: &Path, raw: &str) -> (PathBuf, CompactString) {
-    let mut base = base.to_path_buf();
-    let mut pattern = normalize_glob(raw);
-    loop {
-        if let Some(rest) = pattern.strip_prefix("./") {
-            pattern = rest.into();
-        } else if let Some(rest) = pattern.strip_prefix("../") {
-            base = base.parent().unwrap_or(Path::new(".")).to_path_buf();
-            pattern = rest.into();
-        } else {
-            break;
-        }
-    }
-    (base, pattern)
-}
-
-fn normalize_glob(raw: &str) -> CompactString {
-    let mut value: CompactString = raw.replace('\\', "/").into();
-    if value.is_empty() || value == "." {
-        return "**/*".into();
-    }
-    if !value.contains(['*', '?', '[']) && Path::new(&value).extension().is_none() {
-        if !value.ends_with('/') {
-            value.push('/');
-        }
-        value.push_str("**/*");
-    }
-    value
-}
-
 fn paths_equal(left: &Path, right: &Path, case_sensitive: bool) -> bool {
     relative_to(left, right, case_sensitive).is_some_and(|path| path.as_os_str().is_empty())
 }
@@ -307,11 +233,7 @@ fn relative_to(path: &Path, base: &Path, case_sensitive: bool) -> Option<PathBuf
     Some(path_parts.map(|part| part.as_os_str()).collect())
 }
 
-pub(super) fn names_equal(
-    left: &std::ffi::OsStr,
-    right: &std::ffi::OsStr,
-    case_sensitive: bool,
-) -> bool {
+fn names_equal(left: &std::ffi::OsStr, right: &std::ffi::OsStr, case_sensitive: bool) -> bool {
     if case_sensitive {
         left == right
     } else {

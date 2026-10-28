@@ -460,7 +460,17 @@ pub(super) fn component_usage_has_checkable_binding(
     legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
-    super::super::script_facts::contains_binding(summary, name)
+    let script_binding = super::super::script_facts::with_bindings(summary, |bindings| {
+        if bindings.contains_binding(name) {
+            return true;
+        }
+        let camel = camelize(name);
+        let pascal = capitalize(camel.as_str());
+        [pascal.as_str(), camel.as_str()]
+            .into_iter()
+            .any(|candidate| bindings.contains_binding(candidate))
+    });
+    script_binding
         || (!legacy_vue2
             && (component_name_matches_external_template_binding(name, external_template_bindings)
                 || component_binding_check.allows(name)

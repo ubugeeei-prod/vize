@@ -73,6 +73,47 @@ fn selects_the_only_referenced_project_that_includes_the_source() {
 }
 
 #[test]
+fn a_literal_bracket_page_selects_its_project() {
+    // #10819: `[userId=int]` read as a character class left the page to the
+    // solution shell, without the app's options or typed router.
+    let root = tempfile::tempdir().unwrap();
+    write(
+        root.path(),
+        "tsconfig.json",
+        r#"{"files":[],"references":[{"path":"./tsconfig.app.json"},{"path":"./tsconfig.node.json"}]}"#,
+    );
+    write(
+        root.path(),
+        "tsconfig.app.json",
+        r#"{"include":["src/pages/users/[userId=int].vue"],"exclude":["src/pages/[legacy]"]}"#,
+    );
+    write(
+        root.path(),
+        "tsconfig.node.json",
+        r#"{"include":["src/pages/users/u.vue","src/pages/[legacy]"]}"#,
+    );
+    std::fs::create_dir_all(root.path().join("src/pages/users")).unwrap();
+    std::fs::create_dir_all(root.path().join("src/pages/[legacy]")).unwrap();
+    let owner = |file: &str| {
+        let source = root.path().join(file);
+        std::fs::write(&source, "<template />").unwrap();
+        super::effective_config_for_source(&root.path().join("tsconfig.json"), &source)
+    };
+    assert_eq!(
+        owner("src/pages/users/[userId=int].vue"),
+        normalized(&root.path().join("tsconfig.app.json"))
+    );
+    assert_eq!(
+        owner("src/pages/users/u.vue"),
+        normalized(&root.path().join("tsconfig.node.json"))
+    );
+    assert_eq!(
+        owner("src/pages/[legacy]/index.vue"),
+        normalized(&root.path().join("tsconfig.node.json"))
+    );
+}
+
+#[test]
 fn inherited_include_keeps_its_declaring_config_anchor() {
     let root = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(root.path().join("config/src")).unwrap();

@@ -96,15 +96,8 @@ pub(super) fn skip_implicit_package_directory(path: &Path, includes: &[GlobSpec]
     };
     is_package_folder(name)
         && !includes.iter().any(|include| {
-            include.base_dir.starts_with(path)
-                || (path.starts_with(&include.base_dir)
-                    && include.normalized.split('/').any(|segment| {
-                        if cfg!(windows) {
-                            segment.eq_ignore_ascii_case(name)
-                        } else {
-                            segment == name
-                        }
-                    }))
+            include.base_dir().starts_with(path)
+                || (path.starts_with(include.base_dir()) && include.names_literal_segment(name))
         })
 }
 
@@ -120,7 +113,7 @@ pub(super) fn collect_supported_files_for_include_roots(
     seen_roots.insert(normalized_project_root.clone());
 
     for include in includes {
-        let root = normalize_input_path(&include.base_dir);
+        let root = normalize_input_path(include.base_dir());
         if root.is_dir()
             && !root.starts_with(&normalized_project_root)
             && seen_roots.insert(root.clone())
@@ -151,11 +144,11 @@ pub(super) fn explicit_hidden_include_roots(
     let mut seen = FxHashSet::default();
 
     for include in includes {
-        if path_has_hidden_component_under_root(&include.base_dir, &normalized_project_root) {
-            push_hidden_include_root(&mut roots, &mut seen, &include.base_dir);
+        if path_has_hidden_component_under_root(include.base_dir(), &normalized_project_root) {
+            push_hidden_include_root(&mut roots, &mut seen, include.base_dir());
         }
-        if let Some(root) = hidden_pattern_root(&include.base_dir, &include.normalized) {
-            push_hidden_include_root(&mut roots, &mut seen, &root);
+        if let Some(root) = hidden_pattern_root(include) {
+            push_hidden_include_root(&mut roots, &mut seen, root);
         }
     }
 
@@ -176,8 +169,8 @@ pub(super) fn explicit_hidden_pattern_roots(includes: &[GlobSpec]) -> Vec<PathBu
     let mut seen = FxHashSet::default();
 
     for include in includes {
-        if let Some(root) = hidden_pattern_root(&include.base_dir, &include.normalized) {
-            push_hidden_include_root(&mut roots, &mut seen, &root);
+        if let Some(root) = hidden_pattern_root(include) {
+            push_hidden_include_root(&mut roots, &mut seen, root);
         }
     }
 
@@ -204,24 +197,15 @@ fn path_has_hidden_component_under_root(path: &Path, root: &Path) -> bool {
 /// The literal directory prefix of an include that spells out a hidden
 /// segment, i.e. `tsc`'s include base path. Stopping at the hidden segment
 /// instead walked a whole `node_modules/.pnpm` store for one Nuxt module path.
-fn hidden_pattern_root(base_dir: &Path, pattern: &str) -> Option<PathBuf> {
-    let segments = pattern
-        .split('/')
-        .filter(|segment| !segment.is_empty())
-        .collect::<Vec<_>>();
-    // A pattern without wildcards names a file (see `normalize_tsconfig_glob`).
-    let directories = segments
-        .iter()
-        .position(|segment| segment.contains(['*', '?', '[']))
-        .unwrap_or(segments.len().saturating_sub(1));
-    let literal = segments.get(..directories)?;
-    if !literal
-        .iter()
-        .any(|segment| is_hidden_path_segment(segment))
-    {
-        return None;
-    }
-    let mut root = base_dir.to_path_buf();
-    root.extend(literal);
-    Some(root)
+fn hidden_pattern_root(include: &GlobSpec) -> Option<&Path> {
+    include
+        .literal_directories()
+        .components()
+        .any(|segment| {
+            segment
+                .as_os_str()
+                .to_str()
+                .is_some_and(is_hidden_path_segment)
+        })
+        .then(|| include.base_dir())
 }

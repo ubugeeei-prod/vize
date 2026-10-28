@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+const [workspace,version,out]=process.argv.slice(2);
+const require=createRequire(join(resolve(workspace),'package.json'));
+assert.equal(require('@vizejs/native/package.json').version,version);
+const before=JSON.parse(readFileSync('/tmp/vize-p0-goal-20261027-511rot8h/icons10928/before-public.json','utf8'));
+const expected=structuredClone(before.result);
+for(const tag of ['<i class="mdi mdi-close" />','<i class="ri-home-line" />']){
+ const start=before.source.indexOf(tag),end=start+tag.length;
+ const position=offset=>{const lines=before.source.slice(0,offset).split('\n');return{column:lines.at(-1).length+1,line:lines.length,offset}};
+ expected.diagnostics.push({...structuredClone(before.result.diagnostics[0]),location:{start:position(start),end:position(end)}});
+}
+expected.diagnostics.sort((a,b)=>a.location.start.offset-b.location.start.offset);
+expected.warningCount=8;
+const actual=require('@vizejs/native').lintPatinaSfc(before.source,before.options);
+writeFileSync(out,JSON.stringify({version,source:before.source,options:before.options,actual,expected,before:before.result},null,2)+'\n');
+assert.deepEqual(actual,expected);
+console.log(JSON.stringify({version,exactWarnings:actual.warningCount,oldPacketsPreserved:before.result.diagnostics.length}));

@@ -14,6 +14,8 @@ mod shared_leaves;
 
 #[cfg(test)]
 mod alias_shards;
+#[cfg(test)]
+mod weight_work;
 
 /// Partition the project's source files into shard programs along the
 /// connected components of their import graph. Files in different components
@@ -29,6 +31,8 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
 }
 
 fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> ShardPlan<'_> {
+    #[cfg(test)]
+    weight_work::start_partition();
     let requested_servers = servers;
     let files = project.virtual_files_sorted();
     let mut partitioned: Vec<&VirtualFile> = Vec::new();
@@ -182,30 +186,41 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
             .push(index);
     }
     let weight = |file_indices: &[usize]| -> usize {
+        #[cfg(test)]
+        weight_work::record_call();
         file_indices
             .iter()
-            .filter_map(|&index| partitioned.get(index))
+            .filter_map(|&index| {
+                #[cfg(test)]
+                weight_work::record_member(index);
+                partitioned.get(index)
+            })
             .map(|file| file.content.len())
             .sum()
     };
-    let mut component_groups: Vec<Vec<usize>> = component_files.into_values().collect();
-    if component_groups.len() < 2 {
+    if component_files.len() < 2 {
         return no_sharding;
     }
-    let total_weight: usize = component_groups.iter().map(|group| weight(group)).sum();
-    component_groups.sort_by(|left, right| {
-        weight(right)
-            .cmp(&weight(left))
+    // Evaluate each member once. Sorting must not re-walk a component for
+    // every comparison, especially when a large graph meets many small ones.
+    let mut component_groups: Vec<(usize, Vec<usize>)> = component_files
+        .into_values()
+        .map(|files| (weight(&files), files))
+        .collect();
+    let total_weight: usize = component_groups.iter().map(|(weight, _)| *weight).sum();
+    component_groups.sort_by(|(left_weight, left), (right_weight, right)| {
+        right_weight
+            .cmp(left_weight)
             .then_with(|| left.first().cmp(&right.first()))
     });
 
     let servers = servers.min(component_groups.len());
     let mut bins: Vec<(usize, Vec<usize>)> = vec![(0, Vec::new()); servers];
-    for group in component_groups {
+    for (group_weight, group) in component_groups {
         let Some(bin) = bins.iter_mut().min_by_key(|(bin_weight, _)| *bin_weight) else {
             return no_sharding;
         };
-        bin.0 += weight(&group);
+        bin.0 += group_weight;
         bin.1.extend(group);
     }
     let largest = bins.iter().map(|(bin_weight, _)| *bin_weight).max();

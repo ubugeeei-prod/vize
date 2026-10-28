@@ -117,9 +117,9 @@ mod included_sources;
 mod tsconfig_gen;
 pub use tsconfig_gen::{
     CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
-    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind, UnresolvedExtends,
-    snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
-    snapshot_tsconfig_vue_target,
+    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind, TsconfigWildcard,
+    TsconfigWildcardUsage, UnresolvedExtends, snapshot_tsconfig_compiler_options,
+    snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
 };
 mod tsconfig_paths;
 // The Corsa session key (P5-8) digests the same `extends` chain.
