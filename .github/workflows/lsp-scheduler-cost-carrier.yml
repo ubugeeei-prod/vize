@@ -30,7 +30,7 @@ jobs:
           mkdir "$RUNNER_TEMP/partition-layout-controls"
           node tools/benchmarks/scripts/partition-weight-control.ts > "$RUNNER_TEMP/partition-layout-controls/planner-control.json"
           node tools/benchmarks/scripts/partition-weight-kernel-control.ts > "$RUNNER_TEMP/partition-layout-controls/kernel-control.json"
-          node --test tests/tooling/partition-weight-cli.test.ts 2>&1 | tee "$RUNNER_TEMP/partition-layout-controls/cli-controls.tap"
+          node --test --test-reporter=tap tests/tooling/partition-weight-cli.test.ts 2>&1 | tee "$RUNNER_TEMP/partition-layout-controls/cli-controls.tap"
           git rev-parse HEAD > "$RUNNER_TEMP/partition-layout-controls/source.sha"
           rustfmt --version > "$RUNNER_TEMP/partition-layout-controls/rustfmt.txt"
           node --version > "$RUNNER_TEMP/partition-layout-controls/node.txt"
