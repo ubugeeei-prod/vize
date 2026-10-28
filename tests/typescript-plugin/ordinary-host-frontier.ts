@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { startTsserver } from "./tsserver-client.mjs";
+import { startTsserver } from "./tsserver-client.ts";
 import type { createInheritedConfig } from "./inherited-config.ts";
 
 // This is an explicitly unqualified host boundary, separate from the Vue role.

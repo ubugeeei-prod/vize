@@ -49,7 +49,9 @@ fn registry_checked(
     super::template_ref_registry(
         summary,
         options,
-        Some(script),
+        super::super::SetupHelperPlan::collect(summary, Some(script), false)
+            .template_refs
+            .needs_registry(),
         Some(&root),
         &FxHashSet::<CompactString>::default(),
         checked,
@@ -115,6 +117,21 @@ fn an_instantiated_component_ref_reads_the_template_record() {
 #[test]
 fn a_script_that_never_names_use_template_ref_registers_nothing() {
     assert!(registry_for("const label = 'hi'", r#"<div ref="box" />"#).is_none());
+}
+
+#[test]
+fn typed_and_nested_calls_do_not_demand_inferred_ref_instances() {
+    for script in [
+        "import { useTemplateRef } from 'vue'; const box = useTemplateRef<HTMLElement>('box');",
+        "import { useTemplateRef as r } from 'vue'; const box = r<HTMLElement, 'box'>('box');",
+        "import { useTemplateRef } from 'vue'; function nested() { return useTemplateRef('box'); }",
+        "const text = 'useTemplateRef'; // useTemplateRef('box')",
+    ] {
+        assert!(
+            registry_for(script, r#"<Child ref="box" :foo="1" />"#).is_none(),
+            "{script}"
+        );
+    }
 }
 
 #[test]
@@ -315,7 +332,7 @@ const inner = useTemplateRef("inner");
     let registry = super::template_ref_registry(
         &summary,
         &VirtualTsOptions::default(),
-        Some(script),
+        true,
         Some(&root),
         &type_only,
         (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
@@ -338,7 +355,9 @@ const inner = useTemplateRef("inner");
     let registry = super::template_ref_registry(
         &Croquis::default(),
         &VirtualTsOptions::default(),
-        Some(script),
+        super::super::SetupHelperPlan::collect(&Croquis::default(), Some(script), false)
+            .template_refs
+            .needs_registry(),
         Some(&root),
         &type_only,
         (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
@@ -369,7 +388,7 @@ const root = useTemplateRef("root");
     let registry = super::template_ref_registry(
         &summary,
         &VirtualTsOptions::default(),
-        Some(script),
+        true,
         Some(&root),
         &FxHashSet::default(),
         (VirtualTsCheckOptions::default(), &TemplateRecord::default()),

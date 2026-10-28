@@ -1,0 +1,47 @@
+{
+  "schema": "vize.plain-script-ssr-reference",
+  "version": 1,
+  "input": {
+    "path": "Layout.vue.txt",
+    "original": "src/App.vue.txt",
+    "sha256": "d801e065a254bbffbd8ee5cac7a5d87885139c6bab38671c2a23916e4d780bee"
+  },
+  "reference": {
+    "path": "module.expected.txt",
+    "sha256": "f1f6bb4be9272e5b70f84fe852ce65955b82d2b84d53a9c73afa8fdabaf5489d",
+    "bytes": 828,
+    "wholeJsonPath": "ssr.source-output.json.txt",
+    "wholeJsonSha256": "6938ab3dcf765c44f51d4c4fb50e18ced4581ae9ddd3459fa61b015cd41ec49a"
+  },
+  "producer": {
+    "source": "3bfe310301328e45bb33ffa56cc3d2fbfe7f3945",
+    "tree": "725f800dde5688b9f9354c99d45ab674de80f64f",
+    "binarySha256": "c38d4bd1045be480199930282a363646dfbc784c906a8fbaaa5670c9a90f4137",
+    "run": 40528310601,
+    "job": 122282680803,
+    "artifact": 12748357555,
+    "artifactZipDigest": "sha256:1b31bf4a5d422e0164b7b0ba6e78b5421c62f97bb956ec901eab63fb2d707830"
+  },
+  "replay": {
+    "recipe": "51d62ad801eb22f69ddbe103a5d560630619e2b8",
+    "run": 40558736347,
+    "job": 122381720310,
+    "artifact": 12757933944,
+    "independentExecutions": 2,
+    "completePacket": {
+      "inputSha256": "d801e065a254bbffbd8ee5cac7a5d87885139c6bab38671c2a23916e4d780bee",
+      "moduleSha256": "f1f6bb4be9272e5b70f84fe852ce65955b82d2b84d53a9c73afa8fdabaf5489d",
+      "moduleBase64": "aW1wb3J0IHsgc3NyUmVuZGVyQ29tcG9uZW50IGFzIF9zc3JSZW5kZXJDb21wb25lbnQgfSBmcm9tICJAdnVlL3NlcnZlci1yZW5kZXJlciI7CmltcG9ydCB7IG1lcmdlUHJvcHMgYXMgX21lcmdlUHJvcHMgfSBmcm9tICJ2dWUiOwpmdW5jdGlvbiBzc3JSZW5kZXIoX2N0eCwgX3B1c2gsIF9wYXJlbnQsIF9hdHRycywgJHByb3BzLCAkc2V0dXAsICRkYXRhLCAkb3B0aW9ucykgewogIF9wdXNoKF9zc3JSZW5kZXJDb21wb25lbnQoJHNldHVwLkNoaWxkLCBfbWVyZ2VQcm9wcyh7CiAgICB0ZXh0OiAkc2V0dXAubGFiZWwsCiAgICBvblBpbmc6ICRzZXR1cC5vblBpbmcKICB9LCBfYXR0cnMpLCBudWxsLCBfcGFyZW50KSk7Cn0KaW1wb3J0IHsgbGFiZWwsIG9uUGluZyB9IGZyb20gIi4vc3RvcmUiOwppbXBvcnQgQ2hpbGQgZnJvbSAiLi9DaGlsZC52dWUiOwovLyBpbXBvcnRlZCBpbiB0aGUgcGxhaW4gPHNjcmlwdD4gYmxvY2ssIHVzZWQgYnkgdGhlIDxzY3JpcHQgc2V0dXA+IHRlbXBsYXRlCmV4cG9ydCBkZWZhdWx0IHsKICBfX25hbWU6ICJMYXlvdXQiLAogIHNzclJlbmRlciwKICBzZXR1cChfX3Byb3BzLCB7IGV4cG9zZTogX19leHBvc2UgfSkgewogICAgX19leHBvc2UoKTsKICAgIGNvbnN0IF9fcmV0dXJuZWRfXyA9IHsKICAgICAgQ2hpbGQsCiAgICAgIGxhYmVsLAogICAgICBvblBpbmcKICAgIH07CiAgICBPYmplY3QuZGVmaW5lUHJvcGVydHkoX19yZXR1cm5lZF9fLCAiX19pc1NjcmlwdFNldHVwIiwgewogICAgICBlbnVtZXJhYmxlOiBmYWxzZSwKICAgICAgdmFsdWU6IHRydWUKICAgIH0pOwogICAgcmV0dXJuIF9fcmV0dXJuZWRfXzsKICB9Cn07",
+      "firstWholeJsonBase64": "ewogICJmaWxlbmFtZSI6ICJMYXlvdXQudnVlIiwKICAiY29kZSI6ICJpbXBvcnQgeyBzc3JSZW5kZXJDb21wb25lbnQgYXMgX3NzclJlbmRlckNvbXBvbmVudCB9IGZyb20gXCJAdnVlL3NlcnZlci1yZW5kZXJlclwiO1xuaW1wb3J0IHsgbWVyZ2VQcm9wcyBhcyBfbWVyZ2VQcm9wcyB9IGZyb20gXCJ2dWVcIjtcbmZ1bmN0aW9uIHNzclJlbmRlcihfY3R4LCBfcHVzaCwgX3BhcmVudCwgX2F0dHJzLCAkcHJvcHMsICRzZXR1cCwgJGRhdGEsICRvcHRpb25zKSB7XG4gIF9wdXNoKF9zc3JSZW5kZXJDb21wb25lbnQoJHNldHVwLkNoaWxkLCBfbWVyZ2VQcm9wcyh7XG4gICAgdGV4dDogJHNldHVwLmxhYmVsLFxuICAgIG9uUGluZzogJHNldHVwLm9uUGluZ1xuICB9LCBfYXR0cnMpLCBudWxsLCBfcGFyZW50KSk7XG59XG5pbXBvcnQgeyBsYWJlbCwgb25QaW5nIH0gZnJvbSBcIi4vc3RvcmVcIjtcbmltcG9ydCBDaGlsZCBmcm9tIFwiLi9DaGlsZC52dWVcIjtcbi8vIGltcG9ydGVkIGluIHRoZSBwbGFpbiA8c2NyaXB0PiBibG9jaywgdXNlZCBieSB0aGUgPHNjcmlwdCBzZXR1cD4gdGVtcGxhdGVcbmV4cG9ydCBkZWZhdWx0IHtcbiAgX19uYW1lOiBcIkxheW91dFwiLFxuICBzc3JSZW5kZXIsXG4gIHNldHVwKF9fcHJvcHMsIHsgZXhwb3NlOiBfX2V4cG9zZSB9KSB7XG4gICAgX19leHBvc2UoKTtcbiAgICBjb25zdCBfX3JldHVybmVkX18gPSB7XG4gICAgICBDaGlsZCxcbiAgICAgIGxhYmVsLFxuICAgICAgb25QaW5nXG4gICAgfTtcbiAgICBPYmplY3QuZGVmaW5lUHJvcGVydHkoX19yZXR1cm5lZF9fLCBcIl9faXNTY3JpcHRTZXR1cFwiLCB7XG4gICAgICBlbnVtZXJhYmxlOiBmYWxzZSxcbiAgICAgIHZhbHVlOiB0cnVlXG4gICAgfSk7XG4gICAgcmV0dXJuIF9fcmV0dXJuZWRfXztcbiAgfVxufTsiLAogICJjc3MiOiBudWxsLAogICJlcnJvcnMiOiBbXSwKICAid2FybmluZ3MiOiBbXSwKICAic2NyaXB0X2xhbmciOiAidHMiLAogICJtYWNyb19hcnRpZmFjdHMiOiBbXQp9",
+      "binarySha256": "c38d4bd1045be480199930282a363646dfbc784c906a8fbaaa5670c9a90f4137",
+      "producerSource": "3bfe310301328e45bb33ffa56cc3d2fbfe7f3945",
+      "producerTree": "725f800dde5688b9f9354c99d45ab674de80f64f",
+      "producerRun": "40528310601",
+      "producerJob": "122282680803",
+      "artifactId": 12748357555,
+      "recipeSource": "51d62ad801eb22f69ddbe103a5d560630619e2b8",
+      "independentExecutions": 2
+    }
+  },
+  "scope": "Exact original App bytes, named Layout.vue for the existing SSR module adapter. The primary inline regression is qualified by the separate complete native/official packet and real Vite browser workflow."
+}

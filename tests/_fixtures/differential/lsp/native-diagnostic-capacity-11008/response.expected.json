@@ -1,0 +1,67 @@
+{
+  "schema": "vize.lsp.native-diagnostic-capacity-session",
+  "version": 1,
+  "genericAdapter": "unsupported-transition",
+  "genericNativeParityChecked": 0,
+  "bulkDocuments": 129,
+  "sourceDocuments": 130,
+  "normalizedInputSha256": "7bb95a6f151e978c96ab0e94434533a5834ca54bd9ad977c94e4487a3b3db2fd",
+  "normalizedReopenSha256": "e4afa12839595e7fcb6d43e3d1f05d2bd99042af1f089a2551eed3994b179c70",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true,
+    "typecheckTimeoutMs": 120000
+  },
+  "client": {
+    "messages": 395,
+    "requests": {
+      "initialize": 1,
+      "textDocument/documentColor": 1,
+      "shutdown": 1
+    },
+    "notifications": {
+      "initialized": 1,
+      "textDocument/didOpen": 130,
+      "textDocument/didChange": 260,
+      "exit": 1
+    },
+    "responses": 0
+  },
+  "operations": [
+    "initialize",
+    "seed-version1-native-error",
+    "hold-seed-version2-owned-native-request",
+    "open129-version1-invalid-with-sync-acceptance",
+    "foreground-color-barrier",
+    "resume-owned-native-backend",
+    "observe-all-version1-native-errors",
+    "bulk-repair129-version2",
+    "sequential129-version3-native-recovery",
+    "seed-version3-native-repair-and-checked-idle",
+    "shutdown-and-exit"
+  ],
+  "before": {
+    "revision": "49dc7684234a6ae723e1201c3d2bcb7c0039dbac",
+    "cliSha256": "c5241bc57d274bce1dd89a6b4d652bc0f828ede444f44caa22079ca29c3d7a79",
+    "coverage": [63, 64, 129],
+    "rawDiagnostics": 649,
+    "zeroReverseDependentReceipts": 261
+  },
+  "after": {
+    "revision": "c1dc7965dc51f91345db41a85f6cd5ca8866432c",
+    "cliSha256": "3e32f916f73cff80ddbdffcece6bc79238331eeb0660346f67f116dc6f136876",
+    "coverage": [129, 129, 129],
+    "rawDiagnostics": 780,
+    "zeroReverseDependentReceipts": 393
+  },
+  "reopen": {
+    "revision": "c1dc7965dc51f91345db41a85f6cd5ca8866432c",
+    "versions": [1, 2, 3],
+    "coverage": [1, 1, 1],
+    "rawDiagnostics": 10,
+    "stalePublications": 0,
+    "before": "not-measured"
+  },
+  "seedVersion2AppendedText": "\n"
+}

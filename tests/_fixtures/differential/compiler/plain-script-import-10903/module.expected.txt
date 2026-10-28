@@ -1,0 +1,28 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
+import { mergeProps as _mergeProps } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.Child, _mergeProps({
+    text: $setup.label,
+    onPing: $setup.onPing
+  }, _attrs), null, _parent));
+}
+import { label, onPing } from "./store";
+import Child from "./Child.vue";
+// imported in the plain <script> block, used by the <script setup> template
+export default {
+  __name: "Layout",
+  ssrRender,
+  setup(__props, { expose: __expose }) {
+    __expose();
+    const __returned__ = {
+      Child,
+      label,
+      onPing
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};

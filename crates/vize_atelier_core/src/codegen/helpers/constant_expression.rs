@@ -16,8 +16,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
-use vize_croquis::builtins::is_constant_global;
-use vize_l0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String, template_globals::is_vue_template_global as is_constant_global};
 
 fn is_constant_binding(binding_type: BindingType) -> bool {
     matches!(

@@ -107,7 +107,7 @@ pub(super) fn emit_setup_helpers(
     let registry = template_ref_registry(
         scope.summary,
         scope.options,
-        script_content,
+        component_context.helpers.template_refs.needs_registry(),
         template_ast,
         scope.syntactic_type_only_imported_names,
         (scope.checks, record),
@@ -145,8 +145,12 @@ pub(super) fn emit_setup_helpers(
         };
         append!(
             *ts,
-            "{dom_ref_helper}{component_ref_helper}{instance_helpers}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
+            "{dom_ref_helper}{component_ref_helper}{instance_helpers}"
         );
+        if component_context.helpers.template_refs.needs_registry() {
+            append!(*ts, "  type __VizeTemplateRefs = {{{registry_body}}};\n");
+            ts.push_str("  type __VizeUseTemplateRef = { <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };\n");
+        }
     }
     if record.types_dollar_refs() {
         let dollar_body = registry
@@ -167,7 +171,7 @@ pub(super) fn emit_setup_helpers(
         component_context.helpers,
         hoist_shared_preamble,
         boolean_keys.is_some(),
-        template_refs.is_some(),
+        template_refs.is_some() && component_context.helpers.template_refs.needs_registry(),
     );
     // Whether the template's ref registry is declared in this scope.
     template_refs.is_some()

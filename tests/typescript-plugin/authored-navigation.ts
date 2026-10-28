@@ -2,12 +2,28 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { position } from "./tsserver-client.mjs";
-import type { TsserverClient } from "./project-metadata.ts";
+import {
+  position,
+  type CallHierarchyItem,
+  type FileSpan,
+  type QuickInfo,
+  type References,
+  type Response,
+  type TsserverClient,
+} from "./tsserver-client.ts";
 
-type CallItem = Record<"from" | "to", { file: string; name: string }>;
+export interface NavigationFixture {
+  readonly importer: string;
+  readonly one: string;
+  readonly two: string;
+  readonly source: string;
+  readonly calls: string;
+  readonly callsSource: string;
+  readonly caller: string;
+  readonly callerSource: string;
+}
 
-export function createNavigationFixtures(src: string, output: string) {
+export function createNavigationFixtures(src: string, output: string): NavigationFixture {
   const directory = path.join(src, "navigation");
   fs.mkdirSync(directory);
   const importer = path.join(directory, "imports.ts");
@@ -30,7 +46,7 @@ export function createNavigationFixtures(src: string, output: string) {
     "export function shared() { return 1; }\nexport function plain() { return shared(); }\n";
   const callerSource =
     '<script setup lang="ts">\nimport { shared } from "./calls";\nfunction caller() { return shared(); }\nconst result = caller();\n</script>\n<template>{{ result }}</template>\n';
-  const inputs = [
+  const inputs: [string, string][] = [
     [importer, source],
     [
       one,
@@ -62,24 +78,24 @@ export function createNavigationFixtures(src: string, output: string) {
 
 export async function checkNavigation(
   client: TsserverClient,
-  fixture: ReturnType<typeof createNavigationFixtures>,
+  fixture: NavigationFixture,
   results: Record<string, unknown>,
   vue: string,
   vueText: string,
   util: string,
-) {
+): Promise<void> {
   const { importer, one, two, source, calls, callsSource, caller, callerSource } = fixture;
-  const request = async (
+  const request = async <Body>(
     name: string,
     command: string,
     file: string,
     text?: string,
     marker?: string,
     delta = 1,
-  ) => {
-    const response = await client.send(command, {
+  ): Promise<Response<Body>> => {
+    const response = await client.send<Body>(command, {
       file,
-      ...(marker ? position(text, marker, delta) : {}),
+      ...(marker ? position(text!, marker, delta) : {}),
     });
     results[name] = response;
     assert.equal(response.success, true, JSON.stringify(response));
@@ -102,14 +118,20 @@ export async function checkNavigation(
     ["named-default", "Named;"],
     ["barrel", "Bridge;"],
   ]) {
-    const definition = await request("navigation-" + name, "definition", importer, source, marker);
+    const definition = await request<FileSpan[]>(
+      "navigation-" + name,
+      "definition",
+      importer,
+      source,
+      marker,
+    );
     assert.equal(definition.body[0].file, one);
     assert.deepEqual(definition.body[0].start, { line: 1, offset: 1 });
   }
   const opened = source.replace('Card from "./One.vue"', 'Card from "./Two.vue"');
   await change(importer, source, opened);
   assert.equal(fs.readFileSync(importer, "utf8"), source, "the import edit remains unsaved");
-  const changedDefinition = await request(
+  const changedDefinition = await request<FileSpan[]>(
     "navigation-unsaved-import",
     "definition",
     importer,
@@ -117,7 +139,7 @@ export async function checkNavigation(
     "Card;",
   );
   assert.equal(changedDefinition.body[0].file, two);
-  const changedHover = await request(
+  const changedHover = await request<QuickInfo>(
     "navigation-unsaved-hover",
     "quickinfo",
     importer,
@@ -126,7 +148,7 @@ export async function checkNavigation(
   );
   assert.match(changedHover.body.displayString, /two: number/);
   assert.doesNotMatch(changedHover.body.displayString, /one: string/);
-  const parameter = await request(
+  const parameter = await request<FileSpan[]>(
     "navigation-shadow-parameter",
     "definition",
     importer,
@@ -136,7 +158,7 @@ export async function checkNavigation(
   );
   assert.equal(parameter.body[0].file, importer);
   assert.deepEqual(parameter.body[0].start, position(opened, "Card: number", 0));
-  const parameterHover = await request(
+  const parameterHover = await request<QuickInfo>(
     "navigation-shadow-hover",
     "quickinfo",
     importer,
@@ -146,7 +168,7 @@ export async function checkNavigation(
   );
   assert.match(parameterHover.body.displayString, /Card: number/);
   assert.doesNotMatch(parameterHover.body.displayString, /VueComponent/);
-  const propertyHover = await request(
+  const propertyHover = await request<QuickInfo>(
     "navigation-property-name",
     "quickinfo",
     importer,
@@ -156,7 +178,7 @@ export async function checkNavigation(
   );
   assert.match(propertyHover.body.displayString, /Card: number/);
   assert.doesNotMatch(propertyHover.body.displayString, /VueComponent/);
-  const shorthand = await request(
+  const shorthand = await request<FileSpan[]>(
     "navigation-shorthand-value",
     "definition",
     importer,
@@ -170,8 +192,12 @@ export async function checkNavigation(
   assert.equal(fs.readFileSync(importer, "utf8"), source);
 
   await client.send("open", { file: util, fileContent: fs.readFileSync(util, "utf8") }, false);
-  const fileReferences = await request("authored-file-references", "fileReferences", util);
-  const authored = fileReferences.body.refs.find((entry: { file: string }) => entry.file === vue);
+  const fileReferences = await request<References>(
+    "authored-file-references",
+    "fileReferences",
+    util,
+  );
+  const authored = fileReferences.body.refs.find((entry) => entry.file === vue);
   assert(authored, JSON.stringify(fileReferences));
   assert.deepEqual(authored.start, position(vueText, "./util", 0));
   assert.deepEqual(authored.end, position(vueText, "./util", "./util".length));
@@ -183,7 +209,7 @@ export async function checkNavigation(
     { file: caller, fileContent: callerSource, scriptKindName: "TS" },
     false,
   );
-  const incoming = await request(
+  const incoming = await request<{ readonly from: CallHierarchyItem }[]>(
     "safe-incoming-call-hierarchy",
     "provideCallHierarchyIncomingCalls",
     calls,
@@ -191,14 +217,14 @@ export async function checkNavigation(
     "shared",
   );
   assert(
-    incoming.body.some((call: CallItem) => call.from.file === calls && call.from.name === "plain"),
+    incoming.body.some((call) => call.from.file === calls && call.from.name === "plain"),
     JSON.stringify(incoming),
   );
   assert(
-    incoming.body.every((call: CallItem) => call.from.file !== caller),
+    incoming.body.every((call) => call.from.file !== caller),
     JSON.stringify(incoming),
   );
-  const outgoing = await request(
+  const outgoing = await request<{ readonly to: CallHierarchyItem }[]>(
     "ordinary-outgoing-call-hierarchy",
     "provideCallHierarchyOutgoingCalls",
     calls,
@@ -206,10 +232,10 @@ export async function checkNavigation(
     "plain",
   );
   assert(
-    outgoing.body.some((call: CallItem) => call.to.file === calls && call.to.name === "shared"),
+    outgoing.body.some((call) => call.to.file === calls && call.to.name === "shared"),
     JSON.stringify(outgoing),
   );
-  const refused = await request(
+  const refused = await request<unknown[]>(
     "unsupported-vue-outgoing-call-hierarchy",
     "provideCallHierarchyOutgoingCalls",
     caller,

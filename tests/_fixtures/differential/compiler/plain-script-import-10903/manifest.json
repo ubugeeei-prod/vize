@@ -1,0 +1,50 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/10903",
+  "issueUpdatedAt": "2026-10-27T10:49:16Z",
+  "bodySha256": "61efec9eeecedd7b9f5761e403efa12c94792c6bc73c1fc085c51a280515753e",
+  "files": [
+    {
+      "logical": "package.json",
+      "stored": "package.json.txt",
+      "sha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283"
+    },
+    {
+      "logical": "vite.config.ts",
+      "stored": "vite.config.ts.txt",
+      "sha256": "f92c646184204b25c79d0eb1f289c99a2cc8acb04cfd28dccc50973a650d7df8"
+    },
+    {
+      "logical": "index.html",
+      "stored": "index.html.txt",
+      "sha256": "bea87c52c2bf1e851498ae0daded297b9572be1219985163c861e547a17067f1"
+    },
+    {
+      "logical": "src/main.ts",
+      "stored": "src/main.ts.txt",
+      "sha256": "cf0f7c422d640b2e001e7eedadb53c32c5fb9ab43004bb439e731a86b2789d9c"
+    },
+    {
+      "logical": "src/store.ts",
+      "stored": "src/store.ts.txt",
+      "sha256": "f1d077196f0a675c0fa252b9c03ac1519d943669027c71b68d0d793cb38fffa6"
+    },
+    {
+      "logical": "src/Child.vue",
+      "stored": "src/Child.vue.txt",
+      "sha256": "b55ac42c751c299fe5669d5af62b0a4ed0f9ca61cffed4b2d910e586dbf85a7a"
+    },
+    {
+      "logical": "src/App.vue",
+      "stored": "src/App.vue.txt",
+      "sha256": "d801e065a254bbffbd8ee5cac7a5d87885139c6bab38671c2a23916e4d780bee"
+    },
+    {
+      "logical": "run.mjs",
+      "stored": "run.mjs.txt",
+      "sha256": "83f1f390129627d936fb58f70ce2d83d6926d5346029432adcc9ef96df1e54d9"
+    }
+  ],
+  "officialBoundary": "https://github.com/vuejs/core/blob/v3.5.41/packages/compiler-sfc/src/compileScript.ts#L748-L757",
+  "officialBlob": "d2047c5b2fe8da4285b3cd468a62c5a48d26cf6d",
+  "beforeSource": "db5c35c12124086f034563b6800dbdab8605cdc0"
+}

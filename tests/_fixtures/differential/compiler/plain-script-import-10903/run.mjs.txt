@@ -1,0 +1,26 @@
+import { build, preview, createServer } from "vite";
+import { chromium } from "playwright";
+let server, url;
+if (process.env.MODE === "dev") {
+  server = await createServer({ root: import.meta.dirname, server: { port: 0 }, logLevel: "warn" });
+  await server.listen();
+  url = server.resolvedUrls.local[0];
+} else {
+  await build({ root: import.meta.dirname, logLevel: "warn" });
+  server = await preview({ root: import.meta.dirname, preview: { port: 0 }, logLevel: "warn" });
+  url = server.resolvedUrls.local[0];
+}
+const browser = await chromium.launch();
+const page = await browser.newPage();
+const errors = [];
+page.on("pageerror", e => errors.push(e.message.split("\n")[0]));
+page.on("console", m => m.type() === "error" && errors.push(m.text().split("\n")[0]));
+await page.goto(url);
+await page.waitForSelector("#child");
+const text = await page.textContent("#child");
+await page.click("#child");
+await page.waitForTimeout(100);
+const pings = await page.evaluate(() => window.pings);
+console.log(`${process.env.COMPILER ?? "vize"} (${process.env.MODE ?? "build"}): text ${JSON.stringify(text)}, pings ${pings} (expected "from ref", 1)${errors.length ? " errors: " + JSON.stringify(errors) : ""}`);
+await browser.close();
+await server.close();

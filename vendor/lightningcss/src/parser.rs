@@ -189,6 +189,7 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> TopLevelRuleParser<'a, 'i, 
       rules: &mut self.rules,
       is_in_style_rule: false,
       allow_declarations: false,
+      is_scope_body: false,
     }
   }
 }
@@ -467,6 +468,9 @@ pub struct NestedRuleParser<'a, 'i, T: crate::traits::AtRuleParser<'i>> {
   rules: &'a mut CssRuleList<'i, T::AtRule>,
   is_in_style_rule: bool,
   allow_declarations: bool,
+  // Vize: rules in an `@scope` body are relative to its scoping root, not to an
+  // enclosing style rule, so they take no implicit `&`.
+  is_scope_body: bool,
 }
 
 impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> NestedRuleParser<'a, 'i, T> {
@@ -474,6 +478,15 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> NestedRuleParser<'a, 'i, T>
     &mut self,
     input: &mut Parser<'i, 't>,
     is_style_rule: bool,
+  ) -> Result<(DeclarationBlock<'i>, CssRuleList<'i, T::AtRule>), ParseError<'i, ParserError<'i>>> {
+    self.parse_nested_body(input, is_style_rule, false)
+  }
+
+  fn parse_nested_body<'t>(
+    &mut self,
+    input: &mut Parser<'i, 't>,
+    is_style_rule: bool,
+    is_scope_body: bool,
   ) -> Result<(DeclarationBlock<'i>, CssRuleList<'i, T::AtRule>), ParseError<'i, ParserError<'i>>> {
     let mut rules = CssRuleList(vec![]);
     let mut nested_parser = NestedRuleParser {
@@ -484,6 +497,8 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> NestedRuleParser<'a, 'i, T>
       rules: &mut rules,
       is_in_style_rule: self.is_in_style_rule || is_style_rule,
       allow_declarations: self.allow_declarations || self.is_in_style_rule || is_style_rule,
+      // Conditional blocks inside a scope body stay relative to its root.
+      is_scope_body: is_scope_body || (self.is_scope_body && !is_style_rule),
     };
 
     let parse_declarations = nested_parser.parse_declarations();
@@ -533,6 +548,14 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> NestedRuleParser<'a, 'i, T>
     &mut self,
     input: &mut Parser<'i, 't>,
   ) -> Result<CssRuleList<'i, T::AtRule>, ParseError<'i, ParserError<'i>>> {
+    self.parse_block_body(input, false)
+  }
+
+  fn parse_block_body<'t>(
+    &mut self,
+    input: &mut Parser<'i, 't>,
+    is_scope_body: bool,
+  ) -> Result<CssRuleList<'i, T::AtRule>, ParseError<'i, ParserError<'i>>> {
     let loc = input.current_source_location();
     let loc = Location {
       source_index: self.options.source_index,
@@ -542,7 +565,7 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> NestedRuleParser<'a, 'i, T>
 
     // Declarations can be immediately within @media and @supports blocks that are nested within a parent style rule.
     // These are wrapped in an (invisible) NestedDeclarationsRule.
-    let (declarations, mut rules) = self.parse_nested(input, false)?;
+    let (declarations, mut rules) = self.parse_nested_body(input, false, is_scope_body)?;
 
     if declarations.len() > 0 {
       rules.0.insert(
@@ -857,7 +880,7 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> AtRuleParser<'i> for Nested
         Ok(())
       }
       AtRulePrelude::Scope(scope_start, scope_end) => {
-        let rules = self.parse_style_block(input)?;
+        let rules = self.parse_block_body(input, true)?;
         self.rules.0.push(CssRule::Scope(ScopeRule {
           scope_start,
           scope_end,
@@ -997,7 +1020,34 @@ impl<'a, 'b, 'i, T: crate::traits::AtRuleParser<'i>> QualifiedRuleParser<'i> for
       is_nesting_allowed: true,
       options: &self.options,
     };
-    if self.is_in_style_rule {
+    if self.is_scope_body {
+      // Scoped rules accept relative selectors, but an implied scope anchor
+      // must not become an explicit :scope with higher specificity. Parse
+      // each list item independently so an authored :scope or & is untouched.
+      let lists = input.parse_comma_separated(|input| {
+        let state = input.state();
+        let leading_combinator = matches!(input.next(), Ok(Token::Delim('>' | '+' | '~')));
+        input.reset(&state);
+        if leading_combinator {
+          SelectorList::parse_relative(
+            &selector_parser,
+            input,
+            ParseErrorRecovery::DiscardList,
+            NestingRequirement::Implicit,
+          )
+        } else {
+          SelectorList::parse(
+            &selector_parser,
+            input,
+            ParseErrorRecovery::DiscardList,
+            NestingRequirement::None,
+          )
+        }
+      })?;
+      Ok(SelectorList::from_vec(
+        lists.into_iter().flat_map(|list| list.0).collect(),
+      ))
+    } else if self.is_in_style_rule {
       SelectorList::parse_relative(
         &selector_parser,
         input,
@@ -1167,6 +1217,7 @@ pub fn parse_rule_list<'a, 'i, 't, T: crate::traits::AtRuleParser<'i>>(
     rules: &mut CssRuleList(Vec::new()),
     is_in_style_rule: false,
     allow_declarations: false,
+    is_scope_body: false,
   };
 
   let (_, rules) = parser.parse_nested(input, false)?;
@@ -1187,6 +1238,7 @@ pub fn parse_style_block<'a, 'i, 't, T: crate::traits::AtRuleParser<'i>>(
     rules: &mut CssRuleList(Vec::new()),
     is_in_style_rule: is_nested,
     allow_declarations: true,
+    is_scope_body: false,
   };
 
   parser.parse_style_block(input)
