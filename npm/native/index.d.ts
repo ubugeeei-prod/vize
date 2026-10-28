@@ -577,6 +577,8 @@ export interface FormatOptionsNapi {
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;
   singleAttributePerLine?: boolean;
+  /** Indent the contents of `<script>` and `<style>` blocks. */
+  vueIndentScriptAndStyle?: boolean;
   maxAttributesPerLine?: number;
   normalizeDirectiveShorthands?: boolean;
   /** Order SFC blocks canonically; false preserves their authored order. */

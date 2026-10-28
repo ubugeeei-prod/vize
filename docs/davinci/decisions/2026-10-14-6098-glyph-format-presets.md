@@ -182,3 +182,14 @@ support. The CLI flag is `--end-of-line <lf|crlf|cr|auto>`. An explicit CLI
 value applies after config and a selected preset. A public CLI whole-output
 regression proves exact CRLF bytes and a second-pass fixed point; the existing
 line-ending fixtures continue to cover all four modes independently.
+
+## SFC body indentation option parity
+
+The existing `vueIndentScriptAndStyle` boolean now has direct CLI and native
+Node projections in addition to Rust, config schema, generated TypeScript,
+Pkl, editor, WASM and the Prettier plugin. The CLI flag is
+`--vue-indent-script-and-style[=false]`; Node `formatSfc` uses the camel-case
+option name. It remains opt-in: the default and all four named presets keep
+their existing assignments. Public CLI and Node whole-output regressions prove
+second/third-pass fixed points, while the existing option matrix continues to
+exercise the enabled value over the full in-repo Vue corpus.

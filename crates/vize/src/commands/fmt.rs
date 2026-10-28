@@ -108,6 +108,10 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_attribute_per_line: Option<bool>,
 
+    /// Indent script and style block contents
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub vue_indent_script_and_style: Option<bool>,
+
     /// Maximum number of attributes per line before wrapping
     #[arg(long)]
     pub max_attributes_per_line: Option<u32>,
@@ -607,25 +611,5 @@ struct FormatFileProfile {
     read_time: Duration,
 }
 
-#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
-mod tests {
-    use super::format_file_source;
-    use std::path::Path;
-
-    #[test]
-    fn format_file_source_formats_standalone_tsx() {
-        let options = super::FormatOptions::default();
-        let allocator = super::Allocator::default();
-        let result = format_file_source(
-            Path::new("Component.tsx"),
-            "const Component=({label}:{label:string})=><button>{label}</button>",
-            &options,
-            &allocator,
-            (super::VueVersion::V3, None, false),
-        )
-        .unwrap();
-
-        insta::assert_snapshot!(result.code.as_str());
-    }
-}
+mod tests;
