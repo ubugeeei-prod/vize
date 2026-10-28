@@ -6,7 +6,7 @@ import {
   qualifyLiveProjectionCapture,
   qualifyRetainedProjectionHistory,
   sha256,
-} from "./typechecker-template-emit-projection-history.mjs";
+} from "./typechecker-template-emit-projection-history.ts";
 
 const capture = process.env.VIZE_TEMPLATE_EMIT_TS40_CAPTURE;
 assert(capture, "VIZE_TEMPLATE_EMIT_TS40_CAPTURE is required");
@@ -45,10 +45,19 @@ assert.deepEqual(
   "current projection packet membership drifted",
 );
 const verifierUrl = new URL(import.meta.url);
-const historyVerifierUrl = new URL(
-  "./typechecker-template-emit-projection-history.mjs",
-  import.meta.url,
-);
+const historyVerifierModules = [
+  "typechecker-template-emit-projection-history-baseline.ts",
+  "typechecker-template-emit-projection-history-coordinates.ts",
+  "typechecker-template-emit-projection-history-fixture.ts",
+  "typechecker-template-emit-projection-history-live.ts",
+  "typechecker-template-emit-projection-history-model.ts",
+  "typechecker-template-emit-projection-history-shared.ts",
+  "typechecker-template-emit-projection-history.ts",
+].map((path) => ({
+  path,
+  sha256: sha256(readFileSync(new URL(`./${path}`, import.meta.url))),
+}));
+const historyVerifierSha256 = sha256(Buffer.from(`${JSON.stringify(historyVerifierModules)}\n`));
 writeFileSync(
   receiptPath,
   `${JSON.stringify(
@@ -56,7 +65,8 @@ writeFileSync(
       schema: 2,
       sourceSha: process.env.SOURCE_SHA,
       verifierSha256: sha256(readFileSync(verifierUrl)),
-      historyVerifierSha256: sha256(readFileSync(historyVerifierUrl)),
+      historyVerifierSha256,
+      historyVerifierModules,
       currentProjection,
       historicalProjection,
       completeRawInputsAndOutputs: rawFiles.map((path, index) => ({

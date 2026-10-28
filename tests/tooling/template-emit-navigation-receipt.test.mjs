@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   applyInverseEdits,
   historicalInterval,
   historicalOffset,
   loadRetainedProjectionFixture,
   qualifyRetainedProjectionHistory,
-} from "../../tools/benchmarks/scripts/typechecker-template-emit-projection-history.mjs";
+  sha256,
+} from "../../tools/benchmarks/scripts/typechecker-template-emit-projection-history.ts";
 
 function cloneFixture(fixture) {
   return {
@@ -57,6 +63,58 @@ void test("retained successful and failed artifacts preserve the frozen projecti
       ["define-model", 97],
     ],
   );
+});
+
+void test("the complete incident packet produces a module-custodied schema-2 receipt", () => {
+  const fixture = loadRetainedProjectionFixture();
+  const root = mkdtempSync(join(tmpdir(), "vize-projection-receipt-"));
+  try {
+    for (const [path, bytes] of fixture.packets.incident) {
+      const target = join(root, path);
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, bytes);
+    }
+    const verifier = fileURLToPath(
+      new URL(
+        "../../tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
+        import.meta.url,
+      ),
+    );
+    const result = spawnSync(process.execPath, [verifier], {
+      env: {
+        ...process.env,
+        SOURCE_SHA: fixture.manifest.artifacts.incident.sourceSha,
+        VIZE_TEMPLATE_EMIT_TS40_CAPTURE: root,
+      },
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+    const receipt = JSON.parse(readFileSync(join(root, "receipts.json"), "utf8"));
+    assert.equal(receipt.schema, 2);
+    assert.deepEqual(
+      receipt.historyVerifierModules.map(({ path }) => path),
+      [
+        "typechecker-template-emit-projection-history-baseline.ts",
+        "typechecker-template-emit-projection-history-coordinates.ts",
+        "typechecker-template-emit-projection-history-fixture.ts",
+        "typechecker-template-emit-projection-history-live.ts",
+        "typechecker-template-emit-projection-history-model.ts",
+        "typechecker-template-emit-projection-history-shared.ts",
+        "typechecker-template-emit-projection-history.ts",
+      ],
+    );
+    for (const module of receipt.historyVerifierModules) {
+      const url = new URL(`../../tools/benchmarks/scripts/${module.path}`, import.meta.url);
+      assert.equal(module.sha256, sha256(readFileSync(url)));
+    }
+    assert.equal(
+      receipt.historyVerifierSha256,
+      sha256(Buffer.from(`${JSON.stringify(receipt.historyVerifierModules)}\n`)),
+    );
+    assert.equal(receipt.completeRawInputsAndOutputs.length, 194);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 void test("mutated generated helpers cannot reuse the retained edit scripts", () => {
