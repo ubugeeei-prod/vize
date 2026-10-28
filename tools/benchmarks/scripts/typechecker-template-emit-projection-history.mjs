@@ -220,7 +220,11 @@ function textRows(bytes) {
 }
 
 function rowsDigest(rows) {
-  return sha256(Buffer.from(`${JSON.stringify([...rows].sort())}\n`));
+  return sha256(
+    Buffer.from(
+      `${JSON.stringify([...rows].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)))}\n`,
+    ),
+  );
 }
 
 function generatedRange(startValue, endValue, edits) {
@@ -428,13 +432,26 @@ export function projectionCoordinateProof(manifest, packets) {
     const mapper = scripts.get(`${family}/content-mapper`);
     const maestro = scripts.get(`${family}/maestro`);
     assert(canon && mapper && maestro);
-    for (const [path, normalize] of [
-      ["canon/mappings.txt", (row) => normalizeCanonMapping(row, canon.edits)],
-      ["canon/semantic-links.txt", (row) => normalizeCanonLink(row, canon.edits)],
-      ["content-mapper/mappings.txt", (row) => normalizeMapperMapping(row, mapper.edits)],
-      ["content-mapper/semantic-links.txt", (row) => normalizeMapperLink(row, mapper.edits)],
-      ["content-mapper/authored-hits.txt", (row) => normalizeMapperHit(row, mapper.edits)],
-    ])
+    const coordinateSurfaces = [
+      { path: "canon/mappings.txt", normalize: (row) => normalizeCanonMapping(row, canon.edits) },
+      {
+        path: "canon/semantic-links.txt",
+        normalize: (row) => normalizeCanonLink(row, canon.edits),
+      },
+      {
+        path: "content-mapper/mappings.txt",
+        normalize: (row) => normalizeMapperMapping(row, mapper.edits),
+      },
+      {
+        path: "content-mapper/semantic-links.txt",
+        normalize: (row) => normalizeMapperLink(row, mapper.edits),
+      },
+      {
+        path: "content-mapper/authored-hits.txt",
+        normalize: (row) => normalizeMapperHit(row, mapper.edits),
+      },
+    ];
+    for (const { path, normalize } of coordinateSurfaces)
       surfaces.push(
         reconcileCoordinateRows(
           `${family}/${path}`,
