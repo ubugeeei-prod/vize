@@ -260,8 +260,8 @@ catalogs:
       version: 1.16.0
   nuxt-module:
     '@nuxt/kit':
-      specifier: 3.11.2
-      version: 3.11.2
+      specifier: 3.21.8
+      version: 3.21.8
   oxc:
     oxc-parser:
       specifier: 0.144.0
@@ -471,6 +471,9 @@ importers:
       ajv:
         specifier: catalog:repo-tooling
         version: 8.20.0
+      chokidar-braces-oracle:
+        specifier: npm:chokidar@3.6.0
+        version: chokidar@3.6.0
       glob:
         specifier: catalog:repo-tooling
         version: 13.0.6
@@ -1203,7 +1206,7 @@ importers:
     dependencies:
       '@nuxt/kit':
         specifier: catalog:nuxt-module
-        version: 3.11.2(magicast@0.5.4)(rollup@4.62.4)(supports-color@10.2.2)
+        version: 3.21.8(magicast@0.5.4)
       '@vizejs/native':
         specifier: workspace:*
         version: link:../../native
@@ -3967,6 +3970,10 @@ packages:
 
   '@nuxt/kit@3.21.11':
     resolution: {integrity: sha512-0Xi3tgwN77w43Q8GCPIrvWmF1J7Peehkts44E0uKNIml9lB8WoUn8YxyUjxBv47XtVR86NWoWALAT+/IEMHJEA==}
+    engines: {node: '>=18.12.0'}
+
+  '@nuxt/kit@3.21.8':
+    resolution: {integrity: sha512-kg63DUPY5AHPn+9XM7u8rYcdWHXjzwfUscgRDuiC5YUciQ+xdLRhdwXelYFxEAx2nxJHossliiQXbMm/Fleivw==}
     engines: {node: '>=18.12.0'}
 
   '@nuxt/kit@4.5.2':
@@ -17917,6 +17924,32 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
+  '@nuxt/kit@3.21.8(magicast@0.5.4)':
+    dependencies:
+      c12: 3.3.4(magicast@0.5.4)
+      consola: 3.4.2
+      defu: 6.1.7
+      destr: 2.0.5
+      errx: 0.1.2
+      exsolve: 1.1.3
+      ignore: 7.0.13
+      jiti: 2.7.0
+      klona: 2.0.6
+      knitwork: 1.3.0
+      mlly: 1.8.2
+      ohash: 2.0.12
+      pathe: 2.0.3
+      pkg-types: 2.4.0
+      rc9: 3.1.0
+      scule: 1.3.0
+      semver: 7.8.5
+      tinyglobby: 0.2.17
+      ufo: 1.6.4
+      unctx: 2.5.0
+      untyped: 2.0.0
+    transitivePeerDependencies:
+      - magicast
+
   '@nuxt/kit@4.5.2(magic-string@0.30.21)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1))':
     dependencies:
       c12: 3.3.4(magicast@0.5.5)
@@ -23752,7 +23785,6 @@ snapshots:
       rc9: 3.0.1
     optionalDependencies:
       magicast: 0.5.4
-    optional: true
 
   c12@3.3.4(magicast@0.5.5):
     dependencies:
