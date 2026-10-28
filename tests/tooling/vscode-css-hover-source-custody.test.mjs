@@ -316,35 +316,36 @@ await test("merged main integration rejects altered postimages, modes, preimages
   const p1 = composeReviewedCssTrees(entries(contract.historicalBaselineRevision), [
     contract.layers[0],
   ]);
-  for (const [preimage, target] of [
-    [p1, contract.mergedMain],
-    [entries(contract.mergedMain.sourceRevision), contract.successorMain],
+  const reviewedCss = composeReviewedCssTrees(
+    entries(contract.successorMain.sourceRevision),
+    contract.layers.slice(1),
+  );
+  const pinnedProduct = composeReviewedCssTrees(reviewedCss, [contract.currentContracts]);
+  const currentProduct = composeReviewedCssTrees(pinnedProduct, contract.currentCheckoutLayers);
+  for (const [preimage, layer, actual] of [
+    [p1, contract.mergedMain.integrationLayer, entries(contract.mergedMain.sourceRevision)],
     [
-      composeReviewedCssTrees(
-        entries(contract.successorMain.sourceRevision),
-        contract.layers.slice(1),
-      ),
-      { sourceRevision: contract.productTreeRevision, integrationLayer: contract.currentContracts },
+      entries(contract.mergedMain.sourceRevision),
+      contract.successorMain.integrationLayer,
+      entries(contract.successorMain.sourceRevision),
     ],
+    [reviewedCss, contract.currentContracts, pinnedProduct],
+    [pinnedProduct, contract.currentCheckoutLayers[0], currentProduct],
   ]) {
-    const actual =
-      target.integrationLayer === contract.currentContracts
-        ? composeReviewedCssTrees(preimage, [contract.currentContracts])
-        : entries(target.sourceRevision);
     for (const mutation of ["blob", "mode", "preimage", "extra"]) {
-      const layer = structuredClone(target.integrationLayer);
-      if (mutation === "blob") layer.changes[0].after.oid = "1".repeat(40);
-      else if (mutation === "mode") layer.changes[0].after.mode = "100755";
+      const mutated = structuredClone(layer);
+      if (mutation === "blob") mutated.changes[0].after.oid = "1".repeat(40);
+      else if (mutation === "mode") mutated.changes[0].after.mode = "100755";
       else if (mutation === "preimage")
-        layer.changes[0].before = row(layer.changes[0].path, "2".repeat(40));
+        mutated.changes[0].before = row(mutated.changes[0].path, "2".repeat(40));
       else
-        layer.changes.push({
+        mutated.changes.push({
           path: "crates/unreviewed.rs",
           before: null,
           after: row("crates/unreviewed.rs", "3".repeat(40)),
         });
       assert.throws(
-        () => assertExactCssTree(actual, composeReviewedCssTrees(preimage, [layer])),
+        () => assertExactCssTree(actual, composeReviewedCssTrees(preimage, [mutated])),
         /reviewed (blob\/mode|preimage)/,
       );
     }
@@ -359,6 +360,10 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.mergedMain.integrationLayer.changes.length, 34);
   assert.equal(report.successorMain.integrationLayer.changes.length, 122);
   assert.equal(report.currentContracts.changes.length, 1);
+  assert.deepEqual(
+    report.currentCheckoutLayers.map((layer) => layer.changes.length),
+    [2],
+  );
   assert.equal(report.vsixInfrastructure.changes.length, 7);
   assert.equal(report.historicalBaselineRevision, "2934b35b18393c188b3da5f8e50595299589fb8c");
   assert.equal(report.historicalCapture.sourceRevision, "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc");

@@ -71,6 +71,13 @@ const reviewedLayers = [
     reviewedRevision: "c71cc41310fef3b3bb7669de2a48165ee8e2a2f2",
   },
 ];
+const reviewedCurrentCheckoutLayers = [
+  {
+    name: "shared-document-snapshots-11054",
+    baseRevision: "cc8e49af9193f6ccdcd319c937c8bca62743307b",
+    reviewedRevision: "60dab6f4083c49176760783d5e6a5fcfcc3be39b",
+  },
+];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const compareStrings = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const sorted = (records) => [...records].sort((a, b) => compareStrings(a.path, b.path));
@@ -333,13 +340,30 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
       contract.reviewedFixtures,
     );
   const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
+  const currentCheckoutLayers = contract.currentCheckoutLayers;
+  assert.deepEqual(
+    currentCheckoutLayers.map(({ name, baseRevision, reviewedRevision }) => ({
+      name,
+      baseRevision,
+      reviewedRevision,
+    })),
+    reviewedCurrentCheckoutLayers,
+  );
+  assert.deepEqual(
+    currentCheckoutLayers.flatMap((layer) => layer.changes.map(({ path: name }) => name)),
+    [
+      "crates/vize_maestro/src/server/annotations.rs",
+      "crates/vize_maestro/src/server/handlers/typed.rs",
+    ],
+  );
+  const currentExpected = composeReviewedCssTrees(expected, currentCheckoutLayers);
   // A current checkout must carry the reviewed owned CSS inputs exactly. Other
   // crates, build and VSIX inputs follow main; the build receipt binds the
   // capture to this exact clean HEAD, so they are not frozen here.
   if (!pinnedProduct) {
     assertExactCssTree(
       readTree(revision, ownedSourcePaths),
-      expected.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
+      currentExpected.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
     );
     assertExactCssTree(readTree(revision, ownedFixturePaths), contract.reviewedFixtures);
   }
@@ -419,6 +443,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     mergedMain: contract.mergedMain,
     successorMain: successor,
     currentContracts,
+    currentCheckoutLayers,
     vsixInfrastructure: infrastructure,
     cratesSha256: fingerprint(actual),
     // The pinned product revision need not be fetched; only a checkout has current inputs.

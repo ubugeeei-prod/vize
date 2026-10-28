@@ -2645,6 +2645,45 @@
       }
     ]
   },
+  "currentCheckoutLayers": [
+    {
+      "name": "shared-document-snapshots-11054",
+      "baseRevision": "cc8e49af9193f6ccdcd319c937c8bca62743307b",
+      "reviewedRevision": "60dab6f4083c49176760783d5e6a5fcfcc3be39b",
+      "changes": [
+        {
+          "path": "crates/vize_maestro/src/server/annotations.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ca581e076b503ded29ab4c384bc00b886d0f426e"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "78e4e16df90ada828bcbfce5bf96172c4a293c4d"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "f8a4e35c0cfbd0e749ec3f7aaf44d77e10c55dd5"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "d378281fbcda6dda2f550e21fa3ccde3905d8a7d"
+          }
+        }
+      ]
+    }
+  ],
   "vsixInfrastructure": {
     "baseRevision": "9c8388e3dde4a03e5be74ee8a0ced20560983aea",
     "sourceRevision": "9e5fa02567cb8757e5740269694e062761acfda6",
