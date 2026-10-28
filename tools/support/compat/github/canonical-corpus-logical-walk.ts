@@ -208,17 +208,35 @@ export function walkCommittedGraph(
   validateLogicalGraph(nodes, children);
   const files: Array<[string, string]> = [];
   const rejected: RejectedPath[] = [];
+  // Physical stat can refuse a leaf on the last successful owned prefix
+  // (followed == firstRejected - 1) while the next owned link is the witness.
+  // Only a retained row whose logical count matches is kept; a finite alias
+  // below that prefix stays out of the set.
+  const retainedLeaf = new Map(
+    boundary.rejected
+      .filter((row) => row.followed + 1 === boundary.firstRejected)
+      .map((row) => [row.path, row]),
+  );
   let successfulFollows = 0;
   const visit = (logical: string, node: CorpusNode) => {
     for (const name of [...children.get(node.path)!].sort(pathOrder)) {
       if (["node_modules", "_git-worktrees"].includes(name)) continue;
       const path = logical ? `${logical}/${name}` : name;
       const child = resolveLogical(nodes, path, boundary.firstRejected);
+      const leaf = retainedLeaf.get(path);
       if (kernelBoundary(child)) {
         assert.notEqual(posix.extname(name), ".vue", "Unreadable committed Vue input");
         // The kernel stopped at the certified prefix, while provenance retains
         // every alias the complete committed input would have followed.
         rejected.push({ path, code: "ELOOP", followed: resolveLogical(nodes, path).followed });
+      } else if (
+        leaf &&
+        leaf.code === "ELOOP" &&
+        child.allowed &&
+        child.followed === leaf.followed
+      ) {
+        assert.notEqual(posix.extname(name), ".vue", "Unreadable committed Vue input");
+        rejected.push({ path, code: "ELOOP", followed: child.followed });
       } else {
         successfulFollows = Math.max(successfulFollows, child.followed);
         if (directory(child)) {
