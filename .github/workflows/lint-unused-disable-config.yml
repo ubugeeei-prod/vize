@@ -1,0 +1,61 @@
+name: Lint unused disable configuration
+run-name: Lint unused disable configuration @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/lint-unused-disable-config.yml
+      - davinci/vize_l0/src/config/model/linter.rs
+      - crates/vize/src/commands/lint/entry_rules.rs
+      - crates/vize_maestro/src/ide/diagnostics/patina.rs
+      - crates/vize_carton/src/config/loader/vite-runtime.mjs
+      - npm/cli/pkl/**
+      - npm/cli/schemas/vize.config.schema.json
+      - npm/cli/src/types/generated.ts
+      - npm/builder/vite/src/vite-plus/lint-options.test.ts
+      - tests/tooling/lint-unused-disable-config.test.ts
+permissions: { contents: read }
+concurrency:
+  group: lint-unused-disable-config-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  producer:
+    uses: ./.github/workflows/full-source-cli.yml
+  cli-editor:
+    needs: producer
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Install pinned Pkl renderer for presence semantics
+        run: npm install --global @pkl-community/pkl@0.27.2 && pkl --version
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.producer.outputs) }}" }
+      - name: Verify native configuration and editor updates
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.producer.outputs.receipt-sha256 }}
+        run: node --test tests/tooling/lint-unused-disable-config.test.ts
+      - name: Preserve complete native and editor packets
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lint-unused-disable-config-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/differential/lint-unused-disable-config/
+            target/ci/vize.differential-build.json
+            target/ci/vize.source-build.json
+            target/ci/vize.source-use.json
+          if-no-files-found: error
+          retention-days: 14

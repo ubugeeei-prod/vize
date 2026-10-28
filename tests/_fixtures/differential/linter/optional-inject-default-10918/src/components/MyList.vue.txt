@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { provide } from "vue";
+import { InListKey } from "./keys";
+
+provide(InListKey, true);
+</script>
+
+<template>
+  <div role="list"><slot /></div>
+</template>

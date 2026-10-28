@@ -1,0 +1,64 @@
+name: Published plain-script import acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published package version without v
+        type: string
+        required: true
+      source-sha:
+        description: Exact immutable release tag commit
+        type: string
+        required: true
+permissions: { contents: read, pull-requests: read }
+concurrency:
+  group: plain-script-import-public-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  registry-consumer:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      SOURCE_SHA: ${{ inputs.source-sha }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+      VIZE10903_MODE: public
+      VIZE10903_EXPECT: after
+      VIZE10903_PUBLIC_VERSION: ${{ inputs.version }}
+      VIZE10903_PROOF: /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "v${{ inputs.version }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0" }
+      - name: Verify the immutable release includes the merged source fix
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          node --input-type=module -e '
+          import assert from "node:assert/strict";
+          import { execFileSync } from "node:child_process";
+          import { mkdirSync, writeFileSync } from "node:fs";
+          const api = path => JSON.parse(execFileSync("gh", ["api", path], { encoding: "utf8" }));
+          assert(/^0\.\d+\.\d+$/.test(process.env.PUBLIC_VERSION));
+          assert(/^[a-f0-9]{40}$/.test(process.env.SOURCE_SHA));
+          const pr = api("repos/ubugeeei-prod/vize/pulls/10982");
+          assert.equal(pr.merged, true);
+          const comparison = api("repos/ubugeeei-prod/vize/compare/" + pr.merge_commit_sha + "..." + process.env.SOURCE_SHA);
+          assert(["ahead", "identical"].includes(comparison.status));
+          assert.equal(comparison.merge_base_commit.sha, pr.merge_commit_sha);
+          mkdirSync(process.env.VIZE10903_PROOF, { recursive: true });
+          writeFileSync(process.env.VIZE10903_PROOF + "/release-provenance.json", JSON.stringify({ version: process.env.PUBLIC_VERSION, source: process.env.SOURCE_SHA, fix: pr.html_url, merge: pr.merge_commit_sha, comparison: comparison.html_url, status: comparison.status }, null, 2) + "\n");
+          '
+      - name: Install fresh registry packages and run the untouched reported browser consumer
+        run: node tools/support/compat/plain-script-import-ref.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: plain-script-public-release-${{ inputs.version }}-${{ github.run_id }}
+          path: |
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/*.json
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/host/package*.json
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/projects/*/src/
+            /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/actual-vite-native/
+          if-no-files-found: error
+          retention-days: 90

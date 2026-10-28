@@ -1,0 +1,1589 @@
+{
+  "schema": "vize.plain-script-history-official",
+  "source": "01775187e97a99382367b7c833b825749185eaae",
+  "recipe": "d62a46c8372daae654edccd99f662dac3725124a",
+  "run": "40590049309",
+  "input": "<script lang=\"ts\">\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n</script>\n\n<script setup lang=\"ts\">\nconst value = make()\n</script>\n\n<template>{{ value.id }}</template>",
+  "inputSha256": "65e5e9f66c9233584dc6998ab21548cca17615784f3c116af4395c872aaa0709",
+  "authoredOptions": {
+    "sourceRevision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+    "entrypoint": "compile_sfc",
+    "descriptorParseOptions": {
+      "filename": "",
+      "source_map": false,
+      "pad": "None",
+      "ignore_empty": false,
+      "template_parse_options": null
+    },
+    "compileOptions": {
+      "parse": {
+        "filename": "",
+        "source_map": false,
+        "pad": "None",
+        "ignore_empty": false,
+        "template_parse_options": null
+      },
+      "script": {
+        "id": null,
+        "inline_template": false,
+        "is_ts": false,
+        "reactive_props_destructure": false,
+        "props_destructure": "False",
+        "define_model": false
+      },
+      "template": {
+        "id": null,
+        "ssr": false,
+        "ssr_css_vars": null,
+        "scoped": false,
+        "is_prod": false,
+        "is_ts": false,
+        "custom_renderer": false,
+        "dialect": "V3",
+        "compiler_options": null
+      },
+      "style": {
+        "id": "",
+        "scoped": false,
+        "trim": false,
+        "source_map": false,
+        "preprocessor_lang": null,
+        "data_attrs": []
+      },
+      "vapor": false,
+      "scope_id": null
+    },
+    "effectiveAdapterInputs": {
+      "templateSyntax": "Standard",
+      "customElements": {
+        "construction": "CustomElementMatcher::default()",
+        "exactDefaultPinnedBySourceRevision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac"
+      },
+      "codegen": {
+        "mode": "Function",
+        "prefix_identifiers": false,
+        "source_map": false,
+        "filename": "template.vue",
+        "component_name": null,
+        "scope_id": null,
+        "ssr": false,
+        "optimize_imports": false,
+        "runtime_module_name": "vue",
+        "runtime_global_name": "Vue",
+        "is_ts": false,
+        "inline": false,
+        "binding_metadata": null,
+        "cache_handlers": false
+      },
+      "scriptOutput": "InlineTemplate",
+      "experimental": {
+        "self_component": false
+      }
+    },
+    "optionReferences": [
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_atelier_sfc/src/types.rs",
+        "sha256": "32c9667db989725b21f1beb215640392e52ea23733010c59ba853cb90bbbb952"
+      },
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_atelier_sfc/src/compile/entry.rs",
+        "sha256": "f183aff0cb2f28f4def39e4635a766df8c7bfcaee23d99006713181a0bbbc3d6"
+      },
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_croquis/src/sfc/types.rs",
+        "sha256": "bf6e08b04df948189eecddd8686479dfe1a87fa762ddb420f5b7d37156ba2e6d"
+      },
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_relief/src/options.rs",
+        "sha256": "2ce579b56bc312d8e8154412a80dab3b9734216bd5d9b6a15c0aa567171eb001"
+      },
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_relief/src/options/bindings.rs",
+        "sha256": "8f4a4b77acec3e892bfbf062d1e4e86f7e68402635bf2a2bb61b74bc502dd8e2"
+      },
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_carton/src/config/model/vue.rs",
+        "sha256": "1b6fabdeb232236734afb7b18c78f0ed9ffcc7a7072505368d18285a7a31792b"
+      },
+      {
+        "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+        "path": "crates/vize_relief/src/options/custom_elements.rs",
+        "sha256": "ce5a45ac99baaa034a157e988f5ba7bf1a06686c0ef7fd7af340cb132cfe9124"
+      }
+    ],
+    "execution": "not-run; read-only release-gated proposal",
+    "note": "Descriptor parser defaults are distinct from compileOptions.parse. No imported auxiliary modules or filesystem context supplied by current executable witness."
+  },
+  "optionsSha256": "d997c0356cc59ba01063744b99fe7ecaeede27fb5d94a703300a47c0f6123403",
+  "archived": {
+    "Ok": {
+      "code": "import { toDisplayString as _toDisplayString, unref as _unref } from \"vue\";\nimport { runtimeValue } from \"./mixed\";\nimport \"./empty-import\";\nimport \"./side-effect\";\nconst make = () => ({ id: runtimeValue });\nexport default {\n  __name: \"anonymous\",\n  setup(__props) {\n    const value = make();\n    return (_ctx, _cache) => {\n      return _toDisplayString(_unref(value).id);\n    };\n  }\n};",
+      "css": null,
+      "map": null,
+      "errors": [],
+      "warnings": [],
+      "bindings": {
+        "bindings": {
+          "value": "setup-maybe-ref",
+          "runtimeValue": "setup-const",
+          "make": "setup-const"
+        },
+        "propsAliases": {},
+        "isScriptSetup": true
+      },
+      "macroArtifacts": []
+    }
+  },
+  "archivedSha256": "089a7afd83b8e69b95867d2fdd2c23785a06a5856ffe1a12608d4d4adff03478",
+  "officialVersion": "3.5.41",
+  "dialect": "Vue 3 standard SFC",
+  "mapping": "The original source and options are frozen. Both authored script.inline_template=false and effectiveAdapterInputs.scriptOutput=InlineTemplate are executed. Null optional IDs map to the empty API id; original filename/source_map/is_prod/propsDestructure are retained. Script language is inferred from the unchanged authored lang=ts blocks.",
+  "observations": [
+    {
+      "parseOptions": {
+        "filename": "",
+        "sourceMap": false,
+        "pad": false
+      },
+      "apiOptions": {
+        "id": "",
+        "inlineTemplate": false,
+        "sourceMap": false,
+        "isProd": false,
+        "propsDestructure": false
+      },
+      "parseErrors": [],
+      "warnings": [
+        "\u001b[1m\u001b[33m[@vue/compiler-sfc]\u001b[0m\u001b[33m compileScript now requires passing the `id` option.\nUpgrade your vite or vue-loader version for compatibility with the latest experimental proposals.\u001b[0m\n"
+      ],
+      "scriptLang": "ts",
+      "setupLang": "ts",
+      "script": {
+        "type": "script",
+        "content": "import { defineComponent as _defineComponent } from 'vue'\n\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n\nexport default /*@__PURE__*/_defineComponent({\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst value = make()\n\nconst __returned__ = { make, value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "loc": {
+          "start": {
+            "column": 25,
+            "line": 9,
+            "offset": 245
+          },
+          "end": {
+            "column": 1,
+            "line": 11,
+            "offset": 267
+          },
+          "source": "\nconst value = make()\n"
+        },
+        "attrs": {
+          "setup": true,
+          "lang": "ts"
+        },
+        "setup": true,
+        "lang": "ts",
+        "bindings": {
+          "runtimeValue": "setup-maybe-ref",
+          "make": "setup-const",
+          "value": "setup-maybe-ref"
+        },
+        "imports": {
+          "Foo": {
+            "isType": true,
+            "imported": "Foo",
+            "local": "Foo",
+            "source": "./types-only",
+            "isFromSetup": false,
+            "isUsedInTemplate": false
+          },
+          "Bar": {
+            "isType": true,
+            "imported": "Bar",
+            "local": "Bar",
+            "source": "./mixed",
+            "isFromSetup": false,
+            "isUsedInTemplate": false
+          },
+          "runtimeValue": {
+            "isType": false,
+            "imported": "runtimeValue",
+            "local": "runtimeValue",
+            "source": "./mixed",
+            "isFromSetup": false,
+            "isUsedInTemplate": false
+          }
+        },
+        "scriptAst": [
+          {
+            "type": "ImportDeclaration",
+            "start": 1,
+            "end": 40,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0,
+                "index": 1
+              },
+              "end": {
+                "line": 2,
+                "column": 39,
+                "index": 40
+              }
+            },
+            "importKind": "value",
+            "specifiers": [
+              {
+                "type": "ImportSpecifier",
+                "start": 10,
+                "end": 18,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 9,
+                    "index": 10
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 17,
+                    "index": 18
+                  }
+                },
+                "imported": {
+                  "type": "Identifier",
+                  "start": 15,
+                  "end": 18,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 14,
+                      "index": 15
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 17,
+                      "index": 18
+                    },
+                    "identifierName": "Foo"
+                  },
+                  "name": "Foo"
+                },
+                "local": {
+                  "type": "Identifier",
+                  "start": 15,
+                  "end": 18,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 14,
+                      "index": 15
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 17,
+                      "index": 18
+                    },
+                    "identifierName": "Foo"
+                  },
+                  "name": "Foo"
+                },
+                "importKind": "type"
+              }
+            ],
+            "source": {
+              "type": "StringLiteral",
+              "start": 26,
+              "end": 40,
+              "loc": {
+                "start": {
+                  "line": 2,
+                  "column": 25,
+                  "index": 26
+                },
+                "end": {
+                  "line": 2,
+                  "column": 39,
+                  "index": 40
+                }
+              },
+              "extra": {
+                "rawValue": "./types-only",
+                "raw": "'./types-only'"
+              },
+              "value": "./types-only"
+            },
+            "attributes": []
+          },
+          {
+            "type": "ImportDeclaration",
+            "start": 41,
+            "end": 89,
+            "loc": {
+              "start": {
+                "line": 3,
+                "column": 0,
+                "index": 41
+              },
+              "end": {
+                "line": 3,
+                "column": 48,
+                "index": 89
+              }
+            },
+            "importKind": "value",
+            "specifiers": [
+              {
+                "type": "ImportSpecifier",
+                "start": 50,
+                "end": 58,
+                "loc": {
+                  "start": {
+                    "line": 3,
+                    "column": 9,
+                    "index": 50
+                  },
+                  "end": {
+                    "line": 3,
+                    "column": 17,
+                    "index": 58
+                  }
+                },
+                "imported": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 58,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 14,
+                      "index": 55
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 17,
+                      "index": 58
+                    },
+                    "identifierName": "Bar"
+                  },
+                  "name": "Bar"
+                },
+                "local": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 58,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 14,
+                      "index": 55
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 17,
+                      "index": 58
+                    },
+                    "identifierName": "Bar"
+                  },
+                  "name": "Bar"
+                },
+                "importKind": "type"
+              },
+              {
+                "type": "ImportSpecifier",
+                "start": 60,
+                "end": 72,
+                "loc": {
+                  "start": {
+                    "line": 3,
+                    "column": 19,
+                    "index": 60
+                  },
+                  "end": {
+                    "line": 3,
+                    "column": 31,
+                    "index": 72
+                  }
+                },
+                "imported": {
+                  "type": "Identifier",
+                  "start": 60,
+                  "end": 72,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 19,
+                      "index": 60
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 31,
+                      "index": 72
+                    },
+                    "identifierName": "runtimeValue"
+                  },
+                  "name": "runtimeValue"
+                },
+                "importKind": "value",
+                "local": {
+                  "type": "Identifier",
+                  "start": 60,
+                  "end": 72,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 19,
+                      "index": 60
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 31,
+                      "index": 72
+                    },
+                    "identifierName": "runtimeValue"
+                  },
+                  "name": "runtimeValue"
+                }
+              }
+            ],
+            "source": {
+              "type": "StringLiteral",
+              "start": 80,
+              "end": 89,
+              "loc": {
+                "start": {
+                  "line": 3,
+                  "column": 39,
+                  "index": 80
+                },
+                "end": {
+                  "line": 3,
+                  "column": 48,
+                  "index": 89
+                }
+              },
+              "extra": {
+                "rawValue": "./mixed",
+                "raw": "'./mixed'"
+              },
+              "value": "./mixed"
+            },
+            "attributes": []
+          },
+          {
+            "type": "ImportDeclaration",
+            "start": 90,
+            "end": 121,
+            "loc": {
+              "start": {
+                "line": 4,
+                "column": 0,
+                "index": 90
+              },
+              "end": {
+                "line": 4,
+                "column": 31,
+                "index": 121
+              }
+            },
+            "importKind": "value",
+            "specifiers": [],
+            "source": {
+              "type": "StringLiteral",
+              "start": 105,
+              "end": 121,
+              "loc": {
+                "start": {
+                  "line": 4,
+                  "column": 15,
+                  "index": 105
+                },
+                "end": {
+                  "line": 4,
+                  "column": 31,
+                  "index": 121
+                }
+              },
+              "extra": {
+                "rawValue": "./empty-import",
+                "raw": "'./empty-import'"
+              },
+              "value": "./empty-import"
+            },
+            "attributes": []
+          },
+          {
+            "type": "ImportDeclaration",
+            "start": 122,
+            "end": 144,
+            "loc": {
+              "start": {
+                "line": 5,
+                "column": 0,
+                "index": 122
+              },
+              "end": {
+                "line": 5,
+                "column": 22,
+                "index": 144
+              }
+            },
+            "importKind": "value",
+            "specifiers": [],
+            "source": {
+              "type": "StringLiteral",
+              "start": 129,
+              "end": 144,
+              "loc": {
+                "start": {
+                  "line": 5,
+                  "column": 7,
+                  "index": 129
+                },
+                "end": {
+                  "line": 5,
+                  "column": 22,
+                  "index": 144
+                }
+              },
+              "extra": {
+                "rawValue": "./side-effect",
+                "raw": "'./side-effect'"
+              },
+              "value": "./side-effect"
+            },
+            "attributes": []
+          },
+          {
+            "type": "VariableDeclaration",
+            "start": 145,
+            "end": 191,
+            "loc": {
+              "start": {
+                "line": 6,
+                "column": 0,
+                "index": 145
+              },
+              "end": {
+                "line": 6,
+                "column": 46,
+                "index": 191
+              }
+            },
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "start": 151,
+                "end": 191,
+                "loc": {
+                  "start": {
+                    "line": 6,
+                    "column": 6,
+                    "index": 151
+                  },
+                  "end": {
+                    "line": 6,
+                    "column": 46,
+                    "index": 191
+                  }
+                },
+                "id": {
+                  "type": "Identifier",
+                  "start": 151,
+                  "end": 155,
+                  "loc": {
+                    "start": {
+                      "line": 6,
+                      "column": 6,
+                      "index": 151
+                    },
+                    "end": {
+                      "line": 6,
+                      "column": 10,
+                      "index": 155
+                    },
+                    "identifierName": "make"
+                  },
+                  "name": "make"
+                },
+                "init": {
+                  "type": "ArrowFunctionExpression",
+                  "start": 158,
+                  "end": 191,
+                  "loc": {
+                    "start": {
+                      "line": 6,
+                      "column": 13,
+                      "index": 158
+                    },
+                    "end": {
+                      "line": 6,
+                      "column": 46,
+                      "index": 191
+                    }
+                  },
+                  "returnType": {
+                    "type": "TSTypeAnnotation",
+                    "start": 160,
+                    "end": 165,
+                    "loc": {
+                      "start": {
+                        "line": 6,
+                        "column": 15,
+                        "index": 160
+                      },
+                      "end": {
+                        "line": 6,
+                        "column": 20,
+                        "index": 165
+                      }
+                    },
+                    "typeAnnotation": {
+                      "type": "TSTypeReference",
+                      "start": 162,
+                      "end": 165,
+                      "loc": {
+                        "start": {
+                          "line": 6,
+                          "column": 17,
+                          "index": 162
+                        },
+                        "end": {
+                          "line": 6,
+                          "column": 20,
+                          "index": 165
+                        }
+                      },
+                      "typeName": {
+                        "type": "Identifier",
+                        "start": 162,
+                        "end": 165,
+                        "loc": {
+                          "start": {
+                            "line": 6,
+                            "column": 17,
+                            "index": 162
+                          },
+                          "end": {
+                            "line": 6,
+                            "column": 20,
+                            "index": 165
+                          },
+                          "identifierName": "Foo"
+                        },
+                        "name": "Foo"
+                      }
+                    }
+                  },
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [],
+                  "body": {
+                    "type": "ObjectExpression",
+                    "start": 170,
+                    "end": 190,
+                    "loc": {
+                      "start": {
+                        "line": 6,
+                        "column": 25,
+                        "index": 170
+                      },
+                      "end": {
+                        "line": 6,
+                        "column": 45,
+                        "index": 190
+                      }
+                    },
+                    "properties": [
+                      {
+                        "type": "ObjectProperty",
+                        "start": 172,
+                        "end": 188,
+                        "loc": {
+                          "start": {
+                            "line": 6,
+                            "column": 27,
+                            "index": 172
+                          },
+                          "end": {
+                            "line": 6,
+                            "column": 43,
+                            "index": 188
+                          }
+                        },
+                        "method": false,
+                        "key": {
+                          "type": "Identifier",
+                          "start": 172,
+                          "end": 174,
+                          "loc": {
+                            "start": {
+                              "line": 6,
+                              "column": 27,
+                              "index": 172
+                            },
+                            "end": {
+                              "line": 6,
+                              "column": 29,
+                              "index": 174
+                            },
+                            "identifierName": "id"
+                          },
+                          "name": "id"
+                        },
+                        "computed": false,
+                        "shorthand": false,
+                        "value": {
+                          "type": "Identifier",
+                          "start": 176,
+                          "end": 188,
+                          "loc": {
+                            "start": {
+                              "line": 6,
+                              "column": 31,
+                              "index": 176
+                            },
+                            "end": {
+                              "line": 6,
+                              "column": 43,
+                              "index": 188
+                            },
+                            "identifierName": "runtimeValue"
+                          },
+                          "name": "runtimeValue"
+                        }
+                      }
+                    ],
+                    "extra": {
+                      "parenthesized": true,
+                      "parenStart": 169
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "const"
+          }
+        ],
+        "scriptSetupAst": [
+          {
+            "type": "VariableDeclaration",
+            "start": 1,
+            "end": 21,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0,
+                "index": 1
+              },
+              "end": {
+                "line": 2,
+                "column": 20,
+                "index": 21
+              }
+            },
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "start": 7,
+                "end": 21,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 6,
+                    "index": 7
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 20,
+                    "index": 21
+                  }
+                },
+                "id": {
+                  "type": "Identifier",
+                  "start": 7,
+                  "end": 12,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 6,
+                      "index": 7
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 11,
+                      "index": 12
+                    },
+                    "identifierName": "value"
+                  },
+                  "name": "value"
+                },
+                "init": {
+                  "type": "CallExpression",
+                  "start": 15,
+                  "end": 21,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 14,
+                      "index": 15
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 20,
+                      "index": 21
+                    }
+                  },
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 15,
+                    "end": 19,
+                    "loc": {
+                      "start": {
+                        "line": 2,
+                        "column": 14,
+                        "index": 15
+                      },
+                      "end": {
+                        "line": 2,
+                        "column": 18,
+                        "index": 19
+                      },
+                      "identifierName": "make"
+                    },
+                    "name": "make"
+                  },
+                  "arguments": []
+                }
+              }
+            ],
+            "kind": "const"
+          }
+        ]
+      }
+    },
+    {
+      "parseOptions": {
+        "filename": "",
+        "sourceMap": false,
+        "pad": false
+      },
+      "apiOptions": {
+        "id": "",
+        "inlineTemplate": true,
+        "sourceMap": false,
+        "isProd": false,
+        "propsDestructure": false
+      },
+      "parseErrors": [],
+      "warnings": [
+        "\u001b[1m\u001b[33m[@vue/compiler-sfc]\u001b[0m\u001b[33m compileTemplate now requires the `id` option.\u001b[0m\n"
+      ],
+      "scriptLang": "ts",
+      "setupLang": "ts",
+      "script": {
+        "type": "script",
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref, toDisplayString as _toDisplayString } from \"vue\"\n\n\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n\nexport default /*@__PURE__*/_defineComponent({\n  setup(__props) {\n\nconst value = make()\n\nreturn (_ctx: any,_cache: any) => {\n  return _toDisplayString(_unref(value).id)\n}\n}\n\n})",
+        "loc": {
+          "start": {
+            "column": 25,
+            "line": 9,
+            "offset": 245
+          },
+          "end": {
+            "column": 1,
+            "line": 11,
+            "offset": 267
+          },
+          "source": "\nconst value = make()\n"
+        },
+        "attrs": {
+          "setup": true,
+          "lang": "ts"
+        },
+        "setup": true,
+        "lang": "ts",
+        "bindings": {
+          "runtimeValue": "setup-maybe-ref",
+          "make": "setup-const",
+          "value": "setup-maybe-ref"
+        },
+        "imports": {
+          "Foo": {
+            "isType": true,
+            "imported": "Foo",
+            "local": "Foo",
+            "source": "./types-only",
+            "isFromSetup": false,
+            "isUsedInTemplate": false
+          },
+          "Bar": {
+            "isType": true,
+            "imported": "Bar",
+            "local": "Bar",
+            "source": "./mixed",
+            "isFromSetup": false,
+            "isUsedInTemplate": false
+          },
+          "runtimeValue": {
+            "isType": false,
+            "imported": "runtimeValue",
+            "local": "runtimeValue",
+            "source": "./mixed",
+            "isFromSetup": false,
+            "isUsedInTemplate": false
+          }
+        },
+        "scriptAst": [
+          {
+            "type": "ImportDeclaration",
+            "start": 1,
+            "end": 40,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0,
+                "index": 1
+              },
+              "end": {
+                "line": 2,
+                "column": 39,
+                "index": 40
+              }
+            },
+            "importKind": "value",
+            "specifiers": [
+              {
+                "type": "ImportSpecifier",
+                "start": 10,
+                "end": 18,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 9,
+                    "index": 10
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 17,
+                    "index": 18
+                  }
+                },
+                "imported": {
+                  "type": "Identifier",
+                  "start": 15,
+                  "end": 18,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 14,
+                      "index": 15
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 17,
+                      "index": 18
+                    },
+                    "identifierName": "Foo"
+                  },
+                  "name": "Foo"
+                },
+                "local": {
+                  "type": "Identifier",
+                  "start": 15,
+                  "end": 18,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 14,
+                      "index": 15
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 17,
+                      "index": 18
+                    },
+                    "identifierName": "Foo"
+                  },
+                  "name": "Foo"
+                },
+                "importKind": "type"
+              }
+            ],
+            "source": {
+              "type": "StringLiteral",
+              "start": 26,
+              "end": 40,
+              "loc": {
+                "start": {
+                  "line": 2,
+                  "column": 25,
+                  "index": 26
+                },
+                "end": {
+                  "line": 2,
+                  "column": 39,
+                  "index": 40
+                }
+              },
+              "extra": {
+                "rawValue": "./types-only",
+                "raw": "'./types-only'"
+              },
+              "value": "./types-only"
+            },
+            "attributes": []
+          },
+          {
+            "type": "ImportDeclaration",
+            "start": 41,
+            "end": 89,
+            "loc": {
+              "start": {
+                "line": 3,
+                "column": 0,
+                "index": 41
+              },
+              "end": {
+                "line": 3,
+                "column": 48,
+                "index": 89
+              }
+            },
+            "importKind": "value",
+            "specifiers": [
+              {
+                "type": "ImportSpecifier",
+                "start": 50,
+                "end": 58,
+                "loc": {
+                  "start": {
+                    "line": 3,
+                    "column": 9,
+                    "index": 50
+                  },
+                  "end": {
+                    "line": 3,
+                    "column": 17,
+                    "index": 58
+                  }
+                },
+                "imported": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 58,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 14,
+                      "index": 55
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 17,
+                      "index": 58
+                    },
+                    "identifierName": "Bar"
+                  },
+                  "name": "Bar"
+                },
+                "local": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 58,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 14,
+                      "index": 55
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 17,
+                      "index": 58
+                    },
+                    "identifierName": "Bar"
+                  },
+                  "name": "Bar"
+                },
+                "importKind": "type"
+              },
+              {
+                "type": "ImportSpecifier",
+                "start": 60,
+                "end": 72,
+                "loc": {
+                  "start": {
+                    "line": 3,
+                    "column": 19,
+                    "index": 60
+                  },
+                  "end": {
+                    "line": 3,
+                    "column": 31,
+                    "index": 72
+                  }
+                },
+                "imported": {
+                  "type": "Identifier",
+                  "start": 60,
+                  "end": 72,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 19,
+                      "index": 60
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 31,
+                      "index": 72
+                    },
+                    "identifierName": "runtimeValue"
+                  },
+                  "name": "runtimeValue"
+                },
+                "importKind": "value",
+                "local": {
+                  "type": "Identifier",
+                  "start": 60,
+                  "end": 72,
+                  "loc": {
+                    "start": {
+                      "line": 3,
+                      "column": 19,
+                      "index": 60
+                    },
+                    "end": {
+                      "line": 3,
+                      "column": 31,
+                      "index": 72
+                    },
+                    "identifierName": "runtimeValue"
+                  },
+                  "name": "runtimeValue"
+                }
+              }
+            ],
+            "source": {
+              "type": "StringLiteral",
+              "start": 80,
+              "end": 89,
+              "loc": {
+                "start": {
+                  "line": 3,
+                  "column": 39,
+                  "index": 80
+                },
+                "end": {
+                  "line": 3,
+                  "column": 48,
+                  "index": 89
+                }
+              },
+              "extra": {
+                "rawValue": "./mixed",
+                "raw": "'./mixed'"
+              },
+              "value": "./mixed"
+            },
+            "attributes": []
+          },
+          {
+            "type": "ImportDeclaration",
+            "start": 90,
+            "end": 121,
+            "loc": {
+              "start": {
+                "line": 4,
+                "column": 0,
+                "index": 90
+              },
+              "end": {
+                "line": 4,
+                "column": 31,
+                "index": 121
+              }
+            },
+            "importKind": "value",
+            "specifiers": [],
+            "source": {
+              "type": "StringLiteral",
+              "start": 105,
+              "end": 121,
+              "loc": {
+                "start": {
+                  "line": 4,
+                  "column": 15,
+                  "index": 105
+                },
+                "end": {
+                  "line": 4,
+                  "column": 31,
+                  "index": 121
+                }
+              },
+              "extra": {
+                "rawValue": "./empty-import",
+                "raw": "'./empty-import'"
+              },
+              "value": "./empty-import"
+            },
+            "attributes": []
+          },
+          {
+            "type": "ImportDeclaration",
+            "start": 122,
+            "end": 144,
+            "loc": {
+              "start": {
+                "line": 5,
+                "column": 0,
+                "index": 122
+              },
+              "end": {
+                "line": 5,
+                "column": 22,
+                "index": 144
+              }
+            },
+            "importKind": "value",
+            "specifiers": [],
+            "source": {
+              "type": "StringLiteral",
+              "start": 129,
+              "end": 144,
+              "loc": {
+                "start": {
+                  "line": 5,
+                  "column": 7,
+                  "index": 129
+                },
+                "end": {
+                  "line": 5,
+                  "column": 22,
+                  "index": 144
+                }
+              },
+              "extra": {
+                "rawValue": "./side-effect",
+                "raw": "'./side-effect'"
+              },
+              "value": "./side-effect"
+            },
+            "attributes": []
+          },
+          {
+            "type": "VariableDeclaration",
+            "start": 145,
+            "end": 191,
+            "loc": {
+              "start": {
+                "line": 6,
+                "column": 0,
+                "index": 145
+              },
+              "end": {
+                "line": 6,
+                "column": 46,
+                "index": 191
+              }
+            },
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "start": 151,
+                "end": 191,
+                "loc": {
+                  "start": {
+                    "line": 6,
+                    "column": 6,
+                    "index": 151
+                  },
+                  "end": {
+                    "line": 6,
+                    "column": 46,
+                    "index": 191
+                  }
+                },
+                "id": {
+                  "type": "Identifier",
+                  "start": 151,
+                  "end": 155,
+                  "loc": {
+                    "start": {
+                      "line": 6,
+                      "column": 6,
+                      "index": 151
+                    },
+                    "end": {
+                      "line": 6,
+                      "column": 10,
+                      "index": 155
+                    },
+                    "identifierName": "make"
+                  },
+                  "name": "make"
+                },
+                "init": {
+                  "type": "ArrowFunctionExpression",
+                  "start": 158,
+                  "end": 191,
+                  "loc": {
+                    "start": {
+                      "line": 6,
+                      "column": 13,
+                      "index": 158
+                    },
+                    "end": {
+                      "line": 6,
+                      "column": 46,
+                      "index": 191
+                    }
+                  },
+                  "returnType": {
+                    "type": "TSTypeAnnotation",
+                    "start": 160,
+                    "end": 165,
+                    "loc": {
+                      "start": {
+                        "line": 6,
+                        "column": 15,
+                        "index": 160
+                      },
+                      "end": {
+                        "line": 6,
+                        "column": 20,
+                        "index": 165
+                      }
+                    },
+                    "typeAnnotation": {
+                      "type": "TSTypeReference",
+                      "start": 162,
+                      "end": 165,
+                      "loc": {
+                        "start": {
+                          "line": 6,
+                          "column": 17,
+                          "index": 162
+                        },
+                        "end": {
+                          "line": 6,
+                          "column": 20,
+                          "index": 165
+                        }
+                      },
+                      "typeName": {
+                        "type": "Identifier",
+                        "start": 162,
+                        "end": 165,
+                        "loc": {
+                          "start": {
+                            "line": 6,
+                            "column": 17,
+                            "index": 162
+                          },
+                          "end": {
+                            "line": 6,
+                            "column": 20,
+                            "index": 165
+                          },
+                          "identifierName": "Foo"
+                        },
+                        "name": "Foo"
+                      }
+                    }
+                  },
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [],
+                  "body": {
+                    "type": "ObjectExpression",
+                    "start": 170,
+                    "end": 190,
+                    "loc": {
+                      "start": {
+                        "line": 6,
+                        "column": 25,
+                        "index": 170
+                      },
+                      "end": {
+                        "line": 6,
+                        "column": 45,
+                        "index": 190
+                      }
+                    },
+                    "properties": [
+                      {
+                        "type": "ObjectProperty",
+                        "start": 172,
+                        "end": 188,
+                        "loc": {
+                          "start": {
+                            "line": 6,
+                            "column": 27,
+                            "index": 172
+                          },
+                          "end": {
+                            "line": 6,
+                            "column": 43,
+                            "index": 188
+                          }
+                        },
+                        "method": false,
+                        "key": {
+                          "type": "Identifier",
+                          "start": 172,
+                          "end": 174,
+                          "loc": {
+                            "start": {
+                              "line": 6,
+                              "column": 27,
+                              "index": 172
+                            },
+                            "end": {
+                              "line": 6,
+                              "column": 29,
+                              "index": 174
+                            },
+                            "identifierName": "id"
+                          },
+                          "name": "id"
+                        },
+                        "computed": false,
+                        "shorthand": false,
+                        "value": {
+                          "type": "Identifier",
+                          "start": 176,
+                          "end": 188,
+                          "loc": {
+                            "start": {
+                              "line": 6,
+                              "column": 31,
+                              "index": 176
+                            },
+                            "end": {
+                              "line": 6,
+                              "column": 43,
+                              "index": 188
+                            },
+                            "identifierName": "runtimeValue"
+                          },
+                          "name": "runtimeValue"
+                        }
+                      }
+                    ],
+                    "extra": {
+                      "parenthesized": true,
+                      "parenStart": 169
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "const"
+          }
+        ],
+        "scriptSetupAst": [
+          {
+            "type": "VariableDeclaration",
+            "start": 1,
+            "end": 21,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0,
+                "index": 1
+              },
+              "end": {
+                "line": 2,
+                "column": 20,
+                "index": 21
+              }
+            },
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "start": 7,
+                "end": 21,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 6,
+                    "index": 7
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 20,
+                    "index": 21
+                  }
+                },
+                "id": {
+                  "type": "Identifier",
+                  "start": 7,
+                  "end": 12,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 6,
+                      "index": 7
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 11,
+                      "index": 12
+                    },
+                    "identifierName": "value"
+                  },
+                  "name": "value"
+                },
+                "init": {
+                  "type": "CallExpression",
+                  "start": 15,
+                  "end": 21,
+                  "loc": {
+                    "start": {
+                      "line": 2,
+                      "column": 14,
+                      "index": 15
+                    },
+                    "end": {
+                      "line": 2,
+                      "column": 20,
+                      "index": 21
+                    }
+                  },
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 15,
+                    "end": 19,
+                    "loc": {
+                      "start": {
+                        "line": 2,
+                        "column": 14,
+                        "index": 15
+                      },
+                      "end": {
+                        "line": 2,
+                        "column": 18,
+                        "index": 19
+                      },
+                      "identifierName": "make"
+                    },
+                    "name": "make"
+                  },
+                  "arguments": []
+                }
+              }
+            ],
+            "kind": "const"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -394,7 +394,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &fallthrough_scope,
         template_ast.filter(|_| has_template_scope && check_options.check_template_bindings),
         generic_param.is_some() && !legacy_vue2,
-        script_content,
+        setup_helpers.template_refs.needs_registry(),
     );
     setup_imports.read_template_slots_from(template_record.slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
@@ -438,8 +438,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let named_value_export_starts =
                 self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
-            let mut ref_keys =
-                template_ref_keys::TemplateRefKeyChecks::collect(Some(script), has_ref_registry);
+            let mut ref_keys = setup_helpers.template_refs.key_checks(has_ref_registry);
             let mut pending_wrap_close: Option<usize> = None;
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
@@ -479,7 +478,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     source_offset,
                 );
                 ts.push_str("  "); // indentation (not in source)
-                let gen_content_start = ts.len();
 
                 let mut output_line = std::borrow::Cow::Borrowed(line);
                 setup_type_exports.strip_modifiers(&mut output_line, line_start as u32);
@@ -599,19 +597,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         );
                     }
                 }
-                ts.push_str(&output_line);
-                let gen_content_end = ts.len();
-                ts.push('\n');
-                // Map the line content (excluding the "  " indent prefix)
-                if !line.is_empty() {
-                    let src_line_start = script_source_offset(src_byte_offset);
-                    let src_line_end = src_line_start + line.len();
-                    mappings.push(VizeMapping {
-                        gen_range: gen_content_start..gen_content_end,
-                        src_range: src_line_start..src_line_end,
-                        sub_spans: Vec::new(),
-                    });
-                }
+                ref_keys.emit_line(
+                    &mut ts,
+                    &mut mappings,
+                    output_line,
+                    (line_start, line.len()),
+                    source_offset,
+                );
                 // Once the class body has closed, append the deferred
                 // `const __default__ = <Name>` alias for the class component.
                 if let Some((class_end, name)) = pending_class_alias

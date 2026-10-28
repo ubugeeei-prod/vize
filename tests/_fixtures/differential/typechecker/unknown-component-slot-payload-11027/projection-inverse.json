@@ -1,0 +1,61 @@
+{
+  "schema": "vize.slotUnknownTs40Inverse.v1",
+  "sourceHead": "59f8d34233a702026d20149005cf9bd1bc00f066",
+  "actualMerge": "c9607e8e91a89d482649ae7db688998f405731d0",
+  "run": 40614559482,
+  "artifact": 12784447797,
+  "rawGzipGitBlob": "696f8ef8bf64c398922edad6e80d8c8547432025",
+  "allComparedFieldsQualified": true,
+  "fields": {
+    "packets/static-slot-name/canon/text.ts": {
+      "oldSha256": "08a161c82c45c507df23af94ca5d646b717f1041b2e5e477301d3ff2485f34be",
+      "newSha256": "8b0da7a0c257046bf60a12559c7e66aafd6ee2ae0e80b38c3c6fb8e09e2ad279",
+      "helperEdits": 1,
+      "debugCommentEdits": 1,
+      "editByte": 13907
+    },
+    "packets/static-slot-name/content-mapper/text.ts": {
+      "oldSha256": "179f41edefae3afd5341fc66fec42a2c2d5a895b32561e95149440e5c5085b55",
+      "newSha256": "6acba8a7f5e466398359271cb55b4484f409f879191017eccf0ef1a5b79607a5",
+      "helperEdits": 1,
+      "debugCommentEdits": 1,
+      "editByte": 13869
+    },
+    "packets/static-slot-name/canon/mappings.txt": {
+      "oldSha256": "40f39c2c3a695d3be41ad61ce8a8e3a9fe239264a33368bdd4514111532bf40f",
+      "newSha256": "16ae0cf99e3444e0f20bea058b41147307b8556887dd4cf522a7996a8018f157"
+    },
+    "packets/static-slot-name/canon/semantic-links.txt": {
+      "oldSha256": "b5e95b976388cef0a05baa3baac4acfd5c283003151b03c2455eed370f164460",
+      "newSha256": "0db49b9c7865795ad18ddce82e743674a4a434e8e00a9d5e32be7ef5c5c323bb"
+    },
+    "packets/static-slot-name/content-mapper/mappings.txt": {
+      "oldSha256": "d756c9a6d5fc507c7de829331013aba830feaff319a2138d107ec0e38dacfa72",
+      "newSha256": "8e1b38344c0ba3819d43631631490baaccf8b99ab1a92758b07f81bfed88d1fc"
+    },
+    "packets/static-slot-name/content-mapper/authored-hits.txt": {
+      "oldSha256": "ea883bbdb165ab84be8e2939c454a1e470482bd3a23a29aacb5aee4a40a837a2",
+      "newSha256": "6f97a4686a9a20ce38159750bbe18fd0d92c4979eef5f8b203816fbcc3877ed5"
+    },
+    "packets/static-slot-name/maestro/mappings.txt": {
+      "oldSha256": "55095aec1f53d26c35eddd21e4f1d9361f8806b7ad90854af00dab00389f7ec7",
+      "newSha256": "3859e24cabfad59557aaba57060edc89c8e2736eb037d056d9eb7f87e4e64bf0"
+    },
+    "packets/static-slot-name/maestro/authored-hits.txt": {
+      "oldSha256": "347f63d937375ef38a5a5f46f5df83fd3ba85b8f9937f200d84694110bd44119",
+      "newSha256": "8729373c009a6c89af3edb9c19a225deb49289a7e32c05691a52bb589a0f3089"
+    },
+    "packets/static-slot-name/maestro/text.txt": {
+      "oldSha256": "9be1f79c007cccae9d723ecbead48174f9d7c1dcbb60f3fb1e76f68f713237e3",
+      "newSha256": "0e62c5a84c8d617926044abbfb574d6b95389e532dfb1a6eae0d2917e9c69546"
+    }
+  },
+  "importProbes": {
+    "algorithmBlob": "dc7772ff75918a37174c20d2ecda147b6d738373",
+    "currentCount": 62466,
+    "oldCount": 62458,
+    "currentSha256": "76469b4c9aa4a47f2eea91b4653dd0dc825a5c31c986044329634c2f7bb1984f",
+    "oldSha256": "1b171d9db2799e248fc86673e7080483c8d6a9f0d11ed2afa458ffbfd984e772"
+  },
+  "unchanged": "all authored endpoints/anchors, mapping kinds/flags, diagnostics, separate script document and original SFC bytes"
+}

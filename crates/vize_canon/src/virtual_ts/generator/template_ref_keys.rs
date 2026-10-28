@@ -1,73 +1,111 @@
-//! Literal `useTemplateRef('name')` keys, checked against the template.
+//! Owned, inferred `useTemplateRef('name')` calls and their template keys.
 //!
 //! The Vue toolchain types a call that is not nested in a function by indexing
 //! the template's ref registry with its literal key, so a name the template
 //! never registers is an error on that key. A call inside a function keeps
 //! Vue's own signature and is left alone.
 //!
-//! The authored call is emitted verbatim, so the index access is placed in
+//! Only inferred callees use a private alias. The index access is placed in
 //! front of the statement that holds it, on the generated line the statement
 //! starts on: an authored `@ts-expect-error` above the statement covers it, and
 //! the key maps back to its authored literal. The call itself may span lines
-//! (`useTemplateRef<{\n…\n}>('key')`), so the line of the key is not a place a
+//! (`useTemplateRef(\n'key')`), so the line of the key is not a place a
 //! statement can be inserted at; a statement that shares its first line with
 //! other code is left unchecked for the same reason.
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
+use oxc_ast::ast::{
+    Argument, CallExpression, Expression, ImportDeclarationSpecifier, ImportOrExportKind, Program,
+    Statement,
+};
 use oxc_ast_visit::{Visit, walk};
-use oxc_span::{GetSpan, SourceType};
+use oxc_semantic::Scoping;
+use oxc_span::GetSpan;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::String;
-use vize_croquis::script_parser::parse_program_for_analysis;
+use oxc_syntax::symbol::SymbolId;
+use vize_carton::{FxHashSet, String, append, cstr};
 
 use crate::virtual_ts::VizeMapping;
 use crate::virtual_ts::helpers::push_ts_string_literal;
 
+mod globals;
+mod lines;
+
 #[derive(Default)]
-pub(super) struct TemplateRefKeyChecks {
-    /// In script offsets, ordered by the statement they are checked in front of.
-    keys: Vec<TemplateRefKey>,
+pub(super) struct TemplateRefUsage {
+    calls: Vec<InferredCall>,
+    helper: String,
+}
+
+pub(super) struct TemplateRefKeyChecks<'a> {
+    calls: &'a [InferredCall],
+    helper: &'a str,
     next: usize,
 }
 
-struct TemplateRefKey {
+struct InferredCall {
+    callee: std::ops::Range<usize>,
+    name: String,
+    imported: bool,
     /// Where the top-level statement holding the call starts.
     statement_start: usize,
-    /// The authored string literal.
-    literal: (usize, usize),
-    key: String,
+    /// A key can be nonliteral; its call still needs the inferred signature.
+    literal: Option<(std::ops::Range<usize>, String)>,
 }
 
-impl TemplateRefKeyChecks {
-    /// `registered` is whether this file declares the ref registry at all.
-    pub(super) fn collect(script: Option<&str>, registered: bool) -> Self {
-        let Some(script) = script.filter(|script| registered && script.contains("useTemplateRef"))
-        else {
-            return Self::default();
-        };
-        let allocator = Allocator::default();
-        let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts());
-        if parsed.panicked {
-            return Self::default();
-        }
+impl TemplateRefUsage {
+    /// Reuse setup-helper parsing and resolved symbols. Typed calls and calls
+    /// inside functions retain Vue's own signature and never read the registry.
+    pub(super) fn collect(program: &Program<'_>, scoping: &Scoping, script: &str) -> Self {
         let mut collector = Collector {
             script,
-            keys: Vec::new(),
+            scoping,
+            imports: vue_imports(program),
+            calls: Vec::new(),
             function_depth: 0,
             statement_depth: 0,
             statement_start: 0,
         };
-        collector.visit_program(&parsed.program);
-        collector
-            .keys
-            .sort_by_key(|key| (key.statement_start, key.literal.0));
+        collector.visit_program(program);
+        collector.calls.sort_by_key(|call| call.callee.start);
         Self {
-            keys: collector.keys,
-            next: 0,
+            helper: if collector.calls.is_empty() {
+                String::default()
+            } else {
+                helper_name(scoping)
+            },
+            calls: collector.calls,
         }
     }
 
+    pub(super) fn needs_registry(&self) -> bool {
+        !self.calls.is_empty()
+    }
+
+    pub(super) fn helper_name(&self) -> &str {
+        self.helper.as_str()
+    }
+
+    /// A rewritten call still uses its authored import. Keep only those
+    /// imported bindings live for `noUnusedLocals`, never unrelated imports.
+    pub(super) fn emit_import_anchors(&self, ts: &mut String) {
+        let mut emitted = FxHashSet::default();
+        for call in &self.calls {
+            if call.imported && emitted.insert(call.name.as_str()) {
+                append!(*ts, "void {};\n", call.name);
+            }
+        }
+    }
+
+    pub(super) fn key_checks(&self, registered: bool) -> TemplateRefKeyChecks<'_> {
+        TemplateRefKeyChecks {
+            calls: if registered { &self.calls } else { &[] },
+            helper: self.helper.as_str(),
+            next: 0,
+        }
+    }
+}
+
+impl TemplateRefKeyChecks<'_> {
     /// Emit the checks of every statement that starts on the line `[start, end)`.
     pub(super) fn emit_for_line(
         &mut self,
@@ -76,19 +114,33 @@ impl TemplateRefKeyChecks {
         (start, end): (usize, usize),
         source_offset: &dyn Fn(usize) -> usize,
     ) {
-        while let Some(key) = self.keys.get(self.next)
-            && key.statement_start < end
+        while let Some(call) = self.calls.get(self.next)
+            && call.statement_start < end
         {
             self.next += 1;
-            if key.statement_start < start {
+            let Some((literal, key)) = &call.literal else {
+                continue;
+            };
+            if call.statement_start < start {
                 continue;
             }
-            ts.push_str("void (null! as __VizeTemplateRefs[");
+            if call.imported {
+                ts.push_str("void (null! as __VizeTemplateRefs[");
+            } else {
+                // A missing global produces the checker's error-type `any`.
+                // Keep that on the object side of the conditional: using it
+                // as the index would invent TS2538 beside the real TS2304.
+                append!(
+                    *ts,
+                    "void (null! as ({}IsVue extends true ? __VizeTemplateRefs : Record<string, never>)[",
+                    self.helper
+                );
+            }
             let literal_start = ts.len();
-            push_ts_string_literal(ts, key.key.as_str());
+            push_ts_string_literal(ts, key.as_str());
             mappings.push(VizeMapping {
                 gen_range: literal_start..ts.len(),
-                src_range: source_offset(key.literal.0)..source_offset(key.literal.1),
+                src_range: source_offset(literal.start)..source_offset(literal.end),
                 sub_spans: Vec::new(),
             });
             ts.push_str("]); ");
@@ -96,9 +148,73 @@ impl TemplateRefKeyChecks {
     }
 }
 
+fn vue_imports(program: &Program<'_>) -> Vec<SymbolId> {
+    program
+        .body
+        .iter()
+        .filter_map(|statement| {
+            let Statement::ImportDeclaration(import) = statement else {
+                return None;
+            };
+            (import.source.value == "vue" && import.import_kind != ImportOrExportKind::Type)
+                .then_some(import.specifiers.as_ref())
+                .flatten()
+        })
+        .flat_map(|specifiers| specifiers.iter())
+        .filter_map(|specifier| {
+            let ImportDeclarationSpecifier::ImportSpecifier(named) = specifier else {
+                return None;
+            };
+            (named.import_kind != ImportOrExportKind::Type
+                && named.imported.name() == "useTemplateRef")
+                .then(|| named.local.symbol_id.get())
+                .flatten()
+        })
+        .collect()
+}
+
+/// Reserve lexical bindings and unresolved globals so the helper cannot capture
+/// authored code. Every candidate has the same byte length as `useTemplateRef`.
+fn helper_name(scoping: &Scoping) -> String {
+    let names = || {
+        scoping
+            .symbol_ids()
+            .map(|symbol| scoping.symbol_name(symbol))
+            .chain(
+                scoping
+                    .root_unresolved_references()
+                    .keys()
+                    .map(|name| name.as_str()),
+            )
+    };
+    if !names().any(|name| occupies_helper(name, "__vizeInferRef")) {
+        return "__vizeInferRef".into();
+    }
+    let occupied: FxHashSet<&str> = names().collect();
+    let mut index = 0_u32;
+    loop {
+        let candidate = cstr!("__vize{index:08x}");
+        if !occupied
+            .iter()
+            .any(|name| occupies_helper(name, candidate.as_str()))
+        {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn occupies_helper(name: &str, candidate: &str) -> bool {
+    ["", "Source", "Equal", "Result", "IsVue", "Global"]
+        .iter()
+        .any(|suffix| name.strip_prefix(candidate) == Some(suffix))
+}
+
 struct Collector<'s> {
     script: &'s str,
-    keys: Vec<TemplateRefKey>,
+    scoping: &'s Scoping,
+    imports: Vec<SymbolId>,
+    calls: Vec<InferredCall>,
     function_depth: usize,
     statement_depth: usize,
     /// Where the top-level statement being visited starts.
@@ -144,88 +260,46 @@ impl<'a> Visit<'a> for Collector<'_> {
 
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if self.function_depth == 0
-            && matches!(&call.callee, Expression::Identifier(callee) if callee.name == "useTemplateRef")
-            && let Some(Argument::StringLiteral(key)) = call.arguments.first()
-            && self.statement_opens_its_line()
+            && call.type_arguments.is_none()
+            && let Expression::Identifier(callee) = &call.callee
+            && callee.reference_id.get().is_some_and(|reference| {
+                self.scoping
+                    .get_reference(reference)
+                    .symbol_id()
+                    .map_or(callee.name == "useTemplateRef", |symbol| {
+                        self.imports.contains(&symbol)
+                    })
+            })
         {
-            self.keys.push(TemplateRefKey {
+            let literal = self
+                .statement_opens_its_line()
+                .then(|| {
+                    let Argument::StringLiteral(key) = call.arguments.first()? else {
+                        return None;
+                    };
+                    Some((
+                        key.span.start as usize..key.span.end as usize,
+                        String::from(key.value.as_str()),
+                    ))
+                })
+                .flatten();
+            self.calls.push(InferredCall {
+                callee: callee.span.start as usize..callee.span.end as usize,
+                name: String::from(
+                    self.script
+                        .get(callee.span.start as usize..callee.span.end as usize)
+                        .unwrap_or(callee.name.as_str()),
+                ),
+                imported: callee.reference_id.get().is_some_and(|reference| {
+                    self.scoping.get_reference(reference).symbol_id().is_some()
+                }),
                 statement_start: self.statement_start,
-                literal: (key.span.start as usize, key.span.end as usize),
-                key: String::from(key.value.as_str()),
+                literal,
             });
         }
         walk::walk_call_expression(self, call);
     }
 }
 
-#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
-mod tests {
-    use super::TemplateRefKeyChecks;
-    use vize_carton::String;
-
-    fn authored<'a>(checks: &'a TemplateRefKeyChecks, script: &'a str) -> Vec<(&'a str, &'a str)> {
-        checks
-            .keys
-            .iter()
-            .map(|key| (&script[key.literal.0..key.literal.1], key.key.as_str()))
-            .collect()
-    }
-
-    /// The generated script, with the checks in front of the lines they belong to.
-    fn generate(script: &str) -> String {
-        let mut checks = TemplateRefKeyChecks::collect(Some(script), true);
-        let mut ts = String::default();
-        let mut mappings = Vec::new();
-        let mut line_start = 0;
-        for line in script.split_inclusive('\n') {
-            let line_end = line_start + line.len();
-            checks.emit_for_line(&mut ts, &mut mappings, (line_start, line_end), &|offset| {
-                offset
-            });
-            ts.push_str(line);
-            line_start = line_end;
-        }
-        for mapping in &mappings {
-            assert_eq!(
-                ts[mapping.gen_range.clone()].replace('"', "'"),
-                script[mapping.src_range.clone()]
-            );
-        }
-        ts
-    }
-
-    #[test]
-    fn only_literal_keys_outside_functions_are_checked() {
-        let script = "const a = useTemplateRef('a')\nfunction f() { useTemplateRef('inner') }\nconst g = () => useTemplateRef('arrow')\nuseTemplateRef(name)\nuseTemplateRef<HTMLElement>('typed')\n";
-        let checks = TemplateRefKeyChecks::collect(Some(script), true);
-        assert_eq!(
-            authored(&checks, script),
-            [("'a'", "a"), ("'typed'", "typed")]
-        );
-        assert!(
-            TemplateRefKeyChecks::collect(Some(script), false)
-                .keys
-                .is_empty()
-        );
-    }
-
-    #[test]
-    fn a_call_that_spans_lines_is_checked_in_front_of_its_statement() {
-        assert_eq!(
-            generate(
-                "const modal = useTemplateRef<{\n  close: () => void\n}>('modal')\nif (ok) {\n  useTemplateRef('nested')\n}\n"
-            ),
-            "void (null! as __VizeTemplateRefs[\"modal\"]); const modal = useTemplateRef<{\n  close: () => void\n}>('modal')\nvoid (null! as __VizeTemplateRefs[\"nested\"]); if (ok) {\n  useTemplateRef('nested')\n}\n"
-        );
-    }
-
-    #[test]
-    fn a_statement_that_shares_its_first_line_is_left_unchecked() {
-        let script = "const a = [\n  1]; const b = useTemplateRef('b')\n  const c = useTemplateRef('c'), d = useTemplateRef('d')\n";
-        assert_eq!(
-            generate(script),
-            "const a = [\n  1]; const b = useTemplateRef('b')\nvoid (null! as __VizeTemplateRefs[\"c\"]); void (null! as __VizeTemplateRefs[\"d\"]);   const c = useTemplateRef('c'), d = useTemplateRef('d')\n"
-        );
-    }
-}
+mod tests;

@@ -1,0 +1,281 @@
+{
+  "advisories": {
+    "1112659": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1112659,
+      "title": "node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal",
+      "module_name": "tar",
+      "vulnerable_versions": "<7.5.7",
+      "patched_versions": ">=7.5.7",
+      "severity": "high",
+      "cwe": "CWE-22, CWE-59",
+      "github_advisory_id": "GHSA-34x7-hfp2-rc4v",
+      "url": "https://github.com/advisories/GHSA-34x7-hfp2-rc4v"
+    },
+    "1113300": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1113300,
+      "title": "node-tar is Vulnerable to Arbitrary File Overwrite and Symlink Poisoning via Insufficient Path Sanitization",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.2",
+      "patched_versions": ">=7.5.3",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "github_advisory_id": "GHSA-8qq5-rm4j-mr97",
+      "url": "https://github.com/advisories/GHSA-8qq5-rm4j-mr97"
+    },
+    "1113375": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1113375,
+      "title": "Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction",
+      "module_name": "tar",
+      "vulnerable_versions": "<7.5.8",
+      "patched_versions": ">=7.5.8",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "github_advisory_id": "GHSA-83g3-92jg-28cx",
+      "url": "https://github.com/advisories/GHSA-83g3-92jg-28cx"
+    },
+    "1114200": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1114200,
+      "title": "tar has Hardlink Path Traversal via Drive-Relative Linkpath",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.9",
+      "patched_versions": ">=7.5.10",
+      "severity": "high",
+      "cwe": "CWE-22, CWE-59",
+      "github_advisory_id": "GHSA-qffp-2rhf-9h96",
+      "url": "https://github.com/advisories/GHSA-qffp-2rhf-9h96"
+    },
+    "1114302": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1114302,
+      "title": "node-tar Symlink Path Traversal via Drive-Relative Linkpath",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.10",
+      "patched_versions": ">=7.5.11",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "github_advisory_id": "GHSA-9ppj-qmqm-q256",
+      "url": "https://github.com/advisories/GHSA-9ppj-qmqm-q256"
+    },
+    "1114680": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1114680,
+      "title": "Race Condition in node-tar Path Reservations via Unicode Ligature Collisions on macOS APFS",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.3",
+      "patched_versions": ">=7.5.4",
+      "severity": "high",
+      "cwe": "CWE-176, CWE-367",
+      "github_advisory_id": "GHSA-r6q2-hw4h-h46w",
+      "url": "https://github.com/advisories/GHSA-r6q2-hw4h-h46w"
+    },
+    "1120782": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1120782,
+      "title": "node-tar applies PAX size override to intermediary GNU long-name/long-link headers, causing tar parser interpretation differential (file smuggling)",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.15",
+      "patched_versions": ">=7.5.16",
+      "severity": "moderate",
+      "cwe": "CWE-436",
+      "github_advisory_id": "GHSA-vmf3-w455-68vh",
+      "url": "https://github.com/advisories/GHSA-vmf3-w455-68vh"
+    },
+    "1123939": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1123939,
+      "title": "node-tar: Process crash via PAX numeric path type confusion",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.17",
+      "patched_versions": ">=7.5.18",
+      "severity": "moderate",
+      "cwe": "CWE-704",
+      "github_advisory_id": "GHSA-w8wr-v893-vjvp",
+      "url": "https://github.com/advisories/GHSA-w8wr-v893-vjvp"
+    },
+    "1123940": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1123940,
+      "title": "node-tar: Decompression/parse DoS via unlimited input",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.18",
+      "patched_versions": ">=7.5.19",
+      "severity": "critical",
+      "cwe": "CWE-770",
+      "github_advisory_id": "GHSA-23hp-3jrh-7fpw",
+      "url": "https://github.com/advisories/GHSA-23hp-3jrh-7fpw"
+    },
+    "1123941": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1123941,
+      "title": "node-tar: Negative tar entry size causes infinite loop in archive replace",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.17",
+      "patched_versions": ">=7.5.18",
+      "severity": "high",
+      "cwe": "CWE-835",
+      "github_advisory_id": "GHSA-8x88-c5mf-7j5w",
+      "url": "https://github.com/advisories/GHSA-8x88-c5mf-7j5w"
+    },
+    "1123942": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1123942,
+      "title": "node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.16",
+      "patched_versions": ">=7.5.17",
+      "severity": "moderate",
+      "cwe": "CWE-248",
+      "github_advisory_id": "GHSA-gvwx-54wh-qm9j",
+      "url": "https://github.com/advisories/GHSA-gvwx-54wh-qm9j"
+    },
+    "1145647": {
+      "findings": [
+        {
+          "version": "6.2.1",
+          "paths": [
+            ".>@nuxt/kit>c12>giget>tar"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1145647,
+      "title": "node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection",
+      "module_name": "tar",
+      "vulnerable_versions": "<=7.5.20",
+      "patched_versions": ">=7.5.21",
+      "severity": "high",
+      "cwe": "CWE-400, CWE-674",
+      "github_advisory_id": "GHSA-r292-9mhp-454m",
+      "url": "https://github.com/advisories/GHSA-r292-9mhp-454m"
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 8,
+      "critical": 1
+    },
+    "dependencies": 130,
+    "devDependencies": 0,
+    "optionalDependencies": 1,
+    "totalDependencies": 131
+  }
+}

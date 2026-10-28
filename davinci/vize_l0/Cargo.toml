@@ -43,6 +43,7 @@ criterion.workspace = true
 # Version-less path declarations are stripped when this foundation is packaged.
 davinci_harness.workspace = true
 vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc" }
+vize_croquis = { path = "../../crates/vize_croquis" }
 vize_l1 = { path = "../vize_l1" }
 vize_l1_to_l2 = { path = "../vize_l1_to_l2" }
 vize_l2 = { path = "../vize_l2" }

@@ -2,22 +2,27 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-/** The installed native editor bindings these checks call. */
-export interface NativeApi {
-  getVueLanguageProjectMetadata(configFileName: string): {
-    configIdentity: string;
-    watchedFiles: string[];
-  };
-  generateVueLanguageCode(source: string, options: Record<string, unknown>): string;
-}
-/** The tsserver client from tsserver-client.mjs. */
-export interface TsserverClient {
-  send(command: string, args?: unknown, expectResponse?: boolean): Promise<any>;
-  stop(): Promise<unknown>;
-}
-
 // This consumes the installed, exact-source native package. The inherited
 // configuration fixture is independent of every existing protocol oracle.
+/** The `@vizejs/native` entry points this check calls. */
+export interface NativeProjectApi {
+  getVueLanguageProjectMetadata(file: string): ProjectMetadata;
+  generateVueLanguageCode(
+    source: string,
+    options: {
+      readonly filename: string;
+      readonly configFileName: string;
+      readonly preserveUnusedDiagnostics?: boolean;
+      readonly checkJavaScript?: boolean;
+    },
+  ): string;
+}
+
+interface ProjectMetadata {
+  readonly configIdentity: string;
+  readonly watchedFiles: readonly string[];
+}
+
 const compareNames = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
 
 // Rust's path ordering compares components, so `preferred/tsconfig.json`
@@ -32,13 +37,17 @@ const comparePaths = (left: string, right: string) => {
   return a.length - b.length;
 };
 
-export function checkProjectMetadata(native: NativeApi, consumer: string, output: string) {
+export function checkProjectMetadata(
+  native: NativeProjectApi,
+  consumer: string,
+  output: string,
+): void {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(consumer, "metadata-")));
   const config = path.join(root, "tsconfig.json");
   const base = path.join(root, "base.json");
   const source =
     '<script setup lang="ts">const n = 1;</script><template><Unknown :n="n"/></template>';
-  const packets: { name: string; metadata: unknown }[] = [];
+  const packets: { name: string; metadata: ProjectMetadata }[] = [];
   const inputs: { file: string; text: string }[] = [];
   const write = (file: string, text: string) => {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -122,3 +131,6 @@ export function checkProjectMetadata(native: NativeApi, consumer: string, output
     );
   }
 }
+
+export type NativeApi = NativeProjectApi;
+export type { TsserverClient } from "./tsserver-client.ts";

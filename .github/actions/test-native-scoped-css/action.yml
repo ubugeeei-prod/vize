@@ -25,6 +25,8 @@ runs:
         VIZE_NATIVE_SCOPED_SSR_CAPTURE: ${{ runner.temp }}/native-scoped-ssr-capture.json
         VIZE_NATIVE_SCOPED_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-scoped-ssr-runtime.json
         VIZE_NATIVE_SCOPED_SSR_REQUIRE_NATIVE: "1"
+        VIZE_SCOPE_BODY_CAPTURE: ${{ runner.temp }}/scope-body-source.json
+        VIZE_SCOPE_BODY_RUNTIME_CAPTURE: ${{ runner.temp }}/scope-body-browser.json
       run: |
         git rev-parse HEAD > "$RUNNER_TEMP/native-scoped-css-source.txt"
         cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_tests::four_source_bound_scoped_modules_css_and_default_identity_match_complete_contracts -- --exact
@@ -35,6 +37,8 @@ runs:
         vp node --test tests/tooling/native-sfc-scoped-class-list-reference.test.ts
         vp node --test tests/tooling/native-sfc-scoped-empty-reference.test.ts
         vp node --test tests/tooling/native-sfc-scoped-ssr-reference.test.ts
+        cargo test --locked --profile ci -p vize_atelier_sfc --test css_scope_body
+        vp node --test tests/tooling/scope-body-browser.test.ts
     - name: Verify original fragment CSS variables with exact production Vue
       shell: bash
       env:
@@ -64,6 +68,8 @@ runs:
           ${{ runner.temp }}/native-scoped-ssr-capture.json
           ${{ runner.temp }}/native-scoped-ssr-runtime.json
           ${{ runner.temp }}/native-scoped-css-source.txt
+          ${{ runner.temp }}/scope-body-source.json
+          ${{ runner.temp }}/scope-body-browser.json
           ${{ runner.temp }}/fragment-css-modules.json
           ${{ runner.temp }}/fragment-css-runtime.json
           ${{ runner.temp }}/nested-branch-modules.json

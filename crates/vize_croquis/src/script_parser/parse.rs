@@ -42,6 +42,7 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
     occurrences: bool,
     mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
+    vize_carton::micro_count!("croquis.setup.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
     let source_type = SourceType::from_path(path).unwrap_or_default();
@@ -62,6 +63,7 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
         skip_diagnostics,
         occurrences,
         exports,
+        !ret.panicked && ret.diagnostics.is_empty(),
     );
     if !ret.diagnostics.is_empty() {
         result.setup_context.clear_ssr_facts();
@@ -104,6 +106,7 @@ pub(crate) fn analyze_script_setup_program_skipping<const BUILTIN_TYPES: bool>(
         skip_diagnostics,
         false,
         None,
+        false,
     )
 }
 
@@ -114,12 +117,17 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     skip_diagnostics: bool,
     occurrences: bool,
     mut exports: Option<&mut ModuleExportCapture>,
+    render_admitted: bool,
 ) -> ScriptParseResult {
+    vize_carton::micro_count!("croquis.setup.analysis_requests.bytes", source.len());
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::script_setup(),
+        // The builtin-specialized variable fast path does not run the common
+        // statement fold, so it cannot establish this closed render proof.
+        nuxt_static_render_script: Some(render_admitted && !BUILTIN_TYPES),
         skip_diagnostics,
         ..Default::default()
     };
@@ -238,6 +246,7 @@ pub(crate) fn parse_script_with_options_source_type(
     unused: bool,
     mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
+    vize_carton::micro_count!("croquis.plain.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
 
     let ret = profile!(
@@ -260,7 +269,8 @@ pub(crate) fn parse_script_with_options_source_type(
     let mut result = ScriptParseResult {
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::new(), // Not script setup
-        is_non_setup_script: true,        // Mark as non-setup script for violation detection
+        nuxt_static_render_script: Some(!ret.panicked && ret.diagnostics.is_empty()),
+        is_non_setup_script: true, // Mark as non-setup script for violation detection
         skip_diagnostics,
         ..Default::default()
     };

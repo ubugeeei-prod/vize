@@ -1,0 +1,31 @@
+{
+  "contract": "10927 exact legacy CLI SSR producer; before/after here refer only to10927",
+  "sourceSha256": "6a6d0d40939854b79b8a995035cea9aa9e5b1cdf4887294c73c87eec24bc592f",
+  "codeSha256": "3bf686b7e9465402d51ac01f70d5b9c1c15dfcfcb6d3e8ec7e7e94e5dcda9add",
+  "sameOptions": {
+    "filename": "Layout.vue",
+    "scriptIsTs": false,
+    "scriptOutput": "InlineTemplate",
+    "ssr": true,
+    "templateIsTs": false
+  },
+  "wholeArchives": {
+    "candidate": {
+      "producer": "732fc74c61df740c5189a0d79f978dd0df90c74a",
+      "run": 40522195378,
+      "artifact": 12741544660,
+      "archiveBytes": 29600,
+      "archiveSha256": "9443c72f227485f066db6f312756ab459335970f46b6a4ce9b9c0e18424bab5f",
+      "packetSha256": "810ecea25e5e30aad7f8ac48ef0a9f577868a1a66aa506ef25911963c7a4f38f"
+    },
+    "before": {
+      "producer": "f5973f93e2c2f33092300c59145074a2dd753be7",
+      "run": 40522195378,
+      "artifact": 12742433200,
+      "archiveBytes": 29456,
+      "archiveSha256": "b2e6454295b1b0cfc9381f204adcd089cffff2d8b4453ae4a49299711d8bd78e",
+      "packetSha256": "0ab6b67d51012359cc597872bc1a1127b4f7d8549402e36903f890a9a3d87eaf"
+    }
+  },
+  "transformations": []
+}

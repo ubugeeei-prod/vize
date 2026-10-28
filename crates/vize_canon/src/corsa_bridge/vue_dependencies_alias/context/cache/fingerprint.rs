@@ -36,12 +36,12 @@ impl ContextFingerprint {
         tsconfig_path: Option<&Path>,
     ) -> Self {
         use std::hash::{Hash, Hasher};
-        let mut host = std::hash::DefaultHasher::new();
+        let mut host = vize_l0::micro_default_hasher!("canon.context.host");
         source_path.hash(&mut host);
         content.hash(&mut host);
         let mut overlay_entries: Vec<_> = overlays.iter().collect();
         overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
-        let mut overlay_hash = std::hash::DefaultHasher::new();
+        let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
@@ -122,7 +122,7 @@ impl ContextFingerprint {
             return;
         }
         use std::hash::{Hash, Hasher};
-        let mut hash = std::hash::DefaultHasher::new();
+        let mut hash = vize_l0::micro_default_hasher!("canon.context.requested_sources");
         self.host_content.hash(&mut hash);
         let mut sources = sources.iter().collect::<Vec<_>>();
         sources.sort_by(|left, right| left.0.cmp(&right.0));
@@ -159,7 +159,7 @@ impl ContextFingerprint {
     /// requests can share one preparation.
     pub(crate) fn identity(&self) -> u64 {
         use std::hash::{Hash, Hasher};
-        let mut hash = std::hash::DefaultHasher::new();
+        let mut hash = vize_l0::micro_default_hasher!("canon.context.identity");
         (self.host_content, self.overlays, self.generation_options).hash(&mut hash);
         hash.finish()
     }

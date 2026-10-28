@@ -9,7 +9,7 @@ use super::vue_version::resolve_sfc_vue_version;
 use super::{
     experimentals::ExperimentalTemplateOptions,
     types::{
-        SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi,
+        SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, dependencies_to_napi,
         macro_artifacts_to_napi, style_blocks_to_napi,
     },
 };
@@ -58,6 +58,7 @@ pub fn compile_sfc(
                 styles: vec![],
                 custom_blocks: vec![],
                 macro_artifacts: vec![],
+                dependencies: None,
                 module_shape: None,
             });
         }
@@ -202,6 +203,7 @@ pub fn compile_sfc(
                 styles,
                 custom_blocks,
                 macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
+                dependencies: dependencies_to_napi(&result.dependencies),
                 module_shape,
             })
         }
@@ -218,6 +220,7 @@ pub fn compile_sfc(
             styles,
             custom_blocks,
             macro_artifacts: vec![],
+            dependencies: None,
             module_shape: None,
         }),
     }

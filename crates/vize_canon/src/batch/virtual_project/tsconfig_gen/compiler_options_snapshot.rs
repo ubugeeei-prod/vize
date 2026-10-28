@@ -1,11 +1,13 @@
 //! Self-contained snapshots of effective TypeScript compiler options.
 
+mod observed;
+pub use observed::CompilerOptionsSnapshot;
+
 use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use super::super::VirtualProject;
-use super::compiler_options::FlattenedCompilerOptions;
+use super::compiler_options::{CompilerOptionsContext, FlattenedCompilerOptions};
 use super::path_rebase::is_url;
 use crate::batch::error::CorsaResult;
 
@@ -22,30 +24,40 @@ pub fn snapshot_tsconfig_compiler_options(
     project_root: &Path,
     tsconfig_path: &Path,
 ) -> CorsaResult<Map<std::string::String, Value>> {
-    let project = VirtualProject::new(project_root)?;
+    let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    let context = CompilerOptionsContext::new(&project_root);
+    let flattened = context.load_flattened(Some(tsconfig_path), None)?;
+    Ok(absolute_options(&project_root, flattened))
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub(super) fn absolute_options(
+    project_root: &Path,
+    flattened: FlattenedCompilerOptions,
+) -> Map<std::string::String, Value> {
     let FlattenedCompilerOptions {
         mut options,
         base_url,
         ..
-    } = project.load_compiler_options_flattened(Some(tsconfig_path))?;
+    } = flattened;
 
-    absolutize_string_option(&mut options, "rootDir", &project.project_root);
-    absolutize_string_option(&mut options, "outDir", &project.project_root);
-    absolutize_string_option(&mut options, "declarationDir", &project.project_root);
-    absolutize_string_option(&mut options, "tsBuildInfoFile", &project.project_root);
-    absolutize_string_option(&mut options, "mapRoot", &project.project_root);
-    absolutize_string_option(&mut options, "sourceRoot", &project.project_root);
-    absolutize_string_option(&mut options, "outFile", &project.project_root);
-    absolutize_array_option(&mut options, "rootDirs", &project.project_root);
-    absolutize_array_option(&mut options, "typeRoots", &project.project_root);
-    absolutize_paths(&mut options, &project.project_root);
+    absolutize_string_option(&mut options, "rootDir", project_root);
+    absolutize_string_option(&mut options, "outDir", project_root);
+    absolutize_string_option(&mut options, "declarationDir", project_root);
+    absolutize_string_option(&mut options, "tsBuildInfoFile", project_root);
+    absolutize_string_option(&mut options, "mapRoot", project_root);
+    absolutize_string_option(&mut options, "sourceRoot", project_root);
+    absolutize_string_option(&mut options, "outFile", project_root);
+    absolutize_array_option(&mut options, "rootDirs", project_root);
+    absolutize_array_option(&mut options, "typeRoots", project_root);
+    absolutize_paths(&mut options, project_root);
     if let Some(base_url) = base_url {
         options.insert(
             "baseUrl".into(),
-            Value::String(absolute_project_target(&project.project_root, &base_url).into()),
+            Value::String(absolute_project_target(project_root, &base_url).into()),
         );
     }
-    Ok(options)
+    options
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]

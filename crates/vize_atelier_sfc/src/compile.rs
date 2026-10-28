@@ -40,8 +40,8 @@ use self::diagnostics::create_v_model_reactive_const_warning;
 pub(crate) use self::helpers::is_ts_lang;
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name,
-    extract_descriptor_macro_artifacts, generate_scope_id, output_is_ts, template_is_ts,
-    trim_trailing_newlines, vapor_requested,
+    extract_descriptor_macro_artifacts, output_is_ts, template_is_ts, trim_trailing_newlines,
+    vapor_requested,
 };
 use self::output_module::{
     append_component_render_export, append_css_modules_assignment, finalize_output_mode,
@@ -79,19 +79,7 @@ fn compile_sfc_inner(
     };
     let source_filename = options.script.id.as_deref().unwrap_or(filename);
     let (has_styles, has_scoped, slotted) = styles::scope_flags(&descriptor.styles);
-    // Use externally-provided scope ID if available, otherwise generate from filename.
-    // The external scope ID ensures consistency with JS-side SHA-256 generation.
-    // Template/script-only SFCs do not need the hash.
-    let needs_scope_id =
-        has_styles || !descriptor.css_vars.is_empty() || options.scope_id.is_some();
-    let scope_id = if needs_scope_id {
-        options
-            .scope_id
-            .clone()
-            .unwrap_or_else(|| generate_scope_id(filename))
-    } else {
-        String::default()
-    };
+    let scope_id = styles::scope_id_for_descriptor(descriptor, &options, has_styles, filename);
     let auto_ssr_css_vars = options.template.ssr_css_vars.is_none();
     if auto_ssr_css_vars {
         crate::css::transform::vars::inject_ssr_values(
@@ -381,6 +369,7 @@ fn compile_sfc_inner(
             warnings,
             bindings: None,
             macro_artifacts,
+            dependencies: Vec::new(),
         });
     }
 
@@ -776,5 +765,6 @@ fn compile_sfc_inner(
         warnings,
         bindings: script_result.bindings,
         macro_artifacts,
+        dependencies: Vec::new(),
     })
 }

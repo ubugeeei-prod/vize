@@ -1,0 +1,25 @@
+{
+  "options": {
+    "filename": "Layout.vue",
+    "scriptIsTs": false,
+    "scriptOutput": "InlineTemplate",
+    "ssr": true,
+    "templateIsTs": false
+  },
+  "wholeResult": {
+    "bindings": {
+      "bindings": {
+        "emit": "setup-maybe-ref"
+      },
+      "isScriptSetup": true,
+      "propsAliases": {}
+    },
+    "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({ \"data-values\": [\n    document,\n    window,\n    navigator,\n    globalThis,\n    Promise,\n    Proxy,\n    Function,\n    Reflect,\n    WeakMap,\n    WeakSet,\n    module,\n    exports,\n    TypeError,\n    Uint8Array\n  ] }, _attrs))}>${_ssrInterpolate(Math.max(1, 2))}${_ssrInterpolate(Intl.NumberFormat().format(1))}</button>`);\n}\nexport default {\n  __name: \"Layout\",\n  emits: [\"press\"],\n  ssrRender,\n  setup(__props, { expose: __expose, emit: __emit }) {\n    __expose();\n    const emit = __emit;\n    const __returned__ = { emit };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};",
+    "css": null,
+    "errors": [],
+    "macroArtifacts": [],
+    "map": null,
+    "warnings": []
+  },
+  "wholeSource": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ press: [] }>();\n</script>\n<template><button :data-values=\"[document, window, navigator, globalThis, Promise, Proxy, Function, Reflect, WeakMap, WeakSet, module, exports, TypeError, Uint8Array]\" @click=\"(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }\">{{ Math.max(1, 2) }}{{ Intl.NumberFormat().format(1) }}</button></template>"
+}

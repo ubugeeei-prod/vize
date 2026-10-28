@@ -11,6 +11,7 @@ use super::{
     resolve_relative_import,
 };
 
+mod reachability;
 mod scan;
 
 use scan::source_needs_virtual_registration;

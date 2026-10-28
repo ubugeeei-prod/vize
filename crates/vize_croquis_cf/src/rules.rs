@@ -47,6 +47,7 @@ pub(crate) use complexity::{
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
+pub(crate) use element_id::{analyze_element_ids_with_nuxt_context, has_closed_nuxt_render_facts};
 pub use emit::{EmitFlow, analyze_emits};
 pub use event_bubbling::{EventBubble, analyze_event_bubbling};
 pub use fallthrough::{

@@ -42,6 +42,6 @@ impl MaestroServer {
         };
         self.initial_diagnostics
             .as_ref()
-            .is_some_and(|scheduler| scheduler.retry(uri.clone(), version))
+            .is_some_and(|scheduler| scheduler.retry(uri.clone(), version, &self.state.documents))
     }
 }

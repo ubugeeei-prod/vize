@@ -1,0 +1,7 @@
+import { ref } from "vue";
+
+// a ref exported from a plain module
+export const label = ref("from ref");
+export const onPing = ref((): void => {
+  (window as unknown as { pings: number }).pings++;
+});

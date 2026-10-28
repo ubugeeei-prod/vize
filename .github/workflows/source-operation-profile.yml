@@ -6,6 +6,12 @@ on:
       - davinci/vize_l0/src/profiler/**
       - davinci/vize_l0/src/profiler.rs
       - davinci/vize_l0/tests/source_operations_profile.rs
+      - davinci/vize_l0/tests/source_probes/**
+      - crates/vize_croquis/src/script_parser/parse.rs
+      - crates/vize_croquis/src/script_parser/recovery.rs
+      - crates/vize_croquis/src/script_parser/recovery/**
+      - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/fingerprint.rs
+      - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/namespace.rs
       - davinci/vize_l0/examples/source_operation_overhead.rs
       - davinci/vize_l0/Cargo.toml
       - crates/vize_carton/src/profile_export/**
@@ -45,6 +51,7 @@ jobs:
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
           cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --lib profiler::micro_hash --features micro-profiling 2>&1 | tee evidence/hash-digest-parity.log
           cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
           test "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
           test -z "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"

@@ -23,6 +23,8 @@ pub struct CrossFileAnalyzer {
     ssr_enabled: bool,
     /// Nuxt directories from the host config; `None` infers them beside `app.vue`.
     nuxt_dirs: Option<NuxtRenderDirs>,
+    /// Host authority for exactly one completed source/inventory invocation.
+    nuxt_scope_once: bool,
     /// Module registry.
     registry: ModuleRegistry,
     /// Dependency graph.

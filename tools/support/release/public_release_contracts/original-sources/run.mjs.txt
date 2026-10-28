@@ -1,0 +1,38 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import {fileURLToPath} from "node:url";
+import {createRequire} from "node:module";
+import {createHash} from "node:crypto";
+import {spawnSync} from "node:child_process";
+const [workspaceInput,version,outInput,candidate] = process.argv.slice(2);
+const workspace=fs.realpathSync(workspaceInput),out=path.resolve(outInput),capsule=path.dirname(fileURLToPath(import.meta.url));
+assert.match(version,/^0\.\d+\.0$/);assert.match(candidate,/^[a-f0-9]{40}$/);fs.mkdirSync(out,{recursive:true});
+const sha=bytes=>createHash("sha256").update(bytes).digest("hex");
+const identities=["vize","@vizejs/native","@vizejs/wasm","vue"].map(name=>{
+  const root=fs.realpathSync(path.join(workspace,"node_modules",name));assert.ok(root.startsWith(workspace+path.sep));
+  const manifest=JSON.parse(fs.readFileSync(path.join(root,"package.json")));assert.equal(manifest.version,name==="vue"?"3.6.0-rc.13":version);return {name,version:manifest.version,root};
+});
+const calls=[
+  ["public-contribution-contracts.mjs",[workspace,path.join(capsule,"fixtures"),path.join(out,"public-contribution-contracts.json")]],
+  ["public-compiler-contracts-admitted.mjs",[workspace,path.join(out,"public-compiler-contracts-admitted.json")]],
+  ["public-wasm-compiler-contracts.mjs",[workspace,path.join(out,"public-wasm-compiler-contracts.json"),version]],
+  ["public-config-recovery.mjs",[workspace,path.join(out,"public-config-recovery.json")]],
+  ["public-dynamic-role.mjs",[workspace,version,path.join(out,"public-dynamic-role-10926.json")]],
+];
+const processPackets=[];
+for(const [script,args] of calls){
+  const r=spawnSync(process.execPath,[path.join(capsule,script),...args],{cwd:workspace,encoding:"utf8",timeout:180000,maxBuffer:8*1024*1024});
+  const packet={script,status:r.status,signal:r.signal,error:r.error?.message??null,stdout:r.stdout,stderr:r.stderr};processPackets.push(packet);fs.writeFileSync(path.join(out,"process-packets.json"),JSON.stringify(processPackets,null,2));assert.equal(r.status,0,script+"\n"+r.stdout+"\n"+r.stderr);assert.equal(r.signal,null);
+}
+const read=name=>JSON.parse(fs.readFileSync(path.join(out,name)));
+const diagnostics=read("public-contribution-contracts.json"),reference=JSON.parse(fs.readFileSync(path.join(capsule,"diagnostic-reference-0.600.json")));assert.equal(diagnostics.native,version);assert.deepEqual(diagnostics.rows,reference.rows);
+const native=read("public-compiler-contracts-admitted.json"),wasm=read("public-wasm-compiler-contracts.json"),config=read("public-config-recovery.json"),role=read("public-dynamic-role-10926.json");
+assert.equal(native.rows.length,4);assert.ok(native.rows.every(x=>x.passed));assert.equal(wasm.rows.length,4);assert.ok(wasm.rows.every(x=>x.passed));assert.equal(config.rows.length,6);assert.ok(config.rows.every(x=>x.equal));assert.equal(role.positive.warningCount,0);assert.equal(role.negative.warningCount,1);
+const require=createRequire(path.join(workspace,"package.json"));require("@vizejs/native");
+const binaries=Object.keys(require.cache).filter(x=>x.endsWith(".node")).map(file=>{file=fs.realpathSync(file);assert.ok(file.startsWith(workspace+path.sep));const b=fs.readFileSync(file);return {file,bytes:b.length,sha256:sha(b)};});assert.equal(binaries.length,1);
+const target=process.platform==="linux"?`linux-${process.arch}`:process.platform==="darwin"?`darwin-${process.arch}`:`win32-${process.arch}`;
+const receiptUrl=`https://github.com/ubugeeei-prod/vize/releases/download/v${version}/vize-${target}.vsix.receipt.json`,response=await fetch(receiptUrl);assert.equal(response.status,200);const receipt=await response.json();assert.equal(receipt.source,candidate);assert.equal(receipt.version,version);const provider=receipt.provider.files.filter(x=>x.path.endsWith(".node"));assert.equal(provider.length,1);assert.equal(provider[0].sha256,binaries[0].sha256);assert.equal(provider[0].bytes,binaries[0].bytes);
+const cli=spawnSync(path.join(workspace,"node_modules/.bin/vize"),["--version"],{encoding:"utf8"});assert.equal(cli.status,0);assert.equal(cli.stdout.trim(),`vize ${version}`);
+const lock=fs.readFileSync(path.join(workspace,"package-lock.json"));fs.copyFileSync(path.join(workspace,"package-lock.json"),path.join(out,"package-lock.json"));fs.copyFileSync(path.join(capsule,"source-manifest.json"),path.join(out,"source-manifest.json"));
+const result={version,candidate,workspace,node:process.version,identities,binaries,publicReceipt:{url:receiptUrl,source:receipt.source,provider},lockSha256:sha(lock),cli:{status:cli.status,stdout:cli.stdout,stderr:cli.stderr},counts:{completeDiagnosticPackets:6,nativeMountedControls:4,wasmMountedControls:4,configRecoveryPackets:6,dynamicRolePositiveAndNegative:2},passed:true};fs.writeFileSync(path.join(out,"public-consumer-acceptance.json"),JSON.stringify(result,null,2));console.log(JSON.stringify(result));

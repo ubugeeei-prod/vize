@@ -64,6 +64,8 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
                 if decl.import_kind.is_type() {
                     continue;
                 }
+                // Imported runtime values can be refs, except Vue helpers and SFC defaults.
+                let source = decl.source.value.as_str();
                 if let Some(specifiers) = &decl.specifiers {
                     for spec in specifiers {
                         match spec {
@@ -73,17 +75,26 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
                                     continue;
                                 }
                                 let local = s.local.name.to_compact_string();
-                                bindings
-                                    .bindings
-                                    .entry(local)
-                                    .or_insert(BindingType::SetupConst);
+                                bindings.bindings.entry(local).or_insert(
+                                    if source == "vue"
+                                        || (s.imported.name().as_str() == "default"
+                                            && source.ends_with(".vue"))
+                                    {
+                                        BindingType::SetupConst
+                                    } else {
+                                        BindingType::SetupMaybeRef
+                                    },
+                                );
                             }
                             ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
                                 let local = s.local.name.to_compact_string();
-                                bindings
-                                    .bindings
-                                    .entry(local)
-                                    .or_insert(BindingType::SetupConst);
+                                bindings.bindings.entry(local).or_insert(
+                                    if source == "vue" || source.ends_with(".vue") {
+                                        BindingType::SetupConst
+                                    } else {
+                                        BindingType::SetupMaybeRef
+                                    },
+                                );
                             }
                             ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
                                 let local = s.local.name.to_compact_string();
@@ -344,4 +355,75 @@ pub(super) fn collect_options_api_bindings(
             .insert(local.to_compact_string(), key.to_compact_string());
     }
     (!bindings.bindings.is_empty()).then_some(bindings)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{collect_normal_script_bindings, merge_normal_script_bindings};
+    use crate::types::{BindingMetadata, BindingType};
+
+    #[test]
+    fn normal_script_imports_preserve_vue_ref_boundaries() {
+        let source = r#"
+import { label, onPing as handler } from "./store";
+import defaultValue from "./unknown";
+import * as namespace from "./store";
+import { ref as makeRef } from "vue";
+import VueDefault from "vue";
+import Component from "./Child.vue";
+import { default as ComponentAlias } from "./Child.vue";
+import { "default" as StringComponentAlias } from "./Child.vue";
+import { namedComponent } from "./Child.vue";
+import type TypeOnly from "./types";
+import type { OtherType } from "./types";
+import { type MixedType, runtimeValue } from "./mixed";
+"#;
+        let bindings = collect_normal_script_bindings(source);
+        for name in [
+            "label",
+            "handler",
+            "defaultValue",
+            "namedComponent",
+            "runtimeValue",
+        ] {
+            assert_eq!(
+                bindings.bindings.get(name),
+                Some(&BindingType::SetupMaybeRef),
+                "{name}"
+            );
+        }
+        for name in [
+            "namespace",
+            "makeRef",
+            "VueDefault",
+            "Component",
+            "ComponentAlias",
+            "StringComponentAlias",
+        ] {
+            assert_eq!(
+                bindings.bindings.get(name),
+                Some(&BindingType::SetupConst),
+                "{name}"
+            );
+        }
+        for name in ["TypeOnly", "OtherType", "MixedType"] {
+            assert!(!bindings.bindings.contains_key(name), "{name}");
+        }
+        assert!(!bindings.is_script_setup);
+
+        let mut target = BindingMetadata {
+            is_script_setup: true,
+            ..Default::default()
+        };
+        target
+            .bindings
+            .insert("label".into(), BindingType::SetupRef);
+        merge_normal_script_bindings(&mut target, &bindings);
+        assert!(target.is_script_setup);
+        assert_eq!(target.bindings.get("label"), Some(&BindingType::SetupRef));
+        assert_eq!(
+            target.bindings.get("handler"),
+            Some(&BindingType::SetupMaybeRef)
+        );
+    }
 }

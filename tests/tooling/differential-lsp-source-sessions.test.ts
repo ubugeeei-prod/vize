@@ -14,6 +14,10 @@ import {
   validateLocalResolveSourceSession,
 } from "../differential/lsp-source-sessions.ts";
 import { referenceObservation, referenceReport } from "./support/lsp/differential-reference.ts";
+import {
+  NATIVE_CAPACITY_ID,
+  NATIVE_CAPACITY_UNSUPPORTED_REASON,
+} from "../differential/lsp-native-capacity-contract.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const fixture = readLocalResolveSourceSession(root);
@@ -63,7 +67,9 @@ test("only the closed transition profile can have an empty generic request list"
       delete value.sourceSession;
     },
     (value: typeof fixture.data) => {
-      value.sourceSession!.plannedClientRpcCount = 22 as 23;
+      const session = value.sourceSession;
+      assert.ok(session?.kind === "local-completion-resolve-v1");
+      session.plannedClientRpcCount = 22 as 23;
     },
     (value: typeof fixture.data) => {
       value.provenance.witness!.path = "unrelated.rs";
@@ -117,8 +123,21 @@ test("unsupported transitions get no synthetic wire, reference match or native c
   const row = report.rows.find(({ id }) => id === LOCAL_RESOLVE_SESSION_ID)!;
   assert.deepEqual(row.legacy, sourceSessionUnsupportedLegacy());
   const summary = validateLspReport(loaded, report, build);
-  assert.equal(summary.legacyUnsupported, 1);
-  assert.equal(summary.legacyMatches, loaded.cases.length - 1);
+  const unsupportedIds = [LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID];
+  assert.deepEqual(
+    report.rows.filter(({ legacy }) => legacy.state === "unsupported").map(({ id }) => id),
+    unsupportedIds,
+  );
+  const capacity = report.rows.find(({ id }) => id === NATIVE_CAPACITY_ID);
+  assert.ok(capacity);
+  assert.deepEqual(capacity.legacy, {
+    state: "unsupported",
+    verdict: "unsupported-transition",
+    comparator: "source-inspected-session",
+    reason: NATIVE_CAPACITY_UNSUPPORTED_REASON,
+  });
+  assert.equal(summary.legacyUnsupported, unsupportedIds.length);
+  assert.equal(summary.legacyMatches, loaded.cases.length - unsupportedIds.length);
   assert.equal(summary.nativeHandled, 0);
   for (const extra of [
     { state: "completed", verdict: "matched-reference" },
@@ -126,9 +145,13 @@ test("unsupported transitions get no synthetic wire, reference match or native c
     { observation: {} },
     { workspace: {} },
   ]) {
-    const forged = structuredClone(report);
-    Object.assign(forged.rows.find(({ id }) => id === LOCAL_RESOLVE_SESSION_ID)!.legacy, extra);
-    assert.throws(() => validateLspReport(loaded, forged, build));
+    for (const id of unsupportedIds) {
+      const forged = structuredClone(report);
+      const changed = forged.rows.find((row) => row.id === id);
+      assert.ok(changed);
+      Object.assign(changed.legacy, extra);
+      assert.throws(() => validateLspReport(loaded, forged, build));
+    }
   }
 });
 

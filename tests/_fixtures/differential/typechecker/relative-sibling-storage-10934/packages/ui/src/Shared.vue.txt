@@ -1,0 +1,5 @@
+<script lang="ts">
+import type { LocalId } from "../../../apps/app/src/model";
+export interface SiblingValue { id: LocalId }
+export default {};
+</script>

@@ -1,0 +1,160 @@
+name: Retained source-line replay
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/source-symbolizer-retained.yml
+      - tools/benchmarks/scripts/source-symbolizer-*.ts
+      - tests/tooling/source-symbolizer-protocol.test.ts
+      - tools/benchmarks/scripts/cold-evidence-*.ts
+      - tests/tooling/cold-evidence-thin.test.ts
+  workflow_dispatch:
+    inputs:
+      metadata_run_id: { type: string, default: "" }
+      metadata_artifact_id: { type: string, default: "" }
+      metadata_summary_only: { type: boolean, default: false }
+permissions: { contents: read, actions: read }
+concurrency:
+  group: retained-source-replay-${{ github.event.pull_request.number || github.ref }}-${{ inputs.metadata_artifact_id != '' && 'metadata' || 'source' }}
+  cancel-in-progress: true
+jobs:
+  controls:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - run: node --test tests/tooling/source-symbolizer-protocol.test.ts
+      - run: node --test tests/tooling/cold-evidence-thin.test.ts tests/tooling/retired-tooling-languages.test.ts
+  offline:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id == '' }}
+    needs: controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - name: Install offline tools only
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y linux-tools-generic binutils llvm
+          shopt -s nullglob
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then
+              echo "REPLAY_PERF=$candidate" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: "12745086928"
+          run-id: "40526358411"
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/original-normal
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: "12766658865"
+          run-id: "40566229000"
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/original-carrier
+      - name: Restore byte-sealed images and decode existing data only
+        run: |
+          set -euo pipefail
+          restore=/home/runner/_work/_temp
+          [[ ! -e "$restore/cold-scale" ]]
+          mkdir -p "$restore" "$RUNNER_TEMP/retained-carrier"
+          mapfile -t normal < <(find "$RUNNER_TEMP/original-normal" -type f -name '*.tgz')
+          mapfile -t carrier < <(find "$RUNNER_TEMP/original-carrier" -type f -name '*.tgz')
+          [[ "${#normal[@]}" == 1 && "${#carrier[@]}" == 1 ]]
+          tar -xzf "${normal[0]}" -C "$restore" \
+            cold-scale/record-head/direct-process/perf.data \
+            cold-scale/record-head/direct-process/receipt.json \
+            cold-scale/binaries/normal-head/vize \
+            cold-scale/builds/normal-head.json
+          tar -xzf "${carrier[0]}" -C "$RUNNER_TEMP/retained-carrier" \
+            ./carrier/carrier ./carrier/result.json
+          node tools/benchmarks/scripts/source-symbolizer-retained.ts \
+            --perf "$REPLAY_PERF" --root "$restore/cold-scale" \
+            --carrier-root "$RUNNER_TEMP/retained-carrier" --out "$RUNNER_TEMP/retained-source"
+      - name: Preserve raw frames, independent source witness, and exact census
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: retained-source-${{ github.run_id }}
+          path: ${{ runner.temp }}/retained-source
+          if-no-files-found: warn
+          retention-days: 14
+
+  thin-metadata:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id != '' }}
+    needs: controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - name: Bind the requested completed artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.metadata_run_id }}
+          SOURCE_ARTIFACT: ${{ inputs.metadata_artifact_id }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_RUN" =~ ^[0-9]+$ && "$SOURCE_ARTIFACT" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$SOURCE_ARTIFACT" > "$RUNNER_TEMP/source-artifact-api.json"
+          python3 -c 'import json,os; p=json.load(open(os.environ["RUNNER_TEMP"]+"/source-artifact-api.json")); assert str(p["workflow_run"]["id"])==os.environ["SOURCE_RUN"] and str(p["id"])==os.environ["SOURCE_ARTIFACT"] and not p["expired"] and p["size_in_bytes"] <= 300*1024*1024'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ inputs.metadata_artifact_id }}
+          run-id: ${{ inputs.metadata_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/thin-download
+      - name: Copy allowlisted text from one archive without executing it
+        if: ${{ !inputs.metadata_summary_only }}
+        env:
+          SOURCE_RUN: ${{ inputs.metadata_run_id }}
+          SOURCE_ARTIFACT: ${{ inputs.metadata_artifact_id }}
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find "$RUNNER_TEMP/thin-download" -type f -name '*.tgz')
+          [[ "${#archives[@]}" == 1 ]]
+          node tools/benchmarks/scripts/cold-evidence-thin.ts "${archives[0]}" \
+            "$RUNNER_TEMP/thin-metadata" "$SOURCE_RUN" "$SOURCE_ARTIFACT" \
+            "$RUNNER_TEMP/source-artifact-api.json"
+      - name: Preserve metadata and extraction custody
+        if: ${{ always() && !inputs.metadata_summary_only }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cold-metadata-${{ github.run_id }}
+          path: ${{ runner.temp }}/thin-metadata
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verify capsule custody and derive the bounded summary remotely
+        if: ${{ inputs.metadata_summary_only }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/metadata-summary"
+          node tools/benchmarks/scripts/cold-evidence-summary.ts \
+            "$RUNNER_TEMP/thin-download" "$RUNNER_TEMP/metadata-summary/summary.json"
+          cp "$RUNNER_TEMP/source-artifact-api.json" "$RUNNER_TEMP/metadata-summary/capsule-api.json"
+      - name: Preserve the small summary separately from raw metadata
+        if: ${{ always() && inputs.metadata_summary_only }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cold-summary-${{ github.run_id }}
+          path: ${{ runner.temp }}/metadata-summary
+          if-no-files-found: warn
+          retention-days: 14

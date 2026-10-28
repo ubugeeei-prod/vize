@@ -44,6 +44,47 @@ pub(crate) struct UnusedDirective {
 }
 
 impl InlineSuppressionState {
+    /// Move only located comment spans into their containing source frame.
+    pub(super) fn offset_markers(&mut self, offset: u32) {
+        for event in &mut self.events {
+            if let Some((start, end)) = &mut event.marker {
+                *start += offset;
+                *end += offset;
+            }
+        }
+    }
+
+    /// Import usage of a script file region queried after its block ended.
+    /// The byte marker and canonical rule identify the same authored comment.
+    pub(super) fn import_usage(&self, other: &Self) {
+        for event in &self.events {
+            let Some(marker) = event.marker else {
+                continue;
+            };
+            for used in other
+                .events
+                .iter()
+                .filter(|used| used.marker == Some(marker) && used.used.get())
+            {
+                event.used.set(true);
+                let mut rules = event.used_rules.borrow_mut();
+                for rule in used.used_rules.borrow().iter() {
+                    if !rules.contains(rule) {
+                        rules.push(rule.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    pub(super) fn used_blanket_markers(&self) -> Vec<(u32, u32)> {
+        self.events
+            .iter()
+            .filter(|event| !event.enabled && event.rules.is_empty() && event.used.get())
+            .filter_map(|event| event.marker)
+            .collect()
+    }
+
     pub(super) fn record(&mut self, directive: EslintDisableDirective, line: u32) {
         self.record_at(directive, line, None);
     }
