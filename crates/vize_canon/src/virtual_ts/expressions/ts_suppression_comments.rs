@@ -111,7 +111,10 @@ mod tests {
 
     #[test]
     fn allocates_only_when_callback_parameters_cross_lines() {
-        assert_eq!(callback_parameters_on_ignored_line("(item) => item.id"), None);
+        assert_eq!(
+            callback_parameters_on_ignored_line("(item) => item.id"),
+            None
+        );
         let collapsed = callback_parameters_on_ignored_line("(\n  item\n) => item.id");
         assert_eq!(
             collapsed.as_ref().map(|value| value.as_str()),
