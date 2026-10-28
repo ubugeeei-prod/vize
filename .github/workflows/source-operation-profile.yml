@@ -12,7 +12,6 @@ jobs:
       CARGO_BUILD_JOBS: "12"
       CARGO_TERM_COLOR: never
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-      VIZE_UI_OBSERVATION: ${{ runner.temp }}/ui-corsa-observation
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -36,6 +35,8 @@ jobs:
           OBSERVER_REVISION: ${{ github.sha }}
         run: |
           set -euo pipefail
+          export VIZE_UI_OBSERVATION="$RUNNER_TEMP/ui-corsa-observation"
+          printf 'VIZE_UI_OBSERVATION=%s\\n' "$VIZE_UI_OBSERVATION" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/ui-corsa-observer" "$VIZE_UI_OBSERVATION"
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/40603481864/artifacts?per_page=100" > "$VIZE_UI_OBSERVATION/original-artifact-inventory.json"
           for pair in 'ui-corsa-rpc-proxy.ts:rpc-proxy.ts' 'ui-corsa-observer.ts:observer.ts' 'ui-corsa-case.ts:case.ts'; do
