@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const ids: string[] = []
+const first: string = ids[0]
+const count: number = "1"
+</script>
+
+<template>{{ first }}{{ count }}</template>

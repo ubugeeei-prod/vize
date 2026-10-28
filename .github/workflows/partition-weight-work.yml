@@ -1,0 +1,123 @@
+name: Partition weight work
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/partition-weight-work.yml
+      - crates/vize_canon/Cargo.toml
+      - crates/vize_canon/benches/partition_weight.rs
+      - crates/vize_canon/benches/partition_weight/**
+      - crates/vize_canon/src/batch/executor/cli/partition.rs
+      - crates/vize_canon/src/batch/executor/cli/partition/weight_work/**
+      - crates/vize_canon/src/batch/executor/cli/partition/weight_work.rs
+      - tools/benchmarks/scripts/partition-weight-*.ts
+      - tests/tooling/partition-weight-cli.test.ts
+permissions: { contents: read }
+concurrency:
+  group: partition-weight-work-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  functional:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      CARGO_PROFILE_CI_OPT_DEBUG: "0"
+      CARGO_PROFILE_CI_OPT_STRIP: symbols
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1", components: rustfmt }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Verify the old reference and negative source-control admission
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/partition-weight"
+          git fetch --no-tags --depth=1 origin b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd
+          node tools/benchmarks/scripts/partition-weight-control.ts > "$RUNNER_TEMP/partition-weight/control.json"
+          node --test tests/tooling/partition-weight-cli.test.ts
+          git rev-parse HEAD > "$RUNNER_TEMP/partition-weight/source.sha"
+          rustc -vV > "$RUNNER_TEMP/partition-weight/rustc.txt"
+          cargo -V > "$RUNNER_TEMP/partition-weight/cargo-version.txt"
+      - name: Build one uninstrumented source CLI in a fresh target
+        run: |
+          set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/partition-weight-target"
+          [[ ! -e "$CARGO_TARGET_DIR" ]]
+          cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json > "$RUNNER_TEMP/partition-weight/cargo.jsonl"
+          node -e 'const fs=require("node:fs"),crypto=require("node:crypto");const rows=fs.readFileSync(process.env.RUNNER_TEMP+"/partition-weight/cargo.jsonl","utf8").trim().split("\n").map(x=>JSON.parse(x));const a=rows.filter(x=>x.reason==="compiler-artifact"&&x.target?.name==="vize"&&x.executable);if(a.length!==1||a[0].fresh)throw Error("fresh exact CLI required");const p=a[0].executable;fs.writeFileSync(process.env.RUNNER_TEMP+"/partition-weight/binary.json",JSON.stringify({source:fs.readFileSync(process.env.RUNNER_TEMP+"/partition-weight/source.sha","utf8").trim(),artifact:a[0],bytes:fs.statSync(p).size,sha256:crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex"),profile:"ci-opt",targetDir:process.env.CARGO_TARGET_DIR,targetStartedEmpty:true,compilerEnvironment:{CARGO_BUILD_JOBS:process.env.CARGO_BUILD_JOBS,CARGO_INCREMENTAL:process.env.CARGO_INCREMENTAL,CARGO_PROFILE_CI_OPT_DEBUG:process.env.CARGO_PROFILE_CI_OPT_DEBUG,CARGO_PROFILE_CI_OPT_STRIP:process.env.CARGO_PROFILE_CI_OPT_STRIP,RUSTFLAGS:process.env.RUSTFLAGS??null,CARGO_ENCODED_RUSTFLAGS:process.env.CARGO_ENCODED_RUSTFLAGS??null,RUSTC_WRAPPER:process.env.RUSTC_WRAPPER??null,RUSTC_WORKSPACE_WRAPPER:process.env.RUSTC_WORKSPACE_WRAPPER??null,RUSTUP_TOOLCHAIN:process.env.RUSTUP_TOOLCHAIN??null},allocation:false,timingUsable:false}));'
+      - name: Execute complete old/new shard-plan and actual member-visit laws
+        run: |
+          set -euo pipefail
+          CARGO_TARGET_DIR="$RUNNER_TEMP/partition-weight-target" cargo test --locked --profile ci-opt -p vize_canon --lib weight_work -- --nocapture --test-threads=1 > "$RUNNER_TEMP/partition-weight/work-laws.txt" 2>&1
+          cat "$RUNNER_TEMP/partition-weight/work-laws.txt"
+      - name: Measure the exact uninstrumented weight kernels with both execution orders
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/partition-weight-kernel-control.ts > "$RUNNER_TEMP/partition-weight/kernel-control.json"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/partition-weight-target"
+          cargo bench --locked --profile ci-opt -p vize_canon --bench partition_weight --no-run --message-format=json > "$RUNNER_TEMP/partition-weight/bench-cargo.jsonl"
+          node -e 'const fs=require("node:fs"),cp=require("node:child_process"),crypto=require("node:crypto");const root=process.env.RUNNER_TEMP+"/partition-weight",rows=fs.readFileSync(root+"/bench-cargo.jsonl","utf8").trim().split("\n").map(x=>JSON.parse(x));const a=rows.filter(x=>x.reason==="compiler-artifact"&&x.target?.name==="partition_weight"&&x.executable);if(a.length!==1||a[0].fresh||rows.some(x=>x.reason==="compiler-artifact"&&x.target?.name==="vize_carton"&&x.features?.includes("profiling")))throw Error("fresh normal carrier required");const exe=a[0].executable;fs.writeFileSync(root+"/bench-binary.json",JSON.stringify({source:cp.execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim(),artifact:a[0],binarySha256:crypto.createHash("sha256").update(fs.readFileSync(exe)).digest("hex"),bytes:fs.statSync(exe).size,compilerEnvironment:{CARGO_BUILD_JOBS:process.env.CARGO_BUILD_JOBS,CARGO_INCREMENTAL:process.env.CARGO_INCREMENTAL,CARGO_PROFILE_CI_OPT_DEBUG:process.env.CARGO_PROFILE_CI_OPT_DEBUG,CARGO_PROFILE_CI_OPT_STRIP:process.env.CARGO_PROFILE_CI_OPT_STRIP,RUSTFLAGS:process.env.RUSTFLAGS??null,CARGO_ENCODED_RUSTFLAGS:process.env.CARGO_ENCODED_RUSTFLAGS??null,RUSTC_WRAPPER:process.env.RUSTC_WRAPPER??null,RUSTC_WORKSPACE_WRAPPER:process.env.RUSTC_WORKSPACE_WRAPPER??null,RUSTUP_TOOLCHAIN:process.env.RUSTUP_TOOLCHAIN??null},normal:true,hardwareCounters:null,wholePipelineTiming:false}));fs.appendFileSync(process.env.GITHUB_ENV,"PARTITION_WEIGHT_BENCH="+exe+"\n");const affinity=/Cpus_allowed_list:\s*([^\n]+)/u.exec(fs.readFileSync("/proc/self/status","utf8"))?.[1];if(!affinity)throw Error("CPU affinity unavailable");const first=affinity.trim().split(/[,-]/u)[0];if(!first||!/^\d+$/u.test(first))throw Error("bad CPU affinity");fs.appendFileSync(process.env.GITHUB_ENV,"PARTITION_WEIGHT_CPU="+first+"\n");fs.writeFileSync(root+"/bench-machine.json",JSON.stringify({uname:cp.execFileSync("uname",["-a"],{encoding:"utf8"}),lscpu:cp.execFileSync("lscpu",[],{encoding:"utf8"}),allowed:affinity,pinned:first,clock:"Criterion wall measurement",setup:"component-map clone excluded",outputDrop:"excluded with BatchSize::PerIteration"}));'
+      - name: Execute normal kernels on one pinned CPU, excluding fixture setup
+        run: |
+          set -euo pipefail
+          for order in baseline-first candidate-first; do
+            PARTITION_WEIGHT_ORDER="$order" PARTITION_WEIGHT_CRITERION_DIR="$RUNNER_TEMP/partition-weight/criterion-$order" taskset -c "$PARTITION_WEIGHT_CPU" "$PARTITION_WEIGHT_BENCH" --bench --noplot > "$RUNNER_TEMP/partition-weight/bench-$order.txt" 2>&1
+          done
+          node -e 'const fs=require("node:fs"),path=require("node:path");const root=process.env.RUNNER_TEMP+"/partition-weight",results=[];function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,ent.name);if(ent.isDirectory())walk(p);else if(p.includes(path.sep+"new"+path.sep)&&["estimates.json","sample.json","benchmark.json"].includes(ent.name))results.push({path:path.relative(root,p),value:JSON.parse(fs.readFileSync(p,"utf8"))});}}for(const order of ["baseline-first","candidate-first"])walk(root+"/criterion-"+order);if(results.filter(x=>x.path.endsWith("/new/estimates.json")).length!==16)throw Error("incomplete normal timing census");const build=JSON.parse(fs.readFileSync(root+"/bench-binary.json","utf8")),control=JSON.parse(fs.readFileSync(root+"/kernel-control.json","utf8"));if(control.candidateSource!==build.source||require("node:crypto").createHash("sha256").update(fs.readFileSync(build.artifact.executable)).digest("hex")!==build.binarySha256)throw Error("post-run source/image seal");const report={scope:"normal source-pinned binpacking kernel only; warmed in-process; not full partition/check/cold latency",hardwareCounters:null,allocationCounts:null,source:build.source,control,results};const body=JSON.stringify(report);if(Buffer.byteLength(body)>100*1024)throw Error("normal summary exceeds 100KiB");fs.writeFileSync(root+"/normal-summary.json",body);'
+      - name: Install the unchanged upstream provider pins
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/partition-provider"
+          node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP+"/partition-provider/package.json",JSON.stringify({private:true,dependencies:{vue:"3.6.0-rc.6",typescript:"6.0.3","native-typescript":"npm:typescript@7.1.0-beta","vue-language-tools-fixture-vue":"npm:vue@3.6.0-rc.6","vue-component-type-helpers":"3.3.11"}}))'
+          npm install --prefix "$RUNNER_TEMP/partition-provider" --ignore-scripts --no-audit --no-fund
+      - name: Require real one, two and eight programs with complete negative and repair packets
+        run: |
+          set -euo pipefail
+          PARTITION_WEIGHT_BUILD_RECEIPT="$RUNNER_TEMP/partition-weight/binary.json" node tools/benchmarks/scripts/partition-weight-cli.ts \
+            "$RUNNER_TEMP/partition-weight-target/ci-opt/vize" "$RUNNER_TEMP/partition-provider" \
+            "$RUNNER_TEMP/partition-weight/packets"
+      - name: Run the unchanged upstream 230-project oracle once at the candidate
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          ln -s "$RUNNER_TEMP/partition-provider/node_modules" "$GITHUB_WORKSPACE/tests/node_modules"
+          VIZE_LSP_BIN="$RUNNER_TEMP/partition-weight-target/ci-opt/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=0 \
+            CORSA_PATH="$RUNNER_TEMP/partition-provider/node_modules/@typescript/typescript-linux-x64/lib/tsc" \
+            node --test --test-reporter=spec tests/tooling/canon-upstream-diagnostics.test.ts > "$RUNNER_TEMP/partition-weight/upstream-230.txt" 2>&1
+          cat "$RUNNER_TEMP/partition-weight/upstream-230.txt"
+      - name: Package raw functional evidence without provider links or executables
+        if: always()
+        run: |
+          set -euo pipefail
+          tar --exclude='*/node_modules' --exclude='*/project' -czf "$RUNNER_TEMP/partition-weight-raw.tgz" -C "$RUNNER_TEMP" partition-weight
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: partition-weight-raw-${{ github.sha }}
+          path: ${{ runner.temp }}/partition-weight-raw.tgz
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: partition-weight-summary-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/partition-weight/control.json
+            ${{ runner.temp }}/partition-weight/binary.json
+            ${{ runner.temp }}/partition-weight/work-laws.txt
+            ${{ runner.temp }}/partition-weight/packets/summary.json
+            ${{ runner.temp }}/partition-weight/normal-summary.json
+            ${{ runner.temp }}/partition-weight/bench-binary.json
+            ${{ runner.temp }}/partition-weight/bench-machine.json
+          if-no-files-found: warn
+          retention-days: 14

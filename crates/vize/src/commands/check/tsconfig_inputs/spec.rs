@@ -2,11 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use glob::Pattern;
-
-use super::glob::{normalize_path_separators, normalize_tsconfig_glob_base};
-use super::implicit_exclude::wildcard_segment_hits_package_folder;
-use super::matching::glob_match_options;
+use vize_canon::batch::{TsconfigWildcard, TsconfigWildcardUsage};
 
 #[derive(Debug, Clone, Default)]
 pub(super) struct TsconfigInputSpec {
@@ -116,44 +112,41 @@ impl RelativePathSpec {
     }
 }
 
+/// One tsconfig `include` or `exclude` entry, matched with Canon's
+/// TypeScript semantics so collection and ownership agree (#10819).
 #[derive(Debug, Clone)]
-pub(super) struct GlobSpec {
-    pub(super) base_dir: PathBuf,
-    pattern: Pattern,
-    pub(super) normalized: std::string::String,
-}
+pub(super) struct GlobSpec(TsconfigWildcard);
+
+/// The CLI keeps its platform policy: only Windows folds case.
+const CASE_SENSITIVE: bool = !cfg!(windows);
 
 impl GlobSpec {
-    pub(super) fn new(base_dir: &Path, value: &str) -> Option<Self> {
-        let (base_dir, normalized) = normalize_tsconfig_glob_base(base_dir, value);
-        Pattern::new(&normalized).ok().map(|pattern| Self {
-            base_dir,
-            pattern,
-            normalized,
-        })
+    pub(super) fn include(config_dir: &Path, value: &str) -> Option<Self> {
+        TsconfigWildcard::new(config_dir, value, TsconfigWildcardUsage::Include).map(Self)
     }
 
-    /// Whether `path` matches this spec as a plain glob. This is the `exclude`
-    /// semantics: TypeScript's exclude matcher has no implicit exclusions.
+    pub(super) fn exclude(config_dir: &Path, value: &str) -> Option<Self> {
+        TsconfigWildcard::new(config_dir, value, TsconfigWildcardUsage::Exclude).map(Self)
+    }
+
+    /// The literal directory `tsc` starts walking this entry from.
+    pub(super) fn base_dir(&self) -> &Path {
+        self.0.base()
+    }
+
+    /// The literal directories the entry spells out below its config.
+    pub(super) fn literal_directories(&self) -> &Path {
+        self.0.literal_directories()
+    }
+
+    pub(super) fn names_literal_segment(&self, name: &str) -> bool {
+        self.0.names_literal_segment(name, CASE_SENSITIVE)
+    }
+
+    /// Membership under this entry's own include or exclude rules. See
+    /// [`super::implicit_exclude`] for why the two differ.
     pub(super) fn matches(&self, path: &Path) -> bool {
-        self.matched_relative(path).is_some()
-    }
-
-    /// Whether `path` matches this spec as an `include` entry, i.e. as a plain
-    /// glob *and* without a package folder in any wildcard-matched segment. See
-    /// [`super::implicit_exclude`] for why `include` and `exclude` differ here.
-    pub(super) fn matches_include(&self, path: &Path) -> bool {
-        self.matched_relative(path).is_some_and(|relative| {
-            !wildcard_segment_hits_package_folder(&self.normalized, relative)
-        })
-    }
-
-    fn matched_relative<'path>(&self, path: &'path Path) -> Option<&'path Path> {
-        let relative = path.strip_prefix(&self.base_dir).ok()?;
-        let normalized = normalize_path_separators(relative);
-        self.pattern
-            .matches_with(&normalized, glob_match_options())
-            .then_some(relative)
+        self.0.matches(path, CASE_SENSITIVE)
     }
 }
 

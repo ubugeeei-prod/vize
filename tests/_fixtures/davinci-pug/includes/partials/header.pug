@@ -1,0 +1,5 @@
+mixin title(text)
+  h1(:title="'" + text + "'")= text
+header
+  +title('Hello')
+  include nested/logo.pug

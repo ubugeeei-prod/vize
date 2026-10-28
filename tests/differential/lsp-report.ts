@@ -27,6 +27,7 @@ import {
 function uniqueResponse(messages: JsonRpcMessage[], id: number): JsonRpcMessage {
   const responses = messages.filter((message) => message.id === id && !message.method);
   assert.equal(responses.length, 1, `one complete response required for request ${id}`);
+  assert(responses[0]);
   return responses[0];
 }
 
@@ -204,7 +205,7 @@ export function validateLspReport(
     if (fixture.data.sourceSession) {
       assert.deepEqual(
         row.legacy,
-        sourceSessionUnsupportedLegacy(),
+        sourceSessionUnsupportedLegacy(fixture.data.sourceSession),
         "an unsupported source session cannot claim wire or reference credit",
       );
       summary.legacyUnsupported += 1;

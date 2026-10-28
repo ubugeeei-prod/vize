@@ -15,6 +15,11 @@ impl Croquis {
             self.apply_module_reads(reads);
         }
         self.merge_plain_script_scopes(&plain);
+        // Every script block must independently establish the closed proof.
+        self.nuxt_static_render_script = Some(
+            self.nuxt_static_render_script == Some(true)
+                && plain.nuxt_static_render_script == Some(true),
+        );
 
         let plain_bindings = plain.bindings;
         self.bindings.is_script_setup |= plain_bindings.is_script_setup;

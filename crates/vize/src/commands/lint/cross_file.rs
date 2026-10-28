@@ -2,6 +2,7 @@
 
 mod absent_props;
 mod component;
+mod directives;
 mod fallthrough;
 mod sfc;
 
@@ -18,10 +19,11 @@ use vize_croquis_cf::{
 };
 use vize_curator::complexity::render_cross_file_complexity;
 use vize_l0::{CompactString, FxHashMap, String, ToCompactString, cstr};
-use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
+use vize_patina::{HelpLevel, LintDiagnostic, LintResult, ProjectLintDirectives};
 
 pub(super) struct CrossFileLintOutput {
     pub(super) results: Vec<LintResult>,
+    directive_states: Vec<Option<ProjectLintDirectives>>,
     pub(super) provide_inject_tree: Option<String>,
     pub(super) complexity_report: Option<String>,
 }
@@ -60,8 +62,13 @@ pub(super) fn apply_sfc_cross_file_lint(
         output.complexity_report.as_deref(),
     );
 
-    for (target_index, cross_result) in targets.into_iter().zip(output.results) {
+    for ((target_index, cross_result), state) in targets
+        .into_iter()
+        .zip(output.results)
+        .zip(output.directive_states)
+    {
         if let Some((_, _, _, result)) = results.get_mut(target_index) {
+            directives::reconcile(state.as_ref(), result);
             merge_lint_result(result, cross_result);
         }
     }
@@ -117,6 +124,13 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
         source_offsets.insert(file_id, offsets);
     }
 
+    let directive_states: Vec<_> = files
+        .iter()
+        .map(|(path, source)| {
+            ProjectLintDirectives::from_sfc(source.as_ref(), path.to_string_lossy().as_ref())
+        })
+        .collect();
+
     analyzer.rebuild_import_edges();
     let cross_file_result = analyzer.analyze();
 
@@ -160,9 +174,10 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
                 &configured
             }
         };
-        result.diagnostics.push(cross_file_diagnostic_to_lint(
-            diagnostic, offsets, source_len, help_level,
-        ));
+        let mut lint = cross_file_diagnostic_to_lint(diagnostic, offsets, source_len, help_level);
+        if directives::admit(&directive_states, index, rule, &mut lint) {
+            result.diagnostics.push(lint);
+        }
     }
 
     component::apply(
@@ -183,7 +198,19 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
         (help_level, settings),
     );
 
-    for result in &mut results {
+    for (index, result) in results.iter_mut().enumerate() {
+        result.diagnostics.retain_mut(|diagnostic| {
+            !matches!(diagnostic.rule_name, component::RULE | fallthrough::RULE)
+                || directives::admit(&directive_states, index, diagnostic.rule_name, diagnostic)
+        });
+        if let Some((path, _)) = files.get(index) {
+            directives::finalize(
+                directive_states.get(index).and_then(Option::as_ref),
+                path,
+                result,
+                settings,
+            );
+        }
         result.error_count = result
             .diagnostics
             .iter()
@@ -208,6 +235,7 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 
     CrossFileLintOutput {
         results,
+        directive_states,
         provide_inject_tree,
         complexity_report,
     }
@@ -312,3 +340,6 @@ mod tests;
 
 #[cfg(test)]
 mod effect_summary_tests;
+
+#[cfg(test)]
+mod directive_tests;

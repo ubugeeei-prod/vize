@@ -381,8 +381,50 @@ const theme = inject('theme', 'light')
         diagnostic.code === "vize:croquis/cf/unmatched-inject" &&
         diagnostic.message.includes("theme"),
     );
-    expect(defaultedInject?.severity).toBe("warning");
-    expect(defaultedInject?.type).toBe("provide-inject");
+    expect(defaultedInject).toBeUndefined();
+
+    const analyzeTheme = (call: string) =>
+      wasm.analyzeCrossFile(
+        files.map((file) =>
+          file.path === "Child.vue"
+            ? { ...file, source: file.source.replace("inject('theme', 'light')", call) }
+            : file,
+        ),
+        { provideInject: true, reactivityTracking: true },
+      );
+    const withoutTheme = (diagnostics: typeof result.diagnostics) =>
+      diagnostics.filter((diagnostic) => !diagnostic.message.includes("theme"));
+
+    const required = analyzeTheme("inject('theme')");
+    const missingTheme = required.diagnostics.filter(
+      (diagnostic) =>
+        diagnostic.code === "vize:croquis/cf/unmatched-inject" &&
+        diagnostic.message.includes("theme"),
+    );
+    expect(missingTheme).toHaveLength(1);
+    expect(missingTheme[0]).toMatchObject({
+      file: "Child.vue",
+      severity: "error",
+      type: "provide-inject",
+    });
+    expect(withoutTheme(required.diagnostics)).toEqual(withoutTheme(result.diagnostics));
+
+    const spread = analyzeTheme("inject('theme', ...([] as unknown[]))");
+    const spreadTheme = spread.diagnostics.filter(
+      (diagnostic) =>
+        diagnostic.code === "vize:croquis/cf/unmatched-inject" &&
+        diagnostic.message.includes("theme"),
+    );
+    expect(spreadTheme).toHaveLength(1);
+    expect(spreadTheme[0]).toMatchObject({
+      file: "Child.vue",
+      severity: "warning",
+      type: "provide-inject",
+    });
+    expect(withoutTheme(spread.diagnostics)).toEqual(withoutTheme(result.diagnostics));
+
+    const repaired = analyzeTheme("inject('theme', 'light')");
+    expect(repaired.diagnostics).toEqual(result.diagnostics);
 
     const nonReactiveProvide = result.diagnostics.find(
       (diagnostic) => diagnostic.code === "vize:croquis/cf/non-reactive-provide",

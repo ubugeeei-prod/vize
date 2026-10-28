@@ -136,16 +136,16 @@ void test("known address streams require every ordered address and complete sent
   );
 });
 
-void test("stream adapter preserves real UTF8 frames and rejects invalid synthetic markers", async () => {
+void test("stream adapter preserves genuine frames while isolating mapped marker bodies", async () => {
   const { sentinelAdapterScript } =
     await import("../../tools/benchmarks/scripts/source-symbolizer-adapter.ts");
-  const { spawnSync } = await import("node:child_process");
+  const { spawn, spawnSync } = await import("node:child_process");
   const fake =
-    'import sys\nfor line in sys.stdin.buffer:\n    if line == b"0xdeadbeefbadc0ffe\\n":\n        sys.stdout.buffer.write(line + b"??\\n??:0\\n")\n    else:\n        sys.stdout.buffer.write(line + "original_function\\n/source/雪.rs:12\\n".encode("utf8"))\n    sys.stdout.buffer.flush()\n';
+    'import sys\nfor line in sys.stdin.buffer:\n    if line == b"0xdeadbeefbadc0ffe\\n":\n        sys.stdout.buffer.write(line + b"tombstone\\n/unrelated.rs:12\\ninline\\n/other.rs:99\\n")\n    else:\n        sys.stdout.buffer.write(line + "original_function\\n/source/雪.rs:12\\n".encode("utf8"))\n    sys.stdout.buffer.flush()\n';
   const script = sentinelAdapterScript("/usr/bin/python3");
-  const run = (child: string) =>
+  const run = (child: string, input = ",\n0x123\n,\n0x456\n,\n") =>
     spawnSync("python3", ["-c", script, "-c", child], {
-      input: ",\n0x123\n,\n0x456\n,\n",
+      input,
       encoding: "utf8",
       timeout: 3000,
     });
@@ -155,9 +155,51 @@ void test("stream adapter preserves real UTF8 frames and rejects invalid synthet
     good.stdout,
     ",\n0x123\noriginal_function\n/source/雪.rs:12\n,\n0x456\noriginal_function\n/source/雪.rs:12\n,\n",
   );
-  const malformed = run(fake.replace("??:0", "wrong_source.rs:12"));
-  assert.equal(malformed.status, 1);
-  assert.match(malformed.stderr, /sentinel frame failed/u);
+  const collision = run(fake, "0xdeadbeefbadc0ffe\n,\n");
+  assert.equal(collision.status, 0, collision.stderr);
+  assert.equal(
+    collision.stdout,
+    "0xdeadbeefbadc0ffe\ntombstone\n/unrelated.rs:12\ninline\n/other.rs:99\n,\n",
+  );
+  for (const child of [
+    fake.replace("/other.rs:99\\n", ""),
+    fake.replace(
+      'sys.stdout.buffer.write(line + "original_function',
+      'sys.stdout.buffer.write(b"0x999\\n" + "original_function',
+    ),
+    fake.replace("    sys.stdout.buffer.flush()", "    sys.stdout.buffer.flush()\n    break"),
+  ]) {
+    const malformed = run(child);
+    assert.equal(malformed.status, 1, malformed.stderr);
+    assert.match(malformed.stderr, /sentinel frame failed/u);
+  }
+  const child = spawn("python3", ["-c", script, "-c", fake]);
+  let output = "",
+    errors = "",
+    sent = false;
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+  child.stdout.on("data", (chunk: string) => {
+    output += chunk;
+    if (!sent && output.includes(",\n")) {
+      sent = true;
+      child.stdin.write("0x123\n,\n");
+    }
+    if (output.split(",\n").length === 3) child.stdin.end();
+  });
+  child.stderr.on("data", (chunk: string) => {
+    errors += chunk;
+  });
+  const status = await new Promise<number | null>((done) => {
+    const timer = setTimeout(() => child.kill("SIGKILL"), 3000);
+    child.once("close", (code) => {
+      clearTimeout(timer);
+      done(code);
+    });
+    child.stdin.write(",\n");
+  });
+  assert.equal(status, 0, errors);
+  assert.equal(output, ",\n0x123\noriginal_function\n/source/雪.rs:12\n,\n");
 });
 
 void test("symbol-only census accounts for all DSOs without inventing source locations", async () => {
@@ -182,4 +224,17 @@ void test("symbol-only census accounts for all DSOs without inventing source loc
       .qualified,
     false,
   );
+});
+
+void test("independent source witnesses retain every ordered complete address body", async () => {
+  const { addressFrames } =
+    await import("../../tools/benchmarks/scripts/source-symbolizer-retained.ts");
+  const body = "0x123\nf\n/frozen.rs:46\n0x456\ng\n/frozen.rs:47\n";
+  assert.equal(addressFrames(body, ["123", "456"]).length, 2);
+  for (const bad of [
+    body.replace("0x456", "0x789"),
+    body.replace("g\n/frozen.rs:47", "g"),
+    body.replace("0x456\ng\n/frozen.rs:47\n", ""),
+  ])
+    assert.throws(() => addressFrames(bad, ["123", "456"]));
 });

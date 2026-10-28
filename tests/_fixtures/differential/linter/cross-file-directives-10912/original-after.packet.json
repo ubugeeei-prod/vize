@@ -1,0 +1,20 @@
+[
+  {
+    "file": "src/Editor.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/PageA.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/PageB.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]

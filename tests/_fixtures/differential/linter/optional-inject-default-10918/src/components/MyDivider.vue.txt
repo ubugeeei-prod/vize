@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { inject } from "vue";
+import { InListKey } from "./keys";
+
+// optional on purpose: outside a list the default answers
+const inList = inject(InListKey, false);
+</script>
+
+<template>
+  <hr :aria-hidden="inList ? 'true' : undefined" />
+</template>

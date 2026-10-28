@@ -1,0 +1,49 @@
+name: Document snapshot source profile
+on:
+  pull_request:
+    paths:
+      - .github/workflows/document-snapshot-source-profile.yml
+      - crates/vize_maestro/src/document/store.rs
+      - crates/vize_maestro/Cargo.toml
+      - crates/vize_maestro/tests/source_snapshot_profile.rs
+  workflow_dispatch: {}
+permissions: { contents: read }
+concurrency:
+  group: document-snapshot-source-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  carrier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: document-snapshot-source-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Run the bounded normal and source-counter carriers
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          git rev-parse HEAD > evidence/source.sha
+          rustc +1.99.1 -vV > evidence/rustc.txt
+          lscpu > evidence/cpu.txt
+          python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS","RAYON_NUM_THREADS","GOMAXPROCS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed correctness and source-counter law; no throughput comparison"}))' > evidence/resources.json
+          cargo +1.99.1 test --locked --profile ci -p vize_maestro --test source_snapshot_profile -- --nocapture 2>&1 | tee evidence/normal.log
+          cargo +1.99.1 test --locked --profile ci -p vize_maestro --test source_snapshot_profile --features micro-profiling -- --nocapture 2>&1 | tee evidence/instrumented.log
+          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-operands.log
+          python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_store_micro=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_store_micro=" in line]; assert len(rows)==3; Path("evidence/counts.json").write_text(json.dumps(rows,indent=2)+"\n")'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: document-snapshot-source-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { type PinnedFixtureWorkspace } from "../../../_helpers/realworld-patch.ts";
 import { type CommandResult, type VizeCheckResult } from "../../../_helpers/realworld-typecheck.ts";
+import { withoutVizeSourceContext } from "../../../../tools/support/compat/fixtures/typecheck-divergence-input.mjs";
 import { offsetToPosition } from "../../../tooling/support/lsp/assertions.ts";
 import type { LspDiagnostic } from "../../../tooling/support/lsp/protocol.ts";
 import { writeVueConfigFixture } from "../../../tooling/support/vue-config-fixture.ts";
@@ -184,7 +185,8 @@ export function assertCli(
         line: Number(parts[1]),
         column: Number(parts[2]),
         code: Number(parts[3]),
-        message: message(parts[4]),
+        // vue-tsc prints no `(source: …)` template context (#10335).
+        message: message(withoutVizeSourceContext(parts[4])),
       };
     }),
   );

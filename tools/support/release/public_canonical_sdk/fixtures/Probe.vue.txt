@@ -1,0 +1,7 @@
+<!-- 日本 🧭 -->
+<script setup lang="ts">
+const props = defineProps<{ value: number }>();
+const exact: number = props.value;
+void exact;
+</script>
+<template><div>{{ props.value.toFixed() }}</div></template>

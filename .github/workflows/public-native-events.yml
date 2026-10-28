@@ -24,6 +24,11 @@ on:
         required: false
         type: boolean
         default: false
+      additional_observers:
+        description: Qualify independent published icon and canonical SDK observers after core contracts
+        required: false
+        type: boolean
+        default: false
 run-name: Public native events ${{ inputs.version }} (${{ inputs.phase }})
 permissions: { contents: read }
 concurrency:
@@ -99,7 +104,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   public-release-contracts:
-    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != ''))
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != '')) || (github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.additional_observers == true)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -130,6 +135,23 @@ jobs:
         run: node tools/support/release/public_release_contracts/bootstrap.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof"
       - name: Verify complete packets, runtime controls, and native public custody
         run: node tools/support/release/public_release_contracts/run.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof" "$PUBLIC_CANDIDATE"
+      - name: Prove the candidate contains the required icon source
+        if: inputs.additional_observers == true && inputs.phase == 'after'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUIRED_ICON_SOURCE: d38ab7e48514566f1776f25439e8777a9856b5a6
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_ICON_SOURCE...$PUBLIC_CANDIDATE" > "$RUNNER_TEMP/public-release-proof/icons-source-comparison.json"
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync } from "node:fs";
+          const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/public-release-proof/icons-source-comparison.json", "utf8"));
+          assert.equal(comparison.base_commit.sha, process.env.REQUIRED_ICON_SOURCE);
+          assert.ok(["ahead", "identical"].includes(comparison.status));
+          NODE
+      - name: Qualify independent published icon class packets
+        if: inputs.additional_observers == true && inputs.phase == 'after'
+        run: node tools/support/release/public_icons/verify.ts "$RUNNER_TEMP/public-release-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-release-proof/icons-10928.json"
       - name: Preserve complete consumer evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -179,6 +201,9 @@ jobs:
           node tools/support/release/public_custom_properties/verify.ts \
             "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer" \
             "$RUNNER_TEMP/cpp-release-identity.json"
+      - name: Qualify independent published canonical SDK
+        if: inputs.additional_observers == true && inputs.phase == 'after'
+        run: node tools/support/release/public_canonical_sdk/verify.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer/public-canonical-sdk.json"
       - name: Preserve complete public packets and immutable original witnesses
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -196,3 +221,4 @@ jobs:
             ${{ runner.temp }}/public-custom-properties-consumer/*.txt
             ${{ runner.temp }}/public-custom-properties-consumer/src/
             tools/support/release/public_custom_properties/
+            ${{ runner.temp }}/public-custom-properties-consumer/public-canonical-sdk-evidence/

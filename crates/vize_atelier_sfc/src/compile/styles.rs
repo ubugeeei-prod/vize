@@ -3,7 +3,11 @@
 //! Compiles all `<style>` blocks in an SFC, applying scoped CSS
 //! transformations when needed.
 
-use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};
+use super::helpers::generate_scope_id;
+use crate::types::{
+    CssModuleMapping, SfcCompileOptions, SfcDescriptor, SfcError, SfcStyleBlock,
+    StyleCompileOptions,
+};
 
 use vize_carton::{String, profile};
 
@@ -22,6 +26,28 @@ pub(super) fn scope_flags(styles: &[SfcStyleBlock]) -> (bool, bool, bool) {
                 && (style.content.contains(":slotted(") || style.content.contains("::v-slotted("))
         }),
     )
+}
+
+/// Keep source, CSS and adapter scope identities on the same compile inputs.
+pub(super) fn scope_id_for_descriptor(
+    descriptor: &SfcDescriptor,
+    options: &SfcCompileOptions,
+    has_styles: bool,
+    filename: &str,
+) -> String {
+    // Use externally-provided scope ID if available, otherwise generate from filename.
+    // The external scope ID ensures consistency with JS-side SHA-256 generation.
+    // Template/script-only SFCs do not need the hash.
+    let needs_scope_id =
+        has_styles || !descriptor.css_vars.is_empty() || options.scope_id.is_some();
+    if needs_scope_id {
+        options
+            .scope_id
+            .clone()
+            .unwrap_or_else(|| generate_scope_id(filename))
+    } else {
+        String::default()
+    }
 }
 
 impl CompiledStyles {

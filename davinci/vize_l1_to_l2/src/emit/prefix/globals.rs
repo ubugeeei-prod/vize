@@ -6,76 +6,23 @@
 
 /// Names available independently of a lexical binding.
 pub(crate) fn is_global_allowed(name: &str) -> bool {
-    matches!(
-        name,
-        "Infinity"
-            | "undefined"
-            | "NaN"
-            | "Array"
-            | "Boolean"
-            | "Date"
-            | "Error"
-            | "Function"
-            | "JSON"
-            | "Math"
-            | "Number"
-            | "Object"
-            | "Promise"
-            | "Proxy"
-            | "Reflect"
-            | "RegExp"
-            | "Set"
-            | "String"
-            | "Symbol"
-            | "Map"
-            | "WeakMap"
-            | "WeakSet"
-            | "BigInt"
-            | "parseInt"
-            | "parseFloat"
-            | "isNaN"
-            | "isFinite"
-            | "decodeURI"
-            | "decodeURIComponent"
-            | "encodeURI"
-            | "encodeURIComponent"
-            | "arguments"
-            | "console"
-            | "window"
-            | "document"
-            | "navigator"
-            | "globalThis"
-            | "require"
-            | "import"
-            | "exports"
-            | "module"
-            | "_ctx"
-            | "_cache"
-            | "_push"
-            | "_parent"
-            | "_toNumber"
-    )
-}
-
-/// Host-provided globals: unprefixed, but never hoistable constants. Matches
-/// `vize_croquis::builtins::is_host_global`.
-pub(crate) fn is_host_global(name: &str) -> bool {
-    matches!(
-        name,
-        "window"
-            | "document"
-            | "navigator"
-            | "globalThis"
-            | "require"
-            | "import"
-            | "exports"
-            | "module"
-    )
+    vize_l0::template_globals::is_vue_template_global(name)
+        || matches!(
+            name,
+            "require"
+                | "arguments"
+                | "import"
+                | "_ctx"
+                | "_cache"
+                | "_push"
+                | "_parent"
+                | "_toNumber"
+        )
 }
 
 /// An unprefixed global whose value is stable for constant folding and hoisting.
 pub(crate) fn is_constant_global(name: &str) -> bool {
-    is_global_allowed(name) && !is_host_global(name)
+    vize_l0::template_globals::is_vue_template_global(name)
 }
 
 pub(super) fn is_generated_filter_helper(name: &str) -> bool {
@@ -124,48 +71,10 @@ mod tests {
     }
 }
 
-/// The root scope `vize_croquis::ScopeChain::new` seeds with
-/// `JS_UNIVERSAL_GLOBALS`. `TransformContext::is_in_scope` answers `true`
-/// for every one of them, so the shipped transform never prefixes them —
-/// a *wider* set than [`is_global_allowed`], and the difference is
-/// visible output (`Intl.DateTimeFormat()` stays bare). Only the
-/// transform-side decision consults this; the codegen visitor keeps to
-/// the allowlist, exactly as the shipped lane does.
+/// The transform consults lexical template bindings separately from globals.
+/// The semantic JS universal scope must not widen Vue's compiler allow-list.
 pub(super) fn is_scope_chain_global(name: &str) -> bool {
-    if is_global_allowed(name) {
-        return true;
-    }
-    matches!(name, |"AggregateError"| "ArrayBuffer"
-        | "AsyncFunction"
-        | "AsyncGenerator"
-        | "AsyncGeneratorFunction"
-        | "AsyncIterator"
-        | "Atomics"
-        | "BigInt64Array"
-        | "BigUint64Array"
-        | "DataView"
-        | "EvalError"
-        | "Float32Array"
-        | "Float64Array"
-        | "Generator"
-        | "GeneratorFunction"
-        | "Int16Array"
-        | "Int32Array"
-        | "Int8Array"
-        | "Intl"
-        | "Iterator"
-        | "RangeError"
-        | "ReferenceError"
-        | "SharedArrayBuffer"
-        | "SyntaxError"
-        | "TypeError"
-        | "URIError"
-        | "Uint16Array"
-        | "Uint32Array"
-        | "Uint8Array"
-        | "Uint8ClampedArray"
-        | "eval"
-        | "this")
+    is_global_allowed(name) || name == "this"
 }
 
 #[cfg(test)]
@@ -173,14 +82,20 @@ mod scope_chain_tests {
     use super::{is_global_allowed, is_scope_chain_global};
 
     #[test]
-    fn the_seeded_scope_is_wider_than_the_allowlist() {
-        assert!(is_scope_chain_global("Intl"));
-        assert!(is_scope_chain_global("TypeError"));
-        assert!(is_scope_chain_global("Uint8Array"));
-        assert!(!is_global_allowed("Intl"));
-        // Everything the allowlist admits is seeded too.
-        assert!(is_scope_chain_global("Math"));
-        assert!(!is_scope_chain_global("$event"));
-        assert!(!is_scope_chain_global("Zork"));
+    fn the_transform_and_codegen_use_the_same_vue_global_boundary() {
+        for name in ["Math", "Intl", "require", "arguments"] {
+            assert!(is_scope_chain_global(name), "{name}");
+            assert!(is_global_allowed(name), "{name}");
+        }
+        for name in [
+            "document",
+            "globalThis",
+            "Promise",
+            "TypeError",
+            "Uint8Array",
+        ] {
+            assert!(!is_scope_chain_global(name), "{name}");
+            assert!(!is_global_allowed(name), "{name}");
+        }
     }
 }

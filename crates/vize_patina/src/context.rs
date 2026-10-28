@@ -5,10 +5,12 @@ mod directives;
 mod eslint_directive;
 mod facts;
 mod helpers;
+mod project_directives;
 mod reporting;
 mod sfc_directives;
 mod state;
 
+pub use project_directives::ProjectLintDirectives;
 pub(crate) use reporting::{
     SfcSuppression, offset_diagnostic, retain_unless_sfc_suppressed,
     retain_unless_source_suppressed,

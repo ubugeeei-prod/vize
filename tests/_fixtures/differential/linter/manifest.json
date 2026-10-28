@@ -489,6 +489,42 @@
       }
     },
     {
+      "id": "linter/cross-file-directives-10912",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "cross-file-directives-10912",
+        "files": [
+          {
+            "path": "original/src/Editor.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "240acdb1362ed71863cce0d4aad9800a55ffdfe9e19413433aa183a93a113a01"
+          },
+          {
+            "path": "original/src/PageA.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "9daff2c17a056a03f85325b83ba04fcf4af33d22e62d8e42a7633e3c9969c6b2"
+          },
+          {
+            "path": "original/src/PageB.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "96b829042c822870854281d11e3438786fbb715f452a1d5d5f7a2451f5fc71a1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/attribute-hyphenation-aria-data-camel-props",
       "state": "active",
       "targets": ["lint"],
@@ -1055,6 +1091,47 @@
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/optional-inject-default-10918",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "optional-inject-default-10918",
+        "files": [
+          {
+            "path": "src/App.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "85da5589433daa18f75162f7a8ae6deb345a4680b6ab977aaf47d9b4c4e9e947"
+          },
+          {
+            "path": "src/components/MyDivider.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "b46c27724a2d8a19452794694df95935389fcac76d8178149dea0cfc4e060da7"
+          },
+          {
+            "path": "src/components/MyList.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "5386c1e6f49c8474b7d66a1e2c35db8423cafe4fc463a129b3c1352fdc231a5e"
+          },
+          {
+            "path": "src/components/keys.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "c578dfc4611930eb39305f4db69dce2f8953b1482e31b04323a142dc77bcd573"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

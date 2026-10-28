@@ -1,0 +1,185 @@
+{
+  "version": "0.600.0",
+  "rows": [
+    {
+      "id": "reported-scope",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & [data-v-x]:scope {\n      color: #00f;\n    }\n\n    & .c[data-v-x] {\n      color: red;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "reported-scope",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){& [data-v-x]:scope{color:#00f}& .c[data-v-x]{color:red}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "leading-child",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & > .c[data-v-x] {\n      color: red;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "leading-child",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){&>.c[data-v-x]{color:red}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "mixed-selector-list",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & [data-v-x]:scope, & > .c[data-v-x], & .d[data-v-x] {\n      color: red;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "mixed-selector-list",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){& [data-v-x]:scope,&>.c[data-v-x],& .d[data-v-x]{color:red}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "implicit-specificity",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & > .c[data-v-x] {\n      color: red;\n    }\n\n    & .c[data-v-x] {\n      color: #00f;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "implicit-specificity",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){&>.c[data-v-x]{color:red}& .c[data-v-x]{color:#00f}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "explicit-scope-specificity",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & :scope > .c[data-v-x] {\n      color: red;\n    }\n\n    & .c[data-v-x] {\n      color: #00f;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "explicit-scope-specificity",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){& :scope>.c[data-v-x]{color:red}& .c[data-v-x]{color:#00f}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "explicit-nesting-specificity",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & > .c[data-v-x] {\n      color: red;\n    }\n\n    & .c[data-v-x] {\n      color: #00f;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "explicit-nesting-specificity",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){&>.c[data-v-x]{color:red}& .c[data-v-x]{color:#00f}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "conditional-scope",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    @supports (display: block) {\n      @media all {\n        & [data-v-x]:scope {\n          color: #00f;\n        }\n\n        & > .c[data-v-x] {\n          color: red;\n        }\n      }\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "conditional-scope",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){@supports (display:block){& [data-v-x]:scope{color:#00f}&>.c[data-v-x]{color:red}}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "ordinary-nesting",
+      "minify": false,
+      "code": ".a {\n  @scope (.s) {\n    & .c {\n      & .d[data-v-x] {\n        color: red;\n      }\n    }\n  }\n\n  & .e[data-v-x] {\n    color: #00f;\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "ordinary-nesting",
+      "minify": true,
+      "code": ".a{@scope(.s){& .c{& .d[data-v-x]{color:red}}}& .e[data-v-x]{color:#00f}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "top-level-scope",
+      "minify": false,
+      "code": "@scope(.s){[data-v-x]:scope{color:blue}> .c[data-v-x]{color:red}}",
+      "cssVars": [],
+      "errors": [
+        "CSS parse error: Invalid empty selector at Scope.vue:0:40"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "top-level-scope",
+      "minify": true,
+      "code": "@scope(.s){[data-v-x]:scope{color:blue}> .c[data-v-x]{color:red}}",
+      "cssVars": [],
+      "errors": [
+        "CSS parse error: Invalid empty selector at Scope.vue:0:40"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "nested-scope",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    @scope (.inner) {\n      & [data-v-x]:scope {\n        color: #00f;\n      }\n\n      & > .c[data-v-x] {\n        color: red;\n      }\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "nested-scope",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){@scope(.inner){& [data-v-x]:scope{color:#00f}&>.c[data-v-x]{color:red}}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "pseudo-list",
+      "minify": false,
+      "code": ".a[data-v-x] {\n  @scope (.s) {\n    & :is(.c[data-v-x], .d[data-v-x]), & > [data-v-x]:is(.c, .d) {\n      color: red;\n    }\n  }\n}\n",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "id": "pseudo-list",
+      "minify": true,
+      "code": ".a[data-v-x]{@scope(.s){& :is(.c[data-v-x],.d[data-v-x]),&>[data-v-x]:is(.c,.d){color:red}}}",
+      "cssVars": [],
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}
