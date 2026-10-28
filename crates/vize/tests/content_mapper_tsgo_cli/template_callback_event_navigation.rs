@@ -100,6 +100,49 @@ const emit = defineEmits<{
 </template>
 "#;
 
+const GENERIC_BRANCH_CHILD: &str = r#"<script setup lang="ts">
+defineProps<{
+  apply: <T extends () => unknown>(value: T) => T;
+}>();
+defineEmits<{ quit: [] }>();
+</script>
+
+<template><div /></template>
+"#;
+
+const GENERIC_BRANCH_PARENT: &str = r#"<script setup lang="ts">
+import Foo from "./Foo.vue";
+
+const condition = true;
+const emit = defineEmits<{ quit: [] }>();
+</script>
+
+<template>
+  <Foo
+    :apply="(void 0, <T extends () => unknown>(
+      value) => value)"
+    @quit="emit('quit')"
+  />
+  <Foo
+    :apply="(
+      <T extends () => unknown>(
+        value) => value
+    )"
+    @quit="emit('quit')"
+  />
+  <Foo
+    :apply="condition
+      ? <T extends () => unknown>(
+          value) => {
+          return value
+        }
+      : <U extends () => unknown>(
+          value) => value"
+    @quit="emit('quit')"
+  />
+</template>
+"#;
+
 #[test]
 fn template_callback_next_to_listener_keeps_its_contextual_type() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
@@ -158,6 +201,41 @@ fn multiline_callback_skips_nested_function_type_arrow_for_suppression() {
         output.status.code(),
         Some(0),
         "the nested function-type arrow must not expose generated TS7006\n{}",
+        output_text(&output)
+    );
+    assert_eq!(output.stdout, b"", "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+}
+
+#[test]
+fn multiline_generic_callback_branches_keep_contextual_parameters() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping generic callback branch conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(tsgo.is_file(), "{TSGO_ENV} must name an executable");
+
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-generic-callback-branches-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    std::fs::write(project.path().join("Foo.vue"), GENERIC_BRANCH_CHILD).unwrap();
+    std::fs::write(
+        project.path().join("parent.vue"),
+        GENERIC_BRANCH_PARENT,
+    )
+    .unwrap();
+    std::fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "sequence, wrapper and conditional callback branches must keep contextual typing\n{}",
         output_text(&output)
     );
     assert_eq!(output.stdout, b"", "{}", output_text(&output));

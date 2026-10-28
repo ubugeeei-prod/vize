@@ -2,6 +2,8 @@ use std::path::Path;
 
 use super::generate_vue_content_mapper_transform;
 
+const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.";
+
 #[test]
 fn event_navigation_suppresses_its_inference_only_callback_copy() {
     let source = r#"<script setup lang="ts">
@@ -110,4 +112,109 @@ const emit = defineEmits<{
         "the authored mapped owner remains the sole unsuppressed copy:\n{}",
         result.text
     );
+}
+
+#[test]
+fn generic_callback_branches_keep_every_inference_parameter_suppressed() {
+    let source = r#"<script setup lang="ts">
+import Foo from "./Foo.vue";
+
+const condition = true;
+const emit = defineEmits<{ quit: [] }>();
+</script>
+
+<template>
+  <Foo
+    :apply="(void 0, <T,>(
+      value) => value)"
+    @quit="emit('quit')"
+  />
+  <Foo
+    :apply="(
+      <T,>(
+        value) => value
+    )"
+    @quit="emit('quit')"
+  />
+  <Foo
+    :apply="condition
+      ? <T,>(
+          value) => {
+          return value
+        }
+      : <U,>(
+          value) => value"
+    @quit="emit('quit')"
+  />
+</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("parent.vue"), source).expect("transform");
+
+    let sequence = concat!(
+        "\"apply\": (void 0, // @ts-ignore Inference-only callback branch.\n",
+        "<T,>(       value) => value),",
+    );
+    let wrapped = concat!(
+        "\"apply\": (\n      // @ts-ignore Inference-only callback branch.\n",
+        "<T,>(         value) => value\n    ),",
+    );
+    let conditional = concat!(
+        "\"apply\": condition\n      ? // @ts-ignore Inference-only callback branch.\n",
+        "<T,>(           value) => {\n",
+        "          return value\n",
+        "        }\n",
+        "      : // @ts-ignore Inference-only callback branch.\n",
+        "<U,>(           value) => value,",
+    );
+    for expected in [sequence, wrapped, conditional] {
+        assert_eq!(
+            result.text.matches(expected).count(),
+            3,
+            "all inference paths must preserve this exact callback shape:\n{expected}\n{}",
+            result.text
+        );
+    }
+    assert_eq!(result.text.matches(BRANCH_IGNORE).count(), 12, "{}", result.text);
+
+    let directive_ranges: Vec<_> = result
+        .text
+        .match_indices(BRANCH_IGNORE)
+        .map(|(start, _)| start..start + BRANCH_IGNORE.len())
+        .collect();
+    assert_eq!(directive_ranges.len(), 12);
+    for directive in directive_ranges {
+        let feature_masks: Vec<_> = result
+            .mappings
+            .iter()
+            .filter_map(|mapping| {
+                let generated = mapping.0[0]..mapping.0[0] + mapping.0[1];
+                (generated.start < directive.end && directive.start < generated.end)
+                    .then_some(mapping.0[5])
+            })
+            .collect();
+        assert_eq!(
+            feature_masks,
+            Vec::<usize>::new(),
+            "synthetic branch directives must have exactly zero source-map overlaps: {directive:?}\n{:#?}",
+            result.mappings,
+        );
+    }
+
+    for authored_owner in [
+        "(void 0, <T,>(\n      value) => value);",
+        "(\n      <T,>(\n        value) => value\n    );",
+        concat!(
+            "condition\n      ? <T,>(\n          value) => {\n",
+            "          return value\n        }\n",
+            "      : <U,>(\n          value) => value;",
+        ),
+    ] {
+        assert_eq!(
+            result.text.matches(authored_owner).count(),
+            1,
+            "the authored mapped owner must remain byte-identical:\n{authored_owner}\n{}",
+            result.text
+        );
+    }
 }

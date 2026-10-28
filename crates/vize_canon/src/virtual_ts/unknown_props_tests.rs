@@ -314,6 +314,14 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
         "the whole-object ARIA witness must defer diagnostics once: {code}"
     );
     assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
+    assert_eq!(
+        code.matches(
+            "type __Child_0_prop_aria_label = __VizePropValue<__Child_ValueProps_0, 'aria-label', __VizePropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>;"
+        )
+        .count(),
+        1,
+        "the raw declared key must resolve before the generated camel alias: {code}"
+    );
 
     let camel = generate_usage(
         "import Child from './Child.vue'; const label = 'ok';",
@@ -326,6 +334,15 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
             .count(),
         1,
         "a camel-authored binding must retain the raw quoted-key witness: {camel}"
+    );
+    assert_eq!(
+        camel
+            .matches(
+                "type __Child_0_prop_ariaLabel = __VizePropValue<__Child_ValueProps_0, 'aria-label', __VizePropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'ariaLabel'>>>;"
+            )
+            .count(),
+        1,
+        "the camel-authored check must still read the required raw declaration first: {camel}"
     );
 
     let non_aria = generate_usage(

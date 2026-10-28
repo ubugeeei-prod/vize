@@ -235,7 +235,11 @@ pub(super) fn generate_inferred_emit_args(
                 let owned;
                 let value = if is_inline_callback_prop(prop) {
                     let value = generated_value.text.trim_start();
-                    owned = callback_parameters_on_ignored_line(value);
+                    owned = if generated_value.omits_tail() {
+                        None
+                    } else {
+                        callback_parameters_on_ignored_line(value)
+                    };
                     owned.as_ref().map_or(value, |owned| owned.as_str())
                 } else {
                     generated_value.text.as_str()

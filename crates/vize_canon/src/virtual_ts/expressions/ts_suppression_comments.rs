@@ -1,33 +1,38 @@
 use std::borrow::Cow;
+
 use vize_carton::String;
 use vize_croquis::drawer::strip_js_comments;
 
-/// Collapse line breaks before a callback's `=>` onto the property line that
-/// carries its inference-only `@ts-ignore`.
+mod callback_line_suppression;
+use callback_line_suppression::{CallbackLineRewrite, rewrite_callback_branches};
+
+/// Keep inference-only callback parameters on a line covered by a generated
+/// `@ts-ignore` without changing the authored diagnostic owner.
 ///
-/// `(\n  params\n) => body` otherwise leaves `params` on an unsuppressed line
-/// and external content-mapper hosts report an unmapped TS7006. The scan skips
-/// comments and literals so an arrow-shaped token inside either cannot end the
-/// parameter prefix. A nested function-type arrow is skipped in favor of the
-/// first depth-zero arrow; a shallowest fallback retains wrapped callbacks.
-/// `None` leaves the common single-line callback borrowed.
+/// Ordinary arrows use the allocation-free lexical path. Rare generic,
+/// sequence, conditional and function shapes delegate to parser-derived
+/// branch-local suppression ranges. `None` leaves borrowed input unchanged.
 pub(crate) fn callback_parameters_on_ignored_line(value: &str) -> Option<String> {
-    let arrow = arrow_token_offset(value)?;
+    match rewrite_callback_branches(value) {
+        CallbackLineRewrite::Rewritten(rewritten) => return Some(rewritten),
+        CallbackLineRewrite::Preserve => return None,
+        CallbackLineRewrite::NotApplicable => {}
+    }
+
+    let arrow = lexical_arrow_token_offset(value)?;
     let prefix = value.get(..arrow)?;
     if !prefix.contains(['\n', '\r']) {
         return None;
     }
     let mut collapsed = String::with_capacity(value.len());
     for ch in prefix.chars() {
-        collapsed.push(if ch == '\n' || ch == '\r' { ' ' } else { ch });
+        collapsed.push(if matches!(ch, '\n' | '\r') { ' ' } else { ch });
     }
-    if let Some(rest) = value.get(arrow..) {
-        collapsed.push_str(rest);
-    }
+    collapsed.push_str(value.get(arrow..)?);
     Some(collapsed)
 }
 
-fn arrow_token_offset(value: &str) -> Option<usize> {
+fn lexical_arrow_token_offset(value: &str) -> Option<usize> {
     let bytes = value.as_bytes();
     let mut index: usize = 0;
     let mut parenthesis_depth: usize = 0;
@@ -37,7 +42,10 @@ fn arrow_token_offset(value: &str) -> Option<usize> {
         match current {
             b'/' if bytes.get(index.saturating_add(1)) == Some(&b'/') => {
                 index = index.saturating_add(2);
-                while bytes.get(index).is_some_and(|byte| *byte != b'\n') {
+                while bytes
+                    .get(index)
+                    .is_some_and(|byte| !matches!(byte, b'\n' | b'\r'))
+                {
                     index = index.saturating_add(1);
                 }
             }
@@ -102,7 +110,6 @@ fn contains_typescript_suppression_comment(expr: &str) -> bool {
             after.split_once('\n').unwrap_or((after, ""))
         } else if let Some(after) = rest.strip_prefix("/*") {
             after.split_once("*/").unwrap_or_else(|| {
-                // An unterminated block comment is scanned up to its final character.
                 let mut chars = after.chars();
                 chars.next_back();
                 (chars.as_str(), "")
@@ -123,73 +130,4 @@ fn is_typescript_suppression_directive(comment: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        callback_parameters_on_ignored_line, contains_typescript_suppression_comment,
-        expression_source_for_typecheck,
-    };
-
-    #[test]
-    fn allocates_only_when_callback_parameters_cross_lines() {
-        assert_eq!(
-            callback_parameters_on_ignored_line("(item) => item.id"),
-            None
-        );
-        let collapsed = callback_parameters_on_ignored_line("(\n  item\n) => item.id");
-        assert_eq!(
-            collapsed.as_ref().map(|value| value.as_str()),
-            Some("(   item ) => item.id")
-        );
-
-        let nested =
-            callback_parameters_on_ignored_line("(fn: (s: string) => string,\n value) => value");
-        assert_eq!(
-            nested.as_ref().map(|value| value.as_str()),
-            Some("(fn: (s: string) => string,  value) => value"),
-            "a nested function-type arrow must not hide the outer callback arrow"
-        );
-
-        let wrapped = callback_parameters_on_ignored_line("((\n value) => value)");
-        assert_eq!(
-            wrapped.as_ref().map(|value| value.as_str()),
-            Some("((  value) => value)"),
-            "the shallowest fallback must preserve a fully wrapped callback"
-        );
-    }
-
-    #[test]
-    fn preserves_only_typescript_suppression_comments() {
-        assert_eq!(
-            expression_source_for_typecheck("// note\nvalue").as_ref(),
-            "\nvalue"
-        );
-        assert_eq!(
-            expression_source_for_typecheck("// @ts-ignore\nvalue").as_ref(),
-            "// @ts-ignore\nvalue"
-        );
-        assert_eq!(
-            expression_source_for_typecheck("/* @ts-expect-error */\nvalue").as_ref(),
-            "/* @ts-expect-error */\nvalue"
-        );
-    }
-
-    #[test]
-    fn ignores_suppression_text_inside_literals() {
-        assert!(!contains_typescript_suppression_comment(
-            r#""// @ts-ignore" + value"#
-        ));
-        assert!(!contains_typescript_suppression_comment(
-            r#"`/* @ts-expect-error */` + value"#
-        ));
-    }
-
-    #[test]
-    fn strips_non_leading_suppression_comments() {
-        let object_literal = "{ name: 'route',\n// @ts-expect-error upstream note\nparams }";
-        assert!(!contains_typescript_suppression_comment(object_literal));
-        assert_eq!(
-            expression_source_for_typecheck(object_literal).as_ref(),
-            "{ name: 'route',\n\nparams }"
-        );
-    }
-}
+mod tests;

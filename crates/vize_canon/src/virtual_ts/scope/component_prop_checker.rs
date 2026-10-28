@@ -3,7 +3,9 @@ use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 use super::component_ref_props::is_inline_ref_callback_prop;
 use super::inline_callback_classifier::is_direct_inline_function_prop_value;
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::{
+    component_aria_prop_keys, to_camel_case, to_safe_identifier_fragment,
+};
 
 mod check_helpers;
 pub(super) use check_helpers::append_prop_check_helpers;
@@ -194,9 +196,19 @@ pub(super) fn prop_alias_type(
     let normalized = cstr!(
         "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
     );
+    // A declared raw ARIA key is authoritative even when Vue authored the
+    // camel alias. Resolve it before the whole-object presence witness removes
+    // `undefined`; otherwise a required `'aria-label': string` can degrade to
+    // the permissive HTML fallthrough for `ariaLabel`.
+    let raw_aria_prop_name =
+        component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
-    let resolved = if fallthrough_prop_name == camel_prop_name {
+    let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {
+        cstr!(
+            "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{raw_prop_name}', {normalized}>"
+        )
+    } else if fallthrough_prop_name == camel_prop_name {
         normalized
     } else {
         cstr!(

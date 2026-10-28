@@ -111,11 +111,16 @@ defineProps<{ 'aria-label': string }>()
                 "src/Parent.vue",
                 r#"<script setup lang="ts">
 import Child from './Child.vue'
+
+const maybe = undefined as string | undefined
 </script>
 
 <template>
   <Child aria-label="kebab" />
   <Child ariaLabel="camel" />
+  <Child aria-label="native fallthrough" aria-hidden="true" />
+  <Child :ariaLabel="maybe" />
+  <Child :aria-label="123" />
   <Child />
 </template>
 "#,
@@ -141,16 +146,31 @@ import Child from './Child.vue'
         .collect();
     assert_eq!(
         normalized,
-        vec![(
-            "src/Parent.vue",
-            Some(2345),
-            String::from(concat!(
-                "8:4:error Argument of type '{}' is not assignable to parameter of type ",
-                "'__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>'.\n",
-                "Property '\"aria-label\"' is missing in type '{}' but required in type ",
-                "'{ readonly \"aria-label\": string; }'.",
-            )),
-        )],
-        "both spellings stay valid and the sole diagnostic remains the exact missing raw key"
+        vec![
+            (
+                "src/Parent.vue",
+                Some(2322),
+                String::from(concat!(
+                    "11:11:error Type 'string | undefined' is not assignable to type 'string'.\n",
+                    "Type 'undefined' is not assignable to type 'string'.",
+                )),
+            ),
+            (
+                "src/Parent.vue",
+                Some(2322),
+                String::from("12:11:error Type 'number' is not assignable to type 'string'."),
+            ),
+            (
+                "src/Parent.vue",
+                Some(2345),
+                String::from(concat!(
+                    "13:4:error Argument of type '{}' is not assignable to parameter of type ",
+                    "'__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>'.\n",
+                    "Property '\"aria-label\"' is missing in type '{}' but required in type ",
+                    "'{ readonly \"aria-label\": string; }'.",
+                )),
+            ),
+        ],
+        "valid aliases and native fallthrough stay clean while nullable, wrong and missing values remain exact authored diagnostics"
     );
 }
