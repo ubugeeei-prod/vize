@@ -10119,6 +10119,29 @@
       ]
     },
     {
+      "id": "typechecker/slot-type-message-10902",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [
+        {
+          "path": "slot-type-message-10902/Probe.vue.txt",
+          "sha256": "eae7608fc9a4d1a5ead540a8b57d9b5dc1c3d280b9965b523453067296833546",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
       "targets": [
         "batch"
