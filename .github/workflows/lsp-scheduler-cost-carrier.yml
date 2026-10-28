@@ -1,0 +1,47 @@
+name: Exact conservation module structural guard
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      SOURCE_LENGTH_BASE_REF: 56030db4a8bd41afd004310c65349c1b5f8a1e43
+      OBSERVED_SOURCE: 38ee905f527162ed1a7c82946a901ab402ea45b5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 38ee905f527162ed1a7c82946a901ab402ea45b5
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          run-install: false
+      - uses: ./.github/actions/setup-rust-script
+      - name: Prove exact repaired source and unchanged conservation body
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$OBSERVED_SOURCE"
+          test -z "$(git status --porcelain)"
+          test "$(git hash-object crates/vize_maestro/src/server/initial_diagnostics/tests/conservation_tests.rs)" = e9a7cc85b90e00b3c2b9a57ba1221104f01a50cb
+          mkdir module-guard-evidence
+          git show -s --format=fuller HEAD > module-guard-evidence/source.txt
+          git diff --find-renames "$SOURCE_LENGTH_BASE_REF" HEAD > module-guard-evidence/layout.diff
+          node --version > module-guard-evidence/node.txt
+          rust-script --version > module-guard-evidence/rust-script.txt
+      - name: Run the original complete source-file guard and negative controls
+        run: |
+          set -euo pipefail
+          node --test --test-concurrency=1 --test-reporter=tap tests/tooling/source-file-lengths.test.ts 2>&1 | tee module-guard-evidence/guard.tap
+          python3 -c 'import pathlib,re; s=pathlib.Path("module-guard-evidence/guard.tap").read_text(); assert re.search(r"ok [0-9]+ - source length script checks the current checkout",s); assert re.search(r"ok [0-9]+ - Rust path overrides fail even behind inactive cfgs",s); assert re.search(r"# fail 0",s); assert re.search(r"# skipped 0",s); assert re.search(r"# tests [1-9][0-9]*",s)'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: conservation-module-guard-38ee-${{ github.run_id }}-${{ github.run_attempt }}
+          path: module-guard-evidence/
+          if-no-files-found: error
+          retention-days: 30
