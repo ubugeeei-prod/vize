@@ -7,6 +7,7 @@
 //! are never memoized: their AST and side effects must be produced normally.
 
 use oxc_allocator::{Dummy, GetAllocator};
+use rustc_hash::FxHashMap;
 
 use crate::{
     Context, ParserConfig, ParserImpl,
@@ -48,6 +49,32 @@ pub(crate) struct FailedSubproblem<'a> {
     lexer_token: Token,
     previous_token_end: u32,
     trivia: SpeculativeTrivia,
+}
+
+/// Keep the memo header and its buckets lazy on ordinary parser entries.
+#[derive(Default)]
+pub(crate) struct FailedSubproblems<'a> {
+    entries: Option<Box<FxHashMap<FailedSubproblemKey, FailedSubproblem<'a>>>>,
+}
+
+impl<'a> FailedSubproblems<'a> {
+    fn get(&self, key: &FailedSubproblemKey) -> Option<&FailedSubproblem<'a>> {
+        self.entries.as_deref()?.get(key)
+    }
+
+    fn insert(&mut self, key: FailedSubproblemKey, failed: FailedSubproblem<'a>) {
+        self.entries.get_or_insert_with(Box::default).insert(key, failed);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn len(&self) -> usize {
+        self.entries.as_deref().map_or(0, |entries| entries.len())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn capacity(&self) -> usize {
+        self.entries.as_deref().map_or(0, |entries| entries.capacity())
+    }
 }
 
 impl<'a, C: ParserConfig> ParserImpl<'a, C> {
