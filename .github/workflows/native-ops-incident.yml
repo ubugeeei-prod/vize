@@ -6,6 +6,7 @@ on:
       - .github/scripts/native-ops-driver.ts
       - .github/scripts/native-ops-data.ts
       - .github/workflows/native-ops-incident.yml
+      - tests/tooling/native-ops-workflow.test.ts
   workflow_dispatch:
     inputs:
       authorization:
@@ -39,10 +40,18 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: "24.14.0"
-      - name: Require existing diagnostic tools
+      - name: Install debugger for synthetic-only hosted controls
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --no-upgrade gdb
+      - name: Require and record synthetic diagnostic tools
         run: |
           command -v gdb
           command -v cc
+          mkdir -p "$RUNNER_TEMP/native-ops-pr-private"
+          gdb --version > "$RUNNER_TEMP/native-ops-pr-private/gdb-version.txt"
+          cc --version > "$RUNNER_TEMP/native-ops-pr-private/cc-version.txt"
+          dpkg-query --show gdb libc6 > "$RUNNER_TEMP/native-ops-pr-private/package-versions.txt"
       - name: Validate actual fork, exec, thread and signal propagation
         run: node .github/scripts/native-ops-driver.ts control "$RUNNER_TEMP/native-ops-pr-private"
       - name: Seal public control projection independently
