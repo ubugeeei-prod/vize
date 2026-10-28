@@ -15,7 +15,7 @@ import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.t
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
 import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
-import { finalizeLspResources } from "./lib/lsp-resource-finalize.ts";
+import { finalizeSampledLspRun } from "./lib/lsp-resource-finalize.ts";
 
 interface RunResult {
   run: number;
@@ -263,18 +263,12 @@ async function measure() {
       result.server_stderr = session.stderrText;
       throw error;
     } finally {
-      const { peak, samples, observed_processes } = sampler.stop();
-      result.rss_peak_mib = mib(peak.rss_bytes);
-      result.peak_processes = peak.processes;
-      result.observed_processes = observed_processes;
-      result.resource_samples = samples;
-      measurement.per_run.push(result);
-      delete measurement.active_run;
-      await finalizeLspResources({
+      await finalizeSampledLspRun({
+        sampler,
+        measurement,
+        result,
         session,
         profilePath,
-        workloadFailed: result.error !== undefined,
-        result,
         cleanup() {
           process.env.VIZE_LSP_BIN = server;
           fs.rmSync(workspace, { force: true, recursive: true });

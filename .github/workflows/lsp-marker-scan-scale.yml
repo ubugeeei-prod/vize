@@ -9,9 +9,14 @@ on:
       - tools/support/compat/davinci/lsp-marker-scan-compare.ts
       - tools/support/compat/davinci/lsp-marker-scan-source.ts
       - tools/support/compat/davinci/lib/lsp-resource-corpus.ts
+      - tools/support/compat/davinci/lib/lsp-resource-finalize.ts
+      - tools/support/compat/davinci/lib/lsp-resource-sampler.ts
+      - tools/support/compat/davinci/lsp-resources.ts
       - tests/tooling/lsp-marker-scan-compare.test.ts
       - tests/tooling/lsp-marker-scan-source.test.ts
       - tests/tooling/lsp-resource-corpus.test.ts
+      - tests/tooling/lsp-resource-finalize.test.ts
+      - tests/tooling/lsp-resource-sampler.test.ts
   workflow_dispatch:
     inputs:
       base_sha:
@@ -46,6 +51,14 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with: { node-version-file: package.json, cache: true, run-install: false }
       - run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify measurement tooling
+        run: >-
+          node --test
+          tests/tooling/lsp-marker-scan-compare.test.ts
+          tests/tooling/lsp-marker-scan-source.test.ts
+          tests/tooling/lsp-resource-corpus.test.ts
+          tests/tooling/lsp-resource-finalize.test.ts
+          tests/tooling/lsp-resource-sampler.test.ts
       - run: rustup toolchain install || rustup show active-toolchain
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:

@@ -88,7 +88,41 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
         allocation: { calls: 1000, requested_bytes: 10000 },
       });
     }
-    assert.equal(compareLspMarkerScans(directory).normal.headMedianMs, 70);
+    const report = compareLspMarkerScans(directory);
+    assert.equal(report.normal.headMedianMs, 70);
+    assert.deepEqual(report.profiles.base.root_allocation, {
+      invocations: 2,
+      total: { self_calls: 100, self_bytes: 1000 },
+      per_invocation: { self_calls: 50, self_bytes: 500 },
+    });
+    assert.deepEqual(report.profiles.head.root_allocation, {
+      invocations: 2,
+      total: { self_calls: 50, self_bytes: 500 },
+      per_invocation: { self_calls: 25, self_bytes: 250 },
+    });
+    const profilePath = path.join(directory, "profile-head/run-1.json");
+    const originalProfile = JSON.parse(fs.readFileSync(profilePath, "utf8")) as {
+      spans: { count: number; alloc: { self_calls: number; self_bytes: number } }[];
+    };
+    const moreTotalWork = structuredClone(originalProfile);
+    moreTotalWork.spans[0].count = 4;
+    moreTotalWork.spans[0].alloc.self_calls = 120;
+    moreTotalWork.spans[0].alloc.self_bytes = 1200;
+    write("profile-head/run-1.json", moreTotalWork);
+    assert.throws(
+      () => compareLspMarkerScans(directory),
+      /total allocation hotspot calls must decrease/u,
+    );
+    const worsePerInvocation = structuredClone(originalProfile);
+    worsePerInvocation.spans[0].count = 1;
+    worsePerInvocation.spans[0].alloc.self_calls = 60;
+    worsePerInvocation.spans[0].alloc.self_bytes = 600;
+    write("profile-head/run-1.json", worsePerInvocation);
+    assert.throws(
+      () => compareLspMarkerScans(directory),
+      /per-invocation allocation hotspot calls must decrease/u,
+    );
+    write("profile-head/run-1.json", originalProfile);
     const badBinary = identity("head", false);
     badBinary.binary.sha256 = identity("base", false).binary.sha256;
     write("head-normal-identity.json", badBinary);

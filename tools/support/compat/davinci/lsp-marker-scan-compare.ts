@@ -44,8 +44,24 @@ interface SourceSpan {
   wall_ns: { total: number; self: number };
   alloc: { calls: number; bytes: number; self_calls: number; self_bytes: number };
 }
+interface RootAllocation {
+  invocations: number;
+  total: { self_calls: number; self_bytes: number };
+  per_invocation: { self_calls: number; self_bytes: number };
+}
 const median = (values: number[]) =>
   [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+const rootAllocation = (root: SourceSpan): RootAllocation => ({
+  invocations: root.count,
+  total: {
+    self_calls: root.alloc.self_calls,
+    self_bytes: root.alloc.self_bytes,
+  },
+  per_invocation: {
+    self_calls: root.alloc.self_calls / root.count,
+    self_bytes: root.alloc.self_bytes / root.count,
+  },
+});
 
 /** Reject mismatched executables, inputs, providers or complete diagnostic packets. */
 export function compareLspMarkerScans(directory: string) {
@@ -122,7 +138,13 @@ export function compareLspMarkerScans(directory: string) {
   }
   const profiles = {} as Record<
     "base" | "head",
-    { root: SourceSpan; allocation: unknown; calls: number; entries: number }
+    {
+      root: SourceSpan;
+      root_allocation: RootAllocation;
+      allocation: unknown;
+      calls: number;
+      entries: number;
+    }
   >;
   let profileBuild: Identity["build"] | undefined;
   for (const role of ["base", "head"] as const) {
@@ -155,15 +177,31 @@ export function compareLspMarkerScans(directory: string) {
       .reduce((sum, counter) => sum + counter.units, 0);
     const entries = entryCounter.reduce((sum, counter) => sum + counter.units, 0);
     assert.ok(calls > 0 && entries > baseline.workspace_files);
-    profiles[role] = { root, allocation: profile.allocation, calls, entries };
+    profiles[role] = {
+      root,
+      root_allocation: rootAllocation(root),
+      allocation: profile.allocation,
+      calls,
+      entries,
+    };
   }
   assert.ok(
-    profiles.head.root.alloc.self_calls < profiles.base.root.alloc.self_calls,
-    "the measured allocation hotspot must decrease",
+    profiles.head.root_allocation.total.self_calls < profiles.base.root_allocation.total.self_calls,
+    "the measured total allocation hotspot calls must decrease",
   );
   assert.ok(
-    profiles.head.root.alloc.self_bytes < profiles.base.root.alloc.self_bytes,
-    "the measured requested bytes must decrease",
+    profiles.head.root_allocation.total.self_bytes < profiles.base.root_allocation.total.self_bytes,
+    "the measured total allocation hotspot bytes must decrease",
+  );
+  assert.ok(
+    profiles.head.root_allocation.per_invocation.self_calls <
+      profiles.base.root_allocation.per_invocation.self_calls,
+    "the measured per-invocation allocation hotspot calls must decrease",
+  );
+  assert.ok(
+    profiles.head.root_allocation.per_invocation.self_bytes <
+      profiles.base.root_allocation.per_invocation.self_bytes,
+    "the measured per-invocation allocation hotspot bytes must decrease",
   );
   return {
     scope:
