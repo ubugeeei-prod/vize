@@ -12,9 +12,12 @@ mod support {
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
 }
+mod aria_kebab_prop_11048;
 mod content_mapper_vue_generic_11051;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;
+use support::fix_history_runner::native_fixture_runtime_disabled;
+
 #[test]
 fn contextual_prop_anchors_preserve_authored_diagnostics() {
     check_pack(
@@ -716,10 +719,6 @@ fn pins_incomplete_setup_import_corpus() {
         Some(10200),
         &["relative-imports-before-incomplete-member"],
     );
-}
-
-fn native_fixture_runtime_disabled() -> bool {
-    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
 
 #[test]
