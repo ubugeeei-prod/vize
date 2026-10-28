@@ -164,7 +164,7 @@ return {
     script_button = {
       contents = {
         kind = "markdown",
-        value = "```typescript\nconst button: Readonly<ShallowRef<HTMLButtonElement | null, HTMLButtonElement | null>>\n```",
+        value = "```typescript\nconst button: Readonly<ShallowRef<HTMLButtonElement | null>>\n```",
       },
       range = {
         ["end"] = { character = 12, line = 5 },
