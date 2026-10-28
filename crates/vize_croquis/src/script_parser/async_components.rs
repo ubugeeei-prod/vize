@@ -4,7 +4,10 @@ use super::value_binding_origins::{
     ValueBindingKey, ValueBindingOrigins, ValueImportExport, ValueReference,
 };
 use crate::scope::ScopeId;
-use oxc_ast::ast::{Expression, Function, ObjectPropertyKind, PropertyKind, Statement};
+use oxc_ast::ast::{
+    BindingPattern, Expression, Function, ObjectPropertyKind, Program, PropertyKey, PropertyKind,
+    Statement,
+};
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 #[derive(Debug)]
@@ -30,6 +33,146 @@ pub(crate) struct AsyncComponentBindings {
     calls: FxHashMap<ValueBindingKey, ComponentCall>,
     loaders: FxHashMap<ValueBindingKey, CompactString>,
     factories: FxHashMap<ValueBindingKey, Factory>,
+}
+
+/// Admit the provenance store only when the existing collector can retain a
+/// root async-component call. This predicate deliberately borrows the AST and
+/// performs no hashing or string allocation: once admitted, the normal whole-
+/// program walk still owns every alias, TDZ and mutation fence.
+pub(crate) fn has_top_level_component_call(program: &Program<'_>) -> bool {
+    program.body.iter().any(|statement| {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            return false;
+        };
+        if !declaration.kind.is_const() {
+            return false;
+        }
+        declaration.declarations.iter().any(|declarator| {
+            if !matches!(&declarator.id, BindingPattern::BindingIdentifier(_)) {
+                return false;
+            }
+            let Some(Expression::CallExpression(call)) = declarator
+                .init
+                .as_ref()
+                .map(Expression::get_inner_expression)
+            else {
+                return false;
+            };
+            !call.optional
+                && call.arguments.len() == 1
+                && is_factory_reference(&call.callee)
+                && call
+                    .arguments
+                    .first()
+                    .and_then(|argument| argument.as_expression())
+                    .is_some_and(is_component_loader)
+        })
+    })
+}
+
+fn is_factory_reference(expression: &Expression<'_>) -> bool {
+    match expression.get_inner_expression() {
+        Expression::Identifier(_) => true,
+        Expression::StaticMemberExpression(member) => {
+            !member.optional
+                && matches!(
+                    member.object.get_inner_expression(),
+                    Expression::Identifier(_)
+                )
+        }
+        _ => false,
+    }
+}
+
+fn is_component_loader(expression: &Expression<'_>) -> bool {
+    let expression = expression.get_inner_expression();
+    let Expression::ObjectExpression(object) = expression else {
+        return is_loader_value(expression);
+    };
+    let mut loader = false;
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return false;
+        };
+        if property.computed || property.method || property.kind != PropertyKind::Init {
+            return false;
+        }
+        let Some(is_loader) = static_option_key(&property.key) else {
+            return false;
+        };
+        if is_loader {
+            if loader || !is_loader_value(&property.value) {
+                return false;
+            }
+            loader = true;
+        }
+    }
+    loader
+}
+
+/// The collector accepts every statically named option but only reads
+/// `loader`. Mirror that surface without `PropertyKey::static_name`, which
+/// formats numeric and regexp keys into an owned string.
+fn static_option_key(key: &PropertyKey<'_>) -> Option<bool> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name == "loader"),
+        PropertyKey::StringLiteral(literal) => Some(literal.value == "loader"),
+        PropertyKey::TemplateLiteral(template) => template
+            .single_quasi()
+            .map(|quasi| quasi.as_str() == "loader"),
+        PropertyKey::RegExpLiteral(_)
+        | PropertyKey::NumericLiteral(_)
+        | PropertyKey::BigIntLiteral(_)
+        | PropertyKey::NullLiteral(_) => Some(false),
+        _ => None,
+    }
+}
+
+fn is_loader_value(expression: &Expression<'_>) -> bool {
+    let expression = expression.get_inner_expression();
+    matches!(expression, Expression::Identifier(_)) || is_function_loader(expression)
+}
+
+fn is_function_loader(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::ArrowFunctionExpression(arrow)
+            if arrow.params.items.is_empty() && arrow.params.rest.is_none() =>
+        {
+            match arrow.body.statements.as_slice() {
+                [Statement::ExpressionStatement(statement)] if arrow.expression => {
+                    is_import_path(&statement.expression)
+                }
+                [Statement::ReturnStatement(statement)] if !arrow.expression => {
+                    statement.argument.as_ref().is_some_and(is_import_path)
+                }
+                _ => false,
+            }
+        }
+        Expression::FunctionExpression(function)
+            if !function.generator
+                && function.params.items.is_empty()
+                && function.params.rest.is_none() =>
+        {
+            matches!(
+                function.body.as_ref().map(|body| body.statements.as_slice()),
+                Some([Statement::ReturnStatement(statement)])
+                    if statement.argument.as_ref().is_some_and(is_import_path)
+            )
+        }
+        _ => false,
+    }
+}
+
+fn is_import_path(expression: &Expression<'_>) -> bool {
+    let Expression::ImportExpression(import) = expression.get_inner_expression() else {
+        return false;
+    };
+    import.options.is_none()
+        && import.phase.is_none()
+        && matches!(
+            import.source.get_inner_expression(),
+            Expression::StringLiteral(_)
+        )
 }
 
 impl AsyncComponentBindings {

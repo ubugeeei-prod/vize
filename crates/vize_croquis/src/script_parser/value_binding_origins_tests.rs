@@ -1,8 +1,59 @@
 //! Lexical identity admission and refusal, independently of component policy.
-use super::parse_script_setup;
 use super::value_binding_origins::ValueReference;
 use crate::scope::ScopeKind;
 use oxc_span::Span;
+
+fn parse_script_setup(source: &str) -> super::ScriptParseResult {
+    super::parse_script_setup_for_value_origins::<false>(
+        source, None, false, false, false, false, None,
+    )
+}
+
+#[test]
+fn root_async_component_shapes_admit_value_origins() {
+    for source in [
+        "import { defineAsyncComponent } from 'vue'; const Child = defineAsyncComponent(() => import('./Child.vue'));",
+        "import { defineAsyncComponent } from 'vue'; function loader() { return import('./Child.vue'); } const Child = defineAsyncComponent(loader);",
+        "import { defineAsyncComponent } from 'vue'; const Child = defineAsyncComponent({ timeout: 100, 'loader': () => import('./Child.vue') });",
+        "import * as Vue from 'vue'; const Child = Vue.defineAsyncComponent(() => import('./Child.vue'));",
+    ] {
+        let result = super::parse_script_setup(source);
+        let origins = result
+            .value_binding_origins
+            .as_ref()
+            .expect("root component call demands capture");
+        assert!(origins.is_complete(), "{source}");
+        assert_eq!(
+            origins.async_components.module_for(origins, "Child"),
+            Some("./Child.vue"),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn nested_async_component_registry_remains_uncaptured() {
+    let source = "import { defineAsyncComponent } from 'vue'; const builtInComponents = { Child: defineAsyncComponent(() => import('./Child.vue')) };";
+    let result = super::parse_script_setup(source);
+    assert!(result.value_binding_origins.is_none());
+    assert!(result.bindings.bindings.contains_key("builtInComponents"));
+}
+
+#[test]
+fn provenance_tests_can_force_capture_without_a_component_call() {
+    let source = "import { ref } from 'vue'; const value = ref;";
+    assert!(
+        super::parse_script_setup(source)
+            .value_binding_origins
+            .is_none()
+    );
+    let result = parse_script_setup(source);
+    let origins = result
+        .value_binding_origins
+        .as_ref()
+        .expect("test-only forced capture");
+    assert!(origins.is_complete());
+}
 
 fn at(source: &str, name: &str) -> (super::ScriptParseResult, ValueReference) {
     let result = parse_script_setup(source);
@@ -277,8 +328,9 @@ fn unsupported_top_level_try_refuses_the_original_domain() {
 fn demanded_builtin_walk_retains_the_same_lexical_bindings() {
     let source = "import { ref } from 'vue'; const count = ref(0); const alias = count;";
     let regular = parse_script_setup(source);
-    let demanded =
-        super::parse_script_setup_for_unused::<true>(source, None, false, false, false, false);
+    let demanded = super::parse_script_setup_for_value_origins::<true>(
+        source, None, false, false, false, false, None,
+    );
     let normal = regular
         .value_binding_origins
         .as_ref()
@@ -313,7 +365,7 @@ fn actual_uncaptured_refused_and_empty_programs_never_alias_absence() {
         parse_script_setup("import { ref } from 'vue'; const value = ref;").into_croquis()
     }
     fn compiled() -> crate::Croquis {
-        super::parse_script_setup_with_exports::<false>(
+        super::parse_script_setup_for_value_origins::<false>(
             "const value = 1;",
             None,
             false,

@@ -40,7 +40,33 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
     unused: bool,
     skip_diagnostics: bool,
     occurrences: bool,
+    exports: Option<&mut ModuleExportCapture>,
+) -> ScriptParseResult {
+    parse_script_setup_with_exports_capture::<BUILTIN_TYPES>(
+        source,
+        generic,
+        jsx,
+        unused,
+        skip_diagnostics,
+        occurrences,
+        exports,
+        false,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "internal demand carrier keeps the public parse surface unchanged"
+)]
+fn parse_script_setup_with_exports_capture<const BUILTIN_TYPES: bool>(
+    source: &str,
+    generic: Option<&str>,
+    jsx: bool,
+    unused: bool,
+    skip_diagnostics: bool,
+    occurrences: bool,
     mut exports: Option<&mut ModuleExportCapture>,
+    force_value_origins: bool,
 ) -> ScriptParseResult {
     vize_carton::micro_count!("croquis.setup.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
@@ -59,7 +85,7 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
         };
     }
 
-    let mut result = analyze_script_setup_program_demand::<BUILTIN_TYPES>(
+    let mut result = analyze_script_setup_program_demand_capture::<BUILTIN_TYPES>(
         &ret.program,
         source,
         generic,
@@ -67,6 +93,7 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
         occurrences,
         exports,
         !ret.panicked && ret.diagnostics.is_empty(),
+        force_value_origins,
     );
     if ret.diagnostics.is_empty()
         && let Some(origins) = result.value_binding_origins.as_mut()
@@ -87,6 +114,32 @@ pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
         result.unused_bindings = super::unused_setup_bindings(&ret.program, &result, generic);
     }
     result
+}
+
+#[cfg(test)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "tests explicitly force the otherwise demand-driven provenance store"
+)]
+pub(crate) fn parse_script_setup_for_value_origins<const BUILTIN_TYPES: bool>(
+    source: &str,
+    generic: Option<&str>,
+    jsx: bool,
+    unused: bool,
+    skip_diagnostics: bool,
+    occurrences: bool,
+    exports: Option<&mut ModuleExportCapture>,
+) -> ScriptParseResult {
+    parse_script_setup_with_exports_capture::<BUILTIN_TYPES>(
+        source,
+        generic,
+        jsx,
+        unused,
+        skip_diagnostics,
+        occurrences,
+        exports,
+        true,
+    )
 }
 
 /// Analyze an already-parsed script setup program.
@@ -127,8 +180,34 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     generic: Option<&str>,
     skip_diagnostics: bool,
     occurrences: bool,
+    exports: Option<&mut ModuleExportCapture>,
+    render_admitted: bool,
+) -> ScriptParseResult {
+    analyze_script_setup_program_demand_capture::<BUILTIN_TYPES>(
+        program,
+        source,
+        generic,
+        skip_diagnostics,
+        occurrences,
+        exports,
+        render_admitted,
+        false,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "internal demand carrier keeps the production analysis surface unchanged"
+)]
+fn analyze_script_setup_program_demand_capture<const BUILTIN_TYPES: bool>(
+    program: &Program<'_>,
+    source: &str,
+    generic: Option<&str>,
+    skip_diagnostics: bool,
+    occurrences: bool,
     mut exports: Option<&mut ModuleExportCapture>,
     render_admitted: bool,
+    force_value_origins: bool,
 ) -> ScriptParseResult {
     vize_carton::micro_count!("croquis.setup.analysis_requests.bytes", source.len());
     let source_len = source.len() as u32;
@@ -170,12 +249,14 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
 
     if !skip_diagnostics {
         super::extract::prepare_race_analysis(&mut result, program);
-        result.value_binding_origins = Some(Box::new(
-            super::value_binding_origins::ValueBindingOrigins::new(
-                result.scopes.current_id(),
-                true,
-            ),
-        ));
+        if force_value_origins || super::async_components::has_top_level_component_call(program) {
+            result.value_binding_origins = Some(Box::new(
+                super::value_binding_origins::ValueBindingOrigins::new(
+                    result.scopes.current_id(),
+                    true,
+                ),
+            ));
+        }
     }
 
     // Process all statements

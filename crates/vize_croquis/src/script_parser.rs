@@ -48,8 +48,6 @@ pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
 pub(crate) use module_reads::ModuleReadFacts;
-#[cfg(test)]
-pub(crate) use parse::parse_script_setup_for_unused;
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
@@ -59,6 +57,8 @@ pub(crate) use parse::{
     analyze_script_setup_program_demand, parse_script_plain_with_exports,
     parse_script_setup_with_exports,
 };
+#[cfg(test)]
+pub(crate) use parse::{parse_script_setup_for_unused, parse_script_setup_for_value_origins};
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::parse_program_for_analysis;
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
