@@ -138,6 +138,18 @@ fn controlled_counts_and_allocations() {
         )),
         Some((1, 0, 0, 0, 0))
     );
+    println!(
+        "scoped_fx_observer_allocations={}",
+        serde_json::json!(
+            profiler
+                .get("test.scoped_fx.owner")
+                .map(|m| serde_json::json!({
+                    "count": m.count, "allocCalls": m.alloc_calls, "requestedBytes": m.alloc_bytes,
+                    "selfAllocCalls": m.self_alloc_calls, "selfRequestedBytes": m.self_alloc_bytes,
+                    "scope": "same Rust caller thread; observer registration excluded"
+                }))
+        )
+    );
     let actual = rows
         .iter()
         .map(|r| (r.name, (r.calls, r.units)))
