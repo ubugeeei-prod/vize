@@ -226,3 +226,96 @@ fn mixin_errors_land_on_the_construct_pug_rejects() {
         assert_eq!(render_diagnostics(source), expected, "{source}");
     }
 }
+
+/// Reads includes from disk, resolved as pug-load resolves them.
+struct FileIncludes;
+
+impl vize_l1_to_l2::lower::pug::PugIncludes for FileIncludes {
+    fn read(
+        &mut self,
+        from: &str,
+        path: &str,
+    ) -> Result<(vize_l0::String, vize_l0::String), vize_l0::String> {
+        let resolved = std::path::Path::new(from).parent().unwrap().join(path);
+        std::fs::read_to_string(&resolved)
+            .map(|content| {
+                (
+                    resolved.to_string_lossy().as_ref().into(),
+                    content.as_str().into(),
+                )
+            })
+            .map_err(|error| error.to_string().as_str().into())
+    }
+}
+
+#[test]
+fn include_fixtures_derive_the_pinned_pug_html_and_report_their_files() {
+    let includes = fixtures("includes");
+    assert_eq!(includes.len(), 1);
+    for (name, source, path) in &includes {
+        let expected = std::fs::read_to_string(path.with_extension("html")).expect("html");
+        let derived = vize_l1_to_l2::lower::pug::derive_template_source_including(
+            source,
+            vize_l1_to_l2::lower::pug::PugRendering::Pug,
+            path.to_str().unwrap(),
+            &mut FileIncludes,
+        );
+        assert!(
+            derived.diagnostics.is_empty(),
+            "{name}: {:?}",
+            derived.diagnostics
+        );
+        assert_eq!(derived.html.as_str(), expected, "{name}");
+        assert_eq!(derived.map.html_len() as usize, derived.html.len());
+        let root = path.parent().unwrap();
+        let read: Vec<_> = derived
+            .dependencies
+            .iter()
+            .map(|file| {
+                std::path::Path::new(file.as_str())
+                    .strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned()
+            })
+            .collect();
+        assert_eq!(
+            read,
+            [
+                "partials/header.pug",
+                "partials/nested/logo.pug",
+                "partials/card.pug",
+                "partials/list.pug",
+                "partials/note.txt",
+            ],
+            "{name}"
+        );
+    }
+    // Every byte an included file adds maps to the directive that read it.
+    let (_, source, path) = &includes[0];
+    let derived = vize_l1_to_l2::lower::pug::derive_template_source_including(
+        source,
+        vize_l1_to_l2::lower::pug::PugRendering::Pug,
+        path.to_str().unwrap(),
+        &mut FileIncludes,
+    );
+    let at = derived.html.find("/logo.svg").unwrap() as u32;
+    let span = derived.map.to_pug(Span::new(at, at + 9));
+    assert_eq!(
+        &source[span.start as usize..span.end as usize],
+        "include partials/header.pug"
+    );
+}
+
+#[test]
+fn includes_without_a_reader_stay_refused() {
+    assert_eq!(
+        render_diagnostics("include a.pug\n"),
+        "0..13 Semantic \"include a.pug\" — pug `include` is not supported in Vue templates: it \
+         links other pug files at build time\n"
+    );
+}
+
+mod include_cycles;
+
+mod include_limits;

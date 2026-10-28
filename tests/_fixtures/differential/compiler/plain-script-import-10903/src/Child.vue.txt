@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ text: unknown }>();
+defineEmits<{ ping: [] }>();
+</script>
+
+<template>
+  <button id="child" @click="$emit('ping')">{{ typeof text === "string" ? text : "NOT A STRING: " + typeof text }}</button>
+</template>

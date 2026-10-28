@@ -10,6 +10,7 @@ use std::path::Path;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
     PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
+    batch::{TsconfigOwnershipCache, TsconfigSourceKind},
 };
 
 pub(crate) fn check_pack(
@@ -39,6 +40,7 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "component-tag-aliases-11020" => regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }
@@ -54,6 +56,7 @@ pub(crate) fn check_pack(
             | "v-for-component-source-original"
             | "declared-prop-names-original"
             | "template-suppression-original"
+            | "template-ref-signatures-10948"
             | "native-pointer-events-original"
             | "cache-maintenance-9860"
             | "workspace-alias-cache-10063"
@@ -119,8 +122,10 @@ pub(crate) fn check_pack(
             | "content-mapper-slot-host-callbacks-10774"
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
+            | "relative-sibling-storage-10934"
             | "reopen-repaired-diagnostics-10730"
             | "editor-alias-import-extension-10753"
+            | "tsconfig-literal-brackets-10819"
             | "options-api-reserved-component-reference"
             | "setup-custom-properties"
             | "empty-v-slot-expression"
@@ -311,11 +316,38 @@ pub(crate) fn check_pack(
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))
                 }
+                // `vize check` and the editor check a page with its owning
+                // referenced project.
+                "tsconfig-literal-brackets-10819" => {
+                    let page = case
+                        .inputs
+                        .iter()
+                        .find(|input| input.file.ends_with(".vue"))
+                        .expect("the case must name its page");
+                    Some(
+                        TsconfigOwnershipCache::default().effective_config_for_source(
+                            &project_root.join("tsconfig.json"),
+                            &project_root.join(safe_relative(&page.file)),
+                            TsconfigSourceKind::Typed,
+                        ),
+                    )
+                }
+                "relative-sibling-storage-10934" => {
+                    Some(project_root.join("apps/app/tsconfig.json"))
+                }
                 _ => None,
             },
         };
         let mut checker =
             BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
+        if name == "relative-sibling-storage-10934" {
+            checker
+                .set_persistent_storage_owner(
+                    &project_root.join("apps/app"),
+                    Some(&project_root.join("apps/app/tsconfig.json")),
+                )
+                .expect("the package must select its private persistent storage owner");
+        }
         if name == "workspace-package-import-alias-10175" {
             let mut resolver = PackageRouteResolver::default();
             let bindings = [

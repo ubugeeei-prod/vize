@@ -328,3 +328,5 @@ fn every_top_level_test_file_is_a_declared_module() {
 }
 
 mod support;
+
+mod provide_type_assertion_cli;

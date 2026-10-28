@@ -1,0 +1,126 @@
+{
+  "schema": "vize.scope-body.10810",
+  "reference": "@vue/compiler-sfc@3.5.35",
+  "scopeId": "data-v-x",
+  "html": "<main class=\"a\" data-v-x><section class=\"s\" id=\"root\" data-v-x><p class=\"c\" id=\"child\" data-v-x><span class=\"c d\" id=\"grand\" data-v-x></span></p><p class=\"d\" id=\"other\" data-v-x></p><article class=\"inner\" id=\"inner\" data-v-x><b class=\"c\" id=\"inner-child\" data-v-x></b></article></section><p class=\"c e\" id=\"outside\" data-v-x></p></main>",
+  "cases": [
+    {
+      "id": "reported-scope",
+      "source": ".a{@scope(.s){:scope{color:blue}.c{color:red}}}",
+      "expected": {
+        "root": "rgb(0, 0, 255)",
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(255, 0, 0)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){[data-v-x]:scope{color:blue}.c[data-v-x]{color:red}}}"
+    },
+    {
+      "id": "leading-child",
+      "source": ".a{@scope(.s){> .c{color:red}}}",
+      "expected": {
+        "root": "rgb(0, 0, 0)",
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(0, 0, 0)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){> .c[data-v-x]{color:red}}}"
+    },
+    {
+      "id": "mixed-selector-list",
+      "source": ".a{@scope(.s){:scope,> .c,.d{color:red}}}",
+      "expected": {
+        "root": "rgb(255, 0, 0)",
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(255, 0, 0)",
+        "other": "rgb(255, 0, 0)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){[data-v-x]:scope,> .c[data-v-x],.d[data-v-x]{color:red}}}"
+    },
+    {
+      "id": "implicit-specificity",
+      "source": ".a{@scope(.s){> .c{color:red}.c{color:blue}}}",
+      "expected": {
+        "child": "rgb(0, 0, 255)",
+        "grand": "rgb(0, 0, 255)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){> .c[data-v-x]{color:red}.c[data-v-x]{color:blue}}}"
+    },
+    {
+      "id": "explicit-scope-specificity",
+      "source": ".a{@scope(.s){:scope>.c{color:red}.c{color:blue}}}",
+      "expected": {
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(0, 0, 255)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){:scope>.c[data-v-x]{color:red}.c[data-v-x]{color:blue}}}"
+    },
+    {
+      "id": "explicit-nesting-specificity",
+      "source": ".a{@scope(.s){&>.c{color:red}.c{color:blue}}}",
+      "expected": {
+        "child": "rgb(0, 0, 255)",
+        "grand": "rgb(0, 0, 255)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){&>.c[data-v-x]{color:red}.c[data-v-x]{color:blue}}}"
+    },
+    {
+      "id": "conditional-scope",
+      "source": ".a{@scope(.s){@supports(display:block){@media all{:scope{color:blue}> .c{color:red}}}}}",
+      "expected": {
+        "root": "rgb(0, 0, 255)",
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(0, 0, 0)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){@supports(display:block){@media all{[data-v-x]:scope{color:blue}> .c[data-v-x]{color:red}}}}}"
+    },
+    {
+      "id": "ordinary-nesting",
+      "source": ".a{@scope(.s){.c{.d{color:red}}}.e{color:blue}}",
+      "expected": {
+        "grand": "rgb(255, 0, 0)",
+        "child": "rgb(0, 0, 0)",
+        "outside": "rgb(0, 0, 255)"
+      },
+      "referenceCss": ".a{@scope(.s){.c{.d[data-v-x]{color:red}}}.e[data-v-x]{color:blue}}"
+    },
+    {
+      "id": "top-level-scope",
+      "source": "@scope(.s){:scope{color:blue}> .c{color:red}}",
+      "expected": {
+        "root": "rgb(0, 0, 255)",
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(0, 0, 0)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": "@scope(.s){[data-v-x]:scope{color:blue}> .c[data-v-x]{color:red}}"
+    },
+    {
+      "id": "nested-scope",
+      "source": ".a{@scope(.s){@scope(.inner){:scope{color:blue}> .c{color:red}}}}",
+      "expected": {
+        "root": "rgb(0, 0, 0)",
+        "inner": "rgb(0, 0, 255)",
+        "inner-child": "rgb(255, 0, 0)",
+        "child": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){@scope(.inner){[data-v-x]:scope{color:blue}> .c[data-v-x]{color:red}}}}"
+    },
+    {
+      "id": "pseudo-list",
+      "source": ".a{@scope(.s){:is(.c,.d),> :is(.c,.d){color:red}}}",
+      "expected": {
+        "root": "rgb(0, 0, 0)",
+        "child": "rgb(255, 0, 0)",
+        "grand": "rgb(255, 0, 0)",
+        "outside": "rgb(0, 0, 0)"
+      },
+      "referenceCss": ".a[data-v-x]{@scope(.s){:is(.c[data-v-x],.d[data-v-x]),> :is(.c[data-v-x],.d[data-v-x]){color:red}}}"
+    }
+  ]
+}

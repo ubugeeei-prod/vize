@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+  "sourceRevision": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "empty-expression",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/EmptySlotProps.vue",
+          "source": "src/EmptySlotProps.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "blank-expression",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/BlankSlotProps.vue",
+          "source": "src/BlankSlotProps.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "empty-expression-unknown-slot",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/EmptySlotPropsWrongName.vue",
+          "source": "src/EmptySlotPropsWrongName.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/EmptySlotPropsWrongName.vue",
+          "line": 3,
+          "column": 16,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'body' does not exist on type 'Partial<{ text?: ((props: {}) => any) | undefined; }>'."
+        }
+      ]
+    }
+  ]
+}

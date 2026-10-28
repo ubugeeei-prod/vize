@@ -159,6 +159,8 @@ pub struct SfcCompileResultNapi {
     pub custom_blocks: Vec<CustomBlockNapi>,
     pub macro_artifacts: Vec<MacroArtifactNapi>,
     pub module_shape: Option<ModuleShapeNapi>,
+    /// Files the compile read besides the SFC (pug `include`s).
+    pub dependencies: Option<Vec<String>>,
 }
 
 #[napi(object)]
@@ -261,6 +263,8 @@ pub struct BatchFileResultNapi {
     pub custom_blocks: Vec<CustomBlockNapi>,
     pub macro_artifacts: Vec<MacroArtifactNapi>,
     pub module_shape: Option<ModuleShapeNapi>,
+    /// Files the compile read besides the SFC (pug `include`s).
+    pub dependencies: Option<Vec<String>>,
 }
 
 #[napi(object)]
@@ -271,22 +275,8 @@ pub struct BatchCompileResultWithFilesNapi {
     pub time_ms: f64,
 }
 
-pub(super) fn macro_artifacts_to_napi(
-    artifacts: Vec<vize_atelier_sfc::SfcMacroArtifact>,
-) -> Vec<MacroArtifactNapi> {
-    artifacts
-        .into_iter()
-        .map(|artifact| MacroArtifactNapi {
-            kind: artifact.kind.into(),
-            name: artifact.name.into(),
-            source: artifact.source.into(),
-            content: artifact.content.into(),
-            module_code: artifact.module_code.map(Into::into),
-            start: artifact.start as u32,
-            end: artifact.end as u32,
-        })
-        .collect()
-}
+mod conversions;
+pub(super) use conversions::{dependencies_to_napi, macro_artifacts_to_napi};
 
 pub(super) fn style_blocks_to_napi(
     styles: &[vize_atelier_sfc::SfcStyleBlock],

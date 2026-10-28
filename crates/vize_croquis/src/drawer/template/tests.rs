@@ -361,3 +361,80 @@ fn v_for_sources_report_unresolved_reads() {
     );
     assert_eq!(undefined, ["isSP", "list"]);
 }
+
+#[test]
+fn nuxt_slot_counts_never_admit_caller_owned_or_repeated_template_operations() {
+    use vize_armature::parse;
+    use vize_carton::Allocator;
+
+    for (template, slots, opaque) in [
+        ("<main><slot /></main>", 1, false),
+        ("<slot /><slot />", 2, false),
+        ("<main><NuxtPage /></main>", 0, false),
+        (r#"<template v-for="n in 2"><slot /></template>"#, 1, true),
+        (r#"<slot v-if="visible" />"#, 1, true),
+        (r#"<slot :name="name" />"#, 1, true),
+        (
+            r#"<NuxtLayout v-slot="scope"><NuxtPage /></NuxtLayout>"#,
+            0,
+            true,
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let (root, errors) = parse(&allocator, template);
+        assert!(errors.is_empty(), "{template}: {errors:?}");
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_template(&root);
+        let facts = drawer
+            .croquis()
+            .nuxt_render_template
+            .expect("visited elements");
+        assert_eq!(facts.slot_outlets, slots, "{template}");
+        assert_eq!(facts.opaque_structure, opaque, "{template}");
+        assert!(
+            !facts.admitted,
+            "raw counts cannot establish full-source ownership"
+        );
+    }
+
+    let allocator = Allocator::new();
+    let (first, errors) = parse(&allocator, "<slot />");
+    assert!(errors.is_empty());
+    let (empty, errors) = parse(&allocator, "");
+    assert!(errors.is_empty());
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_template(&first);
+    drawer
+        .croquis
+        .nuxt_render_template
+        .as_mut()
+        .unwrap()
+        .admitted = true;
+    drawer.draw_template(&empty);
+    assert!(drawer.croquis().nuxt_render_template.is_none());
+}
+
+#[test]
+fn nuxt_render_admission_does_not_change_semantic_projections() {
+    use crate::croquis::{Croquis, NuxtTemplateRenderFacts};
+
+    let mut croquis = Croquis::new();
+    let snapshot = croquis.semantic_snapshot();
+    let summary = croquis.semantic_summary();
+    for script in [None, Some(false), Some(true)] {
+        croquis.nuxt_static_render_script = script;
+        for template in [
+            None,
+            Some(NuxtTemplateRenderFacts::default()),
+            Some(NuxtTemplateRenderFacts {
+                slot_outlets: 2,
+                opaque_structure: true,
+                admitted: true,
+            }),
+        ] {
+            croquis.nuxt_render_template = template;
+            assert_eq!(croquis.semantic_summary(), summary);
+            assert_eq!(croquis.semantic_snapshot(), snapshot);
+        }
+    }
+}

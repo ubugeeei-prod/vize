@@ -148,10 +148,7 @@ fn test_disjoint_branch_keys_are_partial_in_json_markdown_and_summary() {
     partial_diagnostics.sort_by_key(|(key, _)| *key);
     assert_eq!(
         partial_diagnostics,
-        vec![
-            ("locale", DiagnosticSeverity::Warning),
-            ("theme", DiagnosticSeverity::Error)
-        ]
+        vec![("theme", DiagnosticSeverity::Error)]
     );
 
     let summary = result

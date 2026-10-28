@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10948,
+  "regressionCommit": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+  "sourceRevision": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "valid-imported-signatures",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "source": "NestedReadonly-valid.vue.txt"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "source": "NestedUnknown-valid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "invalid-original-operations",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "source": "NestedReadonly.vue.txt"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "source": "NestedUnknown.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/NestedReadonly.vue",
+          "line": 5,
+          "column": 11,
+          "severity": 1,
+          "code": 2540,
+          "message": "Cannot assign to 'value' because it is a read-only property."
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "line": 5,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingNestedUnknown' does not exist on type '{}'."
+        }
+      ]
+    },
+    {
+      "id": "repaired-imported-signatures",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NestedReadonly.vue",
+          "source": "NestedReadonly-valid.vue.txt"
+        },
+        {
+          "file": "src/NestedUnknown.vue",
+          "source": "NestedUnknown-valid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

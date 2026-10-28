@@ -1,0 +1,257 @@
+name: Binding origin source laws
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/binding-origin-laws.yml
+      - crates/vize_canon/src/binding_origins/**
+      - crates/vize_canon/src/lib.rs
+permissions: { contents: read }
+concurrency:
+  group: binding-origin-laws-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  laws:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env: { CARGO_BUILD_JOBS: "4", RAYON_NUM_THREADS: "4", CARGO_INCREMENTAL: "0" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build one fresh image, run 23 origin laws and two native API carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          root = pathlib.Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          out = pathlib.Path(os.environ["RUNNER_TEMP"]) / "binding-origin-admission"
+          assert not out.exists(), "never replace earlier evidence"
+          out.mkdir()
+          target = out / "cargo-target"
+          env = dict(os.environ, CARGO_TARGET_DIR=str(target), CARGO_BUILD_JOBS="4", CARGO_INCREMENTAL="0")
+          def run(command, timeout=30):
+              return subprocess.run(command, cwd=root, env=env, capture_output=True, text=True, timeout=timeout)
+          def git(*args):
+              result = run(["git", *args])
+              assert result.returncode == 0, result.stderr
+              return result.stdout.strip()
+          def digest(file):
+              return hashlib.sha256(file.read_bytes()).hexdigest()
+          source = git("rev-parse", "HEAD")
+          tree = git("rev-parse", "HEAD^{tree}")
+          assert git("status", "--porcelain", "--untracked-files=no") == ""
+          compiler = {}
+          for command in ["cargo", "rustc"]:
+              result = run([command, "-Vv"])
+              assert result.returncode == 0, result.stderr
+              compiler[command] = result.stdout
+          observer = run(["node","--test","--test-reporter=tap","tests/tooling/native-api-wire-origin.test.ts"], 60)
+          (out / "observer-unit.stdout.txt").write_text(observer.stdout)
+          (out / "observer-unit.stderr.txt").write_text(observer.stderr)
+          if observer.returncode != 0:
+              print(observer.stdout, flush=True)
+              print(observer.stderr, flush=True)
+          assert observer.returncode == 0
+          for marker in ["# tests 38","# pass 38","# fail 0","# skipped 0"]:
+              assert marker in observer.stdout, observer.stdout
+          guard = run(["setpriv","--version"])
+          assert guard.returncode == 0
+          (out / "setpriv-version.txt").write_text(guard.stdout + guard.stderr)
+          argv = ["cargo", "test", "--locked", "--profile", "ci", "-p", "vize_canon", "--lib", "--no-run", "--message-format=json-render-diagnostics", "--jobs", "4"]
+          built = run(argv, 1200)
+          (out / "cargo.stdout.jsonl").write_text(built.stdout)
+          (out / "cargo.stderr.txt").write_text(built.stderr)
+          if built.returncode != 0:
+              print(built.stderr, flush=True)
+              for line in built.stdout.splitlines():
+                  try:
+                      message = json.loads(line).get("message", {})
+                  except json.JSONDecodeError:
+                      continue
+                  if message.get("level") == "error":
+                      print(message.get("rendered", message), flush=True)
+          assert built.returncode == 0, "inspect retained actual compiler output"
+          artifacts = []
+          for line in built.stdout.splitlines():
+              try:
+                  row = json.loads(line)
+              except json.JSONDecodeError:
+                  continue
+              if row.get("reason") == "compiler-artifact" and row.get("target", {}).get("name") == "vize_canon" and row.get("profile", {}).get("test") and row.get("executable"):
+                  artifacts.append(row)
+          assert len(artifacts) == 1, artifacts
+          artifact, = artifacts
+          assert artifact["fresh"] is False
+          assert "native" in artifact["features"]
+          binary = pathlib.Path(artifact["executable"]).resolve()
+          assert binary.is_relative_to(target)
+          image_sha = digest(binary)
+          tests = [
+              "binding_origins::tests::source_callable_shape_never_authorizes_vue_identity",
+              "binding_origins::tests::actual_type_queries_and_type_only_aliases_retain_provider_identity",
+              "binding_origins::tests::module_spelling_and_stale_provider_revisions_cannot_authorize_identity",
+              "binding_origins::tests::source_and_project_owners_are_explicit_snapshot_inputs",
+              "binding_origins::tests::alias_cycles_do_not_require_a_recursion_limit_or_fabricate_an_origin",
+              "binding_origins::tests::cyclic_export_evidence_can_reach_one_provider_without_guessing_missing_edges",
+              "binding_origins::tests_graph::twenty_thousand_aliases_expand_without_recursion_or_repeated_resolution",
+              "binding_origins::tests_graph::distinct_global_declarations_keep_ambiguous_ownership",
+              "binding_origins::tests_graph::stale_or_foreign_resolver_images_never_authorize_a_provider",
+              "binding_origins::tests_graph::type_only_runtime_values_do_not_become_callable_providers",
+              "binding_origins::tests_graph::requested_roots_do_not_resolve_unrelated_global_values",
+              "binding_origins::tests_graph::import_memoization_preserves_distinct_effective_usage",
+              "binding_origins::tests_graph::import_memoization_preserves_distinct_source_owners",
+              "binding_origins::tests_ambient::annotated_runtime_custom_functions_cannot_borrow_provider_identity",
+              "binding_origins::tests_ambient::uninitialized_runtime_annotations_are_not_ambient_provider_declarations",
+              "binding_origins::tests_ambient::actual_ambient_declarations_and_immutable_value_aliases_keep_provider_identity",
+              "binding_origins::tests_ambient::merged_overload_declarations_preserve_custom_symbol_identity",
+              "binding_origins::tests_requested_globals::requested_global_names_do_not_lower_ten_thousand_unrelated_values",
+              "binding_origins::tests_requested_globals::existing_root_scope_maps_preserve_opaque_value_declaration_forms",
+              "binding_origins::tests_requested_globals::existing_global_augmentation_scope_retains_unsupported_values",
+              "binding_origins::tests_requested_globals::ambient_runtime_writes_cannot_borrow_provider_identity",
+              "binding_origins::tests_requested_globals::requested_global_roots_retain_actual_alias_dependencies",
+              "binding_origins::tests_requested_globals::missing_original_semantic_scopes_refuse_the_whole_source",
+          ]
+          listing = run([str(binary), "--list"])
+          (out / "registered-tests.stdout.txt").write_text(listing.stdout)
+          (out / "registered-tests.stderr.txt").write_text(listing.stderr)
+          assert listing.returncode == 0
+          registered = {line.removesuffix(": test") for line in listing.stdout.splitlines() if line.endswith(": test")}
+          assert set(tests).issubset(registered), set(tests) - registered
+          rows = []
+          for index, name in enumerate(tests, 1):
+              command = [str(binary), "--exact", name, "--nocapture", "--test-threads", "1"]
+              result = run(command, 120)
+              stem = f"{index:02d}"
+              (out / f"{stem}.stdout.txt").write_text(result.stdout)
+              (out / f"{stem}.stderr.txt").write_text(result.stderr)
+              qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
+              row = {"name":name,"command":command,"status":result.returncode,"qualified":qualified}
+              rows.append(row)
+              print(json.dumps(row), flush=True)
+          native_name = "binding_origins::native_api_probe::standalone_native_api_retains_one_project_symbol_owner"
+          assert native_name in registered, "the real source image must contain the mandatory native carrier"
+          native_rows = []
+          for version in ["7.0.2", "7.1.0-beta"]:
+              provider = out / "providers" / version
+              provider.mkdir(parents=True)
+              (provider / "package.json").write_text(json.dumps({"name":"vize-origin-api-provider","version":"1.0.0","private":True,"dependencies":{"typescript":version,"vue":"3.5.42","vue-authentic":"npm:vue@3.5.42","vue-other":"npm:vue@3.5.44"}}))
+              install = subprocess.run(["npm","install","--ignore-scripts","--no-audit","--no-fund","--registry=https://registry.npmjs.org"], cwd=provider, env=env, capture_output=True, text=True, timeout=300)
+              (out / f"{version}.npm.stdout.txt").write_text(install.stdout)
+              (out / f"{version}.npm.stderr.txt").write_text(install.stderr)
+              if install.returncode != 0:
+                  print(install.stdout, flush=True)
+                  print(install.stderr, flush=True)
+              assert install.returncode == 0, "inspect retained exact public provider install"
+              lock = (provider / "package-lock.json").read_bytes()
+              (out / f"{version}.package-lock.json.txt").write_bytes(lock)
+              backend_package = provider / "node_modules/@typescript/typescript-linux-x64"
+              backend = (backend_package / "lib/tsc").resolve()
+              metadata = json.loads((backend_package / "package.json").read_text())
+              assert metadata["name"] == "@typescript/typescript-linux-x64"
+              assert metadata["version"] == version
+              assert json.loads((provider / "node_modules/typescript/package.json").read_text())["version"] == version
+              assert json.loads((provider / "node_modules/vue/package.json").read_text())["version"] == "3.5.42"
+              for alias, expected in [("vue-authentic","3.5.42"),("vue-other","3.5.44")]:
+                  alias_manifest = json.loads((provider / "node_modules" / alias / "package.json").read_text())
+                  assert alias_manifest["name"] == "vue" and alias_manifest["version"] == expected
+              capture = out / f"native-{version}"
+              role_env = dict(env, VIZE_ORIGIN_API_PROVIDER=str(provider), VIZE_ORIGIN_API_BACKEND=str(backend), VIZE_ORIGIN_API_CAPTURE=str(capture), VIZE_ORIGIN_API_VERSION=version)
+              command = [str(binary),"--exact",native_name,"--ignored","--nocapture","--test-threads","1"]
+              result = subprocess.run(command, cwd=root, env=role_env, capture_output=True, text=True, timeout=180)
+              (out / f"{version}.native.stdout.txt").write_text(result.stdout)
+              (out / f"{version}.native.stderr.txt").write_text(result.stderr)
+              qualified = result.returncode == 0 and re.search(r"test result: ok\. 1 passed; 0 failed; 0 ignored;", result.stdout) is not None
+              wire = None
+              wire_error = None
+              if (capture / "client-to-native.wire.bin").is_file() and (capture / "native-to-client.wire.bin").is_file():
+                  try:
+                      observed = run(["node",str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify-wire.ts"),str(capture),version], 60)
+                      (out / f"{version}.wire.stdout.txt").write_text(observed.stdout)
+                      (out / f"{version}.wire.stderr.txt").write_text(observed.stderr)
+                      assert observed.returncode == 0, observed.stdout + observed.stderr
+                      wire = json.loads(observed.stdout)
+                  except Exception as error:
+                      wire_error = repr(error)
+                      qualified = False
+              carrier = json.loads((capture / "carrier-receipt.json").read_text()) if (capture / "carrier-receipt.json").exists() else None
+              row = {"role":version,"test":native_name,"command":command,"status":result.returncode,"qualified":qualified,"wire":wire,"wireError":wire_error,"backendSha256":digest(backend),"backendBytes":backend.stat().st_size,"package":metadata,"lockSha256":hashlib.sha256(lock).hexdigest()}
+              native_rows.append(row)
+              print(json.dumps(row), flush=True)
+              if not qualified:
+                  print(result.stdout, flush=True)
+                  print(result.stderr, flush=True)
+              if carrier is not None:
+                  print("NATIVE_ORIGIN_API_RECEIPT " + json.dumps(carrier), flush=True)
+              if wire is not None:
+                  print("NATIVE_ORIGIN_WIRE_RECEIPT " + json.dumps(wire), flush=True)
+              lean = out / "native-metadata" / version
+              lean.mkdir(parents=True)
+              wanted = ["backend-version.json","actual-launch.json","carrier-receipt.json","raw-symbol-candidates.json","full-wire-symbol-packets.json","full-wire-receipt.json","native.stderr.txt"]
+              for name in wanted:
+                  if (capture / name).is_file():
+                      shutil.copyfile(capture / name, lean / name)
+              for phase in ["valid","partial","repaired"]:
+                  phase_out = lean / phase
+                  phase_out.mkdir()
+                  for name in ["baseline-normalized.json","cases-selected.json","cases-normalized.json","source-file-names.json","source-input-manifest.json","getSyntacticDiagnostics.json","getSemanticDiagnostics.json","phase-receipt.json","original-partial.ts"]:
+                      if (capture / phase / name).is_file():
+                          shutil.copyfile(capture / phase / name, phase_out / name)
+              for name in ["probe.ts","tsconfig.json","custom.ts","custom-vue.ts","globals.d.ts","merged.d.ts","opaque-globals.ts","partial.ts"]:
+                  if (capture / "project" / name).is_file():
+                      shutil.copyfile(capture / "project" / name, lean / name)
+              for suffix in ["native.stdout.txt","native.stderr.txt","package-lock.json.txt","npm.stdout.txt","npm.stderr.txt"]:
+                  if (out / (version + "." + suffix)).is_file():
+                      shutil.copyfile(out / (version + "." + suffix), lean / suffix)
+          assert git("rev-parse", "HEAD") == source
+          assert git("status", "--porcelain", "--untracked-files=no") == ""
+          assert digest(binary) == image_sha
+          receipt = {
+              "schema":"vize.binding-origin.source-laws.v1",
+              "sourceSha":source,"sourceTree":tree,
+              "requestedRef":os.environ.get("GITHUB_REF"),
+              "eventSourceSha":os.environ.get("GITHUB_SHA"),
+              "scope":"Unwired origin foundation plus test-only same-session native symbol/closure laws; not product CLI, mapper, LSP or performance qualification",
+              "targetStartedAbsent":True,"target":str(target),
+              "cargoCommand":argv,"actualCargoArtifact":artifact,
+              "actualTestImage":{"path":str(binary),"bytes":binary.stat().st_size,"sha256":image_sha},
+              "compiler":compiler,
+              "compilerEnvironment":{k:v for k,v in env.items() if k in ["RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","RUSTC","RUSTC_WRAPPER","RUSTC_WORKSPACE_WRAPPER","CARGO_BUILD_TARGET","CARGO_INCREMENTAL","CARGO_BUILD_JOBS"] or k.startswith("CARGO_PROFILE_CI_")},
+              "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
+              "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").rglob("*")) if p.is_file() and p.suffix in [".rs",".ts",".mts"]},
+              "tests":rows,"nativeCarrierRoles":native_rows,"observerUnitTests":38,
+              "passed":len(rows)==23 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
+          }
+          (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")
+          shutil.copyfile(out / "acceptance.json", out / "native-metadata/actual-source-acceptance.json")
+          print("SOURCE_IMAGE_RECEIPT " + json.dumps({"sourceSha":source,"sourceTree":tree,"binarySha256":image_sha,"binaryBytes":binary.stat().st_size,"nativeRoles":native_rows}), flush=True)
+          assert receipt["passed"], "all 23 source laws and both native carrier roles must pass"
+          PY
+      - name: Package actual compiler and test receipts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/binding-origin-admission"
+          tar --exclude=cargo-target --exclude=providers --exclude="*.sock" -czf "$RUNNER_TEMP/binding-origin-admission.tgz" -C "$RUNNER_TEMP" binding-origin-admission
+          mkdir -p "$RUNNER_TEMP/binding-origin-admission/native-metadata"
+          tar -czf "$RUNNER_TEMP/binding-origin-native-metadata.tgz" -C "$RUNNER_TEMP/binding-origin-admission" native-metadata
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: binding-origin-source-laws-${{ github.sha }}
+          path: ${{ runner.temp }}/binding-origin-admission.tgz
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: binding-origin-native-metadata-${{ github.sha }}
+          path: ${{ runner.temp }}/binding-origin-native-metadata.tgz
+          retention-days: 14

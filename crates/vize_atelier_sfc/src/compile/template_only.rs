@@ -155,5 +155,6 @@ pub(super) fn compile_template_only(
         warnings,
         bindings: None,
         macro_artifacts,
+        dependencies: Vec::new(),
     })
 }

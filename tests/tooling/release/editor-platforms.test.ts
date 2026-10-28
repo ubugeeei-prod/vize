@@ -75,7 +75,12 @@ test("platform providers publish after their packages without gating the release
     assert.match(release.jobs[key].steps.at(-1).run, /editors\/vscode\/dist\/vize\.vsix$/);
   for (const key of ["publish-vscode-platforms", "publish-open-vsx-platforms"]) {
     const publisher = release.jobs[key];
-    assert.deepEqual(publisher.needs, ["version", "tag", "build-editor-platforms"]);
+    assert.deepEqual(publisher.needs, [
+      "version",
+      "tag",
+      "build-editor-platforms",
+      "publication-quota",
+    ]);
     assert.equal(publisher.strategy["fail-fast"], false);
     assert.equal(
       publisher.strategy.matrix.settings,
@@ -85,6 +90,7 @@ test("platform providers publish after their packages without gating the release
     assert.equal(publisher.env.VSIX_SOURCE_PATH, "${{ matrix.settings.sourcePath }}");
     assert.match(publisher.steps.at(-1).run, /"editor-extensions\/\$VSIX_SOURCE_PATH"/);
   }
+  assert.deepEqual(release.jobs["publication-quota"].needs, ["version", "tag"]);
   const githubRelease = release.jobs["github-release"];
   assert.ok(githubRelease.needs.includes("build-editor-platforms"));
   assert.match(githubRelease.if, /always\(\)/);

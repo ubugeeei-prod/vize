@@ -21,6 +21,7 @@ mod enums;
 mod imports;
 mod macros;
 mod module_exports;
+mod nuxt_render;
 mod options_api;
 mod statements;
 mod template_components;

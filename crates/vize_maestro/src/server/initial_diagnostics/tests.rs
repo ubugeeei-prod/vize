@@ -4,7 +4,6 @@ use tower_lsp::lsp_types::Url;
 
 use super::{EDIT_DIAGNOSTIC_DEBOUNCE, PendingInitialDiagnostics};
 
-#[path = "conservation_tests.rs"]
 mod conservation_tests;
 use conservation_tests::capacity_uri;
 

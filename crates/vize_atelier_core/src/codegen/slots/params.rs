@@ -2,13 +2,13 @@
 
 use crate::codegen::context::CodegenContext;
 use crate::options::BindingType;
+use crate::steps::expression::is_template_global as is_global_allowed;
 use crate::{DirectiveNode, ExpressionNode};
 use oxc_ast::ast::{BindingPattern, FormalParameters};
 use oxc_ast_visit::{
     Visit,
     walk::{walk_arrow_function_expression, walk_function, walk_object_property},
 };
-use vize_croquis::builtins::is_global_allowed;
 use vize_l0::{FxHashSet, String, ToCompactString};
 
 /// Get slot props expression as raw source (not transformed)

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { startTsserver } from "./tsserver-client.mjs";
+import { startTsserver } from "./tsserver-client.ts";
 import fixtureLoader from "./project-fixture.cjs";
 import { createOrdinaryHostFrontier } from "./ordinary-host-frontier.ts";
 import type { NativeApi, TsserverClient } from "./project-metadata.ts";

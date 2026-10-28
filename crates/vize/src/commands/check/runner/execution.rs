@@ -119,6 +119,7 @@ pub(super) fn prepare_program(
         &mut virtual_ts_options,
         input.nuxt_project_root,
         input.tsconfig_path.as_deref(),
+        input.tsconfig_path.as_ref().map(|_| input.files),
         legacy_vue2,
         dialect,
     );
@@ -162,6 +163,9 @@ pub(super) fn prepare_program(
         settings.corsa_path.as_deref(),
     )
     .map_err(|error| cstr!("{}", error))?;
+    checker
+        .set_persistent_storage_owner(&input.program_root, input.tsconfig_path.as_deref())
+        .map_err(|error| cstr!("{}", error))?;
     checker.set_server_count(settings.servers);
     checker.set_checker_count(settings.checkers);
     if settings.options_api {

@@ -175,7 +175,7 @@ fn indexed_heaps_match_original_scans_with_explicit_deadline_tie_refinement() {
                 match (&actual, &selected) {
                     (None, None) => {}
                     (Some((uri, actual_job)), Some((_, minimum))) => {
-                        let expected = model.get(uri).unwrap();
+                        let expected = &model[uri];
                         assert!(!expected.sync_pending && !expected.sync_running);
                         assert_eq!(expected.not_before, minimum.not_before);
                         assert_eq!(actual_job.not_before, minimum.not_before);

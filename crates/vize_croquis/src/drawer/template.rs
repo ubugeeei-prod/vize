@@ -31,6 +31,9 @@ use vize_relief::{ExpressionNode, RootNode, TemplateChildNode};
 impl Drawer {
     /// Draw template AST facts into the croquis.
     pub fn draw_template(&mut self, root: &RootNode<'_>) -> &mut Self {
+        // A fresh template operation cannot inherit admission from an earlier
+        // full descriptor or from a partial caller-owned draw.
+        self.croquis.nuxt_render_template = None;
         if self
             .template_semantic_reuse
             .as_mut()
