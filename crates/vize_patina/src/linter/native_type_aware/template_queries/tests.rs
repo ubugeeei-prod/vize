@@ -242,7 +242,7 @@ const ids: number[] = [1]
         .collect();
     assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
     let mut offsets = Vec::new();
-    for (query, identifier) in expressions.into_iter().zip(["__expr_2", "__expr_3"]) {
+    for (query, identifier) in expressions.into_iter().zip(["__expr_2", "__expr_5"]) {
         let authored = query.source_start as usize..query.source_end as usize;
         let inferred = expression_bindings::inferred_binding_offset(&document, &authored)
             .expect("comment-stripped expression must own an inferred binding");
