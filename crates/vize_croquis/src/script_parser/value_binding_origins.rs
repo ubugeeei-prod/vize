@@ -83,6 +83,7 @@ struct Declaration {
 #[derive(Debug, Default)]
 pub struct ValueBindingOrigins {
     root: Option<ScopeId>,
+    setup_owner: bool,
     parents: FxHashMap<ScopeId, Option<ScopeId>>,
     declarations: FxHashMap<ScopeId, FxHashMap<CompactString, Declaration>>,
     key_names: FxHashMap<ValueBindingKey, CompactString>,
@@ -98,11 +99,16 @@ pub struct ValueBindingOrigins {
 }
 
 impl ValueBindingOrigins {
-    pub(crate) fn new(root: ScopeId) -> Self {
+    pub(crate) fn new(root: ScopeId, setup_owner: bool) -> Self {
         Self {
             root: Some(root),
+            setup_owner,
             ..Self::default()
         }
+    }
+
+    pub(crate) fn owns_setup_program(&self) -> bool {
+        self.setup_owner
     }
 
     pub(crate) fn refuse(&mut self) {

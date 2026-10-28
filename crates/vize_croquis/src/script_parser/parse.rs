@@ -171,7 +171,10 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     if !skip_diagnostics {
         super::extract::prepare_race_analysis(&mut result, program);
         result.value_binding_origins = Some(Box::new(
-            super::value_binding_origins::ValueBindingOrigins::new(result.scopes.current_id()),
+            super::value_binding_origins::ValueBindingOrigins::new(
+                result.scopes.current_id(),
+                true,
+            ),
         ));
     }
 
@@ -340,7 +343,10 @@ pub(crate) fn parse_script_with_options_source_type(
 
     if !skip_diagnostics {
         result.value_binding_origins = Some(Box::new(
-            super::value_binding_origins::ValueBindingOrigins::new(result.scopes.current_id()),
+            super::value_binding_origins::ValueBindingOrigins::new(
+                result.scopes.current_id(),
+                false,
+            ),
         ));
     }
 
