@@ -84,7 +84,7 @@ jobs:
           assert tomllib.loads(source_files[QA]["crates/vize_canon/Cargo.toml"].decode())["package"]["version"]["workspace"] is True
           
           prefix=a["retained"][0]["runtime"]["context"]["outputParentPhysical"]
-          full={};metrics=[];pids=set();sourcepids=set();vtscounts=[];capture_pairs=0;source_roots=set();virtual_roots=set()
+          full={};metrics=[];pids=set();sourcepids=set();all_rust_pids=set();raw_rust=[];vtscounts=[];capture_pairs=0;source_roots=set();virtual_roots=set()
           for role in roles:
            packets=[]
            for phase in phases:
@@ -109,6 +109,18 @@ jobs:
               decoder=json.JSONDecoder();value,end=decoder.raw_decode(line[len("execve("):])
               entries.append((value,line.endswith("= 0")))
              return entries==[(image,True)]
+            traced_pids=[int(p.rsplit(".",1)[1]) for p in files if p.startswith(leaf+"/exec.trace.") and p.rsplit(".",1)[1].isdigit()]
+            rust_matches=[pid for pid in traced_pids if successful_exec(pid,builds[role]["binary"])]
+            assert len(rust_matches)==1,("actual-source-cli-exec",role,phase,rust_matches)
+            rust_pid=rust_matches[0];assert rust_pid not in all_rust_pids;all_rust_pids.add(rust_pid)
+            rust_trace=files[leaf+"/exec.trace."+str(rust_pid)].decode("utf8")
+            exit_groups=re.findall(r"^exit_group\(([0-9]+)\)",rust_trace,re.MULTILINE)
+            exit_annotations=re.findall(r"^\+\+\+ exited with ([0-9]+) \+\+\+",rust_trace,re.MULTILINE)
+            observed=[int(value) for value in exit_groups+exit_annotations]
+            assert len(set(observed))<=1,("ambiguous-rust-exit",observed)
+            raw_exit=observed[0] if observed else None
+            if raw_exit is not None:assert raw_exit==(1 if phase=="invalid" else 0)
+            raw_rust.append({"role":role,"phase":phase,"pid":rust_pid,"program":builds[role]["binary"],"rawExitCode":raw_exit,"exitGroupRecords":len(exit_groups),"exitAnnotationRecords":len(exit_annotations)})
             call_dirs=sorted({p.rsplit("/",1)[0] for p in files if p.startswith(leaf+"/backend/") and p.endswith("/before.json")})
             calls=[]
             for directory in call_dirs:
@@ -151,7 +163,7 @@ jobs:
                assert packet["invokedPid"] is None and "descendant executable/hash/PID" in packet["unobserved"]
                assert packet["actualArgs"]==before["argv"] and sha(packet["requestedConfigBytes"].encode())==before["configSha256"]
                assert packet["requestedConfigObservation"]=="pre-invocation read, not a post-execution reread"
-               owner=packet["receiptOwnerPid"];assert successful_exec(owner,builds[role]["binary"]);sourcepids.add(owner)
+               owner=packet["receiptOwnerPid"];assert owner==rust_pid and successful_exec(owner,builds[role]["binary"]);sourcepids.add(owner)
                assert "/process-"+str(owner)+"/" in path
                assert not os.path.commonpath([packet["projectRoot"],row["runtime"]["ownedRoot"]])==packet["projectRoot"]
               for key in requested:
@@ -167,6 +179,8 @@ jobs:
           assert len(a["retained"])==9
           report={"status":"independently-accepted-tiny-carrier","run":RUN,"job":122551006712,"attempt":1,"sourceHead":QA,"baseActualMain":BASE,"artifact":{"id":AID,"zipBytes":len(raw),"zipSha256":sha(raw),"tgzSha256":sha(tg),"files":len(files)},"builds":[{"role":v["role"],"revision":v["revision"],"binarySha256":v["binarySha256"],"bytes":v["binaryBytes"],"compilerSourceSeal":v["compilerSourceSeal"],"sourceTree":v["sourceTree"]} for v in b["builds"]],"normalBinaryByteIdentical":b["normalBinaryByteIdentical"],"normalDefaultCaptureReceipts":0,"moduleUnitControls":6,"freshOneSfcExecutions":9,"fullCliVtsBackendPacketsEqual":True,"actualGoElfSha256":"a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70","actualGoPids":sorted(pids),"actualSourceCliPids":sorted(sourcepids),"directSemanticRoots":list(source_roots),"sourceCustodyRequestedCompletedPairs":capture_pairs,"freshBuildInfoAll9":True,"emittedTypeScript":vtscounts,"toyObservationsOnly":metrics,"acceptanceSha256":sha(files["functional/acceptance.json"]),"buildReceiptSha256":sha(files["build/builds.json"]),"qualificationScope":"one public SFC functional observer only; not full corpus, shipping/cold500ms or causal CPU/RSS overhead evidence","localFilesWritten":0}
           
+          assert len(all_rust_pids)==9
+          report["allNineActualRustExecutions"]=raw_rust
           report["sourceWorkspaceVersion"]=source_version
           report["backendExitCodesPerRole"]={"normal-base":[0,2,0],"normal-head":[0,2,0],"observer":[0,2,0]}
           report["rustExitCodesPerRole"]={"normal-base":[0,1,0],"normal-head":[0,1,0],"observer":[0,1,0]}
