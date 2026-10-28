@@ -36,7 +36,7 @@ pub struct Document {
     /// Document version
     pub version: i32,
     /// Document content stored as a rope for efficient editing
-    pub content: DocumentText,
+    content: DocumentText,
     /// Language ID (e.g., "vue", "typescript")
     pub language_id: String,
     /// Monotonic stamp for the exact content this document currently holds.

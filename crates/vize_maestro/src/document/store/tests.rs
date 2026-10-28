@@ -349,6 +349,22 @@ fn shared_text_snapshot_is_revision_bound_and_utf16_exact() {
 }
 
 #[test]
+fn positioned_snapshot_matches_lsp_standalone_cr_boundaries() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    store.open(uri.clone(), "a\rb\r😀".into(), 1, "vue".into());
+
+    let resident = store.text_snapshot(&uri).unwrap();
+    let second_line = store.snapshot_at(&uri, pos(1, 0)).unwrap();
+    let end = store.snapshot_at(&uri, pos(2, 2)).unwrap();
+    assert!(Arc::ptr_eq(&resident, &second_line.content));
+    assert!(Arc::ptr_eq(&resident, &end.content));
+    assert_eq!(second_line.offset, "a\r".len());
+    assert_eq!(end.offset, "a\rb\r😀".len());
+    assert!(store.snapshot_at(&uri, pos(2, 1)).is_none());
+}
+
+#[test]
 fn positioned_snapshot_crosses_a_real_await_without_a_guard_or_deadlock() {
     let store = DocumentStore::new();
     let uri = test_uri();
