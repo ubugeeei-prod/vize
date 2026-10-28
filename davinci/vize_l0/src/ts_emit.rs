@@ -150,12 +150,19 @@ fn push_u64<B: TsBuf>(buffer: &mut B, mut value: u64) {
     }
     let mut digits = [0u8; 20];
     let mut cursor = digits.len();
-    while value > 0 {
+    for digit in digits.iter_mut().rev() {
         cursor -= 1;
-        digits[cursor] = b'0' + (value % 10) as u8;
+        *digit = b'0' + (value % 10) as u8;
         value /= 10;
+        if value == 0 {
+            break;
+        }
     }
-    match core::str::from_utf8(&digits[cursor..]) {
+    let Some(encoded) = digits.get(cursor..) else {
+        buffer.push_ts_str("0");
+        return;
+    };
+    match core::str::from_utf8(encoded) {
         Ok(text) => buffer.push_ts_str(text),
         Err(_) => buffer.push_ts_str("0"),
     }
@@ -180,8 +187,14 @@ mod tests {
         let mut ts = String::default();
         let index = 0usize;
         let signed = -12i32;
-        emit_ts!(&mut ts, "n{index}_{signed}_{true}_{i64::MIN}");
-        assert_eq!(ts, "n0_-12_true_-9223372036854775808");
+        emit_ts!(
+            &mut ts,
+            "n{index}_{signed}_{true}_{i64::MIN}_{u64::MAX}"
+        );
+        assert_eq!(
+            ts,
+            "n0_-12_true_-9223372036854775808_18446744073709551615"
+        );
     }
 
     #[test]
