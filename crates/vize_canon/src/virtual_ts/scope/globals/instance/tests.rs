@@ -72,7 +72,7 @@ fn vue3_reads_every_occurrence_off_the_public_instance() {
     let output = generate(false);
 
     assert_eq!(
-        output.code.matches("__VizeInstanceGlobal").count(),
+        output.code.matches("$VueInstanceGlobal").count(),
         0,
         "{}",
         output.code
@@ -100,7 +100,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
 
     assert!(
         output.code.contains(
-            "type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
+            "type $VueInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
         ),
         "{}",
         output.code
@@ -108,7 +108,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
     assert_eq!(
         output
             .code
-            .matches("const $missing: __VizeInstanceGlobal<'$missing'> = undefined as any;")
+            .matches("const $missing: $VueInstanceGlobal<'$missing'> = undefined as any;")
             .count(),
         1,
         "{}",
@@ -122,7 +122,7 @@ fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     let output = generate(true);
 
     assert!(
-        !output.code.contains("__VizeInstanceGlobal"),
+        !output.code.contains("$VueInstanceGlobal"),
         "{}",
         output.code
     );

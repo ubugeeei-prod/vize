@@ -7,7 +7,7 @@
 //! [`TemplatePropsModel`] rather than from separate scans.
 //!
 //! Before #4145 `$props` was the odd one out: it was emitted as a generic
-//! instance global, `__VizeInstanceGlobal<'$props'>`, which reads
+//! instance global, `$VueInstanceGlobal<'$props'>`, which reads
 //! `ComponentPublicInstance['$props']` with that helper's *default* type
 //! arguments. `P` defaults to `{}` there, so `$props` collapsed to `{}` for
 //! every component and each declared prop read reported `TS2339`.
@@ -38,7 +38,7 @@ use type_shape::is_plain_inline_type_literal;
 /// The component's resolved prop contract as the template sees it.
 pub(crate) struct TemplatePropsModel {
     /// The authored contract: `Props`, `Props<T>`, or the setup-scoped
-    /// `__VizeSetupProps` when the type argument only resolves inside `__setup`.
+    /// `$VueSetupProps` when the type argument only resolves inside `__setup`.
     authored_type_ref: String,
     /// The authored contract with Vue's default substitution applied. This is
     /// what a template read of a prop resolves against.
@@ -65,11 +65,11 @@ impl TemplatePropsModel {
         let setup_scoped = define_props_type_requires_setup_scope(summary);
         let authored_type_ref = if !setup_scoped && super::hoisted_props_alias_replaced(summary) {
             generic_param.map_or_else(
-                || "__VizeResolvedProps".into(),
-                |generic| cstr!("__VizeResolvedProps<{}>", generic.names),
+                || "$VueResolvedProps".into(),
+                |generic| cstr!("$VueResolvedProps<{}>", generic.names),
             )
         } else {
-            props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"))
+            props_type_ref(generic_param, setup_scoped.then_some("$VueSetupProps"))
         };
 
         let (mut defaulted_prop_names, undefined_default_names) =
@@ -93,7 +93,7 @@ impl TemplatePropsModel {
         }
 
         // `__DefineProps` is the setup macro's own return type, but it applies
-        // `{ [K in __VizeBooleanKey<T>]-?: boolean }`, and that key filter can
+        // `{ [K in $VueBooleanKey<T>]-?: boolean }`, and that key filter can
         // only be decided when `keyof T` is concrete. A generic SFC leaves it
         // deferred, so TypeScript must also consider the branch where a
         // string-typed prop *is* a boolean key and resolves it to `T[K] &

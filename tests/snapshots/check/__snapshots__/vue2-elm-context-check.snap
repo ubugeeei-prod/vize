@@ -7,29 +7,29 @@
     {
       "file": "src/components/common/alertTip.vue",
       "diagnostics": [
-        "error:28:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'."
+        "error:28:22 [TS2339] Property '$emit' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/components/common/buyCart.vue",
       "diagnostics": [
         "error:35:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:53:46 [TS2339] Property 'cartList' does not exist on type '__VizeThis'.",
+        "error:53:46 [TS2339] Property 'cartList' does not exist on type '$VueThis'.",
         "error:62:37 [TS2339] Property 'num' does not exist on type 'unknown'.",
-        "error:78:26 [TS2339] Property 'REDUCE_CART' does not exist on type '__VizeThis'.",
-        "error:83:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
-        "error:87:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
-        "error:92:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
-        "error:96:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'."
+        "error:78:26 [TS2339] Property 'REDUCE_CART' does not exist on type '$VueThis'.",
+        "error:83:22 [TS2551] Property 'ADD_CART' does not exist on type '$VueThis'. Did you mean 'addToCart'?",
+        "error:87:22 [TS2339] Property '$emit' does not exist on type '$VueThis'.",
+        "error:92:22 [TS2339] Property '$emit' does not exist on type '$VueThis'.",
+        "error:96:22 [TS2339] Property '$emit' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/components/common/computeTime.vue",
       "diagnostics": [
-        "error:31:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
-        "error:35:36 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
-        "error:36:22 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
-        "error:39:44 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
+        "error:31:22 [TS2339] Property '$emit' does not exist on type '$VueThis'.",
+        "error:35:36 [TS2551] Property 'timer' does not exist on type '$VueThis'. Did you mean 'time'?",
+        "error:36:22 [TS2551] Property 'timer' does not exist on type '$VueThis'. Did you mean 'time'?",
+        "error:39:44 [TS2551] Property 'timer' does not exist on type '$VueThis'. Did you mean 'time'?",
         "error:53:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:54:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:56:21 [TS2322] Type 'string' is not assignable to type 'number'.",
@@ -68,7 +68,7 @@
         "error:23:65 [TS2339] Property 'geohash' does not exist on the component instance. (source: <section @click = \"gotoAddress({path: '/msite', query: {geohash}})\" class=\"guide_item\">; binding: @click)",
         "error:29:58 [TS2339] Property 'geohash' does not exist on the component instance. (source: <section @click = \"gotoAddress({path: `/search/${geohash}`})\" class=\"guide_item\">; binding: @click)",
         "error:51:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:71:16 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:71:16 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -120,8 +120,8 @@
       "file": "src/page/benefit/benefit.vue",
       "diagnostics": [
         "error:87:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:121:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:122:65 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:121:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:122:65 [TS2339] Property 'userInfo' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -140,7 +140,7 @@
       "file": "src/page/benefit/children/exchange.vue",
       "diagnostics": [
         "error:24:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:63:58 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:63:58 [TS2339] Property 'userInfo' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -155,15 +155,15 @@
       "diagnostics": [
         "error:36:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:39:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
-        "error:68:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:69:62 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:71:26 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'."
+        "error:68:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:69:62 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:71:26 [TS2339] Property '$nextTick' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/city/city.vue",
       "diagnostics": [
-        "error:103:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:103:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -172,22 +172,22 @@
         "error:38:127 [TS2339] Property 'searchAddress' does not exist on the component instance. (source: <router-link to=\"/confirmOrder/chooseAddress/addAddress/searchAddress\" tag=\"div\" class=\"choose_address\">{{searchAddress? searchAddress.name : '小区/写字楼/学校等'}}</ro...)",
         "error:38:142 [TS2339] Property 'searchAddress' does not exist on the component instance. (source: <router-link to=\"/confirmOrder/chooseAddress/addAddress/searchAddress\" tag=\"div\" class=\"choose_address\">{{searchAddress? searchAddress.name : '小区/写字楼/学校等'}}</ro...)",
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:102:28 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:102:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:111:32 [TS2339] Property 'searchAddress' does not exist on type '__VizeThis'.",
-        "error:125:53 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:125:76 [TS2339] Property 'searchAddress' does not exist on type '__VizeThis'.",
-        "error:125:122 [TS2339] Property 'geohash' does not exist on type '__VizeThis'.",
-        "error:131:26 [TS2339] Property 'CONFIRM_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:132:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:102:28 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:102:45 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:111:32 [TS2339] Property 'searchAddress' does not exist on type '$VueThis'.",
+        "error:125:53 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:125:76 [TS2339] Property 'searchAddress' does not exist on type '$VueThis'.",
+        "error:125:122 [TS2339] Property 'geohash' does not exist on type '$VueThis'.",
+        "error:131:26 [TS2339] Property 'CONFIRM_ADDRESS' does not exist on type '$VueThis'.",
+        "error:132:26 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/children/children/searchAddress.vue",
       "diagnostics": [
         "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:52:22 [TS2339] Property 'CHOOSE_SEARCH_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:53:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:52:22 [TS2339] Property 'CHOOSE_SEARCH_ADDRESS' does not exist on type '$VueThis'.",
+        "error:53:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -195,21 +195,21 @@
       "diagnostics": [
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:63:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
-        "error:92:26 [TS2339] Property 'addressIndex' does not exist on type '__VizeThis'.",
-        "error:93:33 [TS2339] Property 'addressIndex' does not exist on type '__VizeThis'.",
-        "error:109:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:109:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:110:66 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:136:22 [TS2551] Property 'CHOOSE_ADDRESS' does not exist on type '__VizeThis'. Did you mean 'chooseAddress'?",
-        "error:137:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:92:26 [TS2339] Property 'addressIndex' does not exist on type '$VueThis'.",
+        "error:93:33 [TS2339] Property 'addressIndex' does not exist on type '$VueThis'.",
+        "error:109:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:109:43 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:110:66 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:136:22 [TS2551] Property 'CHOOSE_ADDRESS' does not exist on type '$VueThis'. Did you mean 'chooseAddress'?",
+        "error:137:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/invoice.vue",
       "diagnostics": [
         "error:16:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:38:19 [TS2551] Property 'CONFIRM_INVOICE' does not exist on type '__VizeThis'. Did you mean 'confrimInvoice'?",
-        "error:39:19 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:38:19 [TS2551] Property 'CONFIRM_INVOICE' does not exist on type '$VueThis'. Did you mean 'confrimInvoice'?",
+        "error:39:19 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -222,34 +222,34 @@
         "error:87:21 [TS2322] Type 'string' is not assignable to type 'number'.",
         "error:89:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:91:21 [TS2322] Type 'string' is not assignable to type 'number'.",
-        "error:102:53 [TS2339] Property 'orderMessage' does not exist on type '__VizeThis'.",
-        "error:102:81 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:111:36 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:112:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:115:44 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:131:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:102:53 [TS2339] Property 'orderMessage' does not exist on type '$VueThis'.",
+        "error:102:81 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:111:36 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:112:22 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:115:44 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:131:26 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/remark.vue",
       "diagnostics": [
         "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:69:22 [TS2551] Property 'CONFIRM_REMARK' does not exist on type '__VizeThis'. Did you mean 'confirmRemark'?",
-        "error:70:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:69:22 [TS2551] Property 'CONFIRM_REMARK' does not exist on type '$VueThis'. Did you mean 'confirmRemark'?",
+        "error:70:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/userValidation.vue",
       "diagnostics": [
         "error:26:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:70:36 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:71:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:74:44 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:92:61 [TS2339] Property 'cart_id' does not exist on type '__VizeThis'.",
-        "error:100:22 [TS2339] Property 'CHANGE_ORDER_PARAM' does not exist on type '__VizeThis'.",
-        "error:101:58 [TS2339] Property 'orderParam' does not exist on type '__VizeThis'.",
-        "error:108:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
-        "error:109:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:70:36 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:71:22 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:74:44 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:92:61 [TS2339] Property 'cart_id' does not exist on type '$VueThis'.",
+        "error:100:22 [TS2339] Property 'CHANGE_ORDER_PARAM' does not exist on type '$VueThis'.",
+        "error:101:58 [TS2339] Property 'orderParam' does not exist on type '$VueThis'.",
+        "error:108:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '$VueThis'.",
+        "error:109:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -266,10 +266,10 @@
         "error:88:50 [TS2339] Property 'remarkText' does not exist on the component instance. (source: <span class=\"ellipsis\">{{remarkText||inputText? remarklist: '口味、偏好等'}}</span>)",
         "error:88:62 [TS2339] Property 'inputText' does not exist on the component instance. (source: <span class=\"ellipsis\">{{remarkText||inputText? remarklist: '口味、偏好等'}}</span>)",
         "error:134:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:188:26 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
-        "error:189:40 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
-        "error:194:26 [TS2339] Property 'inputText' does not exist on type '__VizeThis'.",
-        "error:195:39 [TS2339] Property 'inputText' does not exist on type '__VizeThis'.",
+        "error:188:26 [TS2339] Property 'remarkText' does not exist on type '$VueThis'.",
+        "error:189:40 [TS2339] Property 'remarkText' does not exist on type '$VueThis'.",
+        "error:194:26 [TS2339] Property 'inputText' does not exist on type '$VueThis'.",
+        "error:195:39 [TS2339] Property 'inputText' does not exist on type '$VueThis'.",
         "error:214:42 [TS2339] Property 'id' does not exist on type 'unknown'.",
         "error:215:44 [TS2339] Property 'name' does not exist on type 'unknown'.",
         "error:216:51 [TS2339] Property 'packing_fee' does not exist on type 'unknown'.",
@@ -278,23 +278,23 @@
         "error:219:46 [TS2339] Property 'sku_id' does not exist on type 'unknown'.",
         "error:220:46 [TS2339] Property 'specs' does not exist on type 'unknown'.",
         "error:221:45 [TS2339] Property 'stock' does not exist on type 'unknown'.",
-        "error:228:22 [TS2339] Property 'SAVE_CART_ID_SIG' does not exist on type '__VizeThis'.",
-        "error:234:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:234:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:235:66 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:237:30 [TS2339] Property 'CHOOSE_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:262:28 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:262:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:267:32 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
-        "error:273:22 [TS2339] Property 'SAVE_ORDER_PARAM' does not exist on type '__VizeThis'.",
-        "error:274:35 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:276:38 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
-        "error:283:55 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:283:105 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
-        "error:286:26 [TS2339] Property 'NEED_VALIDATION' does not exist on type '__VizeThis'.",
-        "error:287:26 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
-        "error:289:26 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
-        "error:290:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:228:22 [TS2339] Property 'SAVE_CART_ID_SIG' does not exist on type '$VueThis'.",
+        "error:234:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:234:43 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:235:66 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:237:30 [TS2339] Property 'CHOOSE_ADDRESS' does not exist on type '$VueThis'.",
+        "error:262:28 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:262:45 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:267:32 [TS2339] Property 'choosedAddress' does not exist on type '$VueThis'.",
+        "error:273:22 [TS2339] Property 'SAVE_ORDER_PARAM' does not exist on type '$VueThis'.",
+        "error:274:35 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:276:38 [TS2339] Property 'choosedAddress' does not exist on type '$VueThis'.",
+        "error:283:55 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:283:105 [TS2339] Property 'choosedAddress' does not exist on type '$VueThis'.",
+        "error:286:26 [TS2339] Property 'NEED_VALIDATION' does not exist on type '$VueThis'.",
+        "error:287:26 [TS2339] Property '$router' does not exist on type '$VueThis'.",
+        "error:289:26 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '$VueThis'.",
+        "error:290:26 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -312,26 +312,26 @@
         "error:35:62 [TS2339] Property 'index' does not exist on the component instance. (source: <li v-for=\"(item, index) in categoryDetail\" v-if=\"index\" :key=\"index\" class=\"category_right_li\" @click=\"getCategoryIds(item.id, item.name)\" :class=\"{category_ri...; binding: v-if)",
         "error:172:251 [TS2339] Property 'latitude' does not exist on the component instance. (source: <shop-list :geohash=\"geohash\" :restaurantCategoryId=\"restaurant_category_id\" :restaurantCategoryIds=\"restaurant_category_ids\" :sortByType='sortByType' :delivery...; binding: v-if)",
         "error:178:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:225:27 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
-        "error:226:29 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
-        "error:228:42 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
-        "error:230:17 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:234:14 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:237:47 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:237:62 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
-        "error:245:47 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:245:62 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
-        "error:247:47 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:247:62 [TS2339] Property 'longitude' does not exist on type '__VizeThis'."
+        "error:225:27 [TS2339] Property '$route' does not exist on type '$VueThis'.",
+        "error:226:29 [TS2339] Property '$route' does not exist on type '$VueThis'.",
+        "error:228:42 [TS2339] Property '$route' does not exist on type '$VueThis'.",
+        "error:230:17 [TS2339] Property 'latitude' does not exist on type '$VueThis'.",
+        "error:234:14 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '$VueThis'.",
+        "error:237:47 [TS2339] Property 'latitude' does not exist on type '$VueThis'.",
+        "error:237:62 [TS2339] Property 'longitude' does not exist on type '$VueThis'.",
+        "error:245:47 [TS2339] Property 'latitude' does not exist on type '$VueThis'.",
+        "error:245:62 [TS2339] Property 'longitude' does not exist on type '$VueThis'.",
+        "error:247:47 [TS2339] Property 'latitude' does not exist on type '$VueThis'.",
+        "error:247:62 [TS2339] Property 'longitude' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/forget/forget.vue",
       "diagnostics": [
         "error:54:17 [TS1117] An object literal cannot have multiple properties with the same name.",
-        "error:78:26 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:81:48 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:103:26 [TS2339] Property 'validate_token' does not exist on type '__VizeThis'."
+        "error:78:26 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:81:48 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:103:26 [TS2339] Property 'validate_token' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -345,10 +345,10 @@
         "error:55:23 [TS2305] Module '\"src/config/env\"' has no exported member 'proapi'.",
         "error:56:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:57:37 [TS2459] Module '\"../../service/getData\"' declares 'sendLogin' locally, but it is not exported.",
-        "error:111:26 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:114:48 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:175:26 [TS2339] Property 'RECORD_USERINFO' does not exist on type '__VizeThis'.",
-        "error:176:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:111:26 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:114:48 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:175:26 [TS2339] Property 'RECORD_USERINFO' does not exist on type '$VueThis'.",
+        "error:176:26 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -379,11 +379,11 @@
         "error:77:34 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'? (source: <p>{{orderDetail.formatted_created_at}}</p>)",
         "error:90:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:95:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
-        "error:123:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:123:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:124:64 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:124:87 [TS2551] Property 'orderDetail' does not exist on type '__VizeThis'. Did you mean 'orderData'?",
-        "error:126:26 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'."
+        "error:123:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:123:43 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:124:64 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:124:87 [TS2551] Property 'orderDetail' does not exist on type '$VueThis'. Did you mean 'orderData'?",
+        "error:126:26 [TS2339] Property '$nextTick' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -392,12 +392,12 @@
         "error:30:67 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer. (source: <router-link :to=\"{path: '/shop', query: {geohash, id: item.restaurant_id}}\" tag=\"span\" class=\"buy_again\" v-else>再来一单</router-link>; binding: 'to')",
         "error:30:67 [TS2339] Property 'geohash' does not exist on the component instance. (source: <router-link :to=\"{path: '/shop', query: {geohash, id: item.restaurant_id}}\" tag=\"span\" class=\"buy_again\" v-else>再来一单</router-link>; binding: 'to')",
         "error:47:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:89:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:89:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:90:55 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:106:51 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:116:22 [TS2339] Property 'SAVE_ORDER' does not exist on type '__VizeThis'.",
-        "error:118:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:89:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:89:43 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:90:55 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:106:51 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:116:22 [TS2339] Property 'SAVE_ORDER' does not exist on type '$VueThis'.",
+        "error:118:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -417,13 +417,13 @@
         "error:38:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:49:9 [TS2300] Duplicate identifier 'mounted'.",
         "error:53:9 [TS2300] Duplicate identifier 'mounted'.",
-        "error:72:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:72:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:73:25 [TS2339] Property 'saveAddress' does not exist on type '__VizeThis'.",
-        "error:88:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:88:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:89:46 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:90:23 [TS2339] Property 'removeAddress' does not exist on type '__VizeThis'."
+        "error:72:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:72:43 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:73:25 [TS2339] Property 'saveAddress' does not exist on type '$VueThis'.",
+        "error:88:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:88:43 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:89:46 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:90:23 [TS2339] Property 'removeAddress' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -431,29 +431,29 @@
       "diagnostics": [
         "error:13:87 [TS2339] Property 'addAddress' does not exist on the component instance. (source: <input type=\"text\" placeholder=\"小区/写字楼/学校等\" readonly=\"readonly\" v-model=\"addAddress\" />; binding: modelValue)",
         "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:139:53 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:139:91 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
-        "error:139:108 [TS2339] Property 'geohash' does not exist on type '__VizeThis'.",
-        "error:145:20 [TS2339] Property 'ADD_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:148:46 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
-        "error:152:35 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
-        "error:155:20 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:139:53 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:139:91 [TS2339] Property 'addAddress' does not exist on type '$VueThis'.",
+        "error:139:108 [TS2339] Property 'geohash' does not exist on type '$VueThis'.",
+        "error:145:20 [TS2339] Property 'ADD_ADDRESS' does not exist on type '$VueThis'.",
+        "error:148:46 [TS2339] Property 'addAddress' does not exist on type '$VueThis'.",
+        "error:152:35 [TS2339] Property 'addAddress' does not exist on type '$VueThis'.",
+        "error:155:20 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/profile/children/children/children/children/addDetail.vue",
       "diagnostics": [
         "error:31:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:89:19 [TS2339] Property 'SAVE_ADDDETAIL' does not exist on type '__VizeThis'.",
-        "error:90:19 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:89:19 [TS2339] Property 'SAVE_ADDDETAIL' does not exist on type '$VueThis'.",
+        "error:90:19 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/profile/children/children/setusername.vue",
       "diagnostics": [
         "error:22:41 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:72:22 [TS2551] Property 'RETSET_NAME' does not exist on type '__VizeThis'. Did you mean 'resetName'?",
-        "error:73:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:72:22 [TS2551] Property 'RETSET_NAME' does not exist on type '$VueThis'. Did you mean 'resetName'?",
+        "error:73:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -462,15 +462,15 @@
         "error:9:33 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <img  v-if=\"userInfo\" :src=\"imgBaseUrl + userInfo.avatar\" class=\"headportrait-div-top\">; binding: v-if)",
         "error:9:62 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <img  v-if=\"userInfo\" :src=\"imgBaseUrl + userInfo.avatar\" class=\"headportrait-div-top\">; binding: 'src')",
         "error:106:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:154:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:157:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:158:39 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:164:22 [TS2551] Property 'OUT_LOGIN' does not exist on type '__VizeThis'. Did you mean 'outLogin'?",
-        "error:166:22 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
-        "error:176:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:154:35 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:157:22 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:158:39 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:164:22 [TS2551] Property 'OUT_LOGIN' does not exist on type '$VueThis'. Did you mean 'outLogin'?",
+        "error:166:22 [TS2339] Property '$router' does not exist on type '$VueThis'.",
+        "error:176:26 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
         "error:179:47 [TS2339] Property 'files' does not exist on type 'Element'.",
-        "error:181:76 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:188:34 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:181:76 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:188:34 [TS2339] Property 'userInfo' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -482,16 +482,16 @@
         "error:7:89 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <img :src=\"imgBaseUrl + userInfo.avatar\" class=\"privateImage\" v-if=\"userInfo&&userInfo.user_id\">; binding: v-if)",
         "error:7:99 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <img :src=\"imgBaseUrl + userInfo.avatar\" class=\"privateImage\" v-if=\"userInfo&&userInfo.user_id\">; binding: v-if)",
         "error:142:38 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:179:29 [TS2551] Property 'getImgPath' does not exist on type '__VizeThis'. Did you mean 'imgpath'?",
-        "error:181:18 [TS2339] Property 'SAVE_AVANDER' does not exist on type '__VizeThis'.",
-        "error:191:22 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:191:39 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:192:36 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:193:38 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:194:36 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:195:37 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:196:35 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:197:41 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:179:29 [TS2551] Property 'getImgPath' does not exist on type '$VueThis'. Did you mean 'imgpath'?",
+        "error:181:18 [TS2339] Property 'SAVE_AVANDER' does not exist on type '$VueThis'.",
+        "error:191:22 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:191:39 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:192:36 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:193:38 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:194:36 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:195:37 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:196:35 [TS2339] Property 'userInfo' does not exist on type '$VueThis'.",
+        "error:197:41 [TS2339] Property 'userInfo' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -505,15 +505,15 @@
         "error:12:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:13:26 [TS2307] Cannot find module 'showdown' or its corresponding type declarations.",
         "error:14:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
-        "error:42:45 [TS2339] Property 'question' does not exist on type '__VizeThis'."
+        "error:42:45 [TS2339] Property 'question' does not exist on type '$VueThis'."
       ]
     },
     {
       "file": "src/page/service/service.vue",
       "diagnostics": [
         "error:38:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:82:22 [TS2339] Property 'SAVE_QUESTION' does not exist on type '__VizeThis'.",
-        "error:83:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:82:22 [TS2339] Property 'SAVE_QUESTION' does not exist on type '$VueThis'.",
+        "error:83:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -545,8 +545,8 @@
         "error:107:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:108:14 [TS2305] Module '\"src/config/env\"' has no exported member 'localapi'.",
         "error:108:24 [TS2305] Module '\"src/config/env\"' has no exported member 'proapi'.",
-        "error:140:22 [TS2339] Property 'licenseImg' does not exist on type '__VizeThis'.",
-        "error:141:22 [TS2551] Property 'showlicenseImg' does not exist on type '__VizeThis'. Did you mean 'showLicenseImg'?"
+        "error:140:22 [TS2339] Property 'licenseImg' does not exist on type '$VueThis'.",
+        "error:141:22 [TS2551] Property 'showlicenseImg' does not exist on type '$VueThis'. Did you mean 'showLicenseImg'?"
       ]
     },
     {
@@ -580,28 +580,28 @@
         "error:272:101 Template parse error: Missing whitespace between attributes; inferred a new attribute boundary. (source: <svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\"class=\"specs_cancel\" @click=\"showChooseList\">; binding: @click)",
         "error:321:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:328:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
-        "error:413:33 [TS2339] Property 'cartList' does not exist on type '__VizeThis'.",
-        "error:430:27 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:434:26 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:437:75 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:437:90 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
-        "error:446:22 [TS2339] Property 'RECORD_SHOPDETAIL' does not exist on type '__VizeThis'.",
-        "error:452:44 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:413:33 [TS2339] Property 'cartList' does not exist on type '$VueThis'.",
+        "error:430:27 [TS2339] Property 'latitude' does not exist on type '$VueThis'.",
+        "error:434:26 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '$VueThis'.",
+        "error:437:75 [TS2339] Property 'latitude' does not exist on type '$VueThis'.",
+        "error:437:90 [TS2339] Property 'longitude' does not exist on type '$VueThis'.",
+        "error:446:22 [TS2339] Property 'RECORD_SHOPDETAIL' does not exist on type '$VueThis'.",
+        "error:452:44 [TS2339] Property '$refs' does not exist on type '$VueThis'.",
         "error:456:54 [TS2339] Property 'offsetTop' does not exist on type 'unknown'.",
-        "error:475:45 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:477:31 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:483:49 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:513:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
-        "error:517:22 [TS2339] Property 'REDUCE_CART' does not exist on type '__VizeThis'.",
-        "error:565:22 [TS2551] Property 'CLEAR_CART' does not exist on type '__VizeThis'. Did you mean 'clearCart'?",
-        "error:571:26 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:574:26 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:586:22 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'.",
-        "error:623:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
-        "error:629:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:630:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:631:39 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:661:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:475:45 [TS2339] Property '$refs' does not exist on type '$VueThis'.",
+        "error:477:31 [TS2339] Property '$refs' does not exist on type '$VueThis'.",
+        "error:483:49 [TS2339] Property '$refs' does not exist on type '$VueThis'.",
+        "error:513:22 [TS2551] Property 'ADD_CART' does not exist on type '$VueThis'. Did you mean 'addToCart'?",
+        "error:517:22 [TS2339] Property 'REDUCE_CART' does not exist on type '$VueThis'.",
+        "error:565:22 [TS2551] Property 'CLEAR_CART' does not exist on type '$VueThis'. Did you mean 'clearCart'?",
+        "error:571:26 [TS2339] Property '$refs' does not exist on type '$VueThis'.",
+        "error:574:26 [TS2339] Property '$refs' does not exist on type '$VueThis'.",
+        "error:586:22 [TS2339] Property '$nextTick' does not exist on type '$VueThis'.",
+        "error:623:22 [TS2551] Property 'ADD_CART' does not exist on type '$VueThis'. Did you mean 'addToCart'?",
+        "error:629:35 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:630:22 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:631:39 [TS2339] Property 'timer' does not exist on type '$VueThis'.",
+        "error:661:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -615,7 +615,7 @@
       "diagnostics": [
         "error:4:51 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <p class=\"buy_for\">成功兑换后将关联到当前帐号： <span>{{userInfo.username}}</span></p>)",
         "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:55:44 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:55:44 [TS2339] Property 'userInfo' does not exist on type '$VueThis'."
       ]
     },
     {
@@ -630,9 +630,9 @@
         "error:4:24 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <section v-if=\"userInfo\">; binding: v-if)",
         "error:5:44 [TS2339] Property 'userInfo' does not exist on the component instance. (source: <p class=\"buy_for\">为账户 <span>{{userInfo.username}}</span> 购买会员</p>)",
         "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:101:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
-        "error:102:22 [TS2551] Property 'BUY_CART' does not exist on type '__VizeThis'. Did you mean 'buyCart'?",
-        "error:103:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:101:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '$VueThis'.",
+        "error:102:22 [TS2551] Property 'BUY_CART' does not exist on type '$VueThis'. Did you mean 'buyCart'?",
+        "error:103:22 [TS2339] Property '$router' does not exist on type '$VueThis'."
       ]
     },
     {

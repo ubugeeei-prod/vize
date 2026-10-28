@@ -257,13 +257,13 @@ function fixtureOracle(): LspAuthoredOracle {
       tagName: "FeatureChild",
     },
     fileLifecycle: {
-      copiedFile: "__VizeOracleFeatureChild.vue",
-      copiedImportSpecifier: "./__VizeOracleFeatureChild.vue",
+      copiedFile: "$VueOracleFeatureChild.vue",
+      copiedImportSpecifier: "./$VueOracleFeatureChild.vue",
       markerInsertionAnchor: '<script setup lang="ts">\n',
       markerSymbol: "__vizeFileLifecycleMarker__",
       originalImportSpecifier: "./FeatureChild.vue",
-      renamedFile: "__VizeOracleRenamedFeatureChild.vue",
-      renamedImportSpecifier: "./__VizeOracleRenamedFeatureChild.vue",
+      renamedFile: "$VueOracleRenamedFeatureChild.vue",
+      renamedImportSpecifier: "./$VueOracleRenamedFeatureChild.vue",
     },
     templateBinding: {
       declarationAnchor: "{ title: string }",

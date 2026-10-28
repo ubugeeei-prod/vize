@@ -177,7 +177,7 @@ fn instance_props_type(
     }
     resolves_on_authored_instance(summary, scope_options).then(|| {
         String::from(
-            "(typeof __default__ extends abstract new (...args: any) => infer __I ? __VizeIsAny<__I> extends true ? any : __I extends { $props: infer __P } ? __P : {} : {})",
+            "(typeof __default__ extends abstract new (...args: any) => infer __I ? $VueIsAny<__I> extends true ? any : __I extends { $props: infer __P } ? __P : {} : {})",
         )
     })
 }
@@ -283,7 +283,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         let declared_type = if name == "$props" {
             self.resolve_instance_props_type()
         } else if name == "$el" && self.scope_options.check_options.infer_template_dollar_el {
-            Some("__VizeRootEl".into())
+            Some("$VueRootEl".into())
         } else {
             None
         };
@@ -312,12 +312,12 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 .push_str("\n  // Instance globals from ComponentPublicInstance:\n");
             self.emitted_header = true;
         }
-        // The `__VizeInstanceGlobal` alias is only emitted for names that
+        // The `$VueInstanceGlobal` alias is only emitted for names that
         // actually read the public instance: an alias declared and never used
         // is a `TS6196` under `noUnusedLocals`.
         if receiver.is_none() && declared_type.is_none() && !self.emitted_instance_global_alias {
             self.ts.push_str(
-                "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
+                "  type $VueInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
             );
             self.emitted_instance_global_alias = true;
         }
@@ -335,7 +335,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 cstr!("  const {name}: {props_type} = undefined as any;\n")
             }
             (None, None, _) => {
-                cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n")
+                cstr!("  const {name}: $VueInstanceGlobal<'{name}'> = undefined as any;\n")
             }
             (None, Some(receiver), false) => cstr!("  const {name} = {receiver}.{name};\n"),
             (None, Some(receiver), true) => cstr!("  void ({receiver}.{name});\n"),

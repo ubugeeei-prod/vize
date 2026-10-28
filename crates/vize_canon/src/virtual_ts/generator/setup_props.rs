@@ -233,7 +233,7 @@ impl SetupPropsPlan {
         // Resolve through the synthesized intersection when an authored
         // module-level `Props` must absorb models or deferred setup props.
         if self.uses_resolved_props {
-            "__VizeResolvedProps"
+            "$VueResolvedProps"
         } else {
             "Props"
         }
@@ -276,13 +276,13 @@ impl SetupPropsPlan {
             .map(|_| self.generic_fallback_component_props_type_ref())
             .unwrap_or_else(|| self.component_props_type_ref().into());
         let mut public_props_type_ref = if legacy_input_aliases {
-            cstr!("__VizeComponentProps<{props_type_ref}>")
+            cstr!("$VueComponentProps<{props_type_ref}>")
         } else {
             props_type_ref.clone()
         };
         if jsx_slots {
             public_props_type_ref =
-                cstr!("{public_props_type_ref} & __VizeJsxSlotProps<__VizeSlots>");
+                cstr!("{public_props_type_ref} & $VueJsxSlotProps<$VueSlots>");
         }
         if has_emits_for_props {
             append!(

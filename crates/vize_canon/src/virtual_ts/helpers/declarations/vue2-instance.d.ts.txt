@@ -1,4 +1,4 @@
-type __VizeVue2ComponentInstance = {
+type $VueVue2ComponentInstance = {
   $el: Element;
   $refs: Record<string, any>;
   $attrs: Record<string, any>;

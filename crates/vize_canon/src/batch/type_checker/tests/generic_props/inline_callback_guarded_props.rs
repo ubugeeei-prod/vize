@@ -11,7 +11,7 @@
 //!   narrowed type in both — `rows` here is `{ id: number }[] | null`, and an
 //!   empty diagnostic for `:items="rows"` is what shows the grouping held;
 //! * every local the resolution emits — the resolved and selected bindings, and
-//!   the `__VizePropsResolver`/`__VizePropsSelector`/`__VizeResolvedProp`
+//!   the `$VuePropsResolver`/`$VuePropsSelector`/`$VueResolvedProp`
 //!   aliases — is read only through `typeof`. If one ever stops being read,
 //!   `noUnusedLocals` turns it into a `TS6133`/`TS6196` on a clean SFC, which
 //!   reaches check-server clients as an unmapped hint the same way the native

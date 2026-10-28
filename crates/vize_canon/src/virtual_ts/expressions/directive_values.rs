@@ -325,12 +325,12 @@ fn emit_unknown_directive_presence(
     push_key(ts);
     append!(
         *ts,
-        " extends keyof __VizeLocalDirectives<{registered}> ? {{ "
+        " extends keyof $VueLocalDirectives<{registered}> ? {{ "
     );
     push_key(ts);
     append!(*ts, ": unknown }} : ");
     push_key(ts);
-    append!(*ts, " extends keyof __VizeGlobalDirectives ? {{ ");
+    append!(*ts, " extends keyof $VueGlobalDirectives ? {{ ");
     push_key(ts);
     append!(*ts, ": unknown }} : {{}});\n{indent}void {local};\n");
     mappings.push(VizeMapping {

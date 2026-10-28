@@ -84,12 +84,12 @@ fn strict_component_attrs_resolves_single_root_surfaces_without_fallthrough_opt_
         (
             "defineProps<{ title: string }>()",
             "<button>{{ title }}</button>",
-            "Partial<__VizeNativeElement<\"button\">>",
+            "Partial<$VueNativeElement<\"button\">>",
         ),
         (
             "import Basic from './basic.vue'\ndefineProps<{ title: string }>()",
             "<Basic>{{ title }}</Basic>",
-            "Partial<__VizeComponentFallthroughProps<typeof Basic>>",
+            "Partial<$VueComponentFallthroughProps<typeof Basic>>",
         ),
     ] {
         let allocator = Allocator::new();
@@ -171,7 +171,7 @@ fn emits_native_root_fallthrough_props_for_single_root() {
     )
     .expect("single native root should accept fallthrough props");
 
-    assert_eq!(ty, "Partial<__VizeNativeElement<\"button\">>");
+    assert_eq!(ty, "Partial<$VueNativeElement<\"button\">>");
 }
 
 #[test]
@@ -195,7 +195,7 @@ fn resolves_fallthrough_props_of_an_imported_single_component_root() {
     )
     .expect("single imported component root should forward that component's props");
 
-    assert_eq!(ty, "Partial<__VizeComponentFallthroughProps<typeof Basic>>");
+    assert_eq!(ty, "Partial<$VueComponentFallthroughProps<typeof Basic>>");
 
     let kebab = fallthrough_type(
         "import BaseInput from './base-input.vue'\ndefineProps<{ title: string }>()",
@@ -205,7 +205,7 @@ fn resolves_fallthrough_props_of_an_imported_single_component_root() {
 
     assert_eq!(
         kebab,
-        "Partial<__VizeComponentFallthroughProps<typeof BaseInput>>"
+        "Partial<$VueComponentFallthroughProps<typeof BaseInput>>"
     );
 }
 
@@ -222,13 +222,13 @@ fn check_required_forwards_declared_props_minus_the_roots_own_bindings() {
 
     assert_eq!(
         ty,
-        "Omit<__VizeComponentFallthroughSurface<typeof Basic>, \"foo\" | \"barBaz\" | \"onSave\" | \"modelValue\">"
+        "Omit<$VueComponentFallthroughSurface<typeof Basic>, \"foo\" | \"barBaz\" | \"onSave\" | \"modelValue\">"
     );
 
     let native = fallthrough_type_with("defineProps<{ title: string }>()", "<input />", true)
         .expect("single native root should forward its attributes");
 
-    assert_eq!(native, "__VizeNativeElement<\"input\">");
+    assert_eq!(native, "$VueNativeElement<\"input\">");
 }
 
 // A template-less root has an open fallback in addition to declared props.
@@ -240,20 +240,20 @@ fn strict_required_forwarding_removes_the_index_before_omitting_bound_props() {
     assert_eq!(
         fallthrough_type_with_checks(script, template, true, true).as_deref(),
         Some(
-            "Omit<{ [K in keyof (__VizeComponentFallthroughSurface<typeof Basic>) as string extends K ? never : K]: (__VizeComponentFallthroughSurface<typeof Basic>)[K] }, \"foo\">"
+            "Omit<{ [K in keyof ($VueComponentFallthroughSurface<typeof Basic>) as string extends K ? never : K]: ($VueComponentFallthroughSurface<typeof Basic>)[K] }, \"foo\">"
         )
     );
     assert_eq!(
         fallthrough_type_with_checks(script, template, true, false).as_deref(),
-        Some("Omit<__VizeComponentFallthroughSurface<typeof Basic>, \"foo\">")
+        Some("Omit<$VueComponentFallthroughSurface<typeof Basic>, \"foo\">")
     );
     assert_eq!(
         fallthrough_type_with_checks(script, template, false, true).as_deref(),
-        Some("Partial<__VizeComponentFallthroughProps<typeof Basic>>")
+        Some("Partial<$VueComponentFallthroughProps<typeof Basic>>")
     );
     assert_eq!(
         fallthrough_type_with_checks("", "<input />", true, true).as_deref(),
-        Some("__VizeNativeElement<\"input\">")
+        Some("$VueNativeElement<\"input\">")
     );
 }
 
@@ -275,7 +275,7 @@ fn inherit_attrs_false_uses_explicit_attrs_forwarding_target() {
     )
     .expect("explicit native $attrs forwarding should accept fallthrough props");
 
-    assert_eq!(native_ty, "Partial<__VizeNativeElement<\"button\">>");
+    assert_eq!(native_ty, "Partial<$VueNativeElement<\"button\">>");
 
     let component_ty = fallthrough_type(
         "defineOptions({ inheritAttrs: false })\ndefineProps<{ title: string }>()",
@@ -294,7 +294,7 @@ fn explicit_attrs_forwarding_takes_precedence_over_automatic_root_fallthrough() 
     )
     .expect("explicit $attrs forwarding should define the accepted attr surface");
 
-    assert_eq!(ty, "Partial<__VizeNativeElement<\"a\">>");
+    assert_eq!(ty, "Partial<$VueNativeElement<\"a\">>");
 }
 
 #[test]
@@ -323,7 +323,7 @@ fn combines_native_fallthrough_props_when_all_v_if_branches_are_single_roots() {
 
     assert_eq!(
         ty,
-        "Partial<__VizeNativeElement<\"div\">> & Partial<__VizeNativeElement<\"span\">>"
+        "Partial<$VueNativeElement<\"div\">> & Partial<$VueNativeElement<\"span\">>"
     );
 }
 
@@ -337,7 +337,7 @@ fn literal_true_v_else_if_terminates_single_native_root_chain() {
 
     assert_eq!(
         ty,
-        "Partial<__VizeNativeElement<\"div\">> & Partial<__VizeNativeElement<\"span\">>"
+        "Partial<$VueNativeElement<\"div\">> & Partial<$VueNativeElement<\"span\">>"
     );
 }
 

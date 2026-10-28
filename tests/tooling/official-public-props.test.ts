@@ -22,7 +22,7 @@ const cases = officialCases(fixture);
 // do not give tests stronger whole-stream oracles than the actual public actor.
 const additionalSourceStreams: Record<string, string> = {
   "public-props-9498-unknown-prop-strict":
-    "App.vue(4,46): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '__VizeComponentCheckProps<__VizeStaticEmitProps, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
+    "App.vue(4,46): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '$VueComponentCheckProps<$VueStaticEmitProps, $VuePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
   "public-props-9498-wrong-listener-payload":
     "App.vue(5,53): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.\n",
 };

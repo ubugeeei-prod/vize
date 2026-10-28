@@ -600,11 +600,11 @@
           "fileLifecycle": {
             "sourceFile": "manual-testing/src/components/TheWelcome.vue",
             "importerFile": "manual-testing/src/views/HomeView.vue",
-            "copiedFile": "manual-testing/src/components/__VizeOracleTheWelcome.vue",
-            "renamedFile": "manual-testing/src/components/__VizeOracleRenamedTheWelcome.vue",
+            "copiedFile": "manual-testing/src/components/$VueOracleTheWelcome.vue",
+            "renamedFile": "manual-testing/src/components/$VueOracleRenamedTheWelcome.vue",
             "originalImportSpecifier": "../components/TheWelcome.vue",
-            "copiedImportSpecifier": "../components/__VizeOracleTheWelcome.vue",
-            "renamedImportSpecifier": "../components/__VizeOracleRenamedTheWelcome.vue",
+            "copiedImportSpecifier": "../components/$VueOracleTheWelcome.vue",
+            "renamedImportSpecifier": "../components/$VueOracleRenamedTheWelcome.vue",
             "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
             "markerSymbol": "__vizeVueDataUiTheWelcomeMarker__"
           }

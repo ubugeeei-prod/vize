@@ -65,7 +65,7 @@ pub(super) fn collect_plugin_injection_stubs(
     }
 
     stubs.push(
-        "type __VizeNuxtInjection<K extends PropertyKey> = import('#app').NuxtApp extends Record<K, infer T> ? T : any;"
+        "type $VueNuxtInjection<K extends PropertyKey> = import('#app').NuxtApp extends Record<K, infer T> ? T : any;"
             .into(),
     );
 
@@ -92,13 +92,13 @@ pub(super) fn collect_plugin_injection_stubs(
         push_stub(
             stubs,
             seen_names,
-            cstr!("declare const {injected_name}: __VizeNuxtInjection<'{injected_name}'>;"),
+            cstr!("declare const {injected_name}: $VueNuxtInjection<'{injected_name}'>;"),
         );
     }
 }
 
 fn render_nuxt_injected_properties_stub(plugin_keys: &[String]) -> String {
-    let mut stub = String::from("interface __VizeNuxtInjectedProperties {\n");
+    let mut stub = String::from("interface $VueNuxtInjectedProperties {\n");
     for key in plugin_keys {
         let injected_name = if key.starts_with('$') {
             key.clone()
@@ -107,7 +107,7 @@ fn render_nuxt_injected_properties_stub(plugin_keys: &[String]) -> String {
         };
         stub.push_str("  ");
         stub.push_str(injected_name.as_str());
-        stub.push_str(": __VizeNuxtInjection<'");
+        stub.push_str(": $VueNuxtInjection<'");
         stub.push_str(injected_name.as_str());
         stub.push_str("'>;\n");
     }
@@ -117,13 +117,13 @@ fn render_nuxt_injected_properties_stub(plugin_keys: &[String]) -> String {
 
 fn render_nuxt_types_augmentation_stub() -> String {
     String::from(
-        "declare module \"@nuxt/types\" {\n  interface Context extends __VizeNuxtInjectedProperties {}\n  interface NuxtAppOptions extends __VizeNuxtInjectedProperties {}\n}\n",
+        "declare module \"@nuxt/types\" {\n  interface Context extends $VueNuxtInjectedProperties {}\n  interface NuxtAppOptions extends $VueNuxtInjectedProperties {}\n}\n",
     )
 }
 
 fn render_nuxt_composition_api_augmentation_stub() -> String {
     String::from(
-        "declare module \"@nuxtjs/composition-api\" {\n  interface UseContextReturn extends __VizeNuxtInjectedProperties {}\n}\n",
+        "declare module \"@nuxtjs/composition-api\" {\n  interface UseContextReturn extends $VueNuxtInjectedProperties {}\n}\n",
     )
 }
 

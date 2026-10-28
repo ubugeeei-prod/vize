@@ -205,7 +205,7 @@ fn is_component_prop_alias_key(generated: &str, start: usize) -> bool {
     let Some(prefix) = line_prefix(generated, start).map(str::trim_start) else {
         return false;
     };
-    prefix.contains("__VizePropValue<") && prefix.ends_with(", '")
+    prefix.contains("$VuePropValue<") && prefix.ends_with(", '")
 }
 
 fn is_component_prop_check_anchor(

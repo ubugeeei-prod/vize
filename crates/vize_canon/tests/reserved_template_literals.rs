@@ -82,7 +82,7 @@ fn options_setup_spread_never_captures_template_literals() {
     for name in ["falsey", "trueValue", "nullish"] {
         assert!(
             virtual_ts.contains(
-                cstr!("type __R_{name} = __VizeOptionsSetupBinding<\"{name}\">;").as_str()
+                cstr!("type __R_{name} = $VueOptionsSetupBinding<\"{name}\">;").as_str()
             ),
             "legal spread-backed template binding `{name}` must remain available:\n{virtual_ts}"
         );

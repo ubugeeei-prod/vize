@@ -140,7 +140,7 @@ mod tests {
             .content
             .lines()
             .enumerate()
-            .find(|(_, line)| line.contains("unreachable: __VizePatterns.Reachable<"))
+            .find(|(_, line)| line.contains("unreachable: $VuePatterns.Reachable<"))
             .unwrap();
         let column = line.find("const ").unwrap() + "const ".len();
         let stdout = cstr!("{}({},{}): error TS2322: Type 'boolean' is not assignable to type '{{ \"Unreachable v-when\": never; }}'.\n", file.virtual_path.display(), line_number + 1, column + 1).as_bytes().to_vec();

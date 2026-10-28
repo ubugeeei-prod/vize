@@ -20,7 +20,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("const __vize_resolved_Child_props_0 = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof Child>)({")
+            .matches("const __vize_resolved_Child_props_0 = (undefined as unknown as $VueResolvedContextProps)((undefined as unknown as $VuePropsResolver<typeof Child>)({")
             .count(),
         1,
         "inference resolver must keep the authored callback:\n{}",
@@ -29,7 +29,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("const __vize_selected_Child_props_0 = (undefined as unknown as __VizePropsSelector<typeof __vize_resolved_Child_props_0>)({")
+            .matches("const __vize_selected_Child_props_0 = (undefined as unknown as $VuePropsSelector<typeof __vize_resolved_Child_props_0>)({")
             .count(),
         1,
         "selector must be constrained by the inferred props union:\n{}",
@@ -38,7 +38,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("__VizeResolvedProp<typeof __vize_resolved_Child_props_0, typeof __vize_selected_Child_props_0, 'pick'")
+            .matches("$VueResolvedProp<typeof __vize_resolved_Child_props_0, typeof __vize_selected_Child_props_0, 'pick'")
             .count(),
         1,
         "mapped owner must use both inference and selected-branch types:\n{}",
@@ -73,7 +73,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("type __VizeMissingProp = { readonly __vizeMissingProp: unique symbol };")
+            .matches("type $VueMissingProp = { readonly __vizeMissingProp: unique symbol };")
             .count(),
         1,
         "present `never` must remain distinguishable from a missing key:\n{}",
@@ -82,7 +82,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("K extends keyof R ? { value: R[K] } : __VizeMissingProp")
+            .matches("K extends keyof R ? { value: R[K] } : $VueMissingProp")
             .count(),
         1,
         "present `never` must remain distinguishable from a missing key:\n{}",

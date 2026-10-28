@@ -12,7 +12,7 @@
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use vize_l0::String;
 
-const OPTIONS_TYPE_HEAD: &str = "type __VizeVueComponentOptions = {\n";
+const OPTIONS_TYPE_HEAD: &str = "type $VueVueComponentOptions = {\n";
 const INDEX_SIGNATURE: &str = "  [key: string]: any;\n";
 const FIRST_DECLARED_MEMBER: &str = "  name?: string;\n";
 
@@ -48,16 +48,16 @@ fn virtual_ts(source: &str) -> String {
     .expect("virtual ts should be generated")
 }
 
-/// The emitted `__VizeVueComponentOptions` opening, up to and including its
+/// The emitted `$VueVueComponentOptions` opening, up to and including its
 /// first declared member.
 fn options_type_prologue(virtual_ts: &str) -> String {
     let start = virtual_ts
         .find(OPTIONS_TYPE_HEAD)
-        .expect("generated module must declare __VizeVueComponentOptions");
+        .expect("generated module must declare $VueVueComponentOptions");
     let rest = &virtual_ts[start..];
     let end = rest
         .find(FIRST_DECLARED_MEMBER)
-        .expect("__VizeVueComponentOptions must declare `name`")
+        .expect("$VueVueComponentOptions must declare `name`")
         + FIRST_DECLARED_MEMBER.len();
     String::from(&rest[..end])
 }

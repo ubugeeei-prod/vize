@@ -10,10 +10,10 @@ type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<s
 } : Record<string, any[]>;
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
 type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
-type __VizeComponentInstance = {
+type $VueComponentInstance = {
   $props: Props;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };
-declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;
+declare const __vize_component__: new (...args: any[]) => $VueComponentInstance;
 export default __vize_component__;

@@ -156,7 +156,7 @@ fn render_prop_scoped_slot_child_stays_clean() {
 /// The slot payload is *inferred* from the host's declared slots, not `any`.
 ///
 /// Every other scoped-slot case here annotates its callback parameter, so all of
-/// them would still pass if `__VizeJsxSlotPayload` degraded to `any`. This one
+/// them would still pass if `$VueJsxSlotPayload` degraded to `any`. This one
 /// leaves the parameter unannotated and reads a member the declared `string`
 /// payload does not have: `any` accepts that silently, the real payload rejects
 /// it. Only the code and the message are asserted; the authored position is

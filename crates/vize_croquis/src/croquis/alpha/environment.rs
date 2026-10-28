@@ -294,7 +294,7 @@ fn type_arguments_body(arguments: &str) -> &str {
 
 fn is_const_assertion_marker(annotation: &str) -> bool {
     let allocator = Allocator::new();
-    let source = cstr!("type __Vize = {annotation};");
+    let source = cstr!("type $Vue = {annotation};");
     let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
     // The producer preserves the exact authored marker in the public contract.
     // A bare const assertion is literal preservation, not a lexical type name.

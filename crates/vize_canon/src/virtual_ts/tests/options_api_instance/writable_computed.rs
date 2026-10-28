@@ -21,7 +21,7 @@ fn options_api_declarations(script: &str, template: &str) -> Vec<std::string::St
     output
         .code
         .lines()
-        .filter(|line| line.contains("__VizeOptionsBinding"))
+        .filter(|line| line.contains("$VueOptionsBinding"))
         .filter(|line| {
             let trimmed = line.trim_start();
             trimmed.starts_with("const ") || trimmed.starts_with("var ")
@@ -79,13 +79,13 @@ fn writable_computed_template_bindings_emit_var() {
     assert_eq!(
         declarations,
         [
-            "  var accessor: __VizeOptionsBinding<typeof __default__, \"accessor\"> = (void 0) as any;",
-            "  var arrowSetter: __VizeOptionsBinding<typeof __default__, \"arrowSetter\"> = (void 0) as any;",
-            "  const getterOnly: __VizeOptionsBinding<typeof __default__, \"getterOnly\"> = (void 0) as any;",
-            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  const reset: __VizeOptionsBinding<typeof __default__, \"reset\"> = (void 0) as any;",
-            "  var store: __VizeOptionsBinding<typeof __default__, \"store\"> = (void 0) as any;",
+            "  var accessor: $VueOptionsBinding<typeof __default__, \"accessor\"> = (void 0) as any;",
+            "  var arrowSetter: $VueOptionsBinding<typeof __default__, \"arrowSetter\"> = (void 0) as any;",
+            "  const getterOnly: $VueOptionsBinding<typeof __default__, \"getterOnly\"> = (void 0) as any;",
+            "  const label: $VueOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var ratio: $VueOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const reset: $VueOptionsBinding<typeof __default__, \"reset\"> = (void 0) as any;",
+            "  var store: $VueOptionsBinding<typeof __default__, \"store\"> = (void 0) as any;",
         ]
     );
 }
@@ -134,9 +134,9 @@ export default defineComponent({
     assert_eq!(
         declarations,
         [
-            "  const fixed: __VizeOptionsBinding<typeof __default__, \"fixed\"> = (void 0) as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  var title: __VizeOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
+            "  const fixed: $VueOptionsBinding<typeof __default__, \"fixed\"> = (void 0) as any;",
+            "  var ratio: $VueOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  var title: $VueOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
         ]
     );
 }
@@ -185,8 +185,8 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  const title: __VizeOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
+            "  const ratio: $VueOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const title: $VueOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
         ]
     );
 }
@@ -206,7 +206,7 @@ fn accessor_pair_is_writable_in_either_order() {
     let declarations = options_api_declarations(script, r#"<div @click="first = 'b'" />"#);
     assert_eq!(
         declarations,
-        ["  var first: __VizeOptionsBinding<typeof __default__, \"first\"> = (void 0) as any;"]
+        ["  var first: $VueOptionsBinding<typeof __default__, \"first\"> = (void 0) as any;"]
     );
 }
 
@@ -257,8 +257,8 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const label: __VizeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
-            "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const label: $VueOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var ratio: $VueOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
         ]
     );
 }
@@ -303,9 +303,9 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  var free: __VizeOptionsBinding<typeof __default__, \"free\"> = (void 0) as any;",
-            "  const ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  const size: __VizeOptionsBinding<typeof __default__, \"size\"> = (void 0) as any;",
+            "  var free: $VueOptionsBinding<typeof __default__, \"free\"> = (void 0) as any;",
+            "  const ratio: $VueOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const size: $VueOptionsBinding<typeof __default__, \"size\"> = (void 0) as any;",
         ]
     );
 }

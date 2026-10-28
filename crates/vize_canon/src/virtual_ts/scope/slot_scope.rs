@@ -91,14 +91,14 @@ fn slot_payload_type(
     } else {
         append!(
             *ts,
-            "{}const {binding} = undefined as unknown as __VizeSlotHostSlots<typeof {component_ref}>;\n",
+            "{}const {binding} = undefined as unknown as $VueSlotHostSlots<typeof {component_ref}>;\n",
             ctx.indent
         );
     }
 
     if name_is_static {
         cstr!(
-            "__VizeSlotPayload<typeof {binding}, \"{}\">",
+            "$VueSlotPayload<typeof {binding}, \"{}\">",
             data.name.as_str()
         )
     } else {
@@ -111,7 +111,7 @@ fn slot_payload_type(
         ts.push_str(
             dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
         );
-        cstr!("__VizeSlotPayload<typeof {binding}, typeof {name_binding}.name>")
+        cstr!("$VueSlotPayload<typeof {binding}, typeof {name_binding}.name>")
     }
 }
 

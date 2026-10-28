@@ -12,7 +12,7 @@ use vize_carton::{String, append};
 use vize_relief::RootNode;
 
 /// The type of the template's own `$refs` and of the public instance's.
-const DOLLAR_REFS_TYPE: &str = "__VizeDollarRefs";
+const DOLLAR_REFS_TYPE: &str = "$VueDollarRefs";
 
 #[derive(Default)]
 pub(super) struct TemplateRecord {
@@ -99,7 +99,7 @@ impl TemplateRecord {
         let mut instance = String::default();
         append!(
             instance,
-            "__VizeTemplateRefInstance<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
+            "$VueTemplateRefInstance<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
         );
         instance
     }

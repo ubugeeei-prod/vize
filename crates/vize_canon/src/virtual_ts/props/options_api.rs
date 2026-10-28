@@ -62,12 +62,12 @@ pub(super) fn emit_options_api_props_type(
 ) {
     if source.captures_default {
         ts.push_str(
-            "type __VizeDefaultProps<T> = __VizeIsAny<T> extends true ? {} : T extends abstract new (...args: any[]) => { $props: infer P } ? P : {};\n",
+            "type $VueDefaultProps<T> = $VueIsAny<T> extends true ? {} : T extends abstract new (...args: any[]) => { $props: infer P } ? P : {};\n",
         );
     }
     match source.direct.as_ref() {
         Some(DirectOptionsApiPropsSource::DeferredObject(_)) => ts.push_str(
-            "type __VizeOptionsPropRequired<T> = T extends { required: true } ? true : false;\ntype __VizeOptionsPropShape<T extends Record<string, any>> = { [K in keyof T as __VizeOptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as __VizeOptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
+            "type $VueOptionsPropRequired<T> = T extends { required: true } ? true : false;\ntype $VueOptionsPropShape<T extends Record<string, any>> = { [K in keyof T as $VueOptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as $VueOptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
         ),
         Some(DirectOptionsApiPropsSource::Names(names)) => {
             if exported {
@@ -86,12 +86,12 @@ pub(super) fn emit_options_api_props_type(
             if exported {
                 append!(
                     *ts,
-                    "export type {type_name}{generic_decl} = __VizeDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
+                    "export type {type_name}{generic_decl} = $VueDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
                 );
             } else {
                 append!(
                     *ts,
-                    "type {type_name} = __VizeDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
+                    "type {type_name} = $VueDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
                 );
             }
         }
@@ -100,6 +100,6 @@ pub(super) fn emit_options_api_props_type(
 
 pub(crate) fn append_default_props(ts: &mut String, source: &OptionsApiPropsSource) {
     if source.captures_default {
-        ts.push_str(" & __VizeDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>");
+        ts.push_str(" & $VueDefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>");
     }
 }

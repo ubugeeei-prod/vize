@@ -17,14 +17,14 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
     assert_eq!(
         result
             .text
-            .matches("__VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps>")
+            .matches("$VueReplaceComponentProps<$VueComponentInstance, $VueAuthoredKeyWitness<$VueAuthoredProps>")
             .count(),
         1
     );
     assert_eq!(
         result
             .text
-            .matches(": Omit<__VizeComponentInstance, '$props'> & {")
+            .matches(": Omit<$VueComponentInstance, '$props'> & {")
             .count(),
         0
     );

@@ -45,12 +45,12 @@ pub(super) fn generate_strict_slot_child_checks(
         let gen_start = ts.len();
         append!(
             *ts,
-            "{indent}const {check_name}: __VizeSlotChildren<{contract_name}, "
+            "{indent}const {check_name}: $VueSlotChildren<{contract_name}, "
         );
         push_ts_string_literal(ts, check.name.as_str());
         append!(
             *ts,
-            "> = null as unknown as __VizeProvidedSlotChildren<{}>;\n",
+            "> = null as unknown as $VueProvidedSlotChildren<{}>;\n",
             check.children_type.as_str()
         );
         append!(*ts, "{indent}void {check_name};\n");

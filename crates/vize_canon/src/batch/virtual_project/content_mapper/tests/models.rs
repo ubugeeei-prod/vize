@@ -88,7 +88,7 @@ defineModel<string>("title", { required: true });
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("ScopedModel.vue"), source).expect("model");
-    let marker = "type __VizeSetupProps = { value: typeof schema } & {\n  \"title\"";
+    let marker = "type $VueSetupProps = { value: typeof schema } & {\n  \"title\"";
     let generated = result.text.find(marker).expect("setup-scoped model prop") + marker.len()
         - "\"title\"".len();
     let original = source.find("\"title\"").unwrap();
@@ -111,7 +111,7 @@ defineModel<string>("title", { required: true });
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("PublicProps.vue"), source).expect("model");
-    let marker = "type __VizeResolvedProps = Props & {\n  \"title\"";
+    let marker = "type $VueResolvedProps = Props & {\n  \"title\"";
     let generated =
         result.text.find(marker).expect("resolved model prop") + marker.len() - "\"title\"".len();
     let original = source.find("\"title\"").unwrap();
@@ -128,13 +128,13 @@ defineModel<string>("title", { required: true });
     assert!(
         result
             .text
-            .contains("$props: __VizeResolvedProps & __EmitProps<Emits>;"),
+            .contains("$props: $VueResolvedProps & __EmitProps<Emits>;"),
         "text:\n{}",
         result.text
     );
     assert!(
         result.text.contains(
-            "__VizeComponentInput<__VizeResolvedProps, __EmitProps<Emits>, __VizeAuthoredProps>"
+            "$VueComponentInput<$VueResolvedProps, __EmitProps<Emits>, $VueAuthoredProps>"
         ),
         "text:\n{}",
         result.text
@@ -160,14 +160,14 @@ defineModel<string>("title", { required: true });
     assert!(
         result
             .text
-            .contains("type __VizeResolvedProps = Props & {\n  \"title\""),
+            .contains("type $VueResolvedProps = Props & {\n  \"title\""),
         "model props should extend imported Props through the private alias:\n{}",
         result.text
     );
     assert!(
         result
             .text
-            .contains("$props: __VizeResolvedProps & __EmitProps<Emits>;"),
+            .contains("$props: $VueResolvedProps & __EmitProps<Emits>;"),
         "public instance should use the resolved props alias:\n{}",
         result.text
     );

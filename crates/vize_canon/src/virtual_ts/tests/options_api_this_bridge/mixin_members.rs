@@ -1,8 +1,8 @@
-//! `__VizeThis` inherits `mixins:` / `extends:` members (#3609).
+//! `$VueThis` inherits `mixins:` / `extends:` members (#3609).
 //!
 //! Before this, the typed-instance bridge listed only the component's own
 //! option names, so a `methods`/`computed` body calling a mixin-provided
-//! member reported `TS2339 Property 'x' does not exist on type '__VizeThis'`
+//! member reported `TS2339 Property 'x' does not exist on type '$VueThis'`
 //! on code `vue-tsc` accepts.
 
 use super::super::super::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -10,7 +10,7 @@ use super::super::analyze_options_api_script;
 use vize_carton::{String, cstr};
 
 /// The generated bridge from `// Options API typed instance bridge` through
-/// the `__VizeThis` declaration, which is the whole surface these tests pin.
+/// the `$VueThis` declaration, which is the whole surface these tests pin.
 fn bridge_header(code: &str) -> String {
     let mut lines = Vec::new();
     let mut started = false;
@@ -42,7 +42,7 @@ fn legacy_bridge_header(script: &str) -> String {
     bridge_header(&output.code)
 }
 
-const HELPERS: &str = "  type __VizeInheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n  interface __VizeNoInheritedMembers {}\n  type __VizeInheritedMembers<T, __I = __VizeInheritedInstance<T>> = [__VizeIsAny<__I>] extends [true] ? __VizeNoInheritedMembers : __I;";
+const HELPERS: &str = "  type $VueInheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n  interface $VueNoInheritedMembers {}\n  type $VueInheritedMembers<T, __I = $VueInheritedInstance<T>> = [$VueIsAny<__I>] extends [true] ? $VueNoInheritedMembers : __I;";
 
 #[test]
 fn imported_mixin_and_extends_references_join_the_this_shape() {
@@ -66,11 +66,11 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type __VizeInherited0 = __VizeInheritedMembers<typeof greeter>;\n\
-             \x20 type __VizeInherited1 = __VizeInheritedMembers<typeof counter>;\n\
-             \x20 type __VizeThis = {{\n\
+             \x20 type $VueInherited0 = $VueInheritedMembers<typeof greeter>;\n\
+             \x20 type $VueInherited1 = $VueInheritedMembers<typeof counter>;\n\
+             \x20 type $VueThis = {{\n\
              \x20   shout: any;\n\
-             \x20 }} & __VizeInherited0 & __VizeInherited1;"
+             \x20 }} & $VueInherited0 & $VueInherited1;"
         )
     );
 }
@@ -105,10 +105,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type __VizeInherited0 = __VizeInheritedMembers<typeof inlineGreeter>;\n\
-             \x20 type __VizeThis = {{\n\
+             \x20 type $VueInherited0 = $VueInheritedMembers<typeof inlineGreeter>;\n\
+             \x20 type $VueThis = {{\n\
              \x20   double: any;\n\
-             \x20 }} & __VizeInherited0;"
+             \x20 }} & $VueInherited0;"
         )
     );
 }
@@ -134,10 +134,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type __VizeInherited0 = __VizeInheritedMembers<typeof shared.greeter>;\n\
-             \x20 type __VizeThis = {{\n\
+             \x20 type $VueInherited0 = $VueInheritedMembers<typeof shared.greeter>;\n\
+             \x20 type $VueThis = {{\n\
              \x20   shout: any;\n\
-             \x20 }} & __VizeInherited0;"
+             \x20 }} & $VueInherited0;"
         )
     );
 }
@@ -155,7 +155,7 @@ export default defineComponent({
     assert_eq!(
         legacy_bridge_header(script),
         "  // Options API typed instance bridge\n  \
-         type __VizeThis = {\n    \
+         type $VueThis = {\n    \
          greet: any;\n    \
          shout: any;\n  };"
     );
@@ -177,10 +177,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type __VizeInherited0 = __VizeInheritedMembers<typeof untyped>;\n\
-             \x20 type __VizeThis = {{\n\
+             \x20 type $VueInherited0 = $VueInheritedMembers<typeof untyped>;\n\
+             \x20 type $VueThis = {{\n\
              \x20   own: any;\n\
-             \x20 }} & __VizeInherited0;"
+             \x20 }} & $VueInherited0;"
         )
     );
 }

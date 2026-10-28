@@ -13,8 +13,8 @@ pub(super) fn emit_authored_event_map(
     let events = summary.macros.emits();
     let models = summary.macros.models();
     let authored_map = generic_decl.map_or_else(
-        || String::from("__VizeAuthoredEventMap"),
-        |decl| cstr!("__VizeAuthoredEventMap<{decl}>"),
+        || String::from("$VueAuthoredEventMap"),
+        |decl| cstr!("$VueAuthoredEventMap<{decl}>"),
     );
     let generic_suffix = generic_decl
         .map(|_| cstr!("<{generic_names}>"))
@@ -23,7 +23,7 @@ pub(super) fn emit_authored_event_map(
     // mapped navigation endpoints. Reconstructing a fresh object loses docs.
     append!(
         *ts,
-        "type {authored_map} = __VizeStaticEventMap{generic_suffix} & {{\n"
+        "type {authored_map} = $VueStaticEventMap{generic_suffix} & {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for emit in events {
@@ -40,7 +40,7 @@ pub(super) fn emit_authored_event_map(
         let generated_start = ts.len();
         ts.push_str(authored_name.as_str());
         let generated_end = ts.len();
-        append!(*ts, ": __VizeStaticEventMap{generic_suffix}[");
+        append!(*ts, ": $VueStaticEventMap{generic_suffix}[");
         ts.push_str(
             serde_json::to_string(emit.name.as_str())
                 .unwrap_or_default()
@@ -89,7 +89,7 @@ pub(super) fn emit_authored_event_map(
                 .as_str(),
         );
         let generated_end = ts.len();
-        append!(*ts, ": __VizeStaticEventMap{generic_suffix}[");
+        append!(*ts, ": $VueStaticEventMap{generic_suffix}[");
         ts.push_str(
             serde_json::to_string(event_name.as_str())
                 .unwrap_or_default()

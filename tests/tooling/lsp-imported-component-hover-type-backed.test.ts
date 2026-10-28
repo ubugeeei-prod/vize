@@ -157,7 +157,7 @@ function assertImportedComponentHover(hoverText: string): void {
   assert.match(hoverText, /emits: \{ save: \[value: string\] \};/);
   assert.match(hoverText, /slots: \{ default\(props: \{ value: string \}\): unknown \};/);
   assert.match(hoverText, /model: \{ "modelValue": boolean \};/);
-  assert.doesNotMatch(hoverText, /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/);
+  assert.doesNotMatch(hoverText, /__vizeComponentMarker|__vizeRawProps|\$VueComponentConstructor/);
 }
 
 function resolveTsgoBinary(): string | undefined {

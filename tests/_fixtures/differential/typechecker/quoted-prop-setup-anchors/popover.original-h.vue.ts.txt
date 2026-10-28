@@ -8,14 +8,14 @@
 
 // Shared preamble hoisted to the program-wide __vize_helpers.d.ts
 // ========== Module Scope (imports) ==========
-type __VizeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : any;
+type $VueSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : any;
 declare function __vizeConstructorSlots<P, S>(component: new (props: P, ...args: any[]) => { $slots: S }): (props: P) => S;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
-type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeof __vizeConstructorSlots : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
-type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : __VizeNativeSlotsFactory<C>;
+type $VueNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeof __vizeConstructorSlots : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => $VueSlotHostSlots<C>;
+type $VueSlotsFactory<C> = $VueIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeSlotsFactory<C> : $VueNativeSlotsFactory<C>;
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
-type __VizeSilentAny = {}["__vizeSilentAny"];
-type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+type $VueSilentAny = {}["__vizeSilentAny"];
+type $VueSlotPayload<__S, __N> = $VueIsAny<__S> extends true ? $VueSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
 import { computed, ref, unref } from 'vue'
 import { ElTooltip } from '@element-plus/components/tooltip'
 import { addUnit } from '@element-plus/utils'
@@ -119,7 +119,7 @@ function __setup() {
   type __R_style = typeof style;
   const __vize_template = (function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $VueWidenTemplateRef<T['value']> : T : T;
     type __UN<T> = [T] extends [import('vue').Ref] ? __U<T> : [Extract<T, import('vue').Ref>] extends [never] ? __U<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: __U<T> })['value'];
     var ElTooltip: __U<__R_ElTooltip> = undefined as any;
     var gpuAcceleration: __U<__R_gpuAcceleration> = undefined as any;
@@ -192,13 +192,13 @@ function __setup() {
   void onUpdate_visible;
 
   function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }
-  type __VizeSlotOutletFn = (...args: any[]) => any;
-  type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
-  type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
-  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
-  const __vize_events_nav_0 = undefined as unknown as __VizeComponentEvents<typeof ElTooltip> & Record<string, unknown>;
+  type $VueSlotOutletFn = (...args: any[]) => any;
+  type $VueSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, $VueSlotOutletFn>;
+  type $VueSlotOutletArgs<__S, __K extends PropertyKey> = [$VueSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<$VueSlotOutletTarget<__S, __K>>;
+  type $VueSlotOutletPayload<__S, __K extends PropertyKey> = [$VueSlotOutletArgs<__S, __K>] extends [[]] ? unknown : $VueSlotOutletArgs<__S, __K>[0];
+  const __vize_events_nav_0 = undefined as unknown as $VueComponentEvents<typeof ElTooltip> & Record<string, unknown>;
   void __vize_events_nav_0['update:visible'];
-  const __vize_kebab_events_nav_0 = undefined as unknown as __VizeComponentEvents<typeof ElTooltip> & Record<string, unknown>;
+  const __vize_kebab_events_nav_0 = undefined as unknown as $VueComponentEvents<typeof ElTooltip> & Record<string, unknown>;
   void __vize_kebab_events_nav_0.beforeShow;
   void __vize_kebab_events_nav_0.beforeHide;
   void __vize_events_nav_0.show;
@@ -261,7 +261,7 @@ function __setup() {
     : typeof ElTooltip extends (props: infer __P, ...args: any[]) => any
       ? __P extends { "onUpdate:visible"?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
-  type __el_tooltip_23_update_visible_emit_resolver = __VizeEmitPropsFactory<typeof ElTooltip>;
+  type __el_tooltip_23_update_visible_emit_resolver = $VueEmitPropsFactory<typeof ElTooltip>;
   const __vize_emit_props_0_23_update_visible = (undefined as unknown as __el_tooltip_23_update_visible_emit_resolver)(ElTooltip)({
     "trigger": trigger,
     "triggerKeys": triggerKeys,
@@ -313,7 +313,7 @@ function __setup() {
     : typeof ElTooltip extends (props: infer __P, ...args: any[]) => any
       ? __P extends { onBeforeShow?: (...args: infer __A) => any } ? __A : __P extends { "onBefore-show"?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
-  type __el_tooltip_24_before_show_emit_resolver = __VizeEmitPropsFactory<typeof ElTooltip>;
+  type __el_tooltip_24_before_show_emit_resolver = $VueEmitPropsFactory<typeof ElTooltip>;
   const __vize_emit_props_0_24_before_show = (undefined as unknown as __el_tooltip_24_before_show_emit_resolver)(ElTooltip)({
     "trigger": trigger,
     "triggerKeys": triggerKeys,
@@ -365,7 +365,7 @@ function __setup() {
     : typeof ElTooltip extends (props: infer __P, ...args: any[]) => any
       ? __P extends { onBeforeHide?: (...args: infer __A) => any } ? __A : __P extends { "onBefore-hide"?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
-  type __el_tooltip_25_before_hide_emit_resolver = __VizeEmitPropsFactory<typeof ElTooltip>;
+  type __el_tooltip_25_before_hide_emit_resolver = $VueEmitPropsFactory<typeof ElTooltip>;
   const __vize_emit_props_0_25_before_hide = (undefined as unknown as __el_tooltip_25_before_hide_emit_resolver)(ElTooltip)({
     "trigger": trigger,
     "triggerKeys": triggerKeys,
@@ -417,7 +417,7 @@ function __setup() {
     : typeof ElTooltip extends (props: infer __P, ...args: any[]) => any
       ? __P extends { onShow?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
-  type __el_tooltip_26_show_emit_resolver = __VizeEmitPropsFactory<typeof ElTooltip>;
+  type __el_tooltip_26_show_emit_resolver = $VueEmitPropsFactory<typeof ElTooltip>;
   const __vize_emit_props_0_26_show = (undefined as unknown as __el_tooltip_26_show_emit_resolver)(ElTooltip)({
     "trigger": trigger,
     "triggerKeys": triggerKeys,
@@ -469,7 +469,7 @@ function __setup() {
     : typeof ElTooltip extends (props: infer __P, ...args: any[]) => any
       ? __P extends { onHide?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
-  type __el_tooltip_27_hide_emit_resolver = __VizeEmitPropsFactory<typeof ElTooltip>;
+  type __el_tooltip_27_hide_emit_resolver = $VueEmitPropsFactory<typeof ElTooltip>;
   const __vize_emit_props_0_27_hide = (undefined as unknown as __el_tooltip_27_hide_emit_resolver)(ElTooltip)({
     "trigger": trigger,
     "triggerKeys": triggerKeys,
@@ -516,7 +516,7 @@ function __setup() {
   });
 
   // v-slot scope: #content
-  const __vize_slot_host_28 = (undefined as unknown as __VizeSlotsFactory<typeof ElTooltip>)(ElTooltip)({
+  const __vize_slot_host_28 = (undefined as unknown as $VueSlotsFactory<typeof ElTooltip>)(ElTooltip)({
     ...{} as { "onUpdate:visible": never },
     ...{} as { "onBeforeShow": never },
     ...{} as { "onBeforeHide": never },
@@ -548,14 +548,14 @@ function __setup() {
     "gpuAcceleration": gpuAcceleration,
   });
   void __vize_slot_host_28;
-  var __vize_slot_scope_28 = function(__vize_slot_props_28: __VizeSlotPayload<typeof __vize_slot_host_28, "content">) {
+  var __vize_slot_scope_28 = function(__vize_slot_props_28: $VueSlotPayload<typeof __vize_slot_host_28, "content">) {
     void __vize_slot_props_28;
     if ((title)) {
       // @vize-map: expr -> 967:972
     }
     // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
     if ((title)) {
-      const __vize_native_prop_check_972: __VizeNativeElementProp<__VizeNativeElement<"div">, "class"> = (ns.e('title'));
+      const __vize_native_prop_check_972: $VueNativeElementProp<$VueNativeElement<"div">, "class"> = (ns.e('title'));
       void __vize_native_prop_check_972; // VBind
     }
     // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
@@ -572,66 +572,66 @@ function __setup() {
   };
 
   // Component props type declarations
-  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
-  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? __VizeIsAny<__E> extends true ? {} : NonNullable<__E> : {};
-  type __VizeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
-  type __VizeHasFallthroughProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
-  type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
-  type __VizeRequiredFallthroughProps<C, __F = __VizeFallthroughProps<C>, __K = __VizeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
-  type __VizeVueVNodeProps = import('vue').VNodeProps;
-  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;
-  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;
-  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}
-  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;
-  type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-  type __VizePublicProps<C> = C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
-  type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
-  type __VizeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
-  type __VizeHasInstanceRawProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? false : true : false : false;
-  type __VizeHasStaticRawProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? false : true : false : false;
-  type __VizeComponentRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? __VizeInstanceRawProps<C> : __VizeStaticRawProps<C>;
-  type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;
-  type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
-  type __VizeEventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | __VizeKebabCase<Uncapitalize<E>> : never;
-  type __VizeKebabEventAliases<E> = { [K in keyof E & string as __VizeKebabCase<K> extends K ? never : __VizeKebabCase<K>]: E[K] };
-  type __VizeComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & __VizeKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as __VizeEventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };
-  type __VizePropChecker<C, P, T = __VizeComponentCheckTail<C>> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: __VizeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: __VizeComponentCheckProps<P, T>) => void : (props: __VizeComponentCheckProps<P, T>) => void;
-  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
-  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
-  type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
-  type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
-  type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
+  type $VueIsAny<T> = 0 extends (1 & T) ? true : false;
+  type $VueEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? $VueIsAny<__E> extends true ? {} : NonNullable<__E> : {};
+  type $VueIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
+  type $VueHasFallthroughProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
+  type $VueFallthroughProps<C> = $VueHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
+  type $VueRequiredFallthroughProps<C, __F = $VueFallthroughProps<C>, __K = $VueRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
+  type $VueVueVNodeProps = import('vue').VNodeProps;
+  type $VueVueAllowedComponentProps = import('vue').AllowedComponentProps;
+  type $VueVueComponentCustomProps = import('vue').ComponentCustomProps;
+  interface $VuePublicComponentAttrs extends $VueVueVNodeProps, $VueVueAllowedComponentProps, $VueVueComponentCustomProps {}
+  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;
+  type $VueComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+  type $VuePublicProps<C> = C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+  type $VueInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $VueIsAny<__P> extends true ? $VuePublicProps<C> : __P : $VuePublicProps<C>;
+  type $VueStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $VueIsAny<__P> extends true ? $VuePublicProps<C> : __P : $VuePublicProps<C>;
+  type $VueHasInstanceRawProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $VueIsAny<__P> extends true ? false : true : false : false;
+  type $VueHasStaticRawProps<C> = $VueIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $VueIsAny<__P> extends true ? false : true : false : false;
+  type $VueComponentRawProps<C> = $VueHasInstanceRawProps<C> extends true ? $VueInstanceRawProps<C> : $VueStaticRawProps<C>;
+  type $VueHasRawProps<C> = $VueHasInstanceRawProps<C> extends true ? true : $VueHasStaticRawProps<C>;
+  type $VueFallthroughValue<C, K extends PropertyKey> = $VueHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $VueIsAny<__F> extends true ? unknown : $VuePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
+  type $VueEventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | $VueKebabCase<Uncapitalize<E>> : never;
+  type $VueKebabEventAliases<E> = { [K in keyof E & string as $VueKebabCase<K> extends K ? never : $VueKebabCase<K>]: E[K] };
+  type $VueComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & $VueKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as $VueEventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };
+  type $VuePropChecker<C, P, T = $VueComponentCheckTail<C>> = $VueIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $VueIsAny<__F> extends true ? (props: $VueComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $VueComponentCheckProps<P, T>) => void : (props: $VueComponentCheckProps<P, T>) => void;
+  type $VuePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
+  type $VueStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
+  type $VueRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
+  type $VueMissingRequiredSlots<__S, __P> = Exclude<$VueRequiredSlotKeys<__S>, keyof __P>;
+  type $VueRequiredSlots<__S, __P> = $VueIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$VueMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $VueMissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 13:837
-  type __el_tooltip_Props_0 = typeof ElTooltip extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof ElTooltip> : Record<string, unknown>) : __VizeComponentRawProps<typeof ElTooltip>;
+  type __el_tooltip_Props_0 = typeof ElTooltip extends { __vizeCheck: infer __F } ? ($VueIsAny<__F> extends true ? $VueComponentRawProps<typeof ElTooltip> : Record<string, unknown>) : $VueComponentRawProps<typeof ElTooltip>;
   type __el_tooltip_Component_0 = typeof ElTooltip;
-  type __el_tooltip_CheckProps_0 = __el_tooltip_Props_0 & __VizeEmitListeners<__el_tooltip_Component_0> & __VizeRequiredFallthroughProps<__el_tooltip_Component_0>;
-  type __el_tooltip_CheckTail_0 = __VizeComponentCheckTail<__el_tooltip_Component_0>;
-  type __el_tooltip_ValueProps_0 = __el_tooltip_Props_0 & __VizeEmitListeners<__el_tooltip_Component_0> & __VizePublicComponentAttrs;
-  type __el_tooltip_FallthroughValue_0<K extends PropertyKey> = __VizeFallthroughValue<__el_tooltip_Component_0, K>;
-  type __el_tooltip_Check_0 = __VizePropChecker<__el_tooltip_Component_0, __el_tooltip_CheckProps_0, __el_tooltip_CheckTail_0>;
-  type __el_tooltip_0_prop_trigger = __VizePropValue<__el_tooltip_ValueProps_0, 'trigger', __el_tooltip_FallthroughValue_0<'trigger'>>;
-  type __el_tooltip_0_prop_trigger_keys = __VizePropValue<__el_tooltip_ValueProps_0, 'triggerKeys', __el_tooltip_FallthroughValue_0<'trigger-keys'>>;
-  type __el_tooltip_0_prop_placement = __VizePropValue<__el_tooltip_ValueProps_0, 'placement', __el_tooltip_FallthroughValue_0<'placement'>>;
-  type __el_tooltip_0_prop_disabled = __VizePropValue<__el_tooltip_ValueProps_0, 'disabled', __el_tooltip_FallthroughValue_0<'disabled'>>;
-  type __el_tooltip_0_prop_visible = __VizePropValue<__el_tooltip_ValueProps_0, 'visible', __el_tooltip_FallthroughValue_0<'visible'>>;
-  type __el_tooltip_0_prop_transition = __VizePropValue<__el_tooltip_ValueProps_0, 'transition', __el_tooltip_FallthroughValue_0<'transition'>>;
-  type __el_tooltip_0_prop_popper_options = __VizePropValue<__el_tooltip_ValueProps_0, 'popperOptions', __el_tooltip_FallthroughValue_0<'popper-options'>>;
-  type __el_tooltip_0_prop_tabindex = __VizePropValue<__el_tooltip_ValueProps_0, 'tabindex', __el_tooltip_FallthroughValue_0<'tabindex'>>;
-  type __el_tooltip_0_prop_content = __VizePropValue<__el_tooltip_ValueProps_0, 'content', __el_tooltip_FallthroughValue_0<'content'>>;
-  type __el_tooltip_0_prop_offset = __VizePropValue<__el_tooltip_ValueProps_0, 'offset', __el_tooltip_FallthroughValue_0<'offset'>>;
-  type __el_tooltip_0_prop_show_after = __VizePropValue<__el_tooltip_ValueProps_0, 'showAfter', __el_tooltip_FallthroughValue_0<'show-after'>>;
-  type __el_tooltip_0_prop_hide_after = __VizePropValue<__el_tooltip_ValueProps_0, 'hideAfter', __el_tooltip_FallthroughValue_0<'hide-after'>>;
-  type __el_tooltip_0_prop_auto_close = __VizePropValue<__el_tooltip_ValueProps_0, 'autoClose', __el_tooltip_FallthroughValue_0<'auto-close'>>;
-  type __el_tooltip_0_prop_show_arrow = __VizePropValue<__el_tooltip_ValueProps_0, 'showArrow', __el_tooltip_FallthroughValue_0<'show-arrow'>>;
-  type __el_tooltip_0_prop_aria_label = __VizePropValue<__el_tooltip_ValueProps_0, 'ariaLabel', __el_tooltip_FallthroughValue_0<'aria-label'>>;
-  type __el_tooltip_0_prop_effect = __VizePropValue<__el_tooltip_ValueProps_0, 'effect', __el_tooltip_FallthroughValue_0<'effect'>>;
-  type __el_tooltip_0_prop_enterable = __VizePropValue<__el_tooltip_ValueProps_0, 'enterable', __el_tooltip_FallthroughValue_0<'enterable'>>;
-  type __el_tooltip_0_prop_popper_class = __VizePropValue<__el_tooltip_ValueProps_0, 'popperClass', __el_tooltip_FallthroughValue_0<'popper-class'>>;
-  type __el_tooltip_0_prop_popper_style = __VizePropValue<__el_tooltip_ValueProps_0, 'popperStyle', __el_tooltip_FallthroughValue_0<'popper-style'>>;
-  type __el_tooltip_0_prop_teleported = __VizePropValue<__el_tooltip_ValueProps_0, 'teleported', __el_tooltip_FallthroughValue_0<'teleported'>>;
-  type __el_tooltip_0_prop_append_to = __VizePropValue<__el_tooltip_ValueProps_0, 'appendTo', __el_tooltip_FallthroughValue_0<'append-to'>>;
-  type __el_tooltip_0_prop_persistent = __VizePropValue<__el_tooltip_ValueProps_0, 'persistent', __el_tooltip_FallthroughValue_0<'persistent'>>;
-  type __el_tooltip_0_prop_gpu_acceleration = __VizePropValue<__el_tooltip_ValueProps_0, 'gpuAcceleration', __el_tooltip_FallthroughValue_0<'gpu-acceleration'>>;
+  type __el_tooltip_CheckProps_0 = __el_tooltip_Props_0 & $VueEmitListeners<__el_tooltip_Component_0> & $VueRequiredFallthroughProps<__el_tooltip_Component_0>;
+  type __el_tooltip_CheckTail_0 = $VueComponentCheckTail<__el_tooltip_Component_0>;
+  type __el_tooltip_ValueProps_0 = __el_tooltip_Props_0 & $VueEmitListeners<__el_tooltip_Component_0> & $VuePublicComponentAttrs;
+  type __el_tooltip_FallthroughValue_0<K extends PropertyKey> = $VueFallthroughValue<__el_tooltip_Component_0, K>;
+  type __el_tooltip_Check_0 = $VuePropChecker<__el_tooltip_Component_0, __el_tooltip_CheckProps_0, __el_tooltip_CheckTail_0>;
+  type __el_tooltip_0_prop_trigger = $VuePropValue<__el_tooltip_ValueProps_0, 'trigger', __el_tooltip_FallthroughValue_0<'trigger'>>;
+  type __el_tooltip_0_prop_trigger_keys = $VuePropValue<__el_tooltip_ValueProps_0, 'triggerKeys', __el_tooltip_FallthroughValue_0<'trigger-keys'>>;
+  type __el_tooltip_0_prop_placement = $VuePropValue<__el_tooltip_ValueProps_0, 'placement', __el_tooltip_FallthroughValue_0<'placement'>>;
+  type __el_tooltip_0_prop_disabled = $VuePropValue<__el_tooltip_ValueProps_0, 'disabled', __el_tooltip_FallthroughValue_0<'disabled'>>;
+  type __el_tooltip_0_prop_visible = $VuePropValue<__el_tooltip_ValueProps_0, 'visible', __el_tooltip_FallthroughValue_0<'visible'>>;
+  type __el_tooltip_0_prop_transition = $VuePropValue<__el_tooltip_ValueProps_0, 'transition', __el_tooltip_FallthroughValue_0<'transition'>>;
+  type __el_tooltip_0_prop_popper_options = $VuePropValue<__el_tooltip_ValueProps_0, 'popperOptions', __el_tooltip_FallthroughValue_0<'popper-options'>>;
+  type __el_tooltip_0_prop_tabindex = $VuePropValue<__el_tooltip_ValueProps_0, 'tabindex', __el_tooltip_FallthroughValue_0<'tabindex'>>;
+  type __el_tooltip_0_prop_content = $VuePropValue<__el_tooltip_ValueProps_0, 'content', __el_tooltip_FallthroughValue_0<'content'>>;
+  type __el_tooltip_0_prop_offset = $VuePropValue<__el_tooltip_ValueProps_0, 'offset', __el_tooltip_FallthroughValue_0<'offset'>>;
+  type __el_tooltip_0_prop_show_after = $VuePropValue<__el_tooltip_ValueProps_0, 'showAfter', __el_tooltip_FallthroughValue_0<'show-after'>>;
+  type __el_tooltip_0_prop_hide_after = $VuePropValue<__el_tooltip_ValueProps_0, 'hideAfter', __el_tooltip_FallthroughValue_0<'hide-after'>>;
+  type __el_tooltip_0_prop_auto_close = $VuePropValue<__el_tooltip_ValueProps_0, 'autoClose', __el_tooltip_FallthroughValue_0<'auto-close'>>;
+  type __el_tooltip_0_prop_show_arrow = $VuePropValue<__el_tooltip_ValueProps_0, 'showArrow', __el_tooltip_FallthroughValue_0<'show-arrow'>>;
+  type __el_tooltip_0_prop_aria_label = $VuePropValue<__el_tooltip_ValueProps_0, 'ariaLabel', __el_tooltip_FallthroughValue_0<'aria-label'>>;
+  type __el_tooltip_0_prop_effect = $VuePropValue<__el_tooltip_ValueProps_0, 'effect', __el_tooltip_FallthroughValue_0<'effect'>>;
+  type __el_tooltip_0_prop_enterable = $VuePropValue<__el_tooltip_ValueProps_0, 'enterable', __el_tooltip_FallthroughValue_0<'enterable'>>;
+  type __el_tooltip_0_prop_popper_class = $VuePropValue<__el_tooltip_ValueProps_0, 'popperClass', __el_tooltip_FallthroughValue_0<'popper-class'>>;
+  type __el_tooltip_0_prop_popper_style = $VuePropValue<__el_tooltip_ValueProps_0, 'popperStyle', __el_tooltip_FallthroughValue_0<'popper-style'>>;
+  type __el_tooltip_0_prop_teleported = $VuePropValue<__el_tooltip_ValueProps_0, 'teleported', __el_tooltip_FallthroughValue_0<'teleported'>>;
+  type __el_tooltip_0_prop_append_to = $VuePropValue<__el_tooltip_ValueProps_0, 'appendTo', __el_tooltip_FallthroughValue_0<'append-to'>>;
+  type __el_tooltip_0_prop_persistent = $VuePropValue<__el_tooltip_ValueProps_0, 'persistent', __el_tooltip_FallthroughValue_0<'persistent'>>;
+  type __el_tooltip_0_prop_gpu_acceleration = $VuePropValue<__el_tooltip_ValueProps_0, 'gpuAcceleration', __el_tooltip_FallthroughValue_0<'gpu-acceleration'>>;
 
   // Component template navigation references
   void ElTooltip;
@@ -660,7 +660,7 @@ function __setup() {
   void __vize_props_nav_0.appendTo;
   void __vize_props_nav_0.persistent;
   void __vize_props_nav_0.gpuAcceleration;
-  const __vize_slots_nav_0 = undefined as unknown as __VizeStructuralSlots<typeof ElTooltip>;
+  const __vize_slots_nav_0 = undefined as unknown as $VueStructuralSlots<typeof ElTooltip>;
   const { content: __vize_slot_nav_0_0 } = __vize_slots_nav_0;
   void __vize_slot_nav_0_0;
 
@@ -765,12 +765,12 @@ function __setup() {
     "persistent": persistent,
     "gpuAcceleration": gpuAcceleration,
   });
-  type __VizeSlotContract_0 = __VizeStructuralSlots<typeof ElTooltip>;
-  const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, { readonly "content": true; readonly "default": true; }> = {};
+  type $VueSlotContract_0 = $VueStructuralSlots<typeof ElTooltip>;
+  const __vize_required_slots_0: $VueRequiredSlots<$VueSlotContract_0, { readonly "content": true; readonly "default": true; }> = {};
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #content
-  const __vize_slot_props_host_28 = (undefined as unknown as __VizeSlotsFactory<typeof ElTooltip>)(ElTooltip)({
+  const __vize_slot_props_host_28 = (undefined as unknown as $VueSlotsFactory<typeof ElTooltip>)(ElTooltip)({
     ...{} as { "onUpdate:visible": never },
     ...{} as { "onBeforeShow": never },
     ...{} as { "onBeforeHide": never },
@@ -802,7 +802,7 @@ function __setup() {
     "gpuAcceleration": gpuAcceleration,
   });
   void __vize_slot_props_host_28;
-  void function _slot_props_content_28(__vize_slot_props_28: __VizeSlotPayload<typeof __vize_slot_props_host_28, "content">) {
+  void function _slot_props_content_28(__vize_slot_props_28: $VueSlotPayload<typeof __vize_slot_props_host_28, "content">) {
     void __vize_slot_props_28;
   };
   return {} as { "reference"?: (props: typeof __vize_slot_payload_873) => any } & ReturnType<typeof __vize_slot_scope_28>;
@@ -834,29 +834,29 @@ function __setup() {
 __setup();
 
 export type Emits = Awaited<ReturnType<typeof __setup>>["__vize_emits"];
-type __VizeSlots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
-export type { __VizeSlots as Slots };
+type $VueSlots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
+export type { $VueSlots as Slots };
 export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_exposed"];
 
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
-type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
-type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
+type $VueNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+type $VueEmitPropsFactory<C> = $VueIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $VueNativeEmitPropsFactory<C> : $VueNativeEmitPropsFactory<C>;
+type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as $VueHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 
-type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>["__vize_emit_options"]>;
+type $VueStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>["__vize_emit_options"]>;
 
 // ========== Default Export ==========
-type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };
-type __VizeComponentInstance = {
+type $VueShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };
+type $VueComponentInstance = {
   $props: Props & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props;
-  $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<__VizeSlots>;
-} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;
-type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
-$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, __EmitProps<Emits>> & __VizeComponentInputGuard<Props, __EmitProps<Emits>, __VizeAuthoredProps>;
+  $emit: $VuePublicEmit<Emits>;
+  $slots: $VuePublicSlots<$VueSlots>;
+} & $VueComponentPublicBase & $VueShallowUnwrapRef<Exposed>;
+type $VueComponentConstructor = new <$VueAuthoredProps = unknown>(props?: $VueAuthoredProps & $VueComponentInput<Props, __EmitProps<Emits>, $VueAuthoredProps>, ...args: any[]) => $VueUsePublicInstance<$VueAuthoredProps> extends true ? $VueComponentInstance : Omit<$VueComponentInstance, '$props'> & {
+$props: $VueAuthoredKeyWitness<$VueAuthoredProps> & $VueComponentInputProps<Props, __EmitProps<Emits>> & $VueComponentInputGuard<Props, __EmitProps<Emits>, $VueAuthoredProps>;
 };
-type __VizeVueComponentOptions = {
+type $VueVueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -881,5 +881,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeEmitProps?: __VizeStaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeSlots?: Partial<__VizeSlots>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { __vizeEmitProps?: $VueStaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeSlots?: Partial<$VueSlots>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & $VueComponentConstructor & $VueVueComponentOptions;
 export default __vize_component__;

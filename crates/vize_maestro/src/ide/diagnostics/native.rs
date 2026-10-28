@@ -161,7 +161,7 @@ fn without_duplicate_required_props(
                     diagnostic.code.as_ref(),
                     Some(tower_lsp::lsp_types::NumberOrString::Number(2345))
                 )
-                && diagnostic.message.contains("__VizeComponentCheckProps")
+                && diagnostic.message.contains("$VueComponentCheckProps")
                 && diagnostic.message.contains("is missing")
                 && required_tags.iter().any(|tag| {
                     diagnostic.range.start.line == tag.start.line

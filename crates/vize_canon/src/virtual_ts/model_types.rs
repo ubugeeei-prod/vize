@@ -26,7 +26,7 @@ pub(crate) fn model_value_type(
     let arguments = generic_parameters
         .map(|generic| cstr!("<{}>", generic.names))
         .unwrap_or_default();
-    let mut ty = cstr!("__VizeModelDefaults{arguments}[");
+    let mut ty = cstr!("$VueModelDefaults{arguments}[");
     push_ts_string_literal(&mut ty, model.name.as_str());
     ty.push(']');
     ty
@@ -58,6 +58,6 @@ pub(crate) fn emit_defaults_type(ts: &mut String, generic_param: Option<&Generic
         .unwrap_or_default();
     append!(
         *ts,
-        "type __VizeModelDefaults{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_model_defaults\"];\n"
+        "type $VueModelDefaults{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_model_defaults\"];\n"
     );
 }

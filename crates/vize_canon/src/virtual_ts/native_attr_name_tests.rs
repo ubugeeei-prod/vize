@@ -72,11 +72,11 @@ fn assert_component_prop_still_checked(code: &str) {
     assert_has(code, "const __vize_prop_check_0_not_a_real_prop:");
     assert_has(
         code,
-        "__VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C>",
+        "$VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs & $VueAllowedFallthroughAttrs<C>",
     );
     assert_has(
         code,
-        r#"__VizeNativeElementProp<__VizeNativeElement<"div">, "style">"#,
+        r#"$VueNativeElementProp<$VueNativeElement<"div">, "style">"#,
     );
 }
 
@@ -89,7 +89,7 @@ fn vue3_check_unknown_props_accepts_intrinsic_attributes() {
     }
     assert_lacks(
         &output.code,
-        r#"Partial<__VizeNativeElement<"th">> = { "width""#,
+        r#"Partial<$VueNativeElement<"th">> = { "width""#,
     );
     assert_component_prop_still_checked(&output.code);
 }
@@ -102,11 +102,11 @@ fn vue3_expectations_strictly_check_only_their_native_owner() {
     let output = generate_template(template, true);
     assert_has(
         &output.code,
-        r#"Partial<__VizeNativeElement<"div">> = { "foo": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"div">> = { "foo": undefined as never }"#,
     );
     assert_has(
         &output.code,
-        r#"Partial<__VizeNativeElement<"div">> = { "class": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"div">> = { "class": undefined as never }"#,
     );
     assert_lacks(&output.code, "\"ordinary\"");
 }
@@ -126,16 +126,16 @@ fn omitted_target_excess_checks_intrinsic_names_without_never_assignment() {
             !assigns_never,
             "omitted target must not assign the name to never: {line}"
         );
-        let typed = has_fragment(line, "Partial<__VizeNativeElement<")
+        let typed = has_fragment(line, "Partial<$VueNativeElement<")
             || has_fragment(line, "void __vize_native_key_");
         assert!(typed, "{line}");
     }
     for fragment in [
-        r#"Partial<__VizeNativeElement<"div">> = { "x-small": undefined as never }"#,
-        r#"Partial<__VizeNativeElement<"tr">> = { "height": undefined as never }"#,
-        r#"Partial<__VizeNativeElement<"th">> = { "width": undefined as never }"#,
-        r#"Partial<__VizeNativeElement<"div">> = { "no-gutters": undefined as never }"#,
-        r#"Partial<__VizeNativeElement<"div">> = { "cols": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"div">> = { "x-small": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"tr">> = { "height": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"th">> = { "width": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"div">> = { "no-gutters": undefined as never }"#,
+        r#"Partial<$VueNativeElement<"div">> = { "cols": undefined as never }"#,
     ] {
         assert_has(&output.code, fragment);
     }

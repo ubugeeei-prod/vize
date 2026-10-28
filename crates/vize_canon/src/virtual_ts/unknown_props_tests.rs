@@ -8,7 +8,7 @@ fn check_tail_line(code: &str) -> &str {
     code.lines()
         .find(|line| {
             line.as_bytes()
-                .starts_with(b"  type __VizeComponentCheckTail")
+                .starts_with(b"  type $VueComponentCheckTail")
         })
         .expect("component prop helpers should declare a check tail")
 }
@@ -57,7 +57,7 @@ fn generate_usage(script: &str, template: &str, check_unknown_props: bool) -> vi
 fn unknown_props_off_opens_generated_check_tail() {
     assert_eq!(
         check_tail_line(&generate_parent_usage(false)),
-        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
+        "  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
 }
 
@@ -66,11 +66,11 @@ fn unknown_props_on_keeps_native_fallthrough_tail() {
     let code = generate_parent_usage(true);
     assert_eq!(
         check_tail_line(&code),
-        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;",
+        "  type $VueComponentCheckTail<C> = $VueIsGeneratedComponent<C> extends true ? $VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs & $VueAllowedFallthroughAttrs<C> : $VuePublicComponentAttrs & $VueComponentGlobalHtmlAttrs;",
     );
-    assert_eq!(type_declaration(&code, "__VizeAttrCamel"), None);
-    assert_eq!(type_declaration(&code, "__VizeNativeAttrNames"), None);
-    assert_eq!(type_declaration(&code, "__VizeGlobalHtmlAttrs"), None);
+    assert_eq!(type_declaration(&code, "$VueAttrCamel"), None);
+    assert_eq!(type_declaration(&code, "$VueNativeAttrNames"), None);
+    assert_eq!(type_declaration(&code, "$VueGlobalHtmlAttrs"), None);
 }
 
 #[test]
@@ -241,12 +241,12 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         true,
     );
     assert!(
-        code.contains("type __VizePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? __VizeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}"),
+        code.contains("type $VuePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $VueIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}"),
         "{code}"
     );
     assert!(code.contains("\"foo\": \"x\""), "{code}");
     assert!(
-        code.contains("__VizeComponentRawProps<typeof is>"),
+        code.contains("$VueComponentRawProps<typeof is>"),
         "{code}"
     );
 }
@@ -257,17 +257,17 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
     // The navigation completion pattern must receive `{}`, not `unknown`,
     // even when this usage has no authored props to check.
     assert!(
-        code.contains("__VizeHasStaticRawProps<C> extends true ? __VizeStaticRawProps<C> : __VizePublicProps<C>"),
+        code.contains("$VueHasStaticRawProps<C> extends true ? $VueStaticRawProps<C> : $VuePublicProps<C>"),
         "{code}"
     );
     assert!(
         code.contains(
-            "const { } = undefined as unknown as __VizeComponentNavigationProps<__Div_Props_0>;"
+            "const { } = undefined as unknown as $VueComponentNavigationProps<__Div_Props_0>;"
         ),
         "{code}"
     );
     assert!(
-        code.contains("__VizeComponentRawProps<typeof Div>"),
+        code.contains("$VueComponentRawProps<typeof Div>"),
         "{code}"
     );
 }

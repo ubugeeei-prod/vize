@@ -78,7 +78,7 @@ import OptionalProp from './OptionalProp.vue'
         })
         .collect();
 
-    let param_type = "__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>";
+    let param_type = "$VueComponentCheckProps<Props, $VueFallthroughAttrs>";
     assert_eq!(
         snapshot,
         vec![

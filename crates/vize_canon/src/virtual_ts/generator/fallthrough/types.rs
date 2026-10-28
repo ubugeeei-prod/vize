@@ -151,9 +151,9 @@ fn targets_type_ref(
                     return String::from("Record<string, unknown>");
                 };
                 let mut surface = String::from(if check_required {
-                    "__VizeComponentFallthroughSurface<typeof "
+                    "$VueComponentFallthroughSurface<typeof "
                 } else {
-                    "__VizeComponentFallthroughProps<typeof "
+                    "$VueComponentFallthroughProps<typeof "
                 });
                 surface.push_str(reference.as_str());
                 surface.push('>');
@@ -206,7 +206,7 @@ fn native_target_surface(tag: &str, public_types: bool) -> String {
     let mut ty = String::from(if public_types {
         "import('vue').NativeElements["
     } else {
-        "__VizeNativeElement<"
+        "$VueNativeElement<"
     });
     push_ts_string_literal(&mut ty, tag);
     ty.push_str(if public_types { "]" } else { ">" });

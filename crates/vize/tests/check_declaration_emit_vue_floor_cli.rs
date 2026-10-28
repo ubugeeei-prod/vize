@@ -257,8 +257,8 @@ fn declaration_emit_survives_a_vue_without_native_elements_or_directive() {
         assert_eq!(
             contents
                 .lines()
-                .filter(|line| line.contains("__VizeNativeElement")
-                    || line.contains("__VizeDirectiveHook")
+                .filter(|line| line.contains("$VueNativeElement")
+                    || line.contains("$VueDirectiveHook")
                     || line.contains("__vizeDirective"))
                 .collect::<Vec<_>>(),
             Vec::<&str>::new(),

@@ -47,7 +47,7 @@ impl ResolvedTypeWorld {
         if visiting.len() >= 128 {
             return ScopedTypeProperties::default();
         }
-        let source = cstr!("type __VizeProps = {expression}");
+        let source = cstr!("type $VueProps = {expression}");
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
         if parsed.panicked || !parsed.diagnostics.is_empty() {

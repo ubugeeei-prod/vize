@@ -26,17 +26,17 @@ defineModel<string>();
     assert!(
         output
             .code
-            .contains("type __VizeResolvedProps = Props & {\n"),
+            .contains("type $VueResolvedProps = Props & {\n"),
         "model props should extend the imported Props through a private alias:\n{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("  $props: __VizeResolvedProps & __EmitProps<Emits>;")
+            .contains("  $props: $VueResolvedProps & __EmitProps<Emits>;")
             && output
                 .code
-                .contains("readonly __vizeRawProps?: __VizeResolvedProps;"),
+                .contains("readonly __vizeRawProps?: $VueResolvedProps;"),
         "component instance should use the private resolved props alias:\n{}",
         output.code
     );
@@ -61,14 +61,14 @@ defineModel<string>();
     assert!(
         output
             .code
-            .contains("type __VizeResolvedProps = Other & {\n"),
+            .contains("type $VueResolvedProps = Other & {\n"),
         "the authored defineProps type should win over an unrelated imported Props name:\n{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("  $props: __VizeResolvedProps & __EmitProps<Emits>;"),
+            .contains("  $props: $VueResolvedProps & __EmitProps<Emits>;"),
         "component instance should use the private resolved props alias:\n{}",
         output.code
     );
@@ -93,7 +93,7 @@ defineModel<string>();
     assert!(
         output
             .code
-            .contains("type __VizeResolvedProps = Props<Item> & {\n"),
+            .contains("type $VueResolvedProps = Props<Item> & {\n"),
         "the imported Props instantiation should be preserved:\n{}",
         output.code
     );
@@ -140,11 +140,11 @@ export default {
         "imported Props must not be redeclared:\n{code}"
     );
     assert!(
-        code.contains("type __VizeResolvedProps = {\n  \"initial\"?: unknown;\n"),
+        code.contains("type $VueResolvedProps = {\n  \"initial\"?: unknown;\n"),
         "Options API array props should be preserved through a private alias:\n{code}"
     );
     assert!(
-        code.contains("  $props: __VizeResolvedProps;"),
+        code.contains("  $props: $VueResolvedProps;"),
         "component instance should read the private Options API props alias:\n{code}"
     );
 }
@@ -164,11 +164,11 @@ export default {
         "imported Props must not be redeclared:\n{code}"
     );
     assert!(
-        code.contains("type __VizeResolvedProps = {\n  \"initial\"?: unknown;\n"),
+        code.contains("type $VueResolvedProps = {\n  \"initial\"?: unknown;\n"),
         "Options API props should still be preserved through a private alias:\n{code}"
     );
     assert!(
-        code.contains("  $props: __VizeResolvedProps;"),
+        code.contains("  $props: $VueResolvedProps;"),
         "component instance should use the private Options API props alias:\n{code}"
     );
 }
@@ -194,12 +194,12 @@ export default {
     );
     assert!(
         code.contains(
-            "type __VizeResolvedProps = __VizeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "type $VueResolvedProps = $VueOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "deferred Options API props should resolve through a private alias:\n{code}"
     );
     assert!(
-        code.contains("  $props: __VizeResolvedProps;"),
+        code.contains("  $props: $VueResolvedProps;"),
         "component instance should use the private deferred props alias:\n{code}"
     );
 }

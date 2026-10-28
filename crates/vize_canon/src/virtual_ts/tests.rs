@@ -317,7 +317,7 @@ export default class Counter extends Vue {
     assert!(
         output
             .code
-            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">"),
+            .contains("var count: $VueOptionsBinding<typeof __default__, \"count\">"),
         "class members must be typed from the class instance:\n{}",
         output.code
     );
@@ -338,7 +338,7 @@ const count = ref(0)
         generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
 
     assert!(
-        !output.code.contains("__VizeThis"),
+        !output.code.contains("$VueThis"),
         "`<script setup>` output must not contain the Options API bridge:\n{}",
         output.code
     );
@@ -389,7 +389,7 @@ fn test_script_setup_with_define_props_type_ref_byte_identical_with_options_api_
     // not an inline `TSTypeLiteral`) registers destructured names as
     // `BindingType::Props` without populating `summary.macros.props()`. Before
     // the `is_script_setup` gate, those names slipped through the Options API
-    // template-binding filter and produced spurious `__VizeOptionsBinding`
+    // template-binding filter and produced spurious `$VueOptionsBinding`
     // declarations on a `<script setup>` SFC, breaking the byte-identical
     // guarantee.
     use vize_croquis::{Analyzer, AnalyzerOptions};
@@ -653,7 +653,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     assert!(
         output
             .code
-            .contains("type __auto_card_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof AutoCard> : Record<string, unknown>) : __VizeComponentRawProps<typeof AutoCard>;")
+            .contains("type __auto_card_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? ($VueIsAny<__F> extends true ? $VueComponentRawProps<typeof AutoCard> : Record<string, unknown>) : $VueComponentRawProps<typeof AutoCard>;")
     );
 }
 
@@ -682,7 +682,7 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
     assert!(
         output
             .code
-            .contains("declare const AutoCard: __VizeGlobalComponent<\"AutoCard\"> & __VizeGlobalComponentFallback;")
+            .contains("declare const AutoCard: $VueGlobalComponent<\"AutoCard\"> & $VueGlobalComponentFallback;")
     );
     assert!(output.code.contains("type __AutoCard_Props_0"));
     assert!(output.code.contains("__AutoCard_Check_0"));
@@ -739,7 +739,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
     assert!(
         !configured_output
             .code
-            .contains("__VizeInstanceGlobal<'$t'>")
+            .contains("$VueInstanceGlobal<'$t'>")
     );
     assert!(
         configured_output
@@ -770,7 +770,7 @@ const $q = functionCall()
     assert!(
         !output
             .code
-            .contains("const $q: __VizeInstanceGlobal<'$q'> = undefined as any;"),
+            .contains("const $q: $VueInstanceGlobal<'$q'> = undefined as any;"),
         "setup binding named like an instance global must not be redeclared:\n{}",
         output.code
     );
@@ -806,7 +806,7 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("type __VizeComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: __VizePublicEmit<Emits>;\n  $slots: __VizePublicSlots<__VizeSlots>;\n} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;"),
+        output.code.contains("type $VueComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $VuePublicEmit<Emits>;\n  $slots: $VuePublicSlots<$VueSlots>;\n} & $VueComponentPublicBase & $VueShallowUnwrapRef<Exposed>;"),
         "component instance should include exposed bindings:\n{}",
         output.code
     );

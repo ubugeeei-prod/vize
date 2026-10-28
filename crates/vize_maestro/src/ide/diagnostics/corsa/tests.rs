@@ -164,7 +164,7 @@ defineArt("./Button.vue", { title: "Button" });
     assert!(
         result
             .code
-            .contains("import __VizeArtTarget_Button from \"./Button.vue\";"),
+            .contains("import $VueArtTarget_Button from \"./Button.vue\";"),
         "expected defineArt component import, got:\n{}",
         result.code,
     );

@@ -23,9 +23,9 @@ pub(super) fn user_facing_type_message(is_ts2345: bool, message: &str) -> Compac
     const PROPERTY_PREFIX: &str = "Property '";
     const MISSING_PROPERTY_SUFFIX: &str = "' is missing in type ";
 
-    let exposes_internal_component_type = message.contains("__VizeComponentCheckProps")
-        || message.contains("__VizeSetupProps")
-        || message.contains("__VizePublicComponentAttrs");
+    let exposes_internal_component_type = message.contains("$VueComponentCheckProps")
+        || message.contains("$VueSetupProps")
+        || message.contains("$VuePublicComponentAttrs");
     if is_ts2345
         && exposes_internal_component_type
         && let Some((_, property_and_rest)) = message.split_once(PROPERTY_PREFIX)

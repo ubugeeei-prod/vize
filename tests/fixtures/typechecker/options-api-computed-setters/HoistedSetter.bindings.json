@@ -1,3 +1,3 @@
 [
-  "  var hoistedSetter: __VizeOptionsBinding<typeof __default__, \"hoistedSetter\"> = (void 0) as any;"
+  "  var hoistedSetter: $VueOptionsBinding<typeof __default__, \"hoistedSetter\"> = (void 0) as any;"
 ]

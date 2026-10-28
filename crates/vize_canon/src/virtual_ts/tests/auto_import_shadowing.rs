@@ -31,7 +31,7 @@ const count = 1
     assert!(
         output
             .code
-            .contains("declare const __VizeComponent_Differences: typeof import"),
+            .contains("declare const $VueComponent_Differences: typeof import"),
         "{}",
         output.code
     );
@@ -39,7 +39,7 @@ const count = 1
     assert!(
         output
             .code
-            .contains("type __Differences_Props_0 = typeof __VizeComponent_Differences"),
+            .contains("type __Differences_Props_0 = typeof $VueComponent_Differences"),
         "{}",
         output.code
     );
@@ -77,14 +77,14 @@ const paginatorRef = ref<PaginatorRef>()
     assert!(
         output
             .code
-            .contains("declare const __VizeComponent_CommonPaginator: typeof import"),
+            .contains("declare const $VueComponent_CommonPaginator: typeof import"),
         "{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("type __CommonPaginator_Props_0 = typeof __VizeComponent_CommonPaginator"),
+            .contains("type __CommonPaginator_Props_0 = typeof $VueComponent_CommonPaginator"),
         "{}",
         output.code
     );
@@ -126,7 +126,7 @@ const chartComponent = { template: '<div />' }
     assert_eq!(
         lines
             .iter()
-            .filter(|line| **line == "  void __VizeComponent_chartComponent;")
+            .filter(|line| **line == "  void $VueComponent_chartComponent;")
             .count(),
         0,
     );
@@ -183,7 +183,7 @@ fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
             );
             if uses_css_module {
                 assert!(
-                    output.code.contains("type __VizeStyleModules"),
+                    output.code.contains("type $VueStyleModules"),
                     "{}",
                     output.code
                 );
@@ -208,7 +208,7 @@ fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
                     output.code
                 );
                 assert!(
-                    !output.code.contains("type __VizeStyleModules"),
+                    !output.code.contains("type $VueStyleModules"),
                     "{}",
                     output.code
                 );

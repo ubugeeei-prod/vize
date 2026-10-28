@@ -34,8 +34,8 @@ pub(crate) fn html_attribute_virtual_document(
         "/// <reference lib=\"es2022\" />\n\
          /// <reference lib=\"dom\" />\n\
          /// <reference lib=\"dom.iterable\" />\n\
-         type __VizeDomElement = {element_type};\n\
-         declare const __vizeDomElement: __VizeDomElement;\n\
+         type $VueDomElement = {element_type};\n\
+         declare const __vizeDomElement: $VueDomElement;\n\
          __vizeDomElement.{property_name};\n"
     );
     let property_offset = content.rfind(property_name)? + (property_name.len() / 2);

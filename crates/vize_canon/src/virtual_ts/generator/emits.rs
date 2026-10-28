@@ -37,7 +37,7 @@ impl EmitsInfo {
 
     pub(super) fn static_emit_props_field(&self) -> &'static str {
         if self.has_emits_for_props {
-            "__vizeEmitProps?: __VizeStaticEmitProps;"
+            "__vizeEmitProps?: $VueStaticEmitProps;"
         } else {
             ""
         }
@@ -45,7 +45,7 @@ impl EmitsInfo {
 
     pub(super) fn static_event_map_field(&self) -> &'static str {
         if self.has_emits_for_props && self.preserve_event_navigation {
-            "__vizeRawEmits?: __VizeAuthoredEventMap; __vizeEventMap?: __VizeStaticEventMap;"
+            "__vizeRawEmits?: $VueAuthoredEventMap; __vizeEventMap?: $VueStaticEventMap;"
         } else {
             ""
         }
@@ -70,7 +70,7 @@ impl EmitsInfo {
             }
             append!(
                 field,
-                "__vizeResolveEvents?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => __VizeAuthoredEventMap<{generic_names}>;"
+                "__vizeResolveEvents?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => $VueAuthoredEventMap<{generic_names}>;"
             );
         }
         field
@@ -279,22 +279,22 @@ pub(super) fn emit_emit_props_helper(
     }
     if info.has_runtime_emits {
         if info.preserve_event_navigation {
-            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n");
+            ts.push_str("type $VueStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n");
         }
-        ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n\n");
+        ts.push_str("type $VueStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n\n");
     } else {
         if info.preserve_event_navigation {
             if info.generic_event_map_decl.is_empty() {
-                ts.push_str("type __VizeStaticEventMap = __EmitOptions<Emits>;\n");
+                ts.push_str("type $VueStaticEventMap = __EmitOptions<Emits>;\n");
             } else {
                 append!(
                     *ts,
-                    "type __VizeStaticEventMap<{}> = __EmitOptions<Emits<{}>>;\n",
+                    "type $VueStaticEventMap<{}> = __EmitOptions<Emits<{}>>;\n",
                     info.generic_event_map_decl,
                     info.generic_event_map_names
                 );
             }
         }
-        ts.push_str("type __VizeStaticEmitProps = __EmitProps<Emits>;\n\n");
+        ts.push_str("type $VueStaticEmitProps = __EmitProps<Emits>;\n\n");
     }
 }

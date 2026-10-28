@@ -34,7 +34,7 @@ const props = defineProps<SomeGenericType<typeof someDefinition>>();
         output.code
     );
     assert!(
-        setup_and_after.contains("type __VizeSetupProps = SomeGenericType<typeof someDefinition>;"),
+        setup_and_after.contains("type $VueSetupProps = SomeGenericType<typeof someDefinition>;"),
         "setup-local props artifact should preserve the concrete props type:\n{}",
         output.code
     );
@@ -81,13 +81,13 @@ defineProps<Props & { items: typeof someDefinition }>();
     );
     assert!(
         output.code.contains(
-            "type __VizeResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];"
+            "type $VueResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];"
         ),
         "default export should use a private resolved props alias:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("  $props: __VizeResolvedProps;"),
+        output.code.contains("  $props: $VueResolvedProps;"),
         "component instance should use the full deferred props type:\n{}",
         output.code
     );
@@ -123,7 +123,7 @@ defineProps<WidgetProps>();
         output.code
     );
     assert!(
-        setup_and_after.contains("type __VizeSetupProps = WidgetProps;"),
+        setup_and_after.contains("type $VueSetupProps = WidgetProps;"),
         "setup-local props artifact should reference the non-hoisted type:\n{}",
         output.code
     );
@@ -162,7 +162,7 @@ const props = defineProps<Props>();
         output.code
     );
     assert!(
-        !setup_and_after.contains("type __VizeSetupProps"),
+        !setup_and_after.contains("type $VueSetupProps"),
         "plain local type aliases should not force setup-scoped Props:\n{}",
         output.code
     );
@@ -222,7 +222,7 @@ const props = defineProps<Props>();
         output.code
     );
     assert!(
-        setup_and_after.contains("type __VizeSetupProps = Props;"),
+        setup_and_after.contains("type $VueSetupProps = Props;"),
         "defineProps<Props>() must resolve through the setup-local Props artifact:\n{}",
         output.code
     );

@@ -67,7 +67,7 @@ enum RegisteredRefKind {
     },
 }
 
-/// The rendered `__VizeTemplateRefs` object-type body, or `None` when no
+/// The rendered `$VueTemplateRefs` object-type body, or `None` when no
 /// static plain-element ref exists (generation then keeps the untyped shim).
 ///
 /// Retyping the shim and typing `$refs` are the registry's only routes to a
@@ -136,7 +136,7 @@ pub(super) fn template_ref_registry(
                     let mut tag_literal = String::default();
                     push_ts_string_literal(&mut tag_literal, tag.as_str());
                     let svg_argument = if *is_svg { ", true" } else { "" };
-                    append!(target, "__VizeDomElement<{tag_literal}{svg_argument}>");
+                    append!(target, "$VueDomElement<{tag_literal}{svg_argument}>");
                     false
                 }
                 RegisteredRefKind::Component {
@@ -145,7 +145,7 @@ pub(super) fn template_ref_registry(
                 } => {
                     includes_component = true;
                     let declared =
-                        vize_carton::cstr!("__VizeTemplateComponentRef<{reference_type}>");
+                        vize_carton::cstr!("$VueTemplateComponentRef<{reference_type}>");
                     target =
                         record.ref_instance(*start, declared.as_str(), reference_type.as_str());
                     includes_instantiated |= target != declared;

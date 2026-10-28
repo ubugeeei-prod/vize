@@ -48,14 +48,14 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     );
 
     assert!(
-        output.code.contains("type __VizeOptionsInstance<T>"),
+        output.code.contains("type $VueOptionsInstance<T>"),
         "expected Options API instance helper:\n{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">"),
+            .contains("var count: $VueOptionsBinding<typeof __default__, \"count\">"),
         "expected data binding to reference the default component instance:\n{}",
         output.code
     );
@@ -71,7 +71,7 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     );
     assert!(
         output.code.contains(
-            "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"]"
+            "type $VueAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"]"
         ),
         "expected a module-scope authored component alias:\n{}",
         output.code
@@ -79,7 +79,7 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     assert!(
         output
             .code
-            .contains("type __VizeComponentInstance = Omit<__VizeAuthoredInstance, '$props' | '$emit' | '$slots'> & {"),
+            .contains("type $VueComponentInstance = Omit<$VueAuthoredInstance, '$props' | '$emit' | '$slots'> & {"),
         "the public instance must retain Options API members without broadening normalized Vue members:\n{}",
         output.code
     );
@@ -287,13 +287,13 @@ fn test_script_setup_keeps_options_separate_from_the_component_instance() {
     );
 
     assert!(
-        !output.code.contains("__VizeAuthoredComponent &")
-            && !output.code.contains("__VizeAuthoredInstance"),
+        !output.code.contains("$VueAuthoredComponent &")
+            && !output.code.contains("$VueAuthoredInstance"),
         "a `<script setup>` block must not intersect options into the component:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("type __VizeComponentInstance = {\n"),
+        output.code.contains("type $VueComponentInstance = {\n"),
         "the public instance must stay the normalized shape:\n{}",
         output.code
     );
@@ -382,7 +382,7 @@ export default defineComponent({
 
     for expected in [
         // the safe local a component reference reads
-        "  const _as: __VizeOptionsBinding<typeof __default__, \"as\"> = (void 0) as any; void _as;",
+        "  const _as: $VueOptionsBinding<typeof __default__, \"as\"> = (void 0) as any; void _as;",
         // template expressions keep reading the reserved prop through the instance
         "  void __vize_options_instance[\"as\"];",
         // the dynamic component resolves the local

@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-declare namespace __VizePatterns {
+declare namespace $VuePatterns {
   type Reachable<T> = [T] extends [never] ? { "Unreachable v-when": never } : true;
   /**
    * RFC 823 pattern types. Match narrows an arm; Subtract keeps the values left

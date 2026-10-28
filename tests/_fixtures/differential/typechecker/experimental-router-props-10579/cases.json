@@ -48,7 +48,7 @@
           "column": 3,
           "severity": 1,
           "code": 2322,
-          "message": "Type 'true' is not assignable to type 'EXPERIMENTAL_RouteRecordPropsOption<RouteLocationNormalizedLoadedTyped<RouteNamedMap, \"/products/[id=int]\">, __VizeResolvedProps> | undefined'."
+          "message": "Type 'true' is not assignable to type 'EXPERIMENTAL_RouteRecordPropsOption<RouteLocationNormalizedLoadedTyped<RouteNamedMap, \"/products/[id=int]\">, $VueResolvedProps> | undefined'."
         }
       ]
     },

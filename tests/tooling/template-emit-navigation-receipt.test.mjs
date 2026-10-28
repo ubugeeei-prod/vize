@@ -56,8 +56,8 @@ void test("missing, partial, duplicate, mutated and unknown helper families refu
     text.replace(navigationDeclaration, ""),
     text.replace(navigationDeclaration, navigationDeclaration.slice(0, -1)),
     text + navigationDeclaration,
-    text.replace("__VizeEmptyVueNavigationSlots<C>", "__VizeEmptyVueNavigationSlots<Cx>"),
-    text + "\n__VizeNavigationSlots",
+    text.replace("$VueEmptyVueNavigationSlots<C>", "$VueEmptyVueNavigationSlots<Cx>"),
+    text + "\n$VueNavigationSlots",
   ])
     assert.throws(() => rewind(damaged, model));
   assert.throws(() => rewind(text, "unknown initializer"));

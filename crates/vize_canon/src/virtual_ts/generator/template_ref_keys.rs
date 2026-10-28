@@ -125,14 +125,14 @@ impl TemplateRefKeyChecks<'_> {
                 continue;
             }
             if call.imported {
-                ts.push_str("void (null! as __VizeTemplateRefs[");
+                ts.push_str("void (null! as $VueTemplateRefs[");
             } else {
                 // A missing global produces the checker's error-type `any`.
                 // Keep that on the object side of the conditional: using it
                 // as the index would invent TS2538 beside the real TS2304.
                 append!(
                     *ts,
-                    "void (null! as ({}IsVue extends true ? __VizeTemplateRefs : Record<string, never>)[",
+                    "void (null! as ({}IsVue extends true ? $VueTemplateRefs : Record<string, never>)[",
                     self.helper
                 );
             }

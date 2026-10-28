@@ -11,7 +11,7 @@ use crate::virtual_ts::generate_virtual_ts;
 /// would mean the callback is checked, and reported, twice (#3446).
 const SEQUENCE_VALUE_LINES: [&str; 2] = [
     r#""transform": (void 0, (value) => value),"#,
-    "const __vize_prop_check_0_transform: __VizeResolvedProp<typeof __vize_resolved_Child_props_0, typeof __vize_selected_Child_props_0, 'transform', __Child_0_prop_transform> = (void 0, (value) => value);",
+    "const __vize_prop_check_0_transform: $VueResolvedProp<typeof __vize_resolved_Child_props_0, typeof __vize_selected_Child_props_0, 'transform', __Child_0_prop_transform> = (void 0, (value) => value);",
 ];
 
 #[test]

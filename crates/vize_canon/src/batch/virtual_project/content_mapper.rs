@@ -302,8 +302,8 @@ fn publicize_generated_diagnostic_helpers(code: &mut CompactString, mappings: &[
     }
 
     for (internal, display) in [
-        ("__VizeComponentCheckProps", "ComponentPropsForTemplate"),
-        ("__VizePublicComponentAttrs", "VueTemplatePublicAttrsType"),
+        ("$VueComponentCheckProps", "ComponentPropsForTemplate"),
+        ("$VuePublicComponentAttrs", "VueTemplatePublicAttrsType"),
     ] {
         debug_assert_eq!(internal.len(), display.len());
         let occurrences = code

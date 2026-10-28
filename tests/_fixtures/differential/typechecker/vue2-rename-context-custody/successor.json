@@ -29,7 +29,7 @@
         "file": "src/views/dashboard/admin/components/TransactionTable.vue",
         "diagnostics": [
           "error:2:20 [TS2339] Property 'list' does not exist on the component instance. (source: <el-table :data=\"list\" style=\"width: 100%;padding-top: 15px;\">; binding: 'data')",
-          "error:50:14 [TS2339] Property 'list' does not exist on type '__VizeThis'."
+          "error:50:14 [TS2339] Property 'list' does not exist on type '$VueThis'."
         ]
       }
     ],

@@ -1,8 +1,8 @@
 [
-  "  const absent: __VizeOptionsBinding<typeof __default__, \"absent\"> = (void 0) as any;",
-  "  var arrow: __VizeOptionsBinding<typeof __default__, \"arrow\"> = (void 0) as any;",
-  "  const fooBar: __VizeOptionsBinding<typeof __default__, \"fooBar\"> = (void 0) as any;",
-  "  const literal: __VizeOptionsBinding<typeof __default__, \"literal\"> = (void 0) as any;",
-  "  const plain: __VizeOptionsBinding<typeof __default__, \"plain\"> = (void 0) as any;",
-  "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;"
+  "  const absent: $VueOptionsBinding<typeof __default__, \"absent\"> = (void 0) as any;",
+  "  var arrow: $VueOptionsBinding<typeof __default__, \"arrow\"> = (void 0) as any;",
+  "  const fooBar: $VueOptionsBinding<typeof __default__, \"fooBar\"> = (void 0) as any;",
+  "  const literal: $VueOptionsBinding<typeof __default__, \"literal\"> = (void 0) as any;",
+  "  const plain: $VueOptionsBinding<typeof __default__, \"plain\"> = (void 0) as any;",
+  "  var ratio: $VueOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;"
 ]

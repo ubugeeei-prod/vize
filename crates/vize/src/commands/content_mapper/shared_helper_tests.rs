@@ -33,7 +33,7 @@ fn installed_vize_package_enables_shared_component_attribute_helpers() {
         "{text}"
     );
     assert_eq!(
-        text.matches("type __VizeComponentNativeAttrNames =")
+        text.matches("type $VueComponentNativeAttrNames =")
             .count(),
         0,
         "{text}"
@@ -73,7 +73,7 @@ fn mismatched_project_and_helper_vue_packages_keep_transforms_self_contained() {
         "{text}"
     );
     assert_eq!(
-        text.matches("type __VizeComponentNativeAttrNames =")
+        text.matches("type $VueComponentNativeAttrNames =")
             .count(),
         1,
         "{text}"
@@ -119,7 +119,7 @@ fn core_sharing_requires_the_installed_package_export_and_declaration() {
             if stage == 2 { 2 } else { 1 }
         );
         assert_eq!(
-            text.matches("type __VizeComponentInput<").count(),
+            text.matches("type $VueComponentInput<").count(),
             usize::from(stage != 2)
         );
     }

@@ -338,7 +338,7 @@ defineSlots<{
 </template>
 ```
 
-上のデフォルトスロットは `__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` として表され、
+上のデフォルトスロットは `$VueProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` として表され、
 TypeScript がスロットの戻り値の型と比較します。合わない子要素は TypeScript のエラーになります。
 
 ```vue
@@ -368,7 +368,7 @@ TypeScript がスロットの戻り値の型と比較します。合わない子
 
 制限:
 
-- スロットが受け付ける子の型が 1 種類のときは、`__VizeProvidedSlotChildren<__T>` は 1 つの子要素を
+- スロットが受け付ける子の型が 1 種類のときは、`$VueProvidedSlotChildren<__T>` は 1 つの子要素を
   `Only` と `[Only]` のどちらとしても受け付けます。
 - 開いたインデックスシグネチャや `any` のスロットは `any` になり、厳密なチェックは行いません。
 - 組み込みコンポーネント、動的コンポーネント、`KeepAlive`、`Teleport`、`Transition`、`TransitionGroup`、

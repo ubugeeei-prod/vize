@@ -21,7 +21,7 @@ fn template_global_helper_uses_fallback_for_unknown_public_instance_members() {
     );
 
     assert!(
-        ctx.contains("type __VizeGlobalContextProperty<T, F>"),
+        ctx.contains("type $VueGlobalContextProperty<T, F>"),
         "{ctx}"
     );
     assert!(ctx.contains("unknown extends T ? F : T"), "{ctx}");

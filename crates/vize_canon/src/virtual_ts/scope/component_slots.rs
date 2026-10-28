@@ -28,7 +28,7 @@ pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_childr
     // describe callable slot names, not whether the parent must provide them.
     // Required-slot checks therefore trust only Vize's own explicit marker.
     ts.push_str(
-        "  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n",
+        "  type $VueStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n",
     );
     // Navigation checks a known external constructor's actual slots. This does
     // not make a third-party callable slot mandatory: required-slot checks
@@ -36,29 +36,29 @@ pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_childr
     // Vue's declared options retain their slots parameter even when `data: any`
     // collapses the public instance. Unknown constructors carry no such contract.
     ts.push_str(
-        "  type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
+        "  type $VueEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $VueIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $VueIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
     );
     ts.push_str(
-        "  type __VizeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? __VizeIsAny<InstanceType<C>> extends true ? __VizeEmptyVueNavigationSlots<C> : __VizeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
+        "  type $VueNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $VueIsAny<InstanceType<C>> extends true ? $VueEmptyVueNavigationSlots<C> : $VueIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
     );
     ts.push_str(
-        "  type __VizeNavigationSlots<C> = __VizeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? __VizeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? __VizeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : __VizeNativeNavigationSlots<C>;\n",
+        "  type $VueNavigationSlots<C> = $VueIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $VueIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $VueNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $VueNativeNavigationSlots<C>;\n",
     );
     ts.push_str(
-        "  type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];\n",
+        "  type $VueRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];\n",
     );
     ts.push_str(
-        "  type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;\n",
+        "  type $VueMissingRequiredSlots<__S, __P> = Exclude<$VueRequiredSlotKeys<__S>, keyof __P>;\n",
     );
     ts.push_str(
-        "  type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };\n",
+        "  type $VueRequiredSlots<__S, __P> = $VueIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$VueMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $VueMissingRequiredSlots<__S, __P> };\n",
     );
     if strict_children {
         ts.push_str(
-            "  type __VizeSlotChildren<__S, __K extends PropertyKey> = __VizeIsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;\n",
+            "  type $VueSlotChildren<__S, __K extends PropertyKey> = $VueIsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;\n",
         );
         ts.push_str(
-            "  type __VizeProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;\n",
+            "  type $VueProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;\n",
         );
     }
 }
@@ -81,13 +81,13 @@ pub(super) fn generate_component_slot_checks(
         append_chained_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
     }
 
-    let contract_name = vize_carton::cstr!("__VizeSlotContract_{idx}");
+    let contract_name = vize_carton::cstr!("$VueSlotContract_{idx}");
     {
         let ts = &mut *ctx.ts;
         let mappings = &mut *ctx.mappings;
         append!(
             *ts,
-            "{expr_indent}type {contract_name} = __VizeStructuralSlots<typeof {component_ref}>;\n"
+            "{expr_indent}type {contract_name} = $VueStructuralSlots<typeof {component_ref}>;\n"
         );
 
         let provided_slots = provided_slots_type(usage);
@@ -95,7 +95,7 @@ pub(super) fn generate_component_slot_checks(
         let gen_start = ts.len();
         append!(
             *ts,
-            "{expr_indent}const {check_name}: __VizeRequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
+            "{expr_indent}const {check_name}: $VueRequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
         );
         append!(*ts, "{expr_indent}void {check_name};\n");
         let gen_end = ts.len();

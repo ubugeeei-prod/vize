@@ -84,9 +84,9 @@ const café = ref(<span />)
 fn component_input_diagnostics_use_public_display_names() {
     let source = r#"<script setup lang="ts">
 import Child from './Child.vue'
-const __VizeComponentCheckProps = 1
+const $VueComponentCheckProps = 1
 </script>
-<template><Child :count="__VizeComponentCheckProps" /></template>
+<template><Child :count="$VueComponentCheckProps" /></template>
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("App.vue"), source)
         .expect("content mapper transform");
@@ -94,7 +94,7 @@ const __VizeComponentCheckProps = 1
     assert_eq!(
         result
             .text
-            .matches("const __VizeComponentCheckProps = 1")
+            .matches("const $VueComponentCheckProps = 1")
             .count(),
         1,
         "authored identifiers must remain byte-identical:\n{}",
@@ -119,11 +119,11 @@ const __VizeComponentCheckProps = 1
         (
             result
                 .text
-                .matches("type __VizeComponentCheckProps<")
+                .matches("type $VueComponentCheckProps<")
                 .count(),
             result
                 .text
-                .matches("interface __VizePublicComponentAttrs")
+                .matches("interface $VuePublicComponentAttrs")
                 .count(),
         ),
         (0, 0),
@@ -135,8 +135,8 @@ const __VizeComponentCheckProps = 1
 #[test]
 fn authored_reference_packages_keep_internal_spellings() {
     let source = r#"<script setup lang="ts">
-/// <reference types="__VizeComponentCheckProps" />
-/// <reference types="__VizePublicComponentAttrs" />
+/// <reference types="$VueComponentCheckProps" />
+/// <reference types="$VuePublicComponentAttrs" />
 </script>
 <template><div /></template>
 "#;
@@ -151,8 +151,8 @@ fn authored_reference_packages_keep_internal_spellings() {
     assert_eq!(
         references,
         [
-            "\"__VizeComponentCheckProps\" />",
-            "\"__VizePublicComponentAttrs\" />",
+            "\"$VueComponentCheckProps\" />",
+            "\"$VuePublicComponentAttrs\" />",
         ],
         "authored reference packages must remain byte-identical:\n{}",
         result.text
@@ -259,9 +259,9 @@ const TEMPLATE_SCOPE: &str = "  ;(function __template() {\n";
 /// The first four lines the template scope emits for a Vue 3 component that has
 /// a setup binding to shadow, when the shared preamble is not hoisted.
 const TEMPLATE_REF_UNWRAP_PRELUDE: &str = r#"    // Auto-unwrap Vue refs in template scope
-    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
-    type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;
+    type $VueIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type $VueWidenTemplateRef<T> = $VueIsAny<T> extends true ? T : $VueIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $VueWidenTemplateRef<T['value']> : T : T;
 "#;
 
 fn template_scope_of(text: &str) -> &str {
@@ -292,7 +292,7 @@ const message = ref('hello')
         .take(4)
         .collect::<std::string::String>();
     assert_eq!(prelude, TEMPLATE_REF_UNWRAP_PRELUDE);
-    for declaration in ["type __VizeIsUnion<", "type __VizeWidenTemplateRef<"] {
+    for declaration in ["type $VueIsUnion<", "type $VueWidenTemplateRef<"] {
         assert_eq!(
             result.text.matches(declaration).count(),
             1,
@@ -311,8 +311,8 @@ fn a_component_without_setup_bindings_declares_no_widening_helpers() {
 
     for declaration in [
         "type __U<",
-        "type __VizeIsUnion<",
-        "type __VizeWidenTemplateRef<",
+        "type $VueIsUnion<",
+        "type $VueWidenTemplateRef<",
     ] {
         assert_eq!(
             result.text.matches(declaration).count(),
@@ -447,9 +447,9 @@ export default {
     assert!(
         enabled
             .text
-            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">")
+            .contains("var count: $VueOptionsBinding<typeof __default__, \"count\">")
     );
-    assert!(!disabled.text.contains("__VizeOptionsBinding"));
+    assert!(!disabled.text.contains("$VueOptionsBinding"));
 }
 
 #[test]
@@ -483,7 +483,7 @@ export default { data() { return { count: 1 } } }
     let result = generate_vue_content_mapper_transform(Path::new("DefaultOptions.vue"), source)
         .expect("transform");
 
-    assert!(result.text.contains("__VizeOptionsBinding"));
+    assert!(result.text.contains("$VueOptionsBinding"));
 }
 
 #[test]
@@ -682,16 +682,16 @@ import Child from "./Child.vue";
         let text = result.text.as_str();
         assert_eq!(
             text.matches(
-                "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"vize/content-mapper-helpers\";"
+                "import type { VizeComponentAttrCamel as $VueComponentAttrCamel, VizeComponentGlobalHtmlAttrs as $VueComponentGlobalHtmlAttrs } from \"vize/content-mapper-helpers\";"
             )
             .count(),
             1,
             "{text}"
         );
         for duplicated in [
-            "type __VizeComponentAttrCamel<",
-            "type __VizeComponentNativeAttrNames =",
-            "type __VizeComponentGlobalHtmlAttrs =",
+            "type $VueComponentAttrCamel<",
+            "type $VueComponentNativeAttrNames =",
+            "type $VueComponentGlobalHtmlAttrs =",
         ] {
             assert_eq!(
                 text.matches(duplicated).count(),
@@ -706,7 +706,7 @@ import Child from "./Child.vue";
     assert_eq!(
         self_contained
             .text
-            .matches("type __VizeComponentNativeAttrNames =")
+            .matches("type $VueComponentNativeAttrNames =")
             .count(),
         1,
         "standalone transforms must not require an installed vize package"

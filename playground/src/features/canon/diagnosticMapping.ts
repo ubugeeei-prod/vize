@@ -64,14 +64,14 @@ export function mapDiagnosticsToSource(
 function patternDiagnostic(diag: TsDiagnostic, virtualTs: string, details: string) {
   if (diag.code !== 2322) return;
   const assertion = virtualTs.slice(diag.start);
-  if (/^__vize_match_\w*unreachable: __VizePatterns\.Reachable</.test(assertion)) {
+  if (/^__vize_match_\w*unreachable: \$VuePatterns\.Reachable</.test(assertion)) {
     return {
       warning: true,
       message: "Unreachable v-when: the pattern cannot match any remaining value.",
       help: "Remove this arm or check its pattern and order. Earlier unguarded arms may already cover it.",
     };
   }
-  if (/^__vize_match_\w+: __VizePatterns\.Exhaustiveness</.test(assertion)) {
+  if (/^__vize_match_\w+: \$VuePatterns\.Exhaustiveness</.test(assertion)) {
     return {
       warning: false,
       message: "Non-exhaustive v-match: not all possible values are covered.",

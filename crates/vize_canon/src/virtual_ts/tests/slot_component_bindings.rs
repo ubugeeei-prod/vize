@@ -23,9 +23,9 @@ fn generate(template: &str) -> vize_carton::String {
 fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
     let slot_free = generate(r#"<div v-for="item in items">{{ item }}</div>"#);
     for alias in [
-        "type __VizeSlotHostSlots<",
-        "type __VizeSlotsFactory<",
-        "type __VizeSlotPayload<",
+        "type $VueSlotHostSlots<",
+        "type $VueSlotsFactory<",
+        "type $VueSlotPayload<",
     ] {
         assert!(
             !slot_free.contains(alias),
@@ -35,11 +35,11 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
 
     let static_name = generate(TEMPLATE);
     assert!(
-        static_name.contains("type __VizeSlotsFactory<"),
+        static_name.contains("type $VueSlotsFactory<"),
         "{static_name}"
     );
     assert!(
-        static_name.contains("type __VizeSlotPayload<"),
+        static_name.contains("type $VueSlotPayload<"),
         "{static_name}"
     );
 
@@ -47,11 +47,11 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
         r#"<el-badge><template #[slotName]="{ value }">{{ value }}</template></el-badge>"#,
     );
     assert!(
-        dynamic_name.contains("type __VizeSlotsFactory<"),
+        dynamic_name.contains("type $VueSlotsFactory<"),
         "{dynamic_name}"
     );
     assert!(
-        dynamic_name.contains("type __VizeSlotPayload<"),
+        dynamic_name.contains("type $VueSlotPayload<"),
         "{dynamic_name}"
     );
     assert!(
@@ -82,7 +82,7 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsFactory<typeof ElBadge>")
+            .matches("$VueSlotsFactory<typeof ElBadge>")
             .count(),
         // The slot body and restored canonical prop-check scope each keep the
         // same actual PascalCase constructor, as for configured globals below.
@@ -91,7 +91,7 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
         output.code,
     );
     assert!(
-        !output.code.contains("__VizeSlotsFactory<typeof el_badge>"),
+        !output.code.contains("$VueSlotsFactory<typeof el_badge>"),
         "{}",
         output.code,
     );
@@ -119,7 +119,7 @@ fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsFactory<typeof ElBadge>")
+            .matches("$VueSlotsFactory<typeof ElBadge>")
             .count(),
         2,
         "{}",
@@ -165,7 +165,7 @@ type BadgeInstance = typeof ElBadge
 
     assert!(
         output.code.contains(
-            "declare const __VizeComponent_el_badge: __VizeGlobalComponent<\"el-badge\", \"ElBadge\"> & __VizeGlobalComponentFallback;"
+            "declare const $VueComponent_el_badge: $VueGlobalComponent<\"el-badge\", \"ElBadge\"> & $VueGlobalComponentFallback;"
         ),
         "{}",
         output.code,
@@ -178,7 +178,7 @@ type BadgeInstance = typeof ElBadge
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsFactory<typeof __VizeComponent_el_badge>")
+            .matches("$VueSlotsFactory<typeof $VueComponent_el_badge>")
             .count(),
         2,
         "{}",
@@ -207,14 +207,14 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     assert!(
         output
             .code
-            .contains("declare const el_badge: __VizeGlobalComponent<\"el-badge\", \"ElBadge\"> & __VizeGlobalComponentFallback;"),
+            .contains("declare const el_badge: $VueGlobalComponent<\"el-badge\", \"ElBadge\"> & $VueGlobalComponentFallback;"),
         "{}",
         output.code,
     );
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsFactory<typeof el_badge>")
+            .matches("$VueSlotsFactory<typeof el_badge>")
             .count(),
         1,
         "{}",
@@ -251,7 +251,7 @@ fn editor_reference_paths_are_literal_and_deduplicated() {
 /// An empty `v-slot` expression (`<template #text="">`) is a slot function
 /// without parameters for Vue's compiler. The generated slot function declares
 /// its synthetic parameter for it; an empty authored pattern would leave the
-/// parameter without a name (`_slot_text_7(: __VizeSlotPayload<…>)`), a syntax
+/// parameter without a name (`_slot_text_7(: $VueSlotPayload<…>)`), a syntax
 /// error that aborts Corsa's semantic pass for every file in the project.
 #[test]
 fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
@@ -289,7 +289,7 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
             parsed.diagnostics
         );
         let function = vize_carton::cstr!(
-            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: __VizeSlotPayload<typeof __vize_slot_host_{scope}, \"content\">) {{"
+            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: $VueSlotPayload<typeof __vize_slot_host_{scope}, \"content\">) {{"
         );
         let parameter = vize_carton::cstr!("    void __vize_slot_props_{scope};");
         for expected in [function, parameter] {

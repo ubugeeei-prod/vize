@@ -14,11 +14,11 @@ export type FakeAuthoredLspLifecycle = {
 };
 
 const DEFAULT_LIFECYCLE: FakeAuthoredLspLifecycle = {
-  copiedFile: "__VizeOracleFeatureChild.vue",
-  copiedImportSpecifier: "./__VizeOracleFeatureChild.vue",
+  copiedFile: "$VueOracleFeatureChild.vue",
+  copiedImportSpecifier: "./$VueOracleFeatureChild.vue",
   importerFile: "FeatureParent.vue",
-  renamedFile: "__VizeOracleRenamedFeatureChild.vue",
-  renamedImportSpecifier: "./__VizeOracleRenamedFeatureChild.vue",
+  renamedFile: "$VueOracleRenamedFeatureChild.vue",
+  renamedImportSpecifier: "./$VueOracleRenamedFeatureChild.vue",
 };
 
 export class FakeAuthoredLspSession {
