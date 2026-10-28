@@ -1,74 +1,116 @@
-name: Source operation profile
+name: Scoped Fx interface laws
 on:
-  pull_request:
-    paths:
-      - .github/workflows/source-operation-profile.yml
-      - davinci/vize_l0/src/profiler/**
-      - davinci/vize_l0/src/profiler.rs
-      - davinci/vize_l0/tests/source_operations_profile.rs
-      - davinci/vize_l0/examples/source_operation_overhead.rs
-      - davinci/vize_l0/Cargo.toml
-      - crates/vize_carton/src/profile_export/**
-      - crates/vize_carton/src/profile_export.rs
-      - crates/vize_carton/Cargo.toml
-  workflow_dispatch: {}
-permissions:
-  contents: read
-concurrency:
-  group: source-operation-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  workflow_dispatch:
+permissions: { contents: read }
 jobs:
-  scopes:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
+  laws:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     env:
+      CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
+      SOURCE_CANDIDATE: 5f7d2941fe9621e42883c68bffbde240372d3b5f
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-      - run: rustup toolchain install 1.99.1 --profile minimal
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - run: rustup toolchain install 1.99.1 --profile minimal --component rustfmt --component clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: source-operation-v1
+          key: scoped-fx-laws-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Check disabled and instrumented collector laws
+      - name: Check native formatting and record the exact compiler and sources
         run: |
           set -euo pipefail
-          mkdir -p evidence
-          git rev-parse HEAD > evidence/source.sha
-          rustc +1.99.1 -vV > evidence/rustc.txt
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
-          test "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
-          test -z "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"
-      - name: Measure instrumentation overhead separately from product speed
+          mkdir -p laws
+          rustup run 1.99.1 rustfmt --edition 2024 --check --config skip_children=true davinci/vize_l0/src/lib.rs davinci/vize_l0/src/profiler.rs davinci/vize_l0/src/profiler/fx_hasher.rs davinci/vize_l0/src/profiler/fx_hasher_macros.rs davinci/vize_l0/tests/scoped_fx_hasher.rs
+          rustc +1.99.1 -vV > laws/rustc.txt
+          lscpu > laws/cpu.txt
+          git rev-parse HEAD > laws/bench.sha
+          git cat-file commit HEAD > laws/bench.commit
+      - name: Verify normal exact alias and every stable digest and map observation
         run: |
           set -euo pipefail
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead
-          cp target/ci-opt/examples/source_operation_overhead evidence/normal
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead --features micro-profiling
-          cp target/ci-opt/examples/source_operation_overhead evidence/instrumented
-          sha256sum evidence/normal evidence/instrumented > evidence/binaries.sha256
-          wc -c evidence/normal evidence/instrumented > evidence/binary-bytes.txt
-          cpus=$(python3 -c 'import os;print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
-          printf '%s\n' "$cpus" > evidence/measurement-cpus.txt
-          lscpu > evidence/cpu.txt
-          for round in 1 2 3; do
-            taskset -c "$cpus" evidence/normal disabled 8 500000 > "evidence/normal-$round.json"
-            taskset -c "$cpus" evidence/instrumented disabled 8 500000 > "evidence/feature-disabled-$round.json"
-            taskset -c "$cpus" evidence/instrumented enabled 8 500000 > "evidence/feature-enabled-$round.json"
-          done
-          rm evidence/normal evidence/instrumented
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          target="$GITHUB_WORKSPACE/target/fx-normal-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          cargo +1.99.1 test --locked --profile ci --target-dir "$target" -p vize_l0 --test scoped_fx_hasher --message-format=json-render-diagnostics -- --exact stable_fx_delegation_preserves_every_interface_and_map_observation --nocapture --test-threads 1 > laws/normal.log 2> laws/normal.stderr
+          cargo +1.99.1 clippy --locked --profile ci --target-dir "$target" -p vize_l0 --test scoped_fx_hasher -- -D warnings > laws/normal-clippy.log 2> laws/normal-clippy.stderr
+      - name: Verify opt-in delegates and exact source allocation and thread counters
+        run: |
+          set -euo pipefail
+          target="$GITHUB_WORKSPACE/target/fx-profile-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          cargo +1.99.1 test --locked --profile ci --target-dir "$target" -p vize_l0 --test scoped_fx_hasher --features micro-profiling --message-format=json-render-diagnostics -- --exact stable_fx_delegation_preserves_every_interface_and_map_observation --nocapture --test-threads 1 > laws/profile.log 2> laws/profile.stderr
+          cargo +1.99.1 clippy --locked --profile ci --target-dir "$target" -p vize_l0 --test scoped_fx_hasher --features micro-profiling -- -D warnings > laws/profile-clippy.log 2> laws/profile-clippy.stderr
+      - name: Seal interface receipts and check normal code contains no new observer
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 - <<'PYFX'
+          import hashlib,json,os,pathlib,re,subprocess
+          root=pathlib.Path("laws"); source=pathlib.Path.cwd()
+          def text(name):return (root/name).read_text() if (root/name).is_file() else ""
+          def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+          roles={};qualified=True
+          for role in ("normal","profile"):
+              raw=text(role+".log"); names=[]
+              for line in raw.splitlines():
+                  if line.startswith("{"):
+                      row=json.loads(line)
+                      if row.get("reason")=="compiler-artifact" and row["target"]["name"]=="scoped_fx_hasher":names.append(row)
+              expected=["default"] if role=="normal" else ["default","micro-profiling"]
+              valid=len(names)==1 and not names[0]["fresh"] and names[0]["features"]==expected and names[0]["profile"]["opt_level"]=="0"
+              valid=valid and "1 passed; 0 failed; 0 ignored" in raw
+              match=re.search(r"scoped_fx_qualified=(\{[^\n]*\})",raw)
+              control=json.loads(match[1]) if match else None
+              valid=valid and control is not None and control["normalAliasExactRawType"]==(role=="normal") and control["profileBuilderIsZeroSized"] is True
+              if names:
+                  path=pathlib.Path(names[0]["executable"])
+                  symbols=subprocess.check_output(["nm","-C","--defined-only",str(path)],text=True)
+                  (root/(role+"-symbols.txt")).write_text(symbols)
+                  marker=b"test.scoped_fx."
+                  has_prefix=marker in path.read_bytes()
+                  new_symbols=[s for s in symbols.splitlines() if "vize_l0::profiler::fx_hasher::" in s]
+                  valid=valid and (has_prefix==(role=="profile")) and (bool(new_symbols)==(role=="profile"))
+                  roles[role]={"cargo":names[0],"binarySha256":sha(path),"binaryBytes":path.stat().st_size,"normalObserverSymbolsAbsent":not new_symbols,"observerSymbolCount":len(new_symbols),"newCounterLabelsPresent":has_prefix,"controls":control,"qualified":valid}
+              else:roles[role]={"qualified":False}
+              qualified=qualified and valid
+          profile=text("profile.log"); operations=[]
+          allocation_match=re.search(r"scoped_fx_observer_allocations=(\{[^\n]*\})",profile)
+          allocation=json.loads(allocation_match[1]) if allocation_match else None
+          qualified=qualified and allocation=={"count":1,"allocCalls":0,"requestedBytes":0,"selfAllocCalls":0,"selfRequestedBytes":0,"scope":"same Rust caller thread; observer registration excluded"}
+          for label in ("scoped_fx_interfaces","scoped_fx_threads"):
+              match=re.search(label+r"=(\[[^\n]*\])",profile)
+              operations.append({"label":label,"entries":json.loads(match[1]) if match else None})
+          qualified=qualified and all(r["entries"] for r in operations)
+          expected={"test.scoped_fx."+k:(c,u) for k,c,u in [("build",2,0),("hash_one",1,0),("finish",3,0),("write.bytes",1,3),("write_u8.bytes",1,1),("write_u16.bytes",1,2),("write_u32.bytes",1,4),("write_u64.bytes",2,16),("write_u128.bytes",1,16),("write_usize.bytes",1,8),("write_i8.bytes",1,1),("write_i16.bytes",1,2),("write_i32.bytes",1,4),("write_i64.bytes",1,8),("write_i128.bytes",1,16),("write_isize.bytes",1,8)]}
+          actual={e["name"]:(e["calls"],e["units"]) for e in operations[0]["entries"]} if operations[0]["entries"] else None
+          qualified=qualified and actual==expected
+          threaded={e["name"]:(e["calls"],e["units"]) for e in operations[1]["entries"]} if operations[1]["entries"] else None
+          qualified=qualified and threaded=={"test.scoped_fx."+name:(4000,32000 if name=="write_u64.bytes" else 0) for name in ("build","hash_one","finish","write_u64.bytes")}
+          for role in ("normal","profile"):
+              qualified=qualified and not text(role+"-clippy.stderr").count("error:") and "Finished" in text(role+"-clippy.stderr")
+          files=["davinci/vize_l0/src/lib.rs","davinci/vize_l0/src/profiler.rs","davinci/vize_l0/src/profiler/fx_hasher.rs","davinci/vize_l0/src/profiler/fx_hasher_macros.rs","davinci/vize_l0/tests/scoped_fx_hasher.rs"]
+          receipt={"sourceCandidate":os.environ["SOURCE_CANDIDATE"],"bench":text("bench.sha").strip(),"qualifiedFunctional":bool(qualified),"scope":"untimed exact stable Fx interface and map parity; all production maps still raw; not a speed/PMU/whole-hash count claim","roles":roles,"operations":operations,"sourceSha256":{p:sha(source/p) for p in files},"lockSha256":sha(source/"Cargo.lock"),"rawSha256":{p.name:sha(p) for p in root.iterdir() if p.is_file()},"sourceOwnerAllocations":allocation,"allocationLaw":"same-thread owner span count1/inclusive0calls0bytes/self0calls0bytes; excludes libtest reporter and observer registration","unsupportedInterfaceCounts":{"write_str":None,"write_length_prefix":None},"normalTiming":None,"observerOverhead":None,"hardwareCounters":None,"completeHashComputations":None,"failureTail":None if qualified else {p.name:p.read_text()[-6000:] for p in root.glob("*.stderr")}}
+          data=(json.dumps(receipt,separators=(",",":"))+"\n").encode();assert len(data)<=95000
+          (root/"receipt.json").write_bytes(data);print(data.decode())
+          assert qualified,"scoped Fx exact interface/codegen law failed"
+          PYFX
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: source-operation-${{ github.sha }}
-          path: evidence/
-          if-no-files-found: error
+          name: scoped-fx-laws-receipt-${{ github.run_id }}
+          path: |
+            laws/receipt.json
+            laws/rustc.txt
+            laws/cpu.txt
+          if-no-files-found: warn
+      - name: Package text-only raw evidence
+        if: always()
+        run: tar -czf "$RUNNER_TEMP/scoped-fx-laws-raw.tgz" laws
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: scoped-fx-laws-raw-${{ github.run_id }}
+          path: ${{ runner.temp }}/scoped-fx-laws-raw.tgz
+          if-no-files-found: warn
