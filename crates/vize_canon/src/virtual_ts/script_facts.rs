@@ -4,6 +4,8 @@
 //! only way `virtual_ts` consults `Bindings` and `UndefinedRefs`, so the
 //! struct fields stay producer storage.
 
+use std::{cell::RefCell, rc::Rc};
+
 use vize_croquis::facts::{
     Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, UndefinedRefs,
 };
@@ -22,6 +24,68 @@ struct CanonUndefinedRefs;
 impl FactConsumer for CanonUndefinedRefs {
     const NAME: &'static str = "canon/virtual-ts-undefined-refs";
     const DEMAND: Demand = Demand::NONE.with(UndefinedRefs::ID);
+}
+
+struct CachedBindings {
+    summary: *const Croquis,
+    table: Rc<FactTable<Bindings>>,
+}
+
+thread_local! {
+    /// The current synchronous projection's bindings. Batch generation is
+    /// parallel across threads, while every individual projection is
+    /// synchronous, so a lexical thread-local scope gives each SFC one table
+    /// without locking or widening dozens of hot function signatures.
+    static CACHED_BINDINGS: RefCell<Option<CachedBindings>> = const { RefCell::new(None) };
+}
+
+#[cfg(test)]
+fn preparation_count(increment: bool) -> usize {
+    thread_local! {
+        static COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    }
+    COUNT.with(|count| {
+        if increment {
+            count.set(count.get() + 1);
+        }
+        count.get()
+    })
+}
+
+/// Restores an outer projection's cache on normal return and unwinding.
+struct BindingsScope(Option<CachedBindings>);
+
+impl Drop for BindingsScope {
+    fn drop(&mut self) {
+        CACHED_BINDINGS.with_borrow_mut(|cache| {
+            *cache = self.0.take();
+        });
+    }
+}
+
+fn prepare_bindings(summary: &Croquis) -> Option<Rc<FactTable<Bindings>>> {
+    #[cfg(test)]
+    preparation_count(true);
+    vize_l0::micro_count!("canon.script_facts.prepare_bindings.calls", 1);
+    let facts = CroquisFacts::new(summary);
+    vize_l0::micro_span!(
+        "canon.script_facts.prepare_bindings",
+        facts
+            .prepare_owned::<CanonBindings, Bindings>()
+            .ok()
+            .map(Rc::new)
+    )
+}
+
+/// Run one virtual-TS projection with one bindings table for every consumer.
+pub(super) fn with_cached_bindings<T>(summary: &Croquis, body: impl FnOnce() -> T) -> T {
+    let current = CachedBindings {
+        summary: std::ptr::from_ref(summary),
+        table: prepare_bindings(summary).unwrap_or_else(|| Rc::new(FactTable::default())),
+    };
+    let previous = CACHED_BINDINGS.with_borrow_mut(|cache| cache.replace(current));
+    let _scope = BindingsScope(previous);
+    body()
 }
 
 /// Borrowed `Bindings` table. Methods are inherent so callers do not import the trait.
@@ -59,12 +123,14 @@ impl ScriptBindings<'_> {
 
 pub(super) fn with_bindings<T>(summary: &Croquis, body: impl FnOnce(ScriptBindings<'_>) -> T) -> T {
     vize_l0::micro_count!("canon.script_facts.with_bindings.calls", 1);
-    let mut facts = CroquisFacts::new(summary);
-    let view = vize_l0::micro_span!(
-        "canon.script_facts.prepare_bindings",
-        facts.prepare::<CanonBindings>()
-    );
-    body(ScriptBindings(view.get::<Bindings>().ok()))
+    let cached = CACHED_BINDINGS.with_borrow(|cache| {
+        cache
+            .as_ref()
+            .filter(|cached| std::ptr::eq(cached.summary, summary))
+            .map(|cached| Rc::clone(&cached.table))
+    });
+    let table = cached.or_else(|| prepare_bindings(summary));
+    body(ScriptBindings(table.as_deref()))
 }
 
 pub(super) fn binding_type(summary: &Croquis, name: &str) -> Option<BindingType> {
@@ -98,4 +164,32 @@ pub(super) fn undefined_refs(summary: &Croquis) -> Vec<UndefinedRef> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{binding_type, preparation_count, with_cached_bindings};
+    use vize_croquis::{BindingType, Croquis};
+
+    #[test]
+    fn one_projection_prepares_bindings_once_and_nested_scopes_restore_the_owner() {
+        let mut outer = Croquis::new();
+        outer.bindings.add("outer", BindingType::SetupRef);
+        let mut inner = Croquis::new();
+        inner.bindings.add("inner", BindingType::SetupConst);
+        let before = preparation_count(false);
+
+        with_cached_bindings(&outer, || {
+            for _ in 0..100 {
+                assert_eq!(binding_type(&outer, "outer"), Some(BindingType::SetupRef));
+            }
+            with_cached_bindings(&inner, || {
+                assert_eq!(binding_type(&inner, "inner"), Some(BindingType::SetupConst));
+                assert_eq!(binding_type(&inner, "outer"), None);
+            });
+            assert_eq!(binding_type(&outer, "outer"), Some(BindingType::SetupRef));
+        });
+
+        assert_eq!(preparation_count(false) - before, 2);
+    }
 }
