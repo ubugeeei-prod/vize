@@ -5,9 +5,7 @@
 //! helper name there: an unqualified generated reference becomes a wrong-arity
 //! or non-callable error, while the reserved ambient module remains exact.
 
-use super::super::{
-    create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics,
-};
+use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use crate::batch::VirtualProject;
 
 const CHILD: &str = r#"<script setup lang="ts">
@@ -194,7 +192,11 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
     let Some(snapshot) = snapshot else {
         return;
     };
-    assert_eq!(snapshot.len(), 1, "one authored mismatch only: {snapshot:#?}");
+    assert_eq!(
+        snapshot.len(),
+        1,
+        "one authored mismatch only: {snapshot:#?}"
+    );
     let (file, code, message) = &snapshot[0];
     assert_eq!(file.as_str(), "src/Parent.vue");
     assert_eq!(*code, Some(2322));

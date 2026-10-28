@@ -218,13 +218,12 @@ pub(super) fn emit_default_export_declaration(
         ref_resolver_type,
     }) = generic_component_params
     {
-        let emit_resolvers =
-            emits_info.generic_emit_resolver_fields(
-                generic_decl,
-                generic_names,
-                props_type,
-                hoist_shared_preamble,
-            );
+        let emit_resolvers = emits_info.generic_emit_resolver_fields(
+            generic_decl,
+            generic_names,
+            props_type,
+            hoist_shared_preamble,
+        );
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
             ""
         } else {

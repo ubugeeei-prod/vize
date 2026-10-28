@@ -99,8 +99,8 @@ fn slot_payload_type(
         );
     }
 
-    let slot_payload = crate::virtual_ts::helpers::shared_types::SLOT_PAYLOAD
-        .select(ctx.hoist_shared_preamble);
+    let slot_payload =
+        crate::virtual_ts::helpers::shared_types::SLOT_PAYLOAD.select(ctx.hoist_shared_preamble);
 
     if name_is_static {
         cstr!(

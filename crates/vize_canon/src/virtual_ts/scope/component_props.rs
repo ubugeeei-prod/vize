@@ -288,8 +288,8 @@ fn generate_usage_declarations(
             shared.canonical_idx,
         );
     } else {
-        let is_any = crate::virtual_ts::helpers::shared_types::IS_ANY
-            .select(ctx.hoist_shared_preamble);
+        let is_any =
+            crate::virtual_ts::helpers::shared_types::IS_ANY.select(ctx.hoist_shared_preamble);
         let component_raw_props = crate::virtual_ts::helpers::shared_types::COMPONENT_RAW_PROPS
             .select(ctx.hoist_shared_preamble);
         append!(

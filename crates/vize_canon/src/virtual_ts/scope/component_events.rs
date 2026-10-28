@@ -94,10 +94,9 @@ pub(super) fn generate_component_event_types(
         String::from,
     );
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
-    let is_any = crate::virtual_ts::helpers::shared_types::IS_ANY
-        .select(hoist_shared_preamble);
-    let emit_owned_keys = crate::virtual_ts::helpers::shared_types::EMIT_OWNED_KEYS
-        .select(hoist_shared_preamble);
+    let is_any = crate::virtual_ts::helpers::shared_types::IS_ANY.select(hoist_shared_preamble);
+    let emit_owned_keys =
+        crate::virtual_ts::helpers::shared_types::EMIT_OWNED_KEYS.select(hoist_shared_preamble);
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");
     let mut owned_listener_key = String::default();

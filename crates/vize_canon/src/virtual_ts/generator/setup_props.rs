@@ -286,8 +286,8 @@ impl SetupPropsPlan {
                 cstr!("{public_props_type_ref} & __VizeJsxSlotProps<__VizeSlots>");
         }
         if has_emits_for_props {
-            let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
-                .select(hoist_shared_preamble);
+            let emit_props =
+                crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
             append!(
                 ts,
                 "  $props: {public_props_type_ref} & {emit_props}<Emits>;\n"

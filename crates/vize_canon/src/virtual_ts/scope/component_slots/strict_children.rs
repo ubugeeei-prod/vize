@@ -38,8 +38,8 @@ pub(super) fn generate_strict_slot_child_checks(
     } else {
         String::from(ctx.indent)
     };
-    let slot_children = crate::virtual_ts::helpers::shared_types::SLOT_CHILDREN
-        .select(ctx.hoist_shared_preamble);
+    let slot_children =
+        crate::virtual_ts::helpers::shared_types::SLOT_CHILDREN.select(ctx.hoist_shared_preamble);
     let provided_slot_children = crate::virtual_ts::helpers::shared_types::PROVIDED_SLOT_CHILDREN
         .select(ctx.hoist_shared_preamble);
 

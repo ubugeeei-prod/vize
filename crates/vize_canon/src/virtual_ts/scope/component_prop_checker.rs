@@ -149,8 +149,7 @@ pub(super) fn append_prop_checker_alias(
     let emit_listeners = shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
     let required_fallthrough =
         shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
-    let is_library_generic =
-        shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
+    let is_library_generic = shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
     let fallthrough_value = shared_types::FALLTHROUGH_VALUE.select(hoist_shared_preamble);
     let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
     append!(
@@ -197,8 +196,7 @@ pub(super) fn prop_alias_type(
     fallthrough_prop_name: &str,
     hoist_shared_preamble: bool,
 ) -> String {
-    let component_ref_callback =
-        shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
+    let component_ref_callback = shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
     let prop_value = shared_types::PROP_VALUE.select(hoist_shared_preamble);
     let callable_prop = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {

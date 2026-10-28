@@ -173,10 +173,10 @@ pub(crate) fn generate_slot_host_binding(
     indent: &str,
     hoist_shared_preamble: bool,
 ) {
-    let slot_host_selector = crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR
-        .select(hoist_shared_preamble);
-    let slot_constructor = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR
-        .select(hoist_shared_preamble);
+    let slot_host_selector =
+        crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(hoist_shared_preamble);
+    let slot_constructor =
+        crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(hoist_shared_preamble);
     let slot_constructor_args = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS
         .select(hoist_shared_preamble);
     let slots_factory =

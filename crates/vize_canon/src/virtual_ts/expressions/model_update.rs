@@ -39,8 +39,8 @@ pub(super) fn append_model_update_check(
 ) {
     let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
     let payload = vize_carton::cstr!("__{component_type_name}_{idx}_model_{safe_prop_name}");
-    let emit_listeners = crate::virtual_ts::helpers::shared_types::EMIT_LISTENERS
-        .select(hoist_shared_preamble);
+    let emit_listeners =
+        crate::virtual_ts::helpers::shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
     append!(
         *ts,
         "{indent}type {payload} = {emit_listeners}<__{component_type_name}_Component_{idx}> extends {{ ",

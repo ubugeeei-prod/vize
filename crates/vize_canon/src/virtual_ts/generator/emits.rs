@@ -77,8 +77,8 @@ impl EmitsInfo {
     ) -> String {
         let mut field = String::default();
         if self.has_emits_for_props && self.has_generic_emits {
-            let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
-                .select(hoist_shared_preamble);
+            let emit_props =
+                crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
             append!(
                 field,
                 "__vizeResolveEmitProps?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => {emit_props}<Emits<{generic_names}>>;"
@@ -299,8 +299,8 @@ fn emit_emit_props_helper(
     if !info.has_emits_for_props {
         return;
     }
-    let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
-        .select(hoist_shared_preamble);
+    let emit_props =
+        crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
     if info.has_runtime_emits {
         if info.preserve_event_navigation {
             ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n");
@@ -322,9 +322,6 @@ fn emit_emit_props_helper(
                 );
             }
         }
-        append!(
-            *ts,
-            "type __VizeStaticEmitProps = {emit_props}<Emits>;\n\n"
-        );
+        append!(*ts, "type __VizeStaticEmitProps = {emit_props}<Emits>;\n\n");
     }
 }

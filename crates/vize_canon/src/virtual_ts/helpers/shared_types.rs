@@ -15,11 +15,7 @@ pub(crate) struct SharedTypeRef {
 
 impl SharedTypeRef {
     pub(crate) const fn select(self, hoisted: bool) -> &'static str {
-        if hoisted {
-            self.hoisted
-        } else {
-            self.embedded
-        }
+        if hoisted { self.hoisted } else { self.embedded }
     }
 }
 

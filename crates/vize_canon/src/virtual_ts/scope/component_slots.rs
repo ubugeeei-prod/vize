@@ -85,8 +85,8 @@ pub(super) fn generate_component_slot_checks(
     };
     let structural_slots = crate::virtual_ts::helpers::shared_types::STRUCTURAL_SLOTS
         .select(ctx.hoist_shared_preamble);
-    let required_slots = crate::virtual_ts::helpers::shared_types::REQUIRED_SLOTS
-        .select(ctx.hoist_shared_preamble);
+    let required_slots =
+        crate::virtual_ts::helpers::shared_types::REQUIRED_SLOTS.select(ctx.hoist_shared_preamble);
 
     if let Some(ref guard) = usage.vif_guard {
         append_chained_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
