@@ -316,12 +316,10 @@ fn admit_called_local_composables(analyzer: &mut CrossFileAnalyzer, root: &Path)
             .registry()
             .iter()
             .flat_map(|entry| {
-                entry
-                    .analysis
-                    .provide_inject
-                    .composables()
-                    .iter()
-                    .map(|call| (entry.path.clone(), call.source.clone()))
+                let importer = entry.path.clone();
+                vize_croquis::facts::composable_calls(&entry.analysis)
+                    .into_iter()
+                    .map(move |call| (importer.clone(), call.source))
             })
             .collect();
         let mut added = false;

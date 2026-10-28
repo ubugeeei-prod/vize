@@ -17,7 +17,7 @@ use super::super::extract::{
     get_binding_type_from_kind, process_call_expression, record_getter_context_from_call,
     record_static_runtime_object_literal,
 };
-use super::super::walk::{walk_call_arguments, walk_expression, walk_expression_with_closure_name};
+use super::super::walk::{walk_call_arguments, walk_expression_with_closure_name};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
     add_binding_pattern_names, classify_const_initializer, get_binding_pattern_name,
