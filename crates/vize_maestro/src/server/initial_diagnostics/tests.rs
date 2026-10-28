@@ -2,7 +2,11 @@ use std::time::{Duration, Instant};
 
 use tower_lsp::lsp_types::Url;
 
-use super::{EDIT_DIAGNOSTIC_DEBOUNCE, MAX_PENDING_DOCUMENTS, PendingInitialDiagnostics};
+use super::{EDIT_DIAGNOSTIC_DEBOUNCE, PendingInitialDiagnostics};
+
+#[path = "conservation_tests.rs"]
+mod conservation_tests;
+use conservation_tests::capacity_uri;
 
 fn finish_sync(pending: &mut PendingInitialDiagnostics) {
     while let Some((uri, job)) = pending.take_sync() {
@@ -90,27 +94,48 @@ fn distinct_uris_keep_independent_pending_jobs() {
 }
 
 #[test]
-#[expect(
-    clippy::disallowed_macros,
-    reason = "test-only URI generation stays local and explicit"
-)]
-fn pending_jobs_evict_the_oldest_uri_at_capacity() {
+fn closed_jobs_are_removed_without_retaining_a_history_of_opened_uris() {
     let now = Instant::now();
     let mut pending = PendingInitialDiagnostics::default();
-    for index in 0..MAX_PENDING_DOCUMENTS {
-        pending.insert(
-            Url::parse(&format!("file:///workspace/{index}.vue")).unwrap(),
-            index as i32,
-            now,
-        );
+    let documents = crate::document::DocumentStore::new();
+    let uris: Vec<_> = (0..2500).map(capacity_uri).collect();
+    for uri in &uris {
+        documents.open(uri.clone(), "<template />".into(), 1, "vue".into());
+        pending.insert(uri.clone(), 1, now);
     }
-    let oldest = Url::parse("file:///workspace/0.vue").unwrap();
-    let newest = Url::parse("file:///workspace/newest.vue").unwrap();
-    pending.insert(newest.clone(), 99, now);
+    for (index, uri) in uris.iter().enumerate() {
+        documents.close(uri);
+        pending.discard_closed(uri, &documents);
+        assert_eq!(pending.jobs.len(), uris.len() - index - 1);
+    }
+    assert!(documents.uris().is_empty());
+}
 
-    assert_eq!(pending.jobs.len(), MAX_PENDING_DOCUMENTS);
-    assert!(!pending.jobs.contains_key(&oldest));
-    assert_eq!(pending.jobs[&newest].version, 99);
+#[test]
+fn a_delayed_old_completion_and_close_cannot_remove_a_reopened_same_version_job() {
+    let fixture = super::open_importer_tests::queued_open();
+    let server = fixture.service.inner();
+    let scheduler = server.initial_diagnostics.as_ref().unwrap().clone();
+    let state = server.state.clone();
+    let old = state.corsa_request_stamp();
+    assert!(old.is_current(&state));
+    let mut pending = fixture.pending.lock();
+    state.documents.close(&fixture.uri);
+    state.documents.open(
+        fixture.uri.clone(),
+        "<template>reopened</template>".into(),
+        1,
+        "vue".into(),
+    );
+    pending.insert(fixture.uri.clone(), 1, Instant::now());
+    let sequence = pending.jobs[&fixture.uri].sequence;
+    let uri = fixture.uri.clone();
+    let completed = std::thread::spawn(move || scheduler.complete_if_current(&uri, 1, old, &state));
+    drop(pending);
+    completed.join().unwrap();
+    let mut pending = fixture.pending.lock();
+    pending.discard_closed(&fixture.uri, &server.state.documents);
+    assert_eq!(pending.jobs[&fixture.uri].sequence, sequence);
 }
 
 #[test]
@@ -194,4 +219,63 @@ fn did_change_after_a_cheap_settled_pass_validates_without_the_quiet_period() {
         (uri, job.version, job.cause),
         (fixture.uri.clone(), 2, super::DiagnosticsJobCause::Edit)
     );
+}
+
+#[test]
+fn closed_documents_reject_delayed_schedule_and_retry_for_queued_or_taken_jobs() {
+    for taken in [false, true] {
+        let fixture = super::open_importer_tests::queued_open();
+        let server = fixture.service.inner();
+        let scheduler = server.initial_diagnostics.as_ref().unwrap();
+        let version = server.state.documents.version(&fixture.uri).unwrap();
+        assert!(fixture.pending.lock().jobs.contains_key(&fixture.uri));
+        if taken {
+            let mut pending = fixture.pending.lock();
+            finish_sync(&mut pending);
+            let (uri, job) = pending
+                .take_ready(Instant::now() + Duration::from_secs(2))
+                .unwrap();
+            assert_eq!((uri, job.version), (fixture.uri.clone(), version));
+        }
+        server.state.documents.close(&fixture.uri);
+        scheduler.discard_closed(&fixture.uri, &server.state.documents);
+        assert!(!scheduler.retry(fixture.uri.clone(), version, &server.state.documents));
+        assert!(server.schedule_initial_diagnostics(fixture.uri.clone(), version));
+        assert!(fixture.pending.lock().jobs.is_empty());
+    }
+}
+
+#[test]
+fn a_reopened_lower_version_supersedes_a_prior_lifetime_for_schedule_and_retry() {
+    for retry in [false, true] {
+        let fixture = super::open_importer_tests::queued_open();
+        let server = fixture.service.inner();
+        server.state.documents.open(
+            fixture.uri.clone(),
+            "<template>old</template>".into(),
+            5,
+            "vue".into(),
+        );
+        fixture
+            .pending
+            .lock()
+            .insert(fixture.uri.clone(), 5, Instant::now());
+        server.state.documents.close(&fixture.uri);
+        server.state.documents.open(
+            fixture.uri.clone(),
+            "<template>reopened</template>".into(),
+            1,
+            "vue".into(),
+        );
+        let scheduler = server.initial_diagnostics.as_ref().unwrap();
+        if retry {
+            assert!(scheduler.retry(fixture.uri.clone(), 1, &server.state.documents));
+        } else {
+            assert!(server.schedule_initial_diagnostics(fixture.uri.clone(), 1));
+        }
+        let mut pending = fixture.pending.lock();
+        pending.discard_closed(&fixture.uri, &server.state.documents);
+        assert_eq!(pending.jobs.len(), 1);
+        assert_eq!(pending.jobs[&fixture.uri].version, 1);
+    }
 }

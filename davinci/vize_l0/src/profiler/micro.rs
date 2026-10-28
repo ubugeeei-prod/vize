@@ -3,7 +3,7 @@
 //! Counts aggregate all instrumented Rust threads in this process, never child
 //! processes. A thread selects one cache-line-separated shard without hashing.
 //! After first registration an event takes a TLS read and two relaxed atomics;
-//! >32 threads can share a shard, preserving counts but adding contention.
+//! More than 32 threads can share a shard, preserving counts but adding contention.
 //! Span clocks/self time and allocations use the existing synchronous span
 //! stack: child-thread work is not charged as parent-thread allocations.
 //! Stop producers before snapshot/clear; a concurrent read is not a coherent

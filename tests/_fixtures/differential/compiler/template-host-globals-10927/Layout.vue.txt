@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const emit = defineEmits<{ press: [] }>();
+</script>
+<template><button :data-values="[document, window, navigator, globalThis, Promise, Proxy, Function, Reflect, WeakMap, WeakSet, module, exports, TypeError, Uint8Array]" @click="(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }">{{ Math.max(1, 2) }}{{ Intl.NumberFormat().format(1) }}</button></template>
