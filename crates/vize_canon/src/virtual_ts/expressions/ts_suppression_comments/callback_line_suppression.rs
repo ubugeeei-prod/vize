@@ -7,9 +7,12 @@ use oxc_span::SourceType;
 use vize_carton::String;
 
 mod candidate;
-#[cfg(test)]
-pub(super) use candidate::has_callback_parser_candidate;
 use candidate::{CandidateGate, candidate_gate};
+
+#[cfg(test)]
+pub(super) fn has_callback_parser_candidate(value: &str) -> bool {
+    matches!(candidate_gate(value), CandidateGate::Parse)
+}
 
 pub(super) const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.\n";
 

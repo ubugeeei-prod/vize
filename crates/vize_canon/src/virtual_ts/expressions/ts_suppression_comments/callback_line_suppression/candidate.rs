@@ -12,11 +12,6 @@ pub(super) fn candidate_gate(value: &str) -> CandidateGate {
     candidate(value).unwrap_or(CandidateGate::Preserve)
 }
 
-#[cfg(test)]
-pub(super) fn has_callback_parser_candidate(value: &str) -> bool {
-    matches!(candidate_gate(value), CandidateGate::Parse)
-}
-
 fn candidate(value: &str) -> Option<CandidateGate> {
     let bytes = value.as_bytes();
     let (mut index, mut quote, mut escaped) = (0usize, None, false);
