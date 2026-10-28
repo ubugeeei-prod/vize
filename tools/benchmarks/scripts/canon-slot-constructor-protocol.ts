@@ -32,7 +32,12 @@ function image(path: string) {
   }
   return { path: resolve(path), bytes: statSync(path).size, sha256: hash.digest("hex") };
 }
-export function slotRequests(project: string, source: string, config: unknown) {
+export function slotRequests(
+  project: string,
+  source: string,
+  config: unknown,
+  projectFile = "src/Tiny.vue",
+) {
   assert.ok(record(config) && record(config.compilerOptions), "parsed compilerOptions required");
   const params: [string, Record<string, unknown>][] = [
     ["initialize", { positionEncodings: ["utf-8", "utf-16"] }],
@@ -47,7 +52,7 @@ export function slotRequests(project: string, source: string, config: unknown) {
     ],
     [
       "transform",
-      { fileName: join(project, "src/Tiny.vue"), content: source, projectHandle: "slot-proof" },
+      { fileName: join(project, projectFile), content: source, projectHandle: "slot-proof" },
     ],
     ["closeProject", { projectHandle: "slot-proof" }],
   ];
@@ -101,7 +106,13 @@ export function slotResponses(bytes: Buffer) {
   assert.equal(close.result, null);
   return { responses, result: transform.result };
 }
-export function captureSlotPacket(binary: string, project: string, source: string, out: string) {
+export function captureSlotPacket(
+  binary: string,
+  project: string,
+  source: string,
+  out: string,
+  projectFile = "src/Tiny.vue",
+) {
   binary = resolve(binary);
   project = resolve(project);
   out = resolve(out);
@@ -109,7 +120,7 @@ export function captureSlotPacket(binary: string, project: string, source: strin
   mkdirSync(out, { recursive: true });
   const configBytes = readFileSync(join(project, "tsconfig.mapper.json"));
   const config: unknown = JSON.parse(configBytes.toString("utf8"));
-  const input = slotRequests(project, source, config),
+  const input = slotRequests(project, source, config, projectFile),
     before = image(binary);
   writeFileSync(join(out, "stdin.raw"), input);
   writeFileSync(join(out, "config.bytes"), configBytes);

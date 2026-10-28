@@ -90,11 +90,15 @@ function semanticLinkContract(result: Record<string, unknown>) {
   });
 }
 
-export function auditPackets(before: Record<string, unknown>, after: Record<string, unknown>) {
+export function auditPackets(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+  component = "WitnessChild",
+) {
   const baseText = text(before),
     headText = text(after),
-    call = "__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof WitnessChild>>()(",
-    legacy = "__VizeSlotConstructor<typeof WitnessChild>)({",
+    call = `__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof ${component}>>>()(`,
+    legacy = `__VizeSlotConstructor<typeof ${component}>)({`,
     headSemanticLinks = semanticLinkContract(after);
   assert.equal(
     headText.split(call).length - 1,

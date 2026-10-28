@@ -35,6 +35,138 @@ function screenshotKey(row: Pick<Row, "file" | "code" | "message">): string {
   return `${row.file}\u0000${row.code}\u0000${row.message}`;
 }
 
+function occurrences(source: string, needle: string): number {
+  return source.split(needle).length - 1;
+}
+
+function virtualText(result: Record<string, unknown>): string {
+  assert.ok(typeof result.text === "string");
+  return result.text;
+}
+
+function authoredSpan(source: string) {
+  const needle = "<QSplitter",
+    opening = source.indexOf(needle);
+  assert.ok(opening >= 0 && source.indexOf(needle, opening + 1) < 0);
+  const start = opening + 1,
+    end = start + "QSplitter".length,
+    prefix = source.slice(0, start),
+    previousLine = prefix.lastIndexOf("\n");
+  return {
+    text: source.slice(start, end),
+    start,
+    end,
+    length: end - start,
+    line: occurrences(prefix, "\n") + 1,
+    column: start - previousLine,
+    utf8Start: Buffer.byteLength(source.slice(0, start)),
+    utf8End: Buffer.byteLength(source.slice(0, end)),
+    coordinateSystem: "zero-based UTF-16 offsets; one-based line and UTF-16 column",
+  };
+}
+
+function mappings(result: Record<string, unknown>): number[][] {
+  assert.ok(Array.isArray(result.mappings));
+  return result.mappings.map((value: unknown) => {
+    assert.ok(
+      Array.isArray(value) &&
+        value.length === 6 &&
+        value.every((part: unknown) => typeof part === "number" && Number.isSafeInteger(part)),
+    );
+    return value as number[];
+  });
+}
+
+function authoredMappings(result: Record<string, unknown>, span: ReturnType<typeof authoredSpan>) {
+  const source = virtualText(result),
+    matches = mappings(result)
+      .filter(([, , original, originalLength]) => {
+        assert.ok(original !== undefined && originalLength !== undefined);
+        return original < span.utf8End && original + originalLength > span.utf8Start;
+      })
+      .map(([generated, length, original, originalLength, kind, features]) => {
+        assert.ok(
+          generated !== undefined &&
+            length !== undefined &&
+            original !== undefined &&
+            originalLength !== undefined &&
+            kind !== undefined &&
+            features !== undefined,
+        );
+        return {
+          generated: Buffer.from(source).subarray(generated, generated + length).toString("utf8"),
+          original,
+          originalLength,
+          kind,
+          features,
+        };
+      });
+  assert.ok(matches.length > 0, "the exact authored component name must remain mapped");
+  return matches;
+}
+
+function diagnosticPoint(source: string, line: number, column: number) {
+  assert.ok(line >= 1 && column >= 1);
+  let lineStart = 0,
+    currentLine = 1;
+  const newline = /\r\n|[\r\n\u2028\u2029]/gu;
+  while (currentLine < line) {
+    const match = newline.exec(source);
+    assert.ok(match, `virtual line ${line} is outside the mapper packet`);
+    lineStart = match.index + match[0].length;
+    currentLine++;
+  }
+  newline.lastIndex = lineStart;
+  const next = newline.exec(source),
+    lineEnd = next?.index ?? source.length,
+    offset = lineStart + column - 1;
+  assert.ok(offset <= lineEnd, `virtual column ${column} is outside line ${line}`);
+  return {
+    utf16Offset: offset,
+    utf8Offset: Buffer.byteLength(source.slice(0, offset)),
+    lineText: source.slice(lineStart, lineEnd),
+  };
+}
+
+function diagnosticFingerprint(
+  row: Row,
+  result: Record<string, unknown>,
+  sourceLineCount: number,
+) {
+  const source = virtualText(result),
+    point = diagnosticPoint(source, row.line, row.column),
+    mappedSegments = mappings(result).filter(([generated, length]) => {
+      assert.ok(generated !== undefined && length !== undefined);
+      return generated <= point.utf8Offset && point.utf8Offset < generated + length;
+    }),
+    virtualOnly = row.line > sourceLineCount && mappedSegments.length === 0,
+    identity = {
+      file: row.file,
+      line: row.line,
+      column: row.column,
+      code: row.code,
+      message: row.message,
+      virtualTextSha256: hash(source),
+      virtualUtf16Offset: point.utf16Offset,
+      virtualUtf8Offset: point.utf8Offset,
+      virtualLineSha256: hash(point.lineText),
+      mappedAuthoredSegments: mappedSegments,
+    };
+  assert.ok(virtualOnly, `${row.file}:${row.line}:${row.column} must be explicitly virtual-only`);
+  return { ...identity, fingerprintSha256: hash(JSON.stringify(identity)), virtualOnly };
+}
+
+function packetFiles(root: string, packet: { result: Record<string, unknown> }) {
+  return {
+    receipt: identify(path.join(root, "receipt.json")),
+    stdin: identify(path.join(root, "stdin.raw")),
+    stdout: identify(path.join(root, "stdout.raw")),
+    stderr: identify(path.join(root, "stderr.raw")),
+    responses: identify(path.join(root, "responses.json")),
+    virtualTextSha256: hash(virtualText(packet.result)),
+  };
+}
+
 function captureRealProject(
   provider: string,
   head: string,
@@ -99,6 +231,53 @@ function captureRealProject(
   fs.copyFileSync(packageFile, path.join(inputs, "published-vize-package.json"));
   const publishedPackageIdentity = identify(path.join(inputs, "published-vize-package.json"));
   inputIdentities["published-vize-package.json"] = publishedPackageIdentity;
+  const publishedBinary = path.join(project, "node_modules/vize/bin/vize"),
+    packetRecords: unknown[] = [],
+    publishedPackets = new Map<string, Record<string, unknown>>();
+  for (const [, projectName] of realProjectFiles.filter(([, name]) => name.endsWith(".vue"))) {
+    const source = fs.readFileSync(path.join(project, projectName), "utf8"),
+      packetName = path.basename(projectName, ".vue"),
+      publishedRoot = path.join(root, "packets/published-v0.603.0", packetName),
+      headRoot = path.join(root, "packets/head", packetName),
+      publishedPacket = captureSlotPacket(
+        publishedBinary,
+        project,
+        source,
+        publishedRoot,
+        projectName,
+      ),
+      headPacket = captureSlotPacket(head, project, source, headRoot, projectName),
+      span = authoredSpan(source),
+      packetAudit = auditPackets(publishedPacket.result, headPacket.result, "QSplitter"),
+      publishedText = virtualText(publishedPacket.result),
+      headText = virtualText(headPacket.result),
+      legacyCall = "new (undefined as unknown as __VizeSlotConstructor<typeof QSplitter>)({",
+      directCall =
+        "__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof QSplitter>>()(";
+    assert.equal(occurrences(publishedText, legacyCall), 2);
+    assert.equal(occurrences(headText, legacyCall), 0);
+    assert.equal(occurrences(headText, directCall), 2);
+    const publishedAuthoredMappings = authoredMappings(publishedPacket.result, span),
+      headAuthoredMappings = authoredMappings(headPacket.result, span);
+    assert.deepEqual(headAuthoredMappings, publishedAuthoredMappings);
+    publishedPackets.set(projectName, publishedPacket.result);
+    packetRecords.push({
+      file: projectName,
+      authoredComponentSpan: span,
+      source: inputIdentities[projectName],
+      published: {
+        files: packetFiles(publishedRoot, publishedPacket),
+        legacyConstructorCalls: 2,
+        authoredMappings: publishedAuthoredMappings,
+      },
+      head: {
+        files: packetFiles(headRoot, headPacket),
+        directConstructorCalls: 2,
+        authoredMappings: headAuthoredMappings,
+      },
+      packetAudit,
+    });
+  }
   const args = [
       "--runExternalCode",
       "--checkers",
@@ -132,6 +311,12 @@ function captureRealProject(
       `published ${diagnostic.file} diagnostic must be virtual-only`,
     );
   }
+  const publishedFingerprints = baseline.map((diagnostic) => {
+    const packet = publishedPackets.get(diagnostic.file),
+      sourceLineCount = sourceLines.get(diagnostic.file);
+    assert.ok(packet && sourceLineCount !== undefined);
+    return diagnosticFingerprint(diagnostic, packet, sourceLineCount);
+  });
   const expectedScreenshotMultiset = screenshotDiagnostics
       .map(screenshotKey)
       .sort(),
@@ -177,13 +362,15 @@ function captureRealProject(
         ...diagnostic,
         count: baseline.filter((row) => screenshotKey(row) === screenshotKey(diagnostic)).length,
       })),
-      virtualOnly: true,
+      virtualOriginFingerprints: publishedFingerprints,
+      virtualOnly: publishedFingerprints.every((entry) => entry.virtualOnly),
     },
     repaired: {
       rawDiagnostics: repaired,
       exactTs2554Multiset: [],
       virtualOnlyDiagnostics: [],
     },
+    packets: packetRecords,
     scope:
       "real-path Corsa semantic oracle; published and head binaries differ; no timing comparison",
   };
