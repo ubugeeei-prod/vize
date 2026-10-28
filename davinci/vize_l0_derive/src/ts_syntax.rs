@@ -28,33 +28,33 @@ impl Parse for Input {
 }
 
 fn take_splice(tokens: &[TokenTree]) -> syn::Result<(Expr, usize)> {
-    if tokens.is_empty() {
+    let Some(first) = tokens.first() else {
         return Err(syn::Error::new(
             proc_macro2::Span::call_site(),
             "ts! splice needs an expression after #",
         ));
+    };
+    if let TokenTree::Group(group) = first
+        && group.delimiter() == Delimiter::Parenthesis
+    {
+        let expr = syn::parse2(group.stream())?;
+        return Ok((expr, 1));
     }
-    if let TokenTree::Group(group) = &tokens[0] {
-        if group.delimiter() == Delimiter::Parenthesis {
-            let expr = syn::parse2(group.stream())?;
-            return Ok((expr, 1));
-        }
-    }
-    let mut taken = vec![tokens[0].clone()];
+    let mut taken = vec![first.clone()];
     let mut index = 1;
-    while index < tokens.len() {
-        match &tokens[index] {
+    while let Some(token) = tokens.get(index) {
+        match token {
             TokenTree::Punct(punct) if punct.as_char() == '.' => {
-                taken.push(tokens[index].clone());
+                taken.push(token.clone());
                 index += 1;
-                if index >= tokens.len() {
+                let Some(member) = tokens.get(index) else {
                     break;
-                }
-                taken.push(tokens[index].clone());
+                };
+                taken.push(member.clone());
                 index += 1;
             }
             TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
-                taken.push(tokens[index].clone());
+                taken.push(token.clone());
                 index += 1;
             }
             _ => break,
@@ -95,9 +95,9 @@ impl Printer {
     fn render(&mut self, pieces: &mut Vec<Piece>, stream: TokenStream) -> syn::Result<()> {
         let tokens: Vec<TokenTree> = stream.into_iter().collect();
         let mut index = 0;
-        while index < tokens.len() {
-            if is_splice(&tokens[index]) {
-                let (expr, consumed) = take_splice(&tokens[index + 1..])?;
+        while let Some(token) = tokens.get(index) {
+            if is_splice(token) {
+                let (expr, consumed) = take_splice(tokens.get(index + 1..).unwrap_or_default())?;
                 self.flush(pieces);
                 pieces.push(Piece::Hole(expr));
                 self.word = false;
@@ -105,7 +105,7 @@ impl Printer {
                 index += 1 + consumed;
                 continue;
             }
-            self.token(pieces, &tokens[index])?;
+            self.token(pieces, token)?;
             index += 1;
         }
         Ok(())
@@ -213,4 +213,35 @@ impl Printer {
 
 fn is_splice(token: &TokenTree) -> bool {
     matches!(token, TokenTree::Punct(punct) if punct.as_char() == '#')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn incomplete_splices_return_errors_without_panicking() {
+        for source in ["", "value.", "+", "()"] {
+            let tokens: Vec<_> = source.parse::<TokenStream>().unwrap().into_iter().collect();
+            assert!(
+                take_splice(&tokens).is_err(),
+                "accepted incomplete splice: {source}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_splice_stops_before_typescript_generic_closers() {
+        let tokens: Vec<_> = "value.member()>>"
+            .parse::<TokenStream>()
+            .unwrap()
+            .into_iter()
+            .collect();
+        let (expression, consumed) = take_splice(&tokens).unwrap();
+        assert_eq!(quote::quote!(#expression).to_string(), "value . member ()");
+        assert_eq!(consumed, 4);
+        assert!(
+            matches!(tokens.get(consumed), Some(TokenTree::Punct(punct)) if punct.as_char() == '>')
+        );
+    }
 }

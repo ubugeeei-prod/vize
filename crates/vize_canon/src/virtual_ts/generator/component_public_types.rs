@@ -4,7 +4,7 @@ use super::{emits::inner_type_of, generics::module_alias_generic_suffix};
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use vize_carton::{String, cstr};
 use vize_croquis::Croquis;
-use vize_l0::ts;
+use vize_l0::{emit_ts, ts};
 
 /// Emit the private slot contract and preserve the public `Slots` export. When the slots type from
 /// `defineSlots` references an SFC generic parameter, the alias re-declares
@@ -33,9 +33,12 @@ pub(super) fn emit_slots_type(
                     (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", ")))
                 })
                 .unwrap_or_default();
-            ts! { &mut *ts =>
-                type __VizeSlots #declaration = Awaited<ReturnType<typeof __setup #arguments>>["__vize_typed_slots"]
-            }
+            // Preserve the original quote bytes: retained projections and their
+            // source coordinates are shared with independent native observers.
+            emit_ts!(
+                &mut *ts,
+                "type __VizeSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_typed_slots']"
+            );
             mappings.emit_slot_key_witnesses(ts, &summary.macros);
             ts! { &mut *ts => ; }
             generic_injection.is_some()
@@ -53,9 +56,10 @@ pub(super) fn emit_slots_type(
         let (declaration, arguments) = generic_injection
             .map(|(declaration, names)| (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", "))))
             .unwrap_or_default();
-        ts! { &mut *ts =>
-            type __VizeSlots #declaration = Awaited<ReturnType<typeof __setup #arguments>>["__vize_template_slots"];
-        }
+        emit_ts!(
+            &mut *ts,
+            "type __VizeSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_template_slots'];\n"
+        );
         generic_injection.is_some()
     } else {
         ts! { &mut *ts => type __VizeSlots = {}; }

@@ -85,8 +85,8 @@ fn split_template(template: &str, span: proc_macro2::Span) -> syn::Result<Vec<Pi
     let mut static_text = String::new();
     let bytes = template.as_bytes();
     let mut index = 0;
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'{' => {
                 if bytes.get(index + 1) == Some(&b'{') {
                     static_text.push('{');
@@ -115,7 +115,10 @@ fn split_template(template: &str, span: proc_macro2::Span) -> syn::Result<Vec<Pi
                 return Err(syn::Error::new(span, "unmatched '}' in emit_ts! template"));
             }
             _ => {
-                let ch = template[index..].chars().next().unwrap_or('\u{FFFD}');
+                let ch = template
+                    .get(index..)
+                    .and_then(|rest| rest.chars().next())
+                    .ok_or_else(|| syn::Error::new(span, "invalid UTF-8 template boundary"))?;
                 static_text.push(ch);
                 index += ch.len_utf8();
             }
@@ -151,8 +154,7 @@ fn balanced_expr(
     let mut index = start;
     let mut quote: Option<u8> = None;
     let mut escaped = false;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if let Some(active) = quote {
             if escaped {
                 escaped = false;
@@ -170,7 +172,10 @@ fn balanced_expr(
             b'}' => {
                 depth -= 1;
                 if depth == 0 {
-                    let source = template[start..index].trim();
+                    let source = template
+                        .get(start..index)
+                        .ok_or_else(|| syn::Error::new(span, "invalid UTF-8 hole boundary"))?
+                        .trim();
                     if source.is_empty() {
                         return Err(syn::Error::new(
                             span,
@@ -188,4 +193,45 @@ fn balanced_expr(
         index += 1;
     }
     Err(syn::Error::new(span, "unclosed '{' in emit_ts! template"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn split(source: &str) -> syn::Result<Vec<Piece>> {
+        split_template(source, proc_macro2::Span::call_site())
+    }
+
+    #[test]
+    fn unicode_and_escaped_braces_keep_their_exact_bytes() {
+        let pieces = split("日本🧭 {{}} {\"é\"}").unwrap();
+        let text: String = pieces
+            .iter()
+            .map(|piece| match piece {
+                Piece::Static(text) => text.as_str(),
+                _ => panic!("literal holes must be folded into static text"),
+            })
+            .collect();
+        assert_eq!(text, "日本🧭 {} é");
+    }
+
+    #[test]
+    fn nested_blocks_and_quoted_braces_keep_the_hole_boundary() {
+        let pieces = split("prefix {{ {format!(\"}} {}\", value)} }} suffix").unwrap();
+        assert_eq!(pieces.len(), 3);
+        assert!(matches!(pieces.first(), Some(Piece::Static(text)) if text == "prefix { "));
+        assert!(matches!(pieces.get(1), Some(Piece::Hole(_))));
+        assert!(matches!(pieces.get(2), Some(Piece::Static(text)) if text == " } suffix"));
+    }
+
+    #[test]
+    fn malformed_templates_return_errors() {
+        for source in ["}", "{", "{}", "{%}", "{value", "{\"}", "{a +}"] {
+            assert!(
+                split(source).is_err(),
+                "accepted malformed template: {source}"
+            );
+        }
+    }
 }
