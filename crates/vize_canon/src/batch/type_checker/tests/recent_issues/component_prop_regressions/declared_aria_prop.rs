@@ -85,7 +85,7 @@ const maybe = undefined as string | undefined
     assert_eq!(file.as_str(), "src/Parent.vue");
     assert_eq!(*code, Some(2322));
     assert_eq!(
-        message, "13:11: Type 'number' is not assignable to type 'string'.",
+        message, "13:11:error Type 'number' is not assignable to type 'string'.",
         "the declared prop value error must stay on aria-label: {snapshot:#?}"
     );
 }
