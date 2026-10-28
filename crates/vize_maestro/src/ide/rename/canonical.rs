@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use tower_lsp::lsp_types::{
     DocumentChangeOperation, DocumentChanges, OneOf, PrepareRenameResponse, Range, TextEdit, Url,
@@ -160,7 +160,7 @@ fn style_workspace_edit(
 fn collect_style_edits(
     query: &IdeContext<'_>,
     uri: &Url,
-    source: Arc<String>,
+    source: std::sync::Arc<std::string::String>,
     offset: usize,
     new_name: &str,
     seeds: &mut FxHashSet<(Url, String)>,
