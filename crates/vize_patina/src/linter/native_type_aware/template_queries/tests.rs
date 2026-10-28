@@ -242,26 +242,38 @@ const ids: number[] = [1]
         })
         .collect();
     assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
-    let expected_windows = [
-        "_rules: __MyInput_0_prop_rules = [\n    \n    check(ids, ids.map(id => id + 1))\n  ]",
-        "rules: __MyInput_1_prop_rules = [\n     \n    check(ids, ids.map(id => id + 1))\n  ]",
-    ];
-    for (index, query) in expressions.into_iter().enumerate() {
+    let mut offsets = Vec::new();
+    for query in expressions {
+        let authored = query.source_start as usize..query.source_end as usize;
+        let inferred = expression_bindings::inferred_binding_offset(&document, &authored)
+            .expect("comment-stripped expression must own an inferred binding");
+        assert_eq!(query.generated_offset, inferred, "comment {comment:?}");
         let at = query.generated_offset as usize;
-        let window = document
+        let line_start = document
             .content
-            .get(at.saturating_sub(80)..at.saturating_add(1))
-            .unwrap_or("");
-        assert_eq!(
-            window, expected_windows[index],
-            "comment {comment:?} must preserve the complete generated expression packet"
+            .get(..at)
+            .and_then(|before| before.rfind('\n'))
+            .map_or(0, |line| line + 1);
+        let line_end = document
+            .content
+            .get(at..)
+            .and_then(|after| after.find('\n'))
+            .map_or(document.content.len(), |line| at + line);
+        let line = document.content.get(line_start..line_end).unwrap_or("");
+        assert!(
+            line.trim_start().starts_with("const __expr_")
+                && matches!(
+                    document.content.as_bytes().get(at),
+                    Some(byte) if byte.is_ascii_digit()
+                ),
+            "comment {comment:?} must probe the inferred identifier: {line:?}"
         );
-        assert_eq!(
-            document.content.as_bytes().get(at).copied(),
-            Some(b']'),
-            "comment {comment:?} probe must be the stripped array, not a sliding token: {window:?}"
-        );
+        offsets.push(at);
     }
+    assert_ne!(
+        offsets[0], offsets[1],
+        "each expression needs its own owner"
+    );
 }
 
 #[test]
