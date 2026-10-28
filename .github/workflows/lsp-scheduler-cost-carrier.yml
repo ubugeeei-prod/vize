@@ -1,4 +1,4 @@
-name: Partition benchmark structural guard
+name: Partition benchmark source bindings
 on:
   workflow_dispatch:
 permissions:
@@ -6,10 +6,9 @@ permissions:
 jobs:
   guard:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 15
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      SOURCE_LENGTH_BASE_REF: 09ff11b5a3440381d4f4558652885ec19520e4f1
       OBSERVED_SOURCE: 28f8ec3bfa187b468641f89c2a71f0b7cdb2de6f
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -21,44 +20,26 @@ jobs:
         with:
           node-version-file: package.json
           run-install: false
-      - uses: ./.github/actions/setup-rust-script
-      - name: Prove exact repaired source and unchanged benchmark body
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1", components: rustfmt }
+      - name: Run the three unchanged source-binding and protocol controls
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$OBSERVED_SOURCE"
           test -z "$(git status --porcelain)"
-          mkdir module-guard-evidence
-          node tools/benchmarks/scripts/partition-weight-layout.ts > module-guard-evidence/conservation.json
-          cargo metadata --no-deps --format-version 1 > module-guard-evidence/cargo-metadata.json
-          node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("module-guard-evidence/cargo-metadata.json","utf8")).packages.find(x=>x.name==="vize_canon");const t=p?.targets.filter(x=>x.name==="partition_weight"&&x.kind.includes("bench"));if(t?.length!==1||!t[0].src_path.endsWith("/benches/partition_weight/main.rs"))throw Error("ordinary Cargo benchmark target missing");console.log(t[0].src_path);' > module-guard-evidence/cargo-target.txt
-          git show -s --format=fuller HEAD > module-guard-evidence/source.txt
-          git diff --find-renames "$SOURCE_LENGTH_BASE_REF" HEAD > module-guard-evidence/layout.diff
-          node --version > module-guard-evidence/node.txt
-          rust-script --version > module-guard-evidence/rust-script.txt
-      - name: Run the original complete source-file guard and negative controls
-        run: |
-          set -euo pipefail
-          node --test --test-concurrency=1 --test-reporter=tap tests/tooling/source-file-lengths.test.ts 2>&1 | tee module-guard-evidence/guard.tap
-          python3 -c 'import pathlib,re; s=pathlib.Path("module-guard-evidence/guard.tap").read_text(); assert re.search(r"ok [0-9]+ - source length script checks the current checkout",s); assert re.search(r"ok [0-9]+ - Rust path overrides fail even behind inactive cfgs",s); assert re.search(r"# fail 0",s); assert re.search(r"# skipped 0",s); assert re.search(r"# tests [1-9][0-9]*",s)'
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
-        with: { wild-version: "0.9.0" }
-      - name: Compile the actual ordinary benchmark target without executing timing
-        env:
-          CARGO_BUILD_JOBS: "4"
-          CARGO_INCREMENTAL: "0"
-          CARGO_TARGET_DIR: ${{ runner.temp }}/partition-layout-target
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$OBSERVED_SOURCE"
-          cargo bench --locked --profile ci -p vize_canon --bench partition_weight --no-run --message-format=json > module-guard-evidence/bench-cargo.jsonl 2> module-guard-evidence/bench-stderr.txt
-          node -e 'const fs=require("node:fs"),crypto=require("node:crypto");const rows=fs.readFileSync("module-guard-evidence/bench-cargo.jsonl","utf8").trim().split("\n").map(x=>JSON.parse(x));const artifacts=rows.filter(x=>x.reason==="compiler-artifact"&&x.target?.name==="partition_weight"&&x.executable);if(artifacts.length!==1||artifacts[0].fresh||!artifacts[0].target.src_path.endsWith("/benches/partition_weight/main.rs"))throw Error("fresh ordinary bench compile required");const artifact=artifacts[0],bin=fs.readFileSync(artifact.executable);console.log(JSON.stringify({source:process.env.OBSERVED_SOURCE,artifact,binaryBytes:bin.length,binarySha256:crypto.createHash("sha256").update(bin).digest("hex"),executed:false,timing:false,hardwareCounters:null}));' > module-guard-evidence/bench-build.json
-          cat module-guard-evidence/bench-build.json
+          mkdir "$RUNNER_TEMP/partition-layout-controls"
+          node tools/benchmarks/scripts/partition-weight-control.ts > "$RUNNER_TEMP/partition-layout-controls/planner-control.json"
+          node tools/benchmarks/scripts/partition-weight-kernel-control.ts > "$RUNNER_TEMP/partition-layout-controls/kernel-control.json"
+          node --test tests/tooling/partition-weight-cli.test.ts 2>&1 | tee "$RUNNER_TEMP/partition-layout-controls/cli-controls.tap"
+          git rev-parse HEAD > "$RUNNER_TEMP/partition-layout-controls/source.sha"
+          rustfmt --version > "$RUNNER_TEMP/partition-layout-controls/rustfmt.txt"
+          node --version > "$RUNNER_TEMP/partition-layout-controls/node.txt"
+          cat "$RUNNER_TEMP/partition-layout-controls/planner-control.json" "$RUNNER_TEMP/partition-layout-controls/kernel-control.json"
+          node -e 'const fs=require("node:fs");const s=fs.readFileSync(process.env.RUNNER_TEMP+"/partition-layout-controls/cli-controls.tap","utf8");for(const marker of ["# tests 2","# pass 2","# fail 0","# skipped 0"])if(!s.includes(marker))throw Error("incomplete CLI controls: "+marker);'
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: partition-bench-module-guard-28f-${{ github.run_id }}-${{ github.run_attempt }}
-          path: module-guard-evidence/
+          name: partition-bench-source-bindings-28f-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/partition-layout-controls/
           if-no-files-found: error
           retention-days: 30
