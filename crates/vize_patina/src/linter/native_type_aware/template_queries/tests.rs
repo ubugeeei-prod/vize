@@ -174,10 +174,9 @@ fn a_nested_callee_uses_the_authored_initializer_and_the_full_expression_is_infe
         document.content.get(binding as usize..binding as usize + 1),
         Some("0")
     );
-    assert!(
-        document
-            .content
-            .starts_with("  const __expr_0 = (() => emit('retry'));\n")
+    assert_eq!(
+        document.content.as_str(),
+        format!("  const __expr_0 = (() => emit('retry'));\n{text}")
     );
 }
 
@@ -243,30 +242,19 @@ const ids: number[] = [1]
         .collect();
     assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
     let mut offsets = Vec::new();
-    for query in expressions {
+    for (index, query) in expressions.into_iter().enumerate() {
         let authored = query.source_start as usize..query.source_end as usize;
         let inferred = expression_bindings::inferred_binding_offset(&document, &authored)
             .expect("comment-stripped expression must own an inferred binding");
         assert_eq!(query.generated_offset, inferred, "comment {comment:?}");
         let at = query.generated_offset as usize;
-        let line_start = document
-            .content
-            .get(..at)
-            .and_then(|before| before.rfind('\n'))
-            .map_or(0, |line| line + 1);
-        let line_end = document
-            .content
-            .get(at..)
-            .and_then(|after| after.find('\n'))
-            .map_or(document.content.len(), |line| at + line);
-        let line = document.content.get(line_start..line_end).unwrap_or("");
-        assert!(
-            line.trim_start().starts_with("const __expr_")
-                && matches!(
-                    document.content.as_bytes().get(at),
-                    Some(byte) if byte.is_ascii_digit()
-                ),
-            "comment {comment:?} must probe the inferred identifier: {line:?}"
+        let identifier = format!("__expr_{index}");
+        assert_eq!(
+            document
+                .content
+                .get(at + 1 - identifier.len()..at + 1),
+            Some(identifier.as_str()),
+            "comment {comment:?} must probe the exact inferred identifier"
         );
         offsets.push(at);
     }
