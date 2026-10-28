@@ -91,7 +91,7 @@ pub use oxc_allocator::StringBuilder;
 pub use compact_str::CompactString;
 pub use compact_str::CompactString as String;
 pub use compact_str::ToCompactString;
-pub use vize_l0_derive::emit_ts;
+pub use vize_l0_derive::{emit_ts, ts};
 
 // Re-export smallvec for stack-optimized collections
 pub use smallvec::{SmallVec, smallvec};

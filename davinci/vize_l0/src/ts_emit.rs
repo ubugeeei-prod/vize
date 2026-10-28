@@ -163,7 +163,7 @@ fn push_u64<B: TsBuf>(buffer: &mut B, mut value: u64) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{String, emit_ts};
+    use crate::{String, emit_ts, ts};
 
     #[test]
     fn static_text_braces_and_dollars_stay_literal() {
@@ -182,6 +182,28 @@ mod tests {
         let signed = -12i32;
         emit_ts!(&mut ts, "n{index}_{signed}_{true}_{i64::MIN}");
         assert_eq!(ts, "n0_-12_true_-9223372036854775808");
+    }
+
+    #[test]
+    fn ts_tokens_print_a_slot_alias() {
+        let mut ts = String::default();
+        let declaration = "<T>";
+        let arguments = "<T>";
+        ts! { &mut ts =>
+            type __VizeSlots #declaration = Awaited<ReturnType<typeof __setup #arguments>>["__vize_typed_slots"];
+        }
+        assert_eq!(
+            ts,
+            "type __VizeSlots<T> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_slots\"];\n"
+        );
+        ts! { &mut ts => export type { __VizeSlots as Slots }; }
+        assert_eq!(
+            &ts["type __VizeSlots<T> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_slots\"];\n".len()..],
+            "export type { __VizeSlots as Slots };\n"
+        );
+        let mut empty = String::default();
+        ts! { &mut empty => type __VizeSlots = {}; }
+        assert_eq!(empty, "type __VizeSlots = {};\n");
     }
 
     #[test]

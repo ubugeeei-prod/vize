@@ -8,7 +8,7 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{Expr, ExprLit, Lit, LitStr, Token, parse::Parser};
 
-enum Piece {
+pub(crate) enum Piece {
     Static(String),
     Hole(Expr),
     Display(Expr),
@@ -50,6 +50,10 @@ fn expand_input(input: proc_macro::TokenStream) -> syn::Result<TokenStream> {
     for template in templates {
         pieces.extend(split_template(&template.value(), template.span())?);
     }
+    Ok(quote_pieces(buffer, pieces))
+}
+
+pub(crate) fn quote_pieces(buffer: Expr, pieces: Vec<Piece>) -> TokenStream {
     let mut static_len: usize = 0;
     let mut writes = Vec::new();
     for piece in pieces {
@@ -69,11 +73,11 @@ fn expand_input(input: proc_macro::TokenStream) -> syn::Result<TokenStream> {
             }
         }
     }
-    Ok(quote! {{
+    quote! {{
         let __ts: &mut _ = #buffer;
         ::vize_l0::ts_emit::TsBuf::reserve_ts(__ts, #static_len);
         #(#writes)*
-    }})
+    }}
 }
 
 fn split_template(template: &str, span: proc_macro2::Span) -> syn::Result<Vec<Piece>> {
