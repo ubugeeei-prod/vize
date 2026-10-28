@@ -5,7 +5,7 @@ use std::hash::{BuildHasher, Hasher};
 
 vize_l0::scoped_fx_hasher!(Observed, SourceOwner, "test.scoped_fx");
 
-fn observed() -> Observed {
+fn hasher_builder() -> Observed {
     Default::default()
 }
 
@@ -16,7 +16,7 @@ static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
 
 fn digest_and_map_parity() {
     let mut raw = FxHasher::default();
-    let mut observed = observed().build_hasher();
+    let mut observed = hasher_builder().build_hasher();
     for bytes in [
         b"".as_slice(),
         b"ab".as_slice(),
@@ -53,14 +53,20 @@ fn digest_and_map_parity() {
     assert_eq!(raw_clone.finish(), observed_clone.finish());
     assert_eq!(raw.finish(), observed.finish());
     for value in ["", "a", "a\0", "日本🙂", "é", "e\u{301}"] {
-        assert_eq!(FxBuildHasher.hash_one(value), observed().hash_one(value));
+        assert_eq!(
+            FxBuildHasher.hash_one(value),
+            hasher_builder().hash_one(value)
+        );
         assert_eq!(
             FxBuildHasher.hash_one((value, 7_u64)),
-            observed().hash_one((value, 7_u64))
+            hasher_builder().hash_one((value, 7_u64))
         );
     }
     for value in [vec![], vec![0_u8], vec![1, 2, 3, 255]] {
-        assert_eq!(FxBuildHasher.hash_one(&value), observed().hash_one(&value));
+        assert_eq!(
+            FxBuildHasher.hash_one(&value),
+            hasher_builder().hash_one(&value)
+        );
     }
     let keys = (0..512)
         .map(|i| vize_l0::String::from(format!("key_{i}_日本🙂_long_payload")))
@@ -104,7 +110,7 @@ fn controlled_counts_and_allocations() {
     profiler.clear();
     profiler.enable();
     let guard = profiler.global_span("test.scoped_fx.owner");
-    let builder = observed();
+    let builder = hasher_builder();
     let mut hasher = builder.build_hasher();
     hasher.write(b"abc");
     hasher.write_u8(7);
@@ -226,7 +232,7 @@ fn controlled_counts_and_allocations() {
                 while !go.load(Ordering::Acquire) {
                     std::thread::yield_now();
                 }
-                let builder = observed();
+                let builder = hasher_builder();
                 for i in 0..1000_u64 {
                     std::hint::black_box(builder.hash_one(i));
                 }
@@ -268,7 +274,7 @@ fn stable_fx_delegation_preserves_every_interface_and_map_observation() {
     #[cfg(feature = "micro-profiling")]
     vize_l0::profiler::global_profiler().disable();
     #[cfg(not(feature = "micro-profiling"))]
-    let _: FxBuildHasher = observed();
+    let _: FxBuildHasher = hasher_builder();
     digest_and_map_parity();
     #[cfg(feature = "micro-profiling")]
     controlled_counts_and_allocations();
