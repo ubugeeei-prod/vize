@@ -21,6 +21,39 @@ const manifestPath = path.join(
 );
 const loaded = loadCompilerApiManifest(manifestPath, root);
 
+type Successor = {
+  path: string;
+  sha256: string;
+  supersedesSha256: string;
+  issue: string;
+};
+type ManifestCase = {
+  id: string;
+  reference: { path: string; sha256: string };
+  currentReference?: Successor;
+  referenceHistory?: Successor[];
+};
+type CompilerManifest = { cases: ManifestCase[] };
+
+function manifestCase(manifest: CompilerManifest, id: string) {
+  const fixture = manifest.cases.find((candidate) => candidate.id === id);
+  assert(fixture, `missing fixture ${id}`);
+  return fixture;
+}
+
+function assertManifestRejected(mutate: (manifest: CompilerManifest) => void, expected: RegExp) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "compiler-api-successor-"));
+  try {
+    const manifest: CompilerManifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    mutate(manifest);
+    const candidate = path.join(directory, "manifest.json");
+    fs.writeFileSync(candidate, `${JSON.stringify(manifest, null, 2)}\n`);
+    assert.throws(() => loadCompilerApiManifest(candidate, root), expected);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+}
+
 function object(value: JsonValue | undefined): JsonObject {
   assert(value !== null && typeof value === "object" && !Array.isArray(value));
   return value;
@@ -55,6 +88,73 @@ function attempts(value = packet()) {
   };
   return [observation, structuredClone(observation)];
 }
+
+void test("compiler successor chain preserves the five stale-baseline drifts exactly", () => {
+  const successorIds = loaded.cases
+    .filter((fixture) => fixture.currentReference)
+    .map((fixture) => fixture.id);
+  assert.deepEqual(successorIds, [
+    "compiler/sfc/imported-component-before-prop",
+    "compiler/sfc/dynamic-loop-ref-for",
+    "compiler/sfc/dual-script-inline-type-only-imports",
+    "compiler/sfc/separate-template-authored-render-binding",
+    "compiler/sfc/invalid-template-expression-diagnostic",
+  ]);
+  const stale = structuredClone(packet());
+  for (const [index, fixture] of loaded.cases.entries()) {
+    if (!fixture.currentReference) continue;
+    const predecessor = fixture.referenceHistory?.at(-1) ?? fixture.reference;
+    stale.cases[index].result = JSON.parse(
+      fs.readFileSync(path.join(root, predecessor.path), "utf8"),
+    );
+  }
+  const rows = compilerApiRows(loaded, attempts(stale), null);
+  assert.deepEqual(
+    rows.filter((row) => row.legacy.verdict === "baseline-drift").map((row) => row.id),
+    successorIds,
+  );
+  assert.equal(rows.filter((row) => row.legacy.verdict === "baseline-drift").length, 5);
+  assert.equal(rows.filter((row) => row.legacy.verdict === "matched-reference").length, 5);
+});
+
+void test("compiler successor custody rejects duplicate, missing, corrupt and unauthenticated entries", () => {
+  const chainedId = "compiler/sfc/separate-template-authored-render-binding";
+  assertManifestRejected((manifest) => {
+    const fixture = manifestCase(manifest, chainedId);
+    assert(fixture.referenceHistory);
+    fixture.referenceHistory.push(structuredClone(fixture.referenceHistory[0]));
+  }, /duplicate successor path/u);
+  assertManifestRejected((manifest) => {
+    const fixture = manifestCase(manifest, "compiler/sfc/imported-component-before-prop");
+    fixture.currentReference = {
+      ...fixture.reference,
+      supersedesSha256: fixture.reference.sha256,
+      issue: "https://github.com/ubugeeei-prod/vize/issues/10891",
+    };
+  }, /duplicate successor path/u);
+  assertManifestRejected((manifest) => {
+    const fixture = manifestCase(manifest, "compiler/sfc/dynamic-loop-ref-for");
+    fixture.currentReference = {
+      path: `./${fixture.reference.path}`,
+      sha256: fixture.reference.sha256,
+      supersedesSha256: fixture.reference.sha256,
+      issue: "https://github.com/ubugeeei-prod/vize/issues/10891",
+    };
+  }, /duplicate successor SHA256/u);
+  assertManifestRejected((manifest) => {
+    delete manifestCase(manifest, chainedId).currentReference;
+  }, /referenceHistory requires currentReference/u);
+  assertManifestRejected((manifest) => {
+    const fixture = manifestCase(manifest, "compiler/sfc/imported-component-before-prop");
+    assert(fixture.currentReference);
+    fixture.currentReference.sha256 = "0".repeat(64);
+  }, /immutable artifact SHA256 mismatch/u);
+  assertManifestRejected((manifest) => {
+    const fixture = manifestCase(manifest, "compiler/sfc/dynamic-loop-ref-for");
+    assert(fixture.currentReference);
+    fixture.currentReference.issue = "https://github.com/ubugeeei-prod/vize/pull/10923";
+  }, /needs an authenticated issue/u);
+});
 
 void test("complete SFC Result comparison preserves every CSS and module byte", () => {
   const original = compilerApiRows(loaded, attempts(), null);
