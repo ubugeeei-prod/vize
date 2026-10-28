@@ -43,6 +43,7 @@ export function loadPublicTemplateCompiler() {
   assert.equal(producer.encoding, "base64");
   const authorityRaw = Buffer.from(asString(producer.content), "base64");
   const authority = asRecord(parseJson(authorityRaw.toString("utf8")));
+  assert.equal(authority.schema, "vize.publicTemplateGlobalReleaseAuthority.v1");
   assert.equal(authority.version, version);
   assert.equal(authority.tagSourceSha, tagSource);
   const producerSource = asString(authority.producerSource);
@@ -53,8 +54,39 @@ export function loadPublicTemplateCompiler() {
     "the public compiler policy must include the actual protected merge",
   );
   const requiredMerge = asString(pr.merge_commit_sha);
+  assert.equal(authority.required10973MergeSha, requiredMerge);
   ancestor(requiredMerge, producerSource);
+  const evidence = asRecord(authority.producerEvidence);
+  const runId = evidence.runId;
+  assert.ok(typeof runId === "number" && Number.isSafeInteger(runId) && runId > 0);
+  const workflowHead = asString(evidence.workflowHead);
+  assert.match(workflowHead, /^[a-f0-9]{40}$/);
+  ancestor(producerSource, workflowHead);
+  const producerRun = api("actions/runs/" + runId);
+  assert.equal(producerRun.id, runId);
+  assert.equal(producerRun.head_sha, workflowHead);
+  assert.equal(producerRun.path, ".github/workflows/release.yml");
+  assert.equal(producerRun.event, "workflow_dispatch");
+  const prepared = api("git/commits/" + tagSource);
+  assert.deepEqual(
+    asArray(prepared.parents).map((value) => asRecord(value).sha),
+    [producerSource],
+  );
   ancestor(producerSource, tagSource);
+  const componentBlob = asString(evidence.componentBlob);
+  assert.match(componentBlob, /^[a-f0-9]{40}$/);
+  const componentObject = api("git/blobs/" + componentBlob);
+  assert.equal(componentObject.encoding, "base64");
+  const componentRaw = Buffer.from(asString(componentObject.content), "base64");
+  const component = asRecord(parseJson(componentRaw.toString("utf8")));
+  assert.equal(component.schema, "vize.originalActionsProviderReceipts.v1");
+  assert.equal(component.version, version);
+  assert.equal(component.producerSource, producerSource);
+  assert.equal(component.tagSourceSha, tagSource);
+  const componentEvidence = asRecord(component.producerEvidence);
+  assert.equal(componentEvidence.runId, runId);
+  assert.equal(componentEvidence.workflowHead, workflowHead);
+  assert.deepEqual(asArray(authority.receipts), asArray(component.receipts));
   let tag = asRecord(api("git/ref/tags/v" + version).object);
   if (tag.type === "tag") tag = asRecord(api("git/tags/" + asString(tag.sha)).object);
   assert.equal(tag.type, "commit");
@@ -93,6 +125,19 @@ export function loadPublicTemplateCompiler() {
   const image = { filename, bytes: bytes.length, sha256: sha(bytes) };
   const receipts = asArray(authority.receipts).map((value) => {
     const record = asRecord(value);
+    const origin = asRecord(record.origin);
+    assert.equal(origin.runId, runId);
+    assert.equal(origin.workflowHead, workflowHead);
+    assert.ok(
+      typeof origin.artifactId === "number" &&
+        Number.isSafeInteger(origin.artifactId) &&
+        origin.artifactId > 0,
+    );
+    assert.equal(
+      origin.artifactApi,
+      "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/" + origin.artifactId,
+    );
+    assert.ok(asString(origin.member).endsWith(".vsix.receipt.json"));
     const raw = Buffer.from(asString(record.rawBase64), "base64");
     assert.equal(sha(raw), record.sha256);
     const receipt = asRecord(parseJson(raw.toString("utf8")));
@@ -138,6 +183,8 @@ export function loadPublicTemplateCompiler() {
       version,
       tagSource,
       producerSource,
+      producerEvidence: evidence,
+      originalComponent: { blob: componentBlob, sha256: sha(componentRaw) },
       required10973Merge: requiredMerge,
       authorityBlob,
       authoritySha256: sha(authorityRaw),
