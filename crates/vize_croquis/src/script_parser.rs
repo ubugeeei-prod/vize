@@ -42,6 +42,7 @@ mod walk;
 
 #[doc(hidden)]
 pub use value_binding_origins::ValueBindingOrigins;
+pub(crate) use value_binding_origins::component_binding_reference;
 
 pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;

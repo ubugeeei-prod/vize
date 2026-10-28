@@ -220,7 +220,7 @@ pub fn local_component_binding<'a>(
 // Missing capture or another Program's root is not proof that a setup name
 // is absent. Reuse the existing declared inventory with bounded hash lookups.
 fn metadata_binding_name<'a>(croquis: &'a Croquis, tag: &str) -> Option<&'a str> {
-    crate::script_parser::value_binding_origins::component_binding_reference(tag, |candidate| {
+    crate::script_parser::component_binding_reference(tag, |candidate| {
         croquis
             .bindings
             .bindings

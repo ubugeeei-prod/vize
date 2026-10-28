@@ -65,6 +65,7 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, os, pathlib, subprocess
           paths = [
+              "crates/vize_croquis/src/script_parser.rs",
               "crates/vize_croquis/src/script_parser/value_binding_origins.rs",
               "crates/vize_croquis/src/script_parser/parse.rs",
               "crates/vize_croquis/src/script_parser/value_binding_origins/resolution.rs",
@@ -81,7 +82,7 @@ jobs:
                   "id": "component-spelling", "parent": "a15d99e984886cd7b13e706cc755290d4fc98d8c",
                   "test": "facts::components::tests::component_binding_spelling_follows_vue_lookup_order",
                   "marker": b"    #[test]\n    fn component_binding_spelling_follows_vue_lookup_order",
-                  "failure": b"./Camel.vue", "changed": [paths[0], paths[2], paths[3]],
+                  "failure": b"./Camel.vue", "changed": [paths[0], paths[1], paths[3], paths[4]],
               },
           ]
           head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
