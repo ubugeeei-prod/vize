@@ -46,7 +46,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-slot-host-callbacks-10774":
     "content_mapper_slot_host_callbacks_keep_native_diagnostics",
   "content-mapper-template-callback-listener-11023":
-    "content_mapper_template_callback_listener_preserves_contextual_parameters",
+    "content_mapper_template_callback_listener_11023::content_mapper_template_callback_listener_preserves_contextual_parameters",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-type-only-import-use":
