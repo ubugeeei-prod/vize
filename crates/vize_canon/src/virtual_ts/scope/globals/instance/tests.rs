@@ -300,7 +300,7 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
     assert_eq!(
         output
             .code
-            .matches("void (__vize_public_instance.missing);")
+            .matches("void (__vize_template_instance.missing);")
             .count(),
         1,
         "the undeclared negative control must retain its instance diagnostic:\n{}",
