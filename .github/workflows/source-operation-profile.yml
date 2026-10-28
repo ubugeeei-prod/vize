@@ -10,7 +10,7 @@ jobs:
       CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
-      SOURCE_CANDIDATE: fb2cc77b36c26c4f04f58b03d63177095d031e80
+      SOURCE_CANDIDATE: 7a5ab28551637a4da81938a4e50b9b1f19d587fa
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }

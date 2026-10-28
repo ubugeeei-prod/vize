@@ -1,9 +1,14 @@
 //! Stable Fx digest, map, observer-allocation and thread-count laws.
-use rustc_hash::{FxBuildHasher, FxHasher};
-use std::collections::HashMap;
+use rustc_hash::{FxBuildHasher, FxHashMap, FxHasher};
 use std::hash::{BuildHasher, Hasher};
 
 vize_l0::scoped_fx_hasher!(Observed, SourceOwner, "test.scoped_fx");
+
+#[expect(
+    clippy::disallowed_types,
+    reason = "the law changes only the explicit Fx delegate builder in the standard map's third parameter"
+)]
+type ObservedMap<K, V> = std::collections::HashMap<K, V, Observed>;
 
 fn hasher_builder() -> Observed {
     Default::default()
@@ -69,10 +74,10 @@ fn digest_and_map_parity() {
         );
     }
     let keys = (0..512)
-        .map(|i| vize_l0::String::from(format!("key_{i}_日本🙂_long_payload")))
+        .map(|i| vize_l0::cstr!("key_{i}_日本🙂_long_payload"))
         .collect::<Vec<_>>();
-    let mut raw: HashMap<vize_l0::String, usize, FxBuildHasher> = HashMap::default();
-    let mut observed: HashMap<vize_l0::String, usize, Observed> = HashMap::default();
+    let mut raw: FxHashMap<vize_l0::String, usize> = FxHashMap::default();
+    let mut observed: ObservedMap<vize_l0::String, usize> = ObservedMap::default();
     assert_eq!(raw.get("absent"), observed.get("absent"));
     for (i, key) in keys.iter().enumerate() {
         assert_eq!(raw.insert(key.clone(), i), observed.insert(key.clone(), i));
