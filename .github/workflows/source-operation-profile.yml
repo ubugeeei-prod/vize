@@ -1,81 +1,80 @@
-name: Source operation profile
+name: UI Corsa RPC diagnostic
 on:
-  pull_request:
-    paths:
-      - .github/workflows/source-operation-profile.yml
-      - davinci/vize_l0/src/profiler/**
-      - davinci/vize_l0/src/profiler.rs
-      - davinci/vize_l0/tests/source_operations_profile.rs
-      - davinci/vize_l0/tests/source_probes/**
-      - crates/vize_croquis/src/script_parser/parse.rs
-      - crates/vize_croquis/src/script_parser/recovery.rs
-      - crates/vize_croquis/src/script_parser/recovery/**
-      - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/fingerprint.rs
-      - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/namespace.rs
-      - davinci/vize_l0/examples/source_operation_overhead.rs
-      - davinci/vize_l0/Cargo.toml
-      - crates/vize_carton/src/profile_export/**
-      - crates/vize_carton/src/profile_export.rs
-      - crates/vize_carton/Cargo.toml
-  workflow_dispatch: {}
-permissions:
-  contents: read
-concurrency:
-  group: source-operation-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  workflow_dispatch:
+permissions: { contents: read }
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
-  scopes:
+  diagnostic:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
-      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "12"
       CARGO_TERM_COLOR: never
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_UI_OBSERVATION: ${{ runner.temp }}/ui-corsa-observation
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
+          ref: f234b6bff00cf0d44bcec8e8e45eaa98d850b220
           persist-credentials: false
-      - run: rustup toolchain install 1.99.1 --profile minimal
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
         with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: source-operation-v1
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Check disabled and instrumented collector laws
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Fetch only committed observers outside the exact source checkout
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OBSERVER_REVISION: ${{ github.sha }}
         run: |
           set -euo pipefail
-          mkdir -p evidence
-          git rev-parse HEAD > evidence/source.sha
-          rustc +1.99.1 -vV > evidence/rustc.txt
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --lib profiler::micro_hash --features micro-profiling 2>&1 | tee evidence/hash-digest-parity.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
-          test "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
-          test -z "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"
-      - name: Measure instrumentation overhead separately from product speed
-        run: |
-          set -euo pipefail
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead
-          cp target/ci-opt/examples/source_operation_overhead evidence/normal
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead --features micro-profiling
-          cp target/ci-opt/examples/source_operation_overhead evidence/instrumented
-          sha256sum evidence/normal evidence/instrumented > evidence/binaries.sha256
-          wc -c evidence/normal evidence/instrumented > evidence/binary-bytes.txt
-          cpus=$(python3 -c 'import os;print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
-          printf '%s\n' "$cpus" > evidence/measurement-cpus.txt
-          lscpu > evidence/cpu.txt
-          for round in 1 2 3; do
-            taskset -c "$cpus" evidence/normal disabled 8 500000 > "evidence/normal-$round.json"
-            taskset -c "$cpus" evidence/instrumented disabled 8 500000 > "evidence/feature-disabled-$round.json"
-            taskset -c "$cpus" evidence/instrumented enabled 8 500000 > "evidence/feature-enabled-$round.json"
+          mkdir -p "$RUNNER_TEMP/ui-corsa-observer" "$VIZE_UI_OBSERVATION"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40603481864/artifacts?per_page=100" > "$VIZE_UI_OBSERVATION/original-artifact-inventory.json"
+          for pair in 'ui-corsa-rpc-proxy.ts:rpc-proxy.ts' 'ui-corsa-observer.ts:observer.ts' 'ui-corsa-case.ts:case.ts'; do
+            source_name="${pair%%:*}"
+            output_name="${pair#*:}"
+            gh api "repos/$GITHUB_REPOSITORY/contents/tools/benchmarks/scripts/$source_name?ref=$OBSERVER_REVISION" --jq '.content | @base64d' > "$RUNNER_TEMP/ui-corsa-observer/$output_name"
           done
-          rm evidence/normal evidence/instrumented
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          printf '%s\n' '{"type":"module"}' > "$RUNNER_TEMP/ui-corsa-observer/package.json"
+          git rev-parse HEAD > "$VIZE_UI_OBSERVATION/source.sha"
+          git status --porcelain > "$VIZE_UI_OBSERVATION/source-before.status"
+          test ! -d target
+      - name: Install the original conformance dependency selection
+        run: node tools/support/compat/github/install-js-checks.ts ui-conformance
+      - name: Check observer types and preserve transport source identity
+        run: |
+          set -euo pipefail
+          vp exec tsc --noEmit --strict --noUncheckedIndexedAccess --erasableSyntaxOnly --target ESNext --module NodeNext --moduleResolution NodeNext --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" "$RUNNER_TEMP/ui-corsa-observer/rpc-proxy.ts" "$RUNNER_TEMP/ui-corsa-observer/observer.ts" "$RUNNER_TEMP/ui-corsa-observer/case.ts"
+          node --input-type=module -e 'import fs from "node:fs"; import {stripTypeScriptTypes} from "node:module"; import {createHash} from "node:crypto"; const dir=process.env.RUNNER_TEMP+"/ui-corsa-observer"; const rows={}; for(const name of ["rpc-proxy","observer","case"]){const source=fs.readFileSync(dir+"/"+name+".ts","utf8"); const js=stripTypeScriptTypes(source); fs.writeFileSync(dir+"/"+name+".js",js,{mode:0o755}); rows[name]={sourceSha256:createHash("sha256").update(source).digest("hex"),javascriptSha256:createHash("sha256").update(js).digest("hex")};} fs.writeFileSync(process.env.VIZE_UI_OBSERVATION+"/observer-source.json",JSON.stringify(rows,null,2)+"\n");'
+      - name: Build one fresh normal source NAPI image with original features
+        env: { VIZE_NATIVE_CI_FORMATTER_HISTORY: "1" }
+        run: |
+          set -euo pipefail
+          vp run --filter './npm/native' build:ci > "$VIZE_UI_OBSERVATION/build.stdout" 2> "$VIZE_UI_OBSERVATION/build.stderr"
+      - name: Calibrate byte parity then observe one unchanged dropdown source
+        run: |
+          set -euo pipefail
+          node "$RUNNER_TEMP/ui-corsa-observer/observer.js"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: source-operation-${{ github.sha }}
-          path: evidence/
-          if-no-files-found: error
+          name: ui-corsa-diagnostic-receipt-${{ github.run_id }}
+          path: ${{ runner.temp }}/ui-corsa-observation/receipt.json
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ui-corsa-diagnostic-raw-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/ui-corsa-observation/
+            ${{ runner.temp }}/ui-corsa-observer/
+            npm/native/.artifacts/native/formatter-history/build-receipt.json
+          if-no-files-found: warn
