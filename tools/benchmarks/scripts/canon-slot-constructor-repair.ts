@@ -94,7 +94,9 @@ function authoredMappings(result: Record<string, unknown>, span: ReturnType<type
             features !== undefined,
         );
         return {
-          generated: Buffer.from(source).subarray(generated, generated + length).toString("utf8"),
+          generated: Buffer.from(source)
+            .subarray(generated, generated + length)
+            .toString("utf8"),
           original,
           originalLength,
           kind,
@@ -128,11 +130,7 @@ function diagnosticPoint(source: string, line: number, column: number) {
   };
 }
 
-function diagnosticFingerprint(
-  row: Row,
-  result: Record<string, unknown>,
-  sourceLineCount: number,
-) {
+function diagnosticFingerprint(row: Row, result: Record<string, unknown>, sourceLineCount: number) {
   const source = virtualText(result),
     point = diagnosticPoint(source, row.line, row.column),
     mappedSegments = mappings(result).filter(([generated, length]) => {
@@ -167,12 +165,7 @@ function packetFiles(root: string, packet: { result: Record<string, unknown> }) 
   };
 }
 
-function captureRealProject(
-  provider: string,
-  head: string,
-  checker: string,
-  output: string,
-) {
+function captureRealProject(provider: string, head: string, checker: string, output: string) {
   const root = path.join(output, "real-project"),
     project = path.join(root, "project"),
     inputs = path.join(root, "inputs");
@@ -252,8 +245,7 @@ function captureRealProject(
       publishedText = virtualText(publishedPacket.result),
       headText = virtualText(headPacket.result),
       legacyCall = "new (undefined as unknown as __VizeSlotConstructor<typeof QSplitter>)({",
-      directCall =
-        "__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof QSplitter>>()(";
+      directCall = "__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof QSplitter>>()(";
     assert.equal(occurrences(publishedText, legacyCall), 2);
     assert.equal(occurrences(headText, legacyCall), 0);
     assert.equal(occurrences(headText, directCall), 2);
@@ -317,9 +309,7 @@ function captureRealProject(
     assert.ok(packet && sourceLineCount !== undefined);
     return diagnosticFingerprint(diagnostic, packet, sourceLineCount);
   });
-  const expectedScreenshotMultiset = screenshotDiagnostics
-      .map(screenshotKey)
-      .sort(),
+  const expectedScreenshotMultiset = screenshotDiagnostics.map(screenshotKey).sort(),
     observedScreenshotDiagnostics = [
       ...new Map(
         baseline.map((diagnostic) => [

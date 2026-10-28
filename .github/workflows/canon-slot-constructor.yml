@@ -15,7 +15,7 @@ on:
       - tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/**
       - tools/benchmarks/scripts/canon-slot-constructor-*.ts
       - .github/workflows/canon-slot-constructor.yml
-permissions: { contents: read, actions: read }
+permissions: { contents: read }
 concurrency:
   group: canon-slot-constructor-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -29,7 +29,6 @@ jobs:
       GOMAXPROCS: "2"
       RAYON_NUM_THREADS: "2"
       NODE_DISABLE_COMPILE_CACHE: "1"
-      GH_TOKEN: ${{ github.token }}
       PR_HEAD: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -75,27 +74,42 @@ jobs:
           cargo test --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_scoped_slot_expressions -- --exact --nocapture > "$evidence/scoped-slot-expressions.stdout" 2> "$evidence/scoped-slot-expressions.stderr"
           cargo test --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_reserved_prop_and_hyphenated_slot_names -- --exact --nocapture > "$evidence/reserved-props-snapshot.stdout" 2> "$evidence/reserved-props-snapshot.stderr"
           cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$evidence/constructor-packets.stdout" 2> "$evidence/constructor-packets.stderr"
-      - name: Reuse the immutable shipping baseline and pinned public provider
+      - name: Install the pinned public release baseline and provider
         run: |
           set -euo pipefail
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439 > "$RUNNER_TEMP/slot-evidence/base-artifact.json"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439/zip > "$RUNNER_TEMP/slot-base.zip"
-          python3 - <<'PY'
-          import hashlib, io, os, pathlib, tarfile, zipfile
-          root=pathlib.Path(os.environ['RUNNER_TEMP']); raw=(root/'slot-base.zip').read_bytes()
-          assert hashlib.sha256(raw).hexdigest()=='85be25beb129752cebab4c5e96bba80505e82b14f43115b526beee8dc6dd853b'
-          z=zipfile.ZipFile(io.BytesIO(raw)); assert z.namelist()==['cache-source-image.tgz']
-          t=tarfile.open(fileobj=io.BytesIO(z.read(z.namelist()[0])))
-          assert set(m.name for m in t.getmembers() if m.isfile())=={'target/ci/vize','target/ci/vize.differential-build.json'}
-          dest=root/'slot-base'; dest.mkdir(); t.extractall(dest,filter='data')
-          binary=dest/'target/ci/vize'
-          assert hashlib.sha256(binary.read_bytes()).hexdigest()=='cdf44149ddfe160339887a256c1bd0253fb34f1f7c774759e6c5382b42ed0cb9'
-          PY
+          fixture=tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/real-project/provider
           mkdir "$RUNNER_TEMP/slot-provider"
+          cp "$fixture/package.json" "$fixture/package-lock.json" "$RUNNER_TEMP/slot-provider/"
           cd "$RUNNER_TEMP/slot-provider"
-          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.603.0","@vizejs/native":"0.603.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}));'
-          npm install --ignore-scripts --no-audit --no-fund
-          cp package.json package-lock.json "$RUNNER_TEMP/slot-evidence/"
+          printf '%s  %s\n' \
+            9ca03c3cb103e1ff8d0a8c633145a743a056f21c5a0be56fa633a19541ab5256 \
+            package-lock.json | sha256sum --check --strict
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          runner=pathlib.Path(os.environ['RUNNER_TEMP']); provider=runner/'slot-provider'
+          lock_bytes=(provider/'package-lock.json').read_bytes()
+          assert hashlib.sha256(lock_bytes).hexdigest()=='9ca03c3cb103e1ff8d0a8c633145a743a056f21c5a0be56fa633a19541ab5256'
+          lock=json.loads(lock_bytes); package=lock['packages']['node_modules/vize']
+          assert package['version']=='0.603.0'
+          assert package['integrity']=='sha512-uuQ+uXHCbsUTcSsA37edH3hxg3OpnM95odFmEkXsntEi3Wo6Wk8d/mCanBcxKgRr989bKdxrmZi7BQZ+SPbFlA=='
+          root=provider/'node_modules/vize'; manifest=json.loads((root/'package.json').read_text())
+          assert manifest['version']=='0.603.0' and manifest['bin']['vize']=='bin/vize'
+          entries=[]
+          for file in sorted(path for path in root.rglob('*') if path.is_file()):
+            data=file.read_bytes()
+            entries.append({'path':file.relative_to(root).as_posix(),'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+          encoded=json.dumps(entries,separators=(',',':')).encode()
+          tree={'files':len(entries),'bytes':sum(entry['bytes'] for entry in entries),'sha256':hashlib.sha256(encoded).hexdigest()}
+          assert tree=={'files':78,'bytes':737358,'sha256':'d7cdc31d3cd55b8495a3649598971950819b95becbcbd85c5bf6a088a6189d1e'}
+          binary=root/'bin/vize'; binary_bytes=binary.read_bytes()
+          entrypoint={'path':str(binary),'bytes':len(binary_bytes),'sha256':hashlib.sha256(binary_bytes).hexdigest()}
+          assert entrypoint['sha256']=='c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54'
+          receipt={'version':manifest['version'],'lockSha256':hashlib.sha256(lock_bytes).hexdigest(),'registryIntegrity':package['integrity'],'packageTree':tree,'entrypoint':entrypoint,'timingUsable':False}
+          evidence=runner/'slot-evidence'; (evidence/'public-baseline.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          (evidence/'package.json').write_bytes((provider/'package.json').read_bytes())
+          (evidence/'package-lock.json').write_bytes(lock_bytes)
+          PY
       - name: Require the pinned batch diagnostic fixture through the native provider
         run: |
           set -euo pipefail
@@ -120,7 +134,7 @@ jobs:
       - name: Require exact native negative, real-project, and repair admission
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/canon-slot-constructor-repair.ts "$RUNNER_TEMP/slot-provider" "$RUNNER_TEMP/slot-base/target/ci/vize" "$RUNNER_TEMP/slot-head" "$RUNNER_TEMP/slot-evidence/native"
+          node tools/benchmarks/scripts/canon-slot-constructor-repair.ts "$RUNNER_TEMP/slot-provider" "$RUNNER_TEMP/slot-provider/node_modules/vize/bin/vize" "$RUNNER_TEMP/slot-head" "$RUNNER_TEMP/slot-evidence/native"
       - name: Preserve raw failures and authored inputs
         if: always()
         run: |
