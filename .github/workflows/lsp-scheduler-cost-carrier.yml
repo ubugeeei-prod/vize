@@ -6,7 +6,7 @@ permissions:
 jobs:
   guard:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       SOURCE_LENGTH_BASE_REF: 09ff11b5a3440381d4f4558652885ec19520e4f1
@@ -40,6 +40,21 @@ jobs:
           set -euo pipefail
           node --test --test-concurrency=1 --test-reporter=tap tests/tooling/source-file-lengths.test.ts 2>&1 | tee module-guard-evidence/guard.tap
           python3 -c 'import pathlib,re; s=pathlib.Path("module-guard-evidence/guard.tap").read_text(); assert re.search(r"ok [0-9]+ - source length script checks the current checkout",s); assert re.search(r"ok [0-9]+ - Rust path overrides fail even behind inactive cfgs",s); assert re.search(r"# fail 0",s); assert re.search(r"# skipped 0",s); assert re.search(r"# tests [1-9][0-9]*",s)'
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Compile the actual ordinary benchmark target without executing timing
+        env:
+          CARGO_BUILD_JOBS: "4"
+          CARGO_INCREMENTAL: "0"
+          CARGO_TARGET_DIR: ${{ runner.temp }}/partition-layout-target
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$OBSERVED_SOURCE"
+          cargo bench --locked --profile ci -p vize_canon --bench partition_weight --no-run --message-format=json > module-guard-evidence/bench-cargo.jsonl 2> module-guard-evidence/bench-stderr.txt
+          node -e 'const fs=require("node:fs"),crypto=require("node:crypto");const rows=fs.readFileSync("module-guard-evidence/bench-cargo.jsonl","utf8").trim().split("\n").map(x=>JSON.parse(x));const artifacts=rows.filter(x=>x.reason==="compiler-artifact"&&x.target?.name==="partition_weight"&&x.executable);if(artifacts.length!==1||artifacts[0].fresh||!artifacts[0].target.src_path.endsWith("/benches/partition_weight/main.rs"))throw Error("fresh ordinary bench compile required");const artifact=artifacts[0],bin=fs.readFileSync(artifact.executable);console.log(JSON.stringify({source:process.env.OBSERVED_SOURCE,artifact,binaryBytes:bin.length,binarySha256:crypto.createHash("sha256").update(bin).digest("hex"),executed:false,timing:false,hardwareCounters:null}));' > module-guard-evidence/bench-build.json
+          cat module-guard-evidence/bench-build.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
