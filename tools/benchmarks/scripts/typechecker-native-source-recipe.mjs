@@ -22,7 +22,12 @@ const WRAPPER_PREFIX =
     "set -euo pipefail",
     '[[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"',
     'for helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done',
-    'recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"',
+    'if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then',
+    '  [[ "$HISTORICAL_PROJECTION_RECEIPT" == true && "$SOURCE_SHA" == "$DRIVER_SHA" ]]',
+    '  recipe=""',
+    "else",
+    '  recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"',
+    "fi",
     'if [[ -n "$recipe" ]]; then',
     `  if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"`,
     "else",
@@ -226,7 +231,11 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
   assert.equal(steps.length, 1);
   const step = steps[0];
   assert.ok(
-    ["github.event_name == 'pull_request'", "github.event_name == 'schedule'"].includes(step.if),
+    [
+      "github.event_name == 'pull_request'",
+      "github.event_name == 'schedule'",
+      "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)",
+    ].includes(step.if),
     "unrecognized native source campaign condition",
   );
   assert.equal(step.env.VIZE_TEST_REQUIRE_TSGO, "1");
