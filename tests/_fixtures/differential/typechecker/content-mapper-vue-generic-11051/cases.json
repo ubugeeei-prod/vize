@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11051,
+  "regressionCommit": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
+  "sourceRevision": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reporter-valid",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "src/App.vue.txt" },
+        { "file": "src/Picker.vue", "source": "src/Picker.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "invalid-value-control",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "src/App.invalid.vue.txt" },
+        { "file": "src/Picker.vue", "source": "src/Picker.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"c\"' is not assignable to type '\"a\" | \"b\"'."
+        }
+      ]
+    }
+  ]
+}
