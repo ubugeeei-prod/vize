@@ -161,7 +161,9 @@ pub(crate) fn analyze_provide_inject_with_index(
             let branch_count = provider_branches.iter().fold(0usize, |count, branch| {
                 count.saturating_add(branch.path_count())
             });
-            if unmatched_count > 0 {
+            // An explicit fallback declares the provider optional. Keep every provider
+            // branch and the type/reactivity checks; only required injects need this finding.
+            if unmatched_count > 0 && (inject.default_value.is_none() || inject.default_is_spread) {
                 let diagnostic = unmatched_inject_diagnostic(
                     consumer_id,
                     inject,

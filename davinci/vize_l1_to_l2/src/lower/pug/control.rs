@@ -297,6 +297,9 @@ impl<'t> Emitter<'t> {
 
     /// The span of `text`, a slice of the authored source.
     pub(super) fn text_span(&self, text: &str) -> Span {
+        if let Some(origin) = self.origin(text.as_ptr() as usize) {
+            return origin;
+        }
         let start = (text.as_ptr() as usize).saturating_sub(self.source_start()) as u32;
         Span::new(start, start + text.len() as u32)
     }

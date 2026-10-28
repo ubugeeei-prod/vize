@@ -71,6 +71,7 @@ pub mod source_range;
 pub mod span;
 pub mod string_builder;
 pub mod telegraph;
+pub mod template_globals;
 
 // Re-export allocator types
 pub use allocator::{Allocator, ArenaStamp};

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ file0000?: string }>()
+const value0000 = 0
+const items = [1, 2, 3]
+/*🌱日本語*/ value0000.missingNative0000()
+</script>
+<template><ul class="probe"><li v-for="item in items">{{ item }} {{ value0000 }} {{ file0000 }}</li></ul></template>
+<style scoped>.probe { color: #123456 }</style>

@@ -28,6 +28,9 @@ runs:
       run: |
         unset VIZE_TEST_DISABLE_TSGO
         node --test --test-concurrency=1 \
+          tests/tooling/canon-type-admission.test.ts \
+          tests/tooling/canon-global-ref-admission.test.ts \
+          tests/tooling/lsp-type-admission.test.ts \
           tests/tooling/lsp-vue-language-tools-oracles.test.ts \
           tests/tooling/lsp-editor-feature-isolation.test.ts \
           tests/tooling/lsp-local-completion-resolve.test.ts \
@@ -46,6 +49,17 @@ runs:
           tests/tooling/lsp-project-navigation-8013.test.ts \
           tests/tooling/lsp-workspace-semantic.test.ts \
           tests/tooling/lsp-file-rename-workspace.test.ts
+    - name: Preserve complete original template ref type admission
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: template-ref-type-admission-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/differential/fallthrough-listener-inputs/template-ref-admission-*
+          target/differential/template-ref-type-admission-lsp
+          target/differential/template-ref-global-admission
+        if-no-files-found: error
+        retention-days: 7
     - name: Preserve complete experimental route protocol receipts
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

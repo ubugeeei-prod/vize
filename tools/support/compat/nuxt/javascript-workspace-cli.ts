@@ -13,6 +13,10 @@ import { lexical, save, sha } from "./javascript-workspace-project.ts";
 import type { WorkspaceContext } from "./javascript-workspace-project.ts";
 import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.ts";
 import { packageDeclarations } from "./javascript-workspace-declarations.ts";
+import {
+  configuredHiddenMembership,
+  probeHiddenMembership,
+} from "./javascript-workspace-hidden-membership.ts";
 
 export interface CommandResult {
   status: number | null;
@@ -295,6 +299,35 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
   ];
   try {
     const mismatches: { id: string; error: string }[] = [];
+    let qualifiedOriginal = original;
+    if (context.cohort.id === "nuxt3") {
+      try {
+        probeHiddenMembership({
+          app,
+          main,
+          artifacts: context.artifacts,
+          binary,
+          provider,
+          vueTsc,
+          stockPrograms,
+          original,
+          command,
+        });
+      } catch (error) {
+        mismatches.push({
+          id: "hidden-declaration-membership",
+          error: error instanceof Error ? (error.stack ?? error.message) : String(error),
+        });
+      }
+      qualifiedOriginal = configuredHiddenMembership(original);
+      save(context.artifacts, "wildcard-membership-transition.json", {
+        authority:
+          "Six stock vue-tsc and native typed mutations must qualify before the bounded three-root transition is admitted.",
+        qualified: mismatches.length === 0,
+        historical: original,
+        current: qualifiedOriginal,
+      });
+    }
     for (const testCase of cases) {
       try {
         fs.writeFileSync(testCase.file, testCase.source);
@@ -316,22 +349,33 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
           context.artifacts,
           `check-${testCase.id}`,
         );
-        const expected = expectedCheckMembership(original, missingModuleFiles, testCase.id);
+        const historicalExpected = expectedCheckMembership(
+          original,
+          missingModuleFiles,
+          testCase.id,
+        );
+        const expected = expectedCheckMembership(
+          qualifiedOriginal,
+          missingModuleFiles,
+          testCase.id,
+        );
         const needle = testCase.needle ?? "";
         if (testCase.code) {
           const at = position(testCase.source, needle);
           const file = testCase.file.startsWith(app + path.sep)
             ? path.relative(app, testCase.file).split(path.sep).join("/")
             : testCase.file;
-          let item = expected.files.find((row) => row.file === file);
-          if (!item) {
-            item = { file, diagnostics: [] };
-            expected.files.push(item);
+          for (const packet of [expected, historicalExpected]) {
+            let item = packet.files.find((row) => row.file === file);
+            if (!item) {
+              item = { file, diagnostics: [] };
+              packet.files.push(item);
+            }
+            item.diagnostics.push(
+              `error:${at.line + 1}:${at.character + 1} [TS${testCase.code}] ${testCase.message ?? ""}`,
+            );
+            packet.errorCount = 1;
           }
-          item.diagnostics.push(
-            `error:${at.line + 1}:${at.character + 1} [TS${testCase.code}] ${testCase.message ?? ""}`,
-          );
-          expected.errorCount = 1;
         }
         const report = parseJson(actual.stdout);
         let stockExpected = "";
@@ -344,6 +388,7 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
           source: testCase.source,
           actual: report,
           expected,
+          historicalExpected,
           status: actual.status,
         });
         save(context.artifacts, "whole-typecheck-rows.json", records);

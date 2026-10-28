@@ -4,6 +4,10 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { sourceProvenance, validateProductPacket } from "./sfc-parse-attributes-source.mjs";
+import {
+  attributesPacketReference,
+  exposureReferenceCustody,
+} from "./sfc-parse-attributes-reference.ts";
 
 const directory = path.resolve(process.argv[2]);
 const base = JSON.parse(await fs.readFile(path.join(directory, "base/packets.json"), "utf8"));
@@ -49,7 +53,7 @@ for (const fixture of fixtures) {
   for (const mode of ["omitted", "filename", "disabled", "compile"])
     assert.deepEqual(
       original(after[mode]),
-      original(before[mode]),
+      original(attributesPacketReference(before[mode], fixture.source, mode)),
       `${fixture.id}/${mode}: complete existing API packet stays identical`,
     );
   if (fixture.error) {
@@ -98,6 +102,7 @@ await fs.writeFile(
       cases: fixtures.length,
       defaultPackets: fixtures.length * 4,
       originalErrorStacksRetained: true,
+      historicalExposureReference: exposureReferenceCustody,
     },
     null,
     2,

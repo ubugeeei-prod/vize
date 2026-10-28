@@ -29,11 +29,14 @@
 //!
 //! # Refusal
 //!
-//! What needs a JavaScript engine or other files at build time — names the
-//! template does not define, calls of JavaScript functions, includes,
-//! `extends`/named `block`s, `case`, `while`, filters, `doctype` — is
-//! refused with an error diagnostic at the construct; nothing is emitted
-//! for it.
+//! Includes are read through the host's [`PugIncludes`] (`include`),
+//! resolved against the file that names them.
+//!
+//! What needs a JavaScript engine at build time — names the template does
+//! not define, calls of JavaScript functions, `extends`/named `block`s,
+//! `case`, `while`, filters, `doctype` — and includes on a surface that
+//! reads no files are refused with an error diagnostic at the construct;
+//! nothing is emitted for it.
 
 mod attr_object;
 mod attrs;
@@ -42,6 +45,7 @@ mod control;
 mod emit;
 mod eval;
 mod heads;
+mod include;
 mod literal;
 mod map;
 mod mixin;
@@ -59,6 +63,7 @@ use vize_l0::diag::{Diagnostic, Severity};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::pug::{PugError, PugErrorCode, PugTree, parse_pug};
 
+pub use include::{MAX_INCLUDE_BYTES, PugIncludes};
 pub use map::PugSourceMap;
 pub use view::PugBlockView;
 
@@ -73,6 +78,8 @@ pub struct PugTemplate {
     pub map: PugSourceMap,
     /// Surface errors and refusals, in authored pug coordinates.
     pub diagnostics: StdVec<Diagnostic>,
+    /// The resolved names of the files the template includes.
+    pub dependencies: StdVec<String>,
 }
 
 impl PugTemplate {
@@ -115,6 +122,22 @@ pub fn derive_template_with(
     errors: &[PugError],
     rendering: PugRendering,
 ) -> PugTemplate {
+    derive_template_including(tree, errors, rendering, None, None)
+}
+
+/// [`derive_template_with`] reading includes through `reader`, resolved
+/// against `filename` (the template's file).
+/// Includes are limited per compilation to 4096 loads and expansions,
+/// 16 MiB total included source, and 16 MiB derived output. Cycles and
+/// chains deeper than 32 are refused independently.
+#[must_use]
+pub fn derive_template_including(
+    tree: &PugTree<'_>,
+    errors: &[PugError],
+    rendering: PugRendering,
+    filename: Option<&str>,
+    reader: Option<&mut dyn PugIncludes>,
+) -> PugTemplate {
     // A source L1 could not address was not parsed: refuse it before the
     // emitter reserves a buffer the size of the source.
     if let Some(error) = errors
@@ -128,14 +151,20 @@ pub fn derive_template_with(
                 Span::new(error.offset, error.offset),
                 error.code.message(),
             )],
+            dependencies: StdVec::new(),
         };
     }
-    let mut emitter = emit::Emitter::new(tree, rendering);
+    let arena = Allocator::default();
+    let includes = include::Includes::new(&arena, reader.is_some(), filename);
+    let mut emitter = emit::Emitter::new(tree, rendering, includes);
     for error in errors {
         emitter.diagnostics.push(crate::exemptions::surface_syntax(
             Span::new(error.offset, error.offset),
             error.code.message(),
         ));
+    }
+    if let Some(reader) = reader {
+        emitter.load_includes(&tree.nodes, 0, reader);
     }
     emitter.nodes(&tree.nodes);
     emitter.check_uncalled();
@@ -148,6 +177,7 @@ pub fn derive_template_with(
         html: emitter.html,
         map: emitter.map,
         diagnostics: emitter.diagnostics,
+        dependencies: emitter.includes.dependencies,
     }
 }
 
@@ -163,6 +193,19 @@ pub fn derive_template_source_with(source: &str, rendering: PugRendering) -> Pug
     let allocator = Allocator::default();
     let (tree, errors) = parse_pug(&allocator, source);
     derive_template_with(&tree, &errors, rendering)
+}
+
+/// [`derive_template_source_with`] reading includes through `reader`.
+#[must_use]
+pub fn derive_template_source_including(
+    source: &str,
+    rendering: PugRendering,
+    filename: &str,
+    reader: &mut dyn PugIncludes,
+) -> PugTemplate {
+    let allocator = Allocator::default();
+    let (tree, errors) = parse_pug(&allocator, source);
+    derive_template_including(&tree, &errors, rendering, Some(filename), Some(reader))
 }
 
 /// A pug template lowered to L2 through its derived Vue template.

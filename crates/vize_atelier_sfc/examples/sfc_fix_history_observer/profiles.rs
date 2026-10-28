@@ -59,6 +59,8 @@ fn complete_result(result: Result<SfcCompileResult, SfcError>) -> Value {
             warnings,
             bindings,
             macro_artifacts,
+            // The recorded workloads include no files.
+            dependencies: _,
         }) => json!({
             "Ok": { "code": code, "css": css, "map": map, "errors": errors,
                 "warnings": warnings, "bindings": bindings, "macroArtifacts": macro_artifacts },

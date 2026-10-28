@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Editor from "./Editor.vue";
+</script>
+
+<template>
+  <div id="panel">
+    <Editor :initial="{ name: 'a' }" />
+  </div>
+</template>

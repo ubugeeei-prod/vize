@@ -6,6 +6,7 @@ import { loadModuleResolutionLinks } from "./lsp-module-links-manifest.ts";
 import { BINDING_SESSION, loadBindingOccurrences } from "./lsp-binding-occurrences-manifest.ts";
 import { sourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
 import { validateLocalResolveSourceSession } from "./lsp-source-sessions.ts";
+import { validateNativeCapacitySourceSession } from "./lsp-native-capacity-session.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -105,11 +106,11 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     ) as unknown;
     let requests: LspFixture["requests"];
     if (data.sourceSession) {
-      validateLocalResolveSourceSession(
-        data,
-        new Map(files.map((file) => [file.runtimePath, file.bytes])),
-        expected,
-      );
+      const validate =
+        data.sourceSession.kind === "native-diagnostic-capacity-v1"
+          ? validateNativeCapacitySourceSession
+          : validateLocalResolveSourceSession;
+      validate(data, new Map(files.map((file) => [file.runtimePath, file.bytes])), expected);
       requests = [];
     } else if (data.id === BINDING_SESSION) {
       requests = loadBindingOccurrences(packRoot, data, expected);
@@ -194,6 +195,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
         params: Record<string, unknown>;
         result: unknown;
       }>;
+      assert(prepare && rename);
       assert.equal(prepare.method, "textDocument/prepareRename");
       assert.equal(rename.method, "textDocument/rename");
       requests = [prepare, rename];

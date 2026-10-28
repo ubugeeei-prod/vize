@@ -12,7 +12,13 @@ on:
       - tests/tooling/cross-file-script-offset.test.ts
       - tests/tooling/fixtures/cross-file-script-offset/**
       - tests/tooling/support/nuxt-exclusive-id-public-before.ts
+      - tests/tooling/support/nuxt-render-foundation-parity.ts
+      - tests/tooling/support/nuxt-render-census-proposal.ts
+      - crates/vize_croquis/**
+      - crates/vize/src/commands/project_nuxt.rs
+      - crates/vize/src/commands/project_nuxt/**
       - tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json
+      - tests/_fixtures/cross-file/nuxt-render-foundation-controls-10919.json
   push:
     branches: [main]
     paths:
@@ -25,7 +31,13 @@ on:
       - tests/tooling/cross-file-script-offset.test.ts
       - tests/tooling/fixtures/cross-file-script-offset/**
       - tests/tooling/support/nuxt-exclusive-id-public-before.ts
+      - tests/tooling/support/nuxt-render-foundation-parity.ts
+      - tests/tooling/support/nuxt-render-census-proposal.ts
+      - crates/vize_croquis/**
+      - crates/vize/src/commands/project_nuxt.rs
+      - crates/vize/src/commands/project_nuxt/**
       - tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json
+      - tests/_fixtures/cross-file/nuxt-render-foundation-controls-10919.json
   workflow_dispatch:
 
 permissions:
@@ -35,6 +47,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  census-proposal:
+    name: Propose the exact source-qualified Croquis product index
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - name: Render a proposal without rewriting the checkout or installing dependencies
+        env:
+          VIZE_NUXT_SCOPE_AUTHORED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tests/tooling/support/nuxt-render-census-proposal.ts "$RUNNER_TEMP/nuxt-render-census-proposal.json"
+      - name: Preserve exact source and generated index proposal
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: nuxt-render-census-proposal-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/nuxt-render-census-proposal.json
+          if-no-files-found: error
+          retention-days: 14
   producer:
     uses: ./.github/workflows/full-source-cli.yml
   coordinates:
@@ -86,6 +122,10 @@ jobs:
         if: ${{ always() && steps.public_before.outcome == 'success' }}
         run: |
           vp node tests/tooling/support/nuxt-exclusive-id-public-before.ts --corpus tests/_fixtures/cross-file/nuxt-exclusive-id-10919.json --cli "$VIZE_CROSS_FILE_OFFSET_BEFORE_CLI" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919"
+      - name: Require byte-identical old Nuxt packets while foundation admission stays inactive
+        if: ${{ always() && steps.public_before.outcome == 'success' }}
+        run: |
+          vp node tests/tooling/support/nuxt-render-foundation-parity.ts --before "$RUNNER_TEMP/cross-file-offset-proof/nuxt-exclusive-id-10919/before.json" --output "$RUNNER_TEMP/cross-file-offset-proof/nuxt-render-foundation-parity.json"
       - name: Preserve all original producer inputs, processes and output packets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

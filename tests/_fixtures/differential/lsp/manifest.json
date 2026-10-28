@@ -2827,6 +2827,98 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/source-session/native-diagnostic-capacity-11008",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "native-diagnostic-capacity-11008",
+        "files": [
+          {
+            "path": "Seed.vue.txt",
+            "sha256": "3edc49697b204c61b68bb07c3070027a67b3f990895336e4607817b83a6bd0f4"
+          },
+          {
+            "path": "project-input.json.gz",
+            "sha256": "84b06a27c7a2d4e9eeef231097437ad18fea66ba462376ba3709e3a42f6e7d8b"
+          },
+          {
+            "path": "reopen-input.json.gz",
+            "sha256": "0d56bf9f624298b1cd3915ebaaeab76aee148a796f0131b027dacdca8afcad68"
+          },
+          {
+            "path": "before-result.json.gz",
+            "sha256": "60f40a7f19f2e940e329a8ee8fe84eae6ecbebd710aca31bb71add1e7a542014"
+          },
+          {
+            "path": "after-result.json.gz",
+            "sha256": "f91fa54beb8aaf16227fab0b4b44427b207602639e6d1daac04786655a1c96f3"
+          },
+          {
+            "path": "reopen-result.json.gz",
+            "sha256": "053ad4c6c3934222e02c8d9173aa916d36d3b47d6ebfb568cec94707550518e6"
+          },
+          {
+            "path": "before-client.bin.gz",
+            "sha256": "012abe94dc878ee4f1020eda1480de9e37104ffb14ca97a93a67de7ed8a6b17a"
+          },
+          {
+            "path": "before-server.bin.gz",
+            "sha256": "2d5d5a05ed5875082c74043e397140146419b5bf1b3bdf4aeaa313083ef1a82b"
+          },
+          {
+            "path": "after-client.bin.gz",
+            "sha256": "08d5d2fb1f84614e316fe881d5b525ef85e0e5e17bcf0952d379c9d95835e519"
+          },
+          {
+            "path": "after-server.bin.gz",
+            "sha256": "10031ddfd00fedbcc5ad3a90959028a9e54ace4210a4470d659ae500a4471f29"
+          },
+          {
+            "path": "reopen-client.bin.gz",
+            "sha256": "08d6715fa7af6fd837687f0d84c46d2d2738a83868ea2a434e37c01b420f0688"
+          },
+          {
+            "path": "reopen-server.bin.gz",
+            "sha256": "4f07b5bde79f95225e15a3c8adef94f0a8d1ec66737a76cd6d541a8790f0f4f3"
+          },
+          {
+            "path": "executor-before.ts.txt",
+            "sha256": "45166518700caa99b21a43cb26cce9c9dbdbb12bc6e11af3ccba52b410a5b310"
+          },
+          {
+            "path": "executor-capacity.ts.txt",
+            "sha256": "2880db6ce9f287fa57ea880427f78f12fc411e8701931e6d2e32c658ed6d6395"
+          },
+          {
+            "path": "executor-reopen.ts.txt",
+            "sha256": "53ad19fb21e6b1f3c2e749fa69cca9bf5e8e0f429bbd6d8debf53b5a4d43f8de"
+          }
+        ]
+      },
+      "case": {
+        "path": "native-diagnostic-capacity-11008/case.json",
+        "sha256": "dd48471a1198fa299c53035eaf743990400fa2109fb442dc9590af95514d9932"
+      },
+      "requestCount": 0,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": true,
+        "typecheckTimeoutMs": 120000
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

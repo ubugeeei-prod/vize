@@ -67,6 +67,8 @@ pub struct InjectEntry {
     pub key: ProvideKey,
     pub local_name: CompactString,
     pub default_value: Option<CompactString>,
+    /// The authored second argument is a spread whose runtime arity is unproven.
+    pub default_is_spread: bool,
     /// Expected type of the injected value (if available).
     pub expected_type: Option<CompactString>,
     /// The destructure pattern used (if any)
@@ -154,12 +156,21 @@ impl ProvideInjectTracker {
             key,
             local_name,
             default_value,
+            default_is_spread: false,
             expected_type,
             pattern,
             from_composable,
             start,
             end,
         });
+    }
+
+    /// Mark the immediately recorded inject before nested arguments are walked.
+    #[inline]
+    pub(crate) fn mark_last_inject_default_spread(&mut self) {
+        if let Some(inject) = self.injects.last_mut() {
+            inject.default_is_spread = true;
+        }
     }
 
     /// Add a composable function call

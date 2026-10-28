@@ -1,0 +1,138 @@
+{
+  "schema": "vize.language-project.producer-port.v1",
+  "beforeRevision": "b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd",
+  "qualifiedProducerRevision": "bd98435d341a5487bf707842de06a8ecd529b427",
+  "producers": [
+    {
+      "selector": "checkInheritedConfig",
+      "before": {
+        "path": "tests/typescript-plugin/inherited-config.ts",
+        "sha256": "17b8c03fae46c3c3d34e41d27e7901cc3b1969e1c43b13d6c5c1eceb18ec30d0",
+        "snapshot": "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/before/inherited-config.ts.txt"
+      },
+      "after": {
+        "path": "tests/typescript-plugin/inherited-config.ts",
+        "sha256": "fbdd2e93fdf74b15d84c1232f60401a1a042870b8f37d484206ad1b054486320"
+      }
+    },
+    {
+      "selector": "createOrdinaryHostFrontier",
+      "before": {
+        "path": "tests/typescript-plugin/ordinary-host-frontier.ts",
+        "sha256": "d05c9afd2e0f0db0f1818f4ee4bd65790ebb38bdf352212fcba2e193faa7dc76",
+        "snapshot": "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/before/ordinary-host-frontier.ts.txt"
+      },
+      "after": {
+        "path": "tests/typescript-plugin/ordinary-host-frontier.ts",
+        "sha256": "d6cd8d770f74d488bbe251aecb87d940271cac91740c374613eb627c7d6cc8f4"
+      }
+    },
+    {
+      "selector": "packed-consumer",
+      "before": {
+        "path": "tests/typescript-plugin/packed-consumer.mjs",
+        "sha256": "daf6932d21e43514e02eb41a2b4dd17c04a3396e07482d8c568e6d5e74641d30",
+        "snapshot": "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/before/packed-consumer.mjs.txt"
+      },
+      "after": {
+        "path": "tests/typescript-plugin/packed-consumer.ts",
+        "sha256": "7a1d073b558da95a4b3491b5b9599618209b13861f22e73d323c9e70663ef8d5"
+      }
+    },
+    {
+      "selector": "startTsserver",
+      "before": {
+        "path": "tests/typescript-plugin/tsserver-client.mjs",
+        "sha256": "03a93ea537ad511f17b6b2ef35030098c3e8f6bdac3ef2657d5cec8e4fb3b2af",
+        "snapshot": "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/before/tsserver-client.mjs.txt"
+      },
+      "after": {
+        "path": "tests/typescript-plugin/tsserver-client.ts",
+        "sha256": "77b8970dfb6e528a4f5b8955ab4fb4b436c66b0ec9916007be2cdbb2ec0bf8e5"
+      }
+    },
+    {
+      "selector": "TypeScript 5.7.3 and 6.0.3",
+      "before": {
+        "path": ".github/workflows/typescript-plugin.yml",
+        "sha256": "d4ea39e3bd3a68224bce2303304d7b82cf872cef559894d6b882d56d1f262905",
+        "snapshot": "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/before/typescript-plugin.yml.txt"
+      },
+      "after": {
+        "path": ".github/workflows/typescript-plugin.yml",
+        "sha256": "734f5482d5cacd69668dad12e43a43985823cad8c56322dd674c0a4dbce2d288"
+      }
+    }
+  ],
+  "evidence": {
+    "run": 40571175050,
+    "job": 122425461461,
+    "artifact": 12773661457,
+    "artifactSha256": "d9e84a41197d92f0ff7cbeb0fe7be56bdae85286c757f98ea4fca85ec8b54630",
+    "result": "SUCCESS: real TypeScript6.0.3 and5.7.3, exact-source native and production VSIX",
+    "scope": "source qualification, not public registry acceptance"
+  },
+  "sourceReview": {
+    "pureRuntimeAssertions": {
+      "authoredNavigation": 23,
+      "projectMetadata": 22,
+      "inheritedConfiguration": 35,
+      "ordinaryHostFrontier": 12
+    },
+    "packedConsumerAssertions": 28,
+    "packedRuntimeEdits": [
+      "Narrow the failed UTF8 child-process stdout before matching the existing TS2307 assertion.",
+      "Distinguish the declared number-or-readonly-number-array code input by typeof number before the same includes predicate."
+    ],
+    "workflow": "Only three retired entrypoint suffixes changed; all other workflow fields retained."
+  },
+  "immutableInputs": [
+    {
+      "path": "typescript-project-configuration-10740/case.json",
+      "sha256": "96fe793b238e1e5da5061720ad16bfb37ea5c201ee3c3c789cd9cd038a4a46e0"
+    },
+    {
+      "path": "typescript-project-configuration-10740/src/Inherited.vue.txt",
+      "sha256": "bfb407f1299c232f69a428a3b2ebc2548a5015eed88396ae9fb38e03692c495f"
+    },
+    {
+      "path": "typescript-project-configuration-10740/src/control.ts.txt",
+      "sha256": "963d2197898ace3298948205002012b00d31f755d5eaa2ae589a03563befd818"
+    },
+    {
+      "path": "typescript-project-configuration-10740/inherited-before.json.txt",
+      "sha256": "18accd0b731fa5901df2d3c38396d8fa81b496b955e399864c2554a664ff43b2"
+    },
+    {
+      "path": "typescript-project-configuration-10740/inherited-after.json.txt",
+      "sha256": "172ab57682f8e2c73950b879f1d20ea127eaa7224474f32cb14d7098a32dc0df"
+    },
+    {
+      "path": "typescript-project-configuration-10740/tsconfig-6.0.json.txt",
+      "sha256": "981b1be9b5ce25cc1dbe457653945f5fe2fc6189132d64fe054f2aa9a98f1be7"
+    },
+    {
+      "path": "typescript-project-configuration-10740/tsconfig-5.7.json.txt",
+      "sha256": "639f9cca79d3466fc27dbada1a213d26a83ee5f1c497bc3e29b1c56bb881a0d5"
+    },
+    {
+      "path": "typescript-project-configuration-10740/expected.json",
+      "sha256": "97ef6c35cbb6cbb90f099d04ae3a54b851ac17920aece9cfaacac96ff2546242"
+    },
+    {
+      "path": "typescript-project-configuration-10740/before-witness.json",
+      "sha256": "462925989cfc5c1ec84b9ddcdabf175579059df648013acc25b00a5fcc316892"
+    },
+    {
+      "path": "typescript-project-configuration-10740/before-inputs.json",
+      "sha256": "8fedd5da81bb3f78ae01dbe525bfad594702933f5ad3ff05b270a719d70f0e43"
+    }
+  ],
+  "witness": {
+    "path": "typescript-project-configuration-10740/before-witness.json",
+    "sha256": "462925989cfc5c1ec84b9ddcdabf175579059df648013acc25b00a5fcc316892",
+    "sourceRevision": "085b4753c45997744d477cd2be1a882c43704a79",
+    "run": 40226962544,
+    "artifact": 12610814625
+  }
+}

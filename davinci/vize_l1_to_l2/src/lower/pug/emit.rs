@@ -14,6 +14,7 @@ use vize_l1::pug::{
     PugTextPiece, PugTree,
 };
 
+use super::include::Includes;
 use super::mixin::Mixins;
 
 use super::control::interpolated;
@@ -38,10 +39,15 @@ pub(super) struct Emitter<'t> {
     /// The bindings pug's build-time code has made so far.
     pub(super) scope: Scope,
     pub(super) mixins: Mixins<'t>,
+    pub(super) includes: Includes<'t>,
 }
 
 impl<'t> Emitter<'t> {
-    pub(super) fn new(tree: &PugTree<'t>, rendering: super::PugRendering) -> Self {
+    pub(super) fn new(
+        tree: &PugTree<'t>,
+        rendering: super::PugRendering,
+        includes: Includes<'t>,
+    ) -> Self {
         Self {
             rendering,
             source: tree.source,
@@ -51,6 +57,7 @@ impl<'t> Emitter<'t> {
             compiled_tag: false,
             scope: Scope::default(),
             mixins: Mixins::default(),
+            includes,
         }
     }
 
@@ -59,23 +66,37 @@ impl<'t> Emitter<'t> {
     }
 
     pub(super) fn offset(&self, token: &Token<'_>) -> u32 {
-        (token.text.as_ptr() as usize).saturating_sub(self.source.as_ptr() as usize) as u32
+        self.text_span(token.text).start
     }
 
     pub(super) fn span(&self, token: &Token<'_>) -> Span {
-        let start = self.offset(token);
-        Span::new(start, start + token.text.len() as u32)
+        self.text_span(token.text)
     }
 
-    /// Copy a token's bytes (a verbatim map segment).
+    /// Whether `text` is the template's own bytes (not an included file's).
+    pub(super) fn is_authored(&self, text: &str) -> bool {
+        self.origin(text.as_ptr() as usize).is_none()
+    }
+
+    /// Copy a token's bytes (a verbatim map segment); an included file's
+    /// bytes map to the directive that included them.
     pub(super) fn verbatim(&mut self, token: &Token<'_>) {
         let span = self.span(token);
+        if !self.is_authored(token.text) {
+            return self.synth(token.text, span);
+        }
+        if !self.include_output(token.text.len(), span) {
+            return;
+        }
         self.html.push_str(token.text);
         self.map.push_verbatim(token.text.len(), span.start);
     }
 
     /// Emit bytes pug synthesizes for the construct at `span`.
     pub(super) fn synth(&mut self, text: &str, span: Span) {
+        if !self.include_output(text.len(), span) {
+            return;
+        }
         self.html.push_str(text);
         self.map
             .push_synth(text.len(), span.start, span.end.max(span.start));
@@ -89,6 +110,9 @@ impl<'t> Emitter<'t> {
     pub(super) fn nodes(&mut self, nodes: &'t [PugNode<'t>]) {
         let mut index = 0;
         while let Some(node) = nodes.get(index) {
+            if self.includes.budget.halted {
+                return;
+            }
             index += 1;
             match node {
                 PugNode::Refused(refused)
@@ -99,6 +123,12 @@ impl<'t> Emitter<'t> {
                 }
                 node => vize_l0::ensure_sufficient_stack(|| self.node(node)),
             }
+        }
+        // An include's block appended to this node list.
+        if !nodes.is_empty()
+            && let Some(block) = self.yielded(nodes.as_ptr() as usize)
+        {
+            self.nodes(block);
         }
     }
 
@@ -111,6 +141,17 @@ impl<'t> Emitter<'t> {
             }
             PugNode::Refused(refused) if refused.refusal == PugRefusal::MixinBlock => {
                 self.mixin_block(refused);
+            }
+            PugNode::Refused(refused) if refused.refusal == PugRefusal::Include => {
+                self.include(refused);
+            }
+            // An included file's `yield`: the directive's block, if any.
+            PugNode::Refused(refused)
+                if refused.refusal == PugRefusal::Yield && !self.is_authored(refused.head.text) =>
+            {
+                if let Some(block) = self.yielded(core::ptr::from_ref(&**refused) as usize) {
+                    self.nodes(block);
+                }
             }
             PugNode::Text(text) => self.text(text),
             PugNode::Html(html) => self.html(&html.items),
@@ -172,6 +213,9 @@ impl<'t> Emitter<'t> {
             PugBlock::Nodes(nodes) => self.nodes(nodes),
             PugBlock::Text(text) => self.text(text),
         }
+        if let Some(block) = self.yielded(core::ptr::from_ref(tag) as usize) {
+            self.nodes(block);
+        }
     }
 
     fn name(&mut self, tag: &PugTag<'_>, head: Span) {
@@ -191,10 +235,19 @@ impl<'t> Emitter<'t> {
     }
 
     pub(super) fn text(&mut self, text: &'t PugText<'t>) {
+        // `Newline` offsets count in the text's own file.
+        let origin = text.pieces.iter().find_map(|piece| match piece {
+            PugTextPiece::Raw(token) | PugTextPiece::Pipe(token) | PugTextPiece::Code(token) => {
+                self.origin(token.text.as_ptr() as usize)
+            }
+            _ => None,
+        });
         for piece in &text.pieces {
             match piece {
                 PugTextPiece::Raw(token) => self.verbatim(token),
-                PugTextPiece::Newline(at) => self.synth("\n", Span::new(*at, *at)),
+                PugTextPiece::Newline(at) => {
+                    self.synth("\n", origin.unwrap_or(Span::new(*at, *at)));
+                }
                 PugTextPiece::Interpolation(interpolation) => self.nodes(&interpolation.nodes),
                 PugTextPiece::Code(token) => {
                     // An unclosed `#{` is already a surface error.

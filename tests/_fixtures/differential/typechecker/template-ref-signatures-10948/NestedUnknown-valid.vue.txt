@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+function later() {
+  const element = useTemplateRef('button');
+  void element.value;
+}
+void later;
+</script>
+<template><div /></template>

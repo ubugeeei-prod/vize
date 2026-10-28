@@ -1519,6 +1519,52 @@
       }
     },
     {
+      "id": "compiler/sfc/template-host-globals-10927",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "template-host-globals-10927",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6a6d0d40939854b79b8a995035cea9aa9e5b1cdf4887294c73c87eec24bc592f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-host-globals-10927/module.expected.txt",
+        "sha256": "3bf686b7e9465402d51ac01f70d5b9c1c15dfcfcb6d3e8ec7e7e94e5dcda9add",
+        "source": "Actual exact CLI-options producer capture at732fc74c61df740c5189a0d79f978dd0df90c74a, run40522195378/artifact12741544660, legacy-fixture.json packet810ecea25e5e30aad7f8ac48ef0a9f577868a1a66aa506ef25911963c7a4f38f; no code transformations. Full DOM/Vapor/SSR runtimes are independently qualified."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "This registry row exercises the legacy CLI SSR adapter. Direct source-native DOM/Vapor/SSR module and runtime qualification is separately executed by template-global-policy.yml; this SSR-only row makes no native parity claim."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10927"
+      }
+    },
+    {
       "id": "compiler/sfc/uppercase-native-event-keys-10826",
       "state": "active",
       "targets": ["ssr"],

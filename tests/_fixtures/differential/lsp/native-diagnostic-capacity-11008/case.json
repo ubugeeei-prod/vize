@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "id": "lsp/source-session/native-diagnostic-capacity-11008",
+  "provenance": {
+    "fixCommit": "c1dc7965dc51f91345db41a85f6cd5ca8866432c",
+    "witness": {
+      "path": "tests/tooling/lsp-diagnostic-capacity.test.ts",
+      "sha256": "2880db6ce9f287fa57ea880427f78f12fc411e8701931e6d2e32c658ed6d6395"
+    }
+  },
+  "documentVersion": 1,
+  "openDocument": false,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true,
+    "typecheckTimeoutMs": 120000
+  },
+  "files": [
+    {
+      "source": "Seed.vue.txt",
+      "runtimePath": "Seed.vue",
+      "sha256": "3edc49697b204c61b68bb07c3070027a67b3f990895336e4607817b83a6bd0f4"
+    },
+    {
+      "source": "project-input.json.gz",
+      "runtimePath": "protocol/project-input.json.gz",
+      "sha256": "84b06a27c7a2d4e9eeef231097437ad18fea66ba462376ba3709e3a42f6e7d8b"
+    },
+    {
+      "source": "reopen-input.json.gz",
+      "runtimePath": "protocol/reopen-input.json.gz",
+      "sha256": "0d56bf9f624298b1cd3915ebaaeab76aee148a796f0131b027dacdca8afcad68"
+    },
+    {
+      "source": "before-result.json.gz",
+      "runtimePath": "custody/before-result.json.gz",
+      "sha256": "60f40a7f19f2e940e329a8ee8fe84eae6ecbebd710aca31bb71add1e7a542014"
+    },
+    {
+      "source": "after-result.json.gz",
+      "runtimePath": "custody/after-result.json.gz",
+      "sha256": "f91fa54beb8aaf16227fab0b4b44427b207602639e6d1daac04786655a1c96f3"
+    },
+    {
+      "source": "reopen-result.json.gz",
+      "runtimePath": "custody/reopen-result.json.gz",
+      "sha256": "053ad4c6c3934222e02c8d9173aa916d36d3b47d6ebfb568cec94707550518e6"
+    },
+    {
+      "source": "before-client.bin.gz",
+      "runtimePath": "custody/before-client.bin.gz",
+      "sha256": "012abe94dc878ee4f1020eda1480de9e37104ffb14ca97a93a67de7ed8a6b17a"
+    },
+    {
+      "source": "before-server.bin.gz",
+      "runtimePath": "custody/before-server.bin.gz",
+      "sha256": "2d5d5a05ed5875082c74043e397140146419b5bf1b3bdf4aeaa313083ef1a82b"
+    },
+    {
+      "source": "after-client.bin.gz",
+      "runtimePath": "custody/after-client.bin.gz",
+      "sha256": "08d5d2fb1f84614e316fe881d5b525ef85e0e5e17bcf0952d379c9d95835e519"
+    },
+    {
+      "source": "after-server.bin.gz",
+      "runtimePath": "custody/after-server.bin.gz",
+      "sha256": "10031ddfd00fedbcc5ad3a90959028a9e54ace4210a4470d659ae500a4471f29"
+    },
+    {
+      "source": "reopen-client.bin.gz",
+      "runtimePath": "custody/reopen-client.bin.gz",
+      "sha256": "08d6715fa7af6fd837687f0d84c46d2d2738a83868ea2a434e37c01b420f0688"
+    },
+    {
+      "source": "reopen-server.bin.gz",
+      "runtimePath": "custody/reopen-server.bin.gz",
+      "sha256": "4f07b5bde79f95225e15a3c8adef94f0a8d1ec66737a76cd6d541a8790f0f4f3"
+    },
+    {
+      "source": "executor-before.ts.txt",
+      "runtimePath": "custody/executor-before.ts",
+      "sha256": "45166518700caa99b21a43cb26cce9c9dbdbb12bc6e11af3ccba52b410a5b310"
+    },
+    {
+      "source": "executor-capacity.ts.txt",
+      "runtimePath": "custody/executor-capacity.ts",
+      "sha256": "2880db6ce9f287fa57ea880427f78f12fc411e8701931e6d2e32c658ed6d6395"
+    },
+    {
+      "source": "executor-reopen.ts.txt",
+      "runtimePath": "custody/executor-reopen.ts",
+      "sha256": "53ad19fb21e6b1f3c2e749fa69cca9bf5e8e0f429bbd6d8debf53b5a4d43f8de"
+    }
+  ],
+  "entry": "Seed.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "e8ff5c760b9daeccd879ec536fb077905eda5bae266db19cc5921bbeddbf5cb5"
+  },
+  "method": "source-session/native-diagnostic-capacity",
+  "sourceSession": {
+    "kind": "native-diagnostic-capacity-v1",
+    "state": "source-inspected",
+    "executor": "tests/tooling/lsp-diagnostic-capacity.test.ts",
+    "reopenExecutor": "tests/tooling/lsp-diagnostic-capacity-reopen.test.ts",
+    "sourceDocuments": 130,
+    "bulkDocuments": 129,
+    "plannedClientMessageCount": 395,
+    "projectInput": "protocol/project-input.json.gz",
+    "reopenInput": "protocol/reopen-input.json.gz"
+  }
+}

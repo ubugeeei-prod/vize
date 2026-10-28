@@ -85,6 +85,9 @@ fn literal_body<'s>(
     value: &vize_l1::markup::Token<'s>,
 ) -> Option<(&'s str, Span)> {
     let text = value.text;
+    if !emitter.is_authored(text) {
+        return None;
+    }
     let quote = text
         .chars()
         .next()
@@ -162,7 +165,9 @@ impl<'t> Emitter<'t> {
                         raw_key: "id",
                         key_span: None,
                         value: Value::str(body),
-                        body: Some((body, Span::new(span.start + 1, span.end))),
+                        body: self
+                            .is_authored(token.text)
+                            .then(|| (body, Span::new(span.start + 1, span.end))),
                         escaped: false,
                         span,
                     });
@@ -236,7 +241,9 @@ impl<'t> Emitter<'t> {
                         } else {
                             String::from(key)
                         };
-                        let key_span = (rendered.as_str() == attr.name.text).then_some(span);
+                        let key_span = (rendered.as_str() == attr.name.text
+                            && self.is_authored(attr.name.text))
+                        .then_some(span);
                         let body = attr.value.as_ref().and_then(|v| literal_body(self, v));
                         collected.entries.push(Entry {
                             key: rendered,

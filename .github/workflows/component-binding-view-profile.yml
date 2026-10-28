@@ -1,0 +1,154 @@
+name: Component binding view allocation profile
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/virtual_ts/component_reference.rs
+      - crates/vize_canon/src/virtual_ts/generator/unresolved_components.rs
+      - tools/benchmarks/crates/vize/tests/component_binding_profile.rs
+      - tools/benchmarks/scripts/component-binding-view-evidence.ts
+      - .github/workflows/component-binding-view-profile.yml
+permissions: { contents: read }
+concurrency:
+  group: component-binding-view-profile-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RAYON_NUM_THREADS: "8"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Authenticate actual merge parents and untouched normal products
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD^2)" == "$PR_HEAD_SHA" ]]
+          export PRODUCT_BASE_SHA=$(git rev-parse HEAD^1)
+          export PRODUCT_HEAD_SHA=$(git rev-parse HEAD)
+          export EVIDENCE="$RUNNER_TEMP/component-binding-evidence"
+          mkdir "$EVIDENCE"
+          git worktree add --detach "$RUNNER_TEMP/component-binding-base" "$PRODUCT_BASE_SHA"
+          observer=tools/benchmarks/crates/vize/tests/component_binding_profile.rs
+          cp "$observer" "$RUNNER_TEMP/component-binding-base/$observer"
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess
+          root=pathlib.Path(os.environ['EVIDENCE'])
+          receipt={'eventBase':os.environ['EVENT_BASE_SHA'],'pullRequestHead':os.environ['PR_HEAD_SHA'],'productBase':os.environ['PRODUCT_BASE_SHA'],'productHead':os.environ['PRODUCT_HEAD_SHA'],'driver':os.environ['PRODUCT_HEAD_SHA'],'actualParents':subprocess.check_output(['git','show','-s','--format=%P','HEAD'],text=True).split(),'normalSource':'unmodified committed products; separate targets from all profiling overlays'}
+          assert receipt['actualParents']==[receipt['productBase'],receipt['pullRequestHead']]
+          (root/'provenance.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+          for role in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/component-binding-base"; fi
+            git -C "$source_root" diff --exit-code
+            git -C "$source_root" rev-parse HEAD > "$EVIDENCE/$role.source"
+            (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/component-$role-normal-target" cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$EVIDENCE/$role-normal-build.jsonl"
+            python3 - "$role" <<'PY'
+          import json, pathlib, os, sys, hashlib, shutil
+          role=sys.argv[1]; root=pathlib.Path(os.environ['EVIDENCE'])
+          rows=[json.loads(line) for line in (root/(role+'-normal-build.jsonl')).read_text().splitlines()]
+          items=[row for row in rows if row.get('reason')=='compiler-artifact' and row.get('target',{}).get('name')=='vize' and row.get('executable')]
+          assert len(items)==1 and items[0]['fresh'] is False
+          binary=pathlib.Path(items[0]['executable']); destination=pathlib.Path(os.environ['RUNNER_TEMP'])/('component-'+role+'-normal')
+          shutil.copy2(binary,destination)
+          receipt={'source':(root/(role+'.source')).read_text().strip(),'file':str(destination),'sha256':hashlib.sha256(destination.read_bytes()).hexdigest(),'bytes':destination.stat().st_size,'fresh':items[0]['fresh'],'cargoArtifact':items[0],'targetDirectory':str(pathlib.Path(os.environ['RUNNER_TEMP'])/('component-'+role+'-normal-target')),'overlay':False}
+          (root/(role+'-normal-binary.json')).write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+          done
+          node --input-type=module -e 'import fs from "node:fs";const p=process.env.EVIDENCE;const b=Object.fromEntries(["base","head"].map(k=>[k,JSON.parse(fs.readFileSync(p+"/"+k+"-normal-binary.json"))]));if(b.base.sha256===b.head.sha256)throw Error("identical binaries");fs.writeFileSync(p+"/binaries.json",JSON.stringify(b,null,2));'
+          rustc -Vv > "$EVIDENCE/rustc.txt"
+          uname -a > "$EVIDENCE/kernel.txt"
+          lscpu > "$EVIDENCE/cpu.txt"
+      - name: Add identical explicit profiling-only source observers
+        run: |
+          set -euo pipefail
+          export EVIDENCE="$RUNNER_TEMP/component-binding-evidence"
+          python3 - <<'PY'
+          import pathlib, os, json, hashlib, difflib
+          root=pathlib.Path(os.environ['EVIDENCE']); records=[]
+          probes=[('crates/vize_canon/src/virtual_ts/script_facts.rs','pub(super) fn with_bindings<T>','canon.component_binding_observer.with_bindings'),('crates/vize_croquis/src/facts/access.rs','pub fn used_component_name_list(','canon.component_binding_observer.used_component_name_list')]
+          for role,source in [('base',pathlib.Path(os.environ['RUNNER_TEMP'])/'component-binding-base'),('head',pathlib.Path(os.environ['GITHUB_WORKSPACE']))]:
+            for index,(relative,signature,label) in enumerate(probes):
+              file=source/relative; original=file.read_text(); start=original.index(signature); opening=original.index(' {\n',start)+2; end=original.index('\n}',opening)
+              body=original[opening:end]
+              patched=original[:opening]+'\n    vize_carton::profile!("'+label+'", {'+body+'\n    })'+original[end:]
+              assert patched.count('"'+label+'"')==1
+              stem=role+'-overlay-'+str(index)
+              (root/(stem+'.original.rs.txt')).write_text(original);(root/(stem+'.instrumented.rs.txt')).write_text(patched)
+              (root/(stem+'.diff')).write_text(''.join(difflib.unified_diff(original.splitlines(True),patched.splitlines(True),fromfile=relative,tofile=relative)))
+              records.append({'role':role,'path':relative,'label':label,'originalSha256':hashlib.sha256(original.encode()).hexdigest(),'overlaySha256':hashlib.sha256(patched.encode()).hexdigest(),'scope':'profiling-only common wrapper; inclusive current-thread function entry count and requested layout allocation traffic; no normal binary contains this observer'})
+              file.write_text(patched)
+          for index in range(len(probes)):
+            assert records[index]['originalSha256']==records[index+len(probes)]['originalSha256']
+            assert records[index]['overlaySha256']==records[index+len(probes)]['overlaySha256']
+          (root/'profiling-overlays.json').write_text(json.dumps(records,indent=2)+'\n')
+          PY
+          for role in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/component-binding-base"; fi
+            (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/component-$role-profile-target" cargo test --locked --profile ci-opt -p vize_benchmarks --test component_binding_profile --no-run --message-format=json) > "$EVIDENCE/$role-profile-build.jsonl"
+            python3 - "$role" <<'PY'
+          import json,pathlib,os,sys,hashlib
+          role=sys.argv[1]; root=pathlib.Path(os.environ['EVIDENCE'])
+          rows=[json.loads(line) for line in (root/(role+'-profile-build.jsonl')).read_text().splitlines()]
+          items=[row for row in rows if row.get('reason')=='compiler-artifact' and row.get('target',{}).get('name')=='component_binding_profile' and row.get('executable')]
+          assert len(items)==1 and items[0]['fresh'] is False
+          binary=pathlib.Path(items[0]['executable'])
+          (root/(role+'.profile-binary')).write_text(str(binary))
+          (root/(role+'-profile-binary.json')).write_text(json.dumps({'source':(root/(role+'.source')).read_text().strip(),'binary':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'bytes':binary.stat().st_size,'cargoArtifact':items[0],'commonOverlay':'profiling-overlays.json','targetDirectory':str(pathlib.Path(os.environ['RUNNER_TEMP'])/('component-'+role+'-profile-target'))},indent=2)+'\n')
+          PY
+          done
+      - name: Compare full packets and fresh normal mapper processes
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/component-binding-evidence"
+          affinity=$(python3 -c 'import os; print(",".join(map(str,sorted(os.sched_getaffinity(0))[:8])))')
+          printf '%s\n' "$affinity" > "$evidence/affinity.txt"
+          mkdir "$RUNNER_TEMP/component-binding-input"
+          export VIZE_COMPONENT_PROFILE_FILE="$RUNNER_TEMP/component-binding-input/Bindings.vue"
+          for round in 1 2 3; do
+            order='base head'
+            if [[ "$round" == 2 ]]; then order='head base'; fi
+            for shape in camel missing dynamic empty; do
+              for count in 32 128 512; do
+                for role in $order; do
+                  binary=$(cat "$evidence/$role.profile-binary")
+                  export VIZE_COMPONENT_PROFILE_SOURCE=$(cat "$evidence/$role.source")
+                  export VIZE_COMPONENT_PROFILE_SHAPE="$shape" VIZE_COMPONENT_PROFILE_COUNT="$count"
+                  for mode in runtime-off allocation; do
+                    name="$role-$shape-$count-$mode-$round"
+                    export VIZE_COMPONENT_PROFILE_MODE="$mode" VIZE_COMPONENT_PROFILE_OUTPUT="$evidence/$name.json"
+                    taskset -c "$affinity" "$binary" --exact component_binding_generation_profile --ignored --nocapture > "$evidence/$name.stdout" 2> "$evidence/$name.stderr"
+                  done
+                done
+              done
+            done
+          done
+          taskset -c "$affinity" node tools/benchmarks/scripts/component-binding-view-evidence.ts "$evidence"
+      - name: Require immutable complete constructor packets
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/component-binding-evidence"
+          for role in base head; do
+            source_root="$GITHUB_WORKSPACE"
+            if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/component-binding-base"; fi
+            (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/component-$role-profile-target" VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$evidence/$role-constructor.json" cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$evidence/$role-constructor.stdout" 2> "$evidence/$role-constructor.stderr"
+          done
+          cmp "$evidence/base-constructor.json" "$evidence/head-constructor.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: component-binding-view-${{ github.sha }}
+          path: ${{ runner.temp }}/component-binding-evidence
+          retention-days: 14

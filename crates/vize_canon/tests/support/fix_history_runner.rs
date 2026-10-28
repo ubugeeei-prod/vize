@@ -10,6 +10,7 @@ use std::path::Path;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
     PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
+    batch::{TsconfigOwnershipCache, TsconfigSourceKind},
 };
 
 pub(crate) fn check_pack(
@@ -39,6 +40,7 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "component-tag-aliases-11020" => regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }
@@ -54,6 +56,7 @@ pub(crate) fn check_pack(
             | "v-for-component-source-original"
             | "declared-prop-names-original"
             | "template-suppression-original"
+            | "template-ref-signatures-10948"
             | "native-pointer-events-original"
             | "cache-maintenance-9860"
             | "workspace-alias-cache-10063"
@@ -122,6 +125,7 @@ pub(crate) fn check_pack(
             | "relative-sibling-storage-10934"
             | "reopen-repaired-diagnostics-10730"
             | "editor-alias-import-extension-10753"
+            | "tsconfig-literal-brackets-10819"
             | "options-api-reserved-component-reference"
             | "setup-custom-properties"
             | "empty-v-slot-expression"
@@ -311,6 +315,22 @@ pub(crate) fn check_pack(
                 "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))
+                }
+                // `vize check` and the editor check a page with its owning
+                // referenced project.
+                "tsconfig-literal-brackets-10819" => {
+                    let page = case
+                        .inputs
+                        .iter()
+                        .find(|input| input.file.ends_with(".vue"))
+                        .expect("the case must name its page");
+                    Some(
+                        TsconfigOwnershipCache::default().effective_config_for_source(
+                            &project_root.join("tsconfig.json"),
+                            &project_root.join(safe_relative(&page.file)),
+                            TsconfigSourceKind::Typed,
+                        ),
+                    )
                 }
                 "relative-sibling-storage-10934" => {
                     Some(project_root.join("apps/app/tsconfig.json"))

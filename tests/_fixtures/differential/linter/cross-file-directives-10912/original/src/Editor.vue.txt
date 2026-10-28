@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { reactive } from "vue";
+
+const { initial } = defineProps<{ initial: { name: string } }>();
+
+// eslint-disable-next-line croquis/cf/spread-breaks-reactivity -- a draft copy of the prop
+const draft = reactive({ ...initial });
+</script>
+
+<template>
+  <p>{{ draft.name }}</p>
+</template>

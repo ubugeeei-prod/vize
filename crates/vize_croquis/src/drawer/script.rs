@@ -112,6 +112,7 @@ impl Drawer {
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
                 None,
+                false,
             )
         );
 

@@ -16,7 +16,8 @@ use super::{
     thread_pool::BatchThreadPool,
     types::{
         BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
-        BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
+        BatchFileResultNapi, custom_blocks_to_napi, dependencies_to_napi, macro_artifacts_to_napi,
+        style_blocks_to_napi,
     },
 };
 use crate::template_syntax::resolve_template_syntax;
@@ -125,6 +126,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles: vec![],
                         custom_blocks: vec![],
                         macro_artifacts: vec![],
+                        dependencies: None,
                         module_shape: None,
                     };
                 }
@@ -273,6 +275,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles,
                         custom_blocks,
                         macro_artifacts,
+                        dependencies: dependencies_to_napi(&result.dependencies),
                     }
                 }
                 Err(error) => BatchFileResultNapi {
@@ -290,6 +293,7 @@ fn compile_sfc_batch_with_results_inner(
                     styles,
                     custom_blocks,
                     macro_artifacts: vec![],
+                    dependencies: None,
                     module_shape: None,
                 },
             }

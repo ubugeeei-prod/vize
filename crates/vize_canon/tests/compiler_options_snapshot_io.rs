@@ -61,7 +61,7 @@ fn compiler_options_snapshot_does_not_create_cache_locks() {
     std::fs::create_dir(&project).unwrap();
 
     // Corroborate the observer against the real constructor while its plain
-    // File lease is alive, then verify Drop does not unlink the observed entry.
+    // File lease is alive through the complete snapshot measurement.
     assert!(namespace_entries(&control).is_empty());
     let lease = VirtualProject::new(&control).unwrap();
     std::hint::black_box(&lease);
@@ -95,25 +95,6 @@ fn compiler_options_snapshot_does_not_create_cache_locks() {
         blocked_while_alive,
         "the constructor must still hold its real lease"
     );
-    drop(contender);
-    drop(lease);
-    let contender = std::fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(&active_path)
-        .unwrap();
-    let available_after_drop = contender.try_lock().is_ok();
-    assert!(
-        available_after_drop,
-        "dropping the actual project releases its lease"
-    );
-    drop(contender);
-    let after_drop = namespace_entries(&control);
-    assert_eq!(
-        after_drop, while_live,
-        "File lease Drop must not hide creation"
-    );
-
     let config = project.join("tsconfig.json");
     let original = r#"{"compilerOptions":{"strict":true}}"#;
     std::fs::write(&config, original).unwrap();
@@ -124,12 +105,53 @@ fn compiler_options_snapshot_does_not_create_cache_locks() {
     );
     let options = snapshot_tsconfig_compiler_options(&project, &config).unwrap();
     let after = namespace_entries(&project);
+    // The full candidate namespace has already been observed above. Only now
+    // create an observer-owned control lock. GC takes this namespace lock
+    // before its active lock, so it cannot race the independent FD's release
+    // check after the actual owner's plain File is dropped.
+    let observer_lock_path = generated.with_extension("lock");
+    let (observer_lock, observer_created_control_lock) = match std::fs::OpenOptions::new()
+        .create_new(true)
+        .read(true)
+        .write(true)
+        .open(&observer_lock_path)
+    {
+        Ok(file) => (file, true),
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => (
+            std::fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(&observer_lock_path)
+                .unwrap(),
+            false,
+        ),
+        Err(error) => panic!("cannot open {}: {error}", observer_lock_path.display()),
+    };
+    observer_lock.lock().unwrap();
+    let with_observer_barrier = namespace_entries(&control);
+    drop(lease);
+    let available_after_drop = contender.try_lock().is_ok();
+    assert!(
+        available_after_drop,
+        "dropping the actual project releases its lease"
+    );
+    let after_drop = namespace_entries(&control);
+    assert_eq!(
+        after_drop, with_observer_barrier,
+        "the GC first-lock barrier preserves the complete control observation"
+    );
+    std::hint::black_box(&observer_lock);
+    drop(contender);
     eprintln!(
         "{}",
         serde_json::json!({
             "controlRoot": control,
             "controlWhileLeaseAlive": while_live,
+            "controlWithObserverBarrier": with_observer_barrier,
             "controlAfterDrop": after_drop,
+            "observerControlLockPath": observer_lock_path,
+            "observerCreatedControlLock": observer_created_control_lock,
+            "snapshotMeasuredBeforeControlBarrier": true,
             "leaseBlockedWhileAlive": blocked_while_alive,
             "leaseAvailableAfterDrop": available_after_drop,
             "snapshotRoot": project,

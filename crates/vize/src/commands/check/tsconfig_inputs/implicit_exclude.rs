@@ -22,90 +22,11 @@
 //! shape [`super::glob::default_exclude_specs`] produces — therefore misses
 //! nested copies, which is how files from a real nested `node_modules` became
 //! program roots (#3385).
-
-use std::path::Path;
+//!
+//! [`vize_canon::batch::TsconfigWildcard`] compiles every spec with these rules.
 
 /// `commonPackageFolders` in TypeScript's `utilities.ts`.
 const COMMON_PACKAGE_FOLDERS: [&str; 3] = ["node_modules", "bower_components", "jspm_packages"];
-
-const RECURSIVE_SEGMENT: &str = "**";
-
-/// Whether `relative` — a path relative to the include spec's base directory —
-/// has a package folder in a segment that `pattern` matched with a wildcard.
-///
-/// The pattern is aligned against the path segment by segment: literally from
-/// the left up to the first `**`, literally from the right back to the last
-/// `**`, and everything still unclaimed in the middle is what the `**` consumed.
-/// A pattern without `**` therefore claims every segment one-to-one, and a
-/// pattern with several `**` treats the whole span between the outermost two as
-/// consumed — conservative in the same direction as `tsc`, whose `**` fragment
-/// rejects a package folder at any of the depths it spans.
-pub(super) fn wildcard_segment_hits_package_folder(pattern: &str, relative: &Path) -> bool {
-    let segments = relative
-        .components()
-        .filter_map(|component| component.as_os_str().to_str())
-        .collect::<Vec<_>>();
-    let pattern_segments = pattern
-        .split('/')
-        .filter(|segment| !segment.is_empty())
-        .collect::<Vec<_>>();
-
-    // Unclaimed path segments live in `segments[head..tail]`.
-    let mut head = 0usize;
-    let mut tail = segments.len();
-
-    let mut recursive_at = None;
-    for (index, segment) in pattern_segments.iter().enumerate() {
-        if *segment == RECURSIVE_SEGMENT {
-            recursive_at = Some(index);
-            break;
-        }
-        // Fewer path segments than leading pattern segments means the pattern
-        // did not match this path at all; nothing is wildcard-claimed.
-        if head >= tail {
-            return false;
-        }
-        if is_wildcard_segment(segment)
-            && segments.get(head).copied().is_some_and(is_package_folder)
-        {
-            return true;
-        }
-        head += 1;
-    }
-
-    let Some(recursive_at) = recursive_at else {
-        return false;
-    };
-
-    for segment in pattern_segments.iter().skip(recursive_at + 1).rev() {
-        if *segment == RECURSIVE_SEGMENT {
-            break;
-        }
-        if tail <= head {
-            return false;
-        }
-        if is_wildcard_segment(segment)
-            && segments
-                .get(tail - 1)
-                .copied()
-                .is_some_and(is_package_folder)
-        {
-            return true;
-        }
-        tail -= 1;
-    }
-
-    segments
-        .get(head..tail)
-        .unwrap_or_default()
-        .iter()
-        .copied()
-        .any(is_package_folder)
-}
-
-fn is_wildcard_segment(segment: &str) -> bool {
-    segment.contains(['*', '?', '['])
-}
 
 pub(super) fn is_package_folder(segment: &str) -> bool {
     COMMON_PACKAGE_FOLDERS.contains(&segment)

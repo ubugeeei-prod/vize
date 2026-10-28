@@ -103,9 +103,9 @@ export function createSentinelAdapter(out: string, decoder: string) {
         driver: python.stdout.trim(),
         script,
         inputChange: "standalone comma becomes reserved noncanonical 0xdeadbeefbadc0ffe",
-        outputChange: "only its exact unknown 3-line synthetic frame becomes comma",
+        outputChange: "only the response bound to an injected comma request becomes comma",
         sourceOutputChange:
-          "genuine function/source/address bytes pass unchanged; malformed sentinel is fatal",
+          "ordered address headers bind query origin; genuine bytes pass unchanged, synthetic variable inline frames are isolated, incomplete frames are fatal",
       },
       null,
       2,
@@ -261,7 +261,7 @@ export function renderSourceCpu(options: {
       );
       const parsed = parseFlatSourceReport(command.stdout);
       const protocolErrors =
-        /configuration failed|could not read (?:first|sentinel) record|unexpected record instead of sentinel|failed to read.*(?:DWARF|debug)|addr2line.*(?:failed|error)/iu.test(
+        /configuration failed|could not (?:read|send).*(?:record|request)|unexpected record instead of sentinel|failed to read.*(?:DWARF|debug)|addr2line.*(?:failed|error)/iu.test(
           command.stderr,
         );
       return [

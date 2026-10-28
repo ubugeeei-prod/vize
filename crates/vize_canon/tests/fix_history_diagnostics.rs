@@ -877,6 +877,17 @@ fn global_scope_build_info_keeps_complete_diagnostics() {
 }
 
 #[test]
+fn literal_bracket_pages_keep_their_project_options() {
+    check_pack(
+        "tsconfig-literal-brackets-10819",
+        "literal_bracket_pages_keep_their_project_options",
+        "26b8fa31c7933d800c8bf4c2f37057864caaae9d",
+        Some(10819),
+        &["literal-page-include", "bracket-directory-exclude"],
+    );
+}
+
+#[test]
 fn relative_sibling_imports_preserve_complete_package_diagnostics() {
     check_pack(
         "relative-sibling-storage-10934",
@@ -1178,6 +1189,21 @@ fn empty_v_slot_expressions_keep_slot_scopes_checked() {
 }
 
 #[test]
+fn template_ref_signatures_preserve_readonly_unknown_and_repairs() {
+    check_pack(
+        "template-ref-signatures-10948",
+        "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+        "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+        Some(10948),
+        &[
+            "valid-imported-signatures",
+            "invalid-original-operations",
+            "repaired-imported-signatures",
+        ],
+    );
+}
+
+#[test]
 fn custom_properties_resolve_on_the_template_instance() {
     if native_fixture_runtime_disabled() {
         return;
@@ -1223,5 +1249,19 @@ fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
             "no-directive-missing-member",
             "valid-local-unused-expectation",
         ],
+    );
+}
+
+#[test]
+fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-tag-aliases-11020",
+        "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
+        "d653e04143051768a96ba51a35fe64c055caf0c5",
+        Some(11020),
+        &["valid", "invalid", "repaired"],
     );
 }

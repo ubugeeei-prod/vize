@@ -1,0 +1,80 @@
+name: Type admission scale axes
+on:
+  pull_request:
+    paths:
+      - "tools/benchmarks/scripts/type-admission-scale*.ts"
+      - "tests/tooling/type-admission-scale.test.ts"
+      - ".github/workflows/type-admission-scale.yml"
+  workflow_dispatch:
+    inputs:
+      axis:
+        type: choice
+        options: [smoke, files, graph, file-size, types, mixed]
+        default: smoke
+      sfcs:
+        description: File-axis SFC count (2500, 10000, or 50000)
+        type: choice
+        options: ["2500", "10000", "50000"]
+        default: "2500"
+      tool:
+        type: choice
+        options: [all, cli, mapper, vue-tsc]
+        default: all
+      vize-version:
+        description: Exact published Vize/native version for this baseline
+        type: string
+        default: "0.598.0"
+permissions: { contents: read }
+concurrency:
+  group: type-admission-scale-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  original-public-projects:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      SCALE_AXIS: ${{ inputs.axis || 'smoke' }}
+      SCALE_SFCS: ${{ inputs.sfcs || '2500' }}
+      SCALE_TOOL: ${{ inputs.tool || 'all' }}
+      VIZE_VERSION: ${{ inputs.vize-version || '0.598.0' }}
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - name: Install the exact public baseline providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VIZE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          npm install --prefix "$RUNNER_TEMP/admission-provider" --ignore-scripts --no-package-lock --no-audit --no-fund \
+            "vize@$VIZE_VERSION" "@vizejs/native@$VIZE_VERSION" vue@3.5.44 vue-tsc@3.3.13 \
+            typescript@6.0.3 typescript-native@npm:typescript@7.1.0-beta
+      - name: Require the original corpus and diagnostic custody laws
+        run: node --test tests/tooling/type-admission-scale.test.ts
+      - name: Run each original axis and retain every raw diagnostic packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/type-admission-scale-suite.ts \
+            --provider "$RUNNER_TEMP/admission-provider" --out "$RUNNER_TEMP/admission-scale" \
+            --axis "$SCALE_AXIS" --sfcs "$SCALE_SFCS" --tool "$SCALE_TOOL"
+      - name: Package evidence without following workspace dependency symlinks
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/admission-scale"
+          git rev-parse HEAD > "$RUNNER_TEMP/admission-scale/source.txt"
+          node --version > "$RUNNER_TEMP/admission-scale/node.txt"
+          tar --exclude='*/node_modules' --exclude='*/xdg-cache' --exclude='*/tmp' \
+            -czf "$RUNNER_TEMP/admission-scale-evidence.tgz" -C "$RUNNER_TEMP/admission-scale" .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: type-admission-scale-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/admission-scale-evidence.tgz
+          if-no-files-found: error
+          retention-days: 7

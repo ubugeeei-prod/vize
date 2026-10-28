@@ -60,6 +60,10 @@ impl MaestroServer {
     pub(super) async fn close_document(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
         self.state.documents.close(&uri);
+        #[cfg(feature = "native")]
+        if let Some(scheduler) = &self.initial_diagnostics {
+            scheduler.discard_closed(&uri, &self.state.documents);
+        }
         let project = self.for_document(&uri).await;
         project.finish_close_document(uri).await;
     }
