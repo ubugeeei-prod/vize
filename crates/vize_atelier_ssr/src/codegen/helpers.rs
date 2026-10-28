@@ -105,13 +105,23 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_interpolation(&mut self, interp: &InterpolationNode) {
         use vize_atelier_core::ExpressionNode;
 
-        self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
-
         let exp = match &interp.content {
             ExpressionNode::Simple(simple) => self.strip_ctx_for_scoped_params(simple.content),
             ExpressionNode::Compound(_) => "_ctx.value".to_compact_string(), // placeholder
         };
         let span = interp.content.loc().span;
+
+        // Vue 1 triple-mustache is the historical raw-HTML interpolation. It
+        // exists only in a legacy-capable build and must bypass the escaping
+        // helper just like `v-html`; the ordinary Vue 3 binary has no raw flag
+        // and keeps its previous path byte-for-byte.
+        #[cfg(feature = "legacy")]
+        if interp.raw {
+            self.push_wrapped_expression_part("", &exp, "", span);
+            return;
+        }
+
+        self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
         self.push_wrapped_expression_part("_ssrInterpolate(", &exp, ")", span);
     }
 
