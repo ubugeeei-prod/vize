@@ -24,6 +24,11 @@ on:
         required: false
         type: boolean
         default: false
+      type_admission:
+        description: Qualify type admission only on its first containing published after release
+        required: false
+        type: boolean
+        default: false
       additional_observers:
         description: Qualify independent published icon and canonical SDK observers after core contracts
         required: false
@@ -104,7 +109,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   public-release-contracts:
-    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != '')) || (github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.additional_observers == true)
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && (inputs.phase == 'release-contracts' || (inputs.phase == 'after' && inputs.candidate != '')) || (github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.additional_observers == true) || (github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.type_admission == true)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -162,7 +167,7 @@ jobs:
           retention-days: 30
 
   public-custom-properties:
-    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.custom_properties
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.phase == 'after' && inputs.custom_properties || (github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.type_admission == true)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -174,6 +179,13 @@ jobs:
         with: { persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Prove the first containing type-admission publication
+        if: inputs.type_admission == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLIC_TYPE_CANDIDATE: ${{ inputs.candidate }}
+          PUBLIC_TYPE_PHASE: ${{ inputs.phase }}
+        run: node tools/support/release/type-admission-eligibility.ts "$PUBLIC_VERSION" "$PUBLIC_TYPE_CANDIDATE" "$PUBLIC_SOURCE_SHA" "$PUBLIC_TYPE_PHASE" "$RUNNER_TEMP/public-type-admission-eligibility.json"
       - name: Prove the immutable tag contains the merged public-instance change
         env:
           GH_TOKEN: ${{ github.token }}
@@ -204,6 +216,18 @@ jobs:
       - name: Qualify independent published canonical SDK
         if: inputs.additional_observers == true && inputs.phase == 'after'
         run: node tools/support/release/public_canonical_sdk/verify.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer/public-canonical-sdk.json"
+      - name: Preserve the original CPP consumer before template admission
+        if: inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-cpp-custody.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" before "$RUNNER_TEMP/public-type-admission-cpp-custody.json"
+      - name: Install the isolated native TypeScript mapper host
+        if: inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-mapper-host.ts "$RUNNER_TEMP/public-type-admission-mapper-host" "$RUNNER_TEMP/public-type-admission-mapper-host-proof"
+      - name: Qualify independent published template type admission
+        if: inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/public_type_admission/run.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer/type-admission" "$RUNNER_TEMP/public-type-admission-eligibility.json"
+      - name: Verify the original CPP consumer after template admission
+        if: always() && inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-cpp-custody.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" after "$RUNNER_TEMP/public-type-admission-cpp-custody.json"
       - name: Preserve complete public packets and immutable original witnesses
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -222,3 +246,7 @@ jobs:
             ${{ runner.temp }}/public-custom-properties-consumer/src/
             tools/support/release/public_custom_properties/
             ${{ runner.temp }}/public-custom-properties-consumer/public-canonical-sdk-evidence/
+            ${{ runner.temp }}/public-type-admission-eligibility.json
+            ${{ runner.temp }}/public-custom-properties-consumer/type-admission/
+            ${{ runner.temp }}/public-type-admission-mapper-host-proof/
+            ${{ runner.temp }}/public-type-admission-cpp-custody.json*

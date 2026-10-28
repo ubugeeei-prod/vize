@@ -1,7 +1,8 @@
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
-  "aria-kebab-prop-11048": "declared_kebab_aria_props_preserve_batch_diagnostics",
+  "aria-kebab-prop-11048":
+    "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -50,6 +51,8 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
   "content-mapper-unknown-options-10218":
     "content_mapper_unknown_options_preserve_requested_diagnostics",
+  "content-mapper-vue-generic-11051":
+    "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
   "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
@@ -169,6 +172,7 @@ export const sourceRevisions = {
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "content-mapper-vue-generic-11051": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
