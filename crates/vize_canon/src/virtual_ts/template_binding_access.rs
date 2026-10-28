@@ -15,7 +15,10 @@ enum Receiver {
 }
 
 #[derive(Default, Debug)]
-pub(crate) struct TemplateBindingAccess(FxHashMap<String, Receiver>);
+pub(crate) struct TemplateBindingAccess {
+    receivers: FxHashMap<String, Receiver>,
+    lexical: FxHashSet<String>,
+}
 
 impl TemplateBindingAccess {
     pub(crate) fn collect(summary: &Croquis, options_api: bool) -> Self {
@@ -24,11 +27,18 @@ impl TemplateBindingAccess {
             super::script_facts::with_bindings(summary, |bindings| {
                 let script_setup = bindings.is_script_setup();
                 for (name, binding) in bindings.typed() {
-                    if (matches!(binding, BindingType::Data | BindingType::Options)
-                        || (binding == BindingType::Props && !script_setup))
-                        && is_reserved_identifier(name)
+                    if matches!(binding, BindingType::Data | BindingType::Options)
+                        || (binding == BindingType::Props && !script_setup)
                     {
-                        result.0.insert(name.into(), Receiver::OptionsInstance);
+                        if is_reserved_identifier(name) {
+                            result.lexical.remove(name);
+                            result
+                                .receivers
+                                .insert(name.into(), Receiver::OptionsInstance);
+                        } else {
+                            result.receivers.remove(name);
+                            result.lexical.insert(name.into());
+                        }
                     }
                 }
             });
@@ -37,24 +47,29 @@ impl TemplateBindingAccess {
     }
 
     pub(crate) fn from_props(names: FxHashSet<String>) -> Self {
-        Self(
-            names
+        Self {
+            receivers: names
                 .into_iter()
                 .map(|name| (name, Receiver::Props))
                 .collect(),
-        )
+            lexical: FxHashSet::default(),
+        }
     }
 
     pub(crate) fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.receivers.is_empty()
     }
 
     pub(crate) fn contains(&self, name: &str) -> bool {
-        self.0.contains_key(name)
+        self.receivers.contains_key(name)
+    }
+
+    pub(crate) fn is_known(&self, name: &str) -> bool {
+        self.contains(name) || self.lexical.contains(name)
     }
 
     pub(crate) fn receiver(&self, name: &str) -> Option<&'static str> {
-        self.0.get(name).map(|receiver| match receiver {
+        self.receivers.get(name).map(|receiver| match receiver {
             Receiver::Props => "props",
             Receiver::OptionsInstance => "__vize_options_instance",
         })

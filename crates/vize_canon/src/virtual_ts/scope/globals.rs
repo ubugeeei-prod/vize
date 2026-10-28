@@ -125,7 +125,7 @@ pub(super) fn generate_undefined_refs(
         if is_template_instance_global_name(undef.name.as_str()) {
             continue;
         }
-        if template_binding_access.contains(name)
+        if template_binding_access.is_known(name)
             || is_visible_template_binding(summary, name, undef.offset)
         {
             continue;

@@ -239,4 +239,66 @@ fn options_api_reads_the_authored_instance() {
     );
 }
 
+/// Normal Options API members already have generated lexical declarations.
+/// They must not also acquire public-instance reads, which would report one
+/// false TS2339 per authored interpolation when the instance helper is precise.
+#[test]
+fn options_api_lexical_members_do_not_gain_public_instance_reads() {
+    let script = r#"export default {
+  props: { label: { type: String, required: true } },
+  data() { return { count: 1 }; },
+  computed: { doubled() { return this.count * 2; } },
+  methods: { increment() { return ++this.count; } },
+};
+"#;
+    let template =
+        "<p>{{ label }}:{{ count }}:{{ doubled }}:{{ increment() }}:{{ missing }}</p>";
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &analyzer.finish(),
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+
+    for name in ["label", "count", "doubled", "increment"] {
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("__VizeOptionsBinding<typeof __default__, \"{name}\""))
+                .count(),
+            1,
+            "missing lexical Options API binding for {name}:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output.code.matches(&format!("__vize_public_instance.{name}")).count(),
+            0,
+            "Options API member {name} gained a public-instance read:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("__VizeTemplateInstanceMember<\"{name}\">"))
+                .count(),
+            0,
+            "Options API member {name} gained a public-instance declaration:\n{}",
+            output.code
+        );
+    }
+    assert_eq!(
+        output.code.matches("void (__vize_public_instance.missing);").count(),
+        1,
+        "the undeclared negative control must retain its instance diagnostic:\n{}",
+        output.code
+    );
+}
+
 mod lexical_scope;
