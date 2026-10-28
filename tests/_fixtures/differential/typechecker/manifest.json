@@ -226,6 +226,63 @@
       }
     },
     {
+      "id": "typechecker/aria-kebab-prop-11048/declared-kebab-and-optional-valid-with-wrong-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-kebab-prop-11048",
+      "case": "declared-kebab-and-optional-valid-with-wrong-control",
+      "test": "declared_kebab_aria_props_preserve_batch_diagnostics",
+      "regressionCommit": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
+      "sourceRevision": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
+      "packReference": {
+        "path": "aria-kebab-prop-11048/cases.json",
+        "sha256": "2d31a478fe437819cfa7a992288302549ac263324cd88c5badd42221c5ac9da6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-kebab-prop-11048/tsconfig.json.txt",
+          "sha256": "7f26adfe212dd79dac0cd7a52f467fb18466f770950f4c78abc02a54943615da"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "aria-kebab-prop-11048/src/Child.vue.txt",
+          "sha256": "a5dc0411ab88128e65a892fc5b94b99128e4168bdf7827888d025adf8be71098"
+        },
+        {
+          "file": "src/Optional.vue",
+          "path": "aria-kebab-prop-11048/src/Optional.vue.txt",
+          "sha256": "c55bf37e757f715f6db44fd3d67da0d58157d3b9cde313af69704b11cbaeeae7"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "aria-kebab-prop-11048/src/Parent.vue.txt",
+          "sha256": "db255ca4e54fdecdf589f84393e996f4da413562fee80e351534ccdacfe69d21"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
       "state": "active",
       "targets": [

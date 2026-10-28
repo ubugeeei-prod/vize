@@ -1,6 +1,7 @@
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
+  "aria-kebab-prop-11048": "declared_kebab_aria_props_preserve_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -139,6 +140,7 @@ export const TYPECHECKER_TESTS = {
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
 export const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+  "aria-kebab-prop-11048": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
@@ -168,8 +170,7 @@ export const sourceRevisions = {
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "content-mapper-slot-host-callbacks-10774": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
-  "content-mapper-template-callback-listener-11023":
-    "407e7cf15219405110efdd0c977bb30cb1db1644",
+  "content-mapper-template-callback-listener-11023": "407e7cf15219405110efdd0c977bb30cb1db1644",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
