@@ -51,7 +51,9 @@ fn complete_program_and_expression_packets_match_without_memoization() {
         "{ [import.meta.url]: T }",
         "{ [import('m')]: T }",
         "{ [(() => { return /x>y/.test(x) })()]: T }",
+        "{ [x ? y : z]: T }",
         "{ [({ a = 1 } = obj)]: T }",
+        "{ [({ a = b ? c : d } = obj)]: T }",
         "{ [await value]: T }",
         "[T /* > */]",
         "[T, /* @__PURE__ */ f()]",
@@ -62,6 +64,7 @@ fn complete_program_and_expression_packets_match_without_memoization() {
         "[...T[], U?]",
         "T extends U ? V : W",
         "([x, { y }]: T) => U",
+        "([x = y ? z : w]: T) => U",
         "[",
         "[[,]<x",
         "{[[,]<x",
@@ -122,6 +125,13 @@ fn overlapping_fatal_subproblems_are_shared_without_changing_recovery() {
         parser.bump_any();
         let expression = parser.parse_expr();
         assert!(parser.fatal_error.is_some());
+        if enabled {
+            assert!(parser.state.failed_speculative_subproblems.is_allocated());
+            assert!(parser.state.failed_speculative_subproblems.len() > 0);
+            assert!(parser.state.failed_speculative_subproblems.has_assignment());
+        } else {
+            assert!(!parser.state.failed_speculative_subproblems.is_allocated());
+        }
         observations.push((
             format!("{:?}", parser.fatal_error.as_ref().unwrap().error),
             parser.state.subproblem_visits,
@@ -143,6 +153,34 @@ fn overlapping_fatal_subproblems_are_shared_without_changing_recovery() {
     );
     eprintln!("exact #10845 (diagnostic, visits, reuses, arena bytes): {observations:?}");
     assert_eq!(packet(source, SourceType::ts(), false), packet(source, SourceType::ts(), true));
+}
+
+#[test]
+fn assignment_entry_bypasses_inactive_memoization() {
+    let allocator = Allocator::default();
+    let mut parser = parser(&allocator, "x + y", SourceType::ts(), true);
+    parser.bump_any();
+    let _ = parser.parse_assignment_expression_or_higher();
+    assert_eq!(parser.state.memo_entry_calls, 0);
+    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
+
+    let allocator = Allocator::default();
+    let mut parser = parser(&allocator, "x", SourceType::ts(), true);
+    parser.bump_any();
+    parser.state.type_argument_speculation_depth = 1;
+    parser.set_unexpected();
+    let _ = parser.parse_assignment_expression_or_higher();
+    assert_eq!(parser.state.memo_entry_calls, 0);
+    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
+
+    let allocator = Allocator::default();
+    let mut parser = parser(&allocator, "x + y", SourceType::ts(), true);
+    parser.bump_any();
+    parser.state.type_argument_speculation_depth = 1;
+    parser.state.reuse_failed_type_argument_subproblems = true;
+    let _ = parser.parse_assignment_expression_or_higher();
+    assert_eq!(parser.state.memo_entry_calls, 1);
+    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
 }
 
 #[test]
@@ -178,6 +216,11 @@ fn irreversible_side_effects_are_fenced_even_when_collection_lengths_match() {
             usize::from(writer == 5),
             "writer {writer} memoization mismatch"
         );
+        assert_eq!(
+            parser.state.failed_speculative_subproblems.is_allocated(),
+            writer == 5,
+            "writer {writer} allocated a fenced table"
+        );
     }
 }
 
@@ -189,6 +232,7 @@ fn ordinary_successful_programs_do_not_allocate_failed_subproblem_tables() {
     parser.bump_any();
     let _ = parser.parse_expr();
     assert!(parser.fatal_error.is_none());
+    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
     assert_eq!(parser.state.failed_speculative_subproblems.capacity(), 0);
     assert_eq!(parser.state.type_argument_speculation_depth, 0);
 }
