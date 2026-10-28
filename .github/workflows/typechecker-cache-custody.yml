@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { path: carrier, persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { path: source, fetch-depth: 2, persist-credentials: false }
+        with: { path: source, fetch-depth: 16, persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "26.6.0", package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node "$CUSTODY_ROOT/provider/node_modules/typescript/bin/tsc" --noEmit --strict --noUnusedLocals --noUnusedParameters --noUncheckedIndexedAccess --skipLibCheck --target esnext --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --typeRoots "$CUSTODY_ROOT/provider/node_modules/@types" carrier/tools/benchmarks/scripts/typechecker-cache-admission-build.ts carrier/tools/benchmarks/scripts/typechecker-cache-admission-run.ts 2>&1 | tee "$CUSTODY_ROOT/typecheck.log"
+          node "$CUSTODY_ROOT/provider/node_modules/typescript/bin/tsc" --noEmit --strict --noUnusedLocals --noUnusedParameters --noUncheckedIndexedAccess --skipLibCheck --target es2022 --lib es2024 --isolatedModules --verbatimModuleSyntax --erasableSyntaxOnly --resolveJsonModule --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --allowJs --types node --typeRoots "$CUSTODY_ROOT/provider/node_modules/@types" carrier/tools/benchmarks/scripts/typechecker-cache-admission-build.ts carrier/tools/benchmarks/scripts/typechecker-cache-admission-run.ts 2>&1 | tee "$CUSTODY_ROOT/typecheck.log"
       - name: Build independent fresh normal and opt-in CLIs and source unit controls
         shell: bash
         run: |

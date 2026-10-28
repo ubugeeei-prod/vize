@@ -229,21 +229,20 @@ mod tests {
 
     #[test]
     fn outside_missing_config_is_explicit_and_never_reads_an_authored_root_config() {
-        let mut command = Command::new("/vize-nonexistent-native-custody-control");
-        command.args(["--incremental", "--project", "/outside/requested.json"]);
-        command.current_dir("/cache-owner");
-        let result = packet(
-            &command,
-            Path::new("/authored-project"),
-            Path::new("/cache-owner"),
-            Path::new("/outside/requested.json"),
-        );
-        assert_eq!(result["projectRoot"], "/authored-project");
-        assert_eq!(result["virtualRoot"], "/cache-owner");
-        assert_eq!(result["actualCwd"], "/cache-owner");
+        let root = tempfile::tempdir().unwrap();
+        let authored = root.path().join("authored");
+        let cache = root.path().join("cache");
+        let config = root.path().join("outside/requested.json");
+        let mut command = Command::new(root.path().join("missing-native"));
+        command.arg("--incremental").arg("--project").arg(&config);
+        command.current_dir(&cache);
+        let result = packet(&command, &authored, &cache, &config);
+        assert_eq!(result["projectRoot"], json!(authored));
+        assert_eq!(result["virtualRoot"], json!(cache));
+        assert_eq!(result["actualCwd"], json!(cache));
         assert_eq!(
             result["actualArgs"],
-            json!(["--incremental", "--project", "/outside/requested.json"])
+            json!(["--incremental", "--project", config])
         );
         assert!(has_error(&result, "read-requested-config"));
         assert!(result["requestedConfigBytes"].is_null());
