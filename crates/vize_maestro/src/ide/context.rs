@@ -54,6 +54,7 @@ impl<'a> IdeContext<'a> {
     }
 
     /// Consume the request's cursor snapshot, retaining completion insertion boundaries.
+    #[cfg(test)]
     pub(crate) fn completion_with_content(
         state: &'a ServerState,
         uri: &'a Url,
