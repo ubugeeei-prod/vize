@@ -222,11 +222,7 @@ fn multiline_generic_callback_branches_keep_contextual_parameters() {
         .tempdir_in(cases_root)
         .unwrap();
     std::fs::write(project.path().join("Foo.vue"), GENERIC_BRANCH_CHILD).unwrap();
-    std::fs::write(
-        project.path().join("parent.vue"),
-        GENERIC_BRANCH_PARENT,
-    )
-    .unwrap();
+    std::fs::write(project.path().join("parent.vue"), GENERIC_BRANCH_PARENT).unwrap();
     std::fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
     install_mapper_manifest(project.path());
     install_vue_package(project.path());

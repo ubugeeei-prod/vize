@@ -200,8 +200,7 @@ pub(super) fn prop_alias_type(
     // camel alias. Resolve it before the whole-object presence witness removes
     // `undefined`; otherwise a required `'aria-label': string` can degrade to
     // the permissive HTML fallthrough for `ariaLabel`.
-    let raw_aria_prop_name =
-        component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
+    let raw_aria_prop_name = component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
     let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {

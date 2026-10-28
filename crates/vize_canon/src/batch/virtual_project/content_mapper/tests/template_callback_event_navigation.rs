@@ -175,7 +175,12 @@ const emit = defineEmits<{ quit: [] }>();
             result.text
         );
     }
-    assert_eq!(result.text.matches(BRANCH_IGNORE).count(), 12, "{}", result.text);
+    assert_eq!(
+        result.text.matches(BRANCH_IGNORE).count(),
+        12,
+        "{}",
+        result.text
+    );
 
     let directive_ranges: Vec<_> = result
         .text

@@ -7,12 +7,11 @@ use oxc_span::SourceType;
 use vize_carton::String;
 
 mod candidate;
-use candidate::{CandidateGate, candidate_gate};
 #[cfg(test)]
 pub(super) use candidate::has_callback_parser_candidate;
+use candidate::{CandidateGate, candidate_gate};
 
-pub(super) const BRANCH_IGNORE: &str =
-    "// @ts-ignore Inference-only callback branch.\n";
+pub(super) const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.\n";
 
 pub(super) enum CallbackLineRewrite {
     NotApplicable,
@@ -205,9 +204,7 @@ fn last_structural_arrow(value: &str, start: usize, end: usize) -> Option<usize>
                     if comment_next >= end {
                         return None;
                     }
-                    if bytes.get(index) == Some(&b'*')
-                        && bytes.get(comment_next) == Some(&b'/')
-                    {
+                    if bytes.get(index) == Some(&b'*') && bytes.get(comment_next) == Some(&b'/') {
                         index = comment_next.checked_add(1)?;
                         break;
                     }

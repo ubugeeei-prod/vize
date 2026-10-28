@@ -8,7 +8,10 @@ use super::{
 
 #[test]
 fn ordinary_callbacks_keep_the_allocation_free_result() {
-    assert_eq!(callback_parameters_on_ignored_line("(item) => item.id"), None);
+    assert_eq!(
+        callback_parameters_on_ignored_line("(item) => item.id"),
+        None
+    );
     assert_eq!(
         callback_parameters_on_ignored_line("(\n  item\n) => item.id").as_deref(),
         Some("(   item ) => item.id")
@@ -213,8 +216,7 @@ fn type_arguments_comparisons_assertions_and_literals_stay_on_the_fast_path() {
 
 #[test]
 fn unsafe_or_unterminated_prefixes_fail_closed() {
-    let line_comment =
-        "<T extends // keep the terminator\n() => unknown>(\n value: T) => value";
+    let line_comment = "<T extends // keep the terminator\n() => unknown>(\n value: T) => value";
     assert!(has_callback_parser_candidate(line_comment));
     assert_eq!(callback_parameters_on_ignored_line(line_comment), None);
 
@@ -243,7 +245,10 @@ fn parser_shape_and_range_failures_preserve_exact_input() {
 
 #[test]
 fn preserves_only_leading_typescript_suppression_comments() {
-    assert_eq!(expression_source_for_typecheck("// note\nvalue").as_ref(), "\nvalue");
+    assert_eq!(
+        expression_source_for_typecheck("// note\nvalue").as_ref(),
+        "\nvalue"
+    );
     assert_eq!(
         expression_source_for_typecheck("// @ts-ignore\nvalue").as_ref(),
         "// @ts-ignore\nvalue"
