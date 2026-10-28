@@ -50,6 +50,24 @@ export type OperationSample = {
   totalMs: number;
   timingsMs: Record<string, number>;
   rss: ProductRss;
+  oracleReceipt: OperationOracleReceipt;
+};
+
+export type OperationOracleReceipt = {
+  authoredUri: string;
+  completion: { requiredLabel: string; virtualNameCount: number };
+  hoverRange: Range;
+  definition: Array<{ uri: string; range: Range }>;
+  references: Array<{ uri: string; range: Range }>;
+  prepareRenameRange: Range;
+  rename: {
+    uri: string;
+    newName: string;
+    edits: Array<{ range: Range; newText: string }>;
+    appliedTextSha256: string;
+  };
+  passedOperations: string[];
+  sha256: string;
 };
 
 export type ProductRss = {
@@ -186,6 +204,24 @@ export function assertExactProductDiagnostics(
   );
   const match = nonEmpty[0];
   const { reportedVersion } = assertExactPublication(kind, match.params, expected, version);
+
+  const terminalByProvider = new Map<string, ObservedDiagnosticPublication>();
+  for (const publication of observed) terminalByProvider.set(publication.provider, publication);
+  const terminalNonEmpty = [...terminalByProvider.values()].filter(
+    (item) => publicationFingerprint(item.params) !== "empty",
+  );
+  assert.equal(
+    terminalNonEmpty.length,
+    1,
+    `terminal product diagnostics were cleared, stale, or extra: ${JSON.stringify([
+      ...terminalByProvider.values(),
+    ])}`,
+  );
+  assert.equal(
+    publicationFingerprint(terminalNonEmpty[0]?.params),
+    expected,
+    `terminal product diagnostic is not exact: ${JSON.stringify(terminalNonEmpty[0])}`,
+  );
   return { match, reportedVersion };
 }
 
@@ -291,6 +327,22 @@ function hoverTextPart(value: unknown): string {
   if (value && typeof value === "object" && "value" in value)
     return String((value as { value: unknown }).value);
   return "";
+}
+
+export function assertAuthoredHovers(hovers: readonly unknown[], target: Range): void {
+  assert.ok(hovers.length > 0, "hover was missing");
+  assert.ok(
+    hovers.some(
+      (item) => /message/.test(hoverText(item)) && /string|Template binding/.test(hoverText(item)),
+    ),
+    JSON.stringify(hovers),
+  );
+  for (const item of hovers) {
+    assert.ok(item && typeof item === "object", "hover result must be an object");
+    const range = (item as { range?: unknown }).range;
+    assert.ok(range != null, "hover omitted its authored range");
+    assert.deepEqual(asRange(range), target, "hover escaped the authored token");
+  }
 }
 
 type Location = { uri: string; range: Range };
@@ -479,25 +531,14 @@ export async function runQualifiedOperationPacket(
   );
   timingsMs.hover = hover.elapsedMs;
   const hovers = flatten(hover.value);
-  assert.ok(hovers.length > 0, "hover was missing");
-  assert.ok(
-    hovers.some(
-      (item) => /message/.test(hoverText(item)) && /string|Template binding/.test(hoverText(item)),
-    ),
-    JSON.stringify(hovers),
-  );
-  for (const item of hovers) {
-    const range = (item as { range?: unknown }).range;
-    if (range != null) assert.deepEqual(asRange(range), target, "hover escaped the authored token");
-  }
+  assertAuthoredHovers(hovers, target);
 
   const definition = await timed(() =>
     product.requestAll("textDocument/definition", { textDocument: { uri }, position }),
   );
   timingsMs.definition = definition.elapsedMs;
-  assert.deepEqual(dedupeLocations(flatten(definition.value).flatMap(authoredLocations)), [
-    { uri, range: declaration },
-  ]);
+  const definitionLocations = dedupeLocations(flatten(definition.value).flatMap(authoredLocations));
+  assert.deepEqual(definitionLocations, [{ uri, range: declaration }]);
 
   const references = await timed(() =>
     product.requestAll("textDocument/references", {
@@ -507,8 +548,9 @@ export async function runQualifiedOperationPacket(
     }),
   );
   timingsMs.references = references.elapsedMs;
+  const referenceLocations = dedupeLocations(flatten(references.value).flatMap(authoredLocations));
   assert.deepEqual(
-    dedupeLocations(flatten(references.value).flatMap(authoredLocations)),
+    referenceLocations,
     ranges.map((range) => ({ uri, range })),
   );
 
@@ -542,11 +584,40 @@ export async function runQualifiedOperationPacket(
     ranges,
   );
   assert.ok(uniqueEdits.every((edit) => edit.newText === "title"));
-  assert.equal(applyEdits(source, uniqueEdits), source.replaceAll(/\bmessage\b/g, "title"));
+  const appliedText = applyEdits(source, uniqueEdits);
+  assert.equal(appliedText, source.replaceAll(/\bmessage\b/g, "title"));
+
+  const oraclePayload = {
+    authoredUri: uri,
+    completion: { requiredLabel: "message", virtualNameCount: 0 },
+    hoverRange: target,
+    definition: definitionLocations,
+    references: referenceLocations,
+    prepareRenameRange: target,
+    rename: {
+      uri,
+      newName: "title",
+      edits: uniqueEdits,
+      appliedTextSha256: createHash("sha256").update(appliedText).digest("hex"),
+    },
+    passedOperations: [
+      "completion",
+      "hover",
+      "definition",
+      "references",
+      "prepareRename",
+      "rename",
+    ],
+  };
+  await product.settleBackgroundWork();
 
   return {
     totalMs: Object.values(timingsMs).reduce((sum, value) => sum + value, 0),
     timingsMs,
     rss: sampleRss(product),
+    oracleReceipt: {
+      ...oraclePayload,
+      sha256: createHash("sha256").update(JSON.stringify(oraclePayload)).digest("hex"),
+    },
   };
 }

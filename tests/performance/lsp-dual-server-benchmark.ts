@@ -6,7 +6,19 @@ import { performance } from "node:perf_hooks";
 import { inspect } from "node:util";
 
 import { repoRoot } from "../_helpers/realworld-patch.ts";
-import { createDualLspFixture } from "./support/dual-lsp-fixture.ts";
+import {
+  BUILD_RECIPE,
+  PROFILE_BUILD_RECIPE,
+  binaryRelativePath,
+  expectedBuildIdentity,
+  validateBuildReceipt,
+} from "../differential/build-receipt.ts";
+import {
+  assertOwnedWorkspaceCachesAbsent,
+  createDualLspFixture,
+  resetOwnedWorkspaceCaches,
+  type OwnedCachePathReceipt,
+} from "./support/dual-lsp-fixture.ts";
 import {
   diagnosticBarrierCount,
   diagnosticDeadlineMs,
@@ -19,17 +31,23 @@ import {
   DualLspProduct,
   dualLspProviderRoot,
   dualLspToolReceipt,
+  primaryOperationReceipt,
   productOrder,
   stableOperationTranscript,
+  type PrimaryOperationReceipt,
   type ProductKind,
 } from "./support/dual-lsp-product.ts";
 import {
   assertRevisionReceiptReachability,
+  cleanupFailuresFor,
   distribution,
+  retainPrimaryCleanupFailures,
+  selectAuthoritativeFailure,
   summarizeScheduleReceipt,
   summarizeDiagnostics,
   summarizeSamples,
   writeDualLspReport,
+  type FailureSelection,
   type MeasuredSample,
   type SampleOrderReceipt,
 } from "./support/dual-lsp-report.ts";
@@ -47,6 +65,32 @@ type ProductEvidence = {
   freshDiagnostics: RevisionEvidence[];
   warmDiagnostics: RevisionEvidence[];
   warmStartupMs: number[];
+};
+
+type QualifiedSample = { diagnostics: RevisionEvidence; sample: MeasuredSample };
+
+type FreshCacheResetReceipt = {
+  sampleIndex: number;
+  orderIndex: number;
+  product: ProductKind;
+  nextProduct: ProductKind | null;
+  paths: OwnedCachePathReceipt[];
+  verificationStage: "before-next-product" | "before-fixture-dispose" | null;
+  absenceVerified: boolean;
+};
+
+type CustodyEvidence = {
+  qualifiedCandidates: { freshRounds: number; warmRounds: number };
+  freshCacheResets: FreshCacheResetReceipt[];
+  primaryOperations: {
+    fresh: Array<Record<string, unknown>>;
+    warm: Array<Record<string, unknown>>;
+  };
+  oracleEquivalence: {
+    fresh: Array<Record<string, unknown>>;
+    warm: Array<Record<string, unknown>>;
+  };
+  warmupBoundaries: Array<Record<string, unknown>>;
 };
 
 function emptyProductEvidence(): ProductEvidence {
@@ -100,6 +144,46 @@ function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function vizeBinaryCustody(sourceSha: string): Record<string, unknown> {
+  const configuredBinary = process.env.VIZE_LSP_BIN;
+  assert.ok(
+    configuredBinary && path.isAbsolute(configuredBinary),
+    "VIZE_LSP_BIN must identify an absolute source-built binary",
+  );
+  const binaryPath = path.resolve(configuredBinary);
+  const relativeBinaryPath = path.relative(repoRoot, binaryPath);
+  assert.ok(
+    relativeBinaryPath !== "" &&
+      relativeBinaryPath !== ".." &&
+      !relativeBinaryPath.startsWith(`..${path.sep}`),
+    "VIZE_LSP_BIN must remain inside the exact source checkout",
+  );
+  const receiptPath = `${binaryPath}.differential-build.json`;
+  const receiptText = fs.readFileSync(receiptPath, "utf8");
+  const receipt = JSON.parse(receiptText) as Record<string, unknown>;
+  const expected = expectedBuildIdentity(repoRoot, relativeBinaryPath);
+  const expectedRecipe =
+    relativeBinaryPath === binaryRelativePath("ci")
+      ? BUILD_RECIPE
+      : relativeBinaryPath === binaryRelativePath("ci-opt")
+        ? PROFILE_BUILD_RECIPE
+        : null;
+  assert.ok(expectedRecipe, `unsupported Vize benchmark binary path: ${relativeBinaryPath}`);
+  validateBuildReceipt(receipt, expected, expectedRecipe);
+  assert.equal(receipt.sourceRevision, sourceSha, "Vize build receipt source drifted");
+  assert.equal(receipt.binaryPath, relativeBinaryPath, "Vize build receipt path drifted");
+  const binarySha256 = createHash("sha256").update(fs.readFileSync(binaryPath)).digest("hex");
+  assert.equal(binarySha256, receipt.binarySha256, "Vize binary bytes drifted from its receipt");
+  return {
+    configuredBinary: binaryPath,
+    relativeBinaryPath,
+    binarySha256,
+    receiptPath,
+    receiptSha256: sha256(receiptText),
+    receipt,
+  };
+}
+
 function revisionReceiptSha256(scope: RevisionReceiptScope, evidence: RevisionEvidence): string {
   return sha256(
     JSON.stringify({
@@ -114,33 +198,103 @@ function revisionReceiptSha256(scope: RevisionReceiptScope, evidence: RevisionEv
   );
 }
 
-function resetOwnedWorkspaceCaches(workspaceDir: string): void {
-  for (const target of [
-    path.join(workspaceDir, ".vize"),
-    path.join(workspaceDir, "node_modules/.vize"),
-  ]) {
-    fs.rmSync(target, { force: true, recursive: true });
-  }
+function throwSelectedFailure(selection: FailureSelection): void {
+  if (selection.kind === "none") return;
+  retainPrimaryCleanupFailures(selection);
+  throw selection.error;
 }
 
-async function closeProduct(
-  product: DualLspProduct | undefined,
-  preservePrimaryFailure: boolean,
-): Promise<void> {
-  if (!product) return;
+async function closeProduct(product: DualLspProduct | undefined): Promise<unknown[]> {
+  if (!product) return [];
   try {
     await product.shutdown();
+    return [];
   } catch (shutdownError) {
+    const failures: unknown[] = [shutdownError];
     try {
       await product.kill();
     } catch (killError) {
-      if (!preservePrimaryFailure) {
-        throw new AggregateError([shutdownError, killError], "product shutdown and kill failed");
-      }
-      return;
+      failures.push(killError);
     }
-    if (!preservePrimaryFailure) throw shutdownError;
+    return failures;
   }
+}
+
+function pairValue(
+  pair: ReadonlyMap<ProductKind, QualifiedSample>,
+  kind: ProductKind,
+): QualifiedSample {
+  const value = pair.get(kind);
+  if (value == null) throw new Error(`qualified pair omitted ${kind}`);
+  return value;
+}
+
+function oracleEquivalenceReceipt(
+  phase: "fresh" | "warm",
+  sampleIndex: number,
+  order: readonly ProductKind[],
+  pair: ReadonlyMap<ProductKind, QualifiedSample>,
+): Record<string, unknown> {
+  const vize = pairValue(pair, "vize");
+  const vue = pairValue(pair, "vue-language-tools");
+  assert.equal(vize.diagnostics.v1.fingerprint, vue.diagnostics.v1.fingerprint);
+  assert.equal(vize.diagnostics.v2.fingerprint, vue.diagnostics.v2.fingerprint);
+  assert.deepEqual(vize.sample.oracleReceipt, vue.sample.oracleReceipt);
+  const payload = {
+    phase,
+    sampleIndex,
+    order,
+    authoredUri: vize.sample.oracleReceipt.authoredUri,
+    diagnostics: {
+      v1Fingerprint: vize.diagnostics.v1.fingerprint,
+      v2Fingerprint: vize.diagnostics.v2.fingerprint,
+      provenVersion: 2,
+    },
+    queryOracle: vize.sample.oracleReceipt,
+    products: {
+      vize: {
+        revisionReceiptSha256: vize.sample.revisionReceiptSha256,
+        queryOracleSha256: vize.sample.oracleReceipt.sha256,
+      },
+      "vue-language-tools": {
+        revisionReceiptSha256: vue.sample.revisionReceiptSha256,
+        queryOracleSha256: vue.sample.oracleReceipt.sha256,
+      },
+    },
+  };
+  return { ...payload, sha256: sha256(JSON.stringify(payload)) };
+}
+
+function primaryOperationPairReceipt(
+  phase: "fresh" | "warm",
+  sampleIndex: number | null,
+  order: readonly ProductKind[],
+  receipts: ReadonlyMap<ProductKind, PrimaryOperationReceipt>,
+): Record<string, unknown> {
+  const vize = receipts.get("vize");
+  const vue = receipts.get("vue-language-tools");
+  if (vize == null || vue == null)
+    throw new Error(`${phase} primary operation receipt is incomplete`);
+  assert.deepEqual(vize, vue, `${phase} primary method order/counts differed by product`);
+  return {
+    phase,
+    sampleIndex,
+    order,
+    products: { vize, "vue-language-tools": vue },
+  };
+}
+
+function describeFailure(error: unknown): string {
+  return error instanceof Error ? (error.stack ?? error.message) : inspect(error);
+}
+
+function failureReceipt(error: unknown): string | Record<string, unknown> {
+  const cleanupFailures = cleanupFailuresFor(error);
+  if (cleanupFailures.length === 0) return describeFailure(error);
+  return {
+    authoritative: describeFailure(error),
+    cleanupFailures: cleanupFailures.map(describeFailure),
+  };
 }
 
 async function collectFresh(
@@ -148,51 +302,130 @@ async function collectFresh(
   evidence: Record<ProductKind, ProductEvidence>,
   transcriptHashes: string[],
   schedule: SampleOrderReceipt[],
+  custody: CustodyEvidence,
 ): Promise<void> {
   for (let round = 0; round < count; round += 1) {
     const fixture = createDualLspFixture();
     const pairTranscripts = new Map<ProductKind, string>();
+    const pairOperations = new Map<ProductKind, PrimaryOperationReceipt>();
+    const pairQualified = new Map<ProductKind, QualifiedSample>();
     const order = [...productOrder(round)];
     schedule.push({ sampleIndex: round, order });
-    try {
-      for (const kind of order) {
-        let product: DualLspProduct | undefined;
-        let failed = false;
+    let primaryFailed = false;
+    let primaryFailure: unknown;
+    const cleanupFailures: unknown[] = [];
+    let pendingReset: FreshCacheResetReceipt | undefined;
+    for (const [orderIndex, kind] of order.entries()) {
+      if (pendingReset != null) {
         try {
-          const startupStartedAt = performance.now();
-          product = await DualLspProduct.start(kind, fixture.workspaceDir);
-          const startupMs = performance.now() - startupStartedAt;
-          const diagnostics = await qualifyDocumentRevisions(product, fixture);
-          const operation = await runQualifiedOperationPacket(product, fixture);
-          const sample: MeasuredSample = {
-            ...operation,
-            revisionReceiptSha256: revisionReceiptSha256(
-              { product: kind, phase: "fresh", sampleIndex: round },
-              diagnostics,
-            ),
-            startupMs,
-            diagnosticV1QualificationMs: diagnostics.v1.qualificationMs,
-            diagnosticV2QualificationMs: diagnostics.v2.qualificationMs,
-          };
-          evidence[kind].freshDiagnostics.push(diagnostics);
-          evidence[kind].fresh.push(sample);
-          pairTranscripts.set(kind, stableOperationTranscript(product.primaryOperations()));
+          assertOwnedWorkspaceCachesAbsent(pendingReset.paths);
+          pendingReset.verificationStage = "before-next-product";
+          pendingReset.absenceVerified = true;
         } catch (error) {
-          failed = true;
-          throw error;
-        } finally {
-          await closeProduct(product, failed);
-          resetOwnedWorkspaceCaches(fixture.workspaceDir);
+          cleanupFailures.push(error);
         }
+        pendingReset = undefined;
+        if (cleanupFailures.length > 0) break;
       }
-      const vize = pairTranscripts.get("vize");
-      const vue = pairTranscripts.get("vue-language-tools");
-      assert.ok(vize && vue, `fresh round ${round} did not run both products`);
-      assert.equal(vize, vue, `fresh round ${round} changed the primary wire sequence`);
-      transcriptHashes.push(sha256(vize));
-    } finally {
-      fixture.dispose();
+
+      let product: DualLspProduct | undefined;
+      try {
+        const startupStartedAt = performance.now();
+        product = await DualLspProduct.start(kind, fixture.workspaceDir);
+        const startupMs = performance.now() - startupStartedAt;
+        const diagnostics = await qualifyDocumentRevisions(product, fixture);
+        const operation = await runQualifiedOperationPacket(product, fixture);
+        const sample: MeasuredSample = {
+          ...operation,
+          revisionReceiptSha256: revisionReceiptSha256(
+            { product: kind, phase: "fresh", sampleIndex: round },
+            diagnostics,
+          ),
+          startupMs,
+          diagnosticV1QualificationMs: diagnostics.v1.qualificationMs,
+          diagnosticV2QualificationMs: diagnostics.v2.qualificationMs,
+        };
+        pairQualified.set(kind, { diagnostics, sample });
+        const operations = product.primaryOperations();
+        pairTranscripts.set(kind, stableOperationTranscript(operations));
+        pairOperations.set(kind, primaryOperationReceipt(operations, 1, diagnosticBarrierCount));
+      } catch (error) {
+        primaryFailed = true;
+        primaryFailure = error;
+      }
+
+      cleanupFailures.push(...(await closeProduct(product)));
+      try {
+        const cacheReceipt: FreshCacheResetReceipt = {
+          sampleIndex: round,
+          orderIndex,
+          product: kind,
+          nextProduct: order[orderIndex + 1] ?? null,
+          paths: resetOwnedWorkspaceCaches(fixture.workspaceDir),
+          verificationStage: null,
+          absenceVerified: false,
+        };
+        custody.freshCacheResets.push(cacheReceipt);
+        pendingReset = cacheReceipt;
+      } catch (error) {
+        cleanupFailures.push(error);
+      }
+      if (primaryFailed || cleanupFailures.length > 0) break;
     }
+
+    if (pendingReset != null) {
+      try {
+        assertOwnedWorkspaceCachesAbsent(pendingReset.paths);
+        pendingReset.verificationStage = "before-fixture-dispose";
+        pendingReset.absenceVerified = true;
+      } catch (error) {
+        cleanupFailures.push(error);
+      }
+    }
+
+    let transcriptHash: string | undefined;
+    let operationReceipt: Record<string, unknown> | undefined;
+    let equivalenceReceipt: Record<string, unknown> | undefined;
+    if (!primaryFailed && cleanupFailures.length === 0) {
+      try {
+        const vize = pairTranscripts.get("vize");
+        const vue = pairTranscripts.get("vue-language-tools");
+        assert.ok(vize && vue, `fresh round ${round} did not run both products`);
+        assert.equal(vize, vue, `fresh round ${round} changed the primary wire sequence`);
+        transcriptHash = sha256(vize);
+        operationReceipt = primaryOperationPairReceipt("fresh", round, order, pairOperations);
+        equivalenceReceipt = oracleEquivalenceReceipt("fresh", round, order, pairQualified);
+        custody.qualifiedCandidates.freshRounds += 1;
+      } catch (error) {
+        primaryFailed = true;
+        primaryFailure = error;
+      }
+    }
+
+    try {
+      fixture.dispose();
+    } catch (error) {
+      cleanupFailures.push(error);
+    }
+    throwSelectedFailure(
+      selectAuthoritativeFailure(
+        primaryFailed,
+        primaryFailure,
+        cleanupFailures,
+        `fresh round ${round} cleanup failed`,
+      ),
+    );
+    if (transcriptHash == null || operationReceipt == null || equivalenceReceipt == null) {
+      throw new Error(`fresh round ${round} omitted its accepted custody receipt`);
+    }
+    for (const kind of products) {
+      const accepted = pairValue(pairQualified, kind);
+      evidence[kind].freshDiagnostics.push(accepted.diagnostics);
+      evidence[kind].fresh.push(accepted.sample);
+    }
+    transcriptHashes.push(transcriptHash);
+    custody.primaryOperations.fresh.push(operationReceipt);
+    custody.oracleEquivalence.fresh.push(equivalenceReceipt);
   }
 }
 
@@ -201,20 +434,31 @@ async function collectWarm(
   evidence: Record<ProductKind, ProductEvidence>,
   transcriptHashes: string[],
   schedule: SampleOrderReceipt[],
+  custody: CustodyEvidence,
 ): Promise<void> {
   const fixture = createDualLspFixture();
   const sessions = new Map<ProductKind, DualLspProduct>();
+  const sessionStartupMs = new Map<ProductKind, number>();
+  const sessionQualified = new Map<ProductKind, RevisionEvidence>();
   const sessionRevisionReceipts = new Map<ProductKind, string>();
+  const candidateSamples: Record<ProductKind, MeasuredSample[]> = {
+    vize: [],
+    "vue-language-tools": [],
+  };
+  const acceptedEquivalence: Array<Record<string, unknown>> = [];
   let primaryFailed = false;
   let primaryFailure: unknown;
+  let transcriptHash: string | undefined;
+  let operationReceipt: Record<string, unknown> | undefined;
+  const warmupBoundaries: Array<Record<string, unknown>> = [];
   try {
     for (const kind of productOrder(0)) {
       const startupStartedAt = performance.now();
       const product = await DualLspProduct.start(kind, fixture.workspaceDir);
-      evidence[kind].warmStartupMs.push(performance.now() - startupStartedAt);
+      sessionStartupMs.set(kind, performance.now() - startupStartedAt);
       sessions.set(kind, product);
       const diagnostics = await qualifyDocumentRevisions(product, fixture);
-      evidence[kind].warmDiagnostics.push(diagnostics);
+      sessionQualified.set(kind, diagnostics);
       sessionRevisionReceipts.set(
         kind,
         revisionReceiptSha256({ product: kind, phase: "warm", sessionIndex: 0 }, diagnostics),
@@ -222,6 +466,7 @@ async function collectWarm(
     }
     for (let round = 0; round < count; round += 1) {
       const order = [...productOrder(round)];
+      const pairQualified = new Map<ProductKind, QualifiedSample>();
       schedule.push({ sampleIndex: round, order });
       for (const kind of order) {
         const product = sessions.get(kind);
@@ -231,42 +476,104 @@ async function collectWarm(
         }
         const operation = await runQualifiedOperationPacket(product, fixture);
         const sample: MeasuredSample = { ...operation, revisionReceiptSha256 };
-        evidence[kind].warm.push(sample);
+        candidateSamples[kind].push(sample);
+        const diagnostics = sessionQualified.get(kind);
+        if (diagnostics == null) throw new Error(`${kind} warm session lost its qualification`);
+        pairQualified.set(kind, { diagnostics, sample });
       }
+      acceptedEquivalence.push(oracleEquivalenceReceipt("warm", round, order, pairQualified));
+      custody.qualifiedCandidates.warmRounds += 1;
     }
     const vizeSession = sessions.get("vize");
     const vueSession = sessions.get("vue-language-tools");
     if (vizeSession == null || vueSession == null) {
       throw new Error("warm comparison lost one of its product sessions");
     }
-    const vize = stableOperationTranscript(vizeSession.primaryOperations());
-    const vue = stableOperationTranscript(vueSession.primaryOperations());
+    const vizeOperations = vizeSession.primaryOperations();
+    const vueOperations = vueSession.primaryOperations();
+    const vize = stableOperationTranscript(vizeOperations);
+    const vue = stableOperationTranscript(vueOperations);
     assert.equal(vize, vue, "warm products did not receive an identical primary wire sequence");
-    transcriptHashes.push(sha256(vize));
+    transcriptHash = sha256(vize);
+    operationReceipt = primaryOperationPairReceipt(
+      "warm",
+      null,
+      productOrder(0),
+      new Map<ProductKind, PrimaryOperationReceipt>([
+        ["vize", primaryOperationReceipt(vizeOperations, count, diagnosticBarrierCount)],
+        [
+          "vue-language-tools",
+          primaryOperationReceipt(vueOperations, count, diagnosticBarrierCount),
+        ],
+      ]),
+    );
+    for (const kind of products) {
+      const diagnostics = sessionQualified.get(kind);
+      const revisionReceiptSha256 = sessionRevisionReceipts.get(kind);
+      if (diagnostics == null || revisionReceiptSha256 == null) {
+        throw new Error(`${kind} warmup boundary lost its diagnostic receipt`);
+      }
+      const samples = candidateSamples[kind];
+      assert.ok(sessionStartupMs.has(kind));
+      assert.equal(samples.length, count);
+      assert.ok(samples.every((sample) => sample.revisionReceiptSha256 === revisionReceiptSha256));
+      const payload = {
+        product: kind,
+        sessionIndex: 0,
+        initializedSessions: 1,
+        eventOrder: ["initialize", "qualify-v1", "qualify-v2", "measure-packets"],
+        diagnosticQualification: {
+          v1Fingerprint: diagnostics.v1.fingerprint,
+          v2Fingerprint: diagnostics.v2.fingerprint,
+          provenVersion: diagnostics.v2.provenVersion,
+          revisionReceiptSha256,
+        },
+        qualificationCompletedBeforePacketIndex: 0,
+        measuredPacketIndices: samples.map((_, sampleIndex) => sampleIndex),
+        measuredPacketCount: samples.length,
+        allPacketsBoundToRevisionReceipt: true,
+      };
+      warmupBoundaries.push({ ...payload, sha256: sha256(JSON.stringify(payload)) });
+    }
   } catch (error) {
     primaryFailed = true;
     primaryFailure = error;
   }
 
-  const shutdownFailures: unknown[] = [];
+  const cleanupFailures: unknown[] = [];
   for (const session of sessions.values()) {
-    try {
-      await closeProduct(session, primaryFailed);
-    } catch (error) {
-      shutdownFailures.push(error);
-    }
+    cleanupFailures.push(...(await closeProduct(session)));
   }
   try {
     fixture.dispose();
   } catch (error) {
-    shutdownFailures.push(error);
+    cleanupFailures.push(error);
   }
-  if (primaryFailed) {
-    throw primaryFailure;
+  throwSelectedFailure(
+    selectAuthoritativeFailure(
+      primaryFailed,
+      primaryFailure,
+      cleanupFailures,
+      "warm product cleanup failed",
+    ),
+  );
+  if (transcriptHash == null || operationReceipt == null) {
+    throw new Error("warm comparison omitted its accepted custody receipt");
   }
-  if (shutdownFailures.length > 0) {
-    throw new AggregateError(shutdownFailures, "warm product shutdown failed");
+  for (const kind of products) {
+    const startupMs = sessionStartupMs.get(kind);
+    const diagnostics = sessionQualified.get(kind);
+    if (startupMs == null || diagnostics == null) {
+      throw new Error(`${kind} warm acceptance omitted its session evidence`);
+    }
+    evidence[kind].warmStartupMs.push(startupMs);
+    evidence[kind].warmDiagnostics.push(diagnostics);
+    evidence[kind].warm.push(...candidateSamples[kind]);
   }
+  transcriptHashes.push(transcriptHash);
+  custody.primaryOperations.warm.push(operationReceipt);
+  custody.oracleEquivalence.warm.push(...acceptedEquivalence);
+  custody.warmupBoundaries.push(...warmupBoundaries);
 }
 
 async function main(): Promise<void> {
@@ -278,12 +585,18 @@ async function main(): Promise<void> {
   const transcriptHashes: string[] = [];
   const freshSchedule: SampleOrderReceipt[] = [];
   const warmSchedule: SampleOrderReceipt[] = [];
+  const custody: CustodyEvidence = {
+    qualifiedCandidates: { freshRounds: 0, warmRounds: 0 },
+    freshCacheResets: [],
+    primaryOperations: { fresh: [], warm: [] },
+    oracleEquivalence: { fresh: [], warm: [] },
+    warmupBoundaries: [],
+  };
   const startedAt = new Date().toISOString();
   try {
-    await collectFresh(config.freshSamples, evidence, transcriptHashes, freshSchedule);
-    await collectWarm(config.warmSamples, evidence, transcriptHashes, warmSchedule);
     const commit = gitHead();
     const tools = dualLspToolReceipt();
+    const vizeBinary = vizeBinaryCustody(commit);
     const fixture = {
       sourceV1Sha256: sha256(
         fs.readFileSync(
@@ -301,6 +614,7 @@ async function main(): Promise<void> {
     const sourceToolInputs = {
       sourceSha: commit,
       fixture,
+      vizeBinary,
       provider: {
         packageJsonSha256: sha256(
           fs.readFileSync(path.join(dualLspProviderRoot, "package.json"), "utf8"),
@@ -311,14 +625,23 @@ async function main(): Promise<void> {
       },
       resolvedTools: tools,
     };
+    await collectFresh(config.freshSamples, evidence, transcriptHashes, freshSchedule, custody);
+    await collectWarm(config.warmSamples, evidence, transcriptHashes, warmSchedule, custody);
     for (const kind of products) {
       assert.equal(evidence[kind].fresh.length, config.freshSamples);
       assert.equal(evidence[kind].warm.length, config.warmSamples);
       assert.equal(evidence[kind].freshDiagnostics.length, config.freshSamples);
       assert.equal(evidence[kind].warmDiagnostics.length, 1);
     }
+    assert.equal(custody.freshCacheResets.length, config.freshSamples * products.length);
+    assert.ok(custody.freshCacheResets.every((receipt) => receipt.absenceVerified));
+    assert.equal(custody.primaryOperations.fresh.length, config.freshSamples);
+    assert.equal(custody.primaryOperations.warm.length, 1);
+    assert.equal(custody.oracleEquivalence.fresh.length, config.freshSamples);
+    assert.equal(custody.oracleEquivalence.warm.length, config.warmSamples);
+    assert.equal(custody.warmupBoundaries.length, products.length);
     const report = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       status: "passed",
       commit,
       startedAt,
@@ -344,9 +667,16 @@ async function main(): Promise<void> {
       },
       wire: {
         transcriptSha256: transcriptHashes,
+        primaryOperationReceipts: custody.primaryOperations,
         bridge:
           "Vue tsserver/request is forwarded to typescript.tsserverRequest; didOpen/didChange are mirrored to both halves",
       },
+      cacheResetReceipt: {
+        rows: custody.freshCacheResets,
+        sha256: sha256(JSON.stringify(custody.freshCacheResets)),
+      },
+      warmupBoundaryReceipts: custody.warmupBoundaries,
+      oracleEquivalenceReceipts: custody.oracleEquivalence,
       products: Object.fromEntries(
         products.map((kind) => {
           const freshReceiptIds = evidence[kind].freshDiagnostics.map((diagnostics, sampleIndex) =>
@@ -426,12 +756,14 @@ async function main(): Promise<void> {
     writeDualLspReport(config.outputDir, report);
   } catch (error) {
     writeDualLspReport(config.outputDir, {
-      schemaVersion: 2,
+      schemaVersion: 3,
       status: "failed",
       commit: gitHead(),
       startedAt,
       finishedAt: new Date().toISOString(),
-      failure: error instanceof Error ? (error.stack ?? error.message) : inspect(error),
+      failure: failureReceipt(error),
+      qualifiedCandidates: custody.qualifiedCandidates,
+      partialCustody: custody,
       admittedSamples: Object.fromEntries(
         products.map((kind) => [
           kind,

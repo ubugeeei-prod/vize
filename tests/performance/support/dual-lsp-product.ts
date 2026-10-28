@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { collectCleanupFailures, initializeWithCleanupCustody } from "./dual-lsp-report.ts";
 import { DualLspWire, type ClientOperation, type WireLaunch } from "./dual-lsp-wire.ts";
 
 export type ProductKind = "vize" | "vue-language-tools";
@@ -12,6 +14,52 @@ export type ProductResponse = {
   provider: string;
   result: unknown;
 };
+
+export type PrimaryOperationReceipt = {
+  queryPackets: number;
+  diagnosticBarriersPerRevision: number;
+  totalOperations: number;
+  methodOrder: string[];
+  methodCounts: Record<string, number>;
+};
+
+export class BackgroundTaskCustody {
+  private readonly pending = new Set<Promise<void>>();
+  private readonly failures: Error[] = [];
+
+  track(task: Promise<void>): Promise<void> {
+    const guarded = task.catch((error: unknown) => {
+      this.failures.push(
+        error instanceof Error ? error : new Error("background task rejected with a non-Error"),
+      );
+      throw error;
+    });
+    this.pending.add(guarded);
+    void guarded.then(
+      () => {
+        this.pending.delete(guarded);
+      },
+      () => {
+        this.pending.delete(guarded);
+      },
+    );
+    return guarded;
+  }
+
+  assertHealthy(): void {
+    if (this.failures.length === 0) return;
+    throw new AggregateError(this.failures, "background task custody failed");
+  }
+
+  async settle(): Promise<void> {
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    while (this.pending.size > 0) {
+      await Promise.allSettled([...this.pending]);
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+    this.assertHealthy();
+  }
+}
 
 type ResolvedTools = {
   pluginRoot: string;
@@ -144,7 +192,7 @@ export class DualLspProduct {
   readonly kind: ProductKind;
   private readonly primary: DualLspWire;
   private readonly semantic?: DualLspWire;
-  private readonly bridgeFailures: Error[] = [];
+  private readonly bridgeCustody = new BackgroundTaskCustody();
 
   private constructor(kind: ProductKind, primary: DualLspWire, semantic?: DualLspWire) {
     this.kind = kind;
@@ -158,8 +206,14 @@ export class DualLspProduct {
     if (kind === "vize") {
       const primary = new DualLspWire(vizeLaunch(workspaceDir));
       const product = new DualLspProduct(kind, primary);
-      await primary.initialize(commonInitializeParams(workspaceDir, tools.tsdk));
-      return product;
+      return await initializeWithCleanupCustody(
+        async () => {
+          await primary.initialize(commonInitializeParams(workspaceDir, tools.tsdk));
+          return product;
+        },
+        () => product.kill(),
+        "Vize initialization cleanup failed",
+      );
     }
 
     const [vueLaunch, tsLaunch] = vueLaunches(workspaceDir, tools);
@@ -167,24 +221,30 @@ export class DualLspProduct {
     const semantic = new DualLspWire(tsLaunch);
     const product = new DualLspProduct(kind, primary, semantic);
     const common = commonInitializeParams(workspaceDir, tools.tsdk);
-    await semantic.initialize(
-      {
-        ...common,
-        initializationOptions: {
-          plugins: [
-            {
-              name: "@vue/typescript-plugin",
-              location: tools.pluginRoot,
-              languages: ["vue"],
+    return await initializeWithCleanupCustody(
+      async () => {
+        await semantic.initialize(
+          {
+            ...common,
+            initializationOptions: {
+              plugins: [
+                {
+                  name: "@vue/typescript-plugin",
+                  location: tools.pluginRoot,
+                  languages: ["vue"],
+                },
+              ],
+              tsserver: { path: tools.tsdk },
             },
-          ],
-          tsserver: { path: tools.tsdk },
-        },
+          },
+          false,
+        );
+        await primary.initialize(common);
+        return product;
       },
-      false,
+      () => product.kill(),
+      "Vue stack initialization cleanup failed",
     );
-    await primary.initialize(common);
-    return product;
   }
 
   get diagnosticWires(): ReadonlyArray<{ provider: string; wire: DualLspWire }> {
@@ -226,7 +286,7 @@ export class DualLspProduct {
     params: unknown,
     timeoutMs = 60_000,
   ): Promise<ProductResponse[]> {
-    this.assertBridgeHealthy();
+    this.bridgeCustody.assertHealthy();
     assert.ok(this.primary.supports(method), `${this.kind} primary did not advertise ${method}`);
     const requests = [
       this.primary.request(method, params, timeoutMs).then((result) => ({
@@ -243,8 +303,13 @@ export class DualLspProduct {
       );
     }
     const result = await Promise.all(requests);
-    this.assertBridgeHealthy();
+    await this.settleBackgroundWork();
+    this.bridgeCustody.assertHealthy();
     return result;
+  }
+
+  async settleBackgroundWork(): Promise<void> {
+    await this.bridgeCustody.settle();
   }
 
   async diagnosticBarrier(uri: string): Promise<void> {
@@ -252,55 +317,49 @@ export class DualLspProduct {
   }
 
   async shutdown(): Promise<void> {
-    let failure: unknown;
+    const failures: unknown[] = [];
     try {
-      await this.primary.shutdown();
+      await this.settleBackgroundWork();
     } catch (error) {
-      failure = error;
-      await this.primary.kill();
+      failures.push(error);
     }
-    if (this.semantic) {
-      try {
-        await this.semantic.shutdown();
-      } catch (error) {
-        failure ??= error;
-        await this.semantic.kill();
-      }
+    const wires = [this.primary, this.semantic].filter((item): item is DualLspWire => item != null);
+    failures.push(...(await collectCleanupFailures(wires.map((wire) => () => wire.shutdown()))));
+    try {
+      await this.settleBackgroundWork();
+    } catch (error) {
+      failures.push(error);
     }
-    if (failure != null) throw failure;
+    if (failures.length > 0) throw new AggregateError(failures, `${this.kind} shutdown failed`);
   }
 
   async kill(): Promise<void> {
-    await this.primary.kill();
-    if (this.semantic) await this.semantic.kill();
+    const wires = [this.primary, this.semantic].filter((item): item is DualLspWire => item != null);
+    const failures = await collectCleanupFailures(wires.map((wire) => () => wire.kill()));
+    if (failures.length > 0) throw new AggregateError(failures, `${this.kind} kill failed`);
   }
 
   private installBridge(semantic: DualLspWire): void {
-    this.primary.addNotificationObserver(async (notification) => {
+    this.primary.addNotificationObserver((notification) => {
       if (notification.method !== "tsserver/request") return;
-      try {
-        const [id, command, payload] = unwrapTuple(notification.params);
-        const response = await semantic.request(
-          "workspace/executeCommand",
-          { command: "typescript.tsserverRequest", arguments: [command, payload] },
-          60_000,
-          false,
-        );
-        const body =
-          response != null && typeof response === "object" && "body" in response
-            ? (response as { body?: unknown }).body
-            : response;
-        this.primary.notify("tsserver/response", [[id, body]], false);
-      } catch (error) {
-        this.bridgeFailures.push(error as Error);
-        throw error;
-      }
+      const task = this.bridgeCustody.track(
+        (async () => {
+          const [id, command, payload] = unwrapTuple(notification.params);
+          const response = await semantic.request(
+            "workspace/executeCommand",
+            { command: "typescript.tsserverRequest", arguments: [command, payload] },
+            60_000,
+            false,
+          );
+          const body =
+            response != null && typeof response === "object" && "body" in response
+              ? (response as { body?: unknown }).body
+              : response;
+          this.primary.notify("tsserver/response", [[id, body]], false);
+        })(),
+      );
+      return task;
     });
-  }
-
-  private assertBridgeHealthy(): void {
-    if (this.bridgeFailures.length === 0) return;
-    throw new AggregateError(this.bridgeFailures, `${this.kind} tsserver bridge failed`);
   }
 }
 
@@ -312,17 +371,80 @@ export function stableOperationTranscript(operations: readonly ClientOperation[]
   return JSON.stringify(operations);
 }
 
+export function primaryOperationReceipt(
+  operations: readonly ClientOperation[],
+  queryPackets: number,
+  diagnosticBarriersPerRevision: number,
+): PrimaryOperationReceipt {
+  assert.ok(Number.isSafeInteger(queryPackets) && queryPackets >= 0);
+  assert.ok(
+    Number.isSafeInteger(diagnosticBarriersPerRevision) && diagnosticBarriersPerRevision > 0,
+  );
+  const expected: Array<Pick<ClientOperation, "kind" | "method">> = [
+    { kind: "request", method: "initialize" },
+    { kind: "notification", method: "initialized" },
+    { kind: "notification", method: "textDocument/didOpen" },
+    ...Array.from({ length: diagnosticBarriersPerRevision }, () => ({
+      kind: "request" as const,
+      method: "textDocument/documentSymbol",
+    })),
+    { kind: "notification", method: "textDocument/didChange" },
+    ...Array.from({ length: diagnosticBarriersPerRevision }, () => ({
+      kind: "request" as const,
+      method: "textDocument/documentSymbol",
+    })),
+  ];
+  const queryMethods = [
+    "textDocument/completion",
+    "textDocument/hover",
+    "textDocument/definition",
+    "textDocument/references",
+    "textDocument/prepareRename",
+    "textDocument/rename",
+  ];
+  for (let packet = 0; packet < queryPackets; packet += 1) {
+    expected.push(...queryMethods.map((method) => ({ kind: "request" as const, method })));
+  }
+  const actual = operations.map(({ kind, method }) => ({ kind, method }));
+  assert.deepEqual(actual, expected, "primary request/notification method order drifted");
+  const methodOrder = actual.map(({ kind, method }) => `${kind} ${method}`);
+  const methodCounts: Record<string, number> = {};
+  for (const operation of methodOrder) methodCounts[operation] = (methodCounts[operation] ?? 0) + 1;
+  return {
+    queryPackets,
+    diagnosticBarriersPerRevision,
+    totalOperations: methodOrder.length,
+    methodOrder,
+    methodCounts,
+  };
+}
+
 export function dualLspToolReceipt(): Record<string, unknown> {
   const require = createRequire(path.join(dualLspProviderRoot, "package.json"));
   const tools = resolveTools();
-  const packageVersion = (name: string) => {
-    const manifest = JSON.parse(
-      fs.readFileSync(require.resolve(`${name}/package.json`), "utf8"),
-    ) as {
-      version: string;
+  const fileReceipt = (filePath: string) => ({
+    path: filePath,
+    sha256: createHash("sha256").update(fs.readFileSync(filePath)).digest("hex"),
+  });
+  const packageReceipt = (name: string, entrypoint: string) => {
+    const manifestPath = require.resolve(`${name}/package.json`);
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as { version: string };
+    return {
+      version: manifest.version,
+      manifest: fileReceipt(manifestPath),
+      entrypoint: fileReceipt(entrypoint),
     };
-    return manifest.version;
   };
+  const vueLanguageTools = packageReceipt("@vue/language-server", tools.vueLanguageServer);
+  const typescriptLanguageServer = packageReceipt(
+    "typescript-language-server",
+    tools.tsLanguageServer,
+  );
+  const vueTypescriptPlugin = packageReceipt(
+    "@vue/typescript-plugin",
+    require.resolve("@vue/typescript-plugin"),
+  );
+  const typescript = packageReceipt("typescript", require.resolve("typescript"));
   return {
     providerRoot: dualLspProviderRoot,
     vize: {
@@ -332,23 +454,23 @@ export function dualLspToolReceipt(): Record<string, unknown> {
     },
     vueLanguageTools: {
       package: "@vue/language-server",
-      version: packageVersion("@vue/language-server"),
+      ...vueLanguageTools,
       command: process.execPath,
       args: [tools.vueLanguageServer, "--stdio", `--tsdk=${tools.tsdk}`],
       cpuProfile: process.env.LSP_DUAL_VUE_CPU_PROFILE_DIR ?? null,
     },
     typescriptLanguageServer: {
       package: "typescript-language-server",
-      version: packageVersion("typescript-language-server"),
+      ...typescriptLanguageServer,
       command: process.execPath,
       args: [tools.tsLanguageServer, "--stdio", "--log-level", "1"],
     },
     vueTypescriptPlugin: {
       package: "@vue/typescript-plugin",
-      version: packageVersion("@vue/typescript-plugin"),
+      ...vueTypescriptPlugin,
       location: tools.pluginRoot,
     },
-    typescript: { version: packageVersion("typescript"), tsdk: tools.tsdk },
+    typescript: { ...typescript, tsdk: tools.tsdk },
     architecture:
       "Vue Language Tools v3 is measured as Vue LS plus TypeScript LS with @vue/typescript-plugin and the tsserver request bridge",
   };

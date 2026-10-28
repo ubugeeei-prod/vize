@@ -5,7 +5,9 @@ on:
     paths:
       - ".github/workflows/lsp-dual-server-benchmark.yml"
       - "tests/_fixtures/performance/lsp-dual-server/**"
+      - "tests/differential/build-receipt.ts"
       - "tests/performance/lsp-dual-server-benchmark.ts"
+      - "tests/performance/lsp-dual-server-attribution-manifest.ts"
       - "tests/performance/support/dual-lsp-*.ts"
       - "tests/tooling/lsp-dual-server-benchmark.test.ts"
       - "tests/package.json"
@@ -159,12 +161,15 @@ jobs:
           key: lsp-dual-server-attribution
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build the separately instrumented Vize server
-        run: cargo build --profile ci-opt -p vize --features profiling
+        run: |
+          cargo build --profile ci-opt -p vize --features profiling
+          vp exec node tests/differential/build-receipt.ts --profile-ci-opt
       - name: Collect attribution without comparing unlike metrics
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           LSP_DUAL_VIZE_PROFILE_DIR: ${{ runner.temp }}/lsp-attribution/vize
           LSP_DUAL_VUE_CPU_PROFILE_DIR: ${{ runner.temp }}/lsp-attribution/vue
+          LSP_DUAL_ATTRIBUTION_DIR: ${{ runner.temp }}/lsp-attribution
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci-opt/vize
         run: |
           set -euo pipefail
@@ -173,10 +178,13 @@ jobs:
             --fresh 1 --warm 5 --out "$RUNNER_TEMP/lsp-attribution/report"
           sha256sum "$VIZE_LSP_BIN" > "$RUNNER_TEMP/lsp-attribution/vize-binary.sha256"
           git rev-parse HEAD > "$RUNNER_TEMP/lsp-attribution/source.sha"
+          vp exec node tests/performance/lsp-dual-server-attribution-manifest.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
           name: lsp-dual-server-attribution-${{ env.EXPECTED_SOURCE }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/lsp-attribution/
+          path: |
+            ${{ runner.temp }}/lsp-attribution/
+            target/ci-opt/vize.differential-build.json
           if-no-files-found: error
           retention-days: 90

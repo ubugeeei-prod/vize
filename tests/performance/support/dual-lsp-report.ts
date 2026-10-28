@@ -27,6 +27,84 @@ export type SampleOrderReceipt = {
   order: readonly ProductKind[];
 };
 
+export type FailureSelection =
+  | { kind: "none" }
+  | { kind: "primary"; error: unknown; cleanupFailures: readonly unknown[] }
+  | { kind: "cleanup"; error: AggregateError; cleanupFailures: readonly unknown[] };
+
+const retainedCleanupFailures = new Map<unknown, readonly unknown[]>();
+
+export function selectAuthoritativeFailure(
+  primaryFailed: boolean,
+  primaryFailure: unknown,
+  cleanupFailures: readonly unknown[],
+  cleanupMessage: string,
+): FailureSelection {
+  const cleanupEvidence = [...cleanupFailures];
+  if (primaryFailed) {
+    return { kind: "primary", error: primaryFailure, cleanupFailures: cleanupEvidence };
+  }
+  if (cleanupEvidence.length > 0) {
+    return {
+      kind: "cleanup",
+      error: new AggregateError(cleanupEvidence, cleanupMessage),
+      cleanupFailures: cleanupEvidence,
+    };
+  }
+  return { kind: "none" };
+}
+
+export function retainPrimaryCleanupFailures(selection: FailureSelection): void {
+  if (selection.kind !== "primary" || selection.cleanupFailures.length === 0) {
+    return;
+  }
+  retainedCleanupFailures.set(selection.error, [
+    ...(retainedCleanupFailures.get(selection.error) ?? []),
+    ...selection.cleanupFailures,
+  ]);
+}
+
+export function cleanupFailuresFor(error: unknown): readonly unknown[] {
+  if (retainedCleanupFailures.has(error)) return retainedCleanupFailures.get(error) ?? [];
+  if (error instanceof AggregateError) return error.errors;
+  return [];
+}
+
+export async function initializeWithCleanupCustody<T>(
+  initialize: () => Promise<T>,
+  cleanup: () => Promise<void>,
+  cleanupMessage: string,
+): Promise<T> {
+  try {
+    return await initialize();
+  } catch (error) {
+    const cleanupFailures: unknown[] = [];
+    try {
+      await cleanup();
+    } catch (cleanupError) {
+      cleanupFailures.push(cleanupError);
+    }
+    const selection = selectAuthoritativeFailure(true, error, cleanupFailures, cleanupMessage);
+    retainPrimaryCleanupFailures(selection);
+    if (selection.kind === "none") throw new Error("initialization failure was lost");
+    throw selection.error;
+  }
+}
+
+export async function collectCleanupFailures(
+  operations: ReadonlyArray<() => Promise<void>>,
+): Promise<unknown[]> {
+  const failures: unknown[] = [];
+  for (const operation of operations) {
+    try {
+      await operation();
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  return failures;
+}
+
 export function summarizeScheduleReceipt(
   rows: readonly SampleOrderReceipt[],
 ): Record<string, unknown> {
@@ -54,7 +132,7 @@ export function summarizeScheduleReceipt(
 }
 
 export function assertRevisionReceiptReachability(
-  samples: readonly MeasuredSample[],
+  samples: ReadonlyArray<Pick<MeasuredSample, "revisionReceiptSha256">>,
   receiptIds: readonly string[],
 ): Record<string, number> {
   const available = new Set(receiptIds);
@@ -87,7 +165,19 @@ export function distribution(values: readonly number[]): Distribution {
   };
 }
 
-export function summarizeSamples(samples: readonly MeasuredSample[]): Record<string, Distribution> {
+export function summarizeSamples(
+  samples: ReadonlyArray<
+    Pick<
+      MeasuredSample,
+      | "totalMs"
+      | "timingsMs"
+      | "rss"
+      | "startupMs"
+      | "diagnosticV1QualificationMs"
+      | "diagnosticV2QualificationMs"
+    >
+  >,
+): Record<string, Distribution> {
   const result: Record<string, Distribution> = {
     totalMs: distribution(samples.map((sample) => sample.totalMs)),
     rssKiB: distribution(samples.map((sample) => sample.rss.totalKiB)),

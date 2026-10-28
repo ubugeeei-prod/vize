@@ -32,6 +32,65 @@ export type WireNotification = {
   params: unknown;
 };
 
+export class BoundedNotificationHistory {
+  private readonly entries: WireNotification[] = [];
+  private readonly limit: number;
+  private highestDroppedSequence = 0;
+
+  constructor(limit = 200) {
+    assert.ok(
+      Number.isSafeInteger(limit) && limit > 0,
+      "notification history limit must be positive",
+    );
+    this.limit = limit;
+  }
+
+  push(notification: WireNotification): void {
+    const latest = this.entries.at(-1);
+    assert.ok(
+      latest == null || notification.sequence > latest.sequence,
+      "notification sequences must increase",
+    );
+    this.entries.push(notification);
+    if (this.entries.length <= this.limit) return;
+    const dropped = this.entries.shift();
+    assert.ok(dropped);
+    this.highestDroppedSequence = dropped.sequence;
+  }
+
+  find(
+    method: string,
+    afterSequence: number,
+    predicate: (params: unknown) => boolean,
+  ): WireNotification | undefined {
+    this.assertCursorRetained(afterSequence);
+    return this.entries.find(
+      (item) => item.sequence > afterSequence && item.method === method && predicate(item.params),
+    );
+  }
+
+  latest(method: string, afterSequence: number): WireNotification | undefined {
+    this.assertCursorRetained(afterSequence);
+    return this.entries.findLast((item) => item.sequence > afterSequence && item.method === method);
+  }
+
+  since(method: string, afterSequence: number): readonly WireNotification[] {
+    this.assertCursorRetained(afterSequence);
+    return this.entries.filter((item) => item.sequence > afterSequence && item.method === method);
+  }
+
+  recent(count: number): readonly WireNotification[] {
+    return this.entries.slice(-count);
+  }
+
+  private assertCursorRetained(afterSequence: number): void {
+    assert.ok(
+      afterSequence >= this.highestDroppedSequence,
+      `notification cursor ${afterSequence} predates evicted sequence ${this.highestDroppedSequence}`,
+    );
+  }
+}
+
 type NotificationObserver = (notification: WireNotification) => void | Promise<void>;
 
 const defaultTimeoutMs = 60_000;
@@ -77,7 +136,7 @@ export class DualLspWire {
       timer: NodeJS.Timeout;
     }
   >();
-  private readonly notifications: WireNotification[] = [];
+  private readonly notifications = new BoundedNotificationHistory();
   private readonly notificationObservers: NotificationObserver[] = [];
   private readonly operations: ClientOperation[] = [];
   private buffer = Buffer.alloc(0);
@@ -177,9 +236,7 @@ export class DualLspWire {
     predicate: (params: unknown) => boolean,
     timeoutMs = defaultTimeoutMs,
   ): Promise<WireNotification> {
-    const existing = this.notifications.find(
-      (item) => item.sequence > afterSequence && item.method === method && predicate(item.params),
-    );
+    const existing = this.notifications.find(method, afterSequence, predicate);
     if (existing) return existing;
     return await new Promise((resolve, reject) => {
       let observer: NotificationObserver;
@@ -189,7 +246,7 @@ export class DualLspWire {
         reject(
           new Error(
             `${this.launch.name} timed out waiting for ${method} after sequence ${afterSequence}; ` +
-              `recent=${JSON.stringify(this.notifications.slice(-10))}\n${this.stderr}`.trim(),
+              `recent=${JSON.stringify(this.notifications.recent(10))}\n${this.stderr}`.trim(),
           ),
         );
       }, timeoutMs);
@@ -206,15 +263,11 @@ export class DualLspWire {
   }
 
   latestNotification(method: string, afterSequence = 0): WireNotification | undefined {
-    return this.notifications.findLast(
-      (item) => item.sequence > afterSequence && item.method === method,
-    );
+    return this.notifications.latest(method, afterSequence);
   }
 
   notificationsSince(method: string, afterSequence: number): readonly WireNotification[] {
-    return this.notifications.filter(
-      (item) => item.sequence > afterSequence && item.method === method,
-    );
+    return this.notifications.since(method, afterSequence);
   }
 
   async observeQuiet(
@@ -321,7 +374,6 @@ export class DualLspWire {
       params: message.params,
     };
     this.notifications.push(notification);
-    if (this.notifications.length > 200) this.notifications.shift();
     const observers = this.notificationObservers.slice();
     for (const observer of observers) {
       void Promise.resolve(observer(notification)).catch((error) => this.rejectAll(error as Error));

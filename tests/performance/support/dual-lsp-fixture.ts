@@ -17,6 +17,12 @@ export type DualLspFixture = {
   dispose(): void;
 };
 
+export type OwnedCachePathReceipt = {
+  path: string;
+  existedBeforeReset: boolean;
+  existsAfterReset: boolean;
+};
+
 const fixtureRoot = path.join(repoRoot, "tests/_fixtures/performance/lsp-dual-server");
 
 export function createDualLspFixture(): DualLspFixture {
@@ -52,6 +58,35 @@ export function createDualLspFixture(): DualLspFixture {
     sourceV2,
     dispose: () => fs.rmSync(workspaceDir, { force: true, recursive: true }),
   };
+}
+
+export function resetOwnedWorkspaceCaches(workspaceDir: string): OwnedCachePathReceipt[] {
+  return [path.join(workspaceDir, ".vize"), path.join(workspaceDir, "node_modules/.vize")].map(
+    (target) => {
+      const relative = path.relative(workspaceDir, target);
+      assert.ok(
+        relative !== "" && relative !== ".." && !relative.startsWith(`..${path.sep}`),
+        `cache reset escaped its owned workspace: ${target}`,
+      );
+      const existedBeforeReset = fs.existsSync(target);
+      fs.rmSync(target, { force: true, recursive: true });
+      const existsAfterReset = fs.existsSync(target);
+      assert.equal(existsAfterReset, false, `owned cache survived reset: ${target}`);
+      return { path: target, existedBeforeReset, existsAfterReset };
+    },
+  );
+}
+
+export function assertOwnedWorkspaceCachesAbsent(receipt: readonly OwnedCachePathReceipt[]): void {
+  assert.equal(receipt.length, 2, "owned cache receipt must cover both exact paths");
+  for (const item of receipt) {
+    assert.equal(item.existsAfterReset, false, `cache receipt admitted a live path: ${item.path}`);
+    assert.equal(
+      fs.existsSync(item.path),
+      false,
+      `owned cache reappeared before reuse: ${item.path}`,
+    );
+  }
 }
 
 export function offsetToPosition(source: string, offset: number): Position {

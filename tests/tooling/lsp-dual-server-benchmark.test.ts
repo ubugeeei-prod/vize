@@ -1,16 +1,20 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import {
+  assertOwnedWorkspaceCachesAbsent,
   offsetToPosition,
   rangeForNeedle,
+  resetOwnedWorkspaceCaches,
   wordRanges,
 } from "../performance/support/dual-lsp-fixture.ts";
 import {
+  assertAuthoredHovers,
   authoredLocations,
   assertExactProductDiagnostics,
   diagnosticBarrierCount,
@@ -21,18 +25,28 @@ import {
   waitForExpectedDiagnostic,
 } from "../performance/support/dual-lsp-oracles.ts";
 import {
+  BackgroundTaskCustody,
   commonInitializeParams,
   dualLspToolReceipt,
+  primaryOperationReceipt,
   productOrder,
   stableOperationTranscript,
 } from "../performance/support/dual-lsp-product.ts";
 import {
   assertRevisionReceiptReachability,
+  cleanupFailuresFor,
+  collectCleanupFailures,
   distribution,
+  initializeWithCleanupCustody,
+  selectAuthoritativeFailure,
   summarizeScheduleReceipt,
   summarizeSamples,
 } from "../performance/support/dual-lsp-report.ts";
-import { supportsLspMethod } from "../performance/support/dual-lsp-wire.ts";
+import {
+  BoundedNotificationHistory,
+  supportsLspMethod,
+  type ClientOperation,
+} from "../performance/support/dual-lsp-wire.ts";
 import { processTreeRss } from "../performance/support/process-metrics.ts";
 
 const sourceRoot = path.join(repoRoot, "tests/_fixtures/performance/lsp-dual-server/sources");
@@ -57,6 +71,132 @@ test("ABBA scheduling reverses every adjacent product pair", () => {
     () => summarizeScheduleReceipt([{ sampleIndex: 0, order: ["vue-language-tools", "vize"] }]),
     /must preserve the ABBA product order/u,
   );
+});
+
+test("primary failures keep identity while clean paths aggregate cleanup failures", async () => {
+  const primary = { sentinel: "primary" };
+  const firstCleanup = new Error("first cleanup");
+  const secondCleanup = new Error("second cleanup");
+  const selected = selectAuthoritativeFailure(
+    true,
+    primary,
+    [firstCleanup, secondCleanup],
+    "cleanup failed",
+  );
+  assert.equal(selected.kind, "primary");
+  if (selected.kind !== "primary") throw new Error("primary selection was lost");
+  assert.equal(selected.error, primary);
+  assert.deepEqual(selected.cleanupFailures, [firstCleanup, secondCleanup]);
+
+  const cleanupOnly = selectAuthoritativeFailure(
+    false,
+    undefined,
+    [firstCleanup, secondCleanup],
+    "cleanup failed",
+  );
+  assert.equal(cleanupOnly.kind, "cleanup");
+  if (cleanupOnly.kind !== "cleanup") throw new Error("cleanup selection was lost");
+  assert.deepEqual(cleanupOnly.error.errors, [firstCleanup, secondCleanup]);
+
+  const primitivePrimary = "primitive primary";
+  let observed: unknown;
+  try {
+    await initializeWithCleanupCustody(
+      async () => {
+        throw primitivePrimary;
+      },
+      async () => {
+        throw firstCleanup;
+      },
+      "initialization cleanup failed",
+    );
+  } catch (error) {
+    observed = error;
+  }
+  assert.equal(observed, primitivePrimary);
+  assert.deepEqual(cleanupFailuresFor(observed), [firstCleanup]);
+  assert.deepEqual(cleanupFailuresFor(cleanupOnly.error), [firstCleanup, secondCleanup]);
+
+  const nestedPrimary = new AggregateError([new Error("primary child")], "primary aggregate");
+  try {
+    await initializeWithCleanupCustody(
+      async () => {
+        throw nestedPrimary;
+      },
+      async () => {
+        throw firstCleanup;
+      },
+      "initialization cleanup failed",
+    );
+  } catch (error) {
+    assert.equal(error, nestedPrimary);
+    assert.deepEqual(cleanupFailuresFor(error), [firstCleanup]);
+  }
+
+  const attempts: string[] = [];
+  const childFailures = await collectCleanupFailures([
+    async () => {
+      attempts.push("primary");
+      throw firstCleanup;
+    },
+    async () => {
+      attempts.push("semantic");
+      throw secondCleanup;
+    },
+  ]);
+  assert.deepEqual(attempts, ["primary", "semantic"]);
+  assert.deepEqual(childFailures, [firstCleanup, secondCleanup]);
+});
+
+test("fresh cache reset receipts bind exact owned pre/post paths", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-cache-control-"));
+  try {
+    for (const relative of [".vize", "node_modules/.vize"]) {
+      const target = path.join(workspace, relative);
+      fs.mkdirSync(target, { recursive: true });
+      fs.writeFileSync(path.join(target, "witness"), "owned");
+    }
+    const receipt = resetOwnedWorkspaceCaches(workspace);
+    assert.deepEqual(
+      receipt.map(({ path: target, existedBeforeReset, existsAfterReset }) => ({
+        relative: path.relative(workspace, target),
+        existedBeforeReset,
+        existsAfterReset,
+      })),
+      [
+        { relative: ".vize", existedBeforeReset: true, existsAfterReset: false },
+        {
+          relative: "node_modules/.vize",
+          existedBeforeReset: true,
+          existsAfterReset: false,
+        },
+      ],
+    );
+    assertOwnedWorkspaceCachesAbsent(receipt);
+    const firstPath = receipt[0]?.path;
+    assert.ok(firstPath);
+    fs.mkdirSync(firstPath, { recursive: true });
+    assert.throws(() => assertOwnedWorkspaceCachesAbsent(receipt), /reappeared before reuse/u);
+  } finally {
+    fs.rmSync(workspace, { force: true, recursive: true });
+  }
+});
+
+test("notification history rejects cursors that predate eviction", () => {
+  const history = new BoundedNotificationHistory(200);
+  for (let sequence = 1; sequence <= 201; sequence += 1) {
+    history.push({
+      sequence,
+      receivedAtMs: sequence,
+      method: "textDocument/publishDiagnostics",
+      params: { sequence },
+    });
+  }
+  assert.throws(
+    () => history.since("textDocument/publishDiagnostics", 0),
+    /predates evicted sequence 1/u,
+  );
+  assert.equal(history.since("textDocument/publishDiagnostics", 1).length, 200);
 });
 
 test("nearest-rank distributions retain p50, p95, and p99", () => {
@@ -91,6 +231,33 @@ test("definition and reference locations require an authored URI", () => {
   assert.throws(
     () => authoredLocations({ targetUri: 42, targetSelectionRange: range }),
     /location lacks an authored URI/u,
+  );
+});
+
+test("every admitted hover carries the exact authored range", () => {
+  const target = rangeForNeedle(sourceV2, "message");
+  assert.doesNotThrow(() =>
+    assertAuthoredHovers([{ contents: "message: string", range: target }], target),
+  );
+  assert.throws(
+    () => assertAuthoredHovers([{ contents: "message: string" }], target),
+    /hover omitted its authored range/u,
+  );
+  assert.throws(
+    () =>
+      assertAuthoredHovers(
+        [
+          {
+            contents: "message: string",
+            range: {
+              start: target.start,
+              end: { ...target.end, character: target.end.character + 1 },
+            },
+          },
+        ],
+        target,
+      ),
+    /hover escaped the authored token/u,
   );
 });
 
@@ -190,6 +357,24 @@ test("diagnostic admission covers both halves of the Vue product", () => {
     assertExactProductDiagnostics("vue-language-tools", [emptyPrimary, semanticExact], expected, 2)
       .reportedVersion,
     null,
+  );
+  assert.throws(
+    () =>
+      assertExactProductDiagnostics(
+        "vue-language-tools",
+        [
+          emptyPrimary,
+          semanticExact,
+          {
+            provider: "typescript-language-server",
+            receivedAtMs: 3,
+            params: { uri, diagnostics: [] },
+          },
+        ],
+        expected,
+        2,
+      ),
+    /terminal product diagnostics were cleared/u,
   );
   assert.throws(() =>
     assertExactProductDiagnostics(
@@ -339,6 +524,51 @@ test("prepareRename requires the explicit prepare capability", () => {
   assert.equal(
     supportsLspMethod({ renameProvider: { prepareProvider: true } }, "textDocument/prepareRename"),
     true,
+  );
+});
+
+test("late background bridge rejection is settled before admission", async () => {
+  const custody = new BackgroundTaskCustody();
+  const failure = new Error("late bridge rejection");
+  const delayed = new Promise<void>((_resolve, reject) => {
+    setImmediate(() => reject(failure));
+  });
+  void custody.track(delayed).catch(() => undefined);
+  await assert.rejects(
+    () => custody.settle(),
+    (error: unknown) => error instanceof AggregateError && error.errors.includes(failure),
+  );
+});
+
+test("primary operation receipts enforce human-readable exact method counts", () => {
+  const operation = (kind: ClientOperation["kind"], method: string): ClientOperation => ({
+    kind,
+    method,
+    params: null,
+  });
+  const operations = [
+    operation("request", "initialize"),
+    operation("notification", "initialized"),
+    operation("notification", "textDocument/didOpen"),
+    operation("request", "textDocument/documentSymbol"),
+    operation("request", "textDocument/documentSymbol"),
+    operation("notification", "textDocument/didChange"),
+    operation("request", "textDocument/documentSymbol"),
+    operation("request", "textDocument/documentSymbol"),
+    operation("request", "textDocument/completion"),
+    operation("request", "textDocument/hover"),
+    operation("request", "textDocument/definition"),
+    operation("request", "textDocument/references"),
+    operation("request", "textDocument/prepareRename"),
+    operation("request", "textDocument/rename"),
+  ];
+  const receipt = primaryOperationReceipt(operations, 1, 2);
+  assert.equal(receipt.totalOperations, 14);
+  assert.equal(receipt.methodCounts["request textDocument/documentSymbol"], 4);
+  assert.equal(receipt.methodCounts["request textDocument/rename"], 1);
+  assert.throws(
+    () => primaryOperationReceipt(operations.slice(0, -1), 1, 2),
+    /method order drifted/u,
   );
 });
 
