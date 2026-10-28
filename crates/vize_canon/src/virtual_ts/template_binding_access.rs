@@ -25,11 +25,9 @@ impl TemplateBindingAccess {
         let mut result = Self::from_props(collect_template_prop_names(summary));
         if !options_api && let Some(descriptor) = summary.options_descriptor.as_ref() {
             for member in &descriptor.members {
-                let Some(name) =
-                    vize_croquis::croquis::normalize_options_template_binding_name(
-                        member.name.as_str(),
-                    )
-                else {
+                let Some(name) = vize_croquis::croquis::normalize_options_template_binding_name(
+                    member.name.as_str(),
+                ) else {
                     continue;
                 };
                 result.receivers.remove(name.as_str());
