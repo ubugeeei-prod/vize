@@ -122,6 +122,7 @@ export default defineConfig({}).withVue({
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
+| `--vue-indent-script-and-style`    | `<script>` と `<style>` の内容をインデントします。               |
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
 | `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。 |
 
@@ -193,6 +194,11 @@ Node・設定オプション `bracketSpacing` と `bracketSameLine` に対応し
 改行コードも同じように公開されます。
 `--end-of-line <lf|crlf|cr|auto>` は、型付きの Node・設定オプション
 `endOfLine` に対応します。CLI の明示値は、設定と選択したプリセットより優先されます。
+
+SFC 本体のインデントも、すべての直接フォーマッタ境界で明示的に有効化できます。
+`--vue-indent-script-and-style[=false]` は、型付きの Node・設定オプション
+`vueIndentScriptAndStyle` に対応します。このオプションを明示しない限り、既定値と
+すべてのプリセットは変わりません。
 
 ## コンパクトなアプリケーションコード
 

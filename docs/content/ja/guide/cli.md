@@ -151,6 +151,7 @@ vize fmt --write src
 | `--no-semi`                        | セミコロンを省略する                                   |
 | `--sort-attributes`                | テンプレートの属性を並べ替える                         |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ配置する                         |
+| `--vue-indent-script-and-style`    | script と style ブロックの内容をインデントする         |
 | `--max-attributes-per-line`        | 指定した属性数で改行する                               |
 | `--normalize-directive-shorthands` | `v-bind:` / `v-on:` / `v-slot:` の省略記法を正規化する |
 | `--preset`                         | `vize`、`prettier`、`compact`、`documentation` のフォーマッタ既定値を適用する |

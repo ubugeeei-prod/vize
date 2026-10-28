@@ -71,6 +71,9 @@ pub(super) fn build_format_options(
     if let Some(v) = args.single_attribute_per_line {
         opts.single_attribute_per_line = v;
     }
+    if let Some(v) = args.vue_indent_script_and_style {
+        opts.vue_indent_script_and_style = v;
+    }
     if let Some(v) = args.max_attributes_per_line {
         opts.max_attributes_per_line = Some(v);
     }

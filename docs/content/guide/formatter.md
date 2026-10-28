@@ -120,6 +120,7 @@ The same options are available as CLI flags:
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
+| `--vue-indent-script-and-style`    | Indents the contents of `<script>` and `<style>`.              |
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
 
@@ -191,6 +192,11 @@ or false values override a selected preset.
 Line endings are projected consistently too:
 `--end-of-line <lf|crlf|cr|auto>` maps to the typed Node and config option
 `endOfLine`. The explicit CLI value overrides config and a selected preset.
+
+SFC body indentation is also an explicit opt-in on every direct formatter
+surface. `--vue-indent-script-and-style[=false]` maps to the typed Node and
+config option `vueIndentScriptAndStyle`. The default and every preset remain
+unchanged unless this option is set explicitly.
 
 ## Compact application code
 

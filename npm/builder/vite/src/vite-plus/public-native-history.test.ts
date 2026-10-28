@@ -344,6 +344,35 @@ const value = "ready";
   assert.deepEqual(controls[1]?.[0], { preset: "compact", sortBlocks: true });
 });
 
+void test("public formatter exposes SFC body indentation as an opt-in", () => {
+  const source = `<script setup lang="ts">
+const value=1
+</script>
+<style>
+.card{color:red}
+</style>
+`;
+  const expected = `<script setup lang="ts">
+  const value = 1;
+</script>
+
+<style>
+  .card {
+    color: red;
+  }
+</style>
+`;
+  const options = Object.freeze({
+    preset: "vize" as const,
+    vueIndentScriptAndStyle: true,
+  }) satisfies FormatOptionsNapi;
+  assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+  for (let pass = 2; pass <= 3; pass += 1) {
+    assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+  }
+  assert.deepEqual(options, { preset: "vize", vueIndentScriptAndStyle: true });
+});
+
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
   for (const preset of ["", "docs", "PRETTIER", 1, true, {}, []]) {
     assert.throws(
