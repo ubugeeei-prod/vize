@@ -296,13 +296,15 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
         true,
     );
     assert_eq!(
-        code.matches("\"ariaLabel\": __vizeComponentAriaPropValue(label)")
+        code.matches(
+            "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)"
+        )
             .count(),
         1,
         "{code}"
     );
     assert_eq!(
-        code.matches("function __vizeComponentAriaPropValue")
+        code.matches("function __vizeComponentAriaPropEntries")
             .count(),
         1,
         "the value witness must be emitted once per relevant SFC: {code}"
@@ -315,13 +317,30 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     );
     assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
 
+    let camel = generate_usage(
+        "import Child from './Child.vue'; const label = 'ok';",
+        r#"<Child :ariaLabel="label" />"#,
+        true,
+    );
+    assert_eq!(
+        camel
+            .matches(
+                "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)"
+            )
+            .count(),
+        1,
+        "a camel-authored binding must retain the raw quoted-key witness: {camel}"
+    );
+
     let non_aria = generate_usage(
         "import Child from './Child.vue'; const label = 'ok';",
         r#"<Child :data-test="label" />"#,
         true,
     );
     assert_eq!(
-        non_aria.matches("__vizeComponentAriaPropValue").count(),
+        non_aria
+            .matches("__vizeComponentAriaPropEntries")
+            .count(),
         0,
         "unrelated SFCs must not pay for the aria witness: {non_aria}"
     );

@@ -89,3 +89,67 @@ const maybe = undefined as string | undefined
         "the declared prop value error must stay on aria-label: {snapshot:#?}"
     );
 }
+
+#[test]
+fn required_quoted_aria_key_accepts_both_bindings_and_stays_required() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "required-quoted-aria-prop",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{ 'aria-label': string }>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child aria-label="kebab" />
+  <Child ariaLabel="camel" />
+  <Child />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(
+        snapshot.len(),
+        1,
+        "both authored spellings must satisfy the raw key and only the missing usage may fail: {snapshot:#?}"
+    );
+    let (file, code, message) = &snapshot[0];
+    assert_eq!(file.as_str(), "src/Parent.vue");
+    assert_eq!(*code, Some(2345));
+    let normalized = super::super::normalize_component_check_props_tail(message);
+    assert_eq!(
+        normalized.lines().next(),
+        Some(
+            "8:4:error Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>'."
+        ),
+        "the exact missing-prop diagnostic must stay on the empty usage: {normalized}"
+    );
+    assert!(
+        normalized.contains("Property")
+            && normalized.contains("aria-label")
+            && normalized.contains("is missing in type '{}'")
+            && normalized.contains("but required in type"),
+        "the raw quoted key must remain required without being renamed: {normalized}"
+    );
+}

@@ -5,6 +5,7 @@ use vize_croquis::croquis::ComponentUsage;
 
 use super::super::component_ref_props::append_ref_callback_helper;
 use super::is_inline_callback_prop;
+use crate::virtual_ts::helpers::is_component_aria_prop_name;
 
 /// The shared type helpers every per-usage prop check resolves through, emitted
 /// once per template scope that has at least one checkable component usage.
@@ -22,7 +23,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         usage
             .props
             .iter()
-            .any(|prop| !prop.name_is_dynamic && prop.name.starts_with("aria-"))
+            .any(|prop| !prop.name_is_dynamic && is_component_aria_prop_name(prop.name.as_str()))
     }) {
         // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
         // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
@@ -32,7 +33,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         // props remain present, generic inference retains the authored value
         // type, and wrong values are still diagnosed once (#11048, #9658).
         ts.push_str(
-            "  function __vizeComponentAriaPropValue<const T>(value: T): __VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }\n",
+            "  function __vizeComponentAriaPropEntries<const R extends PropertyKey, const C extends PropertyKey, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: __VizeNotUndefined<T> } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: __VizeNotUndefined<T> }; }\n",
         );
     }
     ts.push_str(

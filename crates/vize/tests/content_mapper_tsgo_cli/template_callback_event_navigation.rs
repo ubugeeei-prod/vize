@@ -64,6 +64,42 @@ const CONFIG: &str = r#"{
 }
 "#;
 
+const NESTED_ARROW_CHILD: &str = r#"<script setup lang="ts">
+interface Props {
+  apply: (
+    fn: (value: "a" | "b") => boolean,
+    value: "a" | "b",
+  ) => boolean;
+}
+
+defineProps<Props>();
+defineEmits<{
+  quit: [];
+}>();
+</script>
+
+<template>
+  <div />
+</template>
+"#;
+
+const NESTED_ARROW_PARENT: &str = r#"<script setup lang="ts">
+import Foo from "./Foo.vue";
+
+const emit = defineEmits<{
+  quit: [];
+}>();
+</script>
+
+<template>
+  <Foo
+    :apply="(fn: (value: 'a' | 'b') => boolean,
+      value) => fn(value)"
+    @quit="emit('quit')"
+  />
+</template>
+"#;
+
 #[test]
 fn template_callback_next_to_listener_keeps_its_contextual_type() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
@@ -91,6 +127,37 @@ fn template_callback_next_to_listener_keeps_its_contextual_type() {
         output.status.code(),
         Some(0),
         "report: {REPORT_URL}\nreporter source: {REPORTER_SOURCE_REVISION}\nvize source: {VIZE_REGRESSION_REVISION}\n{}",
+        output_text(&output)
+    );
+    assert_eq!(output.stdout, b"", "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+}
+
+#[test]
+fn multiline_callback_skips_nested_function_type_arrow_for_suppression() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping nested callback-arrow conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(tsgo.is_file(), "{TSGO_ENV} must name an executable");
+
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-nested-callback-arrow-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    std::fs::write(project.path().join("Foo.vue"), NESTED_ARROW_CHILD).unwrap();
+    std::fs::write(project.path().join("parent.vue"), NESTED_ARROW_PARENT).unwrap();
+    std::fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "the nested function-type arrow must not expose generated TS7006\n{}",
         output_text(&output)
     );
     assert_eq!(output.stdout, b"", "{}", output_text(&output));

@@ -8,7 +8,9 @@ use vize_croquis::drawer::strip_js_comments;
 /// `(\n  params\n) => body` otherwise leaves `params` on an unsuppressed line
 /// and external content-mapper hosts report an unmapped TS7006. The scan skips
 /// comments and literals so an arrow-shaped token inside either cannot end the
-/// parameter prefix. `None` leaves the common single-line callback borrowed.
+/// parameter prefix. A nested function-type arrow is skipped in favor of the
+/// first depth-zero arrow; a shallowest fallback retains wrapped callbacks.
+/// `None` leaves the common single-line callback borrowed.
 pub(crate) fn callback_parameters_on_ignored_line(value: &str) -> Option<String> {
     let arrow = arrow_token_offset(value)?;
     let prefix = value.get(..arrow)?;
@@ -28,6 +30,8 @@ pub(crate) fn callback_parameters_on_ignored_line(value: &str) -> Option<String>
 fn arrow_token_offset(value: &str) -> Option<usize> {
     let bytes = value.as_bytes();
     let mut index: usize = 0;
+    let mut parenthesis_depth: usize = 0;
+    let mut shallowest_arrow: Option<(usize, usize)> = None;
     while bytes.get(index.saturating_add(1)).is_some() {
         let current = bytes.get(index).copied()?;
         match current {
@@ -59,11 +63,27 @@ fn arrow_token_offset(value: &str) -> Option<usize> {
                 }
                 index = index.saturating_add(1).min(bytes.len());
             }
-            b'=' if bytes.get(index.saturating_add(1)) == Some(&b'>') => return Some(index),
+            b'(' => {
+                parenthesis_depth = parenthesis_depth.saturating_add(1);
+                index = index.saturating_add(1);
+            }
+            b')' => {
+                parenthesis_depth = parenthesis_depth.checked_sub(1)?;
+                index = index.saturating_add(1);
+            }
+            b'=' if bytes.get(index.saturating_add(1)) == Some(&b'>') => {
+                if parenthesis_depth == 0 {
+                    return Some(index);
+                }
+                if shallowest_arrow.is_none_or(|(_, depth)| parenthesis_depth < depth) {
+                    shallowest_arrow = Some((index, parenthesis_depth));
+                }
+                index = index.saturating_add(2);
+            }
             _ => index = index.saturating_add(1),
         }
     }
-    None
+    shallowest_arrow.map(|(offset, _)| offset)
 }
 
 pub(super) fn expression_source_for_typecheck(expr: &str) -> Cow<'_, str> {
@@ -119,6 +139,22 @@ mod tests {
         assert_eq!(
             collapsed.as_ref().map(|value| value.as_str()),
             Some("(   item ) => item.id")
+        );
+
+        let nested = callback_parameters_on_ignored_line(
+            "(fn: (s: string) => string,\n value) => value",
+        );
+        assert_eq!(
+            nested.as_ref().map(|value| value.as_str()),
+            Some("(fn: (s: string) => string,  value) => value"),
+            "a nested function-type arrow must not hide the outer callback arrow"
+        );
+
+        let wrapped = callback_parameters_on_ignored_line("((\n value) => value)");
+        assert_eq!(
+            wrapped.as_ref().map(|value| value.as_str()),
+            Some("((  value) => value)"),
+            "the shallowest fallback must preserve a fully wrapped callback"
         );
     }
 
