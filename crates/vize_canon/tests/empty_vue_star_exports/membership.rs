@@ -90,19 +90,19 @@ fn expected() -> (Value, Value) {
         fs::read(support::corpus().join("malformed-membership/helper-update-11049.json")).unwrap();
     assert_eq!(
         support::hash(&helper_hoist),
-        "c2a50f37b254efd6cd847e5079a5aaab7d0d24e00e37178c54320d4e82bc6e77"
+        "970e4ae93b460c3761a5548305f3346ac451d86beb7ba7bda12763fb172740ba"
     );
     let helper_hoist: Value = serde_json::from_slice(&helper_hoist).unwrap();
     assert_eq!(helper_hoist["version"], 1);
     assert_eq!(helper_hoist["pullRequest"], 11049);
     assert_eq!(helper_hoist["entry"], 82);
-    assert_eq!(helper_hoist["deltaBytes"], 13_809);
+    assert_eq!(helper_hoist["deltaBytes"], 13_924);
     let helper = members.get_mut(82).unwrap();
     assert_eq!(*helper, helper_hoist["before"]);
     assert_eq!(helper_hoist["before"][0], helper_hoist["after"][0]);
     assert_eq!(
         helper_hoist["after"][1].as_u64().unwrap() - helper_hoist["before"][1].as_u64().unwrap(),
-        13_809
+        13_924
     );
     *helper = helper_hoist["after"].clone();
     manifest["provenance"]["currentHelperHoistUpdate"] = helper_hoist;

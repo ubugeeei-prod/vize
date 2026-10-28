@@ -143,7 +143,7 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         .find_by_original(&parent_path)
         .expect("parent virtual file should exist")
         .content;
-    for member in [
+    let members = [
         "__VizeComponentRawProps",
         "__VizePropChecker",
         "__VizePropValue",
@@ -162,12 +162,22 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         "__VizeSlotPayload",
         "__VizeWidenTemplateRef",
         "__EmitProps",
-    ] {
-        assert!(
-            generated.contains(&format!("import(\"vize:virtual-ts\").{member}")),
-            "activated helper {member} must use the collision-proof module:\n{generated}"
+    ];
+    let mut activated = Vec::with_capacity(members.len());
+    for member in members {
+        let direct_reference = format!("import(\"vize:virtual-ts\").{member}");
+        let direct_count = generated.matches(direct_reference.as_str()).count();
+        let total_count = generated.matches(member).count();
+        assert_eq!(
+            total_count,
+            direct_count + 1,
+            "only the authored poison may reference {member} without the reserved module:\n{generated}"
         );
+        if direct_count != 0 {
+            activated.push(member);
+        }
     }
+    assert_eq!(activated, members);
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
@@ -193,15 +203,13 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
         return;
     };
     assert_eq!(
-        snapshot.len(),
-        1,
-        "one authored mismatch only: {snapshot:#?}"
-    );
-    let (file, code, message) = &snapshot[0];
-    assert_eq!(file.as_str(), "src/Parent.vue");
-    assert_eq!(*code, Some(2322));
-    assert!(
-        message.starts_with(&format!("{expected_line}:11:error")),
-        "the value attribute must retain its authored UTF-16 anchor: {message}"
+        snapshot,
+        vec![(
+            vize_carton::String::from("src/Parent.vue"),
+            Some(2322),
+            vize_carton::cstr!(
+                "{expected_line}:11:error Type 'number' is not assignable to type 'string'."
+            ),
+        )]
     );
 }
