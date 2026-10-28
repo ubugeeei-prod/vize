@@ -13,7 +13,6 @@ import {
   rangeKey,
   wordRanges,
   type DualLspFixture,
-  type Position,
   type Range,
 } from "./dual-lsp-fixture.ts";
 
@@ -90,9 +89,10 @@ type DiagnosticWaiter = {
 };
 
 function normalizeMessage(value: unknown): string {
-  return String(value ?? "")
-    .replace(/\s+/g, " ")
-    .trim();
+  if (typeof value !== "string") {
+    throw new TypeError("diagnostic message must be a string");
+  }
+  return value.replace(/\s+/g, " ").trim();
 }
 
 function asRange(value: unknown): Range {

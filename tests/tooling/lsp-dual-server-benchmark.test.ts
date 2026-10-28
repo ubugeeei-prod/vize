@@ -222,6 +222,31 @@ test("diagnostic admission covers both halves of the Vue product", () => {
       2,
     ),
   );
+  assert.throws(
+    () =>
+      assertExactProductDiagnostics(
+        "vue-language-tools",
+        [
+          {
+            ...semanticExact,
+            params: {
+              uri,
+              diagnostics: [
+                {
+                  range: { end: exact.range.end, start: exact.range.start },
+                  code: exact.code,
+                  message: { text: exact.message },
+                  severity: 1,
+                },
+              ],
+            },
+          },
+        ],
+        expected,
+        2,
+      ),
+    /diagnostic multiset is not exact/u,
+  );
 });
 
 test("startup, diagnostics, and query packets remain separate distributions", () => {

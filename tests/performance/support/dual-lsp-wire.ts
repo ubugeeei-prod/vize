@@ -232,7 +232,8 @@ export class DualLspWire {
         if (hardTimer) clearTimeout(hardTimer);
         const index = this.notificationObservers.indexOf(observer);
         if (index >= 0) this.notificationObservers.splice(index, 1);
-        error ? reject(error) : resolve();
+        if (error) reject(error);
+        else resolve();
       };
       const arm = () => {
         clearTimeout(quietTimer);
@@ -321,7 +322,8 @@ export class DualLspWire {
     };
     this.notifications.push(notification);
     if (this.notifications.length > 200) this.notifications.shift();
-    for (const observer of [...this.notificationObservers]) {
+    const observers = this.notificationObservers.slice();
+    for (const observer of observers) {
       void Promise.resolve(observer(notification)).catch((error) => this.rejectAll(error as Error));
     }
   }

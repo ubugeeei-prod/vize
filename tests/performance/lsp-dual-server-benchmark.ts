@@ -123,13 +123,23 @@ function resetOwnedWorkspaceCaches(workspaceDir: string): void {
   }
 }
 
-async function closeProduct(product: DualLspProduct | undefined, failure: unknown): Promise<void> {
+async function closeProduct(
+  product: DualLspProduct | undefined,
+  preservePrimaryFailure: boolean,
+): Promise<void> {
   if (!product) return;
   try {
     await product.shutdown();
   } catch (shutdownError) {
-    await product.kill();
-    if (failure == null) throw shutdownError;
+    try {
+      await product.kill();
+    } catch (killError) {
+      if (!preservePrimaryFailure) {
+        throw new AggregateError([shutdownError, killError], "product shutdown and kill failed");
+      }
+      return;
+    }
+    if (!preservePrimaryFailure) throw shutdownError;
   }
 }
 
@@ -147,7 +157,7 @@ async function collectFresh(
     try {
       for (const kind of order) {
         let product: DualLspProduct | undefined;
-        let failure: unknown;
+        let failed = false;
         try {
           const startupStartedAt = performance.now();
           product = await DualLspProduct.start(kind, fixture.workspaceDir);
@@ -168,10 +178,10 @@ async function collectFresh(
           evidence[kind].fresh.push(sample);
           pairTranscripts.set(kind, stableOperationTranscript(product.primaryOperations()));
         } catch (error) {
-          failure = error;
+          failed = true;
           throw error;
         } finally {
-          await closeProduct(product, failure);
+          await closeProduct(product, failed);
           resetOwnedWorkspaceCaches(fixture.workspaceDir);
         }
       }
@@ -195,7 +205,8 @@ async function collectWarm(
   const fixture = createDualLspFixture();
   const sessions = new Map<ProductKind, DualLspProduct>();
   const sessionRevisionReceipts = new Map<ProductKind, string>();
-  let failure: unknown;
+  let primaryFailed = false;
+  let primaryFailure: unknown;
   try {
     for (const kind of productOrder(0)) {
       const startupStartedAt = performance.now();
@@ -233,21 +244,28 @@ async function collectWarm(
     assert.equal(vize, vue, "warm products did not receive an identical primary wire sequence");
     transcriptHashes.push(sha256(vize));
   } catch (error) {
-    failure = error;
-    throw error;
-  } finally {
-    const shutdownFailures: unknown[] = [];
-    for (const session of sessions.values()) {
-      try {
-        await closeProduct(session, failure);
-      } catch (error) {
-        shutdownFailures.push(error);
-      }
+    primaryFailed = true;
+    primaryFailure = error;
+  }
+
+  const shutdownFailures: unknown[] = [];
+  for (const session of sessions.values()) {
+    try {
+      await closeProduct(session, primaryFailed);
+    } catch (error) {
+      shutdownFailures.push(error);
     }
+  }
+  try {
     fixture.dispose();
-    if (failure == null && shutdownFailures.length > 0) {
-      throw new AggregateError(shutdownFailures, "warm product shutdown failed");
-    }
+  } catch (error) {
+    shutdownFailures.push(error);
+  }
+  if (primaryFailed) {
+    throw primaryFailure;
+  }
+  if (shutdownFailures.length > 0) {
+    throw new AggregateError(shutdownFailures, "warm product shutdown failed");
   }
 }
 

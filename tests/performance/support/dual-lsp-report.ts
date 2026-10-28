@@ -126,6 +126,16 @@ export function writeDualLspReport(outputDir: string, report: Record<string, unk
   fs.writeFileSync(path.join(outputDir, "summary.md"), renderSummary(report));
 }
 
+function renderFailure(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value == null) return "unknown";
+  try {
+    return JSON.stringify(value) ?? "unknown";
+  } catch {
+    return "unserializable failure";
+  }
+}
+
 function renderSummary(report: Record<string, unknown>): string {
   if (report.status !== "passed") {
     return [
@@ -133,7 +143,7 @@ function renderSummary(report: Record<string, unknown>): string {
       "",
       "Status: **failed**",
       "",
-      `Failure: ${String(report.failure ?? "unknown")}`,
+      `Failure: ${renderFailure(report.failure)}`,
       "",
       "No failed, stale, incomplete, or extra result is admitted as a performance sample.",
       "",
@@ -158,7 +168,7 @@ function renderSummary(report: Record<string, unknown>): string {
   return [
     "# Same-wire LSP benchmark",
     "",
-    `Status: **${String(report.status)}**`,
+    "Status: **passed**",
     "",
     "Only correctness-qualified samples are present. Fresh means a new complete product process tree; warm means repeated operations on one initialized product. startupMs ends after initialize, diagnostic qualification metrics end after product-wide barriers and quiescence, and totalMs contains only the six query operations. Vue Language Tools includes both Vue LS and TypeScript LS process trees.",
     "",
