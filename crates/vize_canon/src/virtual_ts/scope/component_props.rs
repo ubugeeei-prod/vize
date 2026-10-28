@@ -287,6 +287,11 @@ fn generate_usage_declarations(
             "__{component_type_name}_Props_{};\n",
             shared.canonical_idx,
         );
+    } else if !ctx.hoist_shared_preamble {
+        append!(
+            *ts,
+            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : __VizeComponentRawProps<typeof {component_ref}>;\n",
+        );
     } else {
         let is_any =
             crate::virtual_ts::helpers::shared_types::IS_ANY.select(ctx.hoist_shared_preamble);

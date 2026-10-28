@@ -43,17 +43,20 @@ pub(super) fn generate_callback_props_resolution(
     let resolved_props = cstr!("__vize_resolved_{component_type_name}_props_{idx}");
     let selected_props = cstr!("__vize_selected_{component_type_name}_props_{idx}");
     let expr_indent = String::from(indent);
-    let resolved_context_props = crate::virtual_ts::helpers::shared_types::RESOLVED_CONTEXT_PROPS
-        .select(hoist_shared_preamble);
-    let props_resolver =
-        crate::virtual_ts::helpers::shared_types::PROPS_RESOLVER.select(hoist_shared_preamble);
-    let props_selector =
-        crate::virtual_ts::helpers::shared_types::PROPS_SELECTOR.select(hoist_shared_preamble);
-
-    append!(
-        *ts,
-        "{expr_indent}const {resolved_props} = (undefined as unknown as {resolved_context_props})((undefined as unknown as {props_resolver}<typeof {component_ref}>)({{\n",
-    );
+    if hoist_shared_preamble {
+        let resolved_context_props =
+            crate::virtual_ts::helpers::shared_types::RESOLVED_CONTEXT_PROPS.select(true);
+        let props_resolver = crate::virtual_ts::helpers::shared_types::PROPS_RESOLVER.select(true);
+        append!(
+            *ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as {resolved_context_props})((undefined as unknown as {props_resolver}<typeof {component_ref}>)({{\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
+        );
+    }
 
     append_props_object(
         ts,
@@ -64,10 +67,18 @@ pub(super) fn generate_callback_props_resolution(
         false,
     );
     append!(*ts, "{expr_indent}}}));\n");
-    append!(
-        *ts,
-        "{expr_indent}const {selected_props} = (undefined as unknown as {props_selector}<typeof {resolved_props}>)({{\n",
-    );
+    if hoist_shared_preamble {
+        let props_selector = crate::virtual_ts::helpers::shared_types::PROPS_SELECTOR.select(true);
+        append!(
+            *ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as {props_selector}<typeof {resolved_props}>)({{\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",
+        );
+    }
     append_props_object(
         ts,
         usage,

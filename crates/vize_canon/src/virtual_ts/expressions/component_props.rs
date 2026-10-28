@@ -419,12 +419,19 @@ pub(crate) fn generate_component_prop_checks(
                 let camel_prop_name = super::super::helpers::to_camel_case(prop.name.as_str());
                 let resolved_props = resolution.resolved_props.as_str();
                 let selected_props = resolution.selected_props.as_str();
-                let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP
-                    .select(ctx.hoist_shared_preamble);
-                append!(
-                    *ts,
-                    ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
-                );
+                if ctx.hoist_shared_preamble {
+                    let resolved_prop =
+                        crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
+                    append!(
+                        *ts,
+                        ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+                    );
+                } else {
+                    append!(
+                        *ts,
+                        ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+                    );
+                }
             } else {
                 append!(
                     *ts,

@@ -145,6 +145,37 @@ pub(super) fn append_prop_checker_alias(
     } else {
         cstr!("__{component_type_name}_Props_{idx}")
     };
+    // Keep the standalone/content-mapper path on the original static format
+    // strings. Passing the same local helper names through format arguments
+    // leaves the output byte-identical but makes `fmt::write` reserve a few
+    // extra bytes per component. The component-scope allocation gate measures
+    // those requested bytes, so this deliberately duplicated branch is the
+    // allocation-free fast path.
+    if !hoist_shared_preamble {
+        append!(
+            *ts,
+            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizeRequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
+        );
+        append!(
+            *ts,
+            "  type __{component_type_name}_CheckTail_{idx} = __VizeComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
+        );
+        if force_value_props || usage_needs_per_prop_aliases(usage) {
+            append!(
+                *ts,
+                "  type __{component_type_name}_ValueProps_{idx} = __VizeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
+            );
+            append!(
+                *ts,
+                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
+            );
+        }
+        append!(
+            *ts,
+            "  type __{component_type_name}_Check_{idx} = __VizePropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
+        );
+        return;
+    }
     let emit_listeners = shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
     let required_fallthrough =
         shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
@@ -195,6 +226,26 @@ pub(super) fn prop_alias_type(
     fallthrough_prop_name: &str,
     hoist_shared_preamble: bool,
 ) -> String {
+    if !hoist_shared_preamble {
+        if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
+            return String::from("__VizeComponentRefCallback");
+        }
+        let normalized = cstr!(
+            "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
+        );
+        let resolved = if fallthrough_prop_name == camel_prop_name {
+            normalized
+        } else {
+            cstr!(
+                "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
+            )
+        };
+        return if is_inline_callback_prop(prop) {
+            cstr!("__VizeCallableProp<{resolved}>")
+        } else {
+            resolved
+        };
+    }
     let component_ref_callback = shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
     let prop_value = shared_types::PROP_VALUE.select(hoist_shared_preamble);
     let callable_prop = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);

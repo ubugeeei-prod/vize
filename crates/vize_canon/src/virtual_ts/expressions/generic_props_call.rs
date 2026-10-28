@@ -80,9 +80,6 @@ pub(super) fn generate_generic_props_call(
     );
     ts.push_str(");\n");
     let fallthrough_argument_range = check_spread_values.then(|| {
-        let fallthrough_spread_checker =
-            crate::virtual_ts::helpers::shared_types::FALLTHROUGH_SPREAD_CHECKER
-                .select(hoist_shared_preamble);
         append!(
             *ts,
             "{expr_indent}const __VizeFallthroughProps_{idx} = ",
@@ -95,10 +92,19 @@ pub(super) fn generate_generic_props_call(
             expr_indent.as_str(),
         );
         ts.push_str(";\n");
-        append!(
-            *ts,
-            "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
-        );
+        if hoist_shared_preamble {
+            let fallthrough_spread_checker =
+                crate::virtual_ts::helpers::shared_types::FALLTHROUGH_SPREAD_CHECKER.select(true);
+            append!(
+                *ts,
+                "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+            );
+        } else {
+            append!(
+                *ts,
+                "{expr_indent}(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+            );
+        }
         let start = ts.len();
         append!(*ts, "__VizeFallthroughProps_{idx}");
         let range = start..ts.len();
@@ -172,14 +178,6 @@ pub(crate) fn generate_slot_host_binding(
     indent: &str,
     (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) {
-    let slot_host_selector =
-        crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(hoist_shared_preamble);
-    let slot_constructor =
-        crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(hoist_shared_preamble);
-    let slot_constructor_args = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS
-        .select(hoist_shared_preamble);
-    let slots_factory =
-        crate::virtual_ts::helpers::shared_types::SLOTS_FACTORY.select(hoist_shared_preamble);
     let mut discarded = Vec::new();
     if usage.vif_guard.is_some() {
         append!(
@@ -187,10 +185,21 @@ pub(crate) fn generate_slot_host_binding(
             "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"
         );
     }
-    append!(
-        *ts,
-        "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)(new (undefined as unknown as {slot_constructor}<typeof {component_ref}>)(",
-    );
+    if hoist_shared_preamble {
+        let slot_host_selector =
+            crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(true);
+        let slot_constructor =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
+        append!(
+            *ts,
+            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)(new (undefined as unknown as {slot_constructor}<typeof {component_ref}>)(",
+        );
+    } else {
+        append!(
+            *ts,
+            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(new (undefined as unknown as __VizeSlotConstructor<typeof {component_ref}>)(",
+        );
+    }
     let isolated_guard = usage
         .vif_guard
         .as_ref()
@@ -210,10 +219,22 @@ pub(crate) fn generate_slot_host_binding(
     if usage.vif_guard.is_some() {
         ts.push_str(" : (undefined as unknown as never)");
     }
-    append!(
-        *ts,
-        ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>)), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})(",
-    );
+    if hoist_shared_preamble {
+        let slot_constructor =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
+        let slot_constructor_args =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS.select(true);
+        let slots_factory = crate::virtual_ts::helpers::shared_types::SLOTS_FACTORY.select(true);
+        append!(
+            *ts,
+            ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>)), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})(",
+        );
+    } else {
+        append!(
+            *ts,
+            ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
+        );
+    }
     if let Some(guard) = isolated_guard.as_ref() {
         // The constructor's props literal inserts a newline. The factory's
         // repeated guard needs its own physical-line suppression: it can be
