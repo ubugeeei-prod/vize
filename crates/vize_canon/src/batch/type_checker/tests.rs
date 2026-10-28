@@ -24,6 +24,7 @@ mod project_isolation;
 mod recent_issues;
 mod scan;
 mod template_block;
+mod template_ref_runtime_import;
 mod tsgo;
 mod tsgo_project_session;
 mod tsx_sfc;
@@ -943,7 +944,7 @@ fn batch_type_checker_uses_workspace_vue_runtime_without_node_modules() {
         &[(
             "src/UseTemplateRefError.vue",
             r#"<script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, useTemplateRef } from 'vue'
 
 const inputRef = useTemplateRef<HTMLInputElement>('input')
 const count = ref(0)

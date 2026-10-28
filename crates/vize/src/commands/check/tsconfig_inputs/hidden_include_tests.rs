@@ -211,7 +211,7 @@ fn hidden_include_roots_stop_at_the_literal_directory_prefix() {
         "node_modules/.pnpm/missing@1/node_modules/missing/runtime",
     ]
     .into_iter()
-    .filter_map(|include| super::spec::GlobSpec::new(&root, include))
+    .filter_map(|include| super::spec::GlobSpec::include(&root, include))
     .collect::<Vec<_>>();
 
     assert_eq!(

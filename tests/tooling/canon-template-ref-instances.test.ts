@@ -211,3 +211,88 @@ defineExpose({ size: 1 });
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("explicit and nested template refs retain Vue signatures beside inferred aliases", async () => {
+  const app = (extra = "") => `<script setup lang="ts">
+import { useTemplateRef as r } from 'vue';
+const __vizeInferRef = 7;
+const explicit = r<{ custom: number }, 'not-registered'>('not-registered');
+const inferred = r('button');
+function nested() { return r('not-registered'); }
+explicit.value?.custom.toFixed();
+inferred.value?.focus();
+__vizeInferRef.toFixed();
+void nested;
+${extra}
+</script>
+<template><button ref="button" /></template>`;
+  const directory = project({
+    "App.vue": app(),
+    "Shadowed.vue": `<script setup lang="ts">
+function useTemplateRef<T>(_key: string): { value: T | null } { return { value: null }; }
+const local = useTemplateRef<{ own: number }>('not-registered');
+local.value?.own.toFixed();
+</script>
+<template><div ref="other" /></template>`,
+  });
+  const configFile = path.join(directory, "tsconfig.json");
+  const config = JSON.parse(fs.readFileSync(configFile, "utf8"));
+  config.vueCompilerOptions = {
+    composables: { useTemplateRef: ["useTemplateRef", "templateRef", "r"] },
+  };
+  fs.writeFileSync(configFile, JSON.stringify(config));
+  try {
+    await compare(directory, []);
+    fs.writeFileSync(
+      path.join(directory, "App.vue"),
+      app(`explicit.value = null;
+inferred.value?.missing;
+nested().value?.focus();
+const missing = r('absent'); void missing;`),
+    );
+    const oracle = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.deepEqual(
+      oracle.map((diagnostic) => diagnostic.code).sort((a, b) => a - b),
+      [2339, 2339, 2339, 2540],
+    );
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      oracle,
+    );
+    fs.writeFileSync(path.join(directory, "App.vue"), app());
+    await compare(directory, []);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("inferred ref aliases keep used imports live without hiding unused imports", async () => {
+  const source = (unused = false) => `<script setup lang="ts">
+import { useTemplateRef as templateRef${unused ? ", useTemplateRef as unused" : ""} } from 'vue';
+const button = templateRef('button');
+button.value?.focus();
+</script>
+<template><button ref="button" /></template>`;
+  const directory = project({ "App.vue": source() });
+  const configFile = path.join(directory, "tsconfig.json");
+  const config = JSON.parse(fs.readFileSync(configFile, "utf8"));
+  config.compilerOptions.noUnusedLocals = true;
+  fs.writeFileSync(configFile, JSON.stringify(config));
+  try {
+    await compare(directory, []);
+    fs.writeFileSync(path.join(directory, "App.vue"), source(true));
+    const oracle = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.deepEqual(
+      oracle.map((diagnostic) => diagnostic.code),
+      [6133],
+    );
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      oracle,
+    );
+    fs.writeFileSync(path.join(directory, "App.vue"), source());
+    await compare(directory, []);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

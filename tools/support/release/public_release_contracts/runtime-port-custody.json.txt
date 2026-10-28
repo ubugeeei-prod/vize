@@ -1,0 +1,308 @@
+{
+  "schema": "vize-public-runtime-ts-port-custody-v3",
+  "originals": [
+    {
+      "path": "public-compiler-contracts-admitted.mjs",
+      "sha256": "e6c3d5304b8af962b0b1d257165fcb6423c723642519418d9845dc631bfe3cc5"
+    },
+    {
+      "path": "public-wasm-compiler-contracts.mjs",
+      "sha256": "cdb53465c971f8eabe3be5b90327ff4924c3817f3ee50763f6660619ebf5b652"
+    }
+  ],
+  "ported": {
+    "path": "runtime-contracts.ts",
+    "bytes": 8109,
+    "sha256": "edd780c60ee2bb6c9ef9ec3ac450004fcf01d343e4359b9d68125f88e3be2000",
+    "sha": "8ed3c416c31a22257fa54f440c0e7e88fd7b840b"
+  },
+  "validation": {
+    "strictTypeScript": "PASS",
+    "oxfmt": "PASS",
+    "nativeOriginalToPortedWholePacketEqual": true,
+    "wasmOriginalToPortedWholePacketEqual": true,
+    "frozenPublic600NativeWholePacketEqual": true,
+    "frozenPublic600WasmWholePacketEqual": true,
+    "metadataValueAdapter": false,
+    "freshConsumerAcceptanceCredit": false,
+    "adapters": "In-memory stdout capture; WASM root resolver uses the existing package's actual exported self-reference entry. Metadata is read normally from its adjacent original package.json.",
+    "actionsLint": "pending exact new head; zero-warning budget unchanged; no suppression"
+  },
+  "frozenPackets": [
+    {
+      "path": "public-compiler-contracts-admitted.json",
+      "sha256": "ab0eeae879f333e7da8bbbf25a26144ba66ca3fcd8a16a7e08e1db68d9211b63"
+    },
+    {
+      "path": "public-wasm-compiler-contracts.json",
+      "sha256": "7dc56029bf34d86066b1389264589cc454f683bc673cc0db4c4ea2dbd2132f0b"
+    }
+  ],
+  "historicalPort": {
+    "runtimeBlob": "640b52916691e107e4980bec63c390b6d9d3001c",
+    "custodyBlob": "d357b007ba376025792559ed45c7c3d0c182ab7e",
+    "ported": {
+      "path": "runtime-contracts.ts",
+      "sha256": "836fccc139a5c22d5e848030ad2521ca86e2f9820a97a0d700f26357e2ef5329",
+      "bytes": 7823
+    },
+    "validation": {
+      "strictTypeScript": "PASS",
+      "oxfmt": "PASS",
+      "nativeOriginalToPortedWholePacketEqual": true,
+      "wasmOriginalToPortedWholePacketEqual": true,
+      "frozenPublic600NativeWholePacketEqual": true,
+      "frozenPublic600WasmWholePacketEqual": true,
+      "vue": "3.6.0-rc.13",
+      "version": "0.600.0",
+      "freshConsumerAcceptanceCredit": false,
+      "adapters": "In-memory stdout capture only; WASM resolver points to previously extracted public600 payload, with file URL for data-URL evaluation."
+    },
+    "nativeProof": {
+      "strictTypeScript": "PASS",
+      "nativePublicVersion": "0.600.0",
+      "vue": "3.6.0-rc.13",
+      "completeRows": [
+        {
+          "id": "10875-native-once-click",
+          "observed": {
+            "handler": "function",
+            "button": "0",
+            "title": "0",
+            "output": "2"
+          },
+          "passed": true
+        },
+        {
+          "id": "10815-component-once-props-events-slots",
+          "observed": {
+            "button": "0:2",
+            "output": "2"
+          },
+          "passed": true
+        },
+        {
+          "id": "10891-private-default",
+          "observed": {
+            "text": "1",
+            "publicMsg": null,
+            "exposed": {}
+          },
+          "passed": true
+        },
+        {
+          "id": "10891-explicit-expose",
+          "observed": {
+            "text": "1",
+            "publicMsg": 1,
+            "exposed": {
+              "msg": 1
+            }
+          },
+          "passed": true
+        }
+      ],
+      "originalSourceToPortedEqual": true,
+      "frozenOriginalPublic600Equal": true
+    },
+    "wasmProof": {
+      "backend": "wasm",
+      "version": "0.600.0",
+      "vue": "3.6.0-rc.13",
+      "completeRows": [
+        {
+          "id": "10875-native-once-click",
+          "observed": {
+            "handler": "function",
+            "button": "0",
+            "title": "0",
+            "output": "2"
+          },
+          "passed": true
+        },
+        {
+          "id": "10815-component-once-props-events-slots",
+          "observed": {
+            "button": "0:2",
+            "output": "2"
+          },
+          "passed": true
+        },
+        {
+          "id": "10891-private-default",
+          "observed": {
+            "text": "1",
+            "publicMsg": null,
+            "exposed": {}
+          },
+          "passed": true
+        },
+        {
+          "id": "10891-explicit-expose",
+          "observed": {
+            "text": "1",
+            "publicMsg": 1,
+            "exposed": {
+              "msg": 1
+            }
+          },
+          "passed": true
+        }
+      ],
+      "originalSourceToPortedEqual": true,
+      "frozenOriginalPublic600Equal": true,
+      "resolverOnlyAdapter": "/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package",
+      "acceptanceCredit": false
+    }
+  },
+  "transition": {
+    "changed": "Read package metadata adjacent to the exported package root entry instead of a private package.json subpath.",
+    "reason": "Actual public WASM exports reject ./package.json; the previous extracted-payload test did not exercise that exports boundary.",
+    "originalInputsAndAllEightRuntimeObservationsChanged": false,
+    "previousSourceAndCustodyRemainInGitHistory": true,
+    "exportsRegression": {
+      "oldSubpathRejected": "ERR_PACKAGE_PATH_NOT_EXPORTED",
+      "rootEntry": "/private/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package/index.js",
+      "adjacentManifest": "/private/tmp/vize-p0-goal-20261027-511rot8h/release-acceptance/0.600.0/wasm-public-extracted/package/package.json",
+      "name": "@vizejs/wasm",
+      "version": "0.600.0",
+      "result": "PASS"
+    }
+  },
+  "currentWholePacketProof": {
+    "compileFunctionParity": [
+      {
+        "backend": "native",
+        "version": "0.600.0",
+        "vue": "3.6.0-rc.13",
+        "completeRows": [
+          {
+            "id": "10875-native-once-click",
+            "observed": {
+              "handler": "function",
+              "button": "0",
+              "title": "0",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10815-component-once-props-events-slots",
+            "observed": {
+              "button": "0:2",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-private-default",
+            "observed": {
+              "text": "1",
+              "publicMsg": null,
+              "exposed": {}
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-explicit-expose",
+            "observed": {
+              "text": "1",
+              "publicMsg": 1,
+              "exposed": {
+                "msg": 1
+              }
+            },
+            "passed": true
+          }
+        ],
+        "originalSourceToPortedEqual": true,
+        "frozenOriginalPublic600Equal": true,
+        "metadataValueAdapter": false
+      },
+      {
+        "backend": "wasm",
+        "version": "0.600.0",
+        "vue": "3.6.0-rc.13",
+        "completeRows": [
+          {
+            "id": "10875-native-once-click",
+            "observed": {
+              "handler": "function",
+              "button": "0",
+              "title": "0",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10815-component-once-props-events-slots",
+            "observed": {
+              "button": "0:2",
+              "output": "2"
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-private-default",
+            "observed": {
+              "text": "1",
+              "publicMsg": null,
+              "exposed": {}
+            },
+            "passed": true
+          },
+          {
+            "id": "10891-explicit-expose",
+            "observed": {
+              "text": "1",
+              "publicMsg": 1,
+              "exposed": {
+                "msg": 1
+              }
+            },
+            "passed": true
+          }
+        ],
+        "originalSourceToPortedEqual": true,
+        "frozenOriginalPublic600Equal": true,
+        "metadataValueAdapter": false
+      }
+    ],
+    "freshPublicAfterAcceptanceCredit": false
+  },
+  "history": [
+    {
+      "previousRuntimeBlob": "37cccf0d82f9063aed9ea3f8848f4474bcc45b3e",
+      "previousRuntimeCustodyBlob": "9abd9819abd6299972cacf3dfedda1e61da4218d",
+      "reason": "Zero-warning CI: compile generated render factories with node:vm compileFunction instead of the Function constructor; function parameters and generated code bytes are unchanged."
+    }
+  ],
+  "lintTransition": {
+    "oldHead": "022e7c2e6416ec768dbd760d8afd047008fb2ed4",
+    "oldJob": 122266971684,
+    "noImpliedEvalSitesReplaced": 4,
+    "unboundFunctionTypesCorrected": 3,
+    "strictTypeScriptFiles": 4,
+    "formatterFiles": 3,
+    "contributionErasedJavaScriptIdentical": true,
+    "expectedDataChanged": false,
+    "eventBeforeProof": {
+      "compileFunctionEventParity": true,
+      "fullNativeCompileAndVNodeResultsEqual": true,
+      "version": "0.599.0",
+      "templates": 10,
+      "observations": 20,
+      "failed": [
+        "original-native-if",
+        "original-native-for-keyed",
+        "native-if-explicit-key",
+        "native-if-else",
+        "native-for-unkeyed"
+      ],
+      "wholeResultSha256": "cfdbd91edc38ccce703531651de6d26928cbbb23f46612a0e4f3570ca118559c",
+      "referenceSha256": "c8752cefa3ebd5ccfdbe9477804fe8fc4bc03060507efdef4bb7961f8df97437",
+      "inputSha256": "d614ba281249549cbc92c061defd21a9aeee0b724aa644b16e7df35b7a205cce",
+      "freshPublicAfterAcceptanceCredit": false
+    }
+  }
+}

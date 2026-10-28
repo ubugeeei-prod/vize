@@ -1,0 +1,59 @@
+name: Compiler options snapshot
+on:
+  pull_request:
+    paths:
+      - "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/**"
+      - "crates/vize_canon/src/batch/virtual_project/tsconfig_paths/**"
+      - "crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs"
+      - "crates/vize_canon/src/batch/virtual_project.rs"
+      - "crates/vize_canon/src/batch.rs"
+      - "crates/vize_canon/src/lib.rs"
+      - "crates/vize_canon/tests/compiler_options_snapshot_io.rs"
+      - "tools/support/compat/compiler-options-snapshot-proof.ts"
+      - ".github/workflows/compiler-options-snapshot.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: compiler-options-snapshot-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  functional:
+    name: Observed options and unchanged chain controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+      QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Fetch immutable parent source
+        run: git fetch --no-tags --depth=1 origin 9dfc33388e704e321fca1cc2a4feffa818117bf8
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "26.6.0"
+          package-manager-cache: false
+      - name: Execute old and candidate functional programs
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/compiler-options-target
+          COMPILER_OPTIONS_PROOF_OUT: ${{ runner.temp }}/compiler-options-proof
+        run: node tools/support/compat/compiler-options-snapshot-proof.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: compiler-options-snapshot-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/compiler-options-proof
+          if-no-files-found: error
+          retention-days: 14

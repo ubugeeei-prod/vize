@@ -191,9 +191,8 @@ const theme = inject('theme')"#,
 }
 
 #[test]
-fn test_defaulted_inject_without_ancestor_provider_is_warning() {
+fn test_defaulted_inject_without_ancestor_provider_has_no_missing_finding() {
     use crate::diagnostics::CrossFileDiagnosticKind;
-    use crate::diagnostics::DiagnosticSeverity;
 
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
@@ -208,16 +207,16 @@ const theme = inject('theme', 'light')"#,
     );
 
     let result = analyzer.analyze();
-    let diagnostic = result
+    let missing_count = result
         .diagnostics
         .iter()
-        .find(|diagnostic| {
+        .filter(|diagnostic| {
             matches!(
                 &diagnostic.kind,
                 CrossFileDiagnosticKind::UnmatchedInject { key } if key == "theme"
             )
         })
-        .expect("defaulted inject should still be reported");
+        .count();
 
-    assert_eq!(diagnostic.severity, DiagnosticSeverity::Warning);
+    assert_eq!(missing_count, 0);
 }

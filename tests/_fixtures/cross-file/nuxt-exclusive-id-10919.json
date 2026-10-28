@@ -1,0 +1,208 @@
+{
+  "schema": "vize.cross-file.nuxt-exclusive-id.before.v1",
+  "issue": {
+    "number": 10919,
+    "url": "https://github.com/ubugeeei-prod/vize/issues/10919",
+    "author": {
+      "login": "ubugeeei",
+      "id": 71201308
+    },
+    "createdAt": "2026-10-27T08:21:23Z",
+    "updatedAt": "2026-10-27T10:49:23Z",
+    "body": "## Versions\n\n`vize` **0.593.0** (npm), Node 26.6.0, macOS arm64. Nuxt 4 project shape, `ssr: false`.\n\n## Reproduction\n\nRepro directory: `repro/xf-duplicate-id-routes/`.\n\n`nuxt.config.ts`\n\n```ts\nexport default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n```\n\n`src/app.vue`\n\n```vue\n<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n```\n\n`src/layouts/default.vue` / `src/layouts/bare.vue`\n\n```vue\n<template>\n  <div id=\"shell\"><header>menu</header><slot /></div>\n</template>\n```\n\n```vue\n<template>\n  <div id=\"shell\"><slot /></div>\n</template>\n```\n\n`src/pages/login.vue` / `src/pages/signup.vue`\n\n```vue\n<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">login</section>\n</template>\n```\n\n```vue\n<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">signup</section>\n</template>\n```\n\n```\n$ vize lint -f plain --no-config --cross-file \"src/**/*.vue\"\n  src/layouts/bare.vue:2:8 warning cross-file vize:croquis/cf/duplicate-id: Element ID 'shell' is used in 2 different locations across files\n  src/pages/login.vue:6:12 warning cross-file vize:croquis/cf/duplicate-id: Element ID 'auth-page' is used in 2 different locations across files\n```\n\n## Expected\n\nNo findings. Only one layout and one leaf page are rendered at a time, so the same id in two layouts, or in two pages\nthat are not parent and child routes, cannot be in the document together. The render graph that cross-file already\nbuilds for Nuxt (layouts → pages) knows this.\n\n## Notes\n\nThe rule is useful for components that can be on screen together; for files on different routes there is nothing to\nfix, and (see the directive issue) the finding cannot be suppressed on the line.\n"
+  },
+  "publicVersion": "0.601.0",
+  "qualified": false,
+  "role": "research-public-before-and-mutation-matrix",
+  "originalFiles": {
+    "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+    "src/app.vue": "<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n",
+    "src/layouts/default.vue": "<template>\n  <div id=\"shell\"><header>menu</header><slot /></div>\n</template>\n",
+    "src/layouts/bare.vue": "<template>\n  <div id=\"shell\"><slot /></div>\n</template>\n",
+    "src/pages/login.vue": "<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">login</section>\n</template>\n",
+    "src/pages/signup.vue": "<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">signup</section>\n</template>\n"
+  },
+  "cases": [
+    {
+      "id": "original-exclusive-layouts-and-sibling-pages",
+      "role": "known-false-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n",
+        "src/layouts/default.vue": "<template>\n  <div id=\"shell\"><header>menu</header><slot /></div>\n</template>\n",
+        "src/layouts/bare.vue": "<template>\n  <div id=\"shell\"><slot /></div>\n</template>\n",
+        "src/pages/login.vue": "<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">login</section>\n</template>\n",
+        "src/pages/signup.vue": "<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">signup</section>\n</template>\n"
+      },
+      "expectedDuplicateIds": [
+        "shell",
+        "auth-page"
+      ]
+    },
+    {
+      "id": "nested-parent-and-child",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<template><NuxtPage /></template>\n",
+        "src/pages/orders.vue": "<template><section id=\"nested\"><NuxtPage /></section></template>\n",
+        "src/pages/orders/[id].vue": "<template><section id=\"nested\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "nested"
+      ]
+    },
+    {
+      "id": "layout-and-page",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n",
+        "src/layouts/default.vue": "<template><main id=\"layout-page\"><slot /></main></template>\n",
+        "src/pages/index.vue": "<template><section id=\"layout-page\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "layout-page"
+      ]
+    },
+    {
+      "id": "sibling-pages-and-shared-component-mixed-group",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<template><NuxtPage /></template>\n",
+        "src/pages/login.vue": "<script setup lang=\"ts\">\nimport Shared from \"../components/Shared.vue\";\n</script>\n<template><section id=\"mixed\"><Shared /></section></template>\n",
+        "src/pages/signup.vue": "<template><section id=\"mixed\">page</section></template>\n",
+        "src/components/Shared.vue": "<template><span id=\"mixed\">shared</span></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "mixed"
+      ]
+    },
+    {
+      "id": "ordinary-component-siblings",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<script setup lang=\"ts\">\nimport Left from \"./components/Left.vue\";\nimport Right from \"./components/Right.vue\";\n</script>\n<template><main><Left /><Right /></main></template>\n",
+        "src/components/Left.vue": "<template><section id=\"ordinary\">page</section></template>\n",
+        "src/components/Right.vue": "<template><section id=\"ordinary\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "ordinary"
+      ]
+    },
+    {
+      "id": "explicit-layout-imports-alongside-router",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<script setup lang=\"ts\">\nimport DefaultShell from \"./layouts/default.vue\";\nimport BareShell from \"./layouts/bare.vue\";\n</script>\n<template><main><DefaultShell /><BareShell /><NuxtLayout><NuxtPage /></NuxtLayout></main></template>\n",
+        "src/layouts/default.vue": "<template><div id=\"shell\"><slot /></div></template>\n",
+        "src/layouts/bare.vue": "<template><div id=\"shell\"><slot /></div></template>\n",
+        "src/pages/index.vue": "<template><section id=\"unique-page\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "shell"
+      ]
+    },
+    {
+      "id": "multiple-layout-outlets",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<template><main><NuxtLayout name=\"default\" /><NuxtLayout name=\"bare\" /></main></template>\n",
+        "src/layouts/default.vue": "<template><div id=\"shell\"><slot /></div></template>\n",
+        "src/layouts/bare.vue": "<template><div id=\"shell\"><slot /></div></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "shell"
+      ]
+    },
+    {
+      "id": "layout-outlet-in-loop",
+      "role": "co-render-positive",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<template><main><NuxtLayout v-for=\"layout in ['default', 'bare']\" :key=\"layout\" :name=\"layout\" /></main></template>\n",
+        "src/layouts/default.vue": "<template><div id=\"shell\"><slot /></div></template>\n",
+        "src/layouts/bare.vue": "<template><div id=\"shell\"><slot /></div></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "shell"
+      ]
+    },
+    {
+      "id": "dynamic-route-outlets",
+      "role": "unknown-preserve",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({\n  ssr: false,\n  srcDir: \"src\"\n});\n",
+        "src/app.vue": "<script setup lang=\"ts\">\nconst router = useRouter();\nconst routes = [router.resolve(\"/login\"), router.resolve(\"/signup\")];\n</script>\n<template><main><NuxtPage v-for=\"route in routes\" :key=\"route.path\" :route=\"route\" /></main></template>\n",
+        "src/pages/login.vue": "<template><section id=\"auth-page\">page</section></template>\n",
+        "src/pages/signup.vue": "<template><section id=\"auth-page\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "auth-page"
+      ]
+    },
+    {
+      "id": "opaque-config-with-literal-directory-overrides",
+      "role": "unknown-preserve",
+      "files": {
+        "nuxt.config.ts": "import preset from \"./router-preset\";\nexport default defineNuxtConfig({ ...preset, ssr: false, srcDir: \"src\", pages: true, dir: { pages: \"pages\", layouts: \"layouts\" } });\n",
+        "router-preset.ts": "export default { hooks: { \"pages:extend\"(pages) { const login = pages.find(p => p.path === \"/login\"); const signup = pages.find(p => p.path === \"/signup\"); login.children = [signup]; pages.splice(pages.indexOf(signup), 1); } } };\n",
+        "src/app.vue": "<template><NuxtPage /></template>\n",
+        "src/pages/login.vue": "<template><section id=\"auth-page\"><NuxtPage /></section></template>\n",
+        "src/pages/signup.vue": "<template><section id=\"auth-page\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "auth-page"
+      ]
+    },
+    {
+      "id": "custom-routes-config",
+      "role": "unknown-preserve",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({ ssr: false, srcDir: \"src\", hooks: { \"pages:extend\"(pages) { const login = pages.find(p => p.path === \"/login\"); const signup = pages.find(p => p.path === \"/signup\"); login.children = [signup]; pages.splice(pages.indexOf(signup), 1); } } });\n",
+        "src/app.vue": "<template><NuxtPage /></template>\n",
+        "src/pages/login.vue": "<template><section id=\"auth-page\"><NuxtPage /></section></template>\n",
+        "src/pages/signup.vue": "<template><section id=\"auth-page\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "auth-page"
+      ]
+    },
+    {
+      "id": "transition-config",
+      "role": "unknown-preserve",
+      "files": {
+        "nuxt.config.ts": "export default defineNuxtConfig({ ssr: false, srcDir: \"src\", app: { pageTransition: { name: \"page\", mode: \"in-out\" }, layoutTransition: { name: \"layout\", mode: \"in-out\" } } });\n",
+        "src/app.vue": "<template>\n  <NuxtLayout>\n    <NuxtPage />\n  </NuxtLayout>\n</template>\n",
+        "src/layouts/default.vue": "<template>\n  <div id=\"shell\"><header>menu</header><slot /></div>\n</template>\n",
+        "src/layouts/bare.vue": "<template>\n  <div id=\"shell\"><slot /></div>\n</template>\n",
+        "src/pages/login.vue": "<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">login</section>\n</template>\n",
+        "src/pages/signup.vue": "<script setup lang=\"ts\">\ndefinePageMeta({ layout: \"bare\" });\n</script>\n\n<template>\n  <section id=\"auth-page\">signup</section>\n</template>\n"
+      },
+      "expectedDuplicateIds": [
+        "shell",
+        "auth-page"
+      ]
+    },
+    {
+      "id": "non-nuxt-lookalike-directories",
+      "role": "co-render-positive",
+      "files": {
+        "vite.config.ts": "export default {};\n",
+        "src/app.vue": "<script setup lang=\"ts\">\nimport DefaultShell from \"./layouts/default.vue\";\nimport BareShell from \"./layouts/bare.vue\";\nimport Login from \"./pages/login.vue\";\nimport Signup from \"./pages/signup.vue\";\n</script>\n<template><main><DefaultShell /><BareShell /><Login /><Signup /></main></template>\n",
+        "src/layouts/default.vue": "<template><div id=\"shell\"><slot /></div></template>\n",
+        "src/layouts/bare.vue": "<template><div id=\"shell\"><slot /></div></template>\n",
+        "src/pages/login.vue": "<template><section id=\"auth-page\">page</section></template>\n",
+        "src/pages/signup.vue": "<template><section id=\"auth-page\">page</section></template>\n"
+      },
+      "expectedDuplicateIds": [
+        "shell",
+        "auth-page"
+      ]
+    }
+  ]
+}

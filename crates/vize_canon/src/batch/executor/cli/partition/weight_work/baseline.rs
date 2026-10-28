@@ -1,0 +1,233 @@
+//! Frozen b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd partition control.
+//! Only test-only counters and visibility differ from blob a6b8c5aeef0865336ec13d75214c0e6c8232e0ef.
+use super::super::*;
+
+pub(super) fn partition(
+    project: &VirtualProject,
+    servers: usize,
+    allow_leaves: bool,
+) -> ShardPlan<'_> {
+    #[cfg(test)]
+    weight_work::start_partition();
+    let requested_servers = servers;
+    let files = project.virtual_files_sorted();
+    let mut partitioned: Vec<&VirtualFile> = Vec::new();
+    let mut shared: Vec<&Path> = Vec::new();
+    for file in files {
+        // Match the unsharded program's root membership. Registered dependency
+        // sources outside the project root load through their importer-scoped
+        // package shadows; making their canonical mirror an independent root
+        // loses that package's node_modules lookup chain (#9201).
+        if !project.virtual_file_is_program_member(file) {
+            // An imported external augmentation still affects every root. Its
+            // package context cannot be recreated by sharing the canonical
+            // file, so retain the single program for that coupled graph.
+            if project
+                .original_content_for_virtual(&file.virtual_path)
+                .is_some_and(declares_program_wide_types)
+            {
+                return ShardPlan {
+                    shards: Vec::new(),
+                    owners: FxHashMap::default(),
+                };
+            }
+            continue;
+        }
+        // The program-wide check reads the original source: the generated Vue
+        // wrapper carries no `declare global` of its own — the shared
+        // ImportMeta augmentation lives once per program in the hoisted
+        // helpers file (SHARED_HELPERS_FILE), which every shard includes.
+        let program_wide = project
+            .original_content_for_virtual(&file.virtual_path)
+            .is_some_and(declares_program_wide_types);
+        if program_wide || is_ambient_declaration(&file.original_path) {
+            shared.push(file.virtual_path.as_path());
+        } else {
+            partitioned.push(file);
+        }
+    }
+
+    let servers = servers.clamp(1, partitioned.len().max(1));
+    let no_sharding = ShardPlan {
+        shards: Vec::new(),
+        owners: FxHashMap::default(),
+    };
+    // A configured page's generated import can introduce globals to unrelated
+    // components too. Authored-edge partitioning cannot prove that visibility.
+    if servers <= 1 || project.has_typed_router_imports() {
+        return no_sharding;
+    }
+
+    // Union files that load each other or the same unresolved modules. The
+    // graph is a cost model, not a correctness requirement — ownership
+    // filtering already deduplicates diagnostics — but files coupled through
+    // shared sources would otherwise be re-checked by every shard whose
+    // program loads them. Relative imports resolve exactly. A `paths` entry
+    // couples importers of one resolved module, not every file that shares
+    // the prefix (#10360). Workspace packages symlinked into `node_modules`
+    // couple their importers, while bare npm specifiers are dependency cost
+    // every program pays anyway.
+    let index_by_virtual: FxHashMap<&Path, usize> = partitioned
+        .iter()
+        .enumerate()
+        .map(|(index, file)| (file.virtual_path.as_path(), index))
+        .collect();
+    let imports: Vec<_> = partitioned
+        .iter()
+        .map(|file| import_specifiers(&file.content))
+        .collect();
+    let leaves = if allow_leaves {
+        shared_leaves::select(&partitioned, &imports, &index_by_virtual, servers)
+    } else {
+        Default::default()
+    };
+    for (index, file) in partitioned.iter().enumerate() {
+        if leaves.contains(&index) {
+            shared.push(file.virtual_path.as_path());
+        }
+    }
+    let alias_map = alias_modules::AliasMap::from_project(project);
+    let index_by_original: FxHashMap<&Path, usize> = partitioned
+        .iter()
+        .enumerate()
+        .map(|(index, file)| (file.original_path.as_path(), index))
+        .collect();
+    let mut components = UnionFind::new(partitioned.len());
+    let mut coupling_keys: FxHashMap<String, usize> = FxHashMap::default();
+    for (index, (file, specifiers)) in partitioned.iter().zip(&imports).enumerate() {
+        for &specifier in specifiers {
+            if specifier.starts_with("./") || specifier.starts_with("../") {
+                let Some(base) = file.virtual_path.parent() else {
+                    continue;
+                };
+                let target = normalize_join(base, specifier);
+                if let Some(target_index) = resolve_virtual_import(&target, &index_by_virtual) {
+                    // Cheap script leaves stay present in every program but
+                    // do not join otherwise independent source components.
+                    if !leaves.contains(&target_index) {
+                        components.union(index, target_index);
+                    }
+                } else {
+                    // An unresolved local module: couple its importers.
+                    let key = String::from(target.to_string_lossy());
+                    match coupling_keys.get(key.as_str()) {
+                        Some(&first) => components.union(index, first),
+                        None => {
+                            coupling_keys.insert(key, index);
+                        }
+                    }
+                }
+            } else if !alias_map.is_empty()
+                && let Some(edge) =
+                    alias_map.edge(specifier, project, &index_by_virtual, &index_by_original)
+            {
+                match edge {
+                    alias_modules::AliasEdge::File(target_index) => {
+                        if !leaves.contains(&target_index) {
+                            components.union(index, target_index);
+                        }
+                    }
+                    alias_modules::AliasEdge::Module(key) => {
+                        match coupling_keys.get(key.as_str()) {
+                            Some(&first) => components.union(index, first),
+                            None => {
+                                coupling_keys.insert(key, index);
+                            }
+                        }
+                    }
+                }
+            } else if let Some(package) =
+                project.workspace_package_route_identity(&file.original_path, specifier)
+            {
+                let key = cstr!("workspace:{}", package.display());
+                match coupling_keys.get(key.as_str()) {
+                    Some(&first) => components.union(index, first),
+                    None => {
+                        coupling_keys.insert(key, index);
+                    }
+                }
+            }
+        }
+    }
+
+    // Bin-pack components (heaviest first) into the requested shard count and
+    // only keep the plan when it buys real parallelism: a dominant component
+    // means each extra program would mostly re-check the same files. Weights
+    // are generated-content bytes, a usable proxy for parse+check cost.
+    let mut component_files: FxHashMap<usize, Vec<usize>> = FxHashMap::default();
+    for index in (0..partitioned.len()).filter(|index| !leaves.contains(index)) {
+        component_files
+            .entry(components.find(index))
+            .or_default()
+            .push(index);
+    }
+    let weight = |file_indices: &[usize]| -> usize {
+        #[cfg(test)]
+        weight_work::record_call();
+        file_indices
+            .iter()
+            .filter_map(|&index| {
+                #[cfg(test)]
+                weight_work::record_member(index);
+                partitioned.get(index)
+            })
+            .map(|file| file.content.len())
+            .sum()
+    };
+    let mut component_groups: Vec<Vec<usize>> = component_files.into_values().collect();
+    if component_groups.len() < 2 {
+        return no_sharding;
+    }
+    let total_weight: usize = component_groups.iter().map(|group| weight(group)).sum();
+    component_groups.sort_by(|left, right| {
+        weight(right)
+            .cmp(&weight(left))
+            .then_with(|| left.first().cmp(&right.first()))
+    });
+
+    let servers = servers.min(component_groups.len());
+    let mut bins: Vec<(usize, Vec<usize>)> = vec![(0, Vec::new()); servers];
+    for group in component_groups {
+        let Some(bin) = bins.iter_mut().min_by_key(|(bin_weight, _)| *bin_weight) else {
+            return no_sharding;
+        };
+        bin.0 += weight(&group);
+        bin.1.extend(group);
+    }
+    let largest = bins.iter().map(|(bin_weight, _)| *bin_weight).max();
+    // Wall time tracks the heaviest shard; below ~25% savings the duplicated
+    // per-program work on shared and ambient sources outweighs the win.
+    if largest.unwrap_or(0) * 4 >= total_weight * 3 {
+        return no_sharding;
+    }
+
+    // Only a useful leaf plan pays the additional semantic visibility screen.
+    // Unchanged transitive/barrel graphs stop above without parsing scripts.
+    // Uncertain plans replay the original cost model exactly, including its
+    // independent-component parallelism and diagnostic ownership.
+    if !leaves.is_empty()
+        && (!shared_leaves::has_explicit_modules(&partitioned)
+            || !dependency_visibility::permits_sharing(project, &partitioned, &index_by_virtual))
+    {
+        return partition(project, requested_servers, false);
+    }
+
+    let mut shards: Vec<Vec<&Path>> = Vec::with_capacity(bins.len());
+    let mut owners = FxHashMap::default();
+    for (shard_index, (_, file_indices)) in bins.into_iter().enumerate() {
+        let mut include = shared.clone();
+        for file in file_indices
+            .into_iter()
+            .filter_map(|file_index| partitioned.get(file_index))
+        {
+            include.push(file.virtual_path.as_path());
+            owners.insert(file.original_path.clone(), shard_index);
+        }
+        shards.push(include);
+    }
+
+    shared_leaves::record_selection(&partitioned, &leaves, shards.len());
+    vize_carton::profiler::global_profiler()
+        .record_counter("canon.corsa.cli.shards", shards.len() as u64);
+    ShardPlan { shards, owners }
+}

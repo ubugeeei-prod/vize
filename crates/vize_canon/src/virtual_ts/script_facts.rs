@@ -58,8 +58,12 @@ impl ScriptBindings<'_> {
 }
 
 pub(super) fn with_bindings<T>(summary: &Croquis, body: impl FnOnce(ScriptBindings<'_>) -> T) -> T {
+    vize_l0::micro_count!("canon.script_facts.with_bindings.calls", 1);
     let mut facts = CroquisFacts::new(summary);
-    let view = facts.prepare::<CanonBindings>();
+    let view = vize_l0::micro_span!(
+        "canon.script_facts.prepare_bindings",
+        facts.prepare::<CanonBindings>()
+    );
     body(ScriptBindings(view.get::<Bindings>().ok()))
 }
 

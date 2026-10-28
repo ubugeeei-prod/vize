@@ -81,6 +81,8 @@ pub struct ScriptParseResult {
     /// Setup declarations with no resolved script read, when demanded.
     pub unused_bindings: Vec<CompactString>,
     pub macros: MacroTracker,
+    /// Render certainty folded by the existing statement visit; not serialized.
+    pub(crate) nuxt_static_render_script: Option<bool>,
     pub reactivity: ReactivityTracker,
     pub race_conditions: RaceConditionTracker,
     /// Local `interface` / `type` definitions registered by name, so
@@ -286,6 +288,9 @@ impl ScriptParseResult {
         summary.bindings = self.bindings;
         summary.unused_bindings = self.unused_bindings;
         summary.macros = self.macros;
+        let incoming = self.nuxt_static_render_script == Some(true);
+        summary.nuxt_static_render_script =
+            Some(incoming && summary.nuxt_static_render_script != Some(false));
         summary.reactivity = self.reactivity;
         summary.race_conditions = self.race_conditions;
         summary.types = self.types;

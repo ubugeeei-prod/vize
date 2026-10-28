@@ -6,8 +6,8 @@ use vize_croquis::Croquis;
 use super::global_components::GlobalComponentPlan;
 use crate::virtual_ts::{
     component_reference::{
-        component_binding_reference, component_reference_alias, contains_compact_name,
-        has_type_only_component_candidate,
+        component_binding_reference_with_bindings, component_reference_alias,
+        contains_compact_name, has_type_only_component_candidate,
     },
     helpers::to_safe_identifier,
     types::VirtualTsOptions,
@@ -20,52 +20,66 @@ pub(super) fn emit_unresolved_components(
     global_components: &GlobalComponentPlan,
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
 ) {
-    if vize_croquis::facts::used_components_empty(summary) {
+    let components = vize_croquis::facts::used_component_name_list(summary);
+    if components.is_empty() {
         return;
     }
-
-    let external_template_bindings: FxHashSet<&str> = options
-        .external_template_bindings
+    if components
         .iter()
-        .map(|name| name.as_str())
-        .collect();
-    let mut has_unresolved = false;
-    for component in vize_croquis::facts::used_component_name_list(summary) {
-        let name = component.as_str();
-        // A dynamic `:is` alias is declared by the template scope itself.
-        if vize_croquis::drawer::is_dynamic_component_alias(name)
-            || (crate::virtual_ts::script_facts::contains_binding(summary, name)
-                && !contains_compact_name(syntactic_type_only_imported_names, name))
-            || component_name_matches_external_template_binding(name, &external_template_bindings)
-            || global_components.keeps_unresolved_binding(name)
-        {
-            continue;
-        }
-        if !has_unresolved {
-            ts.push_str("\n  // Auto-imported/built-in components (not in script bindings)\n");
-            has_unresolved = true;
-        }
-        let safe = if has_type_only_component_candidate(syntactic_type_only_imported_names, name) {
-            component_reference_alias(name)
-        } else {
-            to_safe_identifier(name)
-        };
-        append!(*ts, "  const {safe}: any = undefined as any;\n");
+        .all(|component| vize_croquis::drawer::is_dynamic_component_alias(component.as_str()))
+    {
+        ts.push_str("\n  // Mark used components as referenced\n");
+        return;
     }
+    crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+        let external_template_bindings: FxHashSet<&str> = options
+            .external_template_bindings
+            .iter()
+            .map(|name| name.as_str())
+            .collect();
+        let mut has_unresolved = false;
+        for component in &components {
+            let name = component.as_str();
+            // A dynamic `:is` alias is declared by the template scope itself.
+            if vize_croquis::drawer::is_dynamic_component_alias(name)
+                || (bindings.contains_binding(name)
+                    && !contains_compact_name(syntactic_type_only_imported_names, name))
+                || component_name_matches_external_template_binding(
+                    name,
+                    &external_template_bindings,
+                )
+                || global_components.keeps_unresolved_binding(name)
+            {
+                continue;
+            }
+            if !has_unresolved {
+                ts.push_str("\n  // Auto-imported/built-in components (not in script bindings)\n");
+                has_unresolved = true;
+            }
+            let safe =
+                if has_type_only_component_candidate(syntactic_type_only_imported_names, name) {
+                    component_reference_alias(name)
+                } else {
+                    to_safe_identifier(name)
+                };
+            append!(*ts, "  const {safe}: any = undefined as any;\n");
+        }
 
-    ts.push_str("\n  // Mark used components as referenced\n");
-    for component in vize_croquis::facts::used_component_name_list(summary) {
-        if vize_croquis::drawer::is_dynamic_component_alias(component.as_str()) {
-            continue;
+        ts.push_str("\n  // Mark used components as referenced\n");
+        for component in &components {
+            if vize_croquis::drawer::is_dynamic_component_alias(component.as_str()) {
+                continue;
+            }
+            let safe = component_binding_reference_with_bindings(
+                summary,
+                bindings,
+                options,
+                syntactic_type_only_imported_names,
+                component.as_str(),
+            );
+            append!(*ts, "  void {safe};\n");
         }
-        let safe = component_binding_reference(
-            summary,
-            options,
-            syntactic_type_only_imported_names,
-            component.as_str(),
-        );
-        append!(*ts, "  void {safe};\n");
-    }
+    });
 }
 
 fn component_name_matches_external_template_binding(

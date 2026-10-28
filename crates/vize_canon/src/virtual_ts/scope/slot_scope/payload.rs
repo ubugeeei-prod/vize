@@ -3,7 +3,9 @@ use vize_croquis::{Croquis, Scope, ScopeData, analysis::ComponentUsage};
 
 /// The resolver lives at module scope so the same host type is used for
 /// named and dynamic slot scopes, including functional components.
-const SLOT_RESOLVER_HELPERS: &str = r#"type __VizeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : any;
+/// An unknown host must retain a regular payload fallback: inventing `any`
+/// here would select the silent error type and hide authored diagnostics.
+const SLOT_RESOLVER_HELPERS: &str = r#"type __VizeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
 type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
 type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : __VizeNativeSlotsFactory<C>;

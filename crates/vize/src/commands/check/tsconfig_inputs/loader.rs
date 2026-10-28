@@ -98,7 +98,7 @@ fn load_tsconfig_inputs_inner(
             merged.has_includes = true;
             merged.includes = includes
                 .into_iter()
-                .filter_map(|value| GlobSpec::new(dir, &value))
+                .filter_map(|value| GlobSpec::include(dir, &value))
                 .collect();
         }
 
@@ -106,7 +106,7 @@ fn load_tsconfig_inputs_inner(
             merged.has_excludes = true;
             merged.excludes = excludes
                 .into_iter()
-                .filter_map(|value| GlobSpec::new(dir, &value))
+                .filter_map(|value| GlobSpec::exclude(dir, &value))
                 .collect();
         }
 

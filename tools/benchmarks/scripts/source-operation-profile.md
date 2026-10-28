@@ -55,3 +55,17 @@ Hardware `perf stat`, software `perf record` and Callgrind instruction counts
 are separate measurements. A PMU capability failure is unavailable evidence,
 never a zero instruction count. The existing instruction-count workflow keeps
 Callgrind `Ir` as a simulation metric.
+
+Selected Canon editor identity constructors use `micro_default_hasher!`: normal
+builds expand directly to `DefaultHasher::new()`. Instrumented builds count
+builders, actual byte-write operations/bytes (including separators), and finish
+queries at each original callsite. This adapter is deliberately restricted to
+Rust 1.99's known DefaultHasher behavior; exact digest tests cover string domain
+separators, primitives, tuples, paths, empty writes and repeated finish queries.
+It is not a replacement for FxHashMap or arbitrary custom hashers.
+
+Croquis counts setup/plain parse requests and setup semantic-analysis requests
+separately from actual OXC attempts. Initial and recovery parses have separate
+source spans and byte totals: one recovery request may issue multiple parses.
+The native standalone control executes real valid setup/plain inputs and an
+incomplete-member repair, checking exact request/attempt totals and input bytes.

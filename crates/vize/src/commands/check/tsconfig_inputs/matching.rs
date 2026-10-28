@@ -2,8 +2,6 @@
 
 use std::path::Path;
 
-use glob::MatchOptions;
-
 use super::super::patterns::{self as check_patterns, CheckFileOptions};
 use super::spec::GlobSpec;
 use super::{NODE_MODULES_DIR, TARGET_DIR, VIZE_CACHE_DIR};
@@ -36,7 +34,7 @@ pub(super) fn matches_tsconfig_patterns(
     includes: &[GlobSpec],
     excludes: &[GlobSpec],
 ) -> bool {
-    if !includes.is_empty() && !includes.iter().any(|glob| glob.matches_include(path)) {
+    if !includes.is_empty() && !includes.iter().any(|glob| glob.matches(path)) {
         return false;
     }
 
@@ -136,12 +134,4 @@ pub(super) fn is_supported_check_file_with_options(
             include_jsx: options.include_jsx,
         },
     )
-}
-
-pub(super) fn glob_match_options() -> MatchOptions {
-    MatchOptions {
-        case_sensitive: !cfg!(windows),
-        require_literal_separator: true,
-        require_literal_leading_dot: false,
-    }
 }

@@ -304,7 +304,20 @@ impl DocumentStore {
 
     /// Get all document URIs.
     pub fn uris(&self) -> Vec<Url> {
-        self.documents.iter().map(|r| r.key().clone()).collect()
+        vize_l0::micro_count!("lsp.document_store.uris.calls", 1);
+        let snapshots: Vec<Url> = vize_l0::micro_span!(
+            "lsp.document_store.uris.clone_snapshot",
+            self.documents.iter().map(|r| r.key().clone()).collect()
+        );
+        vize_l0::micro_count!("lsp.document_store.uris.returned_items", snapshots.len());
+        vize_l0::micro_count!(
+            "lsp.document_store.uris.returned_uri_utf8_bytes",
+            snapshots
+                .iter()
+                .map(|uri| uri.as_str().len() as u64)
+                .sum::<u64>()
+        );
+        snapshots
     }
 
     /// Owned snapshots of open Vue documents, holding no shard guard on return.
@@ -314,17 +327,39 @@ impl DocumentStore {
     /// `.await`, but it can still stall other LSP handlers that need the same
     /// shard's write lock and then make later readers wait behind that writer.
     pub fn vue_texts(&self) -> Vec<(Url, String)> {
-        let mut snapshots = self
-            .documents
-            .iter()
-            .filter_map(|document| {
-                let uri = document.key();
-                uri.path()
-                    .ends_with(".vue")
-                    .then(|| (uri.clone(), document.value().text()))
-            })
-            .collect::<Vec<_>>();
-        snapshots.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
+        vize_l0::micro_count!("lsp.document_store.vue_texts.calls", 1);
+        let snapshots = vize_l0::micro_span!("lsp.document_store.vue_texts.clone_snapshot", {
+            let mut snapshots = self
+                .documents
+                .iter()
+                .filter_map(|document| {
+                    let uri = document.key();
+                    uri.path()
+                        .ends_with(".vue")
+                        .then(|| (uri.clone(), document.value().text()))
+                })
+                .collect::<Vec<_>>();
+            snapshots.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
+            snapshots
+        });
+        vize_l0::micro_count!(
+            "lsp.document_store.vue_texts.returned_items",
+            snapshots.len()
+        );
+        vize_l0::micro_count!(
+            "lsp.document_store.vue_texts.returned_uri_utf8_bytes",
+            snapshots
+                .iter()
+                .map(|(uri, _)| uri.as_str().len() as u64)
+                .sum::<u64>()
+        );
+        vize_l0::micro_count!(
+            "lsp.document_store.vue_texts.returned_text_utf8_bytes",
+            snapshots
+                .iter()
+                .map(|(_, text)| text.len() as u64)
+                .sum::<u64>()
+        );
         snapshots
     }
 

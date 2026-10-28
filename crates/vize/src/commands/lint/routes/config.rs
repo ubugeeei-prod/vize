@@ -10,6 +10,7 @@ use super::super::entry_rules::ResolvedLinterRuleGroups;
 struct Policy<'a> {
     rules: &'a FxHashMap<String, LintRuleSeverity>,
     category: Option<LintRuleSeverity>,
+    report_unused_disable_directives: bool,
 }
 
 pub(in crate::commands::lint) struct CrossFileRuleSettings<'a> {
@@ -26,6 +27,7 @@ impl<'a> CrossFileRuleSettings<'a> {
     pub(in crate::commands::lint) fn new(
         files: &'a [PathBuf],
         resolved: &'a ResolvedLinterRuleGroups,
+        report_unused_disable_directives: bool,
     ) -> Result<Self, String> {
         if files.len() != resolved.file_config_indices.len() {
             return Err("Resolved lint configuration does not cover every input file".into());
@@ -35,6 +37,8 @@ impl<'a> CrossFileRuleSettings<'a> {
             .iter()
             .map(|config| Policy {
                 rules: &config.rules,
+                report_unused_disable_directives: report_unused_disable_directives
+                    || config.report_unused_disable_directives(),
                 category: if config
                     .disabled_categories()
                     .iter()
@@ -98,4 +102,13 @@ pub(in crate::commands::lint) fn configure(
             Some(diagnostic)
         }
     }
+}
+
+pub(in crate::commands::lint) fn report_unused(
+    settings: Option<&CrossFileRuleSettings<'_>>,
+    path: &Path,
+) -> bool {
+    settings
+        .and_then(|settings| settings.files.get(path))
+        .is_some_and(|policy| policy.report_unused_disable_directives)
 }

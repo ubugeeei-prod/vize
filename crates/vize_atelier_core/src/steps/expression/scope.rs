@@ -1,10 +1,21 @@
-//! Names available throughout a generated template expression. Event locals
-//! belong to an introduced handler scope, not this unconditional allowlist.
+//! Compiler globals for authored template expressions.
+//!
+//! Semantic host scopes are broader than Vue's template allow-list. `require`
+//! and `arguments` are the additional identifier-walk exceptions Vue preserves;
+//! generated render locals and helpers must survive the later codegen walk.
 
-/// Whether a name needs no component binding outside any lexical scope.
-///
-/// Croquis also lists conditional event locals for consumers that model those
-/// scopes themselves. Emitters must bind them only where the callback exists.
+/// Whether the compiler leaves a reference unprefixed without a local binding.
 pub fn is_template_global(name: &str) -> bool {
-    vize_croquis::builtins::is_global_allowed(name) && !vize_croquis::builtins::is_event_local(name)
+    vize_l0::template_globals::is_vue_template_global(name)
+        || matches!(
+            name,
+            "require"
+                | "arguments"
+                | "import"
+                | "_ctx"
+                | "_cache"
+                | "_push"
+                | "_parent"
+                | "_toNumber"
+        )
 }

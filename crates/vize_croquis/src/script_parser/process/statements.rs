@@ -29,6 +29,7 @@ use super::macros;
 
 /// Process a single statement
 pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, source: &str) {
+    super::nuxt_render::observe(result, stmt);
     super::template_components::collect(result, stmt);
     super::super::extract::invalidate_default_objects(result, stmt);
     match stmt {

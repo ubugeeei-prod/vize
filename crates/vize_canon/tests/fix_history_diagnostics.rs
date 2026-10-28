@@ -877,6 +877,28 @@ fn global_scope_build_info_keeps_complete_diagnostics() {
 }
 
 #[test]
+fn literal_bracket_pages_keep_their_project_options() {
+    check_pack(
+        "tsconfig-literal-brackets-10819",
+        "literal_bracket_pages_keep_their_project_options",
+        "26b8fa31c7933d800c8bf4c2f37057864caaae9d",
+        Some(10819),
+        &["literal-page-include", "bracket-directory-exclude"],
+    );
+}
+
+#[test]
+fn relative_sibling_imports_preserve_complete_package_diagnostics() {
+    check_pack(
+        "relative-sibling-storage-10934",
+        "relative_sibling_imports_preserve_complete_package_diagnostics",
+        "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+        Some(10934),
+        &["typed-sibling-error", "repaired-sibling-import"],
+    );
+}
+
+#[test]
 fn missing_exported_package_target_preserves_ts2307() {
     check_pack(
         "package-target-deletion-refresh",
@@ -953,6 +975,17 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
         "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
         Some(10494),
         &["tsx-invalid-and-valid-props", "jsx-invalid-and-valid-props"],
+    );
+}
+
+#[test]
+fn undeclared_instance_globals_report_at_every_read() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_report_at_every_read",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10617),
+        &["undeclared-dollar-globals"],
     );
 }
 
@@ -1156,6 +1189,21 @@ fn empty_v_slot_expressions_keep_slot_scopes_checked() {
 }
 
 #[test]
+fn template_ref_signatures_preserve_readonly_unknown_and_repairs() {
+    check_pack(
+        "template-ref-signatures-10948",
+        "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+        "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+        Some(10948),
+        &[
+            "valid-imported-signatures",
+            "invalid-original-operations",
+            "repaired-imported-signatures",
+        ],
+    );
+}
+
+#[test]
 fn custom_properties_resolve_on_the_template_instance() {
     if native_fixture_runtime_disabled() {
         return;
@@ -1170,6 +1218,75 @@ fn custom_properties_resolve_on_the_template_instance() {
             "script-setup-wrong-use-and-unknown-name",
             "options-api-slot-loop-source",
             "options-api-slot-loop-unknown-name",
+        ],
+    );
+}
+
+#[test]
+fn dependency_probe_histories_preserve_complete_diagnostics() {
+    check_pack(
+        "dependency-probe-history-10936",
+        "dependency_probe_histories_preserve_complete_diagnostics",
+        "1266cd3a014654bbdcf3378500b93447411b26d9",
+        Some(10936),
+        &[
+            "valid-precedence-and-alias",
+            "invalid-authored-model",
+            "repaired-authored-model",
+        ],
+    );
+}
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
+        ],
+    );
+}
+
+#[test]
+fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-tag-aliases-11020",
+        "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
+        "d653e04143051768a96ba51a35fe64c055caf0c5",
+        Some(11020),
+        &["valid", "invalid", "repaired"],
+    );
+}
+
+#[test]
+fn unknown_component_slots_preserve_authored_type_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "unknown-component-slot-payload-11027",
+        "unknown_component_slots_preserve_authored_type_diagnostics",
+        "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+        Some(11027),
+        &[
+            "valid",
+            "unknown",
+            "unknown-union",
+            "repaired",
+            "unresolved-tag",
+            "slot-any",
+            "slot-unknown",
+            "slot-never",
+            "slot-string",
+            "unicode-crlf-unknown",
         ],
     );
 }

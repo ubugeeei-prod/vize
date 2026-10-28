@@ -1,0 +1,24 @@
+import {createRequire} from 'node:module';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {join,resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+const [workspace,fixtures,out,mode='assert']=process.argv.slice(2),require=createRequire(join(resolve(workspace),'package.json'));
+const native=require('@vizejs/native'),{babelParse}=require('vue/compiler-sfc');
+const rows=[];
+for(const packName of ['empty-v-slot-expression','options-api-reserved-component-reference']){
+ const packRoot=join(fixtures,packName),pack=JSON.parse(readFileSync(join(packRoot,'cases.json'),'utf8'));
+ for(const entry of pack.cases){
+  const dir=join(workspace,'contribution-checks',packName,entry.id);mkdirSync(dir,{recursive:true});
+  for(const input of entry.inputs){const to=join(dir,input.file);mkdirSync(join(to,'..'),{recursive:true});writeFileSync(to,readFileSync(join(packRoot,input.source)))}
+  const authored=entry.inputs.find(x=>x.file.endsWith('.vue')&&!x.file.endsWith('/Box.vue')&&!x.file.endsWith('/Page.vue')),source=readFileSync(join(packRoot,authored.source),'utf8');
+  const projection=JSON.parse(native.generateVueLanguageCode(source,{filename:join(dir,authored.file),optionsApi:pack.checkerOptions?.optionsApi??false}));
+  let syntax=null;try{babelParse(projection.text,{sourceType:'module',plugins:['typescript']})}catch(e){syntax=e.message}
+  const result=spawnSync(process.execPath,[join(workspace,'node_modules/vize/bin/vize'),'check','--no-config','--format','json','--tsconfig','tsconfig.json'],{cwd:dir,encoding:'utf8',timeout:90000});
+  let report;try{report=JSON.parse(result.stdout)}catch{report={stdout:result.stdout,stderr:result.stderr}}
+  const actual=report.diagnostics??report.files?.flatMap(x=>x.diagnostics??[])??null;
+  rows.push({pack:packName,id:entry.id,syntax,exit:result.status,expected:entry.diagnostics,report,actual});
+ }
+}
+const result={native:require('@vizejs/native/package.json').version,rows};writeFileSync(out,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(rows.map(x=>({id:x.id,syntax:x.syntax,exit:x.exit,actual:x.actual,reportFields:Object.keys(x.report)}))));
+if(mode==='assert'){assert.ok(rows.every(x=>!x.syntax));for(const x of rows){assert.equal(x.exit,x.expected.length?1:0,x.id);assert.ok(x.actual,'structured production diagnostics required');assert.equal(x.actual.length,x.expected.length,x.id);}}

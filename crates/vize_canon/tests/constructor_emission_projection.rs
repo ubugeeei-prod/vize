@@ -46,6 +46,29 @@ const JAVASCRIPT: &str = "<script setup>const label = '日本 \\\"quoted\\\"'</s
 
 type Checker = fn(&str, &SfcTypeCheckOptions) -> SfcTypeCheckResult;
 
+// The identical observer compiles against the pre-feature base. Existing
+// attrs-only callers retain their old packet; new sharing is explicit on head.
+trait SharedTypeCompatibility {
+    fn with_external_component_type_helpers(self, enabled: bool) -> Self;
+}
+
+impl SharedTypeCompatibility for ContentMapperTransformOptions {
+    fn with_external_component_type_helpers(self, _enabled: bool) -> Self {
+        self
+    }
+}
+
+fn helper_options(
+    options: ContentMapperTransformOptions,
+    share_types: bool,
+) -> ContentMapperTransformOptions {
+    if share_types {
+        options.with_external_component_type_helpers(true)
+    } else {
+        SharedTypeCompatibility::with_external_component_type_helpers(options, false)
+    }
+}
+
 fn checker_packet(source: &str, check: Checker, expects_projection: bool) -> Value {
     let options = SfcTypeCheckOptions::new("src/Constructor.vue").with_virtual_ts();
     let result = check(source, &options);
@@ -79,6 +102,7 @@ fn checker_packet(source: &str, check: Checker, expects_projection: bool) -> Val
 
 #[test]
 fn complete_constructor_projection_packets() {
+    let share_types = std::env::var_os("VIZE_CONSTRUCTOR_SHARE_TYPES").is_some();
     let invalid = GENERIC.replace("const label =", "const =");
     let repaired = GENERIC.replace("const label =", "const label = /* repaired */");
     let tsx = GENERIC.replace("lang=\"ts\"", "lang=\"tsx\"").replace(
@@ -105,11 +129,14 @@ fn complete_constructor_projection_packets() {
                 rows.push(json!({"case": name, "newline": newline, "source": source, "target": target, "packet": checker_packet(&source, check, name != "invalid")}));
             }
             for bits in 0..16u8 {
-                let options = ContentMapperTransformOptions::default()
-                    .with_options_api(bits & 1 != 0)
-                    .with_preserve_unused_diagnostics(bits & 2 != 0)
-                    .with_check_javascript(bits & 4 != 0)
-                    .with_external_component_attrs_module(bits & 8 != 0);
+                let options = helper_options(
+                    ContentMapperTransformOptions::default()
+                        .with_options_api(bits & 1 != 0)
+                        .with_preserve_unused_diagnostics(bits & 2 != 0)
+                        .with_check_javascript(bits & 4 != 0)
+                        .with_external_component_attrs_module(bits & 8 != 0),
+                    share_types,
+                );
                 let packet = generate_vue_content_mapper_transform_with_options(
                     Path::new("src/Constructor.vue"),
                     &source,

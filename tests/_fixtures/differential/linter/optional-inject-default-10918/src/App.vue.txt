@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import MyDivider from "./components/MyDivider.vue";
+import MyList from "./components/MyList.vue";
+</script>
+
+<template>
+  <MyList>
+    <div role="listitem">a</div>
+    <MyDivider />
+    <div role="listitem">b</div>
+  </MyList>
+  <MyDivider />
+  <MyDivider />
+</template>

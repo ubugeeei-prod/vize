@@ -117,7 +117,7 @@ pub mod telegraph;
 mod visitor;
 mod visitor_scope;
 
-pub use context::LintContext;
+pub use context::{LintContext, ProjectLintDirectives};
 pub use diagnostic::{
     Fix, HelpLevel, HelpRenderTarget, LintDiagnostic, LintSummary, Severity, TextEdit, render_help,
 };
