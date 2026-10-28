@@ -8,6 +8,9 @@ mod attribution;
 mod cache;
 mod core;
 mod counters;
+#[cfg(feature = "micro-profiling")]
+pub mod fx_hasher;
+mod fx_hasher_macros;
 mod metrics;
 #[cfg(feature = "micro-profiling")]
 pub mod micro;

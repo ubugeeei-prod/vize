@@ -98,7 +98,7 @@ pub use smallvec::{SmallVec, smallvec};
 pub use bitflags::bitflags;
 
 // Re-export rustc-hash for fast hash maps/sets
-pub use rustc_hash::{FxHashMap, FxHashSet};
+pub use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 
 // Re-export phf for compile-time perfect hash functions
 pub use phf::{Map as PhfMap, Set as PhfSet, phf_map, phf_set};
