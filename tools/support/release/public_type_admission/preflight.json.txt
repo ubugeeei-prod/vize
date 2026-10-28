@@ -1,0 +1,39 @@
+{
+  "scope": "Source admission guard update; public consumer not executed",
+  "originalFixturePinsUnchanged": true,
+  "originalSharedHelperPinUnchanged": true,
+  "originalDriverPreflightPreservedByTree": "4bd3f7c6707028ed6055a9087b19ea1c3ed9532b",
+  "strict": {
+    "scope": "RAM-only TS6 tooling compilation; no native checker program",
+    "diagnostics": [],
+    "files": 16,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "physicalWrites": 0
+  },
+  "eligibility": {
+    "scope": "RAM-only capsule eligibility guard; no public consumer execution",
+    "outcomes": [
+      {
+        "version": "0.602.0",
+        "rejectedBeforeSDKAccess": true
+      },
+      {
+        "version": "0.603.0",
+        "rejectedBeforeSDKAccess": true
+      },
+      {
+        "wrongRequiredSourceRejected": true
+      }
+    ],
+    "physicalWrites": 0,
+    "passed": true
+  },
+  "originalRuntimeProofScope": {
+    "cliPackets": 32,
+    "vuePackets": 32,
+    "historicalMapperPackets": 3,
+    "lspResponses": 117,
+    "hovers": 4
+  }
+}
