@@ -46,7 +46,7 @@ pub(super) fn rewrite_vue_component_import_hover(
 pub(crate) fn contains_generated_component_marker(markdown: &str) -> bool {
     markdown.contains("__vizeComponentMarker")
         || markdown.contains("__vizeRawProps")
-        || markdown.contains("$$HogeComponentConstructor")
+        || markdown.contains("$$ComponentConstructor")
         || markdown.contains("__vize_component__")
 }
 

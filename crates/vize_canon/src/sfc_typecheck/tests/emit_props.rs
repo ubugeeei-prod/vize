@@ -21,11 +21,11 @@ defineEmits<{
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("type $$HogeCamelize<S extends string>"),
+        virtual_ts.contains("type $$Camelize<S extends string>"),
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("as $$HogeHandlerKey<K> | `on${Capitalize<K>}`]"),
+        virtual_ts.contains("as $$HandlerKey<K> | `on${Capitalize<K>}`]"),
         "Vue keys kebab events as `onScroll-top`; the camelized key alone rejects it:\n{virtual_ts}"
     );
 }

@@ -60,10 +60,10 @@ fn project_source(name: &str, vue_compiler_options: &str) -> vize_carton::String
 
 fn assert_unknown_checks(content: &str, enabled: bool) {
     let component = content.contains("__vize_global_component_");
-    let props = content.contains("$$HogeComponentGlobalHtmlAttrs");
+    let props = content.contains("$$ComponentGlobalHtmlAttrs");
     let directive = content.contains("__vize_unknown_directive_");
     let open_tail = content.contains(
-        "type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
+        "type $$ComponentCheckTail<C> = $$IsGeneratedComponent<C> extends true ? $$PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
     assert_eq!(component, enabled, "{content}");
     assert_eq!(props, enabled, "{content}");
@@ -108,14 +108,14 @@ fn unknown_checks_follow_vue_compiler_options() {
 fn unknown_props_reuse_the_program_wide_native_attribute_union() {
     let content = project_source("shared-native-attrs", "\"checkUnknownProps\": true");
     assert_eq!(
-        type_declaration(&content, "$$HogeAllowedFallthroughAttrs"),
+        type_declaration(&content, "$$AllowedFallthroughAttrs"),
         Some(
-            "  type $$HogeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$HogeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$HogePublicComponentAttrs | keyof $$HogeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+            "  type $$AllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$FallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$PublicComponentAttrs | keyof $$ComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
         )
     );
-    assert_eq!(type_declaration(&content, "$$HogeComponentAttrCamel"), None);
+    assert_eq!(type_declaration(&content, "$$ComponentAttrCamel"), None);
     assert_eq!(
-        type_declaration(&content, "$$HogeComponentNativeAttrNames"),
+        type_declaration(&content, "$$ComponentNativeAttrNames"),
         None
     );
 }
@@ -176,9 +176,9 @@ mod originals {
         assert_eq!(
             enabled
                 .lines()
-                .find(|line| line.starts_with("  type $$HogeAllowedFallthroughAttrs")),
+                .find(|line| line.starts_with("  type $$AllowedFallthroughAttrs")),
             Some(
-                "  type $$HogeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$HogeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$HogePublicComponentAttrs | keyof $$HogeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+                "  type $$AllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$FallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$PublicComponentAttrs | keyof $$ComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
             )
         );
         let mut off: Value = serde_json::from_str(CONFIG).unwrap();
@@ -188,9 +188,9 @@ mod originals {
         assert_eq!(
             disabled
                 .lines()
-                .find(|line| line.starts_with("  type $$HogeComponentCheckTail")),
+                .find(|line| line.starts_with("  type $$ComponentCheckTail")),
             Some(
-                "  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;"
+                "  type $$ComponentCheckTail<C> = $$IsGeneratedComponent<C> extends true ? $$PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;"
             )
         );
         let absent = source(None, PARENT);
@@ -198,9 +198,9 @@ mod originals {
         assert_eq!(
             absent
                 .lines()
-                .find(|line| line.starts_with("  type $$HogeAllowedFallthroughAttrs")),
+                .find(|line| line.starts_with("  type $$AllowedFallthroughAttrs")),
             Some(
-                "  type $$HogeAllowedFallthroughAttrs<C> = $$HogeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
+                "  type $$AllowedFallthroughAttrs<C> = $$HasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
             )
         );
     }
@@ -211,9 +211,9 @@ mod originals {
         assert_eq!(
             enabled
                 .lines()
-                .find(|line| line.starts_with("  type $$HogeAllowedFallthroughAttrs")),
+                .find(|line| line.starts_with("  type $$AllowedFallthroughAttrs")),
             Some(
-                "  type $$HogeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$HogeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$HogePublicComponentAttrs | keyof $$HogeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+                "  type $$AllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof $$FallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $$PublicComponentAttrs | keyof $$ComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
             )
         );
     }
@@ -226,9 +226,9 @@ mod originals {
         assert_eq!(
             content
                 .lines()
-                .find(|line| line.starts_with("  type $$HogeAllowedFallthroughAttrs")),
+                .find(|line| line.starts_with("  type $$AllowedFallthroughAttrs")),
             Some(
-                "  type $$HogeAllowedFallthroughAttrs<C> = $$HogeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
+                "  type $$AllowedFallthroughAttrs<C> = $$HasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
             ),
         );
     }

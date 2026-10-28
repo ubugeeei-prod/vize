@@ -116,8 +116,8 @@ void Widget
                 source.source_path == canonical_component && source.mapping_kind.is_mappable()
             })
             .expect("package Vue source");
-        let host_uses_vue2_instance = project.host.code.contains("$$HogeVue2ComponentInstance");
-        let dependency_uses_vue2_instance = dependency.code.contains("$$HogeVue2ComponentInstance");
+        let host_uses_vue2_instance = project.host.code.contains("$$Vue2ComponentInstance");
+        let dependency_uses_vue2_instance = dependency.code.contains("$$Vue2ComponentInstance");
         assert_eq!(
             host_uses_vue2_instance, dependency_uses_vue2_instance,
             "host and dependency diverged for {dialect:?}"

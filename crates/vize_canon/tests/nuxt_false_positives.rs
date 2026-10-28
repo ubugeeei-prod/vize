@@ -26,12 +26,12 @@ const modalWindowState = ref(ModalWindowState.None)
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
 
     assert!(
-        virtual_ts.contains("type $$HogeWidenTemplateRef<T>"),
+        virtual_ts.contains("type $$WidenTemplateRef<T>"),
         "template ref unwrapping should use the widening helper:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains(
-            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$HogeWidenTemplateRef<T['value']> : T : T;"
+            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$WidenTemplateRef<T['value']> : T : T;"
         ),
         "Vue 3 template ref unwrapping must widen mutable literal values:\n{virtual_ts}"
     );

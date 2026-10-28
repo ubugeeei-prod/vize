@@ -176,7 +176,7 @@ pub(super) fn generate_component_event_types(
             );
             append!(
                 *ts,
-                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends $$HogeEmitOwnedKeys<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
+                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends $$EmitOwnedKeys<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
             );
         }
         resolved_props
@@ -228,12 +228,12 @@ pub(super) fn generate_component_event_types(
             if legacy_vue2 {
                 append!(
                     *ts,
-                    "{indent}  ? $$HogeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
+                    "{indent}  ? $$IsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
                 );
             } else {
                 append!(
                     *ts,
-                    "{indent}  ? $$HogeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
+                    "{indent}  ? $$IsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
                 );
             }
             append!(*ts, "{indent}  : unknown[];\n");
@@ -299,11 +299,11 @@ pub(super) fn generate_component_event_types(
             cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_legacy_args");
         append!(
             *ts,
-            "{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $$HogeVue2LooseEventArg<__A[0]> : never;\n",
+            "{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $$Vue2LooseEventArg<__A[0]> : never;\n",
         );
         append!(
             *ts,
-            "{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : $$HogeVue2LooseEmitArgs<{args_type}>;\n",
+            "{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : $$Vue2LooseEmitArgs<{args_type}>;\n",
         );
         legacy_args_type
     } else {

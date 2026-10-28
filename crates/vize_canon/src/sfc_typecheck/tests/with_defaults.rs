@@ -27,13 +27,13 @@ const { thickness, label } = props;
 
     assert!(
         virtual_ts.contains(
-            r#"type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<$$HogeMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? $$HogeIfAny<D[K], $$HogeNotUndefined<T[K]>, T[K]> : $$HogeNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;"#
+            r#"type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<$$MappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? $$IfAny<D[K], $$NotUndefined<T[K]>, T[K]> : $$NotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;"#
         ),
         "{virtual_ts}"
     );
     assert!(
         virtual_ts.contains(
-            r#"const props: __WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, $$HogeBooleanKey<Props>>"#
+            r#"const props: __WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, $$BooleanKey<Props>>"#
         ),
         "{virtual_ts}"
     );
@@ -74,7 +74,7 @@ void props;
 
     assert!(
         virtual_ts.contains(
-            r#"const count = props["count"] as Exclude<__WithDefaultsResult<Props, Pick<Props, Extract<"count", keyof Props>>, $$HogeBooleanKey<Props>>["count"], undefined>;"#
+            r#"const count = props["count"] as Exclude<__WithDefaultsResult<Props, Pick<Props, Extract<"count", keyof Props>>, $$BooleanKey<Props>>["count"], undefined>;"#
         ),
         "{virtual_ts}"
     );

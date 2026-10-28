@@ -33,14 +33,14 @@ fn test_legacy_nuxt2_page_validate_gets_contextual_type() {
     assert!(
         output
             .code
-            .contains("validate?: (context: $$HogeNuxt2Context) => unknown;"),
+            .contains("validate?: (context: $$Nuxt2Context) => unknown;"),
         "legacy Nuxt 2 page options should declare a contextual validate type:\n{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("type $$HogeNuxt2PageOptions = ThisType<any> & {")
+            .contains("type $$Nuxt2PageOptions = ThisType<any> & {")
             && output.code.contains("layout?: any;"),
         "legacy Nuxt 2 page options should accept page-only options without narrowing `this`:\n{}",
         output.code
@@ -74,25 +74,25 @@ fn modern_public_constructor_contract_does_not_leak_into_vue2() {
 
     assert!(
         modern.contains("$props: Props;")
-            && modern.contains("new <$$HogeAuthoredProps = unknown>(props?:")
-            && modern.contains("} & $$HogeComponentPublicBase;"),
+            && modern.contains("new <$$AuthoredProps = unknown>(props?:")
+            && modern.contains("} & $$ComponentPublicBase;"),
         "Vue 3 should separate strict public props from call-site inputs:\n{modern}"
     );
     assert!(
-        !modern.contains("$$HogeVue2ComponentInstance"),
+        !modern.contains("$$Vue2ComponentInstance"),
         "Vue 2 instance members must not leak into Vue 3:\n{modern}"
     );
     assert!(
-        legacy.contains("$props: $$HogeComponentProps<Props>;")
-            && legacy.contains("type $$HogeVue2ComponentConstructorStatics = {")
+        legacy.contains("$props: $$ComponentProps<Props>;")
+            && legacy.contains("type $$Vue2ComponentConstructorStatics = {")
             && legacy.contains(
-                "type $$HogeComponentConstructor = {\n  new (...args: any[]): any;\n  new (...args: any[]): $$HogeComponentInstance;\n} & $$HogeVue2ComponentConstructorStatics;"
+                "type $$ComponentConstructor = {\n  new (...args: any[]): any;\n  new (...args: any[]): $$ComponentInstance;\n} & $$Vue2ComponentConstructorStatics;"
             )
-            && legacy.contains("} & $$HogeVue2ComponentInstance;"),
+            && legacy.contains("} & $$Vue2ComponentInstance;"),
         "Vue 2 should keep its existing permissive constructor contract:\n{legacy}"
     );
     assert!(
-        !legacy.contains("new <$$HogeAuthoredProps"),
+        !legacy.contains("new <$$AuthoredProps"),
         "the Vue 3 authored-input constructor must stay outside Vue 2:\n{legacy}"
     );
 }

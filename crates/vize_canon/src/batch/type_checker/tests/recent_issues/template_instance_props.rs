@@ -1,7 +1,7 @@
 //! The template's `$props` is the component's own prop contract (#4145).
 //!
 //! `$props` used to be emitted as a generic instance global,
-//! `$$HogeInstanceGlobal<'$props'>`, which reads
+//! `$$InstanceGlobal<'$props'>`, which reads
 //! `ComponentPublicInstance['$props']` with that helper's *default* type
 //! arguments. `P` defaults to `{}` there, so every declared prop read through
 //! `$props` reported `TS2339 … does not exist on type '{}'` — 19 of them across
@@ -212,7 +212,7 @@ fn runtime_object_props_reach_template_dollar_props() {
         return;
     };
 
-    let props_type = r#"Readonly<Readonly<$$HogeMappedOmit<Props, "isActive">> & { readonly isActive: boolean; } & {}>"#;
+    let props_type = r#"Readonly<Readonly<$$MappedOmit<Props, "isActive">> & { readonly isActive: boolean; } & {}>"#;
     assert_eq!(
         snapshot,
         vec![

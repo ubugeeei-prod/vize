@@ -66,7 +66,7 @@ const VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP: &str = "  render?: Function;
 };
 ";
 
-/// Emit the `$$HogeVueComponentOptions` alias the default export references.
+/// Emit the `$$VueComponentOptions` alias the default export references.
 ///
 /// A generic SFC is *not* a `DefineComponent` for `vue-tsc`: it compiles to a
 /// bare generic function component, so member access on its value type reports
@@ -78,7 +78,7 @@ fn emit_vue_component_options_type(
     has_generic_params: bool,
     static_raw_props_ref: Option<&str>,
 ) {
-    ts.push_str("type $$HogeVueComponentOptions = {\n");
+    ts.push_str("type $$VueComponentOptions = {\n");
     if !has_generic_params {
         ts.push_str(COMPONENT_OPTIONS_INDEX_SIGNATURE);
     }
@@ -106,11 +106,11 @@ pub(super) fn emit_authored_component_aliases(ts: &mut String, authored: Authore
         return;
     }
     ts.push_str(
-        "type $$HogeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
+        "type $$AuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
     );
     if authored == AuthoredDefaultKind::Component {
         ts.push_str(
-            "type $$HogeAuthoredInstance = $$HogeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
+            "type $$AuthoredInstance = $$AuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
         );
     }
 }
@@ -128,7 +128,7 @@ pub(super) fn emit_default_export_declaration(
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
     let authored_component = if authored_default == AuthoredDefaultKind::Component {
-        "$$HogeAuthoredComponent & "
+        "$$AuthoredComponent & "
     } else {
         ""
     };
@@ -140,7 +140,7 @@ pub(super) fn emit_default_export_declaration(
     // authored call-site contract (#4034).
     //
     // Keep the metadata intersection first. Non-generic components defer their
-    // input contract behind `$$HogeComponentInput`; putting that constructor
+    // input contract behind `$$ComponentInput`; putting that constructor
     // before the raw-props member lets TypeScript's incremental relation cache
     // settle only the first of multiple consumers of the same changed SFC.
     // Leading with the direct `Props` identity makes every dependent program
@@ -176,12 +176,12 @@ pub(super) fn emit_default_export_declaration(
         if generic_component_params.is_none() {
             let props = static_raw_props_ref.unwrap_or("{}");
             let emits = if emits_info.has_emits_for_props {
-                "$$HogeStaticEmitProps"
+                "$$StaticEmitProps"
             } else {
                 "{}"
             };
             forwarded = vize_carton::cstr!(
-                "$$HogeUnownedComponentAttrs<{fallthrough_ref}, {props}, {emits}>"
+                "$$UnownedComponentAttrs<{fallthrough_ref}, {props}, {emits}>"
             );
         }
         append!(
@@ -193,7 +193,7 @@ pub(super) fn emit_default_export_declaration(
     if authored_default != AuthoredDefaultKind::None {
         // A normal script may export a primitive. Adding the generated Vue
         // constructor to that value would change its authored public type.
-        ts.push_str("$$HogeAuthoredComponent extends object ? ");
+        ts.push_str("$$AuthoredComponent extends object ? ");
     }
     if let Some(GenericComponentContract {
         declaration: "",
@@ -242,21 +242,21 @@ pub(super) fn emit_default_export_declaration(
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "{{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}$$HogeComponentConstructor & $$HogeVueComponentOptions",
+            "{{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}$$ComponentConstructor & $$VueComponentOptions",
         );
     } else if !component_contract_fields.trim().is_empty() {
         append!(
             *ts,
-            "{{ {component_contract_fields} }} & {authored_component}$$HogeComponentConstructor & $$HogeVueComponentOptions",
+            "{{ {component_contract_fields} }} & {authored_component}$$ComponentConstructor & $$VueComponentOptions",
         );
     } else {
         append!(
             *ts,
-            "{authored_component}$$HogeComponentConstructor & $$HogeVueComponentOptions",
+            "{authored_component}$$ComponentConstructor & $$VueComponentOptions",
         );
     }
     if authored_default != AuthoredDefaultKind::None {
-        ts.push_str(" : $$HogeAuthoredComponent");
+        ts.push_str(" : $$AuthoredComponent");
     }
     ts.push_str(";\n");
 }

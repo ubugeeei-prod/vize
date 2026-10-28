@@ -167,7 +167,7 @@ export const Example = () => (
     assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
     assert!(helpers.contains("interface IntrinsicAttributes"));
     assert!(helpers.contains("class?: unknown; style?: unknown"));
-    assert!(helpers.contains("$$HogeKebabProps"));
+    assert!(helpers.contains("$$KebabProps"));
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

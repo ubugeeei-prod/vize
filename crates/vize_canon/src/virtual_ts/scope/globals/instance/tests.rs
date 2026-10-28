@@ -72,7 +72,7 @@ fn vue3_reads_every_occurrence_off_the_public_instance() {
     let output = generate(false);
 
     assert_eq!(
-        output.code.matches("$$HogeInstanceGlobal").count(),
+        output.code.matches("$$InstanceGlobal").count(),
         0,
         "{}",
         output.code
@@ -100,7 +100,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
 
     assert!(
         output.code.contains(
-            "type $$HogeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
+            "type $$InstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
         ),
         "{}",
         output.code
@@ -108,7 +108,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
     assert_eq!(
         output
             .code
-            .matches("const $missing: $$HogeInstanceGlobal<'$missing'> = undefined as any;")
+            .matches("const $missing: $$InstanceGlobal<'$missing'> = undefined as any;")
             .count(),
         1,
         "{}",
@@ -122,7 +122,7 @@ fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     let output = generate(true);
 
     assert!(
-        !output.code.contains("$$HogeInstanceGlobal"),
+        !output.code.contains("$$InstanceGlobal"),
         "{}",
         output.code
     );

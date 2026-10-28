@@ -123,13 +123,13 @@ export default { data() { return { count: 1 } } }
         enabled_responses[2]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$$HogeOptionsBinding")
+            .contains("$$OptionsBinding")
     );
     assert!(
         !disabled_responses[2]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$$HogeOptionsBinding")
+            .contains("$$OptionsBinding")
     );
 }
 
@@ -278,7 +278,7 @@ export default { data() { return { count: 1 } } }
             responses[2]["result"]["text"]
                 .as_str()
                 .unwrap()
-                .contains("$$HogeOptionsBinding"),
+                .contains("$$OptionsBinding"),
             "expected default-on Options API output: {}",
             responses[2]
         );

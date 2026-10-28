@@ -88,7 +88,7 @@ defineModel<string>("title", { required: true });
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("ScopedModel.vue"), source).expect("model");
-    let marker = "type $$HogeSetupProps = { value: typeof schema } & {\n  \"title\"";
+    let marker = "type $$SetupProps = { value: typeof schema } & {\n  \"title\"";
     let generated = result.text.find(marker).expect("setup-scoped model prop") + marker.len()
         - "\"title\"".len();
     let original = source.find("\"title\"").unwrap();
@@ -111,7 +111,7 @@ defineModel<string>("title", { required: true });
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("PublicProps.vue"), source).expect("model");
-    let marker = "type $$HogeResolvedProps = Props & {\n  \"title\"";
+    let marker = "type $$ResolvedProps = Props & {\n  \"title\"";
     let generated =
         result.text.find(marker).expect("resolved model prop") + marker.len() - "\"title\"".len();
     let original = source.find("\"title\"").unwrap();
@@ -128,13 +128,13 @@ defineModel<string>("title", { required: true });
     assert!(
         result
             .text
-            .contains("$props: $$HogeResolvedProps & __EmitProps<Emits>;"),
+            .contains("$props: $$ResolvedProps & __EmitProps<Emits>;"),
         "text:\n{}",
         result.text
     );
     assert!(
         result.text.contains(
-            "$$HogeComponentInput<$$HogeResolvedProps, __EmitProps<Emits>, $$HogeAuthoredProps>"
+            "$$ComponentInput<$$ResolvedProps, __EmitProps<Emits>, $$AuthoredProps>"
         ),
         "text:\n{}",
         result.text
@@ -160,14 +160,14 @@ defineModel<string>("title", { required: true });
     assert!(
         result
             .text
-            .contains("type $$HogeResolvedProps = Props & {\n  \"title\""),
+            .contains("type $$ResolvedProps = Props & {\n  \"title\""),
         "model props should extend imported Props through the private alias:\n{}",
         result.text
     );
     assert!(
         result
             .text
-            .contains("$props: $$HogeResolvedProps & __EmitProps<Emits>;"),
+            .contains("$props: $$ResolvedProps & __EmitProps<Emits>;"),
         "public instance should use the resolved props alias:\n{}",
         result.text
     );

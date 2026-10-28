@@ -15,7 +15,7 @@ local function assert_component_contract_hover(ctx, bufnr, uri, position, expect
   assert(
     not result.contents.value:match("__vizeComponentMarker")
       and not result.contents.value:match("__vizeRawProps")
-      and not result.contents.value:match("$$HogeComponentConstructor"),
+      and not result.contents.value:match("$$ComponentConstructor"),
     label .. " leaked generated component carrier types: " .. result.contents.value
   )
 end

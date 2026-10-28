@@ -70,33 +70,33 @@ type __RuntimePropShape<T extends Record<string, any>> = {
     ? __RuntimePropCtor<T[K]>
     : __RuntimePropCtor<T[K]> | undefined;
 };
-type $$HogeIsAny<T> = 0 extends 1 & T ? true : false;
+type $$IsAny<T> = 0 extends 1 & T ? true : false;
 
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
-type $$HogeBooleanKey<T, K extends keyof T = keyof T> = K extends any
+type $$BooleanKey<T, K extends keyof T = keyof T> = K extends any
   ? [Exclude<T[K], undefined>] extends [never]
     ? never
     : [Exclude<T[K], undefined>] extends [boolean]
       ? K
       : never
   : never;
-type __DefineProps<T, __BKeys extends keyof T = $$HogeBooleanKey<T>> = Readonly<T> & {
+type __DefineProps<T, __BKeys extends keyof T = $$BooleanKey<T>> = Readonly<T> & {
   readonly [K in __BKeys]-?: boolean;
 };
-type $$HogeIfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
-type $$HogeNotUndefined<T> = T extends undefined ? never : T;
-type $$HogeMappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
-type $$HogeDefaultNativeType = null | number | string | boolean | symbol | Function;
-type $$HogeInferDefault<P, T> =
+type $$IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
+type $$NotUndefined<T> = T extends undefined ? never : T;
+type $$MappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
+type $$DefaultNativeType = null | number | string | boolean | symbol | Function;
+type $$InferDefault<P, T> =
   | ((props: P) => T & {})
-  | (T extends $$HogeDefaultNativeType ? T : never);
-type __WithDefaultsArgs<T> = { [K in keyof T]?: $$HogeInferDefault<T, T[K]> };
+  | (T extends $$DefaultNativeType ? T : never);
+type __WithDefaultsArgs<T> = { [K in keyof T]?: $$InferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown
-  ? Readonly<$$HogeMappedOmit<T, keyof D>> & {
+  ? Readonly<$$MappedOmit<T, keyof D>> & {
       readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T
         ? D[K] extends undefined
-          ? $$HogeIfAny<D[K], $$HogeNotUndefined<T[K]>, T[K]>
-          : $$HogeNotUndefined<T[K]>
+          ? $$IfAny<D[K], $$NotUndefined<T[K]>, T[K]>
+          : $$NotUndefined<T[K]>
         : never;
     } & {
       readonly [K in __BKeys]-?: K extends keyof D
@@ -109,51 +109,51 @@ type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unk
 type __Ref<T> = import("vue").Ref<T>;
 type __ShallowRef<T> = import("vue").ShallowRef<T>;
 
-type $$HogeKebabCase<
+type $$KebabCase<
   S extends string,
   Acc extends string = "",
 > = S extends `${infer Head}${infer Tail}`
   ? Head extends Lowercase<Head>
-    ? $$HogeKebabCase<Tail, `${Acc}${Head}`>
-    : $$HogeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
+    ? $$KebabCase<Tail, `${Acc}${Head}`>
+    : $$KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
   : `${Acc}${S}`;
-type $$HogeKebabProps<T> = { [K in keyof T & string as $$HogeKebabCase<K>]: T[K] };
-type $$HogeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-type $$HogeDomListenerProps = {
+type $$KebabProps<T> = { [K in keyof T & string as $$KebabCase<K>]: T[K] };
+type $$RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $$DomListenerProps = {
   [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (
     event: GlobalEventHandlersEventMap[K],
   ) => void;
 };
-type $$HogeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & {
+type $$FallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & {
   [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown;
 } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown } & Omit<
-    $$HogeDomListenerProps,
+    $$DomListenerProps,
     keyof Owned
   >;
 // Match Vue's public prop contract, including runtime-core module augmentations.
-type $$HogePublicComponentInputProps = import("vue").VNodeProps &
+type $$PublicComponentInputProps = import("vue").VNodeProps &
   import("vue").AllowedComponentProps &
   import("vue").ComponentCustomProps;
-type $$HogeComponentMetadataKeys<T> =
-  $$HogeIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
-type $$HogeComponentOwnKeys<P = {}, E = {}> =
-  | keyof $$HogePublicComponentInputProps
-  | $$HogeComponentMetadataKeys<P>
-  | $$HogeComponentMetadataKeys<E>;
-type $$HogeUnownedComponentAttrs<F, P = {}, E = {}> =
-  $$HogeIsAny<F> extends true
+type $$ComponentMetadataKeys<T> =
+  $$IsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
+type $$ComponentOwnKeys<P = {}, E = {}> =
+  | keyof $$PublicComponentInputProps
+  | $$ComponentMetadataKeys<P>
+  | $$ComponentMetadataKeys<E>;
+type $$UnownedComponentAttrs<F, P = {}, E = {}> =
+  $$IsAny<F> extends true
     ? F
     : unknown extends F
       ? F
       : F extends unknown
         ? F extends null | undefined
           ? F
-          : { [K in keyof F as K extends $$HogeComponentOwnKeys<P, E> ? never : K]: F[K] }
+          : { [K in keyof F as K extends $$ComponentOwnKeys<P, E> ? never : K]: F[K] }
         : never;
-type $$HogePrettify<T> = (T extends any
+type $$Prettify<T> = (T extends any
   ? { [K in keyof T]: T[K] }
   : { [K in keyof T as K]: T[K] }) & {};
-type $$HogeComponentFallthroughSurface<C> = (C extends {
+type $$ComponentFallthroughSurface<C> = (C extends {
   new (...args: any[]): { $props: infer __P };
 }
   ? __P
@@ -161,41 +161,41 @@ type $$HogeComponentFallthroughSurface<C> = (C extends {
     ? __P
     : Record<string, unknown>) &
   (C extends { readonly __vizeFallthroughProps?: infer __F }
-    ? $$HogeIsAny<__F> extends true
+    ? $$IsAny<__F> extends true
       ? {}
       : NonNullable<__F>
     : {});
-type $$HogeComponentFallthroughProps<C> = {
-  [K in keyof $$HogeComponentFallthroughSurface<C>]: $$HogeComponentFallthroughSurface<C>[K];
+type $$ComponentFallthroughProps<C> = {
+  [K in keyof $$ComponentFallthroughSurface<C>]: $$ComponentFallthroughSurface<C>[K];
 };
-type $$HogeComponentInputProps<T, Declared = {}> = T extends unknown
+type $$ComponentInputProps<T, Declared = {}> = T extends unknown
   ? Partial<T> &
-      Partial<$$HogeKebabProps<T>> &
+      Partial<$$KebabProps<T>> &
       Declared &
-      $$HogeFallthroughAttrs<T & Declared> &
-      $$HogePublicComponentInputProps
+      $$FallthroughAttrs<T & Declared> &
+      $$PublicComponentInputProps
   : never;
-type $$HogeMissingRequiredInputKeys<
+type $$MissingRequiredInputKeys<
   T,
   Authored,
-  K extends $$HogeRequiredKeys<T> & string = $$HogeRequiredKeys<T> & string,
+  K extends $$RequiredKeys<T> & string = $$RequiredKeys<T> & string,
 > = K extends unknown
   ? K extends keyof Authored
     ? never
-    : $$HogeKebabCase<K> extends keyof Authored
+    : $$KebabCase<K> extends keyof Authored
       ? never
       : K
   : never;
-type $$HogeIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
-type $$HogeIsSinglePropKey<T> = [T] extends [never]
+type $$IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
+type $$IsSinglePropKey<T> = [T] extends [never]
   ? false
-  : $$HogeIsPropKeyUnion<T> extends true
+  : $$IsPropKeyUnion<T> extends true
     ? false
     : true;
-type $$HogeRelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [
+type $$RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [
   keyof Declared,
 ] extends [never]
-  ? $$HogeIsSinglePropKey<$$HogeRequiredKeys<T>> extends true
+  ? $$IsSinglePropKey<$$RequiredKeys<T>> extends true
     ? K extends string
       ? K extends `on${string}`
         ? false
@@ -205,56 +205,56 @@ type $$HogeRelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Autho
       : false
     : false
   : false;
-type $$HogeExtraInputKeys<
+type $$ExtraInputKeys<
   T,
   Declared,
   Authored,
   Allowed,
   K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,
 > = K extends unknown
-  ? $$HogeRelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
+  ? $$RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
     ? never
     : K
   : never;
-type $$HogeComponentMissingInputGuard<T, Authored> = T extends unknown
-  ? [$$HogeMissingRequiredInputKeys<T, Authored>] extends [never]
+type $$ComponentMissingInputGuard<T, Authored> = T extends unknown
+  ? [$$MissingRequiredInputKeys<T, Authored>] extends [never]
     ? {}
     : {
         readonly __vizeInvalidComponentProps: {
-          readonly missing: $$HogeMissingRequiredInputKeys<T, Authored>;
+          readonly missing: $$MissingRequiredInputKeys<T, Authored>;
           readonly extra: never;
         };
       }
   : never;
-type $$HogeComponentInputGuardFor<T, Declared, Authored, Allowed> = [
-  | $$HogeMissingRequiredInputKeys<T, Authored>
-  | $$HogeExtraInputKeys<T, Declared, Authored, Allowed>,
+type $$ComponentInputGuardFor<T, Declared, Authored, Allowed> = [
+  | $$MissingRequiredInputKeys<T, Authored>
+  | $$ExtraInputKeys<T, Declared, Authored, Allowed>,
 ] extends [never]
   ? {}
   : {
       readonly __vizeInvalidComponentProps: {
-        readonly missing: $$HogeMissingRequiredInputKeys<T, Authored>;
-        readonly extra: $$HogeExtraInputKeys<T, Declared, Authored, Allowed>;
+        readonly missing: $$MissingRequiredInputKeys<T, Authored>;
+        readonly extra: $$ExtraInputKeys<T, Declared, Authored, Allowed>;
       };
     };
-type $$HogeComponentInputGuard<T, Declared, Authored> =
-  $$HogeUsePublicInstance<Authored> extends true
+type $$ComponentInputGuard<T, Declared, Authored> =
+  $$UsePublicInstance<Authored> extends true
     ? {}
     : T extends unknown
-      ? $$HogeComponentInputGuardFor<T, Declared, Authored, $$HogeComponentInputProps<T, Declared>>
+      ? $$ComponentInputGuardFor<T, Declared, Authored, $$ComponentInputProps<T, Declared>>
       : never;
-type $$HogeComponentInputFor<T, Declared, Authored, Allowed> = Allowed &
-  $$HogeComponentInputGuardFor<T, Declared, Authored, Allowed>;
-type $$HogeComponentInput<T, Declared, Authored> =
-  $$HogeUsePublicInstance<Authored> extends true
-    ? $$HogeComponentInputProps<T, Declared>
+type $$ComponentInputFor<T, Declared, Authored, Allowed> = Allowed &
+  $$ComponentInputGuardFor<T, Declared, Authored, Allowed>;
+type $$ComponentInput<T, Declared, Authored> =
+  $$UsePublicInstance<Authored> extends true
+    ? $$ComponentInputProps<T, Declared>
     : T extends unknown
-      ? $$HogeComponentInputFor<T, Declared, Authored, $$HogeComponentInputProps<T, Declared>>
+      ? $$ComponentInputFor<T, Declared, Authored, $$ComponentInputProps<T, Declared>>
       : never;
-type $$HogeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
-type $$HogeIsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
-type $$HogeUsePublicInstance<T> = $$HogeIsAny<T> extends true ? true : $$HogeIsUnknown<T>;
-type $$HogeLiteralKeys<T> = keyof {
+type $$AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+type $$IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
+type $$UsePublicInstance<T> = $$IsAny<T> extends true ? true : $$IsUnknown<T>;
+type $$LiteralKeys<T> = keyof {
   [
     K in keyof T as K extends string
       ? string extends K
@@ -271,9 +271,9 @@ type $$HogeLiteralKeys<T> = keyof {
           : K
   ]: unknown;
 };
-type $$HogeReplaceComponentProps<T, P> = Omit<T, "$props"> &
-  Pick<T, Exclude<$$HogeLiteralKeys<T>, "$props">> & { $props: P };
-type $$HogePublicEmit<
+type $$ReplaceComponentProps<T, P> = Omit<T, "$props"> &
+  Pick<T, Exclude<$$LiteralKeys<T>, "$props">> & { $props: P };
+type $$PublicEmit<
   T,
   S = __EmitShape<T>,
   K extends keyof S & string = keyof S & string,
@@ -282,11 +282,11 @@ type $$HogePublicEmit<
   : [K] extends [never]
     ? (event: string, ...args: any[]) => void
     : __EmitFn<T>;
-type $$HogePublicSlots<T> = [keyof T] extends [never]
+type $$PublicSlots<T> = [keyof T] extends [never]
   ? import("vue").ComponentPublicInstance["$slots"]
   : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type $$HogeComponentPublicBase = Omit<
+type $$ComponentPublicBase = Omit<
   import("vue").ComponentPublicInstance,
   "$props" | "$emit" | "$slots"
 >;
@@ -301,48 +301,48 @@ export type {
   __RuntimePropHasBoolean,
   __RuntimePropResolved,
   __RuntimePropShape,
-  $$HogeIsAny,
+  $$IsAny,
   __LooseRequired,
-  $$HogeBooleanKey,
+  $$BooleanKey,
   __DefineProps,
-  $$HogeIfAny,
-  $$HogeNotUndefined,
-  $$HogeMappedOmit,
-  $$HogeDefaultNativeType,
-  $$HogeInferDefault,
+  $$IfAny,
+  $$NotUndefined,
+  $$MappedOmit,
+  $$DefaultNativeType,
+  $$InferDefault,
   __WithDefaultsArgs,
   __WithDefaultsResult,
   __Ref,
   __ShallowRef,
-  $$HogeKebabCase,
-  $$HogeKebabProps,
-  $$HogeRequiredKeys,
-  $$HogeDomListenerProps,
-  $$HogeFallthroughAttrs,
-  $$HogePublicComponentInputProps,
-  $$HogeComponentMetadataKeys,
-  $$HogeComponentOwnKeys,
-  $$HogeUnownedComponentAttrs,
-  $$HogePrettify,
-  $$HogeComponentFallthroughSurface,
-  $$HogeComponentFallthroughProps,
-  $$HogeComponentInputProps,
-  $$HogeMissingRequiredInputKeys,
-  $$HogeIsPropKeyUnion,
-  $$HogeIsSinglePropKey,
-  $$HogeRelaxedDynamicUnionExtra,
-  $$HogeExtraInputKeys,
-  $$HogeComponentMissingInputGuard,
-  $$HogeComponentInputGuardFor,
-  $$HogeComponentInputGuard,
-  $$HogeComponentInputFor,
-  $$HogeComponentInput,
-  $$HogeAuthoredKeyWitness,
-  $$HogeIsUnknown,
-  $$HogeUsePublicInstance,
-  $$HogeLiteralKeys,
-  $$HogeReplaceComponentProps,
-  $$HogePublicEmit,
-  $$HogePublicSlots,
-  $$HogeComponentPublicBase,
+  $$KebabCase,
+  $$KebabProps,
+  $$RequiredKeys,
+  $$DomListenerProps,
+  $$FallthroughAttrs,
+  $$PublicComponentInputProps,
+  $$ComponentMetadataKeys,
+  $$ComponentOwnKeys,
+  $$UnownedComponentAttrs,
+  $$Prettify,
+  $$ComponentFallthroughSurface,
+  $$ComponentFallthroughProps,
+  $$ComponentInputProps,
+  $$MissingRequiredInputKeys,
+  $$IsPropKeyUnion,
+  $$IsSinglePropKey,
+  $$RelaxedDynamicUnionExtra,
+  $$ExtraInputKeys,
+  $$ComponentMissingInputGuard,
+  $$ComponentInputGuardFor,
+  $$ComponentInputGuard,
+  $$ComponentInputFor,
+  $$ComponentInput,
+  $$AuthoredKeyWitness,
+  $$IsUnknown,
+  $$UsePublicInstance,
+  $$LiteralKeys,
+  $$ReplaceComponentProps,
+  $$PublicEmit,
+  $$PublicSlots,
+  $$ComponentPublicBase,
 };

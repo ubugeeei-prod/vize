@@ -68,7 +68,7 @@ macro_rules! vue_type_helpers_text {
 
 macro_rules! content_mapper_type_helpers_text {
     ($types:expr, $module:expr) => {
-        concat!($types, include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as $$HogeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as $$HogeComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
+        concat!($types, include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as $$ComponentAttrCamel, VizeComponentGlobalHtmlAttrs as $$ComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
     };
 }
 
@@ -90,7 +90,7 @@ pub(crate) const LEGACY_CONTENT_MAPPER_TYPE_HELPERS: &str =
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
 /// Vue's `EmitsToProps` keys handlers as `on${Capitalize<K>}` (`onScroll-top`);
 /// the camelized key is the spelling templates bind, so both are accepted.
-pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as $$HogeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };\n";
+pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as $$HandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };\n";
 
 pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
 
@@ -110,5 +110,5 @@ pub const DECLARATION_HELPERS_DTS: &str = concat!(
     emit_overload_helpers_text!(),
     // Generic component signatures name this; emitted declarations keep it
     // open instead of depending on Vue's `NativeElements` (native_props.rs).
-    "type $$HogeComponentGlobalHtmlAttrs = { [key: string]: unknown };\n",
+    "type $$ComponentGlobalHtmlAttrs = { [key: string]: unknown };\n",
 );

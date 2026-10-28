@@ -29,7 +29,7 @@ pub(crate) const SLOTS_RETURN_KEY: &str = "__vizeSlots";
 
 /// Instantiates a root's props from the props bound on it. A root that has no
 /// resolver is not generic, and its declared surface is already exact.
-pub(crate) const FORWARDED_ROOT_HELPERS: &str = r#"type $$HogeForwardedPropsFactory<C> = $$HogeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : (component: C) => (props: any) => $$HogeComponentFallthroughProps<C> : (component: C) => (props: any) => $$HogeComponentFallthroughProps<C>;
+pub(crate) const FORWARDED_ROOT_HELPERS: &str = r#"type $$ForwardedPropsFactory<C> = $$IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : (component: C) => (props: any) => $$ComponentFallthroughProps<C> : (component: C) => (props: any) => $$ComponentFallthroughProps<C>;
 "#;
 
 pub(super) struct ForwardedRootContext<'a> {
@@ -66,8 +66,8 @@ pub(super) fn emit_forwarded_root_probes(
             );
         }
         for (kind, factory) in [
-            ("props", "$$HogeForwardedPropsFactory"),
-            ("emits", "$$HogeEmitPropsFactory"),
+            ("props", "$$ForwardedPropsFactory"),
+            ("emits", "$$EmitPropsFactory"),
         ] {
             let name = cstr!("__vize_forwarded_{kind}_{index}");
             emit_probe(ts, ctx, usage, component.as_str(), factory, name.as_str());

@@ -19,7 +19,7 @@
         "dataTest"
       ],
       "issueBodySha256": "1cabde8160e65e3aa33fa8e3baf08ccc9b108c64eec3a53c855de8b0348d8796",
-      "baselineStdout": "App.vue(151,5): error TS2353: Object literal may only specify known properties, and '\"dataTest\"' does not exist in type 'Partial<Props> & Partial<$$HogeKebabProps<Props>> & __EmitProps<Emits> & { class?: unknown; style?: unknown; } & { [x: `data-${string}`]: unknown; } & ... & Omit<...> & $$HogeReservedComponentInputProps'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+      "baselineStdout": "App.vue(151,5): error TS2353: Object literal may only specify known properties, and '\"dataTest\"' does not exist in type 'Partial<Props> & Partial<$$KebabProps<Props>> & __EmitProps<Emits> & { class?: unknown; style?: unknown; } & { [x: `data-${string}`]: unknown; } & ... & Omit<...> & $$ReservedComponentInputProps'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
       "baselineStderr": "",
       "expectedStdout": "",
       "expectedStderr": ""
@@ -39,7 +39,7 @@
         "foo"
       ],
       "issueBodySha256": "2a78267961220db8e1a821117c14e48bf151862a6f1ec845b1e0b39395ab9ce6",
-      "baselineStdout": "App.vue(4,37): error TS2353: Object literal may only specify known properties, and '\"foo\"' does not exist in type '$$HogeComponentCheckProps<{}, $$HogePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 656 more ...; zoomAndPan?: ...'.\n",
+      "baselineStdout": "App.vue(4,37): error TS2353: Object literal may only specify known properties, and '\"foo\"' does not exist in type '$$ComponentCheckProps<{}, $$PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 656 more ...; zoomAndPan?: ...'.\n",
       "baselineStderr": "",
       "expectedStdout": "",
       "expectedStderr": ""
@@ -108,7 +108,7 @@
       "terms": [
         "definitelyNotAProp"
       ],
-      "stdout": "App.vue(4,42): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '$$HogeComponentCheckProps<$$HogeStaticEmitProps, $$HogePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
+      "stdout": "App.vue(4,42): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '$$ComponentCheckProps<$$StaticEmitProps, $$PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
       "stderr": "",
       "status": 2
     },
@@ -176,7 +176,7 @@
       "terms": [
         "count"
       ],
-      "stdout": "App.vue(4,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<{ count: number; }, $$HogePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 658 more ...; zoomAndPan?: unknown; } & ...>'.\n  Property 'count' is missing in type '{}' but required in type '{ readonly count: number; }'.\n",
+      "stdout": "App.vue(4,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '$$ComponentCheckProps<{ count: number; }, $$PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 658 more ...; zoomAndPan?: unknown; } & ...>'.\n  Property 'count' is missing in type '{}' but required in type '{ readonly count: number; }'.\n",
       "stderr": "",
       "status": 2,
       "diagnosticProvenance": "Existing concrete constructor with identical $props and template, actually observed in public0.463 officialTS7; abstract candidate must earn these same strict diagnostics in Actions."
@@ -243,7 +243,7 @@
       "terms": [
         "count"
       ],
-      "stdout": "App.vue(4,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<{ count: number; }, $$HogePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 658 more ...; zoomAndPan?: unknown; } & ...>'.\n  Property 'count' is missing in type '{}' but required in type '{ readonly count: number; }'.\n",
+      "stdout": "App.vue(4,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '$$ComponentCheckProps<{ count: number; }, $$PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 658 more ...; zoomAndPan?: unknown; } & ...>'.\n  Property 'count' is missing in type '{}' but required in type '{ readonly count: number; }'.\n",
       "stderr": "",
       "status": 2
     }

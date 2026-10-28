@@ -303,7 +303,7 @@ mod tests {
 
     #[test]
     fn slot_outlet_payloads_get_bindings_before_the_checked_call() {
-        let source = "  __vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"default\"])(\n  {\n    \"items\": getItems(),\n    \"attrs\": { id: 'x' },\n  });\n";
+        let source = "  __vizeSlotOutlet((undefined as unknown as $$Slots)[\"default\"])(\n  {\n    \"items\": getItems(),\n    \"attrs\": { id: 'x' },\n  });\n";
         let call = "getItems()";
         let object = "{ id: 'x' }";
         let call_at = source.find(call).expect("call");
@@ -322,7 +322,7 @@ mod tests {
 
         assert_eq!(
             document.content.as_str(),
-            "  const __expr_0 = (getItems());\n  const __expr_1 = ({ id: 'x' });\n  __vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"default\"])(\n  {\n    \"items\": getItems(),\n    \"attrs\": { id: 'x' },\n  });\n"
+            "  const __expr_0 = (getItems());\n  const __expr_1 = ({ id: 'x' });\n  __vizeSlotOutlet((undefined as unknown as $$Slots)[\"default\"])(\n  {\n    \"items\": getItems(),\n    \"attrs\": { id: 'x' },\n  });\n"
         );
         let call_probe =
             super::mapped::inferred_binding_offset(&document, &call_authored).expect("call probe");
@@ -353,7 +353,7 @@ mod tests {
         bind_template_expressions(&mut document);
         assert_eq!(
             document.content.as_str(),
-            "  const __expr_0: $$HogeOptionsPropShape<typeof __vize_options_props>[\"isOpened\"] = (isOpened); // VBind\n  const __expr_1 = (type); // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
+            "  const __expr_0: $$OptionsPropShape<typeof __vize_options_props>[\"isOpened\"] = (isOpened); // VBind\n  const __expr_1 = (type); // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
         );
         let generated = document.mapping.to_generated(4).expect("row");
         assert_eq!(

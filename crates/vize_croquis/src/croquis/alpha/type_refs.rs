@@ -27,7 +27,7 @@ pub(super) struct References {
 
 pub(super) fn is_object_type(source: &str) -> bool {
     let allocator = Allocator::new();
-    let input = cstr!("type $$Hoge = {source};");
+    let input = cstr!("type $$ = {source};");
     let parsed = Parser::new(&allocator, &input, SourceType::ts()).parse();
     parsed.diagnostics.is_empty()
         && !parsed.panicked
@@ -46,15 +46,15 @@ pub(super) fn collect(
         || CompactString::new(source),
         |parameters| cstr!("{parameters}(__value: {source}) => void"),
     );
-    let input = cstr!("type $$Hoge{outer} = {expression};");
+    let input = cstr!("type $${outer} = {expression};");
     parse_source(&input, BTreeSet::new(), true)
 }
 
 pub(super) fn collect_declaration(source: &str, generic: Option<&str>) -> References {
     let allocator = Allocator::new();
     let input = generic.map_or_else(
-        || CompactString::new("type $$Hoge = unknown;"),
-        |generic| cstr!("type $$Hoge<{generic}> = unknown;"),
+        || CompactString::new("type $$ = unknown;"),
+        |generic| cstr!("type $$<{generic}> = unknown;"),
     );
     let parsed = Parser::new(&allocator, &input, SourceType::ts()).parse();
     let names = match parsed.program.body.as_slice() {

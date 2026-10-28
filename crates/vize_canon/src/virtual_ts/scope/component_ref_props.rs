@@ -19,7 +19,7 @@ pub(super) fn append_ref_callback_helper(ts: &mut String, usages: &[(usize, &Com
         .any(|(_, usage)| usage.props.iter().any(is_inline_ref_callback_prop))
     {
         ts.push_str(
-            "  type $$HogeComponentRefCallback = (ref: any, refs: Record<string, any>) => void;\n",
+            "  type $$ComponentRefCallback = (ref: any, refs: Record<string, any>) => void;\n",
         );
     }
 }

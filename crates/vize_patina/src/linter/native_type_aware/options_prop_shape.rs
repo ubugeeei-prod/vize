@@ -20,7 +20,7 @@ pub(super) fn options_prop_annotation(object: Option<&str>, expr: &str) -> Optio
         return None;
     }
     Some(cstr!(
-        "$$HogeOptionsPropShape<typeof __vize_options_props>[\"{name}\"]"
+        "$$OptionsPropShape<typeof __vize_options_props>[\"{name}\"]"
     ))
 }
 

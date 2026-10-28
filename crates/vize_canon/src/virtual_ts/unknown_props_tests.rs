@@ -8,7 +8,7 @@ fn check_tail_line(code: &str) -> &str {
     code.lines()
         .find(|line| {
             line.as_bytes()
-                .starts_with(b"  type $$HogeComponentCheckTail")
+                .starts_with(b"  type $$ComponentCheckTail")
         })
         .expect("component prop helpers should declare a check tail")
 }
@@ -57,7 +57,7 @@ fn generate_usage(script: &str, template: &str, check_unknown_props: bool) -> vi
 fn unknown_props_off_opens_generated_check_tail() {
     assert_eq!(
         check_tail_line(&generate_parent_usage(false)),
-        "  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
+        "  type $$ComponentCheckTail<C> = $$IsGeneratedComponent<C> extends true ? $$PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
 }
 
@@ -66,11 +66,11 @@ fn unknown_props_on_keeps_native_fallthrough_tail() {
     let code = generate_parent_usage(true);
     assert_eq!(
         check_tail_line(&code),
-        "  type $$HogeComponentCheckTail<C> = $$HogeIsGeneratedComponent<C> extends true ? $$HogePublicComponentAttrs & $$HogeComponentGlobalHtmlAttrs & $$HogeAllowedFallthroughAttrs<C> : $$HogePublicComponentAttrs & $$HogeComponentGlobalHtmlAttrs;",
+        "  type $$ComponentCheckTail<C> = $$IsGeneratedComponent<C> extends true ? $$PublicComponentAttrs & $$ComponentGlobalHtmlAttrs & $$AllowedFallthroughAttrs<C> : $$PublicComponentAttrs & $$ComponentGlobalHtmlAttrs;",
     );
-    assert_eq!(type_declaration(&code, "$$HogeAttrCamel"), None);
-    assert_eq!(type_declaration(&code, "$$HogeNativeAttrNames"), None);
-    assert_eq!(type_declaration(&code, "$$HogeGlobalHtmlAttrs"), None);
+    assert_eq!(type_declaration(&code, "$$AttrCamel"), None);
+    assert_eq!(type_declaration(&code, "$$NativeAttrNames"), None);
+    assert_eq!(type_declaration(&code, "$$GlobalHtmlAttrs"), None);
 }
 
 #[test]
@@ -241,12 +241,12 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         true,
     );
     assert!(
-        code.contains("type $$HogePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $$HogeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}"),
+        code.contains("type $$PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $$IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}"),
         "{code}"
     );
     assert!(code.contains("\"foo\": \"x\""), "{code}");
     assert!(
-        code.contains("$$HogeComponentRawProps<typeof is>"),
+        code.contains("$$ComponentRawProps<typeof is>"),
         "{code}"
     );
 }
@@ -257,17 +257,17 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
     // The navigation completion pattern must receive `{}`, not `unknown`,
     // even when this usage has no authored props to check.
     assert!(
-        code.contains("$$HogeHasStaticRawProps<C> extends true ? $$HogeStaticRawProps<C> : $$HogePublicProps<C>"),
+        code.contains("$$HasStaticRawProps<C> extends true ? $$StaticRawProps<C> : $$PublicProps<C>"),
         "{code}"
     );
     assert!(
         code.contains(
-            "const { } = undefined as unknown as $$HogeComponentNavigationProps<__Div_Props_0>;"
+            "const { } = undefined as unknown as $$ComponentNavigationProps<__Div_Props_0>;"
         ),
         "{code}"
     );
     assert!(
-        code.contains("$$HogeComponentRawProps<typeof Div>"),
+        code.contains("$$ComponentRawProps<typeof Div>"),
         "{code}"
     );
 }

@@ -345,7 +345,7 @@ for (const row of observations) {
       if (
         side.side === "baseline" &&
         row.fixture.guarded &&
-        line.includes("$$HogeSlotsFactory") &&
+        line.includes("$$SlotsFactory") &&
         /\bstatus\s*===/u.test(line)
       )
         expected.push({

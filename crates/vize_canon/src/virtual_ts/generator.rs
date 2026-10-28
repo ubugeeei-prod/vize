@@ -866,7 +866,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .component_value_props_type_ref(generic_component_params.as_ref(), legacy_vue2)
             .as_deref(),
         ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
-            .then_some("$$HogeSlots"),
+            .then_some("$$Slots"),
         (
             self::fallthrough::fallthrough_props_type_ref(
                 &fallthrough_scope,

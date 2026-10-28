@@ -26,7 +26,7 @@ defineSlots<{ default(props: { label: string }): any }>()
     );
     assert!(
         output.code.contains(
-            r#"...__vizeSlotOutletSpread<$$HogeSlotOutletPayload<$$HogeSlots, "default">>()(attrs),"#
+            r#"...__vizeSlotOutletSpread<$$SlotOutletPayload<$$Slots, "default">>()(attrs),"#
         ),
         "slot outlet spread call must infer its expression argument:\n{}",
         output.code

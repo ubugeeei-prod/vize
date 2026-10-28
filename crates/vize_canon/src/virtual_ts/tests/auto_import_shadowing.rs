@@ -31,7 +31,7 @@ const count = 1
     assert!(
         output
             .code
-            .contains("declare const $$HogeComponent_Differences: typeof import"),
+            .contains("declare const $$Component_Differences: typeof import"),
         "{}",
         output.code
     );
@@ -39,7 +39,7 @@ const count = 1
     assert!(
         output
             .code
-            .contains("type __Differences_Props_0 = typeof $$HogeComponent_Differences"),
+            .contains("type __Differences_Props_0 = typeof $$Component_Differences"),
         "{}",
         output.code
     );
@@ -77,14 +77,14 @@ const paginatorRef = ref<PaginatorRef>()
     assert!(
         output
             .code
-            .contains("declare const $$HogeComponent_CommonPaginator: typeof import"),
+            .contains("declare const $$Component_CommonPaginator: typeof import"),
         "{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("type __CommonPaginator_Props_0 = typeof $$HogeComponent_CommonPaginator"),
+            .contains("type __CommonPaginator_Props_0 = typeof $$Component_CommonPaginator"),
         "{}",
         output.code
     );
@@ -126,7 +126,7 @@ const chartComponent = { template: '<div />' }
     assert_eq!(
         lines
             .iter()
-            .filter(|line| **line == "  void $$HogeComponent_chartComponent;")
+            .filter(|line| **line == "  void $$Component_chartComponent;")
             .count(),
         0,
     );
@@ -183,7 +183,7 @@ fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
             );
             if uses_css_module {
                 assert!(
-                    output.code.contains("type $$HogeStyleModules"),
+                    output.code.contains("type $$StyleModules"),
                     "{}",
                     output.code
                 );
@@ -208,7 +208,7 @@ fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
                     output.code
                 );
                 assert!(
-                    !output.code.contains("type $$HogeStyleModules"),
+                    !output.code.contains("type $$StyleModules"),
                     "{}",
                     output.code
                 );

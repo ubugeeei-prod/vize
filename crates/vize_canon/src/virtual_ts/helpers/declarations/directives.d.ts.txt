@@ -1,12 +1,12 @@
-type $$HogeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
-type $$HogeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }) => void : H : never;
-declare function __vizeDirective<D>(directive: D): $$HogeDirectiveCall<$$HogeDirectiveHook<D>>;
+type $$DirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
+type $$DirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }) => void : H : never;
+declare function __vizeDirective<D>(directive: D): $$DirectiveCall<$$DirectiveHook<D>>;
 // @ts-ignore TS2694/TS2307: a `vue` without `GlobalDirectives` must degrade registered directives to unchecked, never error.
-type $$HogeGlobalDirectives = import('vue').GlobalDirectives;
+type $$GlobalDirectives = import('vue').GlobalDirectives;
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade registered directives to unchecked, never error.
-type $$HogeOwnDirectives<D> = D extends infer L & Record<string, import('vue').Directive> ? L : D;
-type $$HogeLocalDirectives<C> = C extends { directives?: infer D } ? { [K in keyof $$HogeOwnDirectives<NonNullable<D>> & string as string extends K ? never : `v${Capitalize<K>}`]: $$HogeOwnDirectives<NonNullable<D>>[K] } : {};
-declare function __vizeRegisteredDirective<C, K extends string>(): K extends keyof $$HogeLocalDirectives<C> ? $$HogeLocalDirectives<C>[K] : K extends keyof $$HogeGlobalDirectives ? $$HogeGlobalDirectives[K] : unknown;
+type $$OwnDirectives<D> = D extends infer L & Record<string, import('vue').Directive> ? L : D;
+type $$LocalDirectives<C> = C extends { directives?: infer D } ? { [K in keyof $$OwnDirectives<NonNullable<D>> & string as string extends K ? never : `v${Capitalize<K>}`]: $$OwnDirectives<NonNullable<D>>[K] } : {};
+declare function __vizeRegisteredDirective<C, K extends string>(): K extends keyof $$LocalDirectives<C> ? $$LocalDirectives<C>[K] : K extends keyof $$GlobalDirectives ? $$GlobalDirectives[K] : unknown;
 declare function __vizeVaporDirective<D>(directive: D): D extends (...args: any[]) => any ? D : (node: unknown, value?: () => unknown, argument?: unknown, modifiers?: unknown) => void;
 declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modifiers: any; dir: any };
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];

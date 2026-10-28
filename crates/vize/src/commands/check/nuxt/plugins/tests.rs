@@ -35,7 +35,7 @@ fn scans_src_app_plugins_for_nuxt2_injections() {
     assert!(
         stubs
             .iter()
-            .any(|stub| stub.contains("$logger: $$HogeNuxtInjection<'$logger'>;")),
+            .any(|stub| stub.contains("$logger: $$NuxtInjection<'$logger'>;")),
         "expected UseContextReturn injection augmentation from src/app/plugins:\n{stubs:#?}"
     );
     assert!(
@@ -55,11 +55,11 @@ fn renders_use_context_injection_augmentations() {
     let composition =
         render_module_augmentation_stub(&render_nuxt_composition_api_augmentation_stub());
 
-    assert!(globals.contains("$logger: $$HogeNuxtInjection<'$logger'>;"));
-    assert!(types.contains("interface Context extends $$HogeNuxtInjectedProperties"));
+    assert!(globals.contains("$logger: $$NuxtInjection<'$logger'>;"));
+    assert!(types.contains("interface Context extends $$NuxtInjectedProperties"));
     assert!(composition.starts_with("// @vize-module-augmentation\n"));
     assert!(
-        composition.contains("interface UseContextReturn extends $$HogeNuxtInjectedProperties")
+        composition.contains("interface UseContextReturn extends $$NuxtInjectedProperties")
     );
 }
 

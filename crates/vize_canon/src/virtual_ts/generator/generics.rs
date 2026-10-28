@@ -127,7 +127,7 @@ impl HoistedGenericAliases {
         for (index, type_name) in self.type_names.iter().enumerate() {
             append!(
                 *ts,
-                "type $$HogeHoistedGeneric{index}<{}> = {type_name}<{}>;\n",
+                "type $$HoistedGeneric{index}<{}> = {type_name}<{}>;\n",
                 self.generic_decl,
                 self.generic_names
             );
@@ -138,7 +138,7 @@ impl HoistedGenericAliases {
         for (index, type_name) in self.type_names.iter().enumerate() {
             append!(
                 *ts,
-                "  type {type_name} = $$HogeHoistedGeneric{index}<{}>;\n",
+                "  type {type_name} = $$HoistedGeneric{index}<{}>;\n",
                 self.generic_names
             );
         }
@@ -284,7 +284,7 @@ mod tests {
         assert_eq!(
             setup.as_str(),
             concat!(
-                "  type Value = $$HogeHoistedGeneric0<T>;\n",
+                "  type Value = $$HoistedGeneric0<T>;\n",
                 "  type Alias = Value;\n",
                 "  interface Payload { value: Alias }\n",
             )

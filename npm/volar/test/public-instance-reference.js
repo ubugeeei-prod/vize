@@ -27,7 +27,7 @@ export function publicInstanceReference(packets) {
     assert.equal(diagnostic.length, name.length);
     assert.equal(diagnostic.file.text.slice(start, start + name.length), name);
     diagnostic.code = 2339;
-    diagnostic.messageText = `Property '${name}' does not exist on type '$$HogeTemplateInstance'.`;
+    diagnostic.messageText = `Property '${name}' does not exist on type '$$TemplateInstance'.`;
   }
   return out;
 }

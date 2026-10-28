@@ -178,7 +178,7 @@ fn css_module_type(shape: &CssModuleShape, strict: bool) -> CompactString {
     let own = if shape.imports.is_empty() {
         classes
     } else {
-        let mut merged = CompactString::from("$$HogePrettify<{}");
+        let mut merged = CompactString::from("$$Prettify<{}");
         for import in &shape.imports {
             merged.push_str(" & typeof import(");
             merged.push_str(
@@ -316,11 +316,11 @@ mod tests {
         let shape = css_module_block_shape(style, true).expect("imports are resolved");
         assert_eq!(
             css_module_type(&shape, false),
-            "Record<string, string> & $$HogePrettify<{} & typeof import(\"./base.css\").default & { \"root\": string; }>"
+            "Record<string, string> & $$Prettify<{} & typeof import(\"./base.css\").default & { \"root\": string; }>"
         );
         assert_eq!(
             css_module_type(&shape, true),
-            "$$HogePrettify<{} & typeof import(\"./base.css\").default & { \"root\": string; }>"
+            "$$Prettify<{} & typeof import(\"./base.css\").default & { \"root\": string; }>"
         );
         assert_eq!(
             css_module_block_type(style, false),

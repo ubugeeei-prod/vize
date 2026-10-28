@@ -82,14 +82,14 @@ const pick = (_value: string, _index: number) => {}
     // The isolated stub's `NativeElements` is `Record<string, …>`, so the
     // #4966 global-attr surface renders as its open index-map form here. The
     // longer shared data-attr map causes TypeScript to elide the final record.
-    let native_tail = "$$HogePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<...>";
+    let native_tail = "$$PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<...>";
     assert_eq!(
         snapshot,
         vec![(
             String::from("src/Parent.vue"),
             Some(2345),
             cstr!(
-                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '$$HogeComponentCheckProps<__Wide_CheckProps_0, {native_tail}>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
+                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '$$ComponentCheckProps<__Wide_CheckProps_0, {native_tail}>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
             ),
         )],
         "a 121-prop child reports exactly its missing required prop, with no complexity error"

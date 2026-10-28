@@ -80,7 +80,7 @@ test("completion resolves authored documentation through the real server", async
     })) as Item[] | { items: Item[] };
     const items = Array.isArray(response) ? response : response.items;
     assert.deepEqual(
-      items.filter((item) => /^\$\$Hoge|^__vize/.test(String(item.label))).map((item) => item.label),
+      items.filter((item) => /^\$\$|^__vize/.test(String(item.label))).map((item) => item.label),
       label.startsWith("__vize") ? [label] : [],
       "only authored helpers may become script candidates",
     );

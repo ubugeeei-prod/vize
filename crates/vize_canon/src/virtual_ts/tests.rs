@@ -317,7 +317,7 @@ export default class Counter extends Vue {
     assert!(
         output
             .code
-            .contains("var count: $$HogeOptionsBinding<typeof __default__, \"count\">"),
+            .contains("var count: $$OptionsBinding<typeof __default__, \"count\">"),
         "class members must be typed from the class instance:\n{}",
         output.code
     );
@@ -338,7 +338,7 @@ const count = ref(0)
         generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
 
     assert!(
-        !output.code.contains("$$HogeThis"),
+        !output.code.contains("$$This"),
         "`<script setup>` output must not contain the Options API bridge:\n{}",
         output.code
     );
@@ -389,7 +389,7 @@ fn test_script_setup_with_define_props_type_ref_byte_identical_with_options_api_
     // not an inline `TSTypeLiteral`) registers destructured names as
     // `BindingType::Props` without populating `summary.macros.props()`. Before
     // the `is_script_setup` gate, those names slipped through the Options API
-    // template-binding filter and produced spurious `$$HogeOptionsBinding`
+    // template-binding filter and produced spurious `$$OptionsBinding`
     // declarations on a `<script setup>` SFC, breaking the byte-identical
     // guarantee.
     use vize_croquis::{Analyzer, AnalyzerOptions};
@@ -653,7 +653,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     assert!(
         output
             .code
-            .contains("type __auto_card_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? ($$HogeIsAny<__F> extends true ? $$HogeComponentRawProps<typeof AutoCard> : Record<string, unknown>) : $$HogeComponentRawProps<typeof AutoCard>;")
+            .contains("type __auto_card_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? ($$IsAny<__F> extends true ? $$ComponentRawProps<typeof AutoCard> : Record<string, unknown>) : $$ComponentRawProps<typeof AutoCard>;")
     );
 }
 
@@ -682,7 +682,7 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
     assert!(
         output
             .code
-            .contains("declare const AutoCard: $$HogeGlobalComponent<\"AutoCard\"> & $$HogeGlobalComponentFallback;")
+            .contains("declare const AutoCard: $$GlobalComponent<\"AutoCard\"> & $$GlobalComponentFallback;")
     );
     assert!(output.code.contains("type __AutoCard_Props_0"));
     assert!(output.code.contains("__AutoCard_Check_0"));
@@ -739,7 +739,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
     assert!(
         !configured_output
             .code
-            .contains("$$HogeInstanceGlobal<'$t'>")
+            .contains("$$InstanceGlobal<'$t'>")
     );
     assert!(
         configured_output
@@ -770,7 +770,7 @@ const $q = functionCall()
     assert!(
         !output
             .code
-            .contains("const $q: $$HogeInstanceGlobal<'$q'> = undefined as any;"),
+            .contains("const $q: $$InstanceGlobal<'$q'> = undefined as any;"),
         "setup binding named like an instance global must not be redeclared:\n{}",
         output.code
     );
@@ -806,7 +806,7 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("type $$HogeComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $$HogePublicEmit<Emits>;\n  $slots: $$HogePublicSlots<$$HogeSlots>;\n} & $$HogeComponentPublicBase & $$HogeShallowUnwrapRef<Exposed>;"),
+        output.code.contains("type $$ComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $$PublicEmit<Emits>;\n  $slots: $$PublicSlots<$$Slots>;\n} & $$ComponentPublicBase & $$ShallowUnwrapRef<Exposed>;"),
         "component instance should include exposed bindings:\n{}",
         output.code
     );

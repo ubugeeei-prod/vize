@@ -61,7 +61,7 @@ fn slot_resolver_retains_authored_defaults_instead_of_guessing_synthetic_ones() 
         assert_eq!(
             actual,
             vize_carton::cstr!(
-                "__vizeResolveSlots?: <{raw}>(props: Partial<Props<{}>> & Record<string, unknown>) => $$HogeSlots<{}>; ",
+                "__vizeResolveSlots?: <{raw}>(props: Partial<Props<{}>> & Record<string, unknown>) => $$Slots<{}>; ",
                 plan.names,
                 plan.names
             )

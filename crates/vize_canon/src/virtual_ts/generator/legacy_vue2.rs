@@ -14,7 +14,7 @@ const LEGACY_VUE_TYPE_HELPERS: &str = concat!(
 );
 const LEGACY_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends { value: infer __V } ? __V : T;\n";
-const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type $$HogeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends { value: infer __V } ? __V : T[K] };\n";
+const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type $$ShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends { value: infer __V } ? __V : T[K] };\n";
 /// Template-scope ref unwrapping for the modern (Vue 3) dialect when the shared
 /// preamble is *not* hoisted (check server, content mapper).
 ///
@@ -35,9 +35,9 @@ const MODERN_REF_UNWRAP_HELPER: &str =
 /// aliases saves 369 bytes in every generated `.vue.ts` and stops TypeScript
 /// instantiating a distinct declaration per file instead of caching one
 /// (#3443, #3460).
-const MODERN_HOISTED_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$HogeWidenTemplateRef<T['value']> : T : T;\n";
+const MODERN_HOISTED_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$WidenTemplateRef<T['value']> : T : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref<any> ? T['value'] : T : T;\n";
-const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type $$HogeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
+const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type $$ShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
 const LEGACY_DEFINE_COMPONENT_HELPER: &str =
     include_str!("../helpers/declarations/vue2-define-component.d.ts.txt");
 pub(super) const LEGACY_COMPONENT_INSTANCE_HELPER: &str =

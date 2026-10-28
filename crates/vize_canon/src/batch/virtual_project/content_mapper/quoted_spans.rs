@@ -255,7 +255,7 @@ mod tests {
             generate_vue_content_mapper_transform(Path::new("CallSignatureChild.vue"), ORIGINAL)
                 .expect("original transform");
         assert!(result.diagnostics.is_empty(), "{:#?}", result.diagnostics);
-        let authored_map = result.text.find("type $$HogeAuthoredEventMap").unwrap();
+        let authored_map = result.text.find("type $$AuthoredEventMap").unwrap();
         let literal = expected["literal"].as_str().unwrap();
         let generated = authored_map + result.text[authored_map..].find(literal).unwrap();
         let original_start = expected["sourceRange"][0].as_u64().unwrap() as usize;

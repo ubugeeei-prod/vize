@@ -41,7 +41,7 @@ fn strict_slot_contracts_are_opt_in_in_modern_and_legacy_entrypoints() {
         assert_eq!(
             contracts(&on),
             [
-                "const __vize_slot_children_0_default: $$HogeSlotChildren<$$HogeSlotContract_0, \"default\"> = null as unknown as $$HogeProvidedSlotChildren<[HTMLInputElement]>;",
+                "const __vize_slot_children_0_default: $$SlotChildren<$$SlotContract_0, \"default\"> = null as unknown as $$ProvidedSlotChildren<[HTMLInputElement]>;",
             ]
         );
         options.experimental_strict_slot_children = false;

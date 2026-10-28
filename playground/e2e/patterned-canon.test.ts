@@ -50,7 +50,7 @@ describe("patterned Canon with real WASM and Monaco TypeScript", () => {
   it("checks root arms, as/loop bindings, guards and the original subject", async () => {
     const { source, check } = await create();
     expect(check.diagnostics.value).toEqual([]);
-    expect(check.typeCheckResult.value?.virtualTsHelpers).toContain("namespace $$HogePatterns");
+    expect(check.typeCheckResult.value?.virtualTsHelpers).toContain("namespace $$Patterns");
     source.value = valid.replace("rows.toFixed()", "rows.toUpperCase()");
     await check.typeCheck();
     expect(check.diagnostics.value).toHaveLength(1);

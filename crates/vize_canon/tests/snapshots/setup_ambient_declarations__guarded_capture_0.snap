@@ -59,18 +59,18 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type $$HogeSlots = {};
-export type { $$HogeSlots as Slots };
+type $$Slots = {};
+export type { $$Slots as Slots };
 
 // ========== Default Export ==========
-type $$HogeComponentInstance = {
+type $$ComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: $$HogePublicEmit<Emits>;
-  $slots: $$HogePublicSlots<$$HogeSlots>;
-} & $$HogeComponentPublicBase;
-type $$HogeComponentConstructor = new <$$HogeAuthoredProps = unknown>(props?: $$HogeAuthoredProps & $$HogeComponentInput<Props, {}, $$HogeAuthoredProps>, ...args: any[]) => $$HogeUsePublicInstance<$$HogeAuthoredProps> extends true ? $$HogeComponentInstance : $$HogeReplaceComponentProps<$$HogeComponentInstance, $$HogeAuthoredKeyWitness<$$HogeAuthoredProps> & $$HogeComponentInputProps<Props, {}> & $$HogeComponentInputGuard<Props, {}, $$HogeAuthoredProps>>;
-type $$HogeVueComponentOptions = {
+  $emit: $$PublicEmit<Emits>;
+  $slots: $$PublicSlots<$$Slots>;
+} & $$ComponentPublicBase;
+type $$ComponentConstructor = new <$$AuthoredProps = unknown>(props?: $$AuthoredProps & $$ComponentInput<Props, {}, $$AuthoredProps>, ...args: any[]) => $$UsePublicInstance<$$AuthoredProps> extends true ? $$ComponentInstance : $$ReplaceComponentProps<$$ComponentInstance, $$AuthoredKeyWitness<$$AuthoredProps> & $$ComponentInputProps<Props, {}> & $$ComponentInputGuard<Props, {}, $$AuthoredProps>>;
+type $$VueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -95,5 +95,5 @@ type $$HogeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$HogeUnownedComponentAttrs<Partial<$$HogeNativeElement<"div">>, Props, {}>; } & $$HogeComponentConstructor & $$HogeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$UnownedComponentAttrs<Partial<$$NativeElement<"div">>, Props, {}>; } & $$ComponentConstructor & $$VueComponentOptions;
 export default __vize_component__;

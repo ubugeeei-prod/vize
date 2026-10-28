@@ -63,22 +63,22 @@ function __setup() {
 // Invoke setup to verify types
 __setup();
 
-type $$HogeAuthoredComponent = Awaited<ReturnType<typeof __setup>>["__default__"];
-type $$HogeAuthoredInstance = $$HogeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};
+type $$AuthoredComponent = Awaited<ReturnType<typeof __setup>>["__default__"];
+type $$AuthoredInstance = $$AuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};
 
 export type Emits = {};
-type $$HogeSlots = {};
-export type { $$HogeSlots as Slots };
+type $$Slots = {};
+export type { $$Slots as Slots };
 
 // ========== Default Export ==========
-type $$HogeComponentInstance = Omit<$$HogeAuthoredInstance, '$props' | '$emit' | '$slots'> & {
+type $$ComponentInstance = Omit<$$AuthoredInstance, '$props' | '$emit' | '$slots'> & {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: $$HogePublicEmit<Emits>;
-  $slots: $$HogePublicSlots<$$HogeSlots>;
-} & $$HogeComponentPublicBase;
-type $$HogeComponentConstructor = new <$$HogeAuthoredProps = unknown>(props?: $$HogeAuthoredProps & $$HogeComponentInput<Props, {}, $$HogeAuthoredProps>, ...args: any[]) => $$HogeUsePublicInstance<$$HogeAuthoredProps> extends true ? $$HogeComponentInstance : $$HogeReplaceComponentProps<$$HogeComponentInstance, $$HogeAuthoredKeyWitness<$$HogeAuthoredProps> & $$HogeComponentInputProps<Props, {}> & $$HogeComponentInputGuard<Props, {}, $$HogeAuthoredProps>>;
-type $$HogeVueComponentOptions = {
+  $emit: $$PublicEmit<Emits>;
+  $slots: $$PublicSlots<$$Slots>;
+} & $$ComponentPublicBase;
+type $$ComponentConstructor = new <$$AuthoredProps = unknown>(props?: $$AuthoredProps & $$ComponentInput<Props, {}, $$AuthoredProps>, ...args: any[]) => $$UsePublicInstance<$$AuthoredProps> extends true ? $$ComponentInstance : $$ReplaceComponentProps<$$ComponentInstance, $$AuthoredKeyWitness<$$AuthoredProps> & $$ComponentInputProps<Props, {}> & $$ComponentInputGuard<Props, {}, $$AuthoredProps>>;
+type $$VueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -103,5 +103,5 @@ type $$HogeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: $$HogeAuthoredComponent extends object ? { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$HogeUnownedComponentAttrs<Partial<$$HogeNativeElement<"div">>, Props, {}>; } & $$HogeAuthoredComponent & $$HogeComponentConstructor & $$HogeVueComponentOptions : $$HogeAuthoredComponent;
+declare const __vize_component__: $$AuthoredComponent extends object ? { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$UnownedComponentAttrs<Partial<$$NativeElement<"div">>, Props, {}>; } & $$AuthoredComponent & $$ComponentConstructor & $$VueComponentOptions : $$AuthoredComponent;
 export default __vize_component__;

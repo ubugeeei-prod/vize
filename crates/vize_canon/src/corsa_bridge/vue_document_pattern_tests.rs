@@ -34,12 +34,12 @@ const value = 'a' as 'a' | 'b';
             &[(child.clone(), child_source)],
         )
         .unwrap();
-        assert_eq!(project.host.code.contains("$$HogePatterns.Match<"), enabled);
+        assert_eq!(project.host.code.contains("$$Patterns.Match<"), enabled);
         assert_eq!(
             project
                 .host
                 .code
-                .contains("declare namespace $$HogePatterns"),
+                .contains("declare namespace $$Patterns"),
             enabled
         );
         let dependency = project
@@ -48,9 +48,9 @@ const value = 'a' as 'a' | 'b';
             .iter()
             .find(|dependency| dependency.source_path.ends_with("Child.vue"))
             .unwrap();
-        assert_eq!(dependency.code.contains("$$HogePatterns.Match<"), enabled);
+        assert_eq!(dependency.code.contains("$$Patterns.Match<"), enabled);
         assert_eq!(
-            dependency.code.contains("declare namespace $$HogePatterns"),
+            dependency.code.contains("declare namespace $$Patterns"),
             enabled
         );
         let mirrored_child = project.host.materialized_sources.iter().find(|file| {

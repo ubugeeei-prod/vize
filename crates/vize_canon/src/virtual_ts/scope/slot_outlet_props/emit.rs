@@ -61,27 +61,27 @@ pub(super) fn emit_slot_outlet_helpers(
     // Match Vue's functional-slot normalization without erasing overloaded call signatures.
     ts.push_str("  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }\n");
     // Payload aliases provide contextual typing for v-bind spreads.
-    ts.push_str("  type $$HogeSlotOutletFn = (...args: any[]) => any;\n");
+    ts.push_str("  type $$SlotOutletFn = (...args: any[]) => any;\n");
     if needs_static {
         ts.push_str(
-            "  type $$HogeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, $$HogeSlotOutletFn>;\n",
+            "  type $$SlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, $$SlotOutletFn>;\n",
         );
         ts.push_str(
-            "  type $$HogeSlotOutletArgs<__S, __K extends PropertyKey> = [$$HogeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<$$HogeSlotOutletTarget<__S, __K>>;\n",
+            "  type $$SlotOutletArgs<__S, __K extends PropertyKey> = [$$SlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<$$SlotOutletTarget<__S, __K>>;\n",
         );
         ts.push_str(
-            "  type $$HogeSlotOutletPayload<__S, __K extends PropertyKey> = [$$HogeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : $$HogeSlotOutletArgs<__S, __K>[0];\n",
+            "  type $$SlotOutletPayload<__S, __K extends PropertyKey> = [$$SlotOutletArgs<__S, __K>] extends [[]] ? unknown : $$SlotOutletArgs<__S, __K>[0];\n",
         );
     }
     if needs_dynamic {
         ts.push_str(
-            "  type $$HogeAnySlotOutletTarget<__S> = Extract<NonNullable<__S[keyof __S]>, $$HogeSlotOutletFn>;\n",
+            "  type $$AnySlotOutletTarget<__S> = Extract<NonNullable<__S[keyof __S]>, $$SlotOutletFn>;\n",
         );
         ts.push_str(
-            "  type $$HogeAnySlotOutletArgs<__S> = [$$HogeAnySlotOutletTarget<__S>] extends [never] ? [] : Parameters<$$HogeAnySlotOutletTarget<__S>>;\n",
+            "  type $$AnySlotOutletArgs<__S> = [$$AnySlotOutletTarget<__S>] extends [never] ? [] : Parameters<$$AnySlotOutletTarget<__S>>;\n",
         );
         ts.push_str(
-            "  type $$HogeAnySlotOutletPayload<__S> = [$$HogeAnySlotOutletArgs<__S>] extends [[]] ? unknown : $$HogeAnySlotOutletArgs<__S>[0];\n",
+            "  type $$AnySlotOutletPayload<__S> = [$$AnySlotOutletArgs<__S>] extends [[]] ? unknown : $$AnySlotOutletArgs<__S>[0];\n",
         );
     }
     if needs_key {
@@ -93,15 +93,15 @@ pub(super) fn emit_slot_outlet_helpers(
         );
     }
     if needs_spread {
-        ts.push_str("  type $$HogeSlotOutletObject<__T> = __T extends object ? __T : never;\n");
+        ts.push_str("  type $$SlotOutletObject<__T> = __T extends object ? __T : never;\n");
         // Intersecting known payloads with the expected type hides incompatible
         // members as `never`. Keep their authored types, including generic
         // conditional payloads, and apply the fallback only to non-object values.
         ts.push_str(
-            "  type $$HogeSlotOutletSpreadPayload<__Expected, __T> = $$HogeSlotOutletObject<__T> | (__T extends object ? never : __Expected & Record<string, unknown>);\n",
+            "  type $$SlotOutletSpreadPayload<__Expected, __T> = $$SlotOutletObject<__T> | (__T extends object ? never : __Expected & Record<string, unknown>);\n",
         );
         ts.push_str(
-            "  function __vizeSlotOutletSpread<__Expected>() { return function <__T>(value: __T): $$HogeSlotOutletSpreadPayload<__Expected, __T> { return value as any; }; }\n",
+            "  function __vizeSlotOutletSpread<__Expected>() { return function <__T>(value: __T): $$SlotOutletSpreadPayload<__Expected, __T> { return value as any; }; }\n",
         );
     }
 }
@@ -246,11 +246,11 @@ fn generate_slot_outlet_checks(
 fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> PayloadType {
     if outlet.name_is_dynamic {
         return PayloadType {
-            text: vize_carton::cstr!("$$HogeAnySlotOutletPayload<{slots_type_ref}>"),
+            text: vize_carton::cstr!("$$AnySlotOutletPayload<{slots_type_ref}>"),
         };
     }
 
-    let mut text = String::from("$$HogeSlotOutletPayload<");
+    let mut text = String::from("$$SlotOutletPayload<");
     text.push_str(slots_type_ref);
     text.push_str(", ");
     crate::virtual_ts::helpers::push_ts_string_literal(&mut text, outlet.name.as_str());

@@ -293,19 +293,19 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let public_dts = std::fs::read_to_string(out_dir.join("Public.vue.d.ts")).unwrap();
     assert!(
         public_dts.contains(
-            "type $$HogeComponentConstructor = new <$$HogeAuthoredProps = unknown>(props?: $$HogeAuthoredProps & $$HogeComponentInput<Props, __EmitProps<Emits>, $$HogeAuthoredProps>, ...args: any[])"
+            "type $$ComponentConstructor = new <$$AuthoredProps = unknown>(props?: $$AuthoredProps & $$ComponentInput<Props, __EmitProps<Emits>, $$AuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
-            "declare const __vize_component__: {\n    __vizeEmitProps?: $$HogeStaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<$$HogeSlots>;\n} & $$HogeComponentConstructor & $$HogeVueComponentOptions;"
+            "declare const __vize_component__: {\n    __vizeEmitProps?: $$StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<$$Slots>;\n} & $$ComponentConstructor & $$VueComponentOptions;"
         )
-            && !public_dts.contains("$$HogeComponentInputConstructor")
-            && !public_dts.contains("$$HogeComponentPublicConstructor"),
+            && !public_dts.contains("$$ComponentInputConstructor")
+            && !public_dts.contains("$$ComponentPublicConstructor"),
         "one constructor must own authored, public-instance, and incremental raw-props contracts:\n{public_dts}"
     );
     assert!(
         public_dts.contains("$props: Props & __EmitProps<Emits>;")
-            && public_dts.contains("$emit: $$HogePublicEmit<Emits>;")
-            && public_dts.contains("$slots: $$HogePublicSlots<$$HogeSlots>;")
-            && public_dts.contains("} & $$HogeComponentPublicBase &"),
+            && public_dts.contains("$emit: $$PublicEmit<Emits>;")
+            && public_dts.contains("$slots: $$PublicSlots<$$Slots>;")
+            && public_dts.contains("} & $$ComponentPublicBase &"),
         "emitted public instance must own props/emits and adapt the Vue base:\n{public_dts}"
     );
 

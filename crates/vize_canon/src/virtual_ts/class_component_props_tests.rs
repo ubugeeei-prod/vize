@@ -55,7 +55,7 @@ export default class HelloDecorator extends Vue {
         "the empty Props no-op must be gone for a class component with props:\n{code}",
     );
     // `required: true` must not slip through as an optional member. Matched on
-    // the Props body only: `$$HogeVueComponentOptions` legitimately carries an
+    // the Props body only: `$$VueComponentOptions` legitimately carries an
     // unrelated optional `name?: string` component-option field.
     assert!(
         !code.contains("  \"name\"?: string;\n};"),
@@ -149,7 +149,7 @@ export default class Renaming extends Vue {
     );
     for name in ["syncedTitle", "modelValue", "selected"] {
         let binding = vize_carton::cstr!(
-            "const {name}: $$HogeOptionsBinding<typeof __default__, \"{name}\">"
+            "const {name}: $$OptionsBinding<typeof __default__, \"{name}\">"
         );
         assert!(
             code.contains(binding.as_str()),
@@ -179,7 +179,7 @@ export default class HelloDecorator extends Vue {
         "a declared prop is bound from the props contract, not the instance bridge:\n{code}",
     );
     assert!(
-        !code.contains("const name: $$HogeOptionsBinding<typeof __default__, \"name\">"),
+        !code.contains("const name: $$OptionsBinding<typeof __default__, \"name\">"),
         "a declared prop must not be declared twice (TS2451):\n{code}",
     );
 }

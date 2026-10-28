@@ -266,9 +266,9 @@ fn component_helper_declares_the_slot_payload_contract() {
     assert_eq!(
         declarations,
         vec![
-            "declare function __vize_jsx_component_spread__<O>(value: O): $$HogeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;",
-            "declare function __vize_jsx_component__<C>(component: C): $$HogeJsxComponentCall<C>;",
-            "declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: $$HogeJsxSlotPayload<C, N>) => unknown): any;",
+            "declare function __vize_jsx_component_spread__<O>(value: O): $$JsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;",
+            "declare function __vize_jsx_component__<C>(component: C): $$JsxComponentCall<C>;",
+            "declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: $$JsxSlotPayload<C, N>) => unknown): any;",
         ]
     );
 }

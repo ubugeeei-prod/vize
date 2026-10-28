@@ -21,7 +21,7 @@ fn options_api_declarations(script: &str, template: &str) -> Vec<std::string::St
     output
         .code
         .lines()
-        .filter(|line| line.contains("$$HogeOptionsBinding"))
+        .filter(|line| line.contains("$$OptionsBinding"))
         .filter(|line| {
             let trimmed = line.trim_start();
             trimmed.starts_with("const ") || trimmed.starts_with("var ")
@@ -79,13 +79,13 @@ fn writable_computed_template_bindings_emit_var() {
     assert_eq!(
         declarations,
         [
-            "  var accessor: $$HogeOptionsBinding<typeof __default__, \"accessor\"> = (void 0) as any;",
-            "  var arrowSetter: $$HogeOptionsBinding<typeof __default__, \"arrowSetter\"> = (void 0) as any;",
-            "  const getterOnly: $$HogeOptionsBinding<typeof __default__, \"getterOnly\"> = (void 0) as any;",
-            "  const label: $$HogeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
-            "  var ratio: $$HogeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  const reset: $$HogeOptionsBinding<typeof __default__, \"reset\"> = (void 0) as any;",
-            "  var store: $$HogeOptionsBinding<typeof __default__, \"store\"> = (void 0) as any;",
+            "  var accessor: $$OptionsBinding<typeof __default__, \"accessor\"> = (void 0) as any;",
+            "  var arrowSetter: $$OptionsBinding<typeof __default__, \"arrowSetter\"> = (void 0) as any;",
+            "  const getterOnly: $$OptionsBinding<typeof __default__, \"getterOnly\"> = (void 0) as any;",
+            "  const label: $$OptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var ratio: $$OptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const reset: $$OptionsBinding<typeof __default__, \"reset\"> = (void 0) as any;",
+            "  var store: $$OptionsBinding<typeof __default__, \"store\"> = (void 0) as any;",
         ]
     );
 }
@@ -134,9 +134,9 @@ export default defineComponent({
     assert_eq!(
         declarations,
         [
-            "  const fixed: $$HogeOptionsBinding<typeof __default__, \"fixed\"> = (void 0) as any;",
-            "  var ratio: $$HogeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  var title: $$HogeOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
+            "  const fixed: $$OptionsBinding<typeof __default__, \"fixed\"> = (void 0) as any;",
+            "  var ratio: $$OptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  var title: $$OptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
         ]
     );
 }
@@ -185,8 +185,8 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const ratio: $$HogeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  const title: $$HogeOptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
+            "  const ratio: $$OptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const title: $$OptionsBinding<typeof __default__, \"title\"> = (void 0) as any;",
         ]
     );
 }
@@ -206,7 +206,7 @@ fn accessor_pair_is_writable_in_either_order() {
     let declarations = options_api_declarations(script, r#"<div @click="first = 'b'" />"#);
     assert_eq!(
         declarations,
-        ["  var first: $$HogeOptionsBinding<typeof __default__, \"first\"> = (void 0) as any;"]
+        ["  var first: $$OptionsBinding<typeof __default__, \"first\"> = (void 0) as any;"]
     );
 }
 
@@ -257,8 +257,8 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const label: $$HogeOptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
-            "  var ratio: $$HogeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const label: $$OptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var ratio: $$OptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
         ]
     );
 }
@@ -303,9 +303,9 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  var free: $$HogeOptionsBinding<typeof __default__, \"free\"> = (void 0) as any;",
-            "  const ratio: $$HogeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
-            "  const size: $$HogeOptionsBinding<typeof __default__, \"size\"> = (void 0) as any;",
+            "  var free: $$OptionsBinding<typeof __default__, \"free\"> = (void 0) as any;",
+            "  const ratio: $$OptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const size: $$OptionsBinding<typeof __default__, \"size\"> = (void 0) as any;",
         ]
     );
 }

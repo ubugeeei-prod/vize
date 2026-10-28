@@ -98,7 +98,7 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.
 ///
-/// `$$HogeJsxFallthroughAttrs` admits `class`/`style`, `data-`/`aria-`
+/// `$$JsxFallthroughAttrs` admits `class`/`style`, `data-`/`aria-`
 /// attributes, and native DOM listeners not shadowed by a declared prop. The
 /// listener set is a **deliberate divergence from `vue-tsc`**, which rejects
 /// `<Comp onClick={…}/>` outright for a component that does not declare it even
@@ -108,7 +108,7 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 /// `crates/vize/tests/check_jsx_component_contract_cli.rs`, which pins both
 /// halves of that contract.
 ///
-/// `$$HogeJsxSlotPayload` is the JSX analogue of the `.vue` template path's
+/// `$$JsxSlotPayload` is the JSX analogue of the `.vue` template path's
 /// `slot_props_type` (`virtual_ts::scope::emit`): a scoped slot's parameter is
 /// typed from the host component's declared `$slots`, falling back to `any`
 /// whenever the host or the slot is untyped so untyped slot hosts never produce
@@ -120,24 +120,24 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 /// are intentionally left `any` here: that fallback is the conservative side of
 /// the trade (it can miss an error, never fabricate one), and typing them is
 /// tracked separately from this fix.
-pub const JSX_COMPONENT_HELPER: &str = "type $$HogeJsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${$$HogeJsxKebabCase<T>}` : `-${Lowercase<H>}${$$HogeJsxKebabCase<T>}` : S;\n\
-type $$HogeJsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<$$HogeJsxCamelCase<T>>}` : S;\n\
-type $$HogeJsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | $$HogeJsxKebabCase<K> : K }[keyof R] : never;\n\
-type $$HogeJsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? $$HogeJsxCamelCase<K> : K]: R[K] } : never;\n\
-type $$HogeJsxIsUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;\n\
-type $$HogeJsxUnionKeys<T> = T extends unknown ? keyof T : never;\n\
-type $$HogeJsxUnionValue<T, K extends PropertyKey> = T extends unknown ? K extends keyof T ? T[K] : never : never;\n\
-type $$HogeJsxLooseUnionProps<T> = { [K in $$HogeJsxUnionKeys<T>]?: $$HogeJsxUnionValue<T, K> };\n\
-type $$HogeJsxNormalizeProps<T> = $$HogeJsxIsUnion<T> extends true ? $$HogeJsxLooseUnionProps<T> : T;\n\
-type $$HogeJsxDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };\n\
-type $$HogeJsxFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<$$HogeJsxDomListenerProps, keyof Owned>;\n\
-type $$HogeJsxSfcComponentProps<I> = I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, $$HogeJsxRawPropKeys<R>> & $$HogeJsxCanonicalRawProps<R> & $$HogeJsxFallthroughAttrs<P> : $$HogeJsxCanonicalRawProps<P> & $$HogeJsxFallthroughAttrs<P> : any;\n\
-type $$HogeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? $$HogeJsxNormalizeProps<$$HogeJsxSfcComponentProps<I>> : C extends (props: infer P, ...args: any[]) => any ? $$HogeJsxNormalizeProps<$$HogeJsxCanonicalRawProps<P> & $$HogeJsxFallthroughAttrs<P>> : any;\n\
-type $$HogeJsxSlotPayload<C, N extends string> = C extends abstract new (...args: any[]) => infer I ? I extends { $slots: infer S } ? N extends keyof S ? NonNullable<S[N]> extends (props: infer P, ...args: any[]) => any ? P : any : any : any : any;\n\
-declare function __vize_jsx_component_spread__<O>(value: O): $$HogeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
-type $$HogeJsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: $$HogeJsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: $$HogeJsxComponentProps<C>) => any;\n\
-declare function __vize_jsx_component__<C>(component: C): $$HogeJsxComponentCall<C>;\n\
-declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: $$HogeJsxSlotPayload<C, N>) => unknown): any;\n";
+pub const JSX_COMPONENT_HELPER: &str = "type $$JsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${$$JsxKebabCase<T>}` : `-${Lowercase<H>}${$$JsxKebabCase<T>}` : S;\n\
+type $$JsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<$$JsxCamelCase<T>>}` : S;\n\
+type $$JsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | $$JsxKebabCase<K> : K }[keyof R] : never;\n\
+type $$JsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? $$JsxCamelCase<K> : K]: R[K] } : never;\n\
+type $$JsxIsUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;\n\
+type $$JsxUnionKeys<T> = T extends unknown ? keyof T : never;\n\
+type $$JsxUnionValue<T, K extends PropertyKey> = T extends unknown ? K extends keyof T ? T[K] : never : never;\n\
+type $$JsxLooseUnionProps<T> = { [K in $$JsxUnionKeys<T>]?: $$JsxUnionValue<T, K> };\n\
+type $$JsxNormalizeProps<T> = $$JsxIsUnion<T> extends true ? $$JsxLooseUnionProps<T> : T;\n\
+type $$JsxDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };\n\
+type $$JsxFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<$$JsxDomListenerProps, keyof Owned>;\n\
+type $$JsxSfcComponentProps<I> = I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, $$JsxRawPropKeys<R>> & $$JsxCanonicalRawProps<R> & $$JsxFallthroughAttrs<P> : $$JsxCanonicalRawProps<P> & $$JsxFallthroughAttrs<P> : any;\n\
+type $$JsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? $$JsxNormalizeProps<$$JsxSfcComponentProps<I>> : C extends (props: infer P, ...args: any[]) => any ? $$JsxNormalizeProps<$$JsxCanonicalRawProps<P> & $$JsxFallthroughAttrs<P>> : any;\n\
+type $$JsxSlotPayload<C, N extends string> = C extends abstract new (...args: any[]) => infer I ? I extends { $slots: infer S } ? N extends keyof S ? NonNullable<S[N]> extends (props: infer P, ...args: any[]) => any ? P : any : any : any : any;\n\
+declare function __vize_jsx_component_spread__<O>(value: O): $$JsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
+type $$JsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: $$JsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: $$JsxComponentProps<C>) => any;\n\
+declare function __vize_jsx_component__<C>(component: C): $$JsxComponentCall<C>;\n\
+declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: $$JsxSlotPayload<C, N>) => unknown): any;\n";
 #[cfg(feature = "native")]
 pub(crate) use types::AuthoredScriptMetadata;
 #[cfg(feature = "native")]

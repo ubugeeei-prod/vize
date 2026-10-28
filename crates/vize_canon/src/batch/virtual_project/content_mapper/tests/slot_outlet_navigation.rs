@@ -36,7 +36,7 @@ defineSlots<{
     assert_static_name_mapping(
         source,
         "item-row",
-        "__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"item-row\"])",
+        "__vizeSlotOutlet((undefined as unknown as $$Slots)[\"item-row\"])",
         "name=\"item-row\"",
     );
 }
@@ -57,7 +57,7 @@ defineSlots<{
         .expect("transform");
     let generated_ranges = all_static_slot_name_ranges(
         &result.text,
-        "__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"header\"])",
+        "__vizeSlotOutlet((undefined as unknown as $$Slots)[\"header\"])",
         "header",
     );
     let source_ranges = all_authored_attr_value_ranges(source, "name=\"header\"", "header");
@@ -82,7 +82,7 @@ defineSlots<{
         .expect("transform");
     let generated = static_slot_name_range(
         &result.text,
-        "__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"default\"])",
+        "__vizeSlotOutlet((undefined as unknown as $$Slots)[\"default\"])",
         "default",
     );
 
@@ -102,7 +102,7 @@ defineSlots<{
         .expect("transform");
     let generated = static_slot_name_range(
         &result.text,
-        "__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"default\"])",
+        "__vizeSlotOutlet((undefined as unknown as $$Slots)[\"default\"])",
         "default",
     );
 
@@ -123,7 +123,7 @@ defineSlots<{
 
     let generated = static_slot_name_range(
         &result.text,
-        "__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"header\"])",
+        "__vizeSlotOutlet((undefined as unknown as $$Slots)[\"header\"])",
         "header",
     );
     assert_has_name_mapping(
@@ -147,7 +147,7 @@ const slotName = "header";
     assert!(
         !result
             .text
-            .contains("__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"header\"])")
+            .contains("__vizeSlotOutlet((undefined as unknown as $$Slots)[\"header\"])")
     );
     assert_no_mapping_overlaps_generated(&result, generated);
 }
@@ -165,13 +165,13 @@ defineSlots<{
         .expect("transform");
     let generated = generated_text_range(
         &result.text,
-        "(undefined as unknown as $$HogeSlots)['header']",
+        "(undefined as unknown as $$Slots)['header']",
     );
 
     assert!(
         !result
             .text
-            .contains("__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"header\"])")
+            .contains("__vizeSlotOutlet((undefined as unknown as $$Slots)[\"header\"])")
     );
     assert_no_mapping_overlaps_generated(&result, generated);
 }
@@ -190,7 +190,7 @@ const slotName = "header";
     assert!(
         !result
             .text
-            .contains("__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"header\"])")
+            .contains("__vizeSlotOutlet((undefined as unknown as $$Slots)[\"header\"])")
     );
     assert_no_mapping_overlaps_generated(&result, generated);
 }
@@ -209,7 +209,7 @@ const name = "header";
     assert!(
         !result
             .text
-            .contains("__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"default\"])")
+            .contains("__vizeSlotOutlet((undefined as unknown as $$Slots)[\"default\"])")
     );
     assert_no_mapping_overlaps_generated(&result, generated);
 }
@@ -227,7 +227,7 @@ defineSlots<{
         .expect("transform");
     let generated = static_slot_name_range(
         &result.text,
-        "__vizeSlotOutlet((undefined as unknown as $$HogeSlots)[\"a\\\"b\"])",
+        "__vizeSlotOutlet((undefined as unknown as $$Slots)[\"a\\\"b\"])",
         r#"a\"b"#,
     );
     let original = authored_attr_value_range(source, "name='a\"b'", "a\"b");

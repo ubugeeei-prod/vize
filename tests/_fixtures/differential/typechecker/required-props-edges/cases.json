@@ -56,7 +56,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ count: number; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+          "message": "Argument of type '{ count: number; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -72,7 +72,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ dataId: string; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__UnionChild_CheckProps_3, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ dataId: string; }' is not assignable to type '{ readonly kind: \"count\"; readonly count: number; } & $$HogePublicComponentAttrs & Record<string, unknown>'.\nType '{ dataId: string; }' is missing the following properties from type '{ readonly kind: \"count\"; readonly count: number; }': kind, count"
+          "message": "Argument of type '{ dataId: string; }' is not assignable to parameter of type '$$ComponentCheckProps<__UnionChild_CheckProps_3, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ dataId: string; }' is not assignable to type '{ readonly kind: \"count\"; readonly count: number; } & $$PublicComponentAttrs & Record<string, unknown>'.\nType '{ dataId: string; }' is missing the following properties from type '{ readonly kind: \"count\"; readonly count: number; }': kind, count"
         },
         {
           "file": "src/Parent.vue",
@@ -80,7 +80,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ count: number; style: { color: string; }; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; style: { color: string; }; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+          "message": "Argument of type '{ count: number; style: { color: string; }; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; style: { color: string; }; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -88,7 +88,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ count: string; label: string; class: string; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ count: string; label: string; class: string; }' is not assignable to type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'.\nTypes of property 'count' are incompatible.\nType 'string' is not assignable to type 'number'."
+          "message": "Argument of type '{ count: string; label: string; class: string; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ count: string; label: string; class: string; }' is not assignable to type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'.\nTypes of property 'count' are incompatible.\nType 'string' is not assignable to type 'number'."
         },
         {
           "file": "src/Parent.vue",
@@ -96,7 +96,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ ref_for: true; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ ref_for: true; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{ ref_for: true; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ ref_for: true; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -104,7 +104,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ ref_key: string; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ ref_key: string; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{ ref_key: string; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ ref_key: string; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -112,7 +112,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -120,7 +120,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__EventChild_CheckProps_13, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => any) | undefined; }'."
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$$ComponentCheckProps<__EventChild_CheckProps_13, $$PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => any) | undefined; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -128,7 +128,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -136,7 +136,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '$$ComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -144,7 +144,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onSave: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$$ComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onSave: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -152,7 +152,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '$$ComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -160,7 +160,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onCancel: (_value: string) => void; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onCancel: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onCancel: (_value: string) => void; }' is not assignable to parameter of type '$$ComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onCancel: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -176,7 +176,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onXML: (_value: string) => void; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onXML: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onXML: (_value: string) => void; }' is not assignable to parameter of type '$$ComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onXML: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -184,7 +184,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ kind: \"text\"; }' is not assignable to parameter of type '$$HogeComponentCheckProps<__UnionChild_CheckProps_3, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{ kind: \"text\"; }' is not assignable to type '{ readonly kind: \"text\"; readonly text: string; } & $$HogePublicComponentAttrs & Record<string, unknown>'.\nProperty 'text' is missing in type '{ kind: \"text\"; }' but required in type '{ readonly kind: \"text\"; readonly text: string; }'."
+          "message": "Argument of type '{ kind: \"text\"; }' is not assignable to parameter of type '$$ComponentCheckProps<__UnionChild_CheckProps_3, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{ kind: \"text\"; }' is not assignable to type '{ readonly kind: \"text\"; readonly text: string; } & $$PublicComponentAttrs & Record<string, unknown>'.\nProperty 'text' is missing in type '{ kind: \"text\"; }' but required in type '{ readonly kind: \"text\"; readonly text: string; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -200,7 +200,7 @@
           "column": 24,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ count: number; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+          "message": "Argument of type '{ count: number; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -208,7 +208,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ count: number; class: string; dataId: string; }' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; class: string; dataId: string; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+          "message": "Argument of type '{ count: number; class: string; dataId: string; }' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; class: string; dataId: string; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -224,7 +224,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{}' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -232,7 +232,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{}' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -240,7 +240,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{}' is not assignable to parameter of type '$$HogeComponentCheckProps<Props, $$HogePublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{}' is not assignable to parameter of type '$$ComponentCheckProps<Props, $$PublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         }
       ]
     }

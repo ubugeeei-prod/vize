@@ -127,7 +127,7 @@ function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
 // The rendered strict-context type inside Vize's TS2339 text. The code,
 // severity, and authored range agree with vue-tsc; only the quoted synthetic
 // type name differs.
-const STRICT_TEMPLATE_CONTEXT_TYPE = "$$HogeStrictTemplateContext";
+const STRICT_TEMPLATE_CONTEXT_TYPE = "$$StrictTemplateContext";
 
 function missingProperty(name: string): string {
   return `Property '${name}' does not exist on type '${STRICT_TEMPLATE_CONTEXT_TYPE}'.`;

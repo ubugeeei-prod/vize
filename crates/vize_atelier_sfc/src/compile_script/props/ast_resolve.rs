@@ -18,7 +18,7 @@ use vize_carton::{String, ToCompactString};
 mod indexed_access;
 mod runtime_type_combine;
 use runtime_type_combine::{combine_runtime_intersection_types, combine_runtime_js_types};
-pub(super) const TYPE_ALIAS_PREFIX: &str = "type $$HogeProps = ";
+pub(super) const TYPE_ALIAS_PREFIX: &str = "type $$Props = ";
 
 pub(super) fn extract_prop_types_from_ast(
     type_args: &str,

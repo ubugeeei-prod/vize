@@ -218,7 +218,7 @@ fn emit_usage_event_references(
             } else {
                 append!(
                     *ts,
-                    "{event_indent}const {events_ref} = undefined as unknown as $$HogeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
+                    "{event_indent}const {events_ref} = undefined as unknown as $$ComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
                 );
             }
             *emitted_ref = true;
@@ -276,7 +276,7 @@ fn emit_event_name_checks(
     // raw emits, listener props and kebab aliases all share the same names.
     append!(
         *ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof $$HogeComponentEvents<typeof {component_ref}> & string as `on${{Capitalize<$$HogeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof $$ComponentEvents<typeof {component_ref}> & string as `on${{Capitalize<$$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for event in &usage.events {
@@ -315,7 +315,7 @@ fn emit_resolved_events(
 ) {
     append!(
         *ts,
-        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => $$HogeComponentEvents<typeof {component_ref}>) : (props: any) => $$HogeComponentEvents<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
+        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => $$ComponentEvents<typeof {component_ref}>) : (props: any) => $$ComponentEvents<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
     if !usage.spread_props.is_empty() {
         crate::virtual_ts::expressions::append_inference_props_literal(

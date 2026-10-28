@@ -413,7 +413,7 @@ pub(crate) fn generate_component_prop_checks(
                 let selected_props = resolution.selected_props.as_str();
                 append!(
                     *ts,
-                    ": $$HogeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+                    ": $$ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
                 );
             } else {
                 append!(

@@ -32,11 +32,11 @@ pub(super) fn emit_setup_type(
             };
             let mut tag = String::default();
             push_ts_string_literal(&mut tag, element.tag);
-            cstr!("$$HogeRootNativeElement<{tag}, {map}>")
+            cstr!("$$RootNativeElement<{tag}, {map}>")
         } else {
             let reference =
                 component_binding_reference(summary, options, type_only_names, element.tag);
-            cstr!("$$HogeRootComponentEl<typeof {reference}>")
+            cstr!("$$RootComponentEl<typeof {reference}>")
         };
         if !types.contains(&ty) {
             types.push(ty);
@@ -44,19 +44,19 @@ pub(super) fn emit_setup_type(
     }
     let inferred = !types.is_empty();
     if inferred {
-        ts.push_str("  type $$HogeRootNativeElement<T extends PropertyKey, M> = T extends keyof M ? M[T] : Element;\n");
-        ts.push_str("  type $$HogeRootComponentEl<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $el: infer E } ? E : any : C extends (props: any, ctx: any, expose: (exposed: infer E) => any, ...args: any[]) => any ? E extends { $el: infer D } ? D : any : any;\n");
+        ts.push_str("  type $$RootNativeElement<T extends PropertyKey, M> = T extends keyof M ? M[T] : Element;\n");
+        ts.push_str("  type $$RootComponentEl<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $el: infer E } ? E : any : C extends (props: any, ctx: any, expose: (exposed: infer E) => any, ...args: any[]) => any ? E extends { $el: infer D } ? D : any : any;\n");
         let ty = types
             .iter()
             .map(|ty| cstr!("({ty})"))
             .collect::<Vec<_>>()
             .join(" | ");
-        append!(*ts, "  type $$HogeRootEl = {ty};\n");
+        append!(*ts, "  type $$RootEl = {ty};\n");
     } else {
-        ts.push_str("  type $$HogeRootEl = any;\n");
+        ts.push_str("  type $$RootEl = any;\n");
     }
     if checks.infer_component_dollar_el && inferred {
-        ts.push_str("  const __vize_root_el = {} as $$HogeRootEl;\n");
+        ts.push_str("  const __vize_root_el = {} as $$RootEl;\n");
         return true;
     }
     false

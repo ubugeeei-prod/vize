@@ -148,7 +148,7 @@ test("typecheck divergence separates a message-only divergence from a match", ()
       {
         file: "src/Parent.vue",
         diagnostics: [
-          "error:6:36 [TS2339] Property 'nope' does not exist on type '$$HogeComponentInstance'.",
+          "error:6:36 [TS2339] Property 'nope' does not exist on type '$$ComponentInstance'.",
         ],
       },
     ],
@@ -178,7 +178,7 @@ test("typecheck divergence separates a message-only divergence from a match", ()
       line: 6,
       column: 36,
       code: 2339,
-      vizeMessage: "Property 'nope' does not exist on type '$$HogeComponentInstance'.",
+      vizeMessage: "Property 'nope' does not exist on type '$$ComponentInstance'.",
       baselineMessage:
         "Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, { reload: (times: number) => number; }, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., {}>'.",
     },
@@ -193,7 +193,7 @@ test("typecheck divergence compares template messages without Vize's source cont
         diagnostics: [
           "error:8:21 [TS2551] Property 'lenght' does not exist on type 'Media[]'. Did you mean 'length'? (source: <div>{{ mediaList.lenght }}</div>)",
           "error:9:14 [TS2339] Property 'nope' does not exist on type 'Media'. (source: <p :title=\"pick(item).nope\">x</p>; binding: 'title')",
-          "error:10:9 [TS2339] Property 'gone' does not exist on type '$$HogeStrictTemplateContext'. (source: <p>{{ gone }}</p>)",
+          "error:10:9 [TS2339] Property 'gone' does not exist on type '$$StrictTemplateContext'. (source: <p>{{ gone }}</p>)",
         ],
       },
     ],
@@ -212,7 +212,7 @@ test("typecheck divergence compares template messages without Vize's source cont
         `${pair.vizeMessage} | ${pair.baselineMessage}`,
     ),
     [
-      "Property 'gone' does not exist on type '$$HogeStrictTemplateContext'. | Property 'gone' does not exist on type '{}'.",
+      "Property 'gone' does not exist on type '$$StrictTemplateContext'. | Property 'gone' does not exist on type '{}'.",
     ],
   );
 });

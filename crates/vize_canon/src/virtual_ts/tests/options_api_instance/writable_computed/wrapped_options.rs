@@ -59,12 +59,12 @@ export default {
     assert_eq!(
         declarations,
         [
-            "  const absent: $$HogeOptionsBinding<typeof __default__, \"absent\"> = (void 0) as any;",
-            "  var arrow: $$HogeOptionsBinding<typeof __default__, \"arrow\"> = (void 0) as any;",
-            "  const fooBar: $$HogeOptionsBinding<typeof __default__, \"fooBar\"> = (void 0) as any;",
-            "  const literal: $$HogeOptionsBinding<typeof __default__, \"literal\"> = (void 0) as any;",
-            "  const plain: $$HogeOptionsBinding<typeof __default__, \"plain\"> = (void 0) as any;",
-            "  var ratio: $$HogeOptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
+            "  const absent: $$OptionsBinding<typeof __default__, \"absent\"> = (void 0) as any;",
+            "  var arrow: $$OptionsBinding<typeof __default__, \"arrow\"> = (void 0) as any;",
+            "  const fooBar: $$OptionsBinding<typeof __default__, \"fooBar\"> = (void 0) as any;",
+            "  const literal: $$OptionsBinding<typeof __default__, \"literal\"> = (void 0) as any;",
+            "  const plain: $$OptionsBinding<typeof __default__, \"plain\"> = (void 0) as any;",
+            "  var ratio: $$OptionsBinding<typeof __default__, \"ratio\"> = (void 0) as any;",
         ]
     );
 }

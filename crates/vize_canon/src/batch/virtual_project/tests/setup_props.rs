@@ -106,7 +106,7 @@ void props
 
     assert!(
         virtual_ts.contains(
-            r#"const targetStudent = props["targetStudent"] as Exclude<__WithDefaultsResult<Props, Pick<Props, Extract<"targetStudent", keyof Props>>, $$HogeBooleanKey<Props>>["targetStudent"], undefined>;"#
+            r#"const targetStudent = props["targetStudent"] as Exclude<__WithDefaultsResult<Props, Pick<Props, Extract<"targetStudent", keyof Props>>, $$BooleanKey<Props>>["targetStudent"], undefined>;"#
         ),
         "legacy Vue2 template scope must expose inline defineProps keys:\n{virtual_ts}"
     );

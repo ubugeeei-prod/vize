@@ -62,17 +62,17 @@ impl fmt::Display for GenericContext<'_> {
         } = self;
         write!(
             formatter,
-            "type $$HogeGenericContext{parameters} = {{\n  props: {props_type}{arguments}"
+            "type $$GenericContext{parameters} = {{\n  props: {props_type}{arguments}"
         )?;
         if self.emit_props {
             write!(formatter, " & __EmitProps<{emits}>")?;
         }
         if self.jsx_slots {
-            write!(formatter, " & $$HogeJsxSlotProps<{slots}>")?;
+            write!(formatter, " & $$JsxSlotProps<{slots}>")?;
         }
         formatter.write_str(" & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: ")?;
         if self.emit_props {
-            write!(formatter, "$$HogePublicEmit<{emits}>")?;
+            write!(formatter, "$$PublicEmit<{emits}>")?;
         } else {
             formatter.write_str("{}")?;
         }
@@ -113,9 +113,9 @@ pub(super) struct GenericSignature<'a> {
 impl fmt::Display for GenericSignature<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (name, props_tail) = match self.role {
-            SignatureRole::Component => ("$$HogeGenericComponent", ""),
+            SignatureRole::Component => ("$$GenericComponent", ""),
             SignatureRole::TemplateRefResolver => {
-                ("$$HogeGenericRefResolver", " & Record<string, unknown>")
+                ("$$GenericRefResolver", " & Record<string, unknown>")
             }
         };
         let Self {
@@ -125,7 +125,7 @@ impl fmt::Display for GenericSignature<'_> {
         } = self;
         writeln!(
             formatter,
-            "type {name} = {parameters}(props: $$HogeGenericContext{arguments}['props']{props_tail}, ctx?: Pick<$$HogeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: $$HogeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: $$HogeGenericContext{arguments} }};"
+            "type {name} = {parameters}(props: $$GenericContext{arguments}['props']{props_tail}, ctx?: Pick<$$GenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: $$GenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: $$GenericContext{arguments} }};"
         )
     }
 }

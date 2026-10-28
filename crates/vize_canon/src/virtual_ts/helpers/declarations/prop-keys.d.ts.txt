@@ -1,2 +1,2 @@
-type $$HogeKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $$HogeKebabCase<Tail, `${Acc}${Head}`> : $$HogeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
-type $$HogeKebabProps<T> = { [K in keyof T & string as $$HogeKebabCase<K>]: T[K] };
+type $$KebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $$KebabCase<Tail, `${Acc}${Head}`> : $$KebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
+type $$KebabProps<T> = { [K in keyof T & string as $$KebabCase<K>]: T[K] };

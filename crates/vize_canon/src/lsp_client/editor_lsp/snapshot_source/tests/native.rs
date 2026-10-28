@@ -165,9 +165,9 @@ fn actual_native_compiler_kind_reads_match_whole_ts_and_generated_vue_pull_packe
             // Canon helper declarations, in source order. Retain the whole set.
             for name in [
                 "__Ref",
-                "$$HogePrettify",
-                "$$HogeComponentFallthroughProps",
-                "$$HogeComponentMissingInputGuard",
+                "$$Prettify",
+                "$$ComponentFallthroughProps",
+                "$$ComponentMissingInputGuard",
             ] {
                 let marker = vize_l0::cstr!("type {name}<");
                 let message = vize_l0::cstr!("'{name}' is declared but never used.");

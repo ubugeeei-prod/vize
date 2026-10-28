@@ -28,7 +28,7 @@ pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_childr
     // describe callable slot names, not whether the parent must provide them.
     // Required-slot checks therefore trust only Vize's own explicit marker.
     ts.push_str(
-        "  type $$HogeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n",
+        "  type $$StructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n",
     );
     // Navigation checks a known external constructor's actual slots. This does
     // not make a third-party callable slot mandatory: required-slot checks
@@ -36,29 +36,29 @@ pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_childr
     // Vue's declared options retain their slots parameter even when `data: any`
     // collapses the public instance. Unknown constructors carry no such contract.
     ts.push_str(
-        "  type $$HogeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $$HogeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $$HogeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
+        "  type $$EmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $$IsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $$IsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
     );
     ts.push_str(
-        "  type $$HogeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $$HogeIsAny<InstanceType<C>> extends true ? $$HogeEmptyVueNavigationSlots<C> : $$HogeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
+        "  type $$NativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $$IsAny<InstanceType<C>> extends true ? $$EmptyVueNavigationSlots<C> : $$IsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
     );
     ts.push_str(
-        "  type $$HogeNavigationSlots<C> = $$HogeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $$HogeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $$HogeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $$HogeNativeNavigationSlots<C>;\n",
+        "  type $$NavigationSlots<C> = $$IsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $$IsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $$NativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $$NativeNavigationSlots<C>;\n",
     );
     ts.push_str(
-        "  type $$HogeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];\n",
+        "  type $$RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];\n",
     );
     ts.push_str(
-        "  type $$HogeMissingRequiredSlots<__S, __P> = Exclude<$$HogeRequiredSlotKeys<__S>, keyof __P>;\n",
+        "  type $$MissingRequiredSlots<__S, __P> = Exclude<$$RequiredSlotKeys<__S>, keyof __P>;\n",
     );
     ts.push_str(
-        "  type $$HogeRequiredSlots<__S, __P> = $$HogeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$$HogeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $$HogeMissingRequiredSlots<__S, __P> };\n",
+        "  type $$RequiredSlots<__S, __P> = $$IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $$MissingRequiredSlots<__S, __P> };\n",
     );
     if strict_children {
         ts.push_str(
-            "  type $$HogeSlotChildren<__S, __K extends PropertyKey> = $$HogeIsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;\n",
+            "  type $$SlotChildren<__S, __K extends PropertyKey> = $$IsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;\n",
         );
         ts.push_str(
-            "  type $$HogeProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;\n",
+            "  type $$ProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;\n",
         );
     }
 }
@@ -81,13 +81,13 @@ pub(super) fn generate_component_slot_checks(
         append_chained_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
     }
 
-    let contract_name = vize_carton::cstr!("$$HogeSlotContract_{idx}");
+    let contract_name = vize_carton::cstr!("$$SlotContract_{idx}");
     {
         let ts = &mut *ctx.ts;
         let mappings = &mut *ctx.mappings;
         append!(
             *ts,
-            "{expr_indent}type {contract_name} = $$HogeStructuralSlots<typeof {component_ref}>;\n"
+            "{expr_indent}type {contract_name} = $$StructuralSlots<typeof {component_ref}>;\n"
         );
 
         let provided_slots = provided_slots_type(usage);
@@ -95,7 +95,7 @@ pub(super) fn generate_component_slot_checks(
         let gen_start = ts.len();
         append!(
             *ts,
-            "{expr_indent}const {check_name}: $$HogeRequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
+            "{expr_indent}const {check_name}: $$RequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
         );
         append!(*ts, "{expr_indent}void {check_name};\n");
         let gen_end = ts.len();

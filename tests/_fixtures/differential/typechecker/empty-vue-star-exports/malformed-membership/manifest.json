@@ -74,7 +74,7 @@
       "sourceChange": {
         "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
         "commit": "2f1bebc2ffd157309f840c7ab63b61acdf7d1ac9",
-        "declaration": "$$HogeFallthroughAttrs",
+        "declaration": "$$FallthroughAttrs",
         "bytesAdded": 60
       },
       "proof": "All86 current bodies retain validated byte lengths and SHA256. All86 rooted paths/order and the other85 complete bodies are identical to the prior reference. Reversing only the single reviewed fallthrough declaration recovers the exact prior helper length/SHA256.",
