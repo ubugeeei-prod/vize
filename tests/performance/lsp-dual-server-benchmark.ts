@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { performance } from "node:perf_hooks";
 import { inspect } from "node:util";
 
 import { repoRoot } from "../_helpers/realworld-patch.ts";
@@ -13,103 +12,40 @@ import {
   expectedBuildIdentity,
   validateBuildReceipt,
 } from "../differential/build-receipt.ts";
-import {
-  assertOwnedWorkspaceCachesAbsent,
-  createDualLspFixture,
-  resetOwnedWorkspaceCaches,
-  type OwnedCachePathReceipt,
-} from "./support/dual-lsp-fixture.ts";
+import { collectFresh } from "./support/dual-lsp-fresh-sampling.ts";
 import {
   diagnosticBarrierCount,
   diagnosticDeadlineMs,
   diagnosticQuietMs,
-  qualifyDocumentRevisions,
-  runQualifiedOperationPacket,
-  type DiagnosticEvidence,
 } from "./support/dual-lsp-oracles.ts";
-import {
-  DualLspProduct,
-  dualLspProviderRoot,
-  dualLspToolReceipt,
-  primaryOperationReceipt,
-  productOrder,
-  stableOperationTranscript,
-  type PrimaryOperationReceipt,
-  type ProductKind,
-} from "./support/dual-lsp-product.ts";
+import { dualLspToolReceipt, type ProductKind } from "./support/dual-lsp-product.ts";
+import { dualLspProviderDependencyReceipt } from "./support/dual-lsp-provider-receipt.ts";
 import {
   assertRevisionReceiptReachability,
   cleanupFailuresFor,
   distribution,
-  retainPrimaryCleanupFailures,
-  selectAuthoritativeFailure,
-  summarizeScheduleReceipt,
   summarizeDiagnostics,
   summarizeSamples,
+  summarizeScheduleReceipt,
   writeDualLspReport,
-  type FailureSelection,
-  type MeasuredSample,
   type SampleOrderReceipt,
 } from "./support/dual-lsp-report.ts";
+import {
+  emptyCustodyEvidence,
+  emptyProductEvidence,
+  products,
+  revisionReceiptSha256,
+  type CustodyEvidence,
+  type ProductEvidence,
+} from "./support/dual-lsp-sampling.ts";
+import { collectWarm } from "./support/dual-lsp-warm-sampling.ts";
 import { gitHead } from "./support/process-metrics.ts";
-
-type RevisionEvidence = { v1: DiagnosticEvidence; v2: DiagnosticEvidence };
-
-type RevisionReceiptScope =
-  | { product: ProductKind; phase: "fresh"; sampleIndex: number }
-  | { product: ProductKind; phase: "warm"; sessionIndex: number };
-
-type ProductEvidence = {
-  fresh: MeasuredSample[];
-  warm: MeasuredSample[];
-  freshDiagnostics: RevisionEvidence[];
-  warmDiagnostics: RevisionEvidence[];
-  warmStartupMs: number[];
-};
-
-type QualifiedSample = { diagnostics: RevisionEvidence; sample: MeasuredSample };
-
-type FreshCacheResetReceipt = {
-  sampleIndex: number;
-  orderIndex: number;
-  product: ProductKind;
-  nextProduct: ProductKind | null;
-  paths: OwnedCachePathReceipt[];
-  verificationStage: "before-next-product" | "before-fixture-dispose" | null;
-  absenceVerified: boolean;
-};
-
-type CustodyEvidence = {
-  qualifiedCandidates: { freshRounds: number; warmRounds: number };
-  freshCacheResets: FreshCacheResetReceipt[];
-  primaryOperations: {
-    fresh: Array<Record<string, unknown>>;
-    warm: Array<Record<string, unknown>>;
-  };
-  oracleEquivalence: {
-    fresh: Array<Record<string, unknown>>;
-    warm: Array<Record<string, unknown>>;
-  };
-  warmupBoundaries: Array<Record<string, unknown>>;
-};
-
-function emptyProductEvidence(): ProductEvidence {
-  return {
-    fresh: [],
-    warm: [],
-    freshDiagnostics: [],
-    warmDiagnostics: [],
-    warmStartupMs: [],
-  };
-}
 
 type Options = {
   freshSamples: number;
   warmSamples: number;
   outputDir: string;
 };
-
-const products: readonly ProductKind[] = ["vize", "vue-language-tools"];
 
 function option(name: string, fallback: string): string {
   const index = process.argv.indexOf(name);
@@ -184,106 +120,6 @@ function vizeBinaryCustody(sourceSha: string): Record<string, unknown> {
   };
 }
 
-function revisionReceiptSha256(scope: RevisionReceiptScope, evidence: RevisionEvidence): string {
-  return sha256(
-    JSON.stringify({
-      scope,
-      evidence,
-      custody: {
-        diagnosticBarrierCount,
-        diagnosticDeadlineMs,
-        diagnosticQuietMs,
-      },
-    }),
-  );
-}
-
-function throwSelectedFailure(selection: FailureSelection): void {
-  if (selection.kind === "none") return;
-  retainPrimaryCleanupFailures(selection);
-  throw selection.error;
-}
-
-async function closeProduct(product: DualLspProduct | undefined): Promise<unknown[]> {
-  if (!product) return [];
-  try {
-    await product.shutdown();
-    return [];
-  } catch (shutdownError) {
-    const failures: unknown[] = [shutdownError];
-    try {
-      await product.kill();
-    } catch (killError) {
-      failures.push(killError);
-    }
-    return failures;
-  }
-}
-
-function pairValue(
-  pair: ReadonlyMap<ProductKind, QualifiedSample>,
-  kind: ProductKind,
-): QualifiedSample {
-  const value = pair.get(kind);
-  if (value == null) throw new Error(`qualified pair omitted ${kind}`);
-  return value;
-}
-
-function oracleEquivalenceReceipt(
-  phase: "fresh" | "warm",
-  sampleIndex: number,
-  order: readonly ProductKind[],
-  pair: ReadonlyMap<ProductKind, QualifiedSample>,
-): Record<string, unknown> {
-  const vize = pairValue(pair, "vize");
-  const vue = pairValue(pair, "vue-language-tools");
-  assert.equal(vize.diagnostics.v1.fingerprint, vue.diagnostics.v1.fingerprint);
-  assert.equal(vize.diagnostics.v2.fingerprint, vue.diagnostics.v2.fingerprint);
-  assert.deepEqual(vize.sample.oracleReceipt, vue.sample.oracleReceipt);
-  const payload = {
-    phase,
-    sampleIndex,
-    order,
-    authoredUri: vize.sample.oracleReceipt.authoredUri,
-    diagnostics: {
-      v1Fingerprint: vize.diagnostics.v1.fingerprint,
-      v2Fingerprint: vize.diagnostics.v2.fingerprint,
-      provenVersion: 2,
-    },
-    queryOracle: vize.sample.oracleReceipt,
-    products: {
-      vize: {
-        revisionReceiptSha256: vize.sample.revisionReceiptSha256,
-        queryOracleSha256: vize.sample.oracleReceipt.sha256,
-      },
-      "vue-language-tools": {
-        revisionReceiptSha256: vue.sample.revisionReceiptSha256,
-        queryOracleSha256: vue.sample.oracleReceipt.sha256,
-      },
-    },
-  };
-  return { ...payload, sha256: sha256(JSON.stringify(payload)) };
-}
-
-function primaryOperationPairReceipt(
-  phase: "fresh" | "warm",
-  sampleIndex: number | null,
-  order: readonly ProductKind[],
-  receipts: ReadonlyMap<ProductKind, PrimaryOperationReceipt>,
-): Record<string, unknown> {
-  const vize = receipts.get("vize");
-  const vue = receipts.get("vue-language-tools");
-  if (vize == null || vue == null)
-    throw new Error(`${phase} primary operation receipt is incomplete`);
-  assert.deepEqual(vize, vue, `${phase} primary method order/counts differed by product`);
-  return {
-    phase,
-    sampleIndex,
-    order,
-    products: { vize, "vue-language-tools": vue },
-  };
-}
-
 function describeFailure(error: unknown): string {
   return error instanceof Error ? (error.stack ?? error.message) : inspect(error);
 }
@@ -297,285 +133,6 @@ function failureReceipt(error: unknown): string | Record<string, unknown> {
   };
 }
 
-async function collectFresh(
-  count: number,
-  evidence: Record<ProductKind, ProductEvidence>,
-  transcriptHashes: string[],
-  schedule: SampleOrderReceipt[],
-  custody: CustodyEvidence,
-): Promise<void> {
-  for (let round = 0; round < count; round += 1) {
-    const fixture = createDualLspFixture();
-    const pairTranscripts = new Map<ProductKind, string>();
-    const pairOperations = new Map<ProductKind, PrimaryOperationReceipt>();
-    const pairQualified = new Map<ProductKind, QualifiedSample>();
-    const order = [...productOrder(round)];
-    schedule.push({ sampleIndex: round, order });
-    let primaryFailed = false;
-    let primaryFailure: unknown;
-    const cleanupFailures: unknown[] = [];
-    let pendingReset: FreshCacheResetReceipt | undefined;
-    for (const [orderIndex, kind] of order.entries()) {
-      if (pendingReset != null) {
-        try {
-          assertOwnedWorkspaceCachesAbsent(pendingReset.paths);
-          pendingReset.verificationStage = "before-next-product";
-          pendingReset.absenceVerified = true;
-        } catch (error) {
-          cleanupFailures.push(error);
-        }
-        pendingReset = undefined;
-        if (cleanupFailures.length > 0) break;
-      }
-
-      let product: DualLspProduct | undefined;
-      try {
-        const startupStartedAt = performance.now();
-        product = await DualLspProduct.start(kind, fixture.workspaceDir);
-        const startupMs = performance.now() - startupStartedAt;
-        const diagnostics = await qualifyDocumentRevisions(product, fixture);
-        const operation = await runQualifiedOperationPacket(product, fixture);
-        const sample: MeasuredSample = {
-          ...operation,
-          revisionReceiptSha256: revisionReceiptSha256(
-            { product: kind, phase: "fresh", sampleIndex: round },
-            diagnostics,
-          ),
-          startupMs,
-          diagnosticV1QualificationMs: diagnostics.v1.qualificationMs,
-          diagnosticV2QualificationMs: diagnostics.v2.qualificationMs,
-        };
-        pairQualified.set(kind, { diagnostics, sample });
-        const operations = product.primaryOperations();
-        pairTranscripts.set(kind, stableOperationTranscript(operations));
-        pairOperations.set(kind, primaryOperationReceipt(operations, 1, diagnosticBarrierCount));
-      } catch (error) {
-        primaryFailed = true;
-        primaryFailure = error;
-      }
-
-      cleanupFailures.push(...(await closeProduct(product)));
-      try {
-        const cacheReceipt: FreshCacheResetReceipt = {
-          sampleIndex: round,
-          orderIndex,
-          product: kind,
-          nextProduct: order[orderIndex + 1] ?? null,
-          paths: resetOwnedWorkspaceCaches(fixture.workspaceDir),
-          verificationStage: null,
-          absenceVerified: false,
-        };
-        custody.freshCacheResets.push(cacheReceipt);
-        pendingReset = cacheReceipt;
-      } catch (error) {
-        cleanupFailures.push(error);
-      }
-      if (primaryFailed || cleanupFailures.length > 0) break;
-    }
-
-    if (pendingReset != null) {
-      try {
-        assertOwnedWorkspaceCachesAbsent(pendingReset.paths);
-        pendingReset.verificationStage = "before-fixture-dispose";
-        pendingReset.absenceVerified = true;
-      } catch (error) {
-        cleanupFailures.push(error);
-      }
-    }
-
-    let transcriptHash: string | undefined;
-    let operationReceipt: Record<string, unknown> | undefined;
-    let equivalenceReceipt: Record<string, unknown> | undefined;
-    if (!primaryFailed && cleanupFailures.length === 0) {
-      try {
-        const vize = pairTranscripts.get("vize");
-        const vue = pairTranscripts.get("vue-language-tools");
-        assert.ok(vize && vue, `fresh round ${round} did not run both products`);
-        assert.equal(vize, vue, `fresh round ${round} changed the primary wire sequence`);
-        transcriptHash = sha256(vize);
-        operationReceipt = primaryOperationPairReceipt("fresh", round, order, pairOperations);
-        equivalenceReceipt = oracleEquivalenceReceipt("fresh", round, order, pairQualified);
-        custody.qualifiedCandidates.freshRounds += 1;
-      } catch (error) {
-        primaryFailed = true;
-        primaryFailure = error;
-      }
-    }
-
-    try {
-      fixture.dispose();
-    } catch (error) {
-      cleanupFailures.push(error);
-    }
-    throwSelectedFailure(
-      selectAuthoritativeFailure(
-        primaryFailed,
-        primaryFailure,
-        cleanupFailures,
-        `fresh round ${round} cleanup failed`,
-      ),
-    );
-    if (transcriptHash == null || operationReceipt == null || equivalenceReceipt == null) {
-      throw new Error(`fresh round ${round} omitted its accepted custody receipt`);
-    }
-    for (const kind of products) {
-      const accepted = pairValue(pairQualified, kind);
-      evidence[kind].freshDiagnostics.push(accepted.diagnostics);
-      evidence[kind].fresh.push(accepted.sample);
-    }
-    transcriptHashes.push(transcriptHash);
-    custody.primaryOperations.fresh.push(operationReceipt);
-    custody.oracleEquivalence.fresh.push(equivalenceReceipt);
-  }
-}
-
-async function collectWarm(
-  count: number,
-  evidence: Record<ProductKind, ProductEvidence>,
-  transcriptHashes: string[],
-  schedule: SampleOrderReceipt[],
-  custody: CustodyEvidence,
-): Promise<void> {
-  const fixture = createDualLspFixture();
-  const sessions = new Map<ProductKind, DualLspProduct>();
-  const sessionStartupMs = new Map<ProductKind, number>();
-  const sessionQualified = new Map<ProductKind, RevisionEvidence>();
-  const sessionRevisionReceipts = new Map<ProductKind, string>();
-  const candidateSamples: Record<ProductKind, MeasuredSample[]> = {
-    vize: [],
-    "vue-language-tools": [],
-  };
-  const acceptedEquivalence: Array<Record<string, unknown>> = [];
-  let primaryFailed = false;
-  let primaryFailure: unknown;
-  let transcriptHash: string | undefined;
-  let operationReceipt: Record<string, unknown> | undefined;
-  const warmupBoundaries: Array<Record<string, unknown>> = [];
-  try {
-    for (const kind of productOrder(0)) {
-      const startupStartedAt = performance.now();
-      const product = await DualLspProduct.start(kind, fixture.workspaceDir);
-      sessionStartupMs.set(kind, performance.now() - startupStartedAt);
-      sessions.set(kind, product);
-      const diagnostics = await qualifyDocumentRevisions(product, fixture);
-      sessionQualified.set(kind, diagnostics);
-      sessionRevisionReceipts.set(
-        kind,
-        revisionReceiptSha256({ product: kind, phase: "warm", sessionIndex: 0 }, diagnostics),
-      );
-    }
-    for (let round = 0; round < count; round += 1) {
-      const order = [...productOrder(round)];
-      const pairQualified = new Map<ProductKind, QualifiedSample>();
-      schedule.push({ sampleIndex: round, order });
-      for (const kind of order) {
-        const product = sessions.get(kind);
-        const revisionReceiptSha256 = sessionRevisionReceipts.get(kind);
-        if (product == null || revisionReceiptSha256 == null) {
-          throw new Error(`${kind} warm session lost its product or revision receipt`);
-        }
-        const operation = await runQualifiedOperationPacket(product, fixture);
-        const sample: MeasuredSample = { ...operation, revisionReceiptSha256 };
-        candidateSamples[kind].push(sample);
-        const diagnostics = sessionQualified.get(kind);
-        if (diagnostics == null) throw new Error(`${kind} warm session lost its qualification`);
-        pairQualified.set(kind, { diagnostics, sample });
-      }
-      acceptedEquivalence.push(oracleEquivalenceReceipt("warm", round, order, pairQualified));
-      custody.qualifiedCandidates.warmRounds += 1;
-    }
-    const vizeSession = sessions.get("vize");
-    const vueSession = sessions.get("vue-language-tools");
-    if (vizeSession == null || vueSession == null) {
-      throw new Error("warm comparison lost one of its product sessions");
-    }
-    const vizeOperations = vizeSession.primaryOperations();
-    const vueOperations = vueSession.primaryOperations();
-    const vize = stableOperationTranscript(vizeOperations);
-    const vue = stableOperationTranscript(vueOperations);
-    assert.equal(vize, vue, "warm products did not receive an identical primary wire sequence");
-    transcriptHash = sha256(vize);
-    operationReceipt = primaryOperationPairReceipt(
-      "warm",
-      null,
-      productOrder(0),
-      new Map<ProductKind, PrimaryOperationReceipt>([
-        ["vize", primaryOperationReceipt(vizeOperations, count, diagnosticBarrierCount)],
-        [
-          "vue-language-tools",
-          primaryOperationReceipt(vueOperations, count, diagnosticBarrierCount),
-        ],
-      ]),
-    );
-    for (const kind of products) {
-      const diagnostics = sessionQualified.get(kind);
-      const revisionReceiptSha256 = sessionRevisionReceipts.get(kind);
-      if (diagnostics == null || revisionReceiptSha256 == null) {
-        throw new Error(`${kind} warmup boundary lost its diagnostic receipt`);
-      }
-      const samples = candidateSamples[kind];
-      assert.ok(sessionStartupMs.has(kind));
-      assert.equal(samples.length, count);
-      assert.ok(samples.every((sample) => sample.revisionReceiptSha256 === revisionReceiptSha256));
-      const payload = {
-        product: kind,
-        sessionIndex: 0,
-        initializedSessions: 1,
-        eventOrder: ["initialize", "qualify-v1", "qualify-v2", "measure-packets"],
-        diagnosticQualification: {
-          v1Fingerprint: diagnostics.v1.fingerprint,
-          v2Fingerprint: diagnostics.v2.fingerprint,
-          provenVersion: diagnostics.v2.provenVersion,
-          revisionReceiptSha256,
-        },
-        qualificationCompletedBeforePacketIndex: 0,
-        measuredPacketIndices: samples.map((_, sampleIndex) => sampleIndex),
-        measuredPacketCount: samples.length,
-        allPacketsBoundToRevisionReceipt: true,
-      };
-      warmupBoundaries.push({ ...payload, sha256: sha256(JSON.stringify(payload)) });
-    }
-  } catch (error) {
-    primaryFailed = true;
-    primaryFailure = error;
-  }
-
-  const cleanupFailures: unknown[] = [];
-  for (const session of sessions.values()) {
-    cleanupFailures.push(...(await closeProduct(session)));
-  }
-  try {
-    fixture.dispose();
-  } catch (error) {
-    cleanupFailures.push(error);
-  }
-  throwSelectedFailure(
-    selectAuthoritativeFailure(
-      primaryFailed,
-      primaryFailure,
-      cleanupFailures,
-      "warm product cleanup failed",
-    ),
-  );
-  if (transcriptHash == null || operationReceipt == null) {
-    throw new Error("warm comparison omitted its accepted custody receipt");
-  }
-  for (const kind of products) {
-    const startupMs = sessionStartupMs.get(kind);
-    const diagnostics = sessionQualified.get(kind);
-    if (startupMs == null || diagnostics == null) {
-      throw new Error(`${kind} warm acceptance omitted its session evidence`);
-    }
-    evidence[kind].warmStartupMs.push(startupMs);
-    evidence[kind].warmDiagnostics.push(diagnostics);
-    evidence[kind].warm.push(...candidateSamples[kind]);
-  }
-  transcriptHashes.push(transcriptHash);
-  custody.primaryOperations.warm.push(operationReceipt);
-  custody.oracleEquivalence.warm.push(...acceptedEquivalence);
-  custody.warmupBoundaries.push(...warmupBoundaries);
-}
-
 async function main(): Promise<void> {
   const config = options();
   const evidence: Record<ProductKind, ProductEvidence> = {
@@ -585,13 +142,7 @@ async function main(): Promise<void> {
   const transcriptHashes: string[] = [];
   const freshSchedule: SampleOrderReceipt[] = [];
   const warmSchedule: SampleOrderReceipt[] = [];
-  const custody: CustodyEvidence = {
-    qualifiedCandidates: { freshRounds: 0, warmRounds: 0 },
-    freshCacheResets: [],
-    primaryOperations: { fresh: [], warm: [] },
-    oracleEquivalence: { fresh: [], warm: [] },
-    warmupBoundaries: [],
-  };
+  const custody: CustodyEvidence = emptyCustodyEvidence();
   const startedAt = new Date().toISOString();
   try {
     const commit = gitHead();
@@ -615,14 +166,7 @@ async function main(): Promise<void> {
       sourceSha: commit,
       fixture,
       vizeBinary,
-      provider: {
-        packageJsonSha256: sha256(
-          fs.readFileSync(path.join(dualLspProviderRoot, "package.json"), "utf8"),
-        ),
-        lockfileSha256: sha256(
-          fs.readFileSync(path.join(dualLspProviderRoot, "pnpm-lock.yaml"), "utf8"),
-        ),
-      },
+      provider: dualLspProviderDependencyReceipt(),
       resolvedTools: tools,
     };
     await collectFresh(config.freshSamples, evidence, transcriptHashes, freshSchedule, custody);
@@ -690,10 +234,10 @@ async function main(): Promise<void> {
             config.freshSamples,
             `${kind} fresh samples must each bind their own revision receipt`,
           );
-          freshReceiptIds.forEach((revisionReceiptSha256, sampleIndex) => {
+          freshReceiptIds.forEach((receiptSha256, sampleIndex) => {
             assert.equal(
               evidence[kind].fresh[sampleIndex]?.revisionReceiptSha256,
-              revisionReceiptSha256,
+              receiptSha256,
               `${kind} fresh sample ${sampleIndex} bound the wrong revision receipt`,
             );
           });
@@ -718,13 +262,13 @@ async function main(): Promise<void> {
             {
               ...evidence[kind],
               diagnosticReceiptIndex: {
-                fresh: freshReceiptIds.map((revisionReceiptSha256, sampleIndex) => ({
+                fresh: freshReceiptIds.map((receiptSha256, sampleIndex) => ({
                   sampleIndex,
-                  revisionReceiptSha256,
+                  revisionReceiptSha256: receiptSha256,
                 })),
-                warmSession: warmReceiptIds.map((revisionReceiptSha256, sessionIndex) => ({
+                warmSession: warmReceiptIds.map((receiptSha256, sessionIndex) => ({
                   sessionIndex,
-                  revisionReceiptSha256,
+                  revisionReceiptSha256: receiptSha256,
                 })),
               },
               revisionReceiptReachability: {

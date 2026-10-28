@@ -9,7 +9,7 @@ on:
       - "tests/performance/lsp-dual-server-benchmark.ts"
       - "tests/performance/lsp-dual-server-attribution-manifest.ts"
       - "tests/performance/support/dual-lsp-*.ts"
-      - "tests/tooling/lsp-dual-server-benchmark.test.ts"
+      - "tests/tooling/lsp-dual-server-*.test.ts"
       - "tests/package.json"
       - "pnpm-lock.yaml"
   workflow_dispatch:

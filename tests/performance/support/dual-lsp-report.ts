@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-import type { DiagnosticEvidence, OperationSample } from "./dual-lsp-oracles.ts";
+import type { DiagnosticEvidence } from "./dual-lsp-oracles.ts";
+import type { OperationSample } from "./dual-lsp-operation-oracles.ts";
 import type { ProductKind } from "./dual-lsp-product.ts";
 
 export type Distribution = {
