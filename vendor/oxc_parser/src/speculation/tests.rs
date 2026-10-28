@@ -158,29 +158,29 @@ fn overlapping_fatal_subproblems_are_shared_without_changing_recovery() {
 #[test]
 fn assignment_entry_bypasses_inactive_memoization() {
     let allocator = Allocator::default();
-    let mut parser = parser(&allocator, "x + y", SourceType::ts(), true);
-    parser.bump_any();
-    let _ = parser.parse_assignment_expression_or_higher();
-    assert_eq!(parser.state.memo_entry_calls, 0);
-    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
+    let mut inactive_parser = parser(&allocator, "x + y", SourceType::ts(), true);
+    inactive_parser.bump_any();
+    let _ = inactive_parser.parse_assignment_expression_or_higher();
+    assert_eq!(inactive_parser.state.memo_entry_calls, 0);
+    assert!(!inactive_parser.state.failed_speculative_subproblems.is_allocated());
 
     let allocator = Allocator::default();
-    let mut parser = parser(&allocator, "x", SourceType::ts(), true);
-    parser.bump_any();
-    parser.state.type_argument_speculation_depth = 1;
-    parser.set_unexpected();
-    let _ = parser.parse_assignment_expression_or_higher();
-    assert_eq!(parser.state.memo_entry_calls, 0);
-    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
+    let mut fatal_parser = parser(&allocator, "x", SourceType::ts(), true);
+    fatal_parser.bump_any();
+    fatal_parser.state.type_argument_speculation_depth = 1;
+    fatal_parser.set_unexpected();
+    let _ = fatal_parser.parse_assignment_expression_or_higher();
+    assert_eq!(fatal_parser.state.memo_entry_calls, 0);
+    assert!(!fatal_parser.state.failed_speculative_subproblems.is_allocated());
 
     let allocator = Allocator::default();
-    let mut parser = parser(&allocator, "x + y", SourceType::ts(), true);
-    parser.bump_any();
-    parser.state.type_argument_speculation_depth = 1;
-    parser.state.reuse_failed_type_argument_subproblems = true;
-    let _ = parser.parse_assignment_expression_or_higher();
-    assert_eq!(parser.state.memo_entry_calls, 1);
-    assert!(!parser.state.failed_speculative_subproblems.is_allocated());
+    let mut active_parser = parser(&allocator, "x + y", SourceType::ts(), true);
+    active_parser.bump_any();
+    active_parser.state.type_argument_speculation_depth = 1;
+    active_parser.state.reuse_failed_type_argument_subproblems = true;
+    let _ = active_parser.parse_assignment_expression_or_higher();
+    assert_eq!(active_parser.state.memo_entry_calls, 1);
+    assert!(!active_parser.state.failed_speculative_subproblems.is_allocated());
 }
 
 #[test]
