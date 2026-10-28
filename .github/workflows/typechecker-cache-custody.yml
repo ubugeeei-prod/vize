@@ -1,80 +1,188 @@
-name: Typechecker source custody admission
+name: Typechecker source custody thin audit
 on:
   workflow_dispatch:
-    inputs:
-      baseline:
-        description: Immutable actual-main parent for source and full packet comparison
-        required: true
-        type: string
-        default: cff28e89578af6af258b7f37693bae58fdae3b07
 permissions: { contents: read, actions: read }
-concurrency:
-  group: source-custody-admission-${{ github.ref }}
-  cancel-in-progress: false
 jobs:
-  tiny:
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 90
-    env:
-      GOMAXPROCS: "8"
-      RAYON_NUM_THREADS: "8"
-      CUSTODY_BASELINE: ${{ inputs.baseline }}
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { path: carrier, persist-credentials: false }
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { path: source, fetch-depth: 16, persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with: { node-version: "26.6.0", package-manager-cache: false }
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
-        with: { wild-version: "0.9.0" }
-      - name: Validate exact authority and establish an owned tiny carrier
+      - name: Independently audit immutable source admission packets without executing source
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
-          [[ "$GITHUB_REF" == refs/heads/test/canon-cache-custody-admission ]]
-          [[ "$CUSTODY_BASELINE" =~ ^[a-f0-9]{40}$ ]]
-          git -C source merge-base --is-ancestor "$CUSTODY_BASELINE" HEAD
-          evidence_root="$RUNNER_TEMP/source-custody-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          test ! -e "$evidence_root"
-          mkdir -m 700 "$evidence_root"
-          printf 'CUSTODY_ROOT=%s\n' "$evidence_root" >> "$GITHUB_ENV"
-          mkdir "$evidence_root/provider"
-          cat > "$evidence_root/provider/package.json" <<'JSON'
-          {"private":true,"type":"module","dependencies":{"vue":"3.5.44","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","@types/node":"25.9.2"}}
-          JSON
-          npm install --prefix "$evidence_root/provider" --ignore-scripts --no-audit --no-fund
-      - name: Strictly typecheck the admission harness
-        shell: bash
-        run: |
-          set -euo pipefail
-          node "$CUSTODY_ROOT/provider/node_modules/typescript/bin/tsc" --noEmit --strict --noUnusedLocals --noUnusedParameters --noUncheckedIndexedAccess --skipLibCheck --target es2022 --lib es2024 --isolatedModules --verbatimModuleSyntax --erasableSyntaxOnly --resolveJsonModule --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --allowJs --types node --typeRoots "$CUSTODY_ROOT/provider/node_modules/@types" carrier/tools/benchmarks/scripts/typechecker-cache-admission-build.ts carrier/tools/benchmarks/scripts/typechecker-cache-admission-run.ts 2>&1 | tee "$CUSTODY_ROOT/typecheck.log"
-      - name: Build independent fresh normal and opt-in CLIs and source unit controls
-        shell: bash
-        run: |
-          set -euo pipefail
-          node carrier/tools/benchmarks/scripts/typechecker-cache-admission-build.ts --source "$GITHUB_WORKSPACE/source" --base "$CUSTODY_BASELINE" --out "$CUSTODY_ROOT/build"
-      - name: Admit one SFC with all CLI and emitted TypeScript packets preserved
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y strace
-          node carrier/tools/benchmarks/scripts/typechecker-cache-admission-run.ts --provider "$CUSTODY_ROOT/provider" --builds "$CUSTODY_ROOT/build/builds.json" --out "$CUSTODY_ROOT/functional"
-      - name: Archive complete bounded metadata without build images
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          evidence_root="$RUNNER_TEMP/source-custody-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          mkdir -p "$evidence_root/build" "$evidence_root/functional" "$evidence_root/provider"
-          tar --exclude='./build/target-*' --exclude='./functional/project' --exclude='./functional/runtime-base' --exclude='./provider/node_modules' -czf "$RUNNER_TEMP/source-custody-metadata.tgz" -C "$evidence_root" .
+          [[ "$GITHUB_REF" == refs/heads/test/canon-cache-custody-thin-audit ]]
+          export AUDIT_OUT="$RUNNER_TEMP/source-custody-thin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          python3 - <<'PY'
+          import json,subprocess,io,zipfile,tarfile,hashlib,base64,os,re,posixpath,collections
+          ROOT="repos/ubugeeei-prod/vize";AID=12782027276;RUN=40607636404;QA="77256cf7a5d108cec477267ab3ed843d78add913";BASE="cff28e89578af6af258b7f37693bae58fdae3b07"
+          def gh(p):return json.loads(subprocess.check_output(["gh","api",ROOT+p]))
+          def sha(b):return hashlib.sha256(b).hexdigest()
+          r=gh("/actions/runs/"+str(RUN));assert r["head_sha"]==QA and r["run_attempt"]==1 and r["status"]=="completed" and r["conclusion"]=="success" and r["event"]=="workflow_dispatch"
+          meta=gh("/actions/artifacts/"+str(AID));assert meta["workflow_run"]["id"]==RUN and meta["workflow_run"]["head_sha"]==QA and not meta["expired"]
+          raw=subprocess.check_output(["gh","api",ROOT+"/actions/artifacts/"+str(AID)+"/zip","--allow-escape-sequences"])
+          assert len(raw)==276406 and sha(raw)=="9d6b5342ac193206d559e24aa9becef83187a44e1e6a3339cce9844601128cc1"
+          z=zipfile.ZipFile(io.BytesIO(raw));assert len(z.namelist())==1;tg=z.read(z.namelist()[0]);t=tarfile.open(fileobj=io.BytesIO(tg),mode="r:gz");files={}
+          for m in t.getmembers():
+           p=m.name.removeprefix("./")
+           assert not p.startswith("/") and ".." not in p.split("/")
+           assert "node_modules/" not in p and "build/target-" not in p
+           if m.isfile():
+            assert m.size<8*1024*1024
+            files[p]=t.extractfile(m).read()
+          def read(p):return json.loads(files[p])
+          b=read("build/builds.json");a=read("functional/acceptance.json")
+          assert b["sourceHead"]==a["sourceHead"]==QA and b["base"]==a["base"]==BASE
+          assert b["featureErasedNormalExecutorByteIdentical"] and b["oldTestReceiptPreserved"] and b["defaultFeaturesUnchanged"]
+          assert a["accepted"] and a["normalWholePacketsEqual"] and a["observerWholePacketsEqual"]
+          assert not a["fullCorpusQualified"] and not a["shippingPerformanceQualified"] and not a["memoryOverheadMeasured"]
+          assert re.search(rb"6 passed; 0 failed",files["build/observer-tests.stdout.txt"])
+          roles=["normal-base","normal-head","observer"];phases=["valid","invalid","repaired"]
+          assert [x["role"] for x in b["builds"]]==roles and a["sourceBuilds"]==b["builds"] and len(a["retained"])==9 and a["fixture"]["sfcs"]==1
+          builds={x["role"]:x for x in b["builds"]};assert len({x["target"] for x in builds.values()})==3
+          for role,v in builds.items():
+           assert v["revision"]==(BASE if role=="normal-base" else QA)
+           assert v["targetStartedAbsent"] and v["actualCargoArtifact"]["fresh"] is False
+           assert "profiling" not in v["actualCargoArtifact"]["features"]
+           assert ("cache-custody" in v["actualCargoArtifact"]["features"])==(role=="observer")
+           assert v["compilerSourceSeal"]==(QA if role=="observer" else None)
+           assert v["binary"]==v["actualCargoArtifact"]["executable"] and v["binary"].startswith(v["target"]+"/")
+           assert v["cargo"]["args"][:6]==["build","--locked","--profile","ci","-p","vize"]
+           assert len(v["binarySha256"])==64 and v["binaryBytes"]>0
+           cargo=[json.loads(line) for line in files["build/"+role+".cargo.jsonl"].decode().splitlines() if line]
+           compiler=[row for row in cargo if row.get("reason")=="compiler-artifact" and row.get("target",{}).get("name")=="vize" and "bin" in row.get("target",{}).get("kind",[]) and row.get("executable")]
+           assert compiler==[v["actualCargoArtifact"]]
+          
+           assert gh("/git/commits/"+v["revision"])["tree"]["sha"]==v["sourceTree"]
+           assert [p["sha"] for p in gh("/git/commits/"+v["revision"])["parents"]]==v["sourceParents"]
+          assert len({x["cliVersion"] for x in builds.values()})==1
+          assert b["normalBinaryByteIdentical"]==(builds["normal-base"]["binarySha256"]==builds["normal-head"]["binarySha256"])
+          compare=gh("/compare/"+BASE+"..."+QA);assert compare["status"]=="ahead" and compare["merge_base_commit"]["sha"]==BASE
+          
+          # Bind the self-asserted compile seal to actual immutable git bytes and Cargo inputs.
+          source_files={}
+          for revision in (BASE,QA):
+           source_files[revision]={}
+           for p in ("Cargo.toml","Cargo.lock","crates/vize/Cargo.toml","crates/vize_canon/Cargo.toml","crates/vize_canon/src/batch/executor/cli.rs"):
+            got=gh("/contents/"+p+"?ref="+revision);data=base64.b64decode(got["content"],validate=False);source_files[revision][p]=data
+           for role,v in builds.items():
+            if v["revision"]==revision:
+             for p,h in v["manifests"].items():assert sha(source_files[revision][p])==h
+          base_cli=source_files[BASE]["crates/vize_canon/src/batch/executor/cli.rs"].decode()
+          head_cli=source_files[QA]["crates/vize_canon/src/batch/executor/cli.rs"].decode()
+          for added in ('#[cfg(feature = "cache-custody")]\nmod cache_custody_receipt;\n','        #[cfg(feature = "cache-custody")]\n        let cache_receipt = cache_custody_receipt::requested(&command, project, config_path);\n','        #[cfg(feature = "cache-custody")]\n        cache_custody_receipt::completed(cache_receipt, &output);\n'):
+           assert head_cli.count(added)==1;head_cli=head_cli.replace(added,"",1)
+          assert head_cli==base_cli
+          import tomllib
+          for p in ("crates/vize/Cargo.toml","crates/vize_canon/Cargo.toml"):
+           assert tomllib.loads(source_files[QA][p].decode())["features"]["default"]==tomllib.loads(source_files[BASE][p].decode())["features"]["default"]
+          assert not b"cache-custody" in source_files[BASE]["crates/vize/Cargo.toml"]
+          
+          prefix=a["retained"][0]["runtime"]["context"]["outputParentPhysical"]
+          full={};metrics=[];pids=set();sourcepids=set();vtscounts=[];capture_pairs=0;source_roots=set();virtual_roots=set()
+          for role in roles:
+           packets=[]
+           for phase in phases:
+            matches=[x for x in a["retained"] if x["role"]==role and x["phase"]==phase];assert len(matches)==1;row=matches[0]
+            leaf="functional/"+role+"-"+phase;cli=read(leaf+"/stdout.json")
+            diag=[[f["file"],message] for f in cli["files"] for message in f["diagnostics"]]
+            expected=[["src/Carrier0.vue","error:3:7 [TS2322] Type 'number' is not assignable to type 'string'."]] if phase=="invalid" else []
+            assert diag==expected and cli["errorCount"]==len(expected) and cli["warningCount"]==0 and len(cli["programs"])==1 and cli["programs"][0]["root"]=="."
+            assert row["runtime"]["createdEmpty"] and not row["timingEligible"] and row["sourceWitnessRequired"]==(role=="observer")
+            assert row["rssScope"]=="GNU time child maximum; not simultaneous process-tree RSS or Rust live allocation"
+            rss=int(re.search(rb"Maximum resident set size \(kbytes\): ([0-9]+)",files[leaf+"/time.txt"])[1]);assert rss==row["rusageMaxRssKiB"] and rss>0 and int(row["observedWallNs"])>0
+            metrics.append({"role":role,"phase":phase,"wallMs":round(int(row["observedWallNs"])/1e6,3),"rusageMaxRssKiB":rss})
+            def local(p):
+             needle="/functional/";assert needle in p;return "functional/"+p.split(needle,1)[1]
+            assert sha(files[local(row["wrapper"]["path"])])==row["wrapper"]["sha256"]
+            assert row["actualGo"]["sha256"]=="a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70"
+            def successful_exec(pid,image):
+             trace=files[leaf+"/exec.trace."+str(pid)].decode("utf8")
+             entries=[]
+             for line in trace.splitlines():
+              if not line.startswith("execve("):continue
+              decoder=json.JSONDecoder();value,end=decoder.raw_decode(line[len("execve("):])
+              entries.append((value,line.endswith("= 0")))
+             return entries==[(image,True)]
+            call_dirs=sorted({p.rsplit("/",1)[0] for p in files if p.startswith(leaf+"/backend/") and p.endswith("/before.json")})
+            calls=[]
+            for directory in call_dirs:
+             before=read(directory+"/before.json");after=read(directory+"/after.json")
+             if before["project"] is None:continue
+             calls.append((directory,before,after))
+            assert len(calls)>0 and len(calls)==len(row["actualGo"]["pids"])
+            metadata={p:read(p) for p in files if p.startswith(leaf+"/source-capture/") and p.endswith(".json")}
+            assert len(metadata)==(2*len(calls) if role=="observer" else 0)
+            used=set();vp=[]
+            for directory,before,after in calls:
+             virtual=before["physicalCwd"];assert virtual.startswith(row["runtime"]["ownedRoot"]+"/") and before["before"]["exists"] is False
+             virtual_roots.add(virtual);pid=after["backendPid"];assert pid not in pids;pids.add(pid)
+             assert successful_exec(pid,row["actualGo"]["path"])
+             assert after["error"] is None and after["signal"] is None and after["status"]==(2 if phase=="invalid" else 0)
+             assert files[directory+"/stderr.txt"]==b""
+             assert files[directory+"/stdout.txt"]==(b"src/Carrier0.vue.ts(35,9): error TS2322: Type 'number' is not assignable to type 'string'."+bytes([10]) if phase=="invalid" else b"")
+             cfg=files[directory+"/generated-tsconfig.json"];assert sha(cfg)==before["configSha256"]
+             inputs=read(directory+"/virtual-inputs.json");assert len([f for f in inputs if f["path"].endswith("Carrier0.vue.ts")])==1
+             normalized=[]
+             for item in inputs:
+              if item["kind"]=="typescript":
+               data=base64.b64decode(item["base64"],validate=True);assert len(data)==item["bytes"] and sha(data)==item["sha256"]
+               normalized.append({"path":item["path"],"text":data.decode("utf8").replace(virtual,"$OBSERVED_VIRTUAL_ROOT")})
+              else:normalized.append(item)
+             vtscounts.append({"role":role,"phase":phase,"regularTypeScriptFiles":sum(f["kind"]=="typescript" for f in inputs),"typeScriptBytes":sum(f.get("bytes",0) for f in inputs)})
+             if role=="observer":
+              pair=[(p,v) for p,v in metadata.items() if v["requestedConfigSha256"]==before["configSha256"] and v["requestedConfigPath"]==before["project"]]
+              assert len(pair)==2;pre=[(p,v) for p,v in pair if v["stage"]=="requested"];post=[(p,v) for p,v in pair if v["stage"]=="completed"];assert len(pre)==len(post)==1
+              requested,completed=pre[0][1],post[0][1];assert requested["completion"]=="PENDING" and completed["completion"]=="INVOKED_PROCESS_REAPED" and completed["exitCode"]==after["status"]
+              for path,packet in pair:
+               assert path not in used;used.add(path)
+               assert packet["schema"]=="vize.cache-runtime-custody" and packet["version"]==2 and packet["metadataOnly"] and packet["timingEligible"] is False and packet["errors"]==[]
+               assert packet["compiledSourceRevision"]==QA==builds[role]["compilerSourceSeal"]
+               assert packet["crateVersion"]=="0.603.0" and packet["virtualRoot"]==packet["actualCwd"]==virtual and os.path.isabs(packet["projectRoot"])
+               source_roots.add(packet["projectRoot"])
+               assert packet["invokedProgram"]==packet["resolvedInvokedProgram"]==row["wrapper"]["path"] and packet["invokedProgramSha256"]==row["wrapper"]["sha256"]!=row["actualGo"]["sha256"]
+               assert packet["invokedPid"] is None and "descendant executable/hash/PID" in packet["unobserved"]
+               assert packet["actualArgs"]==before["argv"] and sha(packet["requestedConfigBytes"].encode())==before["configSha256"]
+               assert packet["requestedConfigObservation"]=="pre-invocation read, not a post-execution reread"
+               owner=packet["receiptOwnerPid"];assert successful_exec(owner,builds[role]["binary"]);sourcepids.add(owner)
+               assert "/process-"+str(owner)+"/" in path
+               assert not os.path.commonpath([packet["projectRoot"],row["runtime"]["ownedRoot"]])==packet["projectRoot"]
+              for key in requested:
+               if key not in ["stage","completion"]:assert requested[key]==completed[key]
+              assert bytes(completed["rawStdoutBytes"])==files[directory+"/stdout.txt"] and bytes(completed["rawStderrBytes"])==files[directory+"/stderr.txt"]
+              capture_pairs+=1
+             vp.append({"config":cfg.decode().replace(virtual,"$OBSERVED_VIRTUAL_ROOT"),"inputs":normalized,"backendStdout":files[directory+"/stdout.txt"].decode().replace(virtual,"$OBSERVED_VIRTUAL_ROOT"),"backendStderr":files[directory+"/stderr.txt"].decode().replace(virtual,"$OBSERVED_VIRTUAL_ROOT")})
+            assert len(used)==len(metadata)
+            packets.append({"phase":phase,"cli":cli,"virtualPackets":vp})
+           full[role]=packets
+          assert full["normal-base"]==full["normal-head"]==full["observer"]
+          assert capture_pairs==3 and len(sourcepids)==3 and len(pids)==9 and len(virtual_roots)==9 and len(source_roots)==1
+          assert len(a["retained"])==9
+          report={"status":"independently-accepted-tiny-carrier","run":RUN,"job":122551006712,"attempt":1,"sourceHead":QA,"baseActualMain":BASE,"artifact":{"id":AID,"zipBytes":len(raw),"zipSha256":sha(raw),"tgzSha256":sha(tg),"files":len(files)},"builds":[{"role":v["role"],"revision":v["revision"],"binarySha256":v["binarySha256"],"bytes":v["binaryBytes"],"compilerSourceSeal":v["compilerSourceSeal"],"sourceTree":v["sourceTree"]} for v in b["builds"]],"normalBinaryByteIdentical":b["normalBinaryByteIdentical"],"normalDefaultCaptureReceipts":0,"moduleUnitControls":6,"freshOneSfcExecutions":9,"fullCliVtsBackendPacketsEqual":True,"actualGoElfSha256":"a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70","actualGoPids":sorted(pids),"actualSourceCliPids":sorted(sourcepids),"directSemanticRoots":list(source_roots),"sourceCustodyRequestedCompletedPairs":capture_pairs,"freshBuildInfoAll9":True,"emittedTypeScript":vtscounts,"toyObservationsOnly":metrics,"acceptanceSha256":sha(files["functional/acceptance.json"]),"buildReceiptSha256":sha(files["build/builds.json"]),"qualificationScope":"one public SFC functional observer only; not full corpus, shipping/cold500ms or causal CPU/RSS overhead evidence","localFilesWritten":0}
+          
+          report["backendExitCodesPerRole"]={"normal-base":[0,2,0],"normal-head":[0,2,0],"observer":[0,2,0]}
+          report["rustExitCodesPerRole"]={"normal-base":[0,1,0],"normal-head":[0,1,0],"observer":[0,1,0]}
+          report["rustExitAuthority"]="same-invocation frozen harness runtime assertion and successful workflow; no separate raw Rust-status receipt"
+          report["cfgErasedExecutorByteIdenticalIndependentlyConfirmed"]=True
+          report["gitManifestBytesBound"]=True
+          report["auditWorkflowHead"]=os.environ["GITHUB_SHA"]
+          report["auditWorkflowRun"]=int(os.environ["GITHUB_RUN_ID"])
+          report["remoteFilesystemWrites"]="thin summary and all-member hash manifest only; no compiler or consumer"
+          report["originalSourceOrConsumerReexecuted"]=False
+          out=os.environ["AUDIT_OUT"]
+          manifest={p:{"bytes":len(b),"sha256":sha(b)} for p,b in sorted(files.items())}
+          os.makedirs(out,exist_ok=False)
+          with open(os.path.join(out,"all-member-hashes.json"),"w") as f:json.dump(manifest,f,separators=(",",":"))
+          with open(os.path.join(out,"summary.json"),"w") as f:json.dump(report,f,separators=(",",":"))
+          assert sum(os.path.getsize(os.path.join(out,n)) for n in os.listdir(out))<100000
+          print(json.dumps(report))
+          PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: always()
+        if: success()
         with:
-          name: source-custody-admission-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/source-custody-metadata.tgz
+          name: source-custody-thin-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-custody-thin-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
