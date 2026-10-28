@@ -141,9 +141,8 @@ mod tests {
             Some("(   item ) => item.id")
         );
 
-        let nested = callback_parameters_on_ignored_line(
-            "(fn: (s: string) => string,\n value) => value",
-        );
+        let nested =
+            callback_parameters_on_ignored_line("(fn: (s: string) => string,\n value) => value");
         assert_eq!(
             nested.as_ref().map(|value| value.as_str()),
             Some("(fn: (s: string) => string,  value) => value"),

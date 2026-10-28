@@ -296,9 +296,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
         true,
     );
     assert_eq!(
-        code.matches(
-            "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)"
-        )
+        code.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
             .count(),
         1,
         "{code}"
@@ -324,9 +322,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     );
     assert_eq!(
         camel
-            .matches(
-                "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)"
-            )
+            .matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
             .count(),
         1,
         "a camel-authored binding must retain the raw quoted-key witness: {camel}"
@@ -338,9 +334,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
         true,
     );
     assert_eq!(
-        non_aria
-            .matches("__vizeComponentAriaPropEntries")
-            .count(),
+        non_aria.matches("__vizeComponentAriaPropEntries").count(),
         0,
         "unrelated SFCs must not pay for the aria witness: {non_aria}"
     );
