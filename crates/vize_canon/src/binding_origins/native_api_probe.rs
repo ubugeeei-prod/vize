@@ -64,8 +64,8 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
     symlink(provider.join("node_modules"), root.join("node_modules")).unwrap();
     fixture::write(&root);
     let config = root.join("tsconfig.json");
-    let launcher = output.join("api-exec.py");
-    fs::write(&launcher, include_str!("native_api_probe.py")).unwrap();
+    let launcher = output.join("api-exec.mts");
+    fs::write(&launcher, include_str!("native_api_probe.mts")).unwrap();
     fs::set_permissions(&launcher, fs::Permissions::from_mode(0o755)).unwrap();
     let mut tap = NativeTap::start(&launcher, &backend, &root, &output);
     let client = block_on(ApiClient::connect_pipe(tap.socket())).unwrap();
@@ -79,6 +79,10 @@ fn standalone_native_api_retains_one_project_symbol_owner() {
         serde_json::from_slice(&fs::read(output.join("actual-launch.json")).unwrap()).unwrap();
     let pid = launch.get("pid").and_then(Value::as_u64).unwrap();
     assert_eq!(pid, u64::from(tap.pid()));
+    assert_eq!(
+        launch.get("ppid").and_then(Value::as_u64),
+        Some(u64::from(std::process::id()))
+    );
     let executable = fs::read_link(cstr!("/proc/{pid}/exe").as_str()).unwrap();
     assert_eq!(executable, backend);
     let stdin = fs::read_link(cstr!("/proc/{pid}/fd/0").as_str()).unwrap();

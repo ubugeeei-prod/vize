@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import hashlib, json, os, pathlib, re, runpy, shutil, subprocess
+          import hashlib, json, os, pathlib, re, shutil, subprocess
           root = pathlib.Path(os.environ["GITHUB_WORKSPACE"]).resolve()
           out = pathlib.Path(os.environ["RUNNER_TEMP"]) / "binding-origin-admission"
           assert not out.exists(), "never replace earlier evidence"
@@ -52,6 +52,18 @@ jobs:
               result = run([command, "-Vv"])
               assert result.returncode == 0, result.stderr
               compiler[command] = result.stdout
+          observer = run(["node","--test","--test-reporter=tap","tests/tooling/native-api-wire-origin.test.ts"], 60)
+          (out / "observer-unit.stdout.txt").write_text(observer.stdout)
+          (out / "observer-unit.stderr.txt").write_text(observer.stderr)
+          if observer.returncode != 0:
+              print(observer.stdout, flush=True)
+              print(observer.stderr, flush=True)
+          assert observer.returncode == 0
+          for marker in ["# tests 38","# pass 38","# fail 0","# skipped 0"]:
+              assert marker in observer.stdout, observer.stdout
+          guard = run(["setpriv","--version"])
+          assert guard.returncode == 0
+          (out / "setpriv-version.txt").write_text(guard.stdout + guard.stderr)
           argv = ["cargo", "test", "--locked", "--profile", "ci", "-p", "vize_canon", "--lib", "--no-run", "--message-format=json-render-diagnostics", "--jobs", "4"]
           built = run(argv, 1200)
           (out / "cargo.stdout.jsonl").write_text(built.stdout)
@@ -160,8 +172,11 @@ jobs:
               wire_error = None
               if (capture / "client-to-native.wire.bin").is_file() and (capture / "native-to-client.wire.bin").is_file():
                   try:
-                      verifier = runpy.run_path(str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify_wire.py"))
-                      wire = verifier["verify"](capture, version)
+                      observed = run(["node",str(root / "crates/vize_canon/src/binding_origins/native_api_probe/verify-wire.ts"),str(capture),version], 60)
+                      (out / f"{version}.wire.stdout.txt").write_text(observed.stdout)
+                      (out / f"{version}.wire.stderr.txt").write_text(observed.stderr)
+                      assert observed.returncode == 0, observed.stdout + observed.stderr
+                      wire = json.loads(observed.stdout)
                   except Exception as error:
                       wire_error = repr(error)
                       qualified = False
@@ -209,8 +224,8 @@ jobs:
               "compiler":compiler,
               "compilerEnvironment":{k:v for k,v in env.items() if k in ["RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","RUSTC","RUSTC_WRAPPER","RUSTC_WORKSPACE_WRAPPER","CARGO_BUILD_TARGET","CARGO_INCREMENTAL","CARGO_BUILD_JOBS"] or k.startswith("CARGO_PROFILE_CI_")},
               "manifests":{str(p.relative_to(root)):digest(p) for p in [root/"Cargo.toml",root/"Cargo.lock",root/".cargo/config",root/".cargo/config.toml"] if p.exists()},
-              "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").rglob("*.rs"))},
-              "tests":rows,"nativeCarrierRoles":native_rows,
+              "originSource":{str(p.relative_to(root)):digest(p) for p in sorted((root/"crates/vize_canon/src/binding_origins").rglob("*")) if p.is_file() and p.suffix in [".rs",".ts",".mts"]},
+              "tests":rows,"nativeCarrierRoles":native_rows,"observerUnitTests":38,
               "passed":len(rows)==23 and all(row["qualified"] for row in rows) and len(native_rows)==2 and all(row["qualified"] for row in native_rows),
           }
           (out / "acceptance.json").write_text(json.dumps(receipt, indent=2)+"\n")

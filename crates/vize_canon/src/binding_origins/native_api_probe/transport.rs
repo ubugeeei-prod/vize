@@ -61,12 +61,15 @@ impl NativeTap {
         let listener = UnixListener::bind(&socket).unwrap();
         listener.set_nonblocking(true).unwrap();
         let mut child = NativeChild(
-            Command::new(launcher)
+            Command::new("setpriv")
+                .args(["--pdeathsig", "KILL", "--"])
+                .arg(launcher)
                 .args(["--api", "--async", "--cwd"])
                 .arg(root)
                 .current_dir(root)
                 .env("VIZE_ORIGIN_API_BACKEND", backend)
                 .env("VIZE_ORIGIN_API_CAPTURE", output)
+                .env("VIZE_ORIGIN_API_PARENT_PID", std::process::id().to_string())
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
                 .stderr(File::create(output.join("native.stderr.txt")).unwrap())
