@@ -71,7 +71,10 @@ function asRange(value: unknown): Range {
   for (const position of [range.start, range.end]) {
     assert.ok(position && Number.isInteger(position.line) && Number.isInteger(position.character));
   }
-  return range;
+  return {
+    start: { line: range.start.line, character: range.start.character },
+    end: { line: range.end.line, character: range.end.character },
+  };
 }
 
 export function expectedDiagnostic(uri: string, source: string, version: 1 | 2): string {

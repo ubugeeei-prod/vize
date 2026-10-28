@@ -78,14 +78,19 @@ test("diagnostic admission covers both halves of the Vue product", () => {
   const expected = expectedDiagnostic(uri, sourceV2, 2);
   const exact = JSON.parse(expected) as {
     uri: string;
-    range: unknown;
+    range: { start: unknown; end: unknown };
     code: string;
     message: string;
   };
   const publication = {
     uri,
     diagnostics: [
-      { range: exact.range, code: exact.code, message: exact.message, severity: 1 },
+      {
+        range: { end: exact.range.end, start: exact.range.start },
+        code: exact.code,
+        message: exact.message,
+        severity: 1,
+      },
     ],
   };
   const emptyPrimary = {
