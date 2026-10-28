@@ -103,8 +103,7 @@ const emit = defineEmits<{
         "every inference-only copy must select the outer arrow and keep its parameter on the ignored line:\n{}",
         result.text
     );
-    let authored_owner =
-        "(fn: (value: 'a' | 'b') => boolean,\n      value) => fn(value);";
+    let authored_owner = "(fn: (value: 'a' | 'b') => boolean,\n      value) => fn(value);";
     assert_eq!(
         result.text.matches(authored_owner).count(),
         1,
