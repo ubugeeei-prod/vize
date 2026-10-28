@@ -27,6 +27,8 @@ const execution = { runId: 53, runAttempt: 2 };
 const names = Object.values(TYPECHECKER_TESTS);
 const ts40Names = [
   "current_projection_matrix_is_exact_and_non_empty",
+  "davinci_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
+  "davinci_ts40_projection_support::evidence::public_instance_slot_packets_remain_authenticated",
   "mapping_drift_fails_closed",
   "diagnostic_drift_fails_closed",
 ];
