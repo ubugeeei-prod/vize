@@ -360,9 +360,11 @@ function original(output: string, receiptPath: string): number {
     testedSourceAfter: revision(),
     faultEvents: faultCount,
     observerGaps: observed.observerGaps,
-    result: faultCount
-      ? "fault evidence captured; human attribution required"
-      : "not reproduced; incident remains unresolved",
+    result: observed.observerGaps.length
+      ? "observation incomplete; incident remains unresolved"
+      : faultCount
+        ? "fault evidence captured; human attribution required"
+        : "not reproduced; incident remains unresolved",
     noAutomaticRetry: true,
     noPerformanceClaim: true,
   });
