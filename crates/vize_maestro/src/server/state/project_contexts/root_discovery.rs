@@ -1,7 +1,10 @@
 //! Fresh project-marker discovery. Source operation counts compile out of
 //! ordinary builds; profiling retains the exact traversal and marker policy.
 
-use std::path::{Path, PathBuf};
+use std::{
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 
 pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     vize_l0::micro_span!("maestro.project.document_root", {
@@ -16,11 +19,15 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
             if let Ok(entries) = std::fs::read_dir(directory) {
                 for entry in entries.flatten() {
                     vize_l0::micro_count!("fs.read_dir.entries", 1);
-                    let path = entry.path();
-                    has_package |=
-                        path.file_name().and_then(|name| name.to_str()) == Some("package.json");
-                    has_vite |= is_vite_config_marker(&path);
-                    has_project_config |= is_typescript_config_marker(&path);
+                    match config_marker_name(&entry.file_name()) {
+                        Some(ConfigMarker::Package) => has_package = true,
+                        Some(ConfigMarker::Vite) => has_vite = true,
+                        Some(ConfigMarker::TypeScript) => {
+                            has_project_config = true;
+                            break;
+                        }
+                        None => {}
+                    }
                 }
             }
             if has_project_config {
@@ -51,26 +58,39 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     })
 }
 
-fn is_vite_config_marker(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.starts_with("vite.config."))
+#[derive(Debug, Eq, PartialEq)]
+enum ConfigMarker {
+    Package,
+    Vite,
+    TypeScript,
 }
 
-fn is_typescript_config_marker(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| {
-            (name.starts_with("tsconfig") && name.ends_with(".json")) || name == "jsconfig.json"
-        })
+// Most entries are source files. Reject them using borrowed OS bytes, without
+// constructing a full path or validating their names as UTF8. Candidate marker
+// names retain the previous UTF8 requirement, including non-UTF8 suffixes.
+fn config_marker_name(name: &OsStr) -> Option<ConfigMarker> {
+    let bytes = name.as_encoded_bytes();
+    if bytes == b"package.json" {
+        return Some(ConfigMarker::Package);
+    }
+    if bytes == b"jsconfig.json" {
+        return Some(ConfigMarker::TypeScript);
+    }
+    let vite = bytes.starts_with(b"vite.config.");
+    let typescript = bytes.starts_with(b"tsconfig") && bytes.ends_with(b".json");
+    if !(vite || typescript) || name.to_str().is_none() {
+        return None;
+    }
+    Some(if vite {
+        ConfigMarker::Vite
+    } else {
+        ConfigMarker::TypeScript
+    })
 }
 
 pub(super) fn is_config_marker(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| {
-            is_vite_config_marker(path)
-                || is_typescript_config_marker(path)
-                || name == "package.json"
-        })
+    path.file_name().and_then(config_marker_name).is_some()
 }
+
+#[cfg(test)]
+mod tests;
