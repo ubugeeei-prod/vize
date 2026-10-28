@@ -17,6 +17,35 @@ pub(super) struct CallbackPropsResolution {
     pub(super) selected_props: String,
 }
 
+pub(super) fn append_prop_check_type(
+    ts: &mut String,
+    (resolution, hoist_shared_preamble): (Option<&CallbackPropsResolution>, bool),
+    (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
+) {
+    let Some(resolution) = resolution else {
+        append!(
+            *ts,
+            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
+        );
+        return;
+    };
+    let camel_prop_name = super::super::helpers::to_camel_case(prop_name);
+    let resolved_props = resolution.resolved_props.as_str();
+    let selected_props = resolution.selected_props.as_str();
+    if hoist_shared_preamble {
+        let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
+        append!(
+            *ts,
+            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        );
+    } else {
+        append!(
+            *ts,
+            ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        );
+    }
+}
+
 /// Invoke the child's props resolver solely to capture its instantiated return
 /// type, retaining inference from every authored prop and spread. This call has
 /// no source mapping, so the mapped whole-props and per-prop checks below remain
