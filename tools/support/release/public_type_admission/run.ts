@@ -22,6 +22,8 @@ async function main(): Promise<void> {
   const lock = hash(fs.readFileSync(path.join(r.workspace, "package-lock.json")));
   const image = hash(fs.readFileSync(r.native.path));
   const backend = hash(fs.readFileSync(r.backend));
+  const hostedBackend = hash(fs.readFileSync(r.mapperHost.backend));
+  const hostLock = hash(fs.readFileSync(path.join(r.mapperHost.workspace, "package-lock.json")));
   const results: unknown[] = [];
   try {
     const project = baseProject(r);
@@ -106,6 +108,11 @@ async function main(): Promise<void> {
     assert.equal(hash(fs.readFileSync(path.join(r.workspace, "package-lock.json"))), lock);
     assert.equal(hash(fs.readFileSync(r.native.path)), image);
     assert.equal(hash(fs.readFileSync(r.backend)), backend);
+    assert.equal(hash(fs.readFileSync(r.mapperHost.backend)), hostedBackend);
+    assert.equal(
+      hash(fs.readFileSync(path.join(r.mapperHost.workspace, "package-lock.json"))),
+      hostLock,
+    );
     write(path.join(r.output, "acceptance.txt"), {
       version: r.version,
       candidate: r.candidate,
@@ -117,6 +124,15 @@ async function main(): Promise<void> {
         node: process.version,
       },
       sourceContract: { pullRequest: 10950, residualOriginIssue: 10980 },
+      routes: {
+        cli: { sdkVersion: "7.0.2", stages: 32 },
+        lsp: { sdkVersion: "7.0.2", diagnosticPackets: 117, typedHovers: 4 },
+        hostedContentMapper: {
+          sdkVersion: r.mapperHost.version,
+          stages: 32,
+          identity: r.mapperHost,
+        },
+      },
       counts: {
         refCliStages: 5,
         refMapperStages: 5,

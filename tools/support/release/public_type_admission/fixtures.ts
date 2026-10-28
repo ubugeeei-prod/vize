@@ -43,10 +43,13 @@ export function verifyOriginals(capsule: string): unknown {
   }
   const drivers = array(manifest.driverFiles);
   assert.deepEqual(drivers.map((value) => string(record(value).name)).sort(), [
+    "capability.ts",
     "fixtures.ts",
     "identity.ts",
+    "installed-runtime.ts",
     "lsp-probes.ts",
     "lsp.ts",
+    "mapper-host.ts",
     "model.ts",
     "observer.ts",
     "process.ts",

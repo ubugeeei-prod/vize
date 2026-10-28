@@ -2,7 +2,7 @@
   "schema": "vize.template-ref.public-capsule.v1",
   "sourceRevision": "509c152e148ebc0ca65ff1de7087bcdb59cb77a6",
   "requiredPullRequest": 10950,
-  "eligibility": "first actual published tag containing83e3;0.602 and0.603 ineligible",
+  "eligibility": "first actual published tag containing83e3;0.602 and0.603 ineligible; hosted mapper uses explicit isolated7.1 SDK",
   "files": [
     {
       "originalPath": "tests/tooling/support/type-admission-fixtures.ts",
@@ -48,21 +48,21 @@
   "driverFiles": [
     {
       "name": "model.ts",
-      "bytes": 5154,
-      "sha256": "66067f314fb4d9684159ea3a8922376f74e60d38674f917496ec45bda6101124",
-      "gitBlob": "c8b8ce7270c14191495017b5b42087736db57f4f"
+      "bytes": 5513,
+      "sha256": "26056c888d99d086bd448152febdd4e62f846ef0bc58739a5480d14c997d2302",
+      "gitBlob": "3affa1f0ee940427fbf7e29b9fd82fa44b298a91"
     },
     {
       "name": "fixtures.ts",
-      "bytes": 5248,
-      "sha256": "e70b362b36c366b8443967fb0eac25b6ad4172e68b2db62567e09cb4abefea29",
-      "gitBlob": "e60e0edd875ecc026cbbb191b5da8e38d925c049"
+      "bytes": 5319,
+      "sha256": "e87ec1bd0b07513541fb0539aec6591face4545b3f885e79ebcc0fa69cf84718",
+      "gitBlob": "8d612fe8de8b1ca50cbe277c7c863a8e2c07f674"
     },
     {
       "name": "process.ts",
-      "bytes": 3557,
-      "sha256": "dd7548d9f635b7dfb4065bb46eb78fa698cb39001d1fe9528a4d56094718e86b",
-      "gitBlob": "156c45b08d5911cb2f9b6cde2f69b4da65c9a3fa"
+      "bytes": 3852,
+      "sha256": "5fab5390bfea3d9a728c9785cce1e65e832bd5dfe5e8c7ba6f18f8687dcc2841",
+      "gitBlob": "dfe0c5d2e24a652f92b47259c9d01533ea91640e"
     },
     {
       "name": "observer.ts",
@@ -84,21 +84,39 @@
     },
     {
       "name": "identity.ts",
-      "bytes": 7046,
-      "sha256": "47c3aef62249837d13f6fcadcfc3c6ebd1053332031147dde6c060a12d98c6f8",
-      "gitBlob": "22d686174aaac0e20c2bc694b6fa1a9405f88b2c"
+      "bytes": 2562,
+      "sha256": "453ca1a0158e17eadb91aaa36078b0d0caa3af29e964917bda401beca2de7cea",
+      "gitBlob": "a4c3bd8f07630db7d9f7193cd57de1fed0397e18"
     },
     {
       "name": "run.ts",
-      "bytes": 4677,
-      "sha256": "12b858d39024d0e336b99dece5b42b8ffac1df2dd0653bba4b50552a32019fc8",
-      "gitBlob": "797f78420043ce04ea445561ab9bb485fd16a3f2"
+      "bytes": 5343,
+      "sha256": "cedf2cda971cd8ba1065e9134ca12c24acb2fb79719c6cb59103179002fdbb2f",
+      "gitBlob": "973ee3f1b4428509e235ac7a0fe9fd5d19ba128c"
     },
     {
       "name": "source-admission.ts",
       "bytes": 1502,
       "sha256": "de470e0a42ad9c104f3e2be8f6efd03053a734083fbdac24e7dd15a55e552f39",
       "gitBlob": "1c7652d294884a96852fa40676e21d202d3178b5"
+    },
+    {
+      "name": "mapper-host.ts",
+      "bytes": 5504,
+      "sha256": "332d4d8b4c942eda8bbb40d1d216b6ac3b89dd2ec90154092d8493997607ce16",
+      "gitBlob": "4f390bbcc56dd95e2689ce68784ef9fa6767b379"
+    },
+    {
+      "name": "installed-runtime.ts",
+      "bytes": 5436,
+      "sha256": "45d38d8242a0e05757a70a01033f4522caaa3b34af798cbebdaa3c1f2d8c0fe5",
+      "gitBlob": "c6f1a4c259e79571acc123f592827218fc96b2b5"
+    },
+    {
+      "name": "capability.ts",
+      "bytes": 3587,
+      "sha256": "bdaa4b69e00ad7b2475beffdb0a241f5cbe209ceeacf5d2db64ffd0fd7bdbbc1",
+      "gitBlob": "7b5f4bce2b454f0a7215c5aa64decbdd7d432a3a"
     }
   ],
   "sharedFiles": [
@@ -156,5 +174,47 @@
     ],
     "globalOriginIssue": 10980,
     "globalOriginQualified": false
+  },
+  "supersedesUnexecutedDriverTree": "55116fa7a8215a904c0e6ccd6339d55bda2cbeeb",
+  "driverRevision": "dual-native-host-v2",
+  "runtimeRoutes": {
+    "cli": {
+      "sdk": "7.0.2",
+      "stages": 32,
+      "graph": "existing CPP"
+    },
+    "lsp": {
+      "sdk": "7.0.2",
+      "diagnosticPackets": 117,
+      "typedHovers": 4,
+      "graph": "existing CPP"
+    },
+    "contentMapper": {
+      "sdk": "7.1.0-beta",
+      "platform": "linux-x64",
+      "stages": 32,
+      "graph": "isolated native SDK; Vize/NAPI resolved from CPP fixture graph"
+    }
+  },
+  "historicalProofScopes": {
+    "sourceAdmission": {
+      "source": "4834900d965b17efa53ec56dd951826eddef38ff",
+      "run": 40523513452,
+      "job": 122270622510,
+      "cliPackets": 32,
+      "vueOraclePackets": 32,
+      "lspResponses": 117,
+      "hovers": 4
+    },
+    "originalMapperCounterexample": {
+      "issue": 10948,
+      "vize": "0.596.0",
+      "nativeSdk": "7.1.0-beta",
+      "route": "--runExternalCode hosted mapper"
+    },
+    "laterThreeMapperPositive": {
+      "qualified": false,
+      "identity": null
+    }
   }
 }

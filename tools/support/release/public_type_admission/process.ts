@@ -60,8 +60,10 @@ export function checkProject(
       tool === "cli"
         ? [runtime.node, runtime.cli, "check", "--corsa-path", runtime.backend, "--format", "json"]
         : [
-            runtime.backend,
+            runtime.mapperHost.backend,
             "--runExternalCode",
+            "--checkers",
+            "1",
             "--project",
             "tsconfig.mapper.json",
             "--pretty",
@@ -85,6 +87,9 @@ export function checkProject(
       signal: result.signal,
       error: result.error?.message ?? null,
       stage,
+      route: tool === "mapper" ? "hosted-content-mapper" : "standalone-cli",
+      sdkVersion: tool === "mapper" ? runtime.mapperHost.version : "7.0.2",
+      sdkSha256: tool === "mapper" ? runtime.mapperHost.sha256 : runtime.backendSha256,
     });
     assert.equal(result.error, undefined);
     assert.equal(result.signal, null);

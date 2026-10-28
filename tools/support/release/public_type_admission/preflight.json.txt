@@ -1,12 +1,11 @@
 {
-  "scope": "Source admission guard update; public consumer not executed",
+  "scope": "unreferenced driver contract update; native host/public consumer not executed here",
   "originalFixturePinsUnchanged": true,
-  "originalSharedHelperPinUnchanged": true,
-  "originalDriverPreflightPreservedByTree": "4bd3f7c6707028ed6055a9087b19ea1c3ed9532b",
+  "sharedHelperPinsUnchanged": true,
   "strict": {
     "scope": "RAM-only TS6 tooling compilation; no native checker program",
     "diagnostics": [],
-    "files": 16,
+    "files": 19,
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "physicalWrites": 0
@@ -29,11 +28,27 @@
     "physicalWrites": 0,
     "passed": true
   },
-  "originalRuntimeProofScope": {
-    "cliPackets": 32,
-    "vuePackets": 32,
-    "historicalMapperPackets": 3,
-    "lspResponses": 117,
-    "hovers": 4
-  }
+  "runtimeRoutes": {
+    "cli": {
+      "sdk": "7.0.2",
+      "stages": 32,
+      "graph": "existing CPP"
+    },
+    "lsp": {
+      "sdk": "7.0.2",
+      "diagnosticPackets": 117,
+      "typedHovers": 4,
+      "graph": "existing CPP"
+    },
+    "contentMapper": {
+      "sdk": "7.1.0-beta",
+      "platform": "linux-x64",
+      "stages": 32,
+      "graph": "isolated native SDK; Vize/NAPI resolved from CPP fixture graph"
+    }
+  },
+  "sourceCapabilityActual": null,
+  "firstContainingPublicAcceptanceActual": null,
+  "supersedesUnexecutedDriverTree": "55116fa7a8215a904c0e6ccd6339d55bda2cbeeb",
+  "unsupportedOldRoute": "native7.0.2 --runExternalCode"
 }

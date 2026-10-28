@@ -183,7 +183,17 @@ async function main(): Promise<void> {
   };
   const eligibility = await buildEligibility(version, candidate, api, phase, source);
   fs.mkdirSync(path.dirname(output), { recursive: true });
-  fs.writeFileSync(output, JSON.stringify(eligibility, null, 2) + "\n", { flag: "wx" });
+  const temporary = fs.realpathSync(asString(process.env.RUNNER_TEMP));
+  const delivery = {
+    ...eligibility,
+    mapperHost: {
+      route: "hosted-content-mapper",
+      sdkVersion: "7.1.0-beta",
+      workspace: path.join(temporary, "public-type-admission-mapper-host"),
+      setupReceipt: path.join(temporary, "public-type-admission-mapper-host-proof/setup.json.txt"),
+    },
+  };
+  fs.writeFileSync(output, JSON.stringify(delivery, null, 2) + "\n", { flag: "wx" });
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
   void main().catch((error: unknown) => {

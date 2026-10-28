@@ -11,6 +11,9 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/cross-file-finalization-order.yml
+      - .github/scripts/cross-file-finalization-scope.ts
+      - .github/scripts/cross-file-finalization-order-scope.ts
+      - tests/tooling/cross-file-finalization-order-scope.test.ts
       - crates/vize_croquis_cf/src/graph.rs
       - crates/vize_croquis_cf/src/graph/order.rs
       - crates/vize_croquis_cf/src/graph/order/**
@@ -28,7 +31,41 @@ env:
   EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   BASE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
 jobs:
+  scope:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run_comparison: ${{ steps.plan.outputs.run_comparison }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - name: Fetch the exact comparison base or fail
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$BASE_SOURCE_SHA"
+      - name: Validate original and ordering scope selection laws
+        run: node --test tests/tooling/cross-file-finalization-scope.test.ts tests/tooling/cross-file-finalization-order-scope.test.ts
+      - name: Record applicability without qualifying ordering measurements
+        id: plan
+        run: node .github/scripts/cross-file-finalization-order-scope.ts
+      - name: Preserve source-scope evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: cross-file-finalization-order-scope-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/vize-tests/cross-file-finalization-order-scope
+          if-no-files-found: warn
+          retention-days: 14
   actual-ordered-source-states:
+    needs: scope
+    if: ${{ needs.scope.outputs.run_comparison == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:

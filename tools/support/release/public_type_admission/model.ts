@@ -6,12 +6,28 @@ export type RecordValue = Record<string, unknown>;
 export type Expected = { file: string; line: number; column: number; code: number };
 export type Finding = Expected & { severity: "error" | "warning"; message: string; raw: string };
 export type NativeImage = { path: string; bytes: number; sha256: string };
+export type MapperHost = {
+  workspace: string;
+  backend: string;
+  version: string;
+  sha256: string;
+  lockSha256: string;
+  packagePins: RecordValue[];
+  setupReceipt: RecordValue;
+  probes: unknown[];
+  route: string;
+  projectedPackageGraph: string;
+  sriScope: string;
+  runtimeCapability: string;
+};
 export type Runtime = {
   workspace: string;
   version: string;
   candidate: string;
   cli: string;
   backend: string;
+  backendSha256: string;
+  mapperHost: MapperHost;
   node: string;
   native: NativeImage;
   observer: string;

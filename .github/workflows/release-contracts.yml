@@ -63,7 +63,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   contracts:
-    if: github.event_name != 'workflow_dispatch' || inputs.phase != 'release-contracts'
+    if: github.event_name != 'workflow_dispatch' || inputs.phase != 'release-contracts' && inputs.phase != 'type-admission-capability'
     name: Release pipeline contracts
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
@@ -80,6 +80,7 @@ jobs:
           tests/tooling/release/public-consumer-guards.test.ts
           tests/tooling/release/public-observers.test.ts
           tests/tooling/release/public-type-admission.test.ts
+          tests/tooling/release/public-type-admission-capability.test.ts
           tests/tooling/release/public-provider.test.ts
           tests/tooling/release/release-workflow.test.ts
           tests/tooling/release/release-notes.test.ts
@@ -204,9 +205,18 @@ jobs:
       - name: Qualify independent published canonical SDK
         if: inputs.additional_observers == true && inputs.phase == 'after'
         run: node tools/support/release/public_canonical_sdk/verify.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer/public-canonical-sdk.json"
+      - name: Preserve the original CPP consumer before template admission
+        if: inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-cpp-custody.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" before "$RUNNER_TEMP/public-type-admission-cpp-custody.json"
+      - name: Install the isolated native TypeScript mapper host
+        if: inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-mapper-host.ts "$RUNNER_TEMP/public-type-admission-mapper-host" "$RUNNER_TEMP/public-type-admission-mapper-host-proof"
       - name: Qualify independent published template type admission
         if: inputs.type_admission == true
         run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/public_type_admission/run.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer/type-admission" "$RUNNER_TEMP/public-type-admission-eligibility.json"
+      - name: Verify the original CPP consumer after template admission
+        if: always() && inputs.type_admission == true
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-cpp-custody.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" after "$RUNNER_TEMP/public-type-admission-cpp-custody.json"
       - name: Preserve complete public packets and immutable original witnesses
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -227,3 +237,113 @@ jobs:
             ${{ runner.temp }}/public-custom-properties-consumer/public-canonical-sdk-evidence/
             ${{ runner.temp }}/public-type-admission-eligibility.json
             ${{ runner.temp }}/public-custom-properties-consumer/type-admission/
+            ${{ runner.temp }}/public-type-admission-mapper-host-proof/
+            ${{ runner.temp }}/public-type-admission-cpp-custody.json*
+
+  type-admission-source-capability:
+    if: github.repository == 'ubugeeei-prod/vize' && github.event_name == 'workflow_dispatch' && inputs.phase == 'type-admission-capability'
+    name: Isolated mapper host source capability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_SOURCE_SHA: ${{ inputs.source_sha }}
+      PUBLIC_CANDIDATE: ${{ inputs.candidate }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Prove the known public source for the isolated host capability
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CAPABILITY_PHASE: ${{ inputs.phase }}
+          CAPABILITY_ADMISSION: ${{ inputs.type_admission }}
+          CAPABILITY_OBSERVERS: ${{ inputs.additional_observers }}
+          CAPABILITY_CPP: ${{ inputs.custom_properties }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          import path from "node:path";
+          const version = process.env.PUBLIC_VERSION;
+          const source = process.env.PUBLIC_SOURCE_SHA;
+          const required = "7c2f6f46172404a8f95335a79ee2b95094f6b7ee";
+          const repository = "ubugeeei-prod/vize";
+          assert.equal(process.env.GITHUB_REPOSITORY, repository);
+          assert.equal(process.env.GITHUB_REF, "refs/heads/test/public-type-admission-release");
+          assert.equal(process.env.CAPABILITY_PHASE, "type-admission-capability");
+          assert.equal(version, "0.603.0");
+          assert.equal(source, "3778a06863bc70bf63b435ae816cca134d2d438e");
+          assert.equal(process.env.PUBLIC_CANDIDATE, source);
+          for (const name of ["CAPABILITY_ADMISSION", "CAPABILITY_OBSERVERS", "CAPABILITY_CPP"])
+            assert.notEqual(process.env[name], "true", "source-only proof must not select public qualification");
+          assert.ok(process.env.GH_TOKEN);
+          const api = async (endpoint) => {
+            const response = await fetch("https://api.github.com/repos/" + repository + endpoint, {
+              headers: { Authorization: "Bearer " + process.env.GH_TOKEN, Accept: "application/vnd.github+json" },
+              signal: AbortSignal.timeout(30000),
+            });
+            assert.equal(response.status, 200, endpoint);
+            return response.json();
+          };
+          const publishedRelease = await api("/releases/tags/v" + version);
+          const tags = await api("/tags?per_page=100");
+          const tag = tags.find((value) => value.name === "v" + version);
+          assert.ok(tag);
+          assert.equal(tag.commit.sha, source);
+          assert.equal(publishedRelease.tag_name, tag.name);
+          assert.equal(publishedRelease.draft, false);
+          assert.ok(publishedRelease.published_at);
+          const comparison = await api("/compare/" + required + "..." + source);
+          assert.equal(comparison.base_commit.sha, required);
+          assert.equal(comparison.merge_base_commit.sha, required);
+          assert.equal(comparison.behind_by, 0);
+          assert.ok(["ahead", "identical"].includes(comparison.status));
+          const temporary = process.env.RUNNER_TEMP;
+          const write = (name, value) => fs.writeFileSync(path.join(temporary, name), JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
+          write("cpp-source-comparison.json", comparison);
+          write("cpp-release-identity.json", {
+            version, sourceSha: source, requiredSource: required, containsRequiredSource: true,
+            comparisonStatus: comparison.status, workflowSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
+          });
+          write("public-type-admission-capability-plan.json", {
+            schema: "vize.typeAdmission.sourceCapabilityEligibility.v1", scope: "source-capability-only",
+            coreReleaseEligible: false, version, sourceSha: source, tag, publishedRelease, comparison,
+            workflowSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
+            mapperHost: { route: "hosted-content-mapper", sdkVersion: "7.1.0-beta",
+              workspace: path.join(temporary, "public-type-admission-capability-host"),
+              setupReceipt: path.join(temporary, "public-type-admission-capability-host-proof/setup.json.txt") },
+          });
+          NODE
+      - name: Authenticate the existing public CLI and native TypeScript provider
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/public_custom_properties/verify.ts "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer" "$RUNNER_TEMP/cpp-release-identity.json"
+      - name: Preserve the original CPP consumer before source capability
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-cpp-custody.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" before "$RUNNER_TEMP/public-type-admission-cpp-custody.json"
+      - name: Install the isolated native TypeScript mapper host
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-mapper-host.ts "$RUNNER_TEMP/public-type-admission-capability-host" "$RUNNER_TEMP/public-type-admission-capability-host-proof"
+      - name: Verify actual hosted mapper capability and its physical public provider
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/public_type_admission/capability.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" "$RUNNER_TEMP/public-type-admission-capability" "$RUNNER_TEMP/public-type-admission-capability-plan.json"
+      - name: Verify the original CPP consumer after source capability
+        if: always()
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/type-admission-cpp-custody.ts "$RUNNER_TEMP/public-custom-properties-consumer" "$PUBLIC_VERSION" after "$RUNNER_TEMP/public-type-admission-cpp-custody.json"
+      - name: Preserve the source-only capability observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: type-admission-source-capability-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/cpp-source-comparison.json
+            ${{ runner.temp }}/cpp-release-identity.json
+            ${{ runner.temp }}/public-type-admission-capability-plan.json
+            ${{ runner.temp }}/public-type-admission-capability/
+            ${{ runner.temp }}/public-type-admission-capability-host-proof/
+            ${{ runner.temp }}/public-type-admission-cpp-custody.json*
+            ${{ runner.temp }}/public-custom-properties-consumer/*.json
+            ${{ runner.temp }}/public-custom-properties-consumer/*.stdout
+            ${{ runner.temp }}/public-custom-properties-consumer/*.stderr
+            ${{ runner.temp }}/public-custom-properties-consumer/*.status
+            ${{ runner.temp }}/public-custom-properties-consumer/*.txt
+            ${{ runner.temp }}/public-custom-properties-consumer/src/
