@@ -9,7 +9,9 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 mod site;
+mod vue_authority;
 pub(crate) use site::template_usage_is_shadowed;
+use vue_authority::vue_specifier_is_redirected;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::facts::components::{LocalComponentBinding, local_component_binding};
@@ -240,6 +242,13 @@ fn resolve_bound(
             // Literal relative .vue imports have one runtime file identity.
             // Reuse the logical resolver candidates, requiring convergence;
             // package/alias/type-view candidates cannot certify this fact.
+            // A project path or Vite alias that rewrites `vue` is not that package.
+            if registry
+                .project_root()
+                .is_some_and(vue_specifier_is_redirected)
+            {
+                return None;
+            }
             if !(module.starts_with("./") || module.starts_with("../")) || !module.ends_with(".vue")
             {
                 return None;
