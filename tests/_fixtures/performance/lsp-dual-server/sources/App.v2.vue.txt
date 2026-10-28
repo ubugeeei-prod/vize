@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+
+const message = ref("hello");
+const broken: string = 42;
+</script>
+
+<template>
+  <main>
+    <p>🚀 {{ message }}</p>
+    <p>{{ message }}</p>
+  </main>
+</template>

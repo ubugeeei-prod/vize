@@ -1,0 +1,182 @@
+name: Same-wire LSP benchmark
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-dual-server-benchmark.yml"
+      - "tests/_fixtures/performance/lsp-dual-server/**"
+      - "tests/performance/lsp-dual-server-benchmark.ts"
+      - "tests/performance/support/dual-lsp-*.ts"
+      - "tests/tooling/lsp-dual-server-benchmark.test.ts"
+      - "tests/package.json"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact source SHA to benchmark
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-dual-server-${{ github.event.pull_request.number || inputs.source_sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_TERM_COLOR: always
+  EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || inputs.source_sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+
+jobs:
+  controls:
+    name: Benchmark custody controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.EXPECTED_SOURCE }}
+          persist-credentials: false
+      - name: Refuse a different source
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install exact JavaScript product stacks
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the isolated comparison provider
+        working-directory: tests/_fixtures/performance/lsp-dual-server/provider
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify ABBA, percentile, source-map, diagnostic, and capability laws
+        working-directory: tests
+        run: vp run test:performance:lsp-dual-server:controls
+
+  compare:
+    name: 100 fresh and 100 warm same-wire samples
+    needs: controls
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: "16"
+      RAYON_NUM_THREADS: "8"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.EXPECTED_SOURCE }}
+          persist-credentials: false
+      - name: Refuse a different source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install exact JavaScript product stacks
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the isolated comparison provider
+        working-directory: tests/_fixtures/performance/lsp-dual-server/provider
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the repository Rust toolchain
+        run: rustup toolchain install || rustup show active-toolchain
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-dual-server-normal
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build and receipt the exact normal Vize server
+        run: |
+          cargo build --profile ci -p vize
+          vp exec node tests/differential/build-receipt.ts
+      - name: Measure identical qualified protocol packets
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+        run: |
+          set -euo pipefail
+          test -x "$CORSA_PATH"
+          test -x "$VIZE_LSP_BIN"
+          vp exec node tests/performance/lsp-dual-server-benchmark.ts \
+            --fresh 100 --warm 100 --out "$RUNNER_TEMP/lsp-dual-server"
+      - name: Publish the qualified distribution
+        if: ${{ always() }}
+        run: |
+          if [[ -f "$RUNNER_TEMP/lsp-dual-server/summary.md" ]]; then
+            cat "$RUNNER_TEMP/lsp-dual-server/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: lsp-dual-server-${{ env.EXPECTED_SOURCE }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/lsp-dual-server/
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 90
+
+  attribution:
+    name: Separate allocation and function attribution
+    needs: controls
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "16"
+      LSP_DUAL_ALLOW_SMOKE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.EXPECTED_SOURCE }}
+          persist-credentials: false
+      - name: Refuse a different source
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the isolated comparison provider
+        working-directory: tests/_fixtures/performance/lsp-dual-server/provider
+        run: vp install --frozen-lockfile --prefer-offline
+      - run: rustup toolchain install || rustup show active-toolchain
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-dual-server-attribution
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build the separately instrumented Vize server
+        run: cargo build --profile ci-opt -p vize --features profiling
+      - name: Collect attribution without comparing unlike metrics
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          LSP_DUAL_VIZE_PROFILE_DIR: ${{ runner.temp }}/lsp-attribution/vize
+          LSP_DUAL_VUE_CPU_PROFILE_DIR: ${{ runner.temp }}/lsp-attribution/vue
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci-opt/vize
+        run: |
+          set -euo pipefail
+          mkdir -p "$LSP_DUAL_VIZE_PROFILE_DIR" "$LSP_DUAL_VUE_CPU_PROFILE_DIR"
+          vp exec node tests/performance/lsp-dual-server-benchmark.ts \
+            --fresh 1 --warm 5 --out "$RUNNER_TEMP/lsp-attribution/report"
+          sha256sum "$VIZE_LSP_BIN" > "$RUNNER_TEMP/lsp-attribution/vize-binary.sha256"
+          git rev-parse HEAD > "$RUNNER_TEMP/lsp-attribution/source.sha"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: lsp-dual-server-attribution-${{ env.EXPECTED_SOURCE }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/lsp-attribution/
+          if-no-files-found: error
+          retention-days: 90

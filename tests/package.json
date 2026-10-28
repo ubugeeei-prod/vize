@@ -36,7 +36,8 @@
     "test:check:fixtures": "node tooling/support/check-fixtures/supervisor.ts",
     "test:check:fixtures:cycles": "node tooling/support/check-fixtures/cycles.ts",
     "test:performance:lsp-incremental": "node --test --test-concurrency=1 performance/misskey-lsp-incremental.test.ts performance/vben-lsp-incremental.test.ts",
-    "test:performance:lsp-churn": "node --test --test-concurrency=1 performance/lsp-churn-stress.test.ts"
+    "test:performance:lsp-churn": "node --test --test-concurrency=1 performance/lsp-churn-stress.test.ts",
+    "test:performance:lsp-dual-server:controls": "node --test tooling/lsp-dual-server-benchmark.test.ts"
   },
   "devDependencies": {
     "@apollo/client": "3.14.1",

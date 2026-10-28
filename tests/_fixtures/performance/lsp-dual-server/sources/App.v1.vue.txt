@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const message = ref("hello");
+const broken: number = "cold-error";
+</script>
+
+<template>
+  <main>
+    <p>🚀 {{ message }}</p>
+    <p>{{ message }}</p>
+  </main>
+</template>
