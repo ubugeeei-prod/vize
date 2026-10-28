@@ -242,15 +242,19 @@ const ids: number[] = [1]
         })
         .collect();
     assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
-    for query in expressions {
+    let expected_windows = [
+        "_rules: __MyInput_0_prop_rules = [\n    \n    check(ids, ids.map(id => id + 1))\n  ]",
+        "rules: __MyInput_1_prop_rules = [\n     \n    check(ids, ids.map(id => id + 1))\n  ]",
+    ];
+    for (index, query) in expressions.into_iter().enumerate() {
         let at = query.generated_offset as usize;
         let window = document
             .content
             .get(at.saturating_sub(80)..at.saturating_add(1))
             .unwrap_or("");
-        assert!(
-            window.contains("id => id + 1"),
-            "comment {comment:?} slid the expression probe off the arrow: {window:?}"
+        assert_eq!(
+            window, expected_windows[index],
+            "comment {comment:?} must preserve the complete generated expression packet"
         );
         assert_eq!(
             document.content.as_bytes().get(at).copied(),
