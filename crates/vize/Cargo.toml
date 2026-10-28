@@ -18,6 +18,8 @@ name = "vize"
 path = "src/lib.rs"
 
 [features]
+# Untimed source custody only; never enabled by default or in shipping builds.
+cache-custody = ["vize_canon/cache-custody"]
 default = ["glyph", "maestro"]
 glyph = ["dep:vize_glyph", "vize_maestro?/glyph"]
 maestro = ["dep:vize_maestro"]
