@@ -6,7 +6,7 @@
 //! spaces. `;` ends the line.
 
 use proc_macro2::{Delimiter, Spacing, TokenStream, TokenTree};
-use syn::parse::Parse;
+use syn::parse::{Parse, ParseStream};
 use syn::{Expr, Token};
 
 use super::emit_ts::{Piece, quote_pieces};
