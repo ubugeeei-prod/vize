@@ -10119,6 +10119,29 @@
       ]
     },
     {
+      "id": "typechecker/ambient-template-ref-10980",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [
+        {
+          "path": "ambient-template-ref-10980/Probe.vue.txt",
+          "sha256": "158a66cf752f4ba13fe3715e5a71b01a4d5f9fce9157468fb20086fd427c58b3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
       "targets": [
         "batch"

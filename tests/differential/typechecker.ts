@@ -212,7 +212,10 @@ export function loadTypecheckerManifest(manifestPath: string) {
   assert.equal(loaded.manifest.issue, 6879);
   const root = path.dirname(manifestPath);
   const packs = new Map<string, Pack>();
-  const cases = (loaded.cases as TypecheckerCase[]).map((fixture) => {
+  // #6852 pins are active inputs without a batch pack, so they stay out of the oracle.
+  const cases = (loaded.cases as TypecheckerCase[])
+    .filter((fixture) => fixture.pack !== undefined)
+    .map((fixture) => {
     assert.deepEqual(fixture.targets, ["batch"]);
     assert.equal(fixture.adapters.legacy, "batch-typechecker-fixture-v1");
     assert.equal(fixture.adapters.native, null);
