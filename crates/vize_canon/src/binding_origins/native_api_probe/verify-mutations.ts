@@ -92,6 +92,10 @@ export function verifyMutations(
   for (const phase of phases) {
     const project = object(phase.project).id;
     const current = requests.filter((request) => {
+      if (request.params === undefined || request.params === null) {
+        assert.equal(request.method, "initialize", "only initialization omits parameters");
+        return false;
+      }
       const params = object(request.params);
       return (
         Object.hasOwn(params, "snapshot") &&
