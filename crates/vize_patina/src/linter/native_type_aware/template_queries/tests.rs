@@ -182,6 +182,85 @@ fn a_nested_callee_uses_the_authored_initializer_and_the_full_expression_is_infe
 }
 
 #[test]
+fn non_ascii_comment_before_an_arrow_keeps_the_expression_probe() {
+    for comment in [
+        "é".repeat(10),
+        "é".repeat(30),
+        "e".repeat(30),
+        "中".repeat(16),
+        "😀".repeat(13),
+    ] {
+        assert_commented_arrow_probe_stays_on_the_expression(&comment);
+    }
+}
+
+fn assert_commented_arrow_probe_stays_on_the_expression(comment: &str) {
+    let source = format!(
+        r#"<script setup lang="ts">
+function check(all: number[], current: number[]): true | string {{ return true }}
+const ids: number[] = [1]
+</script>
+<template>
+  <MyInput :rules="[
+    // {comment}
+    check(ids, ids.map(id => id + 1))
+  ]" />
+  <MyInput :rules="[
+    /* {comment} */
+    check(ids, ids.map(id => id + 1))
+  ]" />
+</template>"#
+    );
+    let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
+    let template = descriptor.template.as_ref().unwrap();
+    let script = descriptor.script_setup.as_ref().unwrap();
+    let allocator = vize_l0::Allocator::default();
+    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
+    assert!(errors.is_empty(), "{errors:?}");
+    let document = super::super::document::project_type_aware(
+        &descriptor,
+        &script.content,
+        Some(&root),
+        script.loc.start as u32,
+        template.loc.start as u32,
+        "UnicodeCommentBinding.vue",
+    );
+    let (queries, _) = super::collect_template_query_sets(
+        &document,
+        &root,
+        template.loc.start as u32,
+        true,
+        false,
+    );
+    let expressions: Vec<_> = queries
+        .iter()
+        .filter(|query| {
+            query.kind == TemplateQueryKind::Expression
+                && source
+                    .get(query.source_start as usize..query.source_end as usize)
+                    .is_some_and(|text| text.contains("=>"))
+        })
+        .collect();
+    assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
+    for query in expressions {
+        let at = query.generated_offset as usize;
+        let window = document
+            .content
+            .get(at.saturating_sub(80)..at.saturating_add(1))
+            .unwrap_or("");
+        assert!(
+            window.contains("id => id + 1"),
+            "comment {comment:?} slid the expression probe off the arrow: {window:?}"
+        );
+        assert_eq!(
+            document.content.as_bytes().get(at).copied(),
+            Some(b']'),
+            "comment {comment:?} probe must be the stripped array, not a sliding token: {window:?}"
+        );
+    }
+}
+
+#[test]
 fn comment_stripped_bindings_keep_exact_callee_probes() {
     let source = r#"<script setup lang="ts">
 function check(all: number[], current: number[]): true | string { return true }
