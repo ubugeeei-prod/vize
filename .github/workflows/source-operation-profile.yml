@@ -1,4 +1,4 @@
-name: UI Corsa RPC diagnostic
+name: UI Corsa eight-shard pressure diagnostic
 on:
   workflow_dispatch:
 permissions: { contents: read }
@@ -39,7 +39,7 @@ jobs:
           printf 'VIZE_UI_OBSERVATION=%s\n' "$VIZE_UI_OBSERVATION" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/ui-corsa-observer" "$VIZE_UI_OBSERVATION"
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/40603481864/artifacts?per_page=100" > "$VIZE_UI_OBSERVATION/original-artifact-inventory.json"
-          for pair in 'ui-corsa-rpc-proxy.ts:rpc-proxy.ts' 'ui-corsa-observer.ts:observer.ts' 'ui-corsa-case.ts:case.ts'; do
+          for pair in 'ui-corsa-rpc-proxy.ts:rpc-proxy.ts' 'ui-corsa-pressure-worker.ts:pressure-worker.ts' 'ui-corsa-case.ts:case.ts'; do
             source_name="${pair%%:*}"
             output_name="${pair#*:}"
             gh api "repos/$GITHUB_REPOSITORY/contents/tools/benchmarks/scripts/$source_name?ref=$OBSERVER_REVISION" --jq '.content | @base64d' > "$RUNNER_TEMP/ui-corsa-observer/$output_name"
@@ -53,29 +53,183 @@ jobs:
       - name: Check observer types and preserve transport source identity
         run: |
           set -euo pipefail
-          vp exec tsc --ignoreConfig --noEmit --strict --noUncheckedIndexedAccess --erasableSyntaxOnly --target ESNext --module NodeNext --moduleResolution NodeNext --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" "$RUNNER_TEMP/ui-corsa-observer/rpc-proxy.ts" "$RUNNER_TEMP/ui-corsa-observer/observer.ts" "$RUNNER_TEMP/ui-corsa-observer/case.ts"
-          node --input-type=module -e 'import fs from "node:fs"; import {stripTypeScriptTypes} from "node:module"; import {createHash} from "node:crypto"; const dir=process.env.RUNNER_TEMP+"/ui-corsa-observer"; const rows={}; for(const name of ["rpc-proxy","observer","case"]){const source=fs.readFileSync(dir+"/"+name+".ts","utf8"); const js=stripTypeScriptTypes(source); fs.writeFileSync(dir+"/"+name+".js",js,{mode:0o755}); rows[name]={sourceSha256:createHash("sha256").update(source).digest("hex"),javascriptSha256:createHash("sha256").update(js).digest("hex")};} fs.writeFileSync(process.env.VIZE_UI_OBSERVATION+"/observer-source.json",JSON.stringify(rows,null,2)+"\n");'
-      - name: Build one fresh normal source NAPI image with original features
+          vp exec tsc --ignoreConfig --noEmit --strict --noUncheckedIndexedAccess --erasableSyntaxOnly --target ESNext --module NodeNext --moduleResolution NodeNext --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" "$RUNNER_TEMP/ui-corsa-observer/rpc-proxy.ts" "$RUNNER_TEMP/ui-corsa-observer/pressure-worker.ts" "$RUNNER_TEMP/ui-corsa-observer/case.ts"
+          node --input-type=module -e 'import fs from "node:fs"; import {stripTypeScriptTypes} from "node:module"; import {createHash} from "node:crypto"; const dir=process.env.RUNNER_TEMP+"/ui-corsa-observer"; const rows={}; for(const name of ["rpc-proxy","pressure-worker","case"]){const source=fs.readFileSync(dir+"/"+name+".ts","utf8"); const js=stripTypeScriptTypes(source); fs.writeFileSync(dir+"/"+name+".js",js,{mode:0o755}); rows[name]={sourceSha256:createHash("sha256").update(source).digest("hex"),javascriptSha256:createHash("sha256").update(js).digest("hex")};} fs.writeFileSync(process.env.VIZE_UI_OBSERVATION+"/observer-source.json",JSON.stringify(rows,null,2)+"\n");'
+      - name: Build one captured fresh normal image through the original inner command
+        working-directory: npm/native
         env: { VIZE_NATIVE_CI_FORMATTER_HISTORY: "1" }
         run: |
           set -euo pipefail
-          vp run --filter './npm/native' build:ci > "$VIZE_UI_OBSERVATION/build.stdout" 2> "$VIZE_UI_OBSERVATION/build.stderr"
-      - name: Calibrate byte parity then observe one unchanged dropdown source
+          export PATH="$GITHUB_WORKSPACE/npm/native/node_modules/.bin:$GITHUB_WORKSPACE/node_modules/.bin:$PATH"
+          node ./scripts/build-ci.mjs > "$VIZE_UI_OBSERVATION/build.stdout" 2> "$VIZE_UI_OBSERVATION/build.stderr"
+      - name: Calibrate byte parity before the unchanged eight-shard phases
+        run: node "$RUNNER_TEMP/ui-corsa-observer/pressure-worker.js" --calibrate
+      - name: Observe eight original shards and one fresh no-proxy control phase
         run: |
           set -euo pipefail
-          node "$RUNNER_TEMP/ui-corsa-observer/observer.js"
+          python3 - <<'PYPRESSURE'
+          import collections,hashlib,json,os,pathlib,re,signal,subprocess,time
+          root=pathlib.Path(os.environ["VIZE_UI_OBSERVATION"]); workspace=pathlib.Path(os.environ["GITHUB_WORKSPACE"])
+          observer=pathlib.Path(os.environ["RUNNER_TEMP"])/"ui-corsa-observer"
+          node=subprocess.check_output(["which","node"],text=True).strip()
+          go=workspace/"node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          def digest(path):
+           h=hashlib.sha256()
+           with path.open("rb") as f:
+            for chunk in iter(lambda:f.read(1048576),b""):h.update(chunk)
+           return h.hexdigest()
+          def write(path,value):path.write_text(json.dumps(value,separators=(",",":"))+"\n")
+          def lines(path):return [json.loads(x) for x in path.read_text().splitlines()] if path.is_file() else []
+          def process(pid):
+           try:
+            base=pathlib.Path("/proc")/str(pid);raw=(base/"stat").read_text();fields=raw[raw.rindex(")")+2:].split()
+            status=(base/"status").read_text();rss=re.search(r"^VmRSS:\s+(\d+) kB$",status,re.M)
+            return {"pid":pid,"parentPid":int(fields[1]),"startTicks":fields[19],"state":fields[0],"userTicks":fields[11],"systemTicks":fields[12],"rssKiB":int(rss[1]) if rss else None,"ns":str(time.monotonic_ns()),"argv":(base/"cmdline").read_text().split("\0")[:-1],"cwd":os.readlink(base/"cwd")}
+           except (OSError,ValueError):return None
+          def descendants(pid):
+           found=[]
+           try:children=(pathlib.Path("/proc")/str(pid)/"task"/str(pid)/"children").read_text().split()
+           except OSError:return found
+           for child in children:
+            info=process(int(child))
+            if info:found.append(info);found.extend(descendants(int(child)))
+           return found
+          revision=subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
+          assert revision=="f234b6bff00cf0d44bcec8e8e45eaa98d850b220"
+          buildpath=workspace/"npm/native/.artifacts/native/formatter-history/build-receipt.json"
+          build=json.loads(buildpath.read_text());cargo=build["emitted"]["cargo"]
+          assert build["schema"]=="vize.public-native-formatter-ci-build" and build["source"]["head"]==revision
+          assert cargo["fresh"] is False and cargo["profile"]["opt_level"]=="0" and cargo["profile"]["test"] is False
+          assert set(cargo["features"])=={"default","glyph","legacy","napi"}
+          image=workspace/"npm/native"/build["generated"]["name"];imagehash=digest(image)
+          assert imagehash==build["generated"]["sha256"]==build["frozen"]["sha256"]
+          gohash=digest(go);version=json.loads((go.parent.parent/"package.json").read_text())["version"]
+          identities={"source":revision,"cargo":cargo,"image":{"path":str(image),"sha256":imagehash,"bytes":image.stat().st_size},"go":{"path":str(go),"realpath":str(go.resolve()),"sha256":gohash,"bytes":go.stat().st_size,"packageVersion":version},"buildRecipe":{"cwd":str(workspace/"npm/native"),"command":["node","./scripts/build-ci.mjs"],"captureAdds":["--message-format=json-render-diagnostics","--locked"],"originalTransportTimeoutMilliseconds":30000},"node":subprocess.check_output([node,"--version"],text=True).strip(),"clockTicksPerSecond":os.sysconf("SC_CLK_TCK"),"originalImageIdentity":None}
+          write(root/"identities.json",identities)
+          phases=[]
+          for phase in ("observed","control"):
+           directory=root/phase;directory.mkdir()
+           handles=[];children=[];known={};started=time.monotonic();deadline=False
+           for shard in range(8):
+            env=dict(os.environ);env["VIZE_UI_RPC_LOG"]=str(directory/"rpc.jsonl");env["VIZE_UI_RPC_REAL_EXE"]=str(go)
+            if phase=="observed":env["VIZE_UI_RPC_CAPTURE_PREFIX"]=str(directory/"raw")
+            else:env.pop("VIZE_UI_RPC_CAPTURE_PREFIX",None)
+            out=(directory/("worker-"+str(shard)+".stdout")).open("wb");err=(directory/("worker-"+str(shard)+".stderr")).open("wb");handles.extend((out,err))
+            children.append(subprocess.Popen([node,str(observer/"pressure-worker.js"),str(shard),phase],cwd=workspace/"npm/ui",env=env,stdout=out,stderr=err))
+           with (directory/"process-samples.jsonl").open("w") as samples:
+            while any(child.poll() is None for child in children):
+             for child in children:
+              infos=([process(child.pid)]+descendants(child.pid)) if child.poll() is None else []
+              for info in infos:
+               if info:
+                known[info["pid"]]=info["startTicks"];samples.write(json.dumps(info,separators=(",",":"))+"\n")
+             if time.monotonic()-started>90:
+              deadline=True
+              for child in children:
+               if child.poll() is None:child.terminate()
+              break
+             time.sleep(.1)
+           for child in children:
+            try:child.wait(timeout=3)
+            except subprocess.TimeoutExpired:child.kill();child.wait()
+           for handle in handles:handle.close()
+           time.sleep(2.2);cleanup=[]
+           for pid,start in known.items():
+            info=process(pid)
+            if info and info["startTicks"]==start and info["state"]!="Z":
+             os.kill(pid,signal.SIGTERM);cleanup.append({"pid":pid,"startTicks":start,"reason":"observer cleanup, not natural exit"})
+           workerrows=[{"shard":shard,"events":lines(directory/("worker-"+str(shard)+".jsonl"))} for shard in range(8)]
+           starts=[e for row in workerrows for e in row["events"] if e["event"]=="call-start"]
+           ends=[e for row in workerrows for e in row["events"] if e["event"]=="call-end"]
+           workerends=[e for row in workerrows for e in row["events"] if e["event"]=="worker-end"]
+           for row in workerends:assert row["loadedNapiPaths"]==[str(image)]
+           manifest=sorted((e["filename"],e["sourceBytes"],e["sourceSha256"]) for e in starts)
+           phases.append({"phase":phase,"exits":[c.returncode for c in children],"observerDeadline":deadline,"completedWorkers":len(workerends),"callsStarted":len(starts),"callsCompleted":len(ends),"diagnosticsCount":sum(e["diagnosticsCount"] or 0 for e in ends),"missingDiagnosticCounts":sum(e["diagnosticsCount"] is None for e in ends),"manifest":manifest,"cleanup":cleanup,"slowestCalls":sorted(({"filename":e["filename"],"elapsedNs":str(int(e["ns"])-int(s["ns"])),"diagnostics":e["diagnostics"]} for row in workerrows for s in row["events"] if s["event"]=="call-start" for e in row["events"] if e["event"]=="call-end" and e["sequence"]==s["sequence"]),key=lambda x:int(x["elapsedNs"]),reverse=True)[:8]})
+           write(directory/"phase.json",phases[-1])
+          class NumberToken(str):pass
+          def canonical(value):
+           if isinstance(value,NumberToken):return ["number",str(value)]
+           if value is None:return ["null"]
+           if isinstance(value,bool):return ["bool",value]
+           if isinstance(value,str):return ["string",value]
+           if isinstance(value,list):return ["array",[canonical(v) for v in value]]
+           return ["object",[[k,canonical(value[k])] for k in sorted(value)]]
+          def bodies(path):
+           data=path.read_bytes();offset=0
+           while offset<len(data):
+            end=data.index(b"\r\n\r\n",offset);header=data[offset:end].decode("ascii")
+            match=re.search(r"(?:^|\r\n)Content-Length:\s*(\d+)(?:\r\n|$)",header,re.I);assert match
+            start=end+4;length=int(match[1]);payload=data[start:start+length];assert len(payload)==length
+            row=json.loads(payload,parse_int=NumberToken,parse_float=NumberToken)
+            yield start,length,row,hashlib.sha256(payload).hexdigest()
+            offset=start+length
+           assert offset==len(data)
+          rpc=lines(root/"observed/rpc.jsonl");wire=[];counts=collections.Counter();distinct=collections.Counter();repeat=[];ownerkeys=collections.Counter();wireErrors=[]
+          for path in sorted((root/"observed").glob("raw-*-to-go.wire")):
+           pid=int(path.name.split("-")[1])
+           try:allrows=list(bodies(path))
+           except (OSError,ValueError,AssertionError) as error:
+            wireErrors.append({"file":path.name,"error":str(error)});continue
+           metas=[r for r in rpc if r.get("event")=="frame" and r.get("direction")=="to-go" and r["proxyPid"]==pid]
+           if len(allrows)!=len(metas):
+            wireErrors.append({"file":path.name,"error":"raw request/metadata frame count mismatch"});continue
+           groups={}
+           for (offset,length,row,sha),meta in zip(allrows,metas):
+            assert meta["payloadBytes"]==length and meta["sha256"]==sha
+            if "method" not in row:continue
+            params=row.get("params");key=json.dumps([row["method"],canonical(params)],separators=(",",":"),ensure_ascii=False)
+            counts[row["method"]]+=1
+            if isinstance(params,dict):
+             for k in params:
+              if "snapshot" in k.lower() or "project" in k.lower():ownerkeys[k]+=1
+            if key not in groups:groups[key]={"calls":0,"method":row["method"],"paramsCanonicalSha256":hashlib.sha256(key.encode()).hexdigest(),"rawFile":path.name,"bodyOffset":offset,"bodyBytes":length}
+            groups[key]["calls"]+=1
+           for group in groups.values():
+            distinct[group["method"]]+=1
+            if group["calls"]>1:repeat.append(group)
+           responsepath=path.with_name(path.name.replace("-to-go.wire","-from-go.wire"))
+           try:response_rows=list(bodies(responsepath))
+           except (OSError,ValueError,AssertionError) as error:
+            wireErrors.append({"file":responsepath.name,"error":str(error)});continue
+           response_metas=[r for r in rpc if r.get("event")=="frame" and r.get("direction")=="from-go" and r["proxyPid"]==pid]
+           assert len(response_rows)==len(response_metas)
+           for (_,length,_,sha),meta in zip(response_rows,response_metas):assert length==meta["payloadBytes"] and sha==meta["sha256"]
+           wire.append({"proxyPid":pid,"requests":len(allrows),"responses":len(response_rows),"requestFile":path.name,"responseFile":responsepath.name,"requestSha256":digest(path),"responseSha256":digest(responsepath)})
+          assert digest(image)==imagehash and digest(go)==gohash
+          equalinputs=phases[0]["manifest"]==phases[1]["manifest"] and phases[0]["completedWorkers"]==phases[1]["completedWorkers"]==8
+          for phase in phases:
+           phase["manifestSha256"]=hashlib.sha256(json.dumps(phase.pop("manifest"),separators=(",",":")).encode()).hexdigest()
+          receipt={"schema":"vize.ui-corsa-pressure-observation","identity":identities,"scope":"same-source new normal image; original eight disjoint lintSfcFiles shards and sequential order, observed first and no-proxy control second; fresh processes, OS page cache not flushed; not a cold benchmark or causal host diagnosis","sourceOptions":"original quality.lintSfcFiles callback options plus explicit equivalent Go/proxy path","calibration":json.loads((root/"calibration.json").read_text()),"phases":phases,"exactAuthoredInputsEqual":equalinputs,"rawWireMetadataHashJoin":not wireErrors,"wireErrors":wireErrors,"exactParamsGrouping":"per-proxy owner + method + complete typed canonical params; arbitrary precision numeric tokens preserved; dictionary order normalized; equality compares complete strings, never hash alone","methodCalls":counts,"distinctCompleteParams":distinct,"additionalExactDuplicateCalls":{k:counts[k]-distinct[k] for k in counts},"actualOwnerFieldNames":ownerkeys,"repeatedParamExamples":sorted(repeat,key=lambda x:x["calls"],reverse=True)[:12],"wireFiles":len(wire),"rawWireSealSha256":hashlib.sha256(json.dumps(wire,separators=(",",":")).encode()).hexdigest(),"originalFailureFixed":False,"originalImageQualified":False,"normalPerformanceQualified":False,"sampledRssScope":"per-process /proc RSS at100ms intervals; no allocator/peak-live qualification; proxy observer is a separate process","goSpawnEvents":sum(r["event"]=="spawn" for r in rpc),"goExitEvents":sum(r["event"]=="exit" for r in rpc),"naturalExitMetadata":[r for r in rpc if r["event"]!="frame"][:16]}
+          write(root/"wire-seals.json",wire)
+          payload=json.dumps(receipt,separators=(",",":"))+"\n";assert len(payload.encode())<=95000
+          (root/"receipt.json").write_text(payload);print(payload)
+          PYPRESSURE
+      - name: Preserve immutable source images remotely for later diagnostics
+        if: always()
+        run: |
+          set -euo pipefail
+          node --input-type=module -e 'import fs from "node:fs"; const p="npm/native/.artifacts/native/formatter-history/build-receipt.json"; if(fs.existsSync(p)){const r=JSON.parse(fs.readFileSync(p,"utf8")); fs.copyFileSync(p,process.env.VIZE_UI_OBSERVATION+"/build-receipt.json"); fs.writeFileSync(process.env.VIZE_UI_OBSERVATION+"/image-name.txt",r.generated.name+"\n");}'
+          if [[ -f "$VIZE_UI_OBSERVATION/image-name.txt" ]]; then
+            image_name="$(cat "$VIZE_UI_OBSERVATION/image-name.txt")"
+            tar -czf "$RUNNER_TEMP/ui-corsa-source-image.tgz" -C npm/native "$image_name" index.js index.d.ts .artifacts/native/formatter-history/build-receipt.json
+          fi
+          tar -czf "$RUNNER_TEMP/ui-corsa-pressure-raw.tgz" -C "$RUNNER_TEMP" ui-corsa-observation ui-corsa-observer
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: ui-corsa-diagnostic-receipt-${{ github.run_id }}
+          name: ui-corsa-pressure-receipt-${{ github.run_id }}
           path: ${{ runner.temp }}/ui-corsa-observation/receipt.json
           if-no-files-found: warn
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: ui-corsa-diagnostic-raw-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/ui-corsa-observation/
-            ${{ runner.temp }}/ui-corsa-observer/
-            npm/native/.artifacts/native/formatter-history/build-receipt.json
+          name: ui-corsa-pressure-raw-${{ github.run_id }}
+          path: ${{ runner.temp }}/ui-corsa-pressure-raw.tgz
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ui-corsa-normal-source-image-${{ github.run_id }}
+          path: ${{ runner.temp }}/ui-corsa-source-image.tgz
+          compression-level: 0
           if-no-files-found: warn

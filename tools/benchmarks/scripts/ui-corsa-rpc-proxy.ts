@@ -8,11 +8,16 @@ const target = process.env.VIZE_UI_RPC_REAL_EXE;
 const logPath = process.env.VIZE_UI_RPC_LOG;
 if (!target || !logPath) throw Error("explicit observer target and log are required");
 const stamp = () => process.hrtime.bigint().toString();
+const rawPrefix = process.env.VIZE_UI_RPC_CAPTURE_PREFIX;
+const logFd = fs.openSync(logPath, "a");
+const captures = rawPrefix
+  ? {
+      outgoing: fs.openSync(rawPrefix + "-" + process.pid + "-to-go.wire", "a"),
+      incoming: fs.openSync(rawPrefix + "-" + process.pid + "-from-go.wire", "a"),
+    }
+  : null;
 const log = (event: Event) => {
-  fs.appendFileSync(
-    logPath,
-    JSON.stringify({ proxyPid: process.pid, ns: stamp(), ...event }) + "\n",
-  );
+  fs.writeSync(logFd, JSON.stringify({ proxyPid: process.pid, ns: stamp(), ...event }) + "\n");
 };
 class WireId {
   raw: string;
@@ -141,12 +146,14 @@ const outgoing = new Frames("to-go"),
   incoming = new Frames("from-go");
 process.stdin.on("data", (chunk: Buffer) => {
   if (!child.stdin.write(chunk)) process.stdin.pause();
+  if (captures) fs.writeSync(captures.outgoing, chunk);
   outgoing.push(chunk);
 });
 child.stdin.on("drain", () => process.stdin.resume());
 process.stdin.on("end", () => child.stdin.end());
 child.stdout.on("data", (chunk: Buffer) => {
   if (!process.stdout.write(chunk)) child.stdout.pause();
+  if (captures) fs.writeSync(captures.incoming, chunk);
   incoming.push(chunk);
 });
 process.stdout.on("drain", () => child.stdout.resume());
