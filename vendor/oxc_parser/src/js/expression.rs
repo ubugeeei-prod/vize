@@ -52,6 +52,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     }
 
     /// Section [Expression](https://tc39.es/ecma262/#sec-ecmascript-language-expressions)
+    #[inline(always)]
     pub(crate) fn parse_expr(&mut self) -> Expression<'a> {
         let span = self.start_span();
 
