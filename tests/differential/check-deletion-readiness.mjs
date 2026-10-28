@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { loadProductManifest, sha256 } from "./harness.mjs";
 import { assessDeletionReadiness, deletionProducts, deletionTiers } from "./deletion-readiness.mjs";
-import { formatterDeletionAdapter } from "./formatter-deletion-verifier.mjs";
+import { deletionReadinessAdapters } from "./deletion-readiness-adapters.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const policyPath = path.join(root, "docs/davinci/plan/deletion-readiness-policy.json");
@@ -65,7 +65,6 @@ const observations = (history?.observations ?? []).map(loadSnapshot);
 
 // Product-specific observation and comparison verifiers must be registered
 // only after their real adapters land. An absent verifier is a deletion blocker.
-const adapters = { formatter: formatterDeletionAdapter };
 const runCache = new Map();
 function verifyRun(runId, tier, sourceRevision, day) {
   if (
@@ -110,7 +109,7 @@ const assessment = assessDeletionReadiness({
   today,
   policySha256: sha256(policyBytes),
   registrySha256: sha256(registryBytes),
-  adapters,
+  adapters: deletionReadinessAdapters,
   verifyRun,
 });
 for (const blocker of assessment.blockers) {

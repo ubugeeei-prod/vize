@@ -257,6 +257,9 @@ void test("current repository state is explicitly blocked without native product
         assert.match(output, new RegExp(`deletion blocked \\[product-verifier\\]: ${product}:`));
       }
       assert.match(output, /candidate-evidence/);
+      assert.match(output, /candidate-sha/);
+      assert.match(output, /stability-history/);
+      assert.match(output, /deletion blocked \[evidence\]: No T1\/T2 observations/);
       assert.doesNotMatch(output, /target-policy/);
       assert.doesNotMatch(output, /span at least null days/);
       assert.match(output, /deletion readiness failed: 9 blocker\(s\)/);

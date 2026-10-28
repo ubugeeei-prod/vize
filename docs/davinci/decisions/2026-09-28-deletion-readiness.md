@@ -40,17 +40,49 @@ adapters: compiler DOM/SSR/Vapor, linter `lint`, formatter `fmt`, typechecker
 `batch` and LSP `stdio`. A checked-in contract rejects drift between those
 targets and their manifests. This fixes the authored target denominator; it
 does not claim that the registered fixtures are complete product coverage.
-The stability duration/cadence remain unset. The formatter now has the first
-production observation/comparison verifier. It binds the source-built CLI
-receipt to every Real Project Matrix shard, requires all 150 registered
-projects' formatter checks, and requires the non-empty projects' check/write
-agreement, idempotence, parse preservation and lint agreement artifacts.
-Property-artifact project identity is derived from those checks, while explicit
-zero-input projects remain in the shard artifact and the 150-project denominator.
-Differences, waivers, unusable baselines, missing files and partial shard
-identity remain blockers. The other four products still have no verifier, and
-no `davinci-deletion-evidence` producer exists. The manual gate therefore exits
-nonzero and names these blockers; it grants no deletion credit.
+The stability duration/cadence remain unset. Formatter remains the only
+registered product-specific observation/comparison verifier, one of the five
+required registrations. Registration is not readiness and grants no deletion
+credit. The formatter verifier binds the source-built CLI receipt to every Real
+Project Matrix shard, requires all 150 registered projects' formatter checks,
+and requires the non-empty projects' check/write agreement, idempotence, parse
+preservation and lint agreement artifacts. Property-artifact project identity
+is derived from those checks, while explicit zero-input projects remain in the
+shard artifact and the 150-project denominator. Differences, waivers, unusable
+baselines, missing files and partial shard identity remain blockers.
+
+The linter path now records a fail-closed preflight artifact but is deliberately
+not registered as a product verifier. It binds the source-built CLI receipt,
+exact source SHA, registry/rule-map/divergence-ledger byte digests, shard
+identity, project revisions and file counts. It also reconciles the Matrix
+summary and raw `<project>-linter.json` diagnostics with the independently
+executed lint-divergence index and per-project reports. Closed schemas,
+partition/ratio laws, rule-map-derived coverage-gap counts,
+producer-recomputed budget reasons and per-file/report digests reject missing,
+reduced, stitched or forged evidence. Discarded baseline configuration
+messages remain explicit project evidence and add a blocker. Explicit zero-file
+projects require the exact no-files diagnostic for every registry `vueGlobs`
+entry together with empty parsed results and a successful Matrix run. A
+nonempty corpus may retain only the exact unmatched-pattern warning for a
+nonempty ordered proper subset of those same globs. The verifier pins the
+registry's current recursive-Vue-glob grammar and re-derives that subset from
+the complete parsed file list; it does not trust stderr to nominate the subset.
+The unmatched patterns are stored in the artifact and remain an explicit
+deletion blocker. Malformed, foreign, duplicate, reordered or silently dropped
+pattern diagnostics fail the recorder.
+
+The preflight always remains blocked because the Matrix artifacts do not yet
+carry a native-only parse/lint/output route receipt or a receipt binding the
+Actions run to the uploaded artifact. The current linter fixture manifest also
+has no real-project `projectId` membership. No exact-candidate T1/T2 evidence
+from a `davinci-deletion-evidence` producer or scheduled stability history
+consumes the shard artifact. These five absences are machine-readable blockers,
+not future assumptions. False positives, false negatives, message or location
+drift, unimplemented or intentionally excluded findings, baseline failures,
+missing files and reduced project sets add further blockers. Compiler, linter,
+typechecker and LSP therefore still lack registered verifiers. The manual gate
+exits nonzero at one of five registrations; the preflight grants no deletion
+credit and #6854 stays open.
 These are remaining #6854 tasks, alongside product adapter and case coverage
 work in #6853, #6891 and #6892. Before any deletion is permitted, wire the
 trusted Real Project Matrix bundle producer to actual per-run result artifacts,
