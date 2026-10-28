@@ -4,8 +4,8 @@
 #![expect(clippy::disallowed_types, reason = "whole CLI fixtures")]
 
 use serde::Deserialize;
-use serde_json::Value;
-use std::{fs, path::PathBuf, process::Command};
+use serde_json::{Value, json};
+use std::{fs, path::Path, path::PathBuf, process::Command};
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -33,10 +33,27 @@ fn manifest() -> Manifest {
     serde_json::from_slice(&fs::read(fixture_root().join("manifest.json")).unwrap()).unwrap()
 }
 
+fn materialize(source: &Path, destination: &Path) {
+    fs::create_dir_all(destination).unwrap();
+    for entry in fs::read_dir(source).unwrap() {
+        let entry = entry.unwrap();
+        let input = entry.path();
+        if input.is_dir() {
+            materialize(&input, &destination.join(entry.file_name()));
+            continue;
+        }
+        let authored = entry.file_name();
+        let authored = authored.to_string_lossy();
+        let runtime = authored.strip_suffix(".txt").expect("source fixture suffix");
+        fs::copy(input, destination.join(runtime)).unwrap();
+    }
+}
+
 fn run(case: &Case) -> (std::process::Output, Value) {
-    let root = fixture_root().join(&case.root);
+    let project = tempfile::tempdir().unwrap();
+    materialize(&fixture_root().join(&case.root), project.path());
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(root)
+        .current_dir(project.path())
         .args([
             "lint",
             "--format",
@@ -51,13 +68,39 @@ fn run(case: &Case) -> (std::process::Output, Value) {
     (output, report)
 }
 
-fn messages(report: &Value) -> Vec<&Value> {
-    report
+fn exact_packet(report: &Value) -> Value {
+    let mut files = report
         .as_array()
         .expect("file reports")
         .iter()
-        .flat_map(|file| file["messages"].as_array().into_iter().flatten())
-        .collect()
+        .map(|file| {
+            let messages = file["messages"]
+                .as_array()
+                .expect("message array")
+                .iter()
+                .map(|message| {
+                    json!({
+                        "ruleId": message["ruleId"],
+                        "ruleDocsPath": message["ruleDocsPath"],
+                        "severity": message["severity"],
+                        "message": message["message"],
+                        "line": message["line"],
+                        "column": message["column"],
+                        "endLine": message["endLine"],
+                        "endColumn": message["endColumn"]
+                    })
+                })
+                .collect::<Vec<_>>();
+            json!({
+                "file": file["file"],
+                "messages": messages,
+                "errorCount": file["errorCount"],
+                "warningCount": file["warningCount"]
+            })
+        })
+        .collect::<Vec<_>>();
+    files.sort_by(|left, right| left["file"].as_str().cmp(&right["file"].as_str()));
+    Value::Array(files)
 }
 
 #[test]
@@ -73,39 +116,29 @@ fn called_composable_inject_matches_and_missing_provider_reports_at_the_componen
     for case in &manifest.cases {
         let (output, report) = run(case);
         assert_eq!(output.status.code(), Some(case.status), "{}", case.name);
-        assert!(
-            report
-                .as_array()
-                .unwrap()
-                .iter()
-                .all(|file| !file["file"].as_str().unwrap().ends_with(".ts")),
-            "autoloaded composables are analysis inputs, not extra lint targets"
-        );
-        let cross_file = messages(&report)
-            .into_iter()
-            .filter(|message| message["ruleId"] == "cross-file")
-            .collect::<Vec<_>>();
-        match case.name.as_str() {
-            "matched-slot-provider" => assert!(
-                cross_file.iter().all(|message| {
-                    let text = message["message"].as_str().unwrap_or_default();
-                    !text.contains("unused-provide") && !text.contains("unmatched-inject")
-                }),
-                "matched provider must have no provide/inject finding: {cross_file:?}"
-            ),
-            "missing-provider" => {
-                let unmatched = cross_file
-                    .iter()
-                    .filter(|message| {
-                        message["message"]
-                            .as_str()
-                            .is_some_and(|text| text.contains("unmatched-inject"))
-                    })
-                    .collect::<Vec<_>>();
-                assert_eq!(unmatched.len(), 1, "{cross_file:?}");
-                assert_eq!(unmatched[0]["line"], 4);
-            }
+        let expected = match case.name.as_str() {
+            "matched-slot-provider" => json!([
+                {"file":"src/App.vue","messages":[],"errorCount":0,"warningCount":0},
+                {"file":"src/components/MyForm.vue","messages":[],"errorCount":0,"warningCount":0},
+                {"file":"src/components/MyInput.vue","messages":[],"errorCount":0,"warningCount":0}
+            ]),
+            "missing-provider" => json!([{
+                "file": "src/components/MyInput.vue",
+                "messages": [{
+                    "ruleId": "cross-file",
+                    "ruleDocsPath": "docs/content/rules/cross-file.md",
+                    "severity": 2,
+                    "message": "[vize:cross-file] vize:croquis/cf/unmatched-inject: **Unmatched Inject**: `inject(RequiredKey)` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.",
+                    "line": 4,
+                    "column": 1,
+                    "endLine": 4,
+                    "endColumn": 14
+                }],
+                "errorCount": 1,
+                "warningCount": 0
+            }]),
             other => panic!("unknown case: {other}"),
-        }
+        };
+        assert_eq!(exact_packet(&report), expected, "{}", case.name);
     }
 }

@@ -96,12 +96,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     return;
                 }
 
-                // Check for inject() call - track with local_name for indirect destructure detection
-                // Also handles inject aliases (e.g., const a = inject; const state = a('key'))
+                // Track direct and aliased inject() calls with their local binding.
                 if is_inject_call(call, result)
                     && let Some(key_argument) = call.arguments.first()
                 {
-                    // Detect setup context violation for inject
                     detect_setup_context_violation(result, call);
 
                     if let Some(key) = extract_provide_key(key_argument, source) {
@@ -123,7 +121,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             call.span.end,
                         );
                         injection::record_default_spread(result, call);
-                        // Walk into the call's callback arguments to track nested scopes
                         walk_call_arguments(result, call, source);
                         // `inject()` can return either a plain value or a ref.
                         // Vue marks const inject bindings as maybe-ref so
@@ -156,12 +153,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 record_static_runtime_object_literal(result, name, init, kind, source);
             }
 
-            // Walk other expression types for nested scopes
-            // Skip if we already extracted and processed a call expression to avoid double processing
+            // Walk expressions not already processed as calls, including nested scopes.
             if !call_extracted && let Some(init) = &declarator.init {
                 walk_expression_with_closure_name(result, init, source, name);
 
-                // Check for ref.value extraction: const x = someRef.value
                 check_ref_value_extraction(
                     result,
                     &declarator.id,
