@@ -86,3 +86,34 @@ test("source provenance, original digest and archive membership cannot be omitte
     assert.throws(() => verifyBabelSmokeInventoryPair(before, after, forged));
   }
 });
+
+function assertLiveInventory(workflow: string, release: string): void {
+  assert.equal(workflow, after, "the active whole workflow is the registered successor");
+  const expected = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  assert.ok(expected);
+  assert.deepEqual(
+    release.split("\n").filter((row) => row.startsWith("  RELEASE_JS_PACKAGES: ")),
+    [expected],
+    "the active release inventory retains exactly the same ordered sixteen packages",
+  );
+}
+
+test("actual native-smoke and release files bind the registered successor", () => {
+  assertLiveInventory(
+    fs.readFileSync(new URL("../../.github/workflows/native-smoke.yml", import.meta.url), "utf8"),
+    fs.readFileSync(new URL("../../.github/workflows/release.yml", import.meta.url), "utf8"),
+  );
+});
+
+test("rolling back either or both active inventories cannot reuse historical admission", () => {
+  const release = fs.readFileSync(
+    new URL("../../.github/workflows/release.yml", import.meta.url),
+    "utf8",
+  );
+  const oldLine = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  const newLine = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  assert.ok(oldLine && newLine);
+  const rolledBackRelease = release.replace(newLine, oldLine);
+  assert.throws(() => assertLiveInventory(before, rolledBackRelease));
+  assert.throws(() => assertLiveInventory(after, rolledBackRelease));
+});
