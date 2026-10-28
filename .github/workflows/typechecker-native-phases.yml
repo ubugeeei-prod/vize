@@ -6,7 +6,7 @@ on:
       role:
         required: true
         type: choice
-        options: [slot-error-type, recover]
+        options: [slot-error-type, recover, source-proof]
 permissions: { contents: read, actions: read }
 jobs:
   semantics:
@@ -99,4 +99,96 @@ jobs:
           path: |
             ${{ runner.temp }}/slot-silent-any-recovered/summary.json
             ${{ runner.temp }}/slot-silent-any-recovered/artifact.json
+          retention-days: 14
+  source-proof:
+    if: github.ref == 'refs/heads/debug/canon-slot-silent-any-11027' && inputs.role == 'source-proof'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+      NODE_DISABLE_COMPILE_CACHE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 1, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 38923caaacb1b600a3bba93dc91ef5c60495c0b6
+          path: .source-fixtures
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /tests/_fixtures/differential/typechecker/unknown-component-slot-payload-11027/
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Authenticate and reuse the immutable final-source normal CLI without Cargo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" == 65897816c9ca6cc9e8f6d9e5b1cf76c7ed904b60 ]]
+          mkdir "$RUNNER_TEMP/unknown-slot-image"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12785791249 > "$RUNNER_TEMP/unknown-slot-image/artifact.json"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12785791249/zip > "$RUNNER_TEMP/unknown-slot-image/image.zip"
+          gh api "repos/ubugeeei-prod/vize/git/commits/$SOURCE_SHA" > "$RUNNER_TEMP/unknown-slot-image/commit.json"
+          python3 - <<'PY'
+          import pathlib,os,json,hashlib,zipfile,tarfile,io,stat
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"unknown-slot-image";body=(root/"image.zip").read_bytes()
+          assert len(body)==60157852 and hashlib.sha256(body).hexdigest()=="465d5849245afe7dfb1f6ea4c0e7a667598f12834cbef3e885ed31b4444dab55"
+          metadata=json.loads((root/"artifact.json").read_text());commit=json.loads((root/"commit.json").read_text())
+          assert metadata["workflow_run"]["id"]==40617031429 and metadata["workflow_run"]["head_sha"]=="38923caaacb1b600a3bba93dc91ef5c60495c0b6"
+          assert [p["sha"] for p in commit["parents"]][1]=="38923caaacb1b600a3bba93dc91ef5c60495c0b6"
+          with zipfile.ZipFile(io.BytesIO(body)) as z:
+            assert z.namelist()==["source-cli.tar.gz"]
+            with tarfile.open(fileobj=io.BytesIO(z.read("source-cli.tar.gz")),mode="r:gz") as t:
+              expected={"target/ci/vize","target/ci/vize.differential-build.json","target/ci/examples/cli_build_result_oracle","source-cli.json"}
+              members=t.getmembers();assert len(members)==4 and {m.name for m in members}==expected and all(m.isfile()for m in members)
+              envelope=json.loads(t.extractfile("source-cli.json").read());identity=envelope["identity"]
+              assert identity["sourceRevision"]==os.environ["SOURCE_SHA"] and identity["sourceTree"]==commit["tree"]["sha"]
+              assert str(identity["runId"])=="40617031429" and str(identity["runAttempt"])=="1"
+              assert {m["path"] for m in envelope["members"]}==expected-{"source-cli.json"}
+              for member in envelope["members"]:
+                entry=t.getmember(member["path"]);content=t.extractfile(entry).read()
+                assert len(content)==member["bytes"] and hashlib.sha256(content).hexdigest()==member["sha256"] and stat.S_IMODE(entry.mode)==member["mode"]
+                if member["path"]=="target/ci/vize":(root/"vize").write_bytes(content);(root/"vize").chmod(0o755)
+                elif member["path"].endswith(".json"):(root/"differential-build.json").write_bytes(content)
+              (root/"source-cli.json").write_text(json.dumps(envelope,indent=2)+"\n")
+          sidecar=json.loads((root/"differential-build.json").read_text());assert sidecar["sourceRevision"]==os.environ["SOURCE_SHA"] and sidecar["binarySha256"]==hashlib.sha256((root/"vize").read_bytes()).hexdigest()
+          PY
+      - name: Install one pinned framework and explicit Go7.1 hosted-mapper provider
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/unknown-slot-provider"
+          cd "$RUNNER_TEMP/unknown-slot-provider"
+          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"},overrides:{"@vue/compiler-dom":"3.5.42","@vue/compiler-core":"3.5.42","@vue/compiler-sfc":"3.5.42","@vue/shared":"3.5.42"}}));'
+          npm install --ignore-scripts --no-audit --no-fund
+      - name: Require actual source authored errors repair and whole projection inverses
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/canon-slot-unknown-source.ts "$RUNNER_TEMP/unknown-slot-provider" "$RUNNER_TEMP/unknown-slot-image/vize" "$GITHUB_WORKSPACE/.source-fixtures/tests/_fixtures/differential/typechecker/unknown-component-slot-payload-11027" "$RUNNER_TEMP/unknown-slot-proof"
+      - name: Preserve all raw evidence and exact provider identities
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/unknown-slot-proof"
+          cp "$RUNNER_TEMP/unknown-slot-image/"*.json "$RUNNER_TEMP/unknown-slot-proof/"
+          if [[ -f "$RUNNER_TEMP/unknown-slot-provider/package-lock.json" ]]; then cp "$RUNNER_TEMP/unknown-slot-provider/"package*.json "$RUNNER_TEMP/unknown-slot-proof/"; fi
+          tar --exclude=node_modules -C "$RUNNER_TEMP" -czf "$RUNNER_TEMP/unknown-slot-proof-raw.tgz" unknown-slot-proof
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: unknown-slot-source-summary-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/unknown-slot-proof/summary.json
+            ${{ runner.temp }}/unknown-slot-proof/source-cli.json
+            ${{ runner.temp }}/unknown-slot-proof/artifact.json
+            ${{ runner.temp }}/unknown-slot-proof/differential-build.json
+            ${{ runner.temp }}/unknown-slot-proof/commit.json
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: unknown-slot-source-raw-${{ github.sha }}
+          path: ${{ runner.temp }}/unknown-slot-proof-raw.tgz
           retention-days: 14
