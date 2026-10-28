@@ -11,7 +11,8 @@ pub(crate) fn template_usage_is_shadowed(analysis: &Croquis, usage: &ComponentUs
     let mut current = Some(usage.scope_id);
     for _ in 0..analysis.scopes.len() {
         let Some(scope) = current.and_then(|id| analysis.scopes.get_scope(id)) else {
-            return false;
+            // Missing site ownership cannot establish a root component read.
+            return true;
         };
         match scope.kind {
             ScopeKind::ScriptSetup

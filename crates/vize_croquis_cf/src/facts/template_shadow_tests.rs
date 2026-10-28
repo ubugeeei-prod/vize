@@ -245,3 +245,72 @@ fn own_slot_scope_does_not_shadow_its_host_component() {
         );
     }
 }
+
+#[test]
+fn missing_template_site_scope_cannot_create_root_ancestry() {
+    for (invalid_scope, expected_edges, expected_targets, expected_matches, expected_unmatched) in [
+        (
+            false,
+            vec![Edge {
+                caller: 1,
+                target: 0,
+                export: "default".into(),
+                sites: vec![(0, 7)],
+            }],
+            vec![crate::FileId::new(0)],
+            vec![(1, 0, "token")],
+            vec![],
+        ),
+        (true, vec![], vec![], vec![], vec![(0, "token")]),
+    ] {
+        let script = "import Lazy from './NoticeLink.vue'; import { provide } from 'vue'; provide('token', 1);";
+        let child = "import { inject } from 'vue'; const value = inject('token');";
+        let mut parent = analysis(script, "<Lazy/>");
+        assert_eq!(parent.component_usages.len(), 1);
+        if invalid_scope {
+            parent.component_usages[0].scope_id = vize_croquis::ScopeId::new(u32::MAX);
+        }
+        let mut project =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+        project.add_file_with_analysis(
+            Path::new("NoticeLink.vue"),
+            child,
+            analysis(child, "<p></p>"),
+        );
+        project.add_file_with_analysis(
+            Path::new("Page.vue"),
+            "<script setup>import Lazy from './NoticeLink.vue'; import { provide } from 'vue'; provide('token', 1);</script><template><Lazy/></template>",
+            parent,
+        );
+        project.rebuild_component_edges();
+        assert_eq!(edge_packet(&project), expected_edges);
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            expected_targets,
+        );
+        let result = project.analyze();
+        let matches: Vec<_> = result
+            .provide_inject_matches
+            .iter()
+            .map(|row| {
+                (
+                    row.provider.as_u32(),
+                    row.consumer.as_u32(),
+                    row.key.as_str(),
+                )
+            })
+            .collect();
+        assert_eq!(matches, expected_matches);
+        let missing: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter_map(|diagnostic| match &diagnostic.kind {
+                CrossFileDiagnosticKind::UnmatchedInject { key } => {
+                    Some((diagnostic.primary_file.as_u32(), key.as_str()))
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(missing, expected_unmatched);
+    }
+}
