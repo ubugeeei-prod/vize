@@ -25,8 +25,7 @@ writeFileSync(
   }),
   { flag: "wx" },
 );
-const execute = process.execve;
-assert.equal(typeof execute, "function");
-if (execute === undefined) throw new Error("Node must expose execve");
-execute(backend, argv, process.env);
+assert.equal(typeof process.execve, "function");
+if (process.execve === undefined) throw new Error("Node must expose execve");
+process.execve(backend, argv, process.env);
 throw new Error("execve unexpectedly returned");
