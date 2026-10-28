@@ -1,0 +1,23 @@
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<button type="button"${_ssrRenderAttrs(_attrs)}>press</button>`);
+}
+export default {
+  __name: "Layout",
+  emits: ["press"],
+  ssrRender,
+  setup(__props, { expose: __expose, emit: __emit }) {
+    __expose();
+    const emit = __emit;
+    const onClick = (event) => {
+      if (_ctx.document.activeElement !== event.currentTarget) return;
+      emit("press");
+    };
+    const __returned__ = { emit, onClick };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};
