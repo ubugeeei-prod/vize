@@ -9,6 +9,7 @@ import { parseArgs } from "node:util";
 import {
   normalProbeFixtureFiles,
   normalProbeGroups,
+  normalProbeLaws,
   normalProbeSizes,
 } from "./cli-probe-history-normal-fixture.ts";
 
@@ -51,6 +52,17 @@ const git = (...args: string[]) => checked("git", args);
 const sourceSha = git("rev-parse", "HEAD"),
   sourceTree = git("rev-parse", "HEAD^{tree}");
 assert.equal(git("status", "--porcelain", "--untracked-files=all"), "");
+const productionCandidate = "b9dd2d2c77af20e8b5329abc1ba98f9537ca3fdf";
+git("merge-base", "--is-ancestor", productionCandidate, "HEAD");
+const overlayPaths = git("diff", "--name-only", productionCandidate, "HEAD", "--", "crates")
+  .split("\n")
+  .filter(Boolean);
+assert.deepEqual(overlayPaths.toSorted(), [
+  "crates/vize/src/lib.rs",
+  "crates/vize/src/commands/check/imports/registration/reachability/tests.rs",
+  "crates/vize/src/commands/check/imports/registration/reachability/tests/normal.rs",
+]);
+const overlayDiff = git("diff", productionCandidate, "HEAD", "--", "crates");
 const env = {
   CARGO_TARGET_DIR: target,
   CARGO_BUILD_JOBS: "4",
@@ -89,6 +101,9 @@ const safe =
 const request = {
   sourceSha,
   sourceTree,
+  productionCandidate,
+  overlayPaths,
+  overlayDiffSha256: hash(overlayDiff),
   args,
   targetStartedAbsent: true,
   normalAllocator: "mimalloc::MiMalloc",
@@ -212,13 +227,7 @@ const seal = () =>
 const fixtureSeal = seal();
 write("fixture-seal.json", { root: physical, files: fixtureSeal });
 const prefix = "commands::check::imports::registration::reachability::tests::";
-const names = [
-  "untracked_probes_keep_typescript_precedence_and_omit_candidate_histories",
-  "untracked_path_mode_retains_complete_alias_probe_histories",
-  "untracked_graphs_keep_exact_work_cycles_and_fresh_missing_to_created_inputs",
-  "tracked_graph_control_still_retains_missing_candidates_and_real_sources",
-  "cross_program_alias_agreement_keeps_equal_winners_with_distinct_proof_paths_apart",
-];
+const names = normalProbeLaws;
 const carrier = prefix + "normal::normal_local_probe_histories";
 const list = checked(executable, ["--list"]).split("\n");
 for (const name of [...names.map((name) => prefix + name), carrier])

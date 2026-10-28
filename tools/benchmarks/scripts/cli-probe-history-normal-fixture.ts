@@ -62,3 +62,11 @@ export function normalProbeFixtureFiles(fixture: string): Record<string, string>
     }
   return files;
 }
+
+export const normalProbeLaws = [
+  "untracked_probes_keep_typescript_precedence_and_omit_candidate_histories",
+  "untracked_path_mode_retains_complete_alias_probe_histories",
+  "untracked_graphs_keep_exact_work_cycles_and_fresh_missing_to_created_inputs",
+  "tracked_graph_control_still_retains_missing_candidates_and_real_sources",
+  "cross_program_alias_agreement_keeps_equal_winners_with_distinct_proof_paths_apart",
+];

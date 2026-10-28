@@ -21,7 +21,7 @@ jobs:
       RAYON_NUM_THREADS: "4"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { persist-credentials: false }
+        with: { persist-credentials: false, fetch-depth: 8 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$SOURCE_HEAD" = b9dd2d2c77af20e8b5329abc1ba98f9537ca3fdf
-          test "$(git rev-parse HEAD^)" = "$SOURCE_HEAD"
+          git merge-base --is-ancestor "$SOURCE_HEAD" HEAD
           node tools/benchmarks/scripts/cli-probe-history-normal.ts --out "$RUNNER_TEMP/probe-normal" --target "$RUNNER_TEMP/probe-normal-target" --fixture "$RUNNER_TEMP/probe-shared-fixture"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
