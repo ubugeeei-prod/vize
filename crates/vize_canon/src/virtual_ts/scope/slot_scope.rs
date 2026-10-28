@@ -86,9 +86,8 @@ fn slot_payload_type(
             binding.as_str(),
             component_ref.as_str(),
             ctx.template_binding_access,
-            ctx.source_context,
             ctx.indent,
-            ctx.hoist_shared_preamble,
+            (ctx.source_context, ctx.hoist_shared_preamble),
         );
     } else {
         let slot_host_slots = crate::virtual_ts::helpers::shared_types::SLOT_HOST_SLOTS

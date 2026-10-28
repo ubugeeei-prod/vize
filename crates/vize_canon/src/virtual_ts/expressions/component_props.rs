@@ -335,9 +335,8 @@ pub(crate) fn generate_component_prop_checks(
             idx,
             component_ref,
             template_binding_access,
-            source_context,
             callback_indent.as_str(),
-            ctx.hoist_shared_preamble,
+            (source_context, ctx.hoist_shared_preamble),
         )
     };
     let resolved_props = if let Some(prelude) = ctx.inference_prelude {
@@ -497,8 +496,7 @@ pub(crate) fn generate_component_prop_checks(
                     prop,
                     generated_value.text.as_str(),
                     target_source,
-                    expr_indent.as_str(),
-                    ctx.hoist_shared_preamble,
+                    (expr_indent.as_str(), ctx.hoist_shared_preamble),
                 );
             }
 

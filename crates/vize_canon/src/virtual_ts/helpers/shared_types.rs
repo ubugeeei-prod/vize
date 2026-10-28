@@ -32,13 +32,8 @@ macro_rules! shared_type_refs {
 
 shared_type_refs! {
     IS_ANY => ("__VizeIsAny", "IsAny"),
-    COMPONENT_GLOBAL_HTML_ATTRS => ("__VizeComponentGlobalHtmlAttrs", "ComponentGlobalHtmlAttrs"),
-    WIDEN_TEMPLATE_REF => ("__VizeWidenTemplateRef", "__VizeWidenTemplateRef"),
     COMPONENT_NAVIGATION_PROPS => ("__VizeComponentNavigationProps", "__VizeComponentNavigationProps"),
     EMIT_LISTENERS => ("__VizeEmitListeners", "__VizeEmitListeners"),
-    IS_GENERATED_COMPONENT => ("__VizeIsGeneratedComponent", "__VizeIsGeneratedComponent"),
-    HAS_FALLTHROUGH_PROPS => ("__VizeHasFallthroughProps", "__VizeHasFallthroughProps"),
-    FALLTHROUGH_PROPS => ("__VizeFallthroughProps", "__VizeFallthroughProps"),
     REQUIRED_FALLTHROUGH_PROPS => ("__VizeRequiredFallthroughProps", "__VizeRequiredFallthroughProps"),
     COMPONENT_RAW_PROPS => ("__VizeComponentRawProps", "__VizeComponentRawProps"),
     FALLTHROUGH_VALUE => ("__VizeFallthroughValue", "__VizeFallthroughValue"),

@@ -34,8 +34,7 @@ pub(super) fn append_model_update_check(
     prop: &PassedProp,
     target: &str,
     target_source: Range<usize>,
-    indent: &str,
-    hoist_shared_preamble: bool,
+    (indent, hoist_shared_preamble): (&str, bool),
 ) {
     let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
     let payload = vize_carton::cstr!("__{component_type_name}_{idx}_model_{safe_prop_name}");

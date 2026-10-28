@@ -305,8 +305,10 @@ fn generate_usage_declarations(
         component_type_name.as_str(),
         component_ref.as_str(),
         idx,
-        ctx.relaxed_required_usage_starts.contains(&usage.start),
-        ctx.hoist_shared_preamble,
+        (
+            ctx.relaxed_required_usage_starts.contains(&usage.start),
+            ctx.hoist_shared_preamble,
+        ),
         (
             shared
                 .filter(|shared| shared.canonical_idx != idx)

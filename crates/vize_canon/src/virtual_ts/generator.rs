@@ -876,8 +876,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             )
             .as_deref(),
             check_options,
+            hoist_shared_preamble,
         ),
-        hoist_shared_preamble,
     );
     component_export::emit_component_default_export_for_generation(
         &mut ts,

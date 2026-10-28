@@ -169,9 +169,8 @@ pub(crate) fn generate_slot_host_binding(
     binding_name: &str,
     component_ref: &str,
     template_binding_access: &TemplateBindingAccess,
-    source_context: ComponentPropSource<'_>,
     indent: &str,
-    hoist_shared_preamble: bool,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) {
     let slot_host_selector =
         crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(hoist_shared_preamble);

@@ -92,8 +92,7 @@ pub(super) fn append_prop_checker_alias(
     component_type_name: &str,
     component_ref: &str,
     idx: usize,
-    relax_required: bool,
-    hoist_shared_preamble: bool,
+    (relax_required, hoist_shared_preamble): (bool, bool),
     sharing: (Option<usize>, bool),
 ) {
     let (shared_idx, force_value_props) = sharing;

@@ -32,9 +32,8 @@ pub(super) fn generate_callback_props_resolution(
     idx: usize,
     component_ref: &str,
     template_binding_access: &TemplateBindingAccess,
-    source_context: ComponentPropSource<'_>,
     indent: &str,
-    hoist_shared_preamble: bool,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) -> Option<CallbackPropsResolution> {
     if !usage.props.iter().any(is_inline_callback_prop) {
         return None;
