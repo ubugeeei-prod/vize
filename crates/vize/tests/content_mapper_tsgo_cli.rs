@@ -18,6 +18,7 @@ mod incomplete_tags;
 mod javascript_check_js;
 mod long_prop_kebab_case;
 mod optional_prop_spacing;
+mod options_api_diagnostics;
 mod props_binding;
 mod pug_refusal;
 mod quoted_generic_parameters;
@@ -506,11 +507,10 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
         "Options API disabled fixture passed unexpectedly"
     );
     let options_disabled_output = output_text(&options_disabled);
-    assert!(
-        options_disabled_output.contains("src/Options.vue")
-            && options_disabled_output.contains("TS2304")
-            && options_disabled_output.contains("Cannot find name 'count'"),
-        "{options_disabled_output}"
+    assert_eq!(
+        options_disabled_output.lines().collect::<Vec<_>>(),
+        options_api_diagnostics::DISABLED_OPTIONS_API,
+        "Options API opt-out diagnostics must retain their exact authored identity"
     );
 
     let broken = check_project(&tsgo, project.path(), "tsconfig.error.json");

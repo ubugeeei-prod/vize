@@ -62,10 +62,9 @@ use super::super::ScriptParseResult;
 use super::class_component_props::collect_prop_decorator;
 use super::options_api::{
     add_template_binding, collect_component_registrations_from_options,
-    collect_options_api_template_bindings_from_options, normalize_template_binding_name,
-    property_key_name,
+    collect_options_api_template_bindings_from_options, property_key_name,
 };
-use crate::croquis::ComponentShape;
+use crate::croquis::{ComponentShape, normalize_options_template_binding_name};
 use crate::macros::EmitDefinition;
 
 /// Return the class when the default export is a class declaration or a
@@ -305,7 +304,7 @@ fn add_class_member_binding(
     let Some(raw_name) = property_key_name(key) else {
         return;
     };
-    let Some(name) = normalize_template_binding_name(raw_name) else {
+    let Some(name) = normalize_options_template_binding_name(raw_name) else {
         return;
     };
     let span = key.span();

@@ -308,4 +308,77 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
     );
 }
 
+/// Disabling Options API removes its generated declarations, so authored
+/// member reads must remain free names (TS2304). They must not be converted to
+/// public-instance reads (TS2339), while a truly unknown name still uses the
+/// public instance added for ComponentCustomProperties support.
+#[test]
+fn disabled_options_api_keeps_known_members_lexical_and_unknowns_public() {
+    let script = r#"const spread = { fromSpread: 1 };
+const dynamicName = "fromComputed";
+export default {
+  props: { label: { type: String, required: true } },
+  data() { return { count: 1, ...spread, [dynamicName]: 2 }; },
+  computed: { doubled() { return this.count * 2; } },
+  methods: { increment() { return ++this.count; } },
+};
+"#;
+    let template = "<p>{{ label }}:{{ count }}:{{ doubled }}:{{ increment() }}:{{ fromSpread }}:{{ fromComputed }}:{{ missing }}</p>";
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let output = generate_virtual_ts_with_offsets(
+        &analyzer.finish(),
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+
+    assert_eq!(output.code.matches("__VizeOptionsBinding").count(), 0);
+    for name in ["label", "count", "doubled", "increment"] {
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("__vize_public_instance.{name}"))
+                .count(),
+            0,
+            "disabled Options API member {name} gained a public-instance read:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("__VizeTemplateInstanceMember<\"{name}\">"))
+                .count(),
+            0,
+            "disabled Options API member {name} gained a public-instance declaration:\n{}",
+            output.code
+        );
+    }
+    for name in ["fromSpread", "fromComputed", "missing"] {
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("__VizeTemplateInstanceMember<\"{name}\">"))
+                .count(),
+            1,
+            "dynamic and unknown controls must retain public-instance resolution:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("void (__vize_public_instance.{name});"))
+                .count(),
+            1,
+            "dynamic and unknown controls need one mapped public-instance read:\n{}",
+            output.code
+        );
+    }
+}
+
 mod lexical_scope;

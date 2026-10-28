@@ -23,6 +23,19 @@ pub(crate) struct TemplateBindingAccess {
 impl TemplateBindingAccess {
     pub(crate) fn collect(summary: &Croquis, options_api: bool) -> Self {
         let mut result = Self::from_props(collect_template_prop_names(summary));
+        if !options_api && let Some(descriptor) = summary.options_descriptor.as_ref() {
+            for member in &descriptor.members {
+                let Some(name) =
+                    vize_croquis::croquis::normalize_options_template_binding_name(
+                        member.name.as_str(),
+                    )
+                else {
+                    continue;
+                };
+                result.receivers.remove(name.as_str());
+                result.lexical.insert(name.into());
+            }
+        }
         if options_api {
             super::script_facts::with_bindings(summary, |bindings| {
                 let script_setup = bindings.is_script_setup();

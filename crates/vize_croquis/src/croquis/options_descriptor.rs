@@ -18,7 +18,50 @@
 //! array-form `props`/`inject` entries, the span covers the full string literal
 //! including its quotes — so byte-for-byte diagnostics are preserved.
 
-use vize_carton::CompactString;
+use vize_carton::{CompactString, String};
+
+/// Normalize an authored Options API member to the identifier spelling used
+/// by template expressions. Invalid names stay unavailable to lexical lookup.
+/// The descriptor walk excludes computed keys and spread entries beforehand.
+pub fn normalize_options_template_binding_name(name: &str) -> Option<CompactString> {
+    if is_valid_template_binding_name(name) {
+        return Some(CompactString::new(name));
+    }
+    if name.contains('-') {
+        let camel = kebab_to_camel(name);
+        if is_valid_template_binding_name(&camel) {
+            return Some(CompactString::new(camel));
+        }
+    }
+    None
+}
+
+fn is_valid_template_binding_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+}
+
+fn kebab_to_camel(name: &str) -> String {
+    let mut result = String::with_capacity(name.len());
+    let mut upper_next = false;
+    for ch in name.chars() {
+        if ch == '-' {
+            upper_next = true;
+        } else if upper_next {
+            result.push(ch.to_ascii_uppercase());
+            upper_next = false;
+        } else {
+            result.push(ch);
+        }
+    }
+    result
+}
 
 /// The Options API group a member was declared in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -100,5 +143,28 @@ impl OptionsDescriptor {
         self.members
             .iter()
             .filter(move |member| member.group == group)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_options_template_binding_name;
+
+    #[test]
+    fn template_binding_normalization_is_shared_by_descriptors_and_parser() {
+        for (authored, expected) in [
+            ("count", Some("count")),
+            ("initial-value", Some("initialValue")),
+            ("$service", Some("$service")),
+            ("two--parts", Some("twoParts")),
+            ("1invalid", None),
+            ("computed.name", None),
+        ] {
+            assert_eq!(
+                normalize_options_template_binding_name(authored).as_deref(),
+                expected,
+                "{authored}"
+            );
+        }
     }
 }

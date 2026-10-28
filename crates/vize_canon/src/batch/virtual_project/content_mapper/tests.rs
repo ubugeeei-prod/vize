@@ -18,6 +18,7 @@ mod diagnostic_ownership;
 mod helper_modes;
 mod models;
 mod navigation;
+mod options_api;
 mod protocol;
 mod scoped_event_navigation;
 mod slot_outlet_navigation;
@@ -423,33 +424,7 @@ fn check_js_and_authored_typescript_opt_into_diagnostics() {
 
 #[test]
 fn options_api_transform_setting_controls_instance_bindings() {
-    let source = r#"<script lang="ts">
-export default {
-  data() { return { count: 1 } }
-}
-</script>
-<template>{{ count }}</template>
-"#;
-
-    let enabled = generate_vue_content_mapper_transform_with_options(
-        Path::new("Options.vue"),
-        source,
-        ContentMapperTransformOptions::default().with_options_api(true),
-    )
-    .expect("enabled transform");
-    let disabled = generate_vue_content_mapper_transform_with_options(
-        Path::new("Options.vue"),
-        source,
-        ContentMapperTransformOptions::default().with_options_api(false),
-    )
-    .expect("disabled transform");
-
-    assert!(
-        enabled
-            .text
-            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">")
-    );
-    assert!(!disabled.text.contains("__VizeOptionsBinding"));
+    options_api::assert_transform_setting_controls_instance_bindings();
 }
 
 #[test]
