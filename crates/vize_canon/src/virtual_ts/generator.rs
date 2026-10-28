@@ -856,7 +856,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .map(|raw| if raw.trim().is_empty() { "" } else { raw }),
         legacy_vue2,
         dialect,
-        hoist_shared_preamble,
     );
     emit_default_export_declaration(
         &mut ts,

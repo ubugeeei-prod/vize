@@ -103,7 +103,6 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     emit_overload_helpers_text!(),
     include_str!("declarations/emit-props.d.ts.txt"),
     include_str!("declarations/emit-inference.d.ts.txt"),
-    include_str!("declarations/exposed-unwrap.d.ts.txt"),
     include_str!("declarations/component-checks.d.ts.txt"),
     include_str!("declarations/shared-macros.d.ts.txt"),
     include_str!("pattern_matching.d.ts")

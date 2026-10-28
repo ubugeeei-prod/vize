@@ -83,15 +83,9 @@ pub(super) fn ref_unwrap_helper_for_template(
     }
 }
 
-pub(super) fn exposed_unwrap_helper(
-    legacy_vue2: bool,
-    dialect: VueVersion,
-    hoist_shared_preamble: bool,
-) -> &'static str {
+pub(super) fn exposed_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         LEGACY_EXPOSED_UNWRAP_HELPER
-    } else if hoist_shared_preamble {
-        ""
     } else {
         MODERN_EXPOSED_UNWRAP_HELPER
     }

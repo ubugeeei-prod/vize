@@ -429,6 +429,13 @@ fn hoisted_helper_hints(generated: &str, names: &[&str]) -> Vec<Value> {
     for name in names {
         let declaration = cstr!("type {name}<");
         assert_eq!(
+            crate::virtual_ts::SHARED_PREAMBLE_DTS
+                .matches(declaration.as_str())
+                .count(),
+            1,
+            "{name} must be declared exactly once in the shared preamble"
+        );
+        assert_eq!(
             generated.matches(declaration.as_str()).count(),
             0,
             "{name} must not be redeclared in a generated SFC"

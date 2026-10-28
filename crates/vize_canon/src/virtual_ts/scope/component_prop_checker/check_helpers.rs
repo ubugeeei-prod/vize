@@ -40,6 +40,18 @@ fn append_hoisted_component_check_policy(
     }
 }
 
+/// Vue public props are package-relative types. Keep these aliases in each
+/// generated module so workspace packages resolve their own Vue installation
+/// and `ComponentCustomProps` augmentation instead of the batch helper's.
+fn append_vue_public_component_attrs(ts: &mut String) {
+    ts.push_str("  type __VizeVueVNodeProps = import('vue').VNodeProps;\n");
+    ts.push_str("  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
+    ts.push_str("  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
+    ts.push_str(
+        "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
+    );
+}
+
 /// The shared type helpers every per-usage prop check resolves through, emitted
 /// once per template scope that has at least one checkable component usage.
 /// Keep this set small; the child's own props type carries the contract.
@@ -53,6 +65,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     hoist_shared_preamble: bool,
 ) {
     if hoist_shared_preamble {
+        append_vue_public_component_attrs(ts);
         append_hoisted_component_check_policy(
             ts,
             check_unknown_props,
@@ -107,12 +120,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts.push_str(
         "  type __VizeRequiredFallthroughProps<C, __F = __VizeFallthroughProps<C>, __K = __VizeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };\n",
     );
-    ts.push_str("  type __VizeVueVNodeProps = import('vue').VNodeProps;\n");
-    ts.push_str("  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
-    ts.push_str("  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
-    ts.push_str(
-        "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
-    );
+    append_vue_public_component_attrs(ts);
     if check_unknown_props {
         if strict_component_attrs {
             // Standard strict attrs accept Vue public attrs and only keys the

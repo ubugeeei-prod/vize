@@ -73,6 +73,10 @@ function __setup() {
   // @vize-map: expr -> 285:298
 
   // Component props type declarations
+  type __VizeVueVNodeProps = import('vue').VNodeProps;
+  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;
+  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;
+  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}
   type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};
   type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;
   // @vize-map: component -> 258:302

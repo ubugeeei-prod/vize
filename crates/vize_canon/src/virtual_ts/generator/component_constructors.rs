@@ -70,7 +70,6 @@ pub(super) fn emit_component_constructors<'a>(
     authored_generic: Option<&'a str>,
     legacy_vue2: bool,
     dialect: VueVersion,
-    hoist_shared_preamble: bool,
 ) -> Option<GenericComponentContract<'a>> {
     let _profile = vize_l0::profiler::global_profiler()
         .global_span("canon.virtual_ts.emit_component_constructors");
@@ -104,11 +103,7 @@ pub(super) fn emit_component_constructors<'a>(
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str(instance_helper(legacy_vue2, dialect));
     if aliases.has_exposed_type {
-        ts.push_str(exposed_unwrap_helper(
-            legacy_vue2,
-            dialect,
-            hoist_shared_preamble,
-        ));
+        ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
     }
     if aliases.has_authored_default && legacy_component {
         ts.push_str("type __VizeComponentInstance = __VizeAuthoredInstance & {\n");

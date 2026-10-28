@@ -201,9 +201,16 @@ const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] = &[
     "type __VizeSlotPayload<",
     "type __VizeEmitRequiredKeys<",
     "type __EmitProps<",
-    "type __VizeShallowUnwrapRef<",
     "type __VizeComponentNavigationProps<",
 ];
+
+const MODULE_LOCAL_VUE_PUBLIC_ATTRS: &[&str] = &[
+    "type __VizeVueVNodeProps = import('vue').VNodeProps;",
+    "type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;",
+    "type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;",
+    "interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}",
+];
+const MODULE_LOCAL_EXPOSED_UNWRAP: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };";
 
 fn ref_sfc(binding: &str) -> vize_carton::String {
     vize_carton::cstr!(
@@ -262,6 +269,83 @@ fn static_template_helpers_are_hoisted_once_per_program() {
             "the hoisted helpers file must declare {declaration} exactly once"
         );
     }
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn package_relative_vue_helpers_stay_in_each_generated_module() {
+    let case_dir = unique_case_dir("package-relative-vue-helpers");
+    let _ = fs::remove_dir_all(&case_dir);
+    let mut inputs = Vec::new();
+    let mut parents = Vec::new();
+    let mut exposed = Vec::new();
+    for package in ["alpha", "beta"] {
+        let src_dir = case_dir.join("packages").join(package).join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let child = src_dir.join("Child.vue");
+        fs::write(
+            &child,
+            "<script setup lang=\"ts\">defineProps<{ label?: string }>()</script>\n",
+        )
+        .unwrap();
+        let parent = src_dir.join("Parent.vue");
+        fs::write(
+            &parent,
+            "<script setup lang=\"ts\">import Child from './Child.vue'</script>\n<template><Child global-token=\"ok\" /></template>\n",
+        )
+        .unwrap();
+        let exposed_path = src_dir.join("Exposed.vue");
+        fs::write(
+            &exposed_path,
+            "<script setup lang=\"ts\">import { ref } from 'vue'; const value = ref('ok'); defineExpose({ value })</script>\n",
+        )
+        .unwrap();
+        inputs.extend([child, parent.clone(), exposed_path.clone()]);
+        parents.push(parent);
+        exposed.push(exposed_path);
+    }
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_paths(&inputs).unwrap();
+    for path in parents {
+        let virtual_file = project.find_by_original(&path).unwrap();
+        let content = &virtual_file.content;
+        for declaration in MODULE_LOCAL_VUE_PUBLIC_ATTRS {
+            assert_eq!(
+                content.matches(declaration).count(),
+                1,
+                "{} must resolve {declaration} from its own package",
+                path.display()
+            );
+        }
+    }
+    for path in exposed {
+        let virtual_file = project.find_by_original(&path).unwrap();
+        let content = &virtual_file.content;
+        assert_eq!(
+            content.matches(MODULE_LOCAL_EXPOSED_UNWRAP).count(),
+            1,
+            "{} must resolve exposed refs from its own package",
+            path.display()
+        );
+    }
+    for declaration in MODULE_LOCAL_VUE_PUBLIC_ATTRS {
+        assert_eq!(
+            crate::virtual_ts::SHARED_PREAMBLE_DTS
+                .matches(declaration)
+                .count(),
+            0,
+            "the shared helper must not own package-relative {declaration}"
+        );
+    }
+    assert_eq!(
+        crate::virtual_ts::SHARED_PREAMBLE_DTS
+            .matches(MODULE_LOCAL_EXPOSED_UNWRAP)
+            .count(),
+        0,
+        "the shared helper must not own package-relative exposed ref unwrapping"
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }
