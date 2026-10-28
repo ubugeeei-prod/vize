@@ -33,11 +33,12 @@ const publishers = [
   "github-release",
 ];
 
-function permitted(job: Job, gate: string, resume = ""): boolean {
+function permitted(job: Job, gate: string, resume = "", workflowCancelled = false): boolean {
   if (!job.if?.includes("always()") && gate !== "success") return false;
   const expression = (job.if ?? "true")
     .replace(/^\$\{\{\s*|\s*\}\}$/g, "")
     .replaceAll("always()", "true")
+    .replaceAll("cancelled()", "cancelled")
     .replace(/needs\.([a-z-]+)\./g, (_, key: string) => `needs["${key}"].`);
   const needs: Record<string, { result: string; outputs: Record<string, string> }> = {};
   for (const dependency of [job.needs ?? []].flat())
@@ -46,9 +47,11 @@ function permitted(job: Job, gate: string, resume = ""): boolean {
       outputs: { ref: "refs/release-candidates/source" },
     };
   return Boolean(
-    compileFunction("return (" + expression + ");", ["needs", "inputs"])(needs, {
-      npm_resume_run: resume,
-    }),
+    compileFunction("return (" + expression + ");", ["needs", "inputs", "cancelled"])(
+      needs,
+      { npm_resume_run: resume },
+      workflowCancelled,
+    ),
   );
 }
 test("every initial registry writer requires the fresh post-build admission barrier", () => {
@@ -66,6 +69,9 @@ test("every initial registry writer requires the fresh post-build admission barr
       assert.equal(permitted(job, state, "42"), false, id + "/resume/" + state);
     }
   }
+  const crates = release.jobs["publish-crates"]!;
+  assert.equal(permitted(crates, "success", "", true), false, "crates/cancelled");
+  assert.equal(permitted(crates, "success", "42", true), false, "crates/resume/cancelled");
 });
 test("failed-job crate recovery refreshes the same producer-bound quota immediately before publishing", () => {
   const steps = release.jobs["publish-crates"]!.steps;
