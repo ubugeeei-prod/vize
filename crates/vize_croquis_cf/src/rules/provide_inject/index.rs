@@ -1,11 +1,12 @@
 use super::keys::create_string_key_diagnostic;
 use crate::diagnostics::CrossFileDiagnostic;
+use crate::facts::resolve_module;
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use crate::rules::cross_file_reactivity::provided_value_reactive_kind;
 use std::cmp::Ordering;
 use vize_carton::{FxHashMap, FxHashSet};
-use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
+use vize_croquis::provide::{InjectEntry, InjectPattern, ProvideEntry, ProvideKey, ProviderId};
 
 mod calls;
 mod frames;
@@ -74,12 +75,74 @@ impl ProvideInjectIndex {
         let mut provides = FxHashMap::default();
         let mut injects = FxHashMap::default();
         let mut reactive_provides = FxHashSet::default();
+        let mut composable_effects: FxHashMap<
+            (FileId, vize_carton::CompactString),
+            (Vec<ProvideEntry>, Vec<InjectEntry>),
+        > = FxHashMap::default();
 
         for entry in registry.vue_components() {
-            let (entry_provides, entry_injects) = extract_provide_inject(&entry.analysis);
+            let (mut entry_provides, mut entry_injects) = extract_provide_inject(&entry.analysis);
+            // Declarations are not setup effects until their composable is
+            // actually called. Imported calls below project only the selected
+            // function's effects into the calling component.
+            entry_provides.retain(|provide| provide.from_composable.is_none());
+            entry_injects.retain(|inject| inject.from_composable.is_none());
             for provide in &entry_provides {
                 if provided_value_reactive_kind(&entry.analysis, provide.value.as_str()).is_some() {
                     reactive_provides.insert((entry.id, provide.id.as_u32()));
+                }
+            }
+            let mut next_provider_id = entry_provides
+                .iter()
+                .map(|provide| provide.id.as_u32())
+                .max()
+                .map_or(0, |id| id.saturating_add(1));
+
+            for call in vize_croquis::facts::composable_calls(&entry.analysis) {
+                if !is_local_module_specifier(call.source.as_str()) {
+                    continue;
+                }
+                let Some(source_id) =
+                    resolve_module(registry, call.source.as_str(), entry.path.parent())
+                else {
+                    continue;
+                };
+                let Some(source) = registry.get(source_id) else {
+                    continue;
+                };
+                let (source_provides, source_injects) = composable_effects
+                    .entry((source_id, call.name.clone()))
+                    .or_insert_with(|| {
+                        let (mut provides, mut injects) = extract_provide_inject(&source.analysis);
+                        provides.retain(|provide| {
+                            provide.from_composable.as_deref() == Some(call.name.as_str())
+                        });
+                        injects.retain(|inject| {
+                            inject.from_composable.as_deref() == Some(call.name.as_str())
+                        });
+                        (provides, injects)
+                    });
+
+                for mut provide in source_provides.iter().cloned() {
+                    provide.id = ProviderId::new(next_provider_id);
+                    next_provider_id = next_provider_id.saturating_add(1);
+                    provide.start = call.start;
+                    provide.end = call.end;
+                    if provided_value_reactive_kind(&source.analysis, provide.value.as_str())
+                        .is_some()
+                    {
+                        reactive_provides.insert((entry.id, provide.id.as_u32()));
+                    }
+                    entry_provides.push(provide);
+                }
+
+                for mut inject in source_injects.iter().cloned() {
+                    inject.start = call.start;
+                    inject.end = call.end;
+                    if let InjectPattern::IndirectDestructure { offset, .. } = &mut inject.pattern {
+                        *offset = call.start;
+                    }
+                    entry_injects.push(inject);
                 }
             }
             if !entry_provides.is_empty() {
@@ -414,6 +477,10 @@ impl ProvideInjectIndex {
             .cmp(&stable_rank(&self.stable_file_order, right))
             .then_with(|| left.as_u32().cmp(&right.as_u32()))
     }
+}
+
+fn is_local_module_specifier(specifier: &str) -> bool {
+    specifier.starts_with('.') || specifier.starts_with("@/") || specifier.starts_with('/')
 }
 
 #[cfg(test)]
