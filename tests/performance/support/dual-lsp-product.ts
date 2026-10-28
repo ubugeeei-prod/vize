@@ -54,7 +54,7 @@ export class BackgroundTaskCustody {
   async settle(): Promise<void> {
     await new Promise<void>((resolve) => setImmediate(resolve));
     while (this.pending.size > 0) {
-      await Promise.allSettled([...this.pending]);
+      await Promise.allSettled(this.pending);
       await new Promise<void>((resolve) => setImmediate(resolve));
     }
     this.assertHealthy();
