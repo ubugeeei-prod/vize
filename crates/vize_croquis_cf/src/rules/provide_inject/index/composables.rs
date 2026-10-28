@@ -35,11 +35,9 @@ impl<'a> ComposableProjection<'a> {
             if !is_local_module_specifier(call.source.as_str()) {
                 continue;
             }
-            let Some(source_id) = resolve_module(
-                self.registry,
-                call.source.as_str(),
-                entry.path.parent(),
-            ) else {
+            let Some(source_id) =
+                resolve_module(self.registry, call.source.as_str(), entry.path.parent())
+            else {
                 continue;
             };
             let Some(source) = self.registry.get(source_id) else {
@@ -64,7 +62,8 @@ impl<'a> ComposableProjection<'a> {
                 next_provider_id = next_provider_id.saturating_add(1);
                 provide.start = call.start;
                 provide.end = call.end;
-                if provided_value_reactive_kind(&source.analysis, provide.value.as_str()).is_some() {
+                if provided_value_reactive_kind(&source.analysis, provide.value.as_str()).is_some()
+                {
                     reactive_provides.insert((entry.id, provide.id.as_u32()));
                 }
                 entry_provides.push(provide);

@@ -44,7 +44,9 @@ fn materialize(source: &Path, destination: &Path) {
         }
         let authored = entry.file_name();
         let authored = authored.to_string_lossy();
-        let runtime = authored.strip_suffix(".txt").expect("source fixture suffix");
+        let runtime = authored
+            .strip_suffix(".txt")
+            .expect("source fixture suffix");
         fs::copy(input, destination.join(runtime)).unwrap();
     }
 }
