@@ -137,6 +137,7 @@ jobs:
           package-manager-cache: false
       - name: Install the genuine pinned Nuxt runtime and unsupported-version control once
         id: nuxt_runtime
+        working-directory: ${{ runner.temp }}
         if: ${{ always() && steps.public_before.outcome == 'success' && steps.nuxt_node.outcome == 'success' }}
         run: |
           mkdir -p "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime"
