@@ -171,9 +171,7 @@ fn loop_lvalues_and_var_hoisting_cannot_keep_stale_loader_identity() {
 #[test]
 fn constructor_and_template_reads_preserve_unrelated_import_authority() {
     for expression in ["new Date()", "String.raw`value`", "`value ${1}`"] {
-        let mut source = vize_carton::String::from(
-            "import { defineAsyncComponent } from 'vue'; ",
-        );
+        let mut source = vize_carton::String::from("import { defineAsyncComponent } from 'vue'; ");
         source.push_str(expression);
         source.push_str("; defineAsyncComponent");
         let (result, reference) = at(source.as_str(), "defineAsyncComponent");
@@ -194,16 +192,18 @@ fn constructor_and_template_writes_invalidate_only_the_written_binding() {
         "(loader = tag)``",
         "`value ${loader = () => import('./Other.vue')}`",
     ] {
-        let mut source = vize_carton::String::from(
-            "function loader() { return import('./Child.vue'); } ",
-        );
+        let mut source =
+            vize_carton::String::from("function loader() { return import('./Child.vue'); } ");
         source.push_str(expression);
         source.push_str("; loader");
         let (result, reference) = at(source.as_str(), "loader");
         let origins = result.value_binding_origins.as_ref().expect("capture");
         assert!(origins.is_complete(), "{expression}");
         assert_eq!(
-            origins.resolve(&reference).expect("loader binding").canonical,
+            origins
+                .resolve(&reference)
+                .expect("loader binding")
+                .canonical,
             None,
             "{expression}"
         );

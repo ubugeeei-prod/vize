@@ -99,9 +99,11 @@ fn json_targets_name_vue_package(targets: &Value) -> bool {
         Value::String(target) => tsconfig_target_names_vue_package(target),
         Value::Array(targets) => {
             !targets.is_empty()
-                && targets
-                    .iter()
-                    .all(|target| target.as_str().is_some_and(tsconfig_target_names_vue_package))
+                && targets.iter().all(|target| {
+                    target
+                        .as_str()
+                        .is_some_and(tsconfig_target_names_vue_package)
+                })
         }
         _ => false,
     }
@@ -220,10 +222,7 @@ fn strip_trailing_commas(text: &str) -> String {
             while chars.get(next).is_some_and(|ch| ch.is_whitespace()) {
                 next += 1;
             }
-            if chars
-                .get(next)
-                .is_some_and(|ch| matches!(ch, '}' | ']'))
-            {
+            if chars.get(next).is_some_and(|ch| matches!(ch, '}' | ']')) {
                 index += 1;
                 continue;
             }

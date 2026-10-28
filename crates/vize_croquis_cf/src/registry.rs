@@ -115,10 +115,7 @@ impl ModuleRegistry {
     }
 
     /// Read project configuration once per registry lifetime.
-    pub(crate) fn project_config_redirects_vue(
-        &self,
-        detect: impl FnOnce(&Path) -> bool,
-    ) -> bool {
+    pub(crate) fn project_config_redirects_vue(&self, detect: impl FnOnce(&Path) -> bool) -> bool {
         let Some(root) = self.project_root() else {
             return false;
         };
@@ -445,7 +442,7 @@ mod tests {
     fn project_configuration_is_read_once_until_invalidated() {
         let mut registry = ModuleRegistry::with_project_root("/project");
         let reads = Cell::new(0);
-        let detect = |_| {
+        let detect = |_: &Path| {
             reads.set(reads.get() + 1);
             true
         };
