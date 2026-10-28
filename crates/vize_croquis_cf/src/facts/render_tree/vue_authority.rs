@@ -13,23 +13,14 @@ fn tsconfig_redirects_vue(root: &Path) -> bool {
     let Ok(text) = fs::read_to_string(root.join("tsconfig.json")) else {
         return false;
     };
-    let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) else {
+    let Some(paths_at) = text.find("\"paths\"") else {
         return false;
     };
-    let Some(targets) = value
-        .pointer("/compilerOptions/paths/vue")
-        .and_then(serde_json::Value::as_array)
-    else {
+    let after = text[paths_at + "\"paths\"".len()..].trim_start();
+    let Some(object) = after.strip_prefix(':').map(str::trim_start) else {
         return false;
     };
-    targets.is_empty()
-        || targets
-            .iter()
-            .any(|target| !value_names_vue_package(target))
-}
-
-fn value_names_vue_package(value: &serde_json::Value) -> bool {
-    value.as_str().is_some_and(text_names_vue_package)
+    object.starts_with('{') && object_redirects_vue(object)
 }
 
 fn text_names_vue_package(target: &str) -> bool {
@@ -176,6 +167,30 @@ fn replacement_is_redirect(entry: &str) -> bool {
 
 fn value_text_is_vue_package(value: &str) -> bool {
     let value = value.trim_start();
+    if let Some(body) = value
+        .strip_prefix('[')
+        .and_then(|_| balanced_body(value, '[', ']'))
+    {
+        let mut saw_target = false;
+        let mut index = 0;
+        while index < body.len() {
+            let ch = body[index..].chars().next().unwrap_or('\0');
+            if ch == '"' || ch == '\'' {
+                let Some(literal) = skip_string(&body[index..]) else {
+                    return false;
+                };
+                let raw = &body[index + 1..index + literal - 1];
+                if !text_names_vue_package(raw) {
+                    return false;
+                }
+                saw_target = true;
+                index += literal;
+                continue;
+            }
+            index += ch.len_utf8();
+        }
+        return saw_target;
+    }
     if let Some(literal) = quoted_literal(value) {
         return text_names_vue_package(literal);
     }
