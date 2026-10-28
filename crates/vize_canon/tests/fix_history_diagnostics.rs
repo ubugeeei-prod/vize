@@ -12,6 +12,7 @@ mod support {
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
 }
+mod content_mapper_vue_generic_11051;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;
 use support::fix_history_runner::native_fixture_runtime_disabled;
