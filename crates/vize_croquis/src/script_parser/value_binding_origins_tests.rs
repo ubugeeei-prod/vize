@@ -169,6 +169,48 @@ fn loop_lvalues_and_var_hoisting_cannot_keep_stale_loader_identity() {
 }
 
 #[test]
+fn constructor_and_template_reads_preserve_unrelated_import_authority() {
+    for expression in ["new Date()", "String.raw`value`", "`value ${1}`"] {
+        let mut source = vize_carton::String::from(
+            "import { defineAsyncComponent } from 'vue'; ",
+        );
+        source.push_str(expression);
+        source.push_str("; defineAsyncComponent");
+        let (result, reference) = at(source.as_str(), "defineAsyncComponent");
+        let origins = result.value_binding_origins.as_ref().expect("capture");
+        assert!(origins.is_complete(), "{expression}");
+        let resolved = origins.resolve(&reference).expect("Vue import");
+        assert!(resolved.canonical.is_some(), "{expression}");
+        assert_eq!(resolved.import.expect("import authority").source, "vue");
+    }
+}
+
+#[test]
+fn constructor_and_template_writes_invalidate_only_the_written_binding() {
+    for expression in [
+        "new Wrapper(loader = () => import('./Other.vue'))",
+        "new Wrapper(...[loader = () => import('./Other.vue')])",
+        "tag`${loader = () => import('./Other.vue')}`",
+        "(loader = tag)``",
+        "`value ${loader = () => import('./Other.vue')}`",
+    ] {
+        let mut source = vize_carton::String::from(
+            "function loader() { return import('./Child.vue'); } ",
+        );
+        source.push_str(expression);
+        source.push_str("; loader");
+        let (result, reference) = at(source.as_str(), "loader");
+        let origins = result.value_binding_origins.as_ref().expect("capture");
+        assert!(origins.is_complete(), "{expression}");
+        assert_eq!(
+            origins.resolve(&reference).expect("loader binding").canonical,
+            None,
+            "{expression}"
+        );
+    }
+}
+
+#[test]
 fn cached_identity_keeps_each_use_tdz_independent() {
     let source = "const before = value; const value = 1; const after = value;";
     let (result, reference) = at(source, "value");

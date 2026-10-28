@@ -120,3 +120,17 @@ fn opaque_loader_reads_preserve_an_independent_proven_component() {
     assert_target(source, "Healthy", true);
     assert_target(source, "NoticeLink", false);
 }
+
+#[test]
+fn nested_constructor_and_template_writes_only_invalidate_the_target_loader() {
+    for source in [
+        "import { defineAsyncComponent as dac } from 'vue'; const Healthy = dac(() => import('./NoticeLink.vue')); function loader() { return import('./NoticeLink.vue'); } new Wrapper(loader = () => import('./Other.vue')); const Changed = dac(loader);",
+        "import { defineAsyncComponent as dac } from 'vue'; const Healthy = dac(() => import('./NoticeLink.vue')); function loader() { return import('./NoticeLink.vue'); } new Wrapper(...[loader = () => import('./Other.vue')]); const Changed = dac(loader);",
+        "import { defineAsyncComponent as dac } from 'vue'; const Healthy = dac(() => import('./NoticeLink.vue')); function loader() { return import('./NoticeLink.vue'); } tag`${loader = () => import('./Other.vue')}`; const Changed = dac(loader);",
+        "import { defineAsyncComponent as dac } from 'vue'; const Healthy = dac(() => import('./NoticeLink.vue')); function loader() { return import('./NoticeLink.vue'); } (loader = tag)``; const Changed = dac(loader);",
+        "import { defineAsyncComponent as dac } from 'vue'; const Healthy = dac(() => import('./NoticeLink.vue')); function loader() { return import('./NoticeLink.vue'); } `value ${loader = () => import('./Other.vue')}`; const Changed = dac(loader);",
+    ] {
+        assert_target(source, "Healthy", true);
+        assert_target(source, "Changed", false);
+    }
+}

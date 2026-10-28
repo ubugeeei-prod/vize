@@ -42,6 +42,29 @@ pub(in crate::script_parser) fn walk_expression(
             walk_call_arguments(result, call, source);
         }
 
+        Expression::NewExpression(new_expr) => {
+            walk_expression(result, &new_expr.callee, source);
+            for argument in &new_expr.arguments {
+                match argument {
+                    Argument::SpreadElement(spread) => {
+                        walk_expression(result, &spread.argument, source);
+                    }
+                    _ => {
+                        if let Some(expression) = argument.as_expression() {
+                            walk_expression(result, expression, source);
+                        }
+                    }
+                }
+            }
+        }
+
+        Expression::TaggedTemplateExpression(tagged) => {
+            walk_expression(result, &tagged.tag, source);
+            for expression in &tagged.quasi.expressions {
+                walk_expression(result, expression, source);
+            }
+        }
+
         Expression::Identifier(id) => {
             result.note_identifier_occurrence(id.name.as_str(), id.span);
             if !result.skip_diagnostics && identifier_might_be_browser_global(id.name.as_str()) {
@@ -270,10 +293,10 @@ pub(in crate::script_parser) fn walk_expression(
             walk_expression(result, &ts_non_null.expression, source);
         }
 
-        // Template literals own only their interpolated expression references.
-        Expression::TemplateLiteral(template) if result.occurrence_capture.is_some() => {
+        // Template literals evaluate each interpolation in the current scope.
+        Expression::TemplateLiteral(template) => {
             for expression in &template.expressions {
-                super::super::occurrences::note_expression_only(result, expression);
+                walk_expression(result, expression, source);
             }
         }
         // Retain only facts for forms the existing scope walk does not visit.

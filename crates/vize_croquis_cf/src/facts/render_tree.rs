@@ -219,14 +219,15 @@ fn resolve_tag(
     entry: &ModuleEntry,
     tag: &str,
 ) -> Option<(FileId, CompactString)> {
-    match local_component_binding(&entry.analysis, tag) {
+    let binding = local_component_binding(&entry.analysis, tag);
+    match binding {
         LocalComponentBinding::Absent | LocalComponentBinding::StaticImport => {
             resolve_imported(registry, entry, tag).or_else(|| {
                 unique_component(registry, tag)
                     .map(|target| (target, CompactString::new("default")))
             })
         }
-        _ => resolve_bound(registry, entry, tag),
+        binding => resolve_binding(registry, entry, binding),
     }
 }
 
@@ -237,16 +238,28 @@ fn resolve_bound(
     entry: &ModuleEntry,
     tag: &str,
 ) -> Option<(FileId, CompactString)> {
-    match local_component_binding(&entry.analysis, tag) {
+    let binding = local_component_binding(&entry.analysis, tag);
+    if matches!(
+        binding,
+        LocalComponentBinding::StaticImport | LocalComponentBinding::Absent
+    ) {
+        return resolve_imported(registry, entry, tag);
+    }
+    resolve_binding(registry, entry, binding)
+}
+
+fn resolve_binding(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
+    binding: LocalComponentBinding<'_>,
+) -> Option<(FileId, CompactString)> {
+    match binding {
         LocalComponentBinding::Async(module) => {
             // Literal relative .vue imports have one runtime file identity.
             // Reuse the logical resolver candidates, requiring convergence;
             // package/alias/type-view candidates cannot certify this fact.
             // A project path or Vite alias that rewrites `vue` is not that package.
-            if registry
-                .project_root()
-                .is_some_and(vue_specifier_is_redirected)
-            {
+            if registry.project_config_redirects_vue(vue_specifier_is_redirected) {
                 return None;
             }
             if !(module.starts_with("./") || module.starts_with("../")) || !module.ends_with(".vue")
@@ -262,10 +275,9 @@ fn resolve_bound(
             }
             Some((target, CompactString::new("default")))
         }
-        LocalComponentBinding::StaticImport | LocalComponentBinding::Absent => {
-            resolve_imported(registry, entry, tag)
-        }
-        LocalComponentBinding::Opaque => None,
+        LocalComponentBinding::StaticImport
+        | LocalComponentBinding::Absent
+        | LocalComponentBinding::Opaque => None,
     }
 }
 

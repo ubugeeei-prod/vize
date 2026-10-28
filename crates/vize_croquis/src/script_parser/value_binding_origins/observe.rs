@@ -90,8 +90,6 @@ pub(crate) fn note_expression_mutation(
             origins.refuse()
         }
         Expression::ClassExpression(_)
-        | Expression::NewExpression(_)
-        | Expression::TaggedTemplateExpression(_)
         | Expression::JSXElement(_)
         | Expression::JSXFragment(_)
         | Expression::TSTypeAssertion(_)
@@ -99,9 +97,6 @@ pub(crate) fn note_expression_mutation(
         | Expression::YieldExpression(_)
         | Expression::PrivateInExpression(_)
         | Expression::PrivateFieldExpression(_) => origins.refuse(),
-        Expression::TemplateLiteral(template) if !template.expressions.is_empty() => {
-            origins.refuse()
-        }
         Expression::ImportExpression(import)
             if import.options.is_some()
                 || !matches!(

@@ -14,6 +14,7 @@ use crate::rules::cross_file_reactivity::store_detection::{
     StoreFactories, collect_store_factories,
 };
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 use std::time::SystemTime;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::Croquis;
@@ -82,6 +83,8 @@ pub struct ModuleRegistry {
     next_id: u32,
     /// Project root path.
     project_root: Option<PathBuf>,
+    /// Whether project configuration rewrites the literal `vue` specifier.
+    vue_specifier_redirected: OnceLock<bool>,
 }
 
 impl ModuleRegistry {
@@ -102,12 +105,31 @@ impl ModuleRegistry {
     /// Set the project root.
     pub fn set_project_root(&mut self, root: impl Into<PathBuf>) {
         self.project_root = Some(root.into());
+        self.invalidate_project_configuration();
     }
 
     /// Get the project root.
     #[inline]
     pub fn project_root(&self) -> Option<&Path> {
         self.project_root.as_deref()
+    }
+
+    /// Read project configuration once per registry lifetime.
+    pub(crate) fn project_config_redirects_vue(
+        &self,
+        detect: impl FnOnce(&Path) -> bool,
+    ) -> bool {
+        let Some(root) = self.project_root() else {
+            return false;
+        };
+        *self.vue_specifier_redirected.get_or_init(|| detect(root))
+    }
+
+    /// Invalidate facts derived from project configuration.
+    ///
+    /// A full registry clear and changing the project root both call this.
+    pub fn invalidate_project_configuration(&mut self) {
+        self.vue_specifier_redirected = OnceLock::new();
     }
 
     /// Register a new file or update an existing one.
@@ -277,6 +299,7 @@ impl ModuleRegistry {
         self.path_to_id.clear();
         self.entries.clear();
         self.next_id = 0;
+        self.invalidate_project_configuration();
     }
 
     /// Get the number of registered files.
@@ -347,6 +370,7 @@ fn extract_component_name(path: &Path) -> Option<CompactString> {
 #[cfg(test)]
 mod tests {
     use super::{ModuleRegistry, extract_component_name, source_renders_slot};
+    use std::cell::Cell;
     use std::path::Path;
     use vize_carton::CompactString;
     use vize_croquis::Croquis;
@@ -415,5 +439,31 @@ mod tests {
                 .pinia_stores
                 .contains("useThingStore")
         );
+    }
+
+    #[test]
+    fn project_configuration_is_read_once_until_invalidated() {
+        let mut registry = ModuleRegistry::with_project_root("/project");
+        let reads = Cell::new(0);
+        let detect = |_| {
+            reads.set(reads.get() + 1);
+            true
+        };
+
+        assert!(registry.project_config_redirects_vue(detect));
+        assert!(registry.project_config_redirects_vue(detect));
+        assert_eq!(reads.get(), 1);
+
+        registry.invalidate_project_configuration();
+        assert!(registry.project_config_redirects_vue(detect));
+        assert_eq!(reads.get(), 2);
+
+        registry.set_project_root("/next-project");
+        assert!(registry.project_config_redirects_vue(detect));
+        assert_eq!(reads.get(), 3);
+
+        registry.clear();
+        assert!(registry.project_config_redirects_vue(detect));
+        assert_eq!(reads.get(), 4);
     }
 }
