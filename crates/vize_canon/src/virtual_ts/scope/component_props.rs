@@ -1,16 +1,18 @@
 //! Scope-aware component props type checks, including recursion into nested
 //! v-for/v-slot closure scopes.
 
+mod bindings;
 mod closure_scopes;
 mod duplicate_listeners;
 mod dynamic_reference;
+pub(super) use bindings::{collect_checkable_usages, component_usage_has_checkable_binding};
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::named_dynamic_reference;
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
-use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, profile};
-use vize_croquis::{Croquis, ScopeData, ScopeKind, analysis::ComponentUsage};
+use vize_carton::{FxHashMap, FxHashSet, String, append, profile};
+use vize_croquis::{ScopeData, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
@@ -26,7 +28,7 @@ use super::component_prop_navigation;
 use super::component_slots::{
     ComponentSlotCheckMeta, append_component_slot_check_helpers, generate_component_slot_checks,
 };
-use super::context::{ComponentBindingCheck, ComponentPropsContext, VForPropsContext};
+use super::context::{ComponentPropsContext, VForPropsContext};
 use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
 use super::root_callback_owners::RootCallbackOwners;
 use super::root_owner_packets::RootOwnerPackets;
@@ -426,64 +428,4 @@ pub(super) fn generate_root_usage_checks(
             slot_check_meta,
         )
     });
-}
-
-pub(super) fn collect_checkable_usages(
-    ctx: &ComponentPropsContext<'_, '_>,
-) -> Vec<(usize, ComponentUsage)> {
-    let external_template_bindings: FxHashSet<&str> = ctx
-        .options
-        .external_template_bindings
-        .iter()
-        .map(|name| name.as_str())
-        .collect();
-    vize_croquis::facts::component_usage_list(ctx.summary)
-        .into_iter()
-        .enumerate()
-        .filter(|(_, usage)| {
-            component_usage_has_checkable_binding(
-                ctx.summary,
-                usage,
-                &external_template_bindings,
-                ctx.component_binding_check,
-                ctx.legacy_vue2,
-            ) || named_dynamic_reference(ctx, usage).is_some()
-        })
-        .collect()
-}
-
-pub(super) fn component_usage_has_checkable_binding(
-    summary: &Croquis,
-    usage: &ComponentUsage,
-    external_template_bindings: &FxHashSet<&str>,
-    component_binding_check: ComponentBindingCheck<'_>,
-    legacy_vue2: bool,
-) -> bool {
-    let name = usage.name.as_str();
-    let script_binding = super::super::script_facts::with_bindings(summary, |bindings| {
-        if bindings.contains_binding(name) {
-            return true;
-        }
-        let camel = camelize(name);
-        let pascal = capitalize(camel.as_str());
-        [pascal.as_str(), camel.as_str()]
-            .into_iter()
-            .any(|candidate| bindings.contains_binding(candidate))
-    });
-    script_binding
-        || (!legacy_vue2
-            && (component_name_matches_external_template_binding(name, external_template_bindings)
-                || component_binding_check.allows(name)
-                || vize_croquis::drawer::is_dynamic_component_alias(name)))
-}
-
-fn component_name_matches_external_template_binding(
-    name: &str,
-    external_template_bindings: &FxHashSet<&str>,
-) -> bool {
-    let camel_name = camelize(name);
-    let pascal_name = capitalize(camel_name.as_str());
-    [name, camel_name.as_str(), pascal_name.as_str()]
-        .iter()
-        .any(|candidate| external_template_bindings.contains(candidate))
 }
