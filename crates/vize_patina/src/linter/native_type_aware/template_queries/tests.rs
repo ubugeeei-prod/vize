@@ -242,16 +242,15 @@ const ids: number[] = [1]
         .collect();
     assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
     let mut offsets = Vec::new();
-    for (index, query) in expressions.into_iter().enumerate() {
+    for (query, identifier) in expressions.into_iter().zip(["__expr_2", "__expr_3"]) {
         let authored = query.source_start as usize..query.source_end as usize;
         let inferred = expression_bindings::inferred_binding_offset(&document, &authored)
             .expect("comment-stripped expression must own an inferred binding");
         assert_eq!(query.generated_offset, inferred, "comment {comment:?}");
         let at = query.generated_offset as usize;
-        let identifier = format!("__expr_{index}");
         assert_eq!(
             document.content.get(at + 1 - identifier.len()..at + 1),
-            Some(identifier.as_str()),
+            Some(identifier),
             "comment {comment:?} must probe the exact inferred identifier"
         );
         offsets.push(at);
