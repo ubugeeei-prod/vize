@@ -383,7 +383,10 @@ fn mutable_document_access_invalidates_the_shared_snapshot() {
 
     {
         let mut document = store.get_mut(&uri).unwrap();
-        let chars = document.content.len_chars();
+        let chars = document
+            .content
+            .try_byte_to_char(document.content.len_bytes())
+            .unwrap();
         document.content.replace(0..chars, "after");
     }
 
