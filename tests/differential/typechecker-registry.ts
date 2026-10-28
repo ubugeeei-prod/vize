@@ -1,6 +1,7 @@
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
+  "aria-kebab-prop-11048": "declared_kebab_aria_props_preserve_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -135,6 +136,7 @@ export const TYPECHECKER_TESTS = {
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
 export const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+  "aria-kebab-prop-11048": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
