@@ -126,6 +126,7 @@ pub(super) fn emit_default_export_declaration(
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
     (fallthrough_props_ref, checks): (Option<&str>, VirtualTsCheckOptions),
+    hoist_shared_preamble: bool,
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
     let emit_props_static = emits_info.static_emit_props_field();
@@ -218,7 +219,12 @@ pub(super) fn emit_default_export_declaration(
     }) = generic_component_params
     {
         let emit_resolvers =
-            emits_info.generic_emit_resolver_fields(generic_decl, generic_names, props_type);
+            emits_info.generic_emit_resolver_fields(
+                generic_decl,
+                generic_names,
+                props_type,
+                hoist_shared_preamble,
+            );
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
             ""
         } else {

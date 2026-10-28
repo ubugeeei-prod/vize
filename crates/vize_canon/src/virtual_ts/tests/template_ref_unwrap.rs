@@ -49,7 +49,7 @@ const direction = ref<'rtl'>('rtl')
 
     const WIDEN_HELPER: &str = "type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
     assert_eq!(
-        exact_line_count(SHARED_PREAMBLE_DTS, WIDEN_HELPER),
+        exact_line_count(SHARED_PREAMBLE_DTS, &format!("export {WIDEN_HELPER}")),
         1,
         "the shared template-ref helper must preserve the exact widening oracle:\n{}",
         SHARED_PREAMBLE_DTS,

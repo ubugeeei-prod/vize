@@ -18,24 +18,24 @@ fn append_hoisted_component_check_policy(
     if check_unknown_props {
         if strict_component_attrs {
             ts.push_str(
-                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n",
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof import(\"vize:virtual-ts\").__VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n",
             );
             ts.push_str(
-                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs;\n",
+                "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs;\n",
             );
         } else {
             ts.push_str(if check_unknown_fallthrough_props {
-                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof import(\"vize:virtual-ts\").__VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
             } else {
-                "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
+                "  type __VizeAllowedFallthroughAttrs<C> = import(\"vize:virtual-ts\").__VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
             });
             ts.push_str(
-                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;\n",
+                "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs;\n",
             );
         }
     } else {
         ts.push_str(
-            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
+            "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
         );
     }
 }

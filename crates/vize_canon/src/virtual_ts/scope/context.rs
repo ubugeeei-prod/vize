@@ -88,6 +88,7 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) template_offset: u32,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
+    pub(crate) hoist_shared_preamble: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
     /// Component usages whose props have already been materialized for event
     /// inference. Every listener on one usage reads the same resolved object.
@@ -156,6 +157,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) check_unknown_events: bool,
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
+    pub(crate) hoist_shared_preamble: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
 }

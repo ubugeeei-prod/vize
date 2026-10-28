@@ -11,6 +11,7 @@ use std::ops::Range;
 
 mod dom_events;
 mod preamble;
+pub(crate) mod shared_types;
 pub(crate) mod setup_macros;
 mod vue2_members;
 

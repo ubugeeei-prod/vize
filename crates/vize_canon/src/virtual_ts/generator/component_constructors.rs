@@ -35,6 +35,7 @@ pub(super) struct ComponentInstanceAliases<'a> {
     pub(super) has_refs: bool,
     pub(super) jsx_slots: bool,
     pub(super) has_authored_default: bool,
+    pub(super) hoist_shared_preamble: bool,
 }
 
 /// Reference to a module-scope alias inside the generic component constructor:
@@ -120,6 +121,7 @@ pub(super) fn emit_component_constructors<'a>(
         aliases.generic_params.map(|(decl, _)| decl.as_str()),
         legacy_component,
         aliases.jsx_slots,
+        aliases.hoist_shared_preamble,
     );
     if legacy_component {
         ts.push_str("  $emit: __EmitFn<Emits>;\n");
@@ -148,9 +150,11 @@ pub(super) fn emit_component_constructors<'a>(
             props_ref = cstr!("{props_ref} & __VizeJsxSlotProps<__VizeSlots>");
         }
         let emit_props_ref = if aliases.has_emits_for_props {
-            "__EmitProps<Emits>"
+            let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
+                .select(aliases.hoist_shared_preamble);
+            cstr!("{emit_props}<Emits>")
         } else {
-            "{}"
+            String::from("{}")
         };
         // `__VizeComponentInput` is a conditional on the authored type
         // parameter, so the checker defers it instead of resolving the input
@@ -172,7 +176,9 @@ pub(super) fn emit_component_constructors<'a>(
     let slots_ref = alias_ref("__VizeSlots", aliases.slots_is_generic, generic_names);
     let emits_ref = alias_ref("Emits", aliases.emits_is_generic, generic_names);
     let emit_props_field = if aliases.has_emits_for_props {
-        cstr!(" & __EmitProps<{emits_ref}>")
+        let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
+            .select(aliases.hoist_shared_preamble);
+        cstr!(" & {emit_props}<{emits_ref}>")
     } else {
         String::default()
     };

@@ -199,6 +199,7 @@ pub(super) fn generate_component_props(
             check_unknown_events: ctx.check_unknown_events,
             strict_v_model: ctx.strict_v_model,
             typed_fallthrough_values: ctx.typed_fallthrough_values,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
         };
@@ -287,9 +288,13 @@ fn generate_usage_declarations(
             shared.canonical_idx,
         );
     } else {
+        let is_any = crate::virtual_ts::helpers::shared_types::IS_ANY
+            .select(ctx.hoist_shared_preamble);
+        let component_raw_props = crate::virtual_ts::helpers::shared_types::COMPONENT_RAW_PROPS
+            .select(ctx.hoist_shared_preamble);
         append!(
             *ts,
-            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : __VizeComponentRawProps<typeof {component_ref}>;\n",
+            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {component_raw_props}<typeof {component_ref}> : Record<string, unknown>) : {component_raw_props}<typeof {component_ref}>;\n",
         );
     }
 
@@ -301,6 +306,7 @@ fn generate_usage_declarations(
         component_ref.as_str(),
         idx,
         ctx.relaxed_required_usage_starts.contains(&usage.start),
+        ctx.hoist_shared_preamble,
         (
             shared
                 .filter(|shared| shared.canonical_idx != idx)
@@ -309,7 +315,13 @@ fn generate_usage_declarations(
         ),
     );
 
-    append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
+    append_per_prop_aliases(
+        ts,
+        usage,
+        component_type_name.as_str(),
+        idx,
+        ctx.hoist_shared_preamble,
+    );
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
 }
 
@@ -413,7 +425,8 @@ pub(super) fn generate_root_usage_checks(
             "  ",
         )
         .strict_v_model(ctx.strict_v_model)
-        .typed_fallthrough_values(ctx.typed_fallthrough_values);
+        .typed_fallthrough_values(ctx.typed_fallthrough_values)
+        .hoist_shared_preamble(ctx.hoist_shared_preamble);
         check_context.inference_prelude = ctx.inference_prelude;
         generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
     });
@@ -424,7 +437,8 @@ pub(super) fn generate_root_usage_checks(
             ctx.template_binding_access,
             ctx.source_context(),
             "  ",
-        );
+        )
+        .hoist_shared_preamble(ctx.hoist_shared_preamble);
         generate_component_slot_checks(
             &mut check_context,
             usage,

@@ -205,6 +205,7 @@ pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) indent: &'b str,
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
+    pub(crate) hoist_shared_preamble: bool,
 }
 
 impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
@@ -224,6 +225,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
             indent,
             strict_v_model: false,
             typed_fallthrough_values: false,
+            hoist_shared_preamble: false,
         }
     }
 
@@ -236,6 +238,12 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     /// Also validate values contributed by inherited fallthrough spread keys.
     pub(crate) fn typed_fallthrough_values(mut self, enabled: bool) -> Self {
         self.typed_fallthrough_values = enabled;
+        self
+    }
+
+    /// Resolve batch-shared helpers through their collision-proof module.
+    pub(crate) fn hoist_shared_preamble(mut self, enabled: bool) -> Self {
+        self.hoist_shared_preamble = enabled;
         self
     }
 }
@@ -329,6 +337,7 @@ pub(crate) fn generate_component_prop_checks(
             template_binding_access,
             source_context,
             callback_indent.as_str(),
+            ctx.hoist_shared_preamble,
         )
     };
     let resolved_props = if let Some(prelude) = ctx.inference_prelude {
@@ -411,9 +420,11 @@ pub(crate) fn generate_component_prop_checks(
                 let camel_prop_name = super::super::helpers::to_camel_case(prop.name.as_str());
                 let resolved_props = resolution.resolved_props.as_str();
                 let selected_props = resolution.selected_props.as_str();
+                let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP
+                    .select(ctx.hoist_shared_preamble);
                 append!(
                     *ts,
-                    ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+                    ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
                 );
             } else {
                 append!(
@@ -487,6 +498,7 @@ pub(crate) fn generate_component_prop_checks(
                     generated_value.text.as_str(),
                     target_source,
                     expr_indent.as_str(),
+                    ctx.hoist_shared_preamble,
                 );
             }
 
@@ -508,5 +520,6 @@ pub(crate) fn generate_component_prop_checks(
         source_context,
         indent,
         ctx.typed_fallthrough_values,
+        ctx.hoist_shared_preamble,
     );
 }

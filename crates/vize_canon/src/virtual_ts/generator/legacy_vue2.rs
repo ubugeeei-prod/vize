@@ -35,7 +35,7 @@ const MODERN_REF_UNWRAP_HELPER: &str =
 /// aliases saves 369 bytes in every generated `.vue.ts` and stops TypeScript
 /// instantiating a distinct declaration per file instead of caching one
 /// (#3443, #3460).
-const MODERN_HOISTED_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;\n";
+const MODERN_HOISTED_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").__VizeWidenTemplateRef<T['value']> : T : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref<any> ? T['value'] : T : T;\n";
 const MODERN_EXPOSED_UNWRAP_HELPER: &str =
     include_str!("../helpers/declarations/exposed-unwrap.d.ts.txt");

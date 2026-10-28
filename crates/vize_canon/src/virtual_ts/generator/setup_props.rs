@@ -271,6 +271,7 @@ impl SetupPropsPlan {
         generic_decl: Option<&str>,
         legacy_input_aliases: bool,
         jsx_slots: bool,
+        hoist_shared_preamble: bool,
     ) {
         let props_type_ref = generic_decl
             .map(|_| self.generic_fallback_component_props_type_ref())
@@ -285,9 +286,11 @@ impl SetupPropsPlan {
                 cstr!("{public_props_type_ref} & __VizeJsxSlotProps<__VizeSlots>");
         }
         if has_emits_for_props {
+            let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
+                .select(hoist_shared_preamble);
             append!(
                 ts,
-                "  $props: {public_props_type_ref} & __EmitProps<Emits>;\n"
+                "  $props: {public_props_type_ref} & {emit_props}<Emits>;\n"
             );
         } else {
             append!(ts, "  $props: {public_props_type_ref};\n");

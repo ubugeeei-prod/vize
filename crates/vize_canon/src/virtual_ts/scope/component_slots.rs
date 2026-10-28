@@ -83,6 +83,10 @@ pub(super) fn generate_component_slot_checks(
     } else {
         String::from(indent)
     };
+    let structural_slots = crate::virtual_ts::helpers::shared_types::STRUCTURAL_SLOTS
+        .select(ctx.hoist_shared_preamble);
+    let required_slots = crate::virtual_ts::helpers::shared_types::REQUIRED_SLOTS
+        .select(ctx.hoist_shared_preamble);
 
     if let Some(ref guard) = usage.vif_guard {
         append_chained_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
@@ -94,7 +98,7 @@ pub(super) fn generate_component_slot_checks(
         let mappings = &mut *ctx.mappings;
         append!(
             *ts,
-            "{expr_indent}type {contract_name} = __VizeStructuralSlots<typeof {component_ref}>;\n"
+            "{expr_indent}type {contract_name} = {structural_slots}<typeof {component_ref}>;\n"
         );
 
         let provided_slots = provided_slots_type(usage);
@@ -102,7 +106,7 @@ pub(super) fn generate_component_slot_checks(
         let gen_start = ts.len();
         append!(
             *ts,
-            "{expr_indent}const {check_name}: __VizeRequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
+            "{expr_indent}const {check_name}: {required_slots}<{contract_name}, {provided_slots}> = {{}};\n"
         );
         append!(*ts, "{expr_indent}void {check_name};\n");
         let gen_end = ts.len();

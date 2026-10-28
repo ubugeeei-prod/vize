@@ -87,18 +87,24 @@ fn slot_payload_type(
             ctx.template_binding_access,
             ctx.source_context,
             ctx.indent,
+            ctx.hoist_shared_preamble,
         );
     } else {
+        let slot_host_slots = crate::virtual_ts::helpers::shared_types::SLOT_HOST_SLOTS
+            .select(ctx.hoist_shared_preamble);
         append!(
             *ts,
-            "{}const {binding} = undefined as unknown as __VizeSlotHostSlots<typeof {component_ref}>;\n",
+            "{}const {binding} = undefined as unknown as {slot_host_slots}<typeof {component_ref}>;\n",
             ctx.indent
         );
     }
 
+    let slot_payload = crate::virtual_ts::helpers::shared_types::SLOT_PAYLOAD
+        .select(ctx.hoist_shared_preamble);
+
     if name_is_static {
         cstr!(
-            "__VizeSlotPayload<typeof {binding}, \"{}\">",
+            "{slot_payload}<typeof {binding}, \"{}\">",
             data.name.as_str()
         )
     } else {
@@ -111,7 +117,7 @@ fn slot_payload_type(
         ts.push_str(
             dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
         );
-        cstr!("__VizeSlotPayload<typeof {binding}, typeof {name_binding}.name>")
+        cstr!("{slot_payload}<typeof {binding}, typeof {name_binding}.name>")
     }
 }
 

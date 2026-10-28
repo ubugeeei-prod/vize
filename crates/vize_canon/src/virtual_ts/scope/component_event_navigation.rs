@@ -31,6 +31,7 @@ pub(super) fn emit_event_references(
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
+        hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in checkable_usages {
         if is_closure_scoped(ctx.summary, usage) {
@@ -70,6 +71,7 @@ pub(super) fn emit_scoped_event_references(
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
+        hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in usages {
         let component_ref = component_binding_reference(
@@ -100,6 +102,7 @@ struct EventNavigationContext<'a> {
     template_binding_access: &'a TemplateBindingAccess,
     preserve_event_navigation: bool,
     check_unknown_events: bool,
+    hoist_shared_preamble: bool,
 }
 
 fn is_closure_scoped(summary: &Croquis, usage: &ComponentUsage) -> bool {
@@ -118,6 +121,8 @@ fn emit_usage_event_references(
     component_ref: &str,
     indent: &str,
 ) {
+    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+        .select(ctx.hoist_shared_preamble);
     if ctx.check_unknown_events {
         emit_event_name_checks(ts, mappings, ctx, idx, usage, component_ref, indent);
     }
@@ -218,7 +223,7 @@ fn emit_usage_event_references(
             } else {
                 append!(
                     *ts,
-                    "{event_indent}const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
+                    "{event_indent}const {events_ref} = undefined as unknown as {component_events}<typeof {component_ref}> & Record<string, unknown>;\n"
                 );
             }
             *emitted_ref = true;
@@ -272,11 +277,13 @@ fn emit_event_name_checks(
     if !usage.events.iter().any(|event| !event.name_is_dynamic) {
         return;
     }
+    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+        .select(ctx.hoist_shared_preamble);
     // Handler values are checked separately. Use the canonical event map so
     // raw emits, listener props and kebab aliases all share the same names.
     append!(
         *ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof __VizeComponentEvents<typeof {component_ref}> & string as `on${{Capitalize<__VizeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{Capitalize<__VizeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for event in &usage.events {
@@ -313,9 +320,11 @@ fn emit_resolved_events(
     resolved_events: &str,
     indent: &str,
 ) {
+    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+        .select(ctx.hoist_shared_preamble);
     append!(
         *ts,
-        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeComponentEvents<typeof {component_ref}>) : (props: any) => __VizeComponentEvents<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
+        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
     if !usage.spread_props.is_empty() {
         crate::virtual_ts::expressions::append_inference_props_literal(

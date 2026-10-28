@@ -3,7 +3,7 @@ use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 use super::component_ref_props::is_inline_ref_callback_prop;
 use super::inline_callback_classifier::is_direct_inline_function_prop_value;
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::{shared_types, to_camel_case, to_safe_identifier_fragment};
 
 mod check_helpers;
 pub(super) use check_helpers::append_prop_check_helpers;
@@ -93,6 +93,7 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
     relax_required: bool,
+    hoist_shared_preamble: bool,
     sharing: (Option<usize>, bool),
 ) {
     let (shared_idx, force_value_props) = sharing;
@@ -145,9 +146,16 @@ pub(super) fn append_prop_checker_alias(
     } else {
         cstr!("__{component_type_name}_Props_{idx}")
     };
+    let emit_listeners = shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
+    let required_fallthrough =
+        shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
+    let is_library_generic =
+        shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
+    let fallthrough_value = shared_types::FALLTHROUGH_VALUE.select(hoist_shared_preamble);
+    let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizeRequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
+        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & {required_fallthrough}<__{component_type_name}_Component_{idx}>;\n",
     );
     append!(
         *ts,
@@ -156,16 +164,16 @@ pub(super) fn append_prop_checker_alias(
     if force_value_props || usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,
-            "  type __{component_type_name}_ValueProps_{idx} = __VizeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
+            "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
         );
         append!(
             *ts,
-            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
+            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = {fallthrough_value}<__{component_type_name}_Component_{idx}, K>;\n",
         );
     }
     append!(
         *ts,
-        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
+        "  type __{component_type_name}_Check_{idx} = {prop_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
     );
 }
 
@@ -187,12 +195,17 @@ pub(super) fn prop_alias_type(
     idx: usize,
     camel_prop_name: &str,
     fallthrough_prop_name: &str,
+    hoist_shared_preamble: bool,
 ) -> String {
+    let component_ref_callback =
+        shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
+    let prop_value = shared_types::PROP_VALUE.select(hoist_shared_preamble);
+    let callable_prop = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
-        return String::from("__VizeComponentRefCallback");
+        return String::from(component_ref_callback);
     }
     let normalized = cstr!(
-        "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
+        "{prop_value}<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
     );
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
@@ -200,11 +213,11 @@ pub(super) fn prop_alias_type(
         normalized
     } else {
         cstr!(
-            "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
+            "{prop_value}<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
         )
     };
     if is_inline_callback_prop(prop) {
-        cstr!("__VizeCallableProp<{resolved}>")
+        cstr!("{callable_prop}<{resolved}>")
     } else {
         resolved
     }
@@ -220,6 +233,7 @@ pub(super) fn append_per_prop_aliases(
     usage: &ComponentUsage,
     component_type_name: &str,
     idx: usize,
+    hoist_shared_preamble: bool,
 ) {
     let mut declared_aliases = FxHashSet::default();
     for prop in &usage.props {
@@ -245,7 +259,8 @@ pub(super) fn append_per_prop_aliases(
                 component_type_name,
                 idx,
                 &camel_prop_name,
-                prop.name.as_str()
+                prop.name.as_str(),
+                hoist_shared_preamble,
             ),
         );
     }

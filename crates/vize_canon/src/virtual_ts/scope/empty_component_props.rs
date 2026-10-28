@@ -107,7 +107,8 @@ fn generate_empty_checks(
             ctx.source_context,
             body_indent.as_str(),
         )
-        .typed_fallthrough_values(ctx.typed_fallthrough_values);
+        .typed_fallthrough_values(ctx.typed_fallthrough_values)
+        .hoist_shared_preamble(ctx.hoist_shared_preamble);
         profile!(
             "canon.virtual_ts.empty_component_prop_checks",
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
@@ -168,7 +169,8 @@ pub(super) fn generate_scope_checks(
                 indent,
             )
             .strict_v_model(ctx.strict_v_model)
-            .typed_fallthrough_values(ctx.typed_fallthrough_values);
+            .typed_fallthrough_values(ctx.typed_fallthrough_values)
+            .hoist_shared_preamble(ctx.hoist_shared_preamble);
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
             generate_component_slot_checks(
                 &mut check_context,

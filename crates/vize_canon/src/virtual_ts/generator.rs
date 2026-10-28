@@ -849,6 +849,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             has_refs: template_record.has_instance_refs(),
             jsx_slots: check_options.jsx_slots,
             has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
+            hoist_shared_preamble,
         },
         generic_parameters
             .map(|plan| plan.authored())
@@ -876,6 +877,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_deref(),
             check_options,
         ),
+        hoist_shared_preamble,
     );
     component_export::emit_component_default_export_for_generation(
         &mut ts,

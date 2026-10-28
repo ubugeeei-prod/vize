@@ -38,6 +38,10 @@ pub(super) fn generate_strict_slot_child_checks(
     } else {
         String::from(ctx.indent)
     };
+    let slot_children = crate::virtual_ts::helpers::shared_types::SLOT_CHILDREN
+        .select(ctx.hoist_shared_preamble);
+    let provided_slot_children = crate::virtual_ts::helpers::shared_types::PROVIDED_SLOT_CHILDREN
+        .select(ctx.hoist_shared_preamble);
 
     for check in checks {
         let safe_slot_name = to_safe_identifier_fragment(check.name.as_str());
@@ -45,12 +49,12 @@ pub(super) fn generate_strict_slot_child_checks(
         let gen_start = ts.len();
         append!(
             *ts,
-            "{indent}const {check_name}: __VizeSlotChildren<{contract_name}, "
+            "{indent}const {check_name}: {slot_children}<{contract_name}, "
         );
         push_ts_string_literal(ts, check.name.as_str());
         append!(
             *ts,
-            "> = null as unknown as __VizeProvidedSlotChildren<{}>;\n",
+            "> = null as unknown as {provided_slot_children}<{}>;\n",
             check.children_type.as_str()
         );
         append!(*ts, "{indent}void {check_name};\n");
