@@ -210,7 +210,7 @@ assert.equal(
 fs.writeFileSync(path.join(evidence, "binaries.json"), JSON.stringify(executables, null, 2));
 const allowed = fs
   .readFileSync("/proc/self/status", "utf8")
-  .match(/^Cpus_allowed_list:\\s*([0-9,-]+)$/m)?.[1];
+  .match(/^Cpus_allowed_list:\s*([0-9,-]+)$/m)?.[1];
 assert.ok(allowed);
 const first = allowed.split(",")[0];
 assert.ok(first);
