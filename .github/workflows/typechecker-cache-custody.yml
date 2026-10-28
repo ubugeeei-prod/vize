@@ -1,137 +1,183 @@
-name: Typechecker cache custody
+name: Canonical boundary read-only diagnostic
 on:
   workflow_dispatch:
-    inputs:
-      full:
-        description: Run public/source2500-SFC coverage and five fresh shipping-profile samples
-        type: boolean
-        default: false
-      coverage_only:
-        description: Run full untimed cache and accuracy gates on official Ubuntu without latency samples
-        type: boolean
-        default: false
-      source_mode:
-        description: Immutable normalfb550 checkpoint or one fresh normal source build
-        type: choice
-        options: [reuse-checkpoint, build-current]
-        default: reuse-checkpoint
-  pull_request:
-    paths:
-      - .github/workflows/typechecker-cache-custody.yml
-      - tools/benchmarks/scripts/typechecker-cache-*.ts
-      - tools/benchmarks/scripts/cold-typechecker-scale*.ts
-      - tools/benchmarks/scripts/check-workspace.ts
-      - tools/benchmarks/scripts/typechecker-fixture-identity.ts
-      - tools/benchmarks/scripts/typechecker-source-coverage.ts
-      - tests/tooling/typechecker-cache*.test.ts
 permissions: { contents: read, actions: read }
-concurrency:
-  group: typechecker-cache-custody-${{ github.event.pull_request.number || github.ref }}${{ inputs.coverage_only && '-untimed-coverage' || '' }}
-  cancel-in-progress: false
 jobs:
-  observe:
-    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.full && !inputs.coverage_only && 'blacksmith-8vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
-    timeout-minutes: 60
-    env:
-      GOMAXPROCS: "8"
-      RAYON_NUM_THREADS: "8"
-      VIZE_BENCH_RUNTIME_CACHE_BASE: /tmp/vize-cold-cache-${{ github.run_id }}-${{ github.run_attempt }}
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with: { node-version-file: package.json, package-manager-cache: false }
-      - name: Check observer protocol controls
-        run: node --test tests/tooling/typechecker-cache-custody.test.ts tests/tooling/typechecker-cache-root.test.ts
-      - name: Prepare the genuine public shipping baseline
+      - name: Extract immutable original boundary and committed graph facts
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir "$RUNNER_TEMP/cache-provider" "$RUNNER_TEMP/cache-public" "$RUNNER_TEMP/cache-evidence"
-          cd "$RUNNER_TEMP/cache-provider"
-          cat > package.json <<'JSON'
-          {"private":true,"dependencies":{"vize":"0.602.0","@vizejs/native":"0.602.0","vue":"3.5.44","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"}}
-          JSON
-          npm install --ignore-scripts --no-audit --no-fund
-          cd "$RUNNER_TEMP/cache-public"
-          curl --fail --location --retry 3 --output vize.tar.gz https://github.com/ubugeeei-prod/vize/releases/download/v0.602.0/vize-x86_64-unknown-linux-gnu.tar.gz
-          printf '%s\n' '4a75062b16eeee03449c0e471f3776be383f16e99e0820fe6a170b40e63ff93e  vize.tar.gz' | sha256sum --check -
-          tar -xzf vize.tar.gz
-          test -x vize
-      - name: Admit public actual cache boundaries at1/10/100SFCs
-        shell: bash
-        run: |
-          set -euo pipefail
-          for sfcs in 1 10 100; do
-            node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$RUNNER_TEMP/cache-public/vize" --carrier-sfcs "$sfcs" --out "$RUNNER_TEMP/cache-evidence/public-carrier-$sfcs"
-          done
-      - name: Reuse the immutable normal shipping-profile source checkpoint
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'reuse-checkpoint' }}
-        env: { GH_TOKEN: "${{ github.token }}" }
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir "$RUNNER_TEMP/cache-source-checkpoint" "$RUNNER_TEMP/cache-source-build-proof"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439/zip > "$RUNNER_TEMP/cache-source-checkpoint.zip"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12764104945/zip > "$RUNNER_TEMP/cache-source-build-proof.zip"
-          unzip -q "$RUNNER_TEMP/cache-source-checkpoint.zip" -d "$RUNNER_TEMP/cache-source-checkpoint"
-          unzip -q "$RUNNER_TEMP/cache-source-build-proof.zip" -d "$RUNNER_TEMP/cache-source-build-proof"
-          tar -xzf "$RUNNER_TEMP/cache-source-checkpoint/cache-source-image.tgz" -C "$RUNNER_TEMP/cache-source-checkpoint"
-          tar -xzf "$RUNNER_TEMP/cache-source-build-proof/cache-metadata.tgz" -C "$RUNNER_TEMP/cache-source-build-proof"
-          node tools/benchmarks/scripts/typechecker-cache-reuse.ts --image "$RUNNER_TEMP/cache-source-checkpoint/target/ci/vize" --build "$RUNNER_TEMP/cache-source-build-proof/cache-evidence/source-build.json" --out "$RUNNER_TEMP/cache-evidence/source-reuse"
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}
-        with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}
-        with: { wild-version: "0.9.0" }
-      - name: Build one genuinely fresh normal shipping-profile source CLI
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/typechecker-cache-source.ts --source-root "$GITHUB_WORKSPACE" --target-dir "$RUNNER_TEMP/cache-source-target" --receipt "$RUNNER_TEMP/cache-evidence/source-build.json"
-      - name: Full all-SFC coverage before absolute timing
         env:
-          { SOURCE_MODE: "${{ inputs.source_mode }}", COVERAGE_ONLY: "${{ inputs.coverage_only }}" }
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
-        shell: bash
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          source_binary="$RUNNER_TEMP/cache-source-checkpoint/target/ci/vize"
-          source_sha=fb550c424e4256860647dbf96ce32c31cea3774b
-          if [[ "$SOURCE_MODE" == build-current ]]; then source_binary="$GITHUB_WORKSPACE/target/ci/vize"; source_sha=$(git rev-parse HEAD); fi
-          failures=0
-          for role in public source; do
-            binary="$RUNNER_TEMP/cache-public/vize"
-            source_args=()
-            if [[ "$role" == source ]]; then binary="$source_binary"; source_args=(--source "$source_sha"); fi
-            mkdir -p "$RUNNER_TEMP/cache-evidence/$role"
-            cache_valid=true
-            if ! node tools/benchmarks/scripts/typechecker-cache-custody.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --out "$RUNNER_TEMP/cache-evidence/$role/audit"; then failures=$((failures+1)); cache_valid=false; fi
-            if ! node tools/benchmarks/scripts/typechecker-source-coverage.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --sfcs 2500 --out "$RUNNER_TEMP/cache-evidence/$role/coverage"; then failures=$((failures+1)); continue; fi
-            if [[ "$cache_valid" != true || "$COVERAGE_ONLY" == true ]]; then continue; fi
-            if ! node tools/benchmarks/scripts/typechecker-cache-latency.ts --provider "$RUNNER_TEMP/cache-provider" --binary "$binary" "${source_args[@]}" --role "$role" --out "$RUNNER_TEMP/cache-evidence/$role" --custody "$RUNNER_TEMP/cache-evidence/$role/audit/custody.json" --coverage "$RUNNER_TEMP/cache-evidence/$role/coverage/acceptance.json"; then failures=$((failures+1)); fi
-          done
-          test "$failures" -eq 0
-      - name: Package metadata separately from replay images
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/cache-evidence"
-          cp "$RUNNER_TEMP/cache-provider/package.json" "$RUNNER_TEMP/cache-provider/package-lock.json" "$RUNNER_TEMP/cache-evidence/" 2>/dev/null || true
-          tar --exclude='*/node_modules' -czf "$RUNNER_TEMP/cache-metadata.tgz" -C "$RUNNER_TEMP" cache-evidence
-          if [[ -f target/ci/vize ]]; then tar -czf "$RUNNER_TEMP/cache-source-image.tgz" target/ci/vize target/ci/vize.differential-build.json; fi
+          [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
+          [[ "$GITHUB_REF" == refs/heads/test/canonical-boundary-11036-thin ]]
+          export THIN_OUT="$RUNNER_TEMP/canonical-boundary-11036-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          python3 - <<'PY'
+          import base64,collections,hashlib,io,json,os,posixpath,re,subprocess,zipfile
+          ROOT="repos/ubugeeei-prod/vize";RUN=40615893838;JOB=122578344786;AID=12785366305
+          SOURCE="3d9b589d9afe6e4bf7991761c3d3082c8a32085b";ZIP_SHA="d6777b38cb2a9e1209e6c68170ffd4ce5b54996b40da3147ed160d952d95597c";PREFIX="native-observation-hgWwDv/"
+          def gh(p):return json.loads(subprocess.check_output(["gh","api",ROOT+p]))
+          def sha(b):return hashlib.sha256(b).hexdigest()
+          def oid(kind,b):return hashlib.sha1((kind+" "+str(len(b))+"\0").encode()+b).hexdigest()
+          run=gh("/actions/runs/"+str(RUN));meta=gh("/actions/artifacts/"+str(AID));job=gh("/actions/jobs/"+str(JOB))
+          assert run["head_sha"]==SOURCE and run["run_attempt"]==1 and run["event"]=="merge_group"
+          assert meta["workflow_run"]["id"]==RUN and meta["workflow_run"]["head_sha"]==SOURCE and meta["size_in_bytes"]==17271431 and not meta["expired"]
+          assert job["run_id"]==RUN and job["conclusion"]=="failure"
+          raw=subprocess.check_output(["gh","api",ROOT+"/actions/artifacts/"+str(AID)+"/zip","--allow-escape-sequences"])
+          assert len(raw)==17271431 and sha(raw)==ZIP_SHA
+          z=zipfile.ZipFile(io.BytesIO(raw));assert len(z.infolist())==18
+          members={}
+          for item in z.infolist():
+           assert not item.filename.startswith("/") and ".." not in item.filename.split("/") and not item.flag_bits&1
+           data=z.read(item)
+           members[item.filename]={"bytes":len(data),"sha256":sha(data),"crc32":format(item.CRC,"08x")}
+          def read(name):return json.loads(z.read(name))
+          identity=read(PREFIX+"identity.json");proof=read(PREFIX+"committed-corpus.json");physical=read(PREFIX+"physical.json")
+          assert identity["sha"]==identity["providerSha"]==SOURCE and identity["runId"]==RUN and identity["attempt"]==1
+          assert identity["repository"]=="ubugeeei-prod/vize" and identity["event"]=="merge_group"
+          assert identity["tree"]==gh("/git/commits/"+SOURCE)["tree"]["sha"]
+          assert proof["schema"]=="vize.canonical-committed-inventory" and proof["version"]==1
+          assert [{"path":r["path"],"sha":r["sha"]} for r in proof["repositories"]]==identity["gitlinks"]
+          nodes={"":{"mode":"40000","path":""}};children={"":set()};object_count=0
+          def parent(p):return posixpath.dirname(p) if posixpath.dirname(p)!="." else ""
+          def add(p,node):
+           assert p not in nodes,("overlap",p)
+           up=parent(p)
+           if up not in nodes:add(up,{"mode":"40000"})
+           assert nodes[up]["mode"]=="40000"
+           nodes[p]={**node,"path":p};children[up].add(posixpath.basename(p))
+           if node["mode"] in ("40000","160000"):children[p]=set()
+          for repo in proof["repositories"]:
+           assert repo["path"].startswith("tests/_fixtures/_git/")
+           prefix=repo["path"][len("tests/_fixtures/_git/"):]
+           assert prefix and all(p not in ("",".","..") for p in prefix.split("/"))
+           objects={}
+           for o in repo["objects"]:
+            b=base64.b64decode(o["bytes"],validate=True)
+            assert o["id"] not in objects and o["type"] in ("commit","tree","blob") and oid(o["type"],b)==o["id"]
+            objects[o["id"]]=(o["type"],b);object_count+=1
+           used=set()
+           def obj(h,kind):
+            assert h in objects and objects[h][0]==kind
+            used.add(h);return objects[h][1]
+           commit=obj(repo["sha"],"commit");match=re.match(rb"tree ([0-9a-f]{40})\n",commit);assert match
+           tree=match[1].decode();add(prefix,{"mode":"40000","id":tree});active=set()
+           def visit(p,h):
+            assert h not in active;active.add(h);b=obj(h,"tree");at=0;names=set()
+            while at<len(b):
+             space=b.index(b" ",at);zero=b.index(b"\0",space+1);assert zero+21<=len(b)
+             mode=b[at:space].decode("ascii");name=b[space+1:zero].decode("utf8");child_id=b[zero+1:zero+21].hex();at=zero+21
+             assert mode in ("40000","100644","100755","120000","160000") and name not in names and name not in ("",".","..") and "/" not in name
+             names.add(name);node={"mode":mode,"id":child_id,"repository":repo["path"],"revision":repo["sha"]}
+             if mode=="120000":node["target"]=obj(child_id,"blob").decode("utf8")
+             child=p+"/"+name;add(child,node)
+             if mode=="40000":visit(child,child_id)
+            active.remove(h)
+           visit(prefix,tree);assert len(used)==len(objects),("unused-objects",repo["path"])
+          OWNER={"path":"jellyfin-vue/packaging/deb/root","repository":"tests/_fixtures/_git/jellyfin-vue","revision":"6b35d977335cab224c4536d18dc22d15a63d5185","id":"c25bddb6dd4666c6eb8cc92e33f1d60f64c3162b","target":"../.."}
+          def known(n):return all(n.get(k)==v for k,v in OWNER.items())
+          def resolve(logical,limit=None):
+           assert not logical.startswith("/") and "\0" not in logical
+           pending=collections.deque(logical.split("/"));current="";followed=0;allowed=False;active=set();events=[]
+           while pending:
+            part=pending.popleft()
+            if isinstance(part,tuple):active.remove(part[0]);continue
+            assert nodes[current]["mode"] in ("40000","160000")
+            if part in ("","."):continue
+            if part=="..":assert current;current=parent(current);continue
+            nxt=current+"/"+part if current else part;assert nxt in nodes,("missing-target",nxt)
+            node=nodes[nxt]
+            if node["mode"]!="120000":current=nxt;continue
+            assert node.get("target") and not node["target"].startswith("/") and nxt not in active
+            active.add(nxt);followed+=1;allowed=allowed or known(node)
+            events.append({"path":nxt,"followed":followed,"target":node["target"],"id":node["id"],"repository":node.get("repository"),"revision":node.get("revision"),"ownedCycle":known(node)})
+            if limit is not None and followed>=limit:
+             assert allowed,"foreign committed kernel boundary";return {"kernelBoundary":True,"followed":followed,"allowed":allowed,"aliases":events}
+            pending.extendleft(reversed(node["target"].split("/")+[(nxt,)]))
+           return {"node":nodes[current],"followed":followed,"allowed":allowed,"aliases":events}
+          def selected_entry(logical):
+           owner=resolve(parent(logical))["node"]["path"];selected=owner+"/"+posixpath.basename(logical) if owner else posixpath.basename(logical)
+           return nodes[selected]
+          def runs(events):
+           out=[]
+           for e in events:
+            shape={k:v for k,v in e.items() if k!="followed"}
+            if out and out[-1]["alias"]==shape and out[-1]["lastFollowed"]+1==e["followed"]:out[-1]["lastFollowed"]=e["followed"];out[-1]["count"]+=1
+            else:out.append({"alias":shape,"firstFollowed":e["followed"],"lastFollowed":e["followed"],"count":1})
+           return out
+          metadata=physical["metadata"];rejected=physical["rejected"];raw_physical={r["path"]:r for r in physical["physical"]}
+          assert len(rejected)==4 and all(r["code"]=="ELOOP" for r in rejected)
+          targeted=[];root_prefixes=set();suffixes=set()
+          for refusal in rejected:
+           logical=refusal["path"];resolved=resolve(logical);up=parent(logical);preceding=resolve(up)
+           assert resolved["followed"]==refusal["followed"] and resolved["allowed"]
+           indices=[i for i,row in enumerate(metadata) if row["path"]==logical];assert len(indices)==1;i=indices[0];raw_meta=metadata[i]
+           assert raw_meta.get("error",{}).get("code")=="ELOOP" and raw_meta["followed"]==refusal["followed"]
+           error_path=raw_meta["error"].get("path");requested_root=None
+           if error_path and error_path.endswith("/"+logical):requested_root=error_path[:-len(logical)-1];root_prefixes.add(requested_root)
+           parent_rows=[{"index":j,"raw":row} for j,row in enumerate(metadata) if row["path"]==up]
+           node=resolved["node"];canonical=node["path"]
+           wanted={canonical,up}
+           for event in resolved["aliases"]:wanted.add(event["path"])
+           for p in list(wanted):
+            q=parent(p)
+            while q:wanted.add(q);q=parent(q)
+           physical_rows=[]
+           for p in sorted(wanted):
+            if p not in raw_physical:continue
+            row=raw_physical[p]
+            if "targetBase64" in row:
+             target=base64.b64decode(row["targetBase64"],validate=True);assert nodes[p]["mode"]=="120000" and oid("blob",target)==nodes[p]["id"] and target.decode()==nodes[p]["target"]
+            physical_rows.append(row)
+           if not known(node):
+            for suffix in ("packages/ui-toolkit/README.md","packaging/deb/debian/gbp.conf","packaging/tauri/Cargo.toml"):
+             if logical.endswith("/"+suffix):suffixes.add(suffix)
+           targeted.append({"rawRefusal":refusal,"logicalUtf8Bytes":len(logical.encode()),"logicalSha256":sha(logical.encode()),"rawMetadataIndex":i,"rawMetadata":raw_meta,
+            "parentLogicalResolution":{"path":up,"followed":preceding["followed"],"node":preceding["node"]},"rawParentMetadata":parent_rows,
+            "selectedCommittedEntry":selected_entry(logical),"resolvedCanonicalPhysicalEntry":raw_physical.get(canonical),"resolvedCommittedLeaf":node,"completeAliasRuns":runs(resolved["aliases"]),"terminalIsDirectory":node["mode"] in ("40000","160000"),
+            "logicalExtension":posixpath.splitext(logical)[1],"resolvedExtension":posixpath.splitext(canonical)[1],"rawPhysicalEntries":physical_rows,
+            "immediatelyAdjacentMetadata":[{"index":j,"raw":metadata[j]} for j in range(max(0,i-2),min(len(metadata),i+3))],"requestedRootDerivedFromErrorSuffix":requested_root})
+          assert len(root_prefixes)==1 and suffixes=={"packages/ui-toolkit/README.md","packaging/deb/debian/gbp.conf","packaging/tauri/Cargo.toml"}
+          vector=z.read(PREFIX+"native-vector.nul");assert vector.endswith(b"\0");paths=vector[:-1].decode("utf8").split("\0")
+          raw_files=physical["files"];file_paths=[r[0] for r in raw_files]
+          model=[];model_files=[]
+          def walk(logical,node,threshold):
+           for name in sorted(children[node["path"]],key=lambda x:x.encode()):
+            if name in ("node_modules","_git-worktrees"):continue
+            p=logical+"/"+name if logical else name;child=resolve(p,threshold)
+            if child.get("kernelBoundary"):
+             assert posixpath.splitext(name)[1]!=".vue";model.append({"path":p,"code":"ELOOP","followed":resolve(p)["followed"]})
+            elif child["node"]["mode"] in ("40000","160000"):walk(p,child["node"],threshold)
+            elif posixpath.splitext(name)[1]==".vue":model_files.append([p,child["node"].get("id")])
+          # Use the retained owned root witness only; this does not certify the extra leaf refusals.
+          owned=[r for r in rejected if known(selected_entry(r["path"]))];assert len(owned)==1
+          first=owned[0]["followed"];walk("",nodes[""],first)
+          assert len(model)==1 and model==owned
+          assert [[r[0],r[3]] for r in raw_files]==model_files
+          report={"schema":"vize.canonical-boundary-diagnostic.v1","status":"diagnostic-extraction-only","source":SOURCE,"run":RUN,"attempt":1,"originalJob":JOB,"originalJobConclusion":job["conclusion"],
+           "originalRunner":{"id":job["runner_id"],"name":job["runner_name"],"labels":job["labels"]},"artifact":{"id":AID,"bytes":len(raw),"sha256":sha(raw),"members":members},
+           "identity":{"sha":identity["sha"],"tree":identity["tree"],"gitlinks":len(identity["gitlinks"]),"gitlinksSha256":identity["gitlinksSha256"],"cacheTrusted":identity["cacheTrusted"]},
+           "closedGraph":{"repositories":len(proof["repositories"]),"gitObjectsVerified":object_count,"nodes":len(nodes),"allObjectsHashAndClosureVerified":True},
+           "nativeRustc":z.read(PREFIX+"native-rustc.txt").decode(),"nodeVersion":{"value":"v24.14.0","authority":"original job log SHA305f1678f4db241ec729cff39dc74661529e33380dba3a997a2469e98cc8acfe"},
+           "originalKernelVersion":None,"originalPhysicalPrefixSymlinkBudget":None,"requestedRootsFromStatErrors":sorted(root_prefixes),
+           "observedSuccessfulFollows":physical["successfulFollows"],"ownedFirstRejected":first,"logicalModelRejected":model,"physicalRejected":rejected,"targeted":targeted,
+           "wholeVueVectors":{"physicalTuples":len(raw_files),"physicalPathAndGitBlobVectorEqualsCommittedLogicalWalk":True,"physicalFilesMemberSha256":members[PREFIX+"physical.json"]["sha256"],
+            "nativeVectorBytes":len(vector),"nativeVectorPaths":len(paths),"nativeVectorSha256":sha(vector),"nativeEqualsPhysicalPathVector":paths==file_paths},
+           "originalMetadataRecords":len(metadata),"metadataErrorCounts":dict(collections.Counter(row["error"].get("code") for row in metadata if "error" in row)),
+           "semanticQualification":False,"pugObserverPassed":False,"sourceUnderTestChanged":False,"nativeOrCompilerExecuted":False,"rehydrated":False,
+           "auditor":{"source":os.environ["GITHUB_SHA"],"run":int(os.environ["GITHUB_RUN_ID"])}}
+          out=os.environ["THIN_OUT"];os.makedirs(out,exist_ok=False)
+          b=json.dumps(report,ensure_ascii=False,separators=(",",":")).encode();assert len(b)<=100000,len(b)
+          with open(os.path.join(out,"diagnostic.json"),"wb") as f:f.write(b)
+          print(json.dumps({"status":report["status"],"reportBytes":len(b),"reportSha256":sha(b),"closedGraph":report["closedGraph"],"logicalRejected":len(model),"physicalRejected":len(rejected),"semanticQualification":False}))
+          PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: always()
+        if: success()
         with:
-          name: typechecker-cache-metadata-${{ github.sha }}
-          path: ${{ runner.temp }}/cache-metadata.tgz
-          retention-days: 14
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: ${{ always() && hashFiles('target/ci/vize.differential-build.json') != '' }}
-        with:
-          name: typechecker-cache-source-image-${{ github.sha }}
-          path: ${{ runner.temp }}/cache-source-image.tgz
-          retention-days: 14
+          name: canonical-boundary-11036-thin-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/canonical-boundary-11036-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
