@@ -12,23 +12,29 @@
 
 use std::borrow::Cow;
 
-use vize_l1_to_l2::lower::pug::{PugRendering, derive_template_source_including};
+use vize_l1_to_l2::lower::pug::{PugRendering, PugSourceMap, derive_template_source_including};
 
 use crate::types::{BlockLocation, SfcDescriptor, SfcError};
 
 mod files;
 use files::FileIncludes;
 
+type PreparedPugTemplate<'d, 's> = (
+    Cow<'d, SfcDescriptor<'s>>,
+    Vec<vize_l0::String>,
+    Option<PugSourceMap>,
+);
+
 /// A compile view of `descriptor` whose pug template content is its
 /// derived Vue template, and the files it includes; borrowed unchanged
 /// for every other template.
 pub(super) fn prepare_pug_template<'d, 's>(
     descriptor: &'d SfcDescriptor<'s>,
-) -> Result<(Cow<'d, SfcDescriptor<'s>>, Vec<vize_l0::String>), SfcError> {
+) -> Result<PreparedPugTemplate<'d, 's>, SfcError> {
     let Some(template) = descriptor.template.as_ref().filter(|template| {
         template.src.is_none() && template.lang.as_deref().is_some_and(is_pug_language)
     }) else {
-        return Ok((Cow::Borrowed(descriptor), Vec::new()));
+        return Ok((Cow::Borrowed(descriptor), Vec::new(), None));
     };
     let derived = derive_template_source_including(
         &template.content,
@@ -47,11 +53,12 @@ pub(super) fn prepare_pug_template<'d, 's>(
         });
     }
     let dependencies = derived.dependencies.clone();
+    let map = derived.map;
     let mut view = descriptor.clone();
     if let Some(template) = view.template.as_mut() {
         template.content = Cow::Owned(derived.html.into());
     }
-    Ok((Cow::Owned(view), dependencies))
+    Ok((Cow::Owned(view), dependencies, Some(map)))
 }
 
 fn is_pug_language(lang: &str) -> bool {

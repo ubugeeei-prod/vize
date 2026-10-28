@@ -42,7 +42,7 @@ pub(super) fn compile_sfc_inner(
             .is_some_and(|options| options.experimental_in_tag_comments),
         template_syntax,
     )?;
-    let (descriptor, dependencies) = super::pug::prepare_pug_template(&descriptor)?;
+    let (descriptor, dependencies, pug_source_map) = super::pug::prepare_pug_template(&descriptor)?;
     let mut result = super::super::compile_sfc_inner(
         &descriptor,
         options,
@@ -52,6 +52,7 @@ pub(super) fn compile_sfc_inner(
         script_output,
         experimental_options,
         nuxt_page_meta,
+        pug_source_map.as_ref(),
         capture,
     )?;
     result.dependencies = dependencies;
