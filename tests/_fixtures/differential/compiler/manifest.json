@@ -509,7 +509,7 @@
       },
       "reference": {
         "path": "computed-v-once-event-6839/module.expected.txt",
-        "sha256": "3476d6ad9cd3f18881bcd610a1ddc6372539553859bdb0e74f20da94cb9ce3fd",
+        "sha256": "f3e14c57641d690100d5f84a2ecd8cf6c6601108547474a5566acfd9682ead27",
         "source": "crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs:computed_event_names_freeze_while_handlers_stay_live; SSR source coverage only"
       },
       "adapters": {

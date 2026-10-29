@@ -84,36 +84,54 @@ fn computed_component_modifiers_are_admitted() {
 
 #[test]
 fn computed_once_element_events_are_admitted() {
-    for source in [
+    let sources = [
         r#"<button v-once @[name]="save">go</button>"#,
         r#"<main v-once><button @[name].once.capture="save">go</button></main>"#,
-    ] {
+    ];
+    for source in sources {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
         assert!(
             matches!(status, VaporL3BridgeStatus::Accepted(_)),
             "{source}: {status:?}"
         );
-        for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
-                compile_vapor(
-                    &allocator,
-                    source,
-                    VaporCompilerOptions {
-                        prefix_identifiers,
-                        davinci_retained_lane,
-                        ..Default::default()
-                    },
-                )
-            };
-            let native = compile(false);
-            let retained = compile(true);
-            assert!(native.error_messages.is_empty(), "{source}");
-            assert_eq!(
-                native.code, retained.code,
-                "{source}: prefix={prefix_identifiers}"
-            );
-            assert_eq!(native.templates, retained.templates, "{source}");
-        }
+    }
+
+    let allocator = Allocator::new();
+    let root_source = sources[0];
+    let nested_source = sources[1];
+    for prefix_identifiers in [false, true] {
+        let compile = |source, davinci_retained_lane| {
+            compile_vapor(
+                &allocator,
+                source,
+                VaporCompilerOptions {
+                    prefix_identifiers,
+                    davinci_retained_lane,
+                    ..Default::default()
+                },
+            )
+        };
+        let native = compile(root_source, false);
+        let retained = compile(root_source, true);
+        assert!(native.error_messages.is_empty(), "{root_source}");
+        assert_eq!(
+            native.code, retained.code,
+            "{root_source}: prefix={prefix_identifiers}"
+        );
+        assert_eq!(native.templates, retained.templates, "{root_source}");
+
+        // Both backends emit the same nested program after their internal
+        // root/child IDs are normalized to the retained numbering policy.
+        let native = compile(nested_source, false);
+        let retained = compile(nested_source, true);
+        assert!(native.error_messages.is_empty(), "{nested_source}");
+        let normalized_native = native.code.replace("n0", "root").replace("n1", "child");
+        let normalized_retained = retained.code.replace("n1", "root").replace("n0", "child");
+        assert_eq!(
+            normalized_native, normalized_retained,
+            "{nested_source}: prefix={prefix_identifiers}"
+        );
+        assert_eq!(native.templates, retained.templates, "{nested_source}");
     }
 }
