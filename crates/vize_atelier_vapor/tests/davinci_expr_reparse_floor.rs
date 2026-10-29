@@ -78,6 +78,8 @@ fn vapor_legacy_reparse_floor_holds() {
         r#"<button v-once :title="label" @click="save">{{ label }}</button>"#,
         r#"<main v-once><button @click.stop.prevent="record(label)">{{ label }}</button></main>"#,
         r#"<main v-once><button @focus.capture="save" @keydown.enter="record(label)">{{ label }}</button></main>"#,
+        r#"<button v-once @[eventName]="save">go</button>"#,
+        r#"<main v-once><button @[eventName].once.capture="save">go</button></main>"#,
         r#"<Transition :css="false"><p>{{ label }}</p></Transition>"#,
         r#"<Transition :css="false"><div v-if="show"><span>{{ label }}</span></div></Transition>"#,
         r#"<TransitionGroup tag="ul" :css="false"><li v-for="item in items" :key="item.id"><span>{{ item.text }}</span></li></TransitionGroup>"#,

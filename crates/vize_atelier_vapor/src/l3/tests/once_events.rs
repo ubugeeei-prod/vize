@@ -54,7 +54,6 @@ fn frozen_subtree_events_match_retained_generation() {
 #[test]
 fn unproved_once_surfaces_remain_legacy() {
     for source in [
-        r#"<button v-once @[event]="save">frozen</button>"#,
         r#"<main v-once><MyComp /></main>"#,
         r#"<main v-once><span v-if="visible">content</span></main>"#,
         r#"<main v-once><span v-for="item in items">{{ item }}</span></main>"#,
