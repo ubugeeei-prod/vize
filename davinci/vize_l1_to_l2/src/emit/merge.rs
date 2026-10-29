@@ -60,6 +60,7 @@ pub(super) fn object_patch<'a>(
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
+    bind_is_literal_const: &dyn Fn(&BindOp<'a>) -> bool,
     handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
@@ -85,6 +86,12 @@ pub(super) fn object_patch<'a>(
                         || (!is_component && matches!(raw_name, "class" | "style"))
                         || bind_value_is_static_patchless(bind, is_ts)
                     {
+                        continue;
+                    }
+                    if !raw_name.ends_with("Modifiers") && bind_is_literal_const(bind) {
+                        if has_prop_modifier(bind) {
+                            flag |= 32;
+                        }
                         continue;
                     }
                     let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {

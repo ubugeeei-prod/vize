@@ -162,7 +162,7 @@ jobs:
           node --input-type=module -e '
           import assert from "node:assert/strict";
           import { readFileSync, writeFileSync } from "node:fs";
-          import { setupComponentBracketReference } from "./tests/tooling/support/script-setup-default-expose.ts";
+          import { setupComponentBracketReference } from "./tests/tooling/support/setup-component-bracket-reference.ts";
           const priorPackets = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "full-module-packets.json")));
           const nextPackets = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/full-module-packets.json"));
           const setupComponents = { original: "Child", "named-alias": "Child", "default-unknown": "Child", "constant-controls": "DefaultAlias" };

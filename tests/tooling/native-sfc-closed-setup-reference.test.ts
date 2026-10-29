@@ -4,9 +4,9 @@ import { test } from "node:test";
 import {
   closedSetupReference,
   historicalSetupCode,
-  setupComponentBracketReference,
   type ExposurePacket,
 } from "./support/script-setup-default-expose.ts";
+import { setupComponentBracketReference } from "./support/setup-component-bracket-reference.ts";
 
 const fixture = JSON.parse(
   readFileSync(

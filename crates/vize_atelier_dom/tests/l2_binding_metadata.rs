@@ -135,6 +135,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div v-if="count"><span v-show="msg"></span></div>"#,
     ),
     (
+        "show_with_literal_const_prop",
+        r#"<div v-show="count" :id="LIMIT"></div>"#,
+    ),
+    (
         "html_text",
         r#"<div v-html="rawHtml"></div><p v-text="title"></p>"#,
     ),
@@ -304,5 +308,67 @@ fn binding_metadata_spellings_are_pinned() {
     assert_eq!(
         emit(r#"<MyComp v-focus @click="method" />"#),
         "import { withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _directive_focus = $setup[\"vFocus\"]\n  \n  return _withDirectives((_openBlock(), _createBlock($setup[\"MyComp\"], { onClick: (...args) => (_ctx.method && _ctx.method(...args)) }, null, 8 /* PROPS */, [\"onClick\"])), [\n    [_directive_focus]\n  ])\n}"
+    );
+}
+
+#[test]
+fn literal_const_patch_facts_preserve_independent_dynamic_sources() {
+    let metadata = metadata();
+    let table = table(&metadata);
+    let allocator = vize_l0::Allocator::new();
+    let options = DomEmitOptions {
+        mode: DomEmitMode::Module,
+        prefix_identifiers: true,
+        bindings: Some(&table),
+        ..DomEmitOptions::DEFAULT
+    };
+    for (name, source, expected) in [
+        (
+            "duplicate ordinary key",
+            r#"<div :id="LIMIT" :id="count"></div>"#,
+            vec![String::from("8 /* PROPS */, [\"id\"]")],
+        ),
+        (
+            "runtime directive",
+            r#"<div v-show="count" :id="LIMIT"></div>"#,
+            vec![String::from("512 /* NEED_PATCH */")],
+        ),
+        (
+            "object spread",
+            r#"<div v-bind="attrs" :id="LIMIT"></div>"#,
+            vec![String::from("16 /* FULL_PROPS */")],
+        ),
+    ] {
+        let observed = vize_l1_to_l2::emit_dom_source_sfc_observed_with_options(
+            &allocator,
+            source,
+            vize_l1_to_l2::LegacyCaps::VUE3,
+            &options,
+        )
+        .unwrap_or_else(|error| panic!("{name}: binding witness must emit: {error:?}"));
+        let assembled = observed.emit.assembled();
+        assert_eq!(
+            support::patch_sites(&assembled),
+            expected,
+            "{name}: {assembled}"
+        );
+    }
+
+    let cached_options = DomEmitOptions {
+        cache_handlers: true,
+        ..options
+    };
+    let observed = vize_l1_to_l2::emit_dom_source_sfc_observed_with_options(
+        &allocator,
+        r#"<input v-model="msg" :id="LIMIT">"#,
+        vize_l1_to_l2::LegacyCaps::VUE3,
+        &cached_options,
+    )
+    .expect("cached model binding witness must emit");
+    let assembled = observed.emit.assembled();
+    assert_eq!(
+        support::patch_sites(&assembled),
+        [String::from("512 /* NEED_PATCH */")],
+        "cached runtime model: {assembled}"
     );
 }

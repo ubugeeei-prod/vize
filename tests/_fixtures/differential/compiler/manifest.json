@@ -1518,8 +1518,8 @@
       },
       "reference": {
         "path": "setup-component-literal-const-10877/module.expected.txt",
-        "sha256": "e63a480b8c253eff5fe7a6962955491bf06a96f4ea2c1684da43da6d3978371f",
-        "source": "Preserved source-native SSR packet advanced only by the exact #10891 closed setup exposure. #10877 is client-only: its bracket read and literal-const patch-flag parity are independently pinned by whole-packet jobs and setup_literal_const_prop.rs, while this case guards SSR bytes as unchanged."
+        "sha256": "b4c3c81e794d17403b861461c6e18f60972ca903ce7812b5744bc32347356fac",
+        "source": "Preserved source-native SSR packet advanced only by the exact #10891 closed setup exposure and #10877 setup component bracket read; literal-const patch-flag parity is independently pinned by whole-packet jobs and setup_literal_const_prop.rs."
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
