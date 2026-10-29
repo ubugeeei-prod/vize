@@ -76,6 +76,14 @@ function catalogVersions(content: string): Map<string, string> {
   }
   return versions;
 }
+const publishedCorsaPlatforms = [
+  "@typescript/typescript-darwin-arm64",
+  "@typescript/typescript-darwin-x64",
+  "@typescript/typescript-linux-arm64",
+  "@typescript/typescript-linux-x64",
+  "@typescript/typescript-win32-arm64",
+  "@typescript/typescript-win32-x64",
+] as const;
 export function preparePublishManifest(directory: string) {
   const filename = path.join(directory, "package.json"),
     value = readJson(filename),
@@ -129,6 +137,19 @@ export function preparePublishManifest(directory: string) {
         }
       }
     }
+  if (manifest?.name === "vize") {
+    const optional = object(manifest.optionalDependencies) ?? {};
+    manifest.optionalDependencies = optional;
+    for (const name of publishedCorsaPlatforms) {
+      if (typeof optional[name] === "string") continue;
+      const version = catalogs.get(`corsa-runtime\0${name}`);
+      if (version !== undefined) optional[name] = version;
+      else
+        errors.push(
+          `Missing catalog version for ${name} from corsa-runtime in optionalDependencies`,
+        );
+    }
+  }
   if (errors.length) throw new Error(`Cannot prepare ${filename}\n${errors.join("\n")}`);
   writeJsonPretty(filename, value);
   console.log(`Prepared npm publish manifest at ${filename}`);
