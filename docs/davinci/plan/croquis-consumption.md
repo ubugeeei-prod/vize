@@ -78,6 +78,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `JsRuntime`                                | type  | `scope`                        |
 | `MacroTracker`                             | type  | `macros`                       |
 | `NonScriptSetupScopeData`                  | type  | `scope`                        |
+| `NuxtPageLayout`                           | type  | `croquis::template`            |
 | `NuxtTemplateRenderFacts`                  | type  | `croquis::template`            |
 | `OptionGroup`                              | type  | `croquis`                      |
 | `OptionKey`                                | type  | `croquis`                      |
@@ -143,6 +144,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `build_effect_graph_from_script`           | type  | `effect_graph`                 |
 | `build_effect_graph_from_script_setup`     | type  | `effect_graph`                 |
 | `build_effect_graph_from_sfc_scripts`      | type  | `effect_graph`                 |
+| `normalize_options_template_binding_name`  | type  | `croquis::options_descriptor`  |
 | `note_mounted_resources`                   | type  | `mounted`                      |
 | `Croquis.binding_spans`                    | field | `croquis`                      |
 | `Croquis.bindings`                         | field | `croquis`                      |
@@ -154,6 +156,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `Croquis.import_statements`                | field | `croquis`                      |
 | `Croquis.invalid_exports`                  | field | `croquis`                      |
 | `Croquis.macros`                           | field | `croquis`                      |
+| `Croquis.nuxt_page_layout`                 | field | `croquis`                      |
 | `Croquis.nuxt_render_template`             | field | `croquis`                      |
 | `Croquis.nuxt_static_render_script`        | field | `croquis`                      |
 | `Croquis.options_descriptor`               | field | `croquis`                      |

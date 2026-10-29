@@ -2,7 +2,7 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
-const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$WidenTemplateRef<T['value']> : T : T;";
+const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").$WidenTemplateRef<T['value']> : T : T;";
 const LEGACY_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: infer __V } ? __V : T;";
 
 #[test]
@@ -66,8 +66,8 @@ const count = ref(0)
     assert!(!v2_content.contains("Ref<infer"));
     assert!(v2_content.contains("$listeners"));
     assert!(!default_content.contains("$listeners"));
-    assert!(v2_content.contains("type $$Vue2ComponentInstance = {\n  $el: Element;"));
-    assert!(!default_content.contains("$$Vue2ComponentInstance"));
+    assert!(v2_content.contains("type $Vue2ComponentInstance = {\n  $el: Element;"));
+    assert!(!default_content.contains("$Vue2ComponentInstance"));
     assert!(!v2_content.contains("Ref<infer V, any>"));
     assert!(!v2_content.contains("import('vue').Ref"));
     assert!(!v2_content.contains("import('vue').ComponentPublicInstance"));
@@ -168,16 +168,16 @@ export default {
         .clone();
     assert!(setup_content.contains(LEGACY_REF_UNWRAP_HELPER));
     for content in [setup_content.as_str(), options_content.as_str()] {
-        assert!(content.contains("type $$Vue2ComponentInstance = {\n  $el: Element;"));
+        assert!(content.contains("type $Vue2ComponentInstance = {\n  $el: Element;"));
         assert!(content.contains("  $refs: Record<string, any>;"));
-        assert!(content.contains("} & $$Vue2ComponentInstance;"));
+        assert!(content.contains("} & $Vue2ComponentInstance;"));
         assert!(!content.contains("import('vue').Ref"));
         assert!(!content.contains("import('vue').ShallowRef"));
         assert!(!content.contains("import('vue').ComponentPublicInstance"));
         assert!(!content.contains("import('vue').defineComponent"));
     }
     assert!(options_content.contains(
-        "declare function __vizeDefineComponent<T>(options: T & $$Nuxt2PageOptions): T;",
+        "declare function __vizeDefineComponent<T>(options: T & $Nuxt2PageOptions): T;",
     ));
 
     project.materialize().unwrap();
@@ -194,8 +194,23 @@ export default {
 /// hands TypeScript a distinct declaration to instantiate for each one, which
 /// defeats its instantiation cache — the effect measured in #3443 and bisected in
 /// #3460.
-const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] =
-    &["type $$IsUnion<", "type $$WidenTemplateRef<"];
+const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] = &[
+    "type $IsUnion<",
+    "type $WidenTemplateRef<",
+    "type $SlotHostSlots<",
+    "type $SlotPayload<",
+    "type $EmitRequiredKeys<",
+    "type __EmitProps<",
+    "type $ComponentNavigationProps<",
+];
+
+const MODULE_LOCAL_VUE_PUBLIC_ATTRS: &[&str] = &[
+    "type $VueVNodeProps = import('vue').VNodeProps;",
+    "type $VueAllowedComponentProps = import('vue').AllowedComponentProps;",
+    "type $VueComponentCustomProps = import('vue').ComponentCustomProps;",
+    "interface $PublicComponentAttrs extends $VueVNodeProps, $VueAllowedComponentProps, $VueComponentCustomProps {}",
+];
+const MODULE_LOCAL_EXPOSED_UNWRAP: &str = "type $ShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };";
 
 fn ref_sfc(binding: &str) -> vize_carton::String {
     vize_carton::cstr!(
@@ -212,7 +227,7 @@ const {binding} = ref('')
 }
 
 #[test]
-fn template_ref_widening_helpers_are_hoisted_once_per_program() {
+fn static_template_helpers_are_hoisted_once_per_program() {
     let case_dir = unique_case_dir("shared-helper-hoisting");
     let _ = fs::remove_dir_all(&case_dir);
     let src_dir = case_dir.join("src");
@@ -254,6 +269,83 @@ fn template_ref_widening_helpers_are_hoisted_once_per_program() {
             "the hoisted helpers file must declare {declaration} exactly once"
         );
     }
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn package_relative_vue_helpers_stay_in_each_generated_module() {
+    let case_dir = unique_case_dir("package-relative-vue-helpers");
+    let _ = fs::remove_dir_all(&case_dir);
+    let mut inputs = Vec::new();
+    let mut parents = Vec::new();
+    let mut exposed = Vec::new();
+    for package in ["alpha", "beta"] {
+        let src_dir = case_dir.join("packages").join(package).join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let child = src_dir.join("Child.vue");
+        fs::write(
+            &child,
+            "<script setup lang=\"ts\">defineProps<{ label?: string }>()</script>\n",
+        )
+        .unwrap();
+        let parent = src_dir.join("Parent.vue");
+        fs::write(
+            &parent,
+            "<script setup lang=\"ts\">import Child from './Child.vue'</script>\n<template><Child global-token=\"ok\" /></template>\n",
+        )
+        .unwrap();
+        let exposed_path = src_dir.join("Exposed.vue");
+        fs::write(
+            &exposed_path,
+            "<script setup lang=\"ts\">import { ref } from 'vue'; const value = ref('ok'); defineExpose({ value })</script>\n",
+        )
+        .unwrap();
+        inputs.extend([child, parent.clone(), exposed_path.clone()]);
+        parents.push(parent);
+        exposed.push(exposed_path);
+    }
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_paths(&inputs).unwrap();
+    for path in parents {
+        let virtual_file = project.find_by_original(&path).unwrap();
+        let content = &virtual_file.content;
+        for declaration in MODULE_LOCAL_VUE_PUBLIC_ATTRS {
+            assert_eq!(
+                content.matches(declaration).count(),
+                1,
+                "{} must resolve {declaration} from its own package",
+                path.display()
+            );
+        }
+    }
+    for path in exposed {
+        let virtual_file = project.find_by_original(&path).unwrap();
+        let content = &virtual_file.content;
+        assert_eq!(
+            content.matches(MODULE_LOCAL_EXPOSED_UNWRAP).count(),
+            1,
+            "{} must resolve exposed refs from its own package",
+            path.display()
+        );
+    }
+    for declaration in MODULE_LOCAL_VUE_PUBLIC_ATTRS {
+        assert_eq!(
+            crate::virtual_ts::SHARED_PREAMBLE_DTS
+                .matches(declaration)
+                .count(),
+            0,
+            "the shared helper must not own package-relative {declaration}"
+        );
+    }
+    assert_eq!(
+        crate::virtual_ts::SHARED_PREAMBLE_DTS
+            .matches(MODULE_LOCAL_EXPOSED_UNWRAP)
+            .count(),
+        0,
+        "the shared helper must not own package-relative exposed ref unwrapping"
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }

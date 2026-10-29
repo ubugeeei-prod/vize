@@ -59,6 +59,9 @@ pub use file_uri::decode_uri_path;
 pub mod intelligence;
 mod options_api_setup_spread;
 pub mod package_route;
+#[cfg(feature = "profiling")]
+#[doc(hidden)]
+pub mod profiling;
 mod script_parse;
 pub use script_parse::supports_native_script_syntax;
 mod sfc_diagnostics;

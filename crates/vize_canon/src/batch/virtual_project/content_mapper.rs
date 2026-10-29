@@ -12,7 +12,7 @@ use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};
 
 mod alias;
-use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
+use alias::is_synthetic_content_mapper_identifier;
 
 mod protocol;
 use protocol::protocol_semantic_links;
@@ -248,7 +248,13 @@ fn transform_with_diagnostic_ownership(
             (!authored.is_derived())
                 .then(|| {
                     let directives = with_generic_echoes(
-                        sfc_diagnostic_directives(content, &descriptor, &spans, &diagnostic_echoes),
+                        sfc_diagnostic_directives(
+                            content,
+                            &code,
+                            &descriptor,
+                            &spans,
+                            &diagnostic_echoes,
+                        ),
                         generic_copies.as_ref(),
                     );
                     with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
@@ -302,8 +308,8 @@ fn publicize_generated_diagnostic_helpers(code: &mut CompactString, mappings: &[
     }
 
     for (internal, display) in [
-        ("$$ComponentCheckProps", "ComponentPropsForTemplate"),
-        ("$$PublicComponentAttrs", "VueTemplatePublicAttrsType"),
+        ("$ComponentCheckProps", "ComponentPropsForTemplate"),
+        ("$PublicComponentAttrs", "VueTemplatePublicAttrsType"),
     ] {
         debug_assert_eq!(internal.len(), display.len());
         let occurrences = code
@@ -524,16 +530,11 @@ fn candidate(
     }
 
     Some(SpanCandidate {
-        generated: generated_range,
+        generated: generated_range.clone(),
         original: original_range,
-        kind: if is_alias_projection(generated_text, original_text) {
-            ContentMapperSpanKind::Alias
-        } else {
-            ContentMapperSpanKind::Atom
-        },
+        kind: alias::span_kind(generated, generated_range, original_text),
     })
 }
-
 fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
     left.start < right.end && right.start < left.end
 }

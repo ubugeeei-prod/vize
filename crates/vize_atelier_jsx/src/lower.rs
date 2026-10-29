@@ -18,6 +18,7 @@ mod name;
 mod opaque_slots;
 mod slot;
 mod spread;
+mod stable_component;
 mod style;
 mod text;
 mod typecheck_expr;
@@ -89,6 +90,8 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     pending_typecheck_roots: std::vec::Vec<TypecheckRoot<'a>>,
     is_custom_element: Option<&'m BabelIsCustomElement>,
     scoping: Option<Scoping>,
+    stable_component_bindings: Option<vize_l0::FxHashSet<oxc_syntax::symbol::SymbolId>>,
+    current_output_mode: crate::JsxOutputMode,
     boolean_bindings: boolean::BooleanBindings,
     custom_element_spans: std::vec::Vec<(u32, u32)>,
     babel_vdom_lane: bool,
@@ -133,6 +136,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             pending_typecheck_roots: std::vec::Vec::new(),
             is_custom_element: babel.is_custom_element,
             scoping,
+            stable_component_bindings: None,
+            current_output_mode: crate::JsxOutputMode::Vdom,
             boolean_bindings: boolean::BooleanBindings::default(),
             custom_element_spans: std::vec::Vec::new(),
             babel_vdom_lane: babel.vdom_lane,
@@ -274,6 +279,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
     /// Select whether the current render root may use VDOM-only Babel options.
     pub(crate) fn set_current_output_mode(&mut self, mode: crate::JsxOutputMode) {
+        self.current_output_mode = mode;
         self.babel_vdom_compat_active = self.babel_vdom_lane && mode == crate::JsxOutputMode::Vdom;
         self.literal_styles_active = match self.literal_style_target {
             LiteralStyleTarget::Disabled => false,

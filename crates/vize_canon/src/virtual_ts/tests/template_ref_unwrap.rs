@@ -47,9 +47,9 @@ const direction = ref<'rtl'>('rtl')
     let hoisted_code = generate_template_code(script, template, true);
     let embedded_code = generate_template_code(script, template, false);
 
-    const WIDEN_HELPER: &str = "type $$WidenTemplateRef<T> = $$IsAny<T> extends true ? T : $$IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
+    const WIDEN_HELPER: &str = "type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
     assert_eq!(
-        exact_line_count(SHARED_PREAMBLE_DTS, WIDEN_HELPER),
+        exact_line_count(SHARED_PREAMBLE_DTS, &format!("export {WIDEN_HELPER}")),
         1,
         "the shared template-ref helper must preserve the exact widening oracle:\n{}",
         SHARED_PREAMBLE_DTS,

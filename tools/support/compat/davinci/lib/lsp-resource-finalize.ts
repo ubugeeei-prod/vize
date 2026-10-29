@@ -2,10 +2,20 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { isRecord } from "../../../json-value.ts";
+import { mib } from "./lsp-resource-sampler.ts";
+import type { ObservedProcess, ProcessEntry, Sampler } from "./lsp-resource-sampler.ts";
 
 interface ProfileResult {
   profile_json?: { path: string; bytes: number; sha256: string };
   finalization_error?: string;
+}
+
+interface SampledProfileResult extends ProfileResult {
+  error?: string;
+  rss_peak_mib?: number;
+  peak_processes?: ProcessEntry[];
+  observed_processes?: ObservedProcess[];
+  resource_samples?: number;
 }
 
 interface Session {
@@ -66,4 +76,42 @@ export async function finalizeLspResources(options: {
     }
   }
   if (failed && !options.workloadFailed) throw failure;
+}
+
+/** Persist sampler evidence and restore the harness without replacing workload failures. */
+export async function finalizeSampledLspRun<Result extends SampledProfileResult>(options: {
+  sampler: Pick<Sampler, "stop">;
+  measurement: { per_run: Result[]; active_run?: Result };
+  result: Result;
+  session: Session;
+  profilePath: string | null;
+  cleanup(): void;
+  persist(): void;
+}): Promise<void> {
+  const workloadFailed = options.result.error !== undefined;
+  let samplingFailure: unknown;
+  try {
+    const { peak, samples, observed_processes } = options.sampler.stop();
+    options.result.rss_peak_mib = mib(peak.rss_bytes);
+    options.result.peak_processes = peak.processes;
+    options.result.observed_processes = observed_processes;
+    options.result.resource_samples = samples;
+  } catch (error) {
+    samplingFailure = error;
+    if (!workloadFailed) options.result.error = String(error);
+  }
+
+  options.measurement.per_run.push(options.result);
+  delete options.measurement.active_run;
+  await finalizeLspResources({
+    session: options.session,
+    profilePath: options.profilePath,
+    // A sampler failure becomes the primary successful-workload failure. Keep
+    // cleanup/profile errors as persisted evidence instead of replacing it.
+    workloadFailed: workloadFailed || samplingFailure !== undefined,
+    result: options.result,
+    cleanup: () => options.cleanup(),
+    persist: () => options.persist(),
+  });
+  if (samplingFailure !== undefined && !workloadFailed) throw samplingFailure;
 }

@@ -61,6 +61,7 @@ title: "类型与脚本规则"
 | [`script/one-component-per-file`](#script-one-component-per-file) | [错误示例](#script-one-component-per-file-bad) · [正确示例](#script-one-component-per-file-good) | 禁止在一个文件中定义多个组件 |
 | [`script/order-in-components`](#script-order-in-components) | [错误示例](#script-order-in-components-bad) · [正确示例](#script-order-in-components-good) | 强制组件选项的属性遵循默认顺序 |
 | [`script/prefer-computed`](#script-prefer-computed) | [错误示例](#script-prefer-computed-bad) · [正确示例](#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [错误示例](#script-prefer-define-emits-binding-bad) · [正确示例](#script-prefer-define-emits-binding-good) | 优先使用从 defineEmits 捕获的函数而不是模板 $emit |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [错误示例](#script-prefer-import-from-vue-bad) · [正确示例](#script-prefer-import-from-vue-good) | 优先从 'vue' 导入，而不是内部包 |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [错误示例](#script-prefer-ref-over-reactive-bad) · [正确示例](#script-prefer-ref-over-reactive-good) | 建议使用 ref() 而不是 reactive() 管理状态 |
@@ -3503,6 +3504,73 @@ const doubled = computed(() => count.value * 2);
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [全部规则](all.md)
 
+### `script/prefer-define-emits-binding`
+
+优先使用从 defineEmits 捕获的函数而不是模板 $emit
+
+[错误示例](#script-prefer-define-emits-binding-bad) · [正确示例](#script-prefer-define-emits-binding-good)
+
+默认严重程度: `warning`
+
+预设: _none_
+
+自动修复: 适用于已支持的诊断
+
+适用范围: 包含 `<script setup>` 和编译器提供的 `defineEmits` 调用的 Vue SFC；检查模板中的 `$emit` 调用
+
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/prefer-define-emits-binding": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+**错误示例**
+
+模板调用组件的 `$emit` 辅助函数，但 `<script setup>` 已捕获 `defineEmits` 返回的类型化函数。
+
+```vue annotate="remove:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="$emit('save', 1)">Save</button></template>
+```
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+**正确示例**
+
+模板改为调用捕获的 `emit` 绑定，使事件名和 payload 经过组件的 `defineEmits` 约定。
+
+```vue annotate="add:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="emit('save', 1)">Save</button></template>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) · [全部规则](all.md)
+
 ### `script/prefer-define-options`
 
 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt;
@@ -4244,7 +4312,7 @@ function greet(name: string): string {
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L55) · [全部规则](all.md)
 
 ### `script/require-prop-type-constructor`
 

@@ -13,7 +13,7 @@ const PACKAGE: &str = "{\"name\":\"vize-event-fixture\",\"version\":\"0.0.0\",\"
 const SLOT_NAVIGATION_PRELUDE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-prelude.expected.txt"
 );
-const COMPONENT_NAVIGATION_HELPER: &str = "  type $$ComponentNavigationProps<P> = $$IsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n";
+const COMPONENT_NAVIGATION_HELPER: &str = "  type $ComponentNavigationProps<P> = $IsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n";
 
 pub(crate) struct Witness {
     pub app_path: PathBuf,
@@ -106,7 +106,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     let mapping = format!("// @vize-map: component -> {source_start}:{source_end}\n");
     assert_eq!(app.matches(&mapping).count(), 1);
     assert_eq!(app.matches(COMPONENT_NAVIGATION_HELPER).count(), 1);
-    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $$ComponentNavigationProps<__MySwitch_Props_0>;\n";
+    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__MySwitch_Props_0>;\n";
     assert_eq!(app.matches(construct).count(), 1);
     let cursor = app.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert!(app.find(&mapping).unwrap() < cursor);
@@ -236,14 +236,14 @@ pub fn public_input_prelude_utf16_delta() -> usize {
 pub fn kebab_case_prelude_utf16_delta() -> usize {
     let before = include_str!(
         "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt"
-    ).lines().find(|line| line.starts_with("type $$KebabCase<")).unwrap();
+    ).lines().find(|line| line.starts_with("type $KebabCase<")).unwrap();
     assert_eq!(
         super::hash(before.as_bytes()),
         "252e573afbee269915bdda1cb0725b6cb723b7bba2f8bd1195ec51aca24263b9"
     );
     let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
         .lines()
-        .find(|line| line.starts_with("type $$KebabCase<"))
+        .find(|line| line.starts_with("type $KebabCase<"))
         .unwrap();
     current
         .encode_utf16()

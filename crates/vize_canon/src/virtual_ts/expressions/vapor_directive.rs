@@ -9,6 +9,7 @@ use super::directive_values::DirectiveValueBinding;
 use crate::virtual_ts::helpers::push_ts_string_literal;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{String, append};
+use vize_l0::ts;
 
 pub(super) fn generate(
     ts: &mut String,
@@ -71,14 +72,19 @@ pub(super) fn generate(
     if binding.modifiers.is_empty() {
         ts.push_str("undefined");
     } else {
-        ts.push_str("{ ");
-        for (modifier, range) in &binding.modifiers {
-            let mut key = String::default();
-            push_ts_string_literal(&mut key, modifier.as_str());
-            push_mapped(ts, key.as_str(), in_template(*range));
-            ts.push_str(": true, ");
+        ts! { &mut *ts =>
+            {
+                #(" ")
+                #{
+                    for (modifier, range) in &binding.modifiers {
+                        let mut key = String::default();
+                        push_ts_string_literal(&mut key, modifier.as_str());
+                        push_mapped(__ts, key.as_str(), in_template(*range));
+                        __ts.push_str(": true, ");
+                    }
+                }
+            }
         }
-        ts.push('}');
     }
     ts.push_str("); // CustomDirective\n");
 }

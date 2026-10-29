@@ -78,8 +78,8 @@ Windows or Intel macOS packages. For the editor, start `tsrs --lsp`.
 ## Also available: `vize check`
 
 `vize check` type-checks `.vue`, `.ts`, `.tsx`, and `.d.ts` files with the
-checker packaged in `vize`. New projects should use the TypeScript 7.1 content
-mapper above. Use `vize check` when you want that packaged command, including
+Vize checker and a native TypeScript executable installed by your project. New projects
+should use the TypeScript 7.1 content mapper above. Use `vize check` for its command, including
 virtual TypeScript inspection and the check server.
 
 In a Vite+ project that uses the [Vize helper](./vite-plus.md), the generated
@@ -92,9 +92,26 @@ vp run typecheck
 Install `vize` and run it directly when you are not on Vite+:
 
 ```bash
-vp install -D vize
+vp install -D vize typescript@7.1.0-beta
 vp exec vize check
 ```
+
+Vize does not bundle or download the native compiler. The CLI, language server, and type-aware
+linting share runtime discovery from the selected project's dependencies. Explicit
+`--corsa-path`, `typeChecker.corsaPath`, or `CORSA_PATH` settings take priority. When a selected
+`tsconfig` lives in another package, its package provides the runtime; unrelated workspace
+caches and Vize's own dependencies are not runtime sources. Global executables require an
+explicit path; discovery does not search `HOME`, global npm installations, or `PATH`.
+
+To retain TypeScript 6 for other tools, use a project alias for the native compiler:
+
+```bash
+vp install -D typescript-native@npm:typescript@7.1.0-beta
+```
+
+A missing runtime is an error for operations that need type information. Formatting and
+syntax-only operations work independently. Compiler capabilities are checked separately:
+installing an executable does not guarantee that its API supports every editor operation.
 
 With no arguments, `vize check` reads `files`, `include`, and `exclude` from the nearest
 `tsconfig.json`. Pass paths or a different project to narrow the run:

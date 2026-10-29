@@ -4,7 +4,7 @@ use crate::virtual_ts::VirtualTsOptions;
 
 #[test]
 fn batch_type_checker_reports_camel_case_child_component_prop_error() {
-    // Repro 15 from ushironoko/vize-config-repro: `$$ComponentProps<T>`
+    // Repro 15 from ushironoko/vize-config-repro: `$ComponentProps<T>`
     // is a camel/kebab union, so prop value extraction must distribute over
     // the union instead of using `keyof` on the union as a whole.
     if resolve_test_tsgo_binary().is_none() {

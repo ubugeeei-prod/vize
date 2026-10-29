@@ -100,7 +100,7 @@ void OptionsWidget; void ClassWidget; void PageWidget
 
     let options = mapped_code(&project, &package.join("Options.vue"));
     assert!(
-        options.contains("type $$OptionsInstance<T>"),
+        options.contains("type $OptionsInstance<T>"),
         "{options}"
     );
     let class = mapped_code(&project, &package.join("Class.vue"));

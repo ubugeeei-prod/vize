@@ -58,7 +58,7 @@ export default { data() { return { count: 1 } } }
         responses[2]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$$OptionsBinding"),
+            .contains("$OptionsBinding"),
         "{}",
         responses[2]
     );
@@ -150,13 +150,13 @@ export default { data() { return { count: 1 } } }
         responses[2]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$$OptionsBinding")
+            .contains("$OptionsBinding")
     );
     assert!(
         !responses[4]["result"]["text"]
             .as_str()
             .unwrap()
-            .contains("$$OptionsBinding")
+            .contains("$OptionsBinding")
     );
 }
 
@@ -208,7 +208,7 @@ fn host_selected_configs_keep_unknown_prop_checks_scoped_by_project_handle() {
     let loose_code = responses[4]["result"]["text"].as_str().unwrap();
     let tail = |code: &str| {
         code.lines()
-            .find(|line| line.contains("type $$ComponentCheckTail"))
+            .find(|line| line.contains("type $ComponentCheckTail"))
             .unwrap()
             .to_owned()
     };

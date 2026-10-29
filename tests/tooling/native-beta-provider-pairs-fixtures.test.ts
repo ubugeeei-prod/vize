@@ -55,7 +55,7 @@ void test("exact beta lifecycle protocol custody remains outside batch and diale
   assert.deepEqual(analyze()?.cases, [row.id]);
   assert.equal(
     loadTypecheckerManifest(new URL(manifestPath, root).pathname).cases.length,
-    manifest.cases.length,
+    manifest.cases.filter((entry: { pack?: string }) => entry.pack !== undefined).length,
   );
   assert.equal(analyze({ previous: [row] })?.state, "new-input-missing");
   assert.equal(

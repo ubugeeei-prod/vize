@@ -51,6 +51,10 @@ fn test_slice_template_parts_matches_line_scanner() {
             };
             let bindings = BindingMetadata::default();
             let template_allocator = vize_l0::Allocator::new();
+            let codegen_options = vize_atelier_core::CodegenOptions {
+                source_map: true,
+                ..Default::default()
+            };
             let mut template_options = TemplateCompileOptions::default();
             if !inline {
                 let compiler_options = vize_atelier_dom::DomCompilerOptions {
@@ -75,11 +79,19 @@ fn test_slice_template_parts_matches_line_scanner() {
                     experimental_self_component: false,
                     bindings: Some(&bindings),
                     croquis: None,
+                    collect_map: false,
+                    authored_source: None,
+                    pug_source_map: None,
                 },
                 vize_atelier_core::TemplateSyntaxMode::Standard,
-                &vize_atelier_core::CodegenOptions::default(),
+                &codegen_options,
             )
             .expect("template should compile");
+
+            assert!(
+                result.map.is_none(),
+                "script-bearing callers must not collect an unused template map"
+            );
 
             let sections = result
                 .sections

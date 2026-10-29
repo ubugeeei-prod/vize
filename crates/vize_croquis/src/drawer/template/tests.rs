@@ -416,25 +416,32 @@ fn nuxt_slot_counts_never_admit_caller_owned_or_repeated_template_operations() {
 
 #[test]
 fn nuxt_render_admission_does_not_change_semantic_projections() {
-    use crate::croquis::{Croquis, NuxtTemplateRenderFacts};
+    use crate::croquis::{Croquis, NuxtPageLayout, NuxtTemplateRenderFacts};
 
     let mut croquis = Croquis::new();
     let snapshot = croquis.semantic_snapshot();
     let summary = croquis.semantic_summary();
-    for script in [None, Some(false), Some(true)] {
-        croquis.nuxt_static_render_script = script;
-        for template in [
-            None,
-            Some(NuxtTemplateRenderFacts::default()),
-            Some(NuxtTemplateRenderFacts {
-                slot_outlets: 2,
-                opaque_structure: true,
-                admitted: true,
-            }),
-        ] {
-            croquis.nuxt_render_template = template;
-            assert_eq!(croquis.semantic_summary(), summary);
-            assert_eq!(croquis.semantic_snapshot(), snapshot);
+    for page_layout in [
+        None,
+        Some(NuxtPageLayout::Disabled),
+        Some(NuxtPageLayout::Named("bare".into())),
+    ] {
+        croquis.nuxt_page_layout = page_layout;
+        for script in [None, Some(false), Some(true)] {
+            croquis.nuxt_static_render_script = script;
+            for template in [
+                None,
+                Some(NuxtTemplateRenderFacts::default()),
+                Some(NuxtTemplateRenderFacts {
+                    slot_outlets: 2,
+                    opaque_structure: true,
+                    admitted: true,
+                }),
+            ] {
+                croquis.nuxt_render_template = template;
+                assert_eq!(croquis.semantic_summary(), summary);
+                assert_eq!(croquis.semantic_snapshot(), snapshot);
+            }
         }
     }
 }

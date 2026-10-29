@@ -27,6 +27,7 @@ pub(super) use forwarded::ForwardedRoots;
 pub(crate) use types::fallthrough_component_root_starts;
 pub(super) use types::{
     FallthroughComponentScope, fallthrough_attrs_type_ref, fallthrough_props_type_ref,
+    has_only_native_fallthrough_targets,
 };
 
 fn explicit_attrs_targets(root: &RootNode<'_>) -> Option<Vec<FallthroughRootTarget>> {

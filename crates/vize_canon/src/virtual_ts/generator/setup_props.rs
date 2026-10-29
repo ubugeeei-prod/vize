@@ -233,7 +233,7 @@ impl SetupPropsPlan {
         // Resolve through the synthesized intersection when an authored
         // module-level `Props` must absorb models or deferred setup props.
         if self.uses_resolved_props {
-            "$$ResolvedProps"
+            "$ResolvedProps"
         } else {
             "Props"
         }
@@ -271,23 +271,25 @@ impl SetupPropsPlan {
         generic_decl: Option<&str>,
         legacy_input_aliases: bool,
         jsx_slots: bool,
+        hoist_shared_preamble: bool,
     ) {
         let props_type_ref = generic_decl
             .map(|_| self.generic_fallback_component_props_type_ref())
             .unwrap_or_else(|| self.component_props_type_ref().into());
         let mut public_props_type_ref = if legacy_input_aliases {
-            cstr!("$$ComponentProps<{props_type_ref}>")
+            cstr!("$ComponentProps<{props_type_ref}>")
         } else {
             props_type_ref.clone()
         };
         if jsx_slots {
-            public_props_type_ref =
-                cstr!("{public_props_type_ref} & $$JsxSlotProps<$$Slots>");
+            public_props_type_ref = cstr!("{public_props_type_ref} & $JsxSlotProps<$Slots>");
         }
         if has_emits_for_props {
+            let emit_props =
+                crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
             append!(
                 ts,
-                "  $props: {public_props_type_ref} & __EmitProps<Emits>;\n"
+                "  $props: {public_props_type_ref} & {emit_props}<Emits>;\n"
             );
         } else {
             append!(ts, "  $props: {public_props_type_ref};\n");

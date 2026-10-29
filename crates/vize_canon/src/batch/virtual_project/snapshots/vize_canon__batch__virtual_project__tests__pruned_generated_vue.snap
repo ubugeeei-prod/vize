@@ -59,18 +59,18 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type $$Slots = {};
-export type { $$Slots as Slots };
+type $Slots = {};
+export type { $Slots as Slots };
 
 // ========== Default Export ==========
-type $$ComponentInstance = {
+type $ComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: $$PublicEmit<Emits>;
-  $slots: $$PublicSlots<$$Slots>;
-} & $$ComponentPublicBase;
-type $$ComponentConstructor = new <$$AuthoredProps = unknown>(props?: $$AuthoredProps & $$ComponentInput<Props, {}, $$AuthoredProps>, ...args: any[]) => $$UsePublicInstance<$$AuthoredProps> extends true ? $$ComponentInstance : $$ReplaceComponentProps<$$ComponentInstance, $$AuthoredKeyWitness<$$AuthoredProps> & $$ComponentInputProps<Props, {}> & $$ComponentInputGuard<Props, {}, $$AuthoredProps>>;
-type $$VueComponentOptions = {
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;
+type $VueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -95,5 +95,5 @@ type $$VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $$UnownedComponentAttrs<Partial<$$NativeElement<"div">>, Props, {}>; } & $$ComponentConstructor & $$VueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

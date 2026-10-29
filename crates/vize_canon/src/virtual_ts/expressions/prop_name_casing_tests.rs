@@ -10,7 +10,7 @@
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::generate_virtual_ts;
-use crate::virtual_ts::helpers::to_camel_case;
+use crate::virtual_ts::helpers::{component_aria_prop_keys, to_camel_case};
 
 fn virtual_ts(script: &str, template: &str) -> std::string::String {
     let allocator = vize_carton::Allocator::new();
@@ -51,6 +51,20 @@ fn camelize_matches_vue_and_never_lowercases_the_leading_character() {
 }
 
 #[test]
+fn aria_prop_spellings_preserve_the_raw_key_and_generated_camel_key() {
+    assert_eq!(
+        component_aria_prop_keys("aria-label"),
+        Some(("aria-label".into(), "ariaLabel".into()))
+    );
+    assert_eq!(
+        component_aria_prop_keys("ariaLabel"),
+        Some(("aria-label".into(), "ariaLabel".into()))
+    );
+    assert_eq!(component_aria_prop_keys("data-label"), None);
+    assert_eq!(component_aria_prop_keys("arialabel"), None);
+}
+
+#[test]
 fn a_snake_case_prop_keeps_its_name() {
     let code = virtual_ts(
         "import Child from \"./Child.vue\"\nconst value = 1\n",
@@ -59,7 +73,7 @@ fn a_snake_case_prop_keeps_its_name() {
 
     assert!(
         code.contains(
-            "$$PropValue<__Child_ValueProps_0, 'my_prop', __Child_FallthroughValue_0<'my_prop'>>"
+            "$PropValue<__Child_ValueProps_0, 'my_prop', __Child_FallthroughValue_0<'my_prop'>>"
         ),
         "an underscore was treated as a separator:\n{code}"
     );
@@ -78,7 +92,7 @@ fn a_prop_named_template_keeps_its_case_everywhere_it_is_emitted() {
     // prop check reports it missing while the parent clearly bound it.
     assert!(
         code.contains(
-            "$$PropValue<__Child_ValueProps_0, 'Template', __Child_FallthroughValue_0<'Template'>>"
+            "$PropValue<__Child_ValueProps_0, 'Template', __Child_FallthroughValue_0<'Template'>>"
         ),
         "prop alias type lost the declared casing:\n{code}"
     );
@@ -105,7 +119,7 @@ fn kebab_case_attributes_still_resolve_to_their_camel_case_prop() {
 
     assert!(
         code.contains(
-            "$$PropValue<__Child_ValueProps_0, 'my-prop', $$PropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>>"
+            "$PropValue<__Child_ValueProps_0, 'my-prop', $PropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>>"
         ),
         "literal own prop must precede its camel alias and fallthrough lookup:\n{code}"
     );

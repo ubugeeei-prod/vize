@@ -43,7 +43,7 @@ use {
 /// template's real bindings, which live in the setup scope.
 ///
 /// Every other Vue 3 template reads its unknown names off the template
-/// context's public instance (`$$TemplateInstance`, see
+/// context's public instance (`$TemplateInstance`, see
 /// [`PUBLIC_INSTANCE_PRELUDE`]): a `ComponentCustomProperties` member resolves
 /// with its declared type, and a name nothing declares reports once per
 /// authored occurrence with the instance wording. Legacy Vue 2 and the strict
@@ -125,7 +125,7 @@ pub(super) fn generate_undefined_refs(
         if is_template_instance_global_name(undef.name.as_str()) {
             continue;
         }
-        if template_binding_access.contains(name)
+        if template_binding_access.is_known(name)
             || is_visible_template_binding(summary, name, undef.offset)
         {
             continue;
@@ -136,7 +136,8 @@ pub(super) fn generate_undefined_refs(
         }
 
         let src_start = (template_offset + undef.offset) as usize;
-        let src_end = src_start + undef.name.len();
+        let template = options.template_ast.map(|root| root.source);
+        let src_end = src_start + authored_binding_len(template, undef.offset, name);
         // A name a configured `globalTypes` entry or a CSS module already
         // declares in this scope keeps the free-name emission too: the `var` the
         // instance form hoists would redeclare it (`TS2451`).
@@ -218,7 +219,7 @@ pub(super) fn generate_undefined_refs(
             if seen_names.insert(String::from(name)) {
                 append!(
                     *ts,
-                    "  var {name}!: $$TemplateInstanceMember<\"{name}\">; void ({name});\n"
+                    "  var {name}!: $TemplateInstanceMember<\"{name}\">; void ({name});\n"
                 );
             }
             emit_strict_template_context_ref(
@@ -301,13 +302,34 @@ pub(super) fn generate_undefined_refs(
 /// The value a Vue 3 template without an Options API default export reads its
 /// unknown names off. The mapped alias keeps the public instance's members and
 /// gives the missing-property diagnostic a type name of its own
-/// (`$$TemplateInstance`), which the projection rewrites to the component
+/// (`$TemplateInstance`), which the projection rewrites to the component
 /// instance wording the lexical form reports. `__Ctx` is the template context
 /// type, so a `vue` without `ComponentPublicInstance` degrades to an index
 /// signature and reports nothing, as the context itself does.
-const PUBLIC_INSTANCE_PRELUDE: &str = "  type $$TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type $$TemplateInstanceMember<__K extends string> = __K extends keyof $$TemplateInstance ? $$TemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as $$TemplateInstance;\n  void __vize_public_instance;\n";
+const PUBLIC_INSTANCE_PRELUDE: &str = "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as $TemplateInstance;\n  void __vize_public_instance;\n";
 
 const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
+
+/// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
+/// the authored token is longer. A prefix range overlaps the attribute and is
+/// dropped, so the instance read is reported in unmapped virtual code.
+fn authored_binding_len(template: Option<&str>, offset: u32, name: &str) -> usize {
+    let Some(rest) = template.and_then(|source| source.get(offset as usize..)) else {
+        return name.len();
+    };
+    if rest.starts_with(name) {
+        return name.len();
+    }
+    let token_len = rest
+        .find(|ch: char| !ch.is_ascii_alphanumeric() && ch != '-' && ch != '_')
+        .unwrap_or(rest.len());
+    let token = rest.get(..token_len).unwrap_or("");
+    if crate::virtual_ts::helpers::to_camel_case(token).as_str() == name {
+        token_len
+    } else {
+        name.len()
+    }
+}
 
 pub(super) fn emit_header(ts: &mut String, emitted_header: &mut bool) {
     if !*emitted_header {

@@ -134,7 +134,7 @@ fn instance_props_type(
         && !has_script_setup(summary);
     resolve_on_instance.then(|| {
         String::from(
-            "(typeof __default__ extends abstract new (...args: any) => infer __I ? $$IsAny<__I> extends true ? any : __I extends { $props: infer __P } ? __P : {} : {})",
+            "(typeof __default__ extends abstract new (...args: any) => infer __I ? $IsAny<__I> extends true ? any : __I extends { $props: infer __P } ? __P : {} : {})",
         )
     })
 }
@@ -220,7 +220,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         let declared_type = if name == "$props" {
             self.resolve_instance_props_type()
         } else if name == "$el" && self.scope_options.check_options.infer_template_dollar_el {
-            Some("$$RootEl".into())
+            Some("$RootEl".into())
         } else {
             None
         };
@@ -246,12 +246,12 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 .push_str("\n  // Instance globals from ComponentPublicInstance:\n");
             self.emitted_header = true;
         }
-        // The `$$InstanceGlobal` alias is only emitted for names that
+        // The `$InstanceGlobal` alias is only emitted for names that
         // actually read the public instance: an alias declared and never used
         // is a `TS6196` under `noUnusedLocals`.
         if !strict && declared_type.is_none() && !self.emitted_instance_global_alias {
             self.ts.push_str(
-                "  type $$InstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
+                "  type $InstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
             );
             self.emitted_instance_global_alias = true;
         }
@@ -262,7 +262,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 cstr!("  const {name}: {props_type} = undefined as any;\n")
             }
             (None, false, _) => {
-                cstr!("  const {name}: $$InstanceGlobal<'{name}'> = undefined as any;\n")
+                cstr!("  const {name}: $InstanceGlobal<'{name}'> = undefined as any;\n")
             }
             (None, true, false) => {
                 cstr!("  const {name} = __vize_strict_template_context.{name};\n")

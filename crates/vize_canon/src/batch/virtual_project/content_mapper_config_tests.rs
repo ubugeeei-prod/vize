@@ -422,3 +422,4 @@ fn auto_target_watches_installed_vue_and_identity_follows_the_resolved_dialect()
         .any(|file| is_vue_manifest(file.as_str()));
     assert!(!numeric_watches_vue);
 }
+mod fallthrough_attributes;

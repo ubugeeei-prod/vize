@@ -47,7 +47,7 @@ impl ResolvedTypeWorld {
         if visiting.len() >= 128 {
             return ScopedTypeProperties::default();
         }
-        let source = cstr!("type $$Props = {expression}");
+        let source = cstr!("type $Props = {expression}");
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
         if parsed.panicked || !parsed.diagnostics.is_empty() {

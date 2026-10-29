@@ -4,24 +4,25 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
 
-const implementation = fs.readFileSync(
-  new URL(
-    "../../crates/vize_canon/src/virtual_ts/scope/component_events/inference_helpers.rs",
-    import.meta.url,
-  ),
-  "utf8",
+const implementationUrl = new URL(
+  "../../crates/vize_canon/src/virtual_ts/scope/component_events/inference_helpers.rs",
+  import.meta.url,
 );
-const declaration = implementation.match(/const EMIT_INFERENCE_HELPERS: &str = r#"([\s\S]+?)"#;/);
+const implementation = fs.readFileSync(implementationUrl, "utf8");
+const declaration = implementation.match(
+  /const EMIT_INFERENCE_HELPERS: &str =\s*include_str!\("([^"]+)"\);/u,
+);
 assert.ok(declaration);
-const helper = declaration[1];
+assert.equal(declaration[1], "../../helpers/declarations/emit-inference.d.ts.txt");
+const helper = fs.readFileSync(new URL(declaration[1], implementationUrl), "utf8");
 const shared = fs.readFileSync(
   new URL("../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt", import.meta.url),
   "utf8",
 );
 const ownership = [
-  "$$ComponentMetadataKeys",
-  "$$ComponentOwnKeys",
-  "$$UnownedComponentAttrs",
+  "$ComponentMetadataKeys",
+  "$ComponentOwnKeys",
+  "$UnownedComponentAttrs",
 ]
   .map((name) => {
     const line = shared.split("\n").find((line) => line.startsWith(`type ${name}<`));
@@ -36,184 +37,184 @@ const ownership = [
 // The canonical schema models below retain unknown-prop policy; the secondary
 // helper must validate typed inherited values without inventing excess checks.
 const body = `declare const constructor_0: (new(props:{own?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra?:string};};
-declare const factory_0: $$EmitPropsFactory<typeof constructor_0>;
+declare const factory_0: $EmitPropsFactory<typeof constructor_0>;
 factory_0(constructor_0)({own:1,extra:"ok"});
 declare const constructor_1: (new(props:{own?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra?:string};};
-declare const factory_1: $$EmitPropsFactory<typeof constructor_1>;
+declare const factory_1: $EmitPropsFactory<typeof constructor_1>;
 factory_1(constructor_1)({own:1,extra:123});
 declare const constructor_2: (new(props:{own?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra?:string};};
-declare const factory_2: $$EmitPropsFactory<typeof constructor_2>;
+declare const factory_2: $EmitPropsFactory<typeof constructor_2>;
 factory_2(constructor_2)({...{own:1,extra:"ok"}});
 declare const constructor_3: (new(props:{own?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra?:string};};
-declare const factory_3: $$EmitPropsFactory<typeof constructor_3>;
+declare const factory_3: $EmitPropsFactory<typeof constructor_3>;
 factory_3(constructor_3)({...{own:1,extra:123}});
 declare const constructor_4: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:Record<string,string>;};
-declare const factory_4: $$EmitPropsFactory<typeof constructor_4>;
+declare const factory_4: $EmitPropsFactory<typeof constructor_4>;
 factory_4(constructor_4)({bar:1,extra:"ok"});
 declare const constructor_5: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:Record<string,string>;};
-declare const factory_5: $$EmitPropsFactory<typeof constructor_5>;
+declare const factory_5: $EmitPropsFactory<typeof constructor_5>;
 factory_5(constructor_5)({bar:1,extra:123});
 declare const constructor_6: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:Record<string,string>;};
-declare const factory_6: $$EmitPropsFactory<typeof constructor_6>;
+declare const factory_6: $EmitPropsFactory<typeof constructor_6>;
 factory_6(constructor_6)({bar:"wrong",extra:"ok"});
 declare const constructor_7: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:Record<string,string>;};
-declare const factory_7: $$EmitPropsFactory<typeof constructor_7>;
+declare const factory_7: $EmitPropsFactory<typeof constructor_7>;
 factory_7(constructor_7)({...{bar:1,extra:"ok"}});
 declare const constructor_8: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:Record<string,string>;};
-declare const factory_8: $$EmitPropsFactory<typeof constructor_8>;
+declare const factory_8: $EmitPropsFactory<typeof constructor_8>;
 factory_8(constructor_8)({...{bar:1,extra:123}});
 declare const constructor_9: (new(props:{'data-owned'?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{'data-owned'?:number},Exclude<'data-owned','hidden'|'onChange'>>;__vizeEmitProps?:Select<{'data-owned'?:number},Extract<'data-owned','onChange'>>;__vizeFallthroughProps?:Partial<Record<\`data-\${string}\`,string>>;};
-declare const factory_9: $$EmitPropsFactory<typeof constructor_9>;
+declare const factory_9: $EmitPropsFactory<typeof constructor_9>;
 factory_9(constructor_9)({"data-owned":1,"data-extra":"ok"});
 declare const constructor_10: (new(props:{'data-owned'?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{'data-owned'?:number},Exclude<'data-owned','hidden'|'onChange'>>;__vizeEmitProps?:Select<{'data-owned'?:number},Extract<'data-owned','onChange'>>;__vizeFallthroughProps?:Partial<Record<\`data-\${string}\`,string>>;};
-declare const factory_10: $$EmitPropsFactory<typeof constructor_10>;
+declare const factory_10: $EmitPropsFactory<typeof constructor_10>;
 factory_10(constructor_10)({"data-owned":1,"data-extra":123});
 declare const constructor_11: (new(props:{'data-owned'?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{'data-owned'?:number},Exclude<'data-owned','hidden'|'onChange'>>;__vizeEmitProps?:Select<{'data-owned'?:number},Extract<'data-owned','onChange'>>;__vizeFallthroughProps?:Partial<Record<\`data-\${string}\`,string>>;};
-declare const factory_11: $$EmitPropsFactory<typeof constructor_11>;
+declare const factory_11: $EmitPropsFactory<typeof constructor_11>;
 factory_11(constructor_11)({"data-owned":"wrong","data-extra":"ok"});
 declare const constructor_12: (new(props:{'data-owned'?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{'data-owned'?:number},Exclude<'data-owned','hidden'|'onChange'>>;__vizeEmitProps?:Select<{'data-owned'?:number},Extract<'data-owned','onChange'>>;__vizeFallthroughProps?:Partial<Record<\`data-\${string}\`,string>>;};
-declare const factory_12: $$EmitPropsFactory<typeof constructor_12>;
+declare const factory_12: $EmitPropsFactory<typeof constructor_12>;
 factory_12(constructor_12)({...{"data-owned":1,"data-extra":"ok"}});
 declare const constructor_13: (new(props:{'data-owned'?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{'data-owned'?:number},Exclude<'data-owned','hidden'|'onChange'>>;__vizeEmitProps?:Select<{'data-owned'?:number},Extract<'data-owned','onChange'>>;__vizeFallthroughProps?:Partial<Record<\`data-\${string}\`,string>>;};
-declare const factory_13: $$EmitPropsFactory<typeof constructor_13>;
+declare const factory_13: $EmitPropsFactory<typeof constructor_13>;
 factory_13(constructor_13)({...{"data-owned":1,"data-extra":123}});
 declare const constructor_14: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:{bar?:string};};
-declare const factory_14: $$EmitPropsFactory<typeof constructor_14>;
+declare const factory_14: $EmitPropsFactory<typeof constructor_14>;
 factory_14(constructor_14)({bar:1});
 declare const constructor_15: (new(props:{bar?:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{bar?:number},Exclude<'bar','hidden'|'onChange'>>;__vizeEmitProps?:Select<{bar?:number},Extract<'bar','onChange'>>;__vizeFallthroughProps?:{bar?:string};};
-declare const factory_15: $$EmitPropsFactory<typeof constructor_15>;
+declare const factory_15: $EmitPropsFactory<typeof constructor_15>;
 factory_15(constructor_15)({bar:"wrong"});
 declare const constructor_16: (new(props:{hidden?:boolean}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{hidden?:boolean},Exclude<'hidden','hidden'|'onChange'>>;__vizeEmitProps?:Select<{hidden?:boolean},Extract<'hidden','onChange'>>;__vizeFallthroughProps?:{hidden?:string};};
-declare const factory_16: $$EmitPropsFactory<typeof constructor_16>;
+declare const factory_16: $EmitPropsFactory<typeof constructor_16>;
 factory_16(constructor_16)({hidden:true});
 declare const constructor_17: (new(props:{hidden?:boolean}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{hidden?:boolean},Exclude<'hidden','hidden'|'onChange'>>;__vizeEmitProps?:Select<{hidden?:boolean},Extract<'hidden','onChange'>>;__vizeFallthroughProps?:{hidden?:string};};
-declare const factory_17: $$EmitPropsFactory<typeof constructor_17>;
+declare const factory_17: $EmitPropsFactory<typeof constructor_17>;
 factory_17(constructor_17)({hidden:"wrong"});
 declare const constructor_18: (new(props:{own?:number;onClick?:(value:MouseEvent)=>void}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Extract<'own','onChange'>>;__vizeFallthroughProps?:{onClick?:(value:string)=>void};};
-declare const factory_18: $$EmitPropsFactory<typeof constructor_18>;
+declare const factory_18: $EmitPropsFactory<typeof constructor_18>;
 factory_18(constructor_18)({own:1,onClick:(value:string)=>{}});
 declare const constructor_19: (new(props:{own?:number;onClick?:(value:MouseEvent)=>void}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Extract<'own','onChange'>>;__vizeFallthroughProps?:{onClick?:(value:string)=>void};};
-declare const factory_19: $$EmitPropsFactory<typeof constructor_19>;
+declare const factory_19: $EmitPropsFactory<typeof constructor_19>;
 factory_19(constructor_19)({own:1,onClick:(value:MouseEvent)=>{}});
 declare const constructor_20: (new(props:{own?:number;onClick?:(value:MouseEvent)=>void}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Extract<'own','onChange'>>;__vizeFallthroughProps?:{onClick?:(value:string)=>void};};
-declare const factory_20: $$EmitPropsFactory<typeof constructor_20>;
+declare const factory_20: $EmitPropsFactory<typeof constructor_20>;
 factory_20(constructor_20)({own:1,onClick:(value)=>{const text:string=value;}});
 declare const constructor_21: (new(props:{own?:number;onClick?:(value:MouseEvent)=>void}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own?:number;onClick?:(value:MouseEvent)=>void},Extract<'own','onChange'>>;__vizeFallthroughProps?:{onClick?:(value:string)=>void};};
-declare const factory_21: $$EmitPropsFactory<typeof constructor_21>;
+declare const factory_21: $EmitPropsFactory<typeof constructor_21>;
 factory_21(constructor_21)({own:1,onClick:(value)=>{const number:number=value;}});
 declare const constructor_22: (new(props:{onChange?:(value:number)=>void}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{onChange?:(value:number)=>void},Exclude<'onChange','hidden'|'onChange'>>;__vizeEmitProps?:Select<{onChange?:(value:number)=>void},Extract<'onChange','onChange'>>;__vizeFallthroughProps?:{onChange?:(value:string)=>void};};
-declare const factory_22: $$EmitPropsFactory<typeof constructor_22>;
+declare const factory_22: $EmitPropsFactory<typeof constructor_22>;
 factory_22(constructor_22)({onChange:(value:number)=>{}});
 declare const constructor_23: (new(props:{onChange?:(value:number)=>void}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{onChange?:(value:number)=>void},Exclude<'onChange','hidden'|'onChange'>>;__vizeEmitProps?:Select<{onChange?:(value:number)=>void},Extract<'onChange','onChange'>>;__vizeFallthroughProps?:{onChange?:(value:string)=>void};};
-declare const factory_23: $$EmitPropsFactory<typeof constructor_23>;
+declare const factory_23: $EmitPropsFactory<typeof constructor_23>;
 factory_23(constructor_23)({onChange:(value:string)=>{}});
 declare const constructor_24: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra:string};};
-declare const factory_24: $$EmitPropsFactory<typeof constructor_24>;
+declare const factory_24: $EmitPropsFactory<typeof constructor_24>;
 factory_24(constructor_24)({own:1,extra:"ok"});
 declare const constructor_25: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra:string};};
-declare const factory_25: $$EmitPropsFactory<typeof constructor_25>;
+declare const factory_25: $EmitPropsFactory<typeof constructor_25>;
 factory_25(constructor_25)({extra:"ok"});
 declare const constructor_26: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra:string};};
-declare const factory_26: $$EmitPropsFactory<typeof constructor_26>;
+declare const factory_26: $EmitPropsFactory<typeof constructor_26>;
 factory_26(constructor_26)({own:1});
 declare const constructor_27: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{extra:string};};
-declare const factory_27: $$EmitPropsFactory<typeof constructor_27>;
+declare const factory_27: $EmitPropsFactory<typeof constructor_27>;
 factory_27(constructor_27)({});
 declare const constructor_28: (new(props:{kind:"left";left:string}|{kind:"right";right:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{kind:"left";left:string}|{kind:"right";right:number},Exclude<'kind'|'left'|'right','hidden'|'onChange'>>;__vizeEmitProps?:Select<{kind:"left";left:string}|{kind:"right";right:number},Extract<'kind'|'left'|'right','onChange'>>;__vizeFallthroughProps?:{extra?:boolean};};
-declare const factory_28: $$EmitPropsFactory<typeof constructor_28>;
+declare const factory_28: $EmitPropsFactory<typeof constructor_28>;
 factory_28(constructor_28)({kind:"left",left:"ok",extra:true});
 declare const constructor_29: (new(props:{kind:"left";left:string}|{kind:"right";right:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{kind:"left";left:string}|{kind:"right";right:number},Exclude<'kind'|'left'|'right','hidden'|'onChange'>>;__vizeEmitProps?:Select<{kind:"left";left:string}|{kind:"right";right:number},Extract<'kind'|'left'|'right','onChange'>>;__vizeFallthroughProps?:{extra?:boolean};};
-declare const factory_29: $$EmitPropsFactory<typeof constructor_29>;
+declare const factory_29: $EmitPropsFactory<typeof constructor_29>;
 factory_29(constructor_29)({kind:"right",right:1,extra:true});
 declare const constructor_30: (new(props:{kind:"left";left:string}|{kind:"right";right:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{kind:"left";left:string}|{kind:"right";right:number},Exclude<'kind'|'left'|'right','hidden'|'onChange'>>;__vizeEmitProps?:Select<{kind:"left";left:string}|{kind:"right";right:number},Extract<'kind'|'left'|'right','onChange'>>;__vizeFallthroughProps?:{extra?:boolean};};
-declare const factory_30: $$EmitPropsFactory<typeof constructor_30>;
+declare const factory_30: $EmitPropsFactory<typeof constructor_30>;
 factory_30(constructor_30)({kind:"left",left:1,extra:true});
 declare const constructor_31: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{};};
-declare const factory_31: $$EmitPropsFactory<typeof constructor_31>;
+declare const factory_31: $EmitPropsFactory<typeof constructor_31>;
 factory_31(constructor_31)({own:1});
 declare const constructor_32: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{};};
-declare const factory_32: $$EmitPropsFactory<typeof constructor_32>;
+declare const factory_32: $EmitPropsFactory<typeof constructor_32>;
 factory_32(constructor_32)({own:"wrong"});
 declare const constructor_33: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:{};};
-declare const factory_33: $$EmitPropsFactory<typeof constructor_33>;
+declare const factory_33: $EmitPropsFactory<typeof constructor_33>;
 factory_33(constructor_33)({});
 declare const constructor_34: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:unknown;};
-declare const factory_34: $$EmitPropsFactory<typeof constructor_34>;
+declare const factory_34: $EmitPropsFactory<typeof constructor_34>;
 factory_34(constructor_34)({own:1});
 declare const constructor_35: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:unknown;};
-declare const factory_35: $$EmitPropsFactory<typeof constructor_35>;
+declare const factory_35: $EmitPropsFactory<typeof constructor_35>;
 factory_35(constructor_35)({own:"wrong"});
 declare const constructor_36: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:unknown;};
-declare const factory_36: $$EmitPropsFactory<typeof constructor_36>;
+declare const factory_36: $EmitPropsFactory<typeof constructor_36>;
 factory_36(constructor_36)({});
 declare const constructor_37: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:undefined;};
-declare const factory_37: $$EmitPropsFactory<typeof constructor_37>;
+declare const factory_37: $EmitPropsFactory<typeof constructor_37>;
 factory_37(constructor_37)({own:1});
 declare const constructor_38: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:undefined;};
-declare const factory_38: $$EmitPropsFactory<typeof constructor_38>;
+declare const factory_38: $EmitPropsFactory<typeof constructor_38>;
 factory_38(constructor_38)({own:"wrong"});
 declare const constructor_39: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:undefined;};
-declare const factory_39: $$EmitPropsFactory<typeof constructor_39>;
+declare const factory_39: $EmitPropsFactory<typeof constructor_39>;
 factory_39(constructor_39)({});
 declare const constructor_40: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:null;};
-declare const factory_40: $$EmitPropsFactory<typeof constructor_40>;
+declare const factory_40: $EmitPropsFactory<typeof constructor_40>;
 factory_40(constructor_40)({own:1});
 declare const constructor_41: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:null;};
-declare const factory_41: $$EmitPropsFactory<typeof constructor_41>;
+declare const factory_41: $EmitPropsFactory<typeof constructor_41>;
 factory_41(constructor_41)({own:"wrong"});
 declare const constructor_42: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:null;};
-declare const factory_42: $$EmitPropsFactory<typeof constructor_42>;
+declare const factory_42: $EmitPropsFactory<typeof constructor_42>;
 factory_42(constructor_42)({});
 declare const constructor_43: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:never;};
-declare const factory_43: $$EmitPropsFactory<typeof constructor_43>;
+declare const factory_43: $EmitPropsFactory<typeof constructor_43>;
 factory_43(constructor_43)({own:1});
 declare const constructor_44: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:never;};
-declare const factory_44: $$EmitPropsFactory<typeof constructor_44>;
+declare const factory_44: $EmitPropsFactory<typeof constructor_44>;
 factory_44(constructor_44)({own:"wrong"});
 declare const constructor_45: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:never;};
-declare const factory_45: $$EmitPropsFactory<typeof constructor_45>;
+declare const factory_45: $EmitPropsFactory<typeof constructor_45>;
 factory_45(constructor_45)({});
 declare const constructor_46: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:any;};
-declare const factory_46: $$EmitPropsFactory<typeof constructor_46>;
+declare const factory_46: $EmitPropsFactory<typeof constructor_46>;
 factory_46(constructor_46)({own:1});
 declare const constructor_47: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:any;};
-declare const factory_47: $$EmitPropsFactory<typeof constructor_47>;
+declare const factory_47: $EmitPropsFactory<typeof constructor_47>;
 factory_47(constructor_47)({own:"wrong"});
 declare const constructor_48: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;__vizeFallthroughProps?:any;};
-declare const factory_48: $$EmitPropsFactory<typeof constructor_48>;
+declare const factory_48: $EmitPropsFactory<typeof constructor_48>;
 factory_48(constructor_48)({});
 declare const constructor_49: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;};
-declare const factory_49: $$EmitPropsFactory<typeof constructor_49>;
+declare const factory_49: $EmitPropsFactory<typeof constructor_49>;
 factory_49(constructor_49)({own:1});
 declare const constructor_50: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;};
-declare const factory_50: $$EmitPropsFactory<typeof constructor_50>;
+declare const factory_50: $EmitPropsFactory<typeof constructor_50>;
 factory_50(constructor_50)({own:"wrong"});
 declare const constructor_51: (new(props:{own:number}) => {$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:Select<{own:number},Exclude<'own','hidden'|'onChange'>>;__vizeEmitProps?:Select<{own:number},Extract<'own','onChange'>>;};
-declare const factory_51: $$EmitPropsFactory<typeof constructor_51>;
+declare const factory_51: $EmitPropsFactory<typeof constructor_51>;
 factory_51(constructor_51)({});
 declare const generic: new<T>(props:{value:T}) => {$emit:(value:T)=>void};
-declare const genericFactory: $$EmitPropsFactory<typeof generic>;
+declare const genericFactory: $EmitPropsFactory<typeof generic>;
 const emit = genericFactory(generic)({value:"text"}).emit;
 emit("ok");
 emit(123);
 declare const generatedGeneric: {readonly __vizeComponentMarker:true;__vizeResolveProps?:<T>(props:{value:T;extra?:string})=>{emit:(value:T)=>void}};
-declare const generatedGenericFactory: $$EmitPropsFactory<typeof generatedGeneric>;
+declare const generatedGenericFactory: $EmitPropsFactory<typeof generatedGeneric>;
 const generatedEmit = generatedGenericFactory(generatedGeneric)({value:"text",extra:"root"}).emit;
 generatedEmit("ok");
 generatedEmit(123);
 declare const internalGeneric: (new<A=unknown>(props?:A&{own?:number})=>{$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:{own?:number};__vizeFallthroughProps?:{extra?:string}};
-declare const internalFactory: $$EmitPropsFactory<typeof internalGeneric>;
+declare const internalFactory: $EmitPropsFactory<typeof internalGeneric>;
 internalFactory(internalGeneric)({own:1,extra:"root"});
 internalFactory(internalGeneric)({own:"wrong",extra:"root"});
 type IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
-type PublicMode<A> = $$IsAny<A> extends true ? true : IsUnknown<A>;
+type PublicMode<A> = $IsAny<A> extends true ? true : IsUnknown<A>;
 type PublicInput<P> = P extends unknown ? Partial<P> & {hidden?:boolean;onClick?:(event:MouseEvent)=>void} : never;
-type Missing<P,A> = Exclude<$$EmitRequiredKeys<P>,keyof A>;
+type Missing<P,A> = Exclude<$EmitRequiredKeys<P>,keyof A>;
 type Guard<P,A> = [Missing<P,A>|Exclude<keyof A,keyof PublicInput<P>>] extends [never] ? {} : {readonly invalidProps:{readonly missing:Missing<P,A>;readonly extra:Exclude<keyof A,keyof PublicInput<P>>}};
 type Input<P,A> = PublicMode<A> extends true ? PublicInput<P> : P extends unknown ? PublicInput<P>&Guard<P,A> : never;
 type View<P> = {$props:P;$emit:(value:string)=>void};
 declare const conditional: (new<A=unknown>(props?: A&Input<{own:number},A>)=>PublicMode<A> extends true ? View<{own:number}> : Omit<View<{own:number}>,"$props"> & {$props:{[K in keyof A]:unknown}&PublicInput<{own:number}>&Guard<{own:number},A>}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:{own:number};__vizeFallthroughProps?:Record<string,string>};
-declare const conditionalFactory: $$EmitPropsFactory<typeof conditional>;
+declare const conditionalFactory: $EmitPropsFactory<typeof conditional>;
 conditionalFactory(conditional)({own:1,extra:"ok"});
 conditionalFactory(conditional)({own:"wrong",extra:"ok"});
 conditionalFactory(conditional)({own:1,extra:123});
@@ -223,12 +224,12 @@ conditionalFactory(conditional)({extra:"ok"});
 declare function canonicalOwn(props:{own:number}):void;
 canonicalOwn({});
 declare const untypedMetadata: (new(props:{own?:number;hidden?:boolean})=>{$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:any;__vizeEmitProps?:any;__vizeFallthroughProps?:{extra?:string;hidden?:string}};
-declare const untypedFactory: $$EmitPropsFactory<typeof untypedMetadata>;
+declare const untypedFactory: $EmitPropsFactory<typeof untypedMetadata>;
 untypedFactory(untypedMetadata)({own:1,hidden:true,extra:"root"});
 untypedFactory(untypedMetadata)({own:1,hidden:true,extra:123});
 untypedFactory(untypedMetadata)({own:1,hidden:"wrong",extra:"root"});
 declare const schemaComponent: (new(props:{own?:number})=>{$emit:(value:string)=>void}) & {readonly __vizeComponentMarker:true;__vizeRawProps?:{own?:number};__vizeFallthroughProps?:{extra?:string}};
-declare const schemaFactory: $$EmitPropsFactory<typeof schemaComponent>;
+declare const schemaFactory: $EmitPropsFactory<typeof schemaComponent>;
 declare function schemaOpen(props:{own?:number;extra?:unknown}&Record<string,unknown>):void;
 declare function schemaStrict(props:{own?:number;extra?:unknown}):void;
 schemaOpen({own:1,extra:"ok",bogus:123});
@@ -318,9 +319,9 @@ const cases: Array<[string, number, number[]]> = [
 function diagnostics(exactOptionalPropertyTypes: boolean) {
   const prelude =
     [
-      "type $$IsAny<T> = 0 extends (1 & T) ? true : false;",
+      "type $IsAny<T> = 0 extends (1 & T) ? true : false;",
       "type __EmitProps<E> = { emit: E };",
-      "type $$PublicComponentInputProps = { hidden?: boolean };",
+      "type $PublicComponentInputProps = { hidden?: boolean };",
       "type Select<T, K extends PropertyKey> = T extends unknown ? Pick<T, Extract<keyof T, K>> : never;",
       ownership,
       helper.trimEnd(),
@@ -358,60 +359,60 @@ test("listener inputs preserve ownership, index values, generics and canonical u
 test("hand-authored root forwarding preserves listener owners and raw prop identities", () => {
   // Structural producer/consumer models, never a Vize-generated module.
   const content = `export {};
-type $$IsAny<T> = 0 extends (1 & T) ? true : false;
-type $$PublicComponentInputProps = { hidden?: boolean };
+type $IsAny<T> = 0 extends (1 & T) ? true : false;
+type $PublicComponentInputProps = { hidden?: boolean };
 ${ownership}
 type Public<C> = C extends new (...args: any[]) => { $props: infer P } ? P : {};
 type Fallthrough<C> = C extends { readonly __vizeFallthroughProps?: infer F } ? F : {};
-type Owned<C> = $$ComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
+type Owned<C> = $ComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
 type Args<P, K extends PropertyKey> = P extends { [Q in K]?: (...args: infer A) => any } ? A : P extends { [Q in K]?: infer H } ? [Extract<NonNullable<H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<H>, (...args: any) => any> extends (...args: infer A) => any ? A : unknown[] : unknown[];
-type RootArgs<C, K extends PropertyKey, F = Fallthrough<C>> = $$IsAny<F> extends true ? unknown[] : Args<NonNullable<F>, K> extends infer A ? A extends [] ? unknown[] : A : unknown[];
+type RootArgs<C, K extends PropertyKey, F = Fallthrough<C>> = $IsAny<F> extends true ? unknown[] : Args<NonNullable<F>, K> extends infer A ? A extends [] ? unknown[] : A : unknown[];
 type View<C, K extends PropertyKey> = C extends { readonly __vizeComponentMarker: true } ? C extends { __vizeCheck: unknown } ? Public<C> : K extends Owned<C> ? Public<C> : unknown[] extends RootArgs<C, K> ? Public<C> : NonNullable<Fallthrough<C>> : Public<C>;
 type Return<C, K extends PropertyKey> = View<C, K> extends { [Q in K]?: infer H } ? Extract<NonNullable<H>, (...args: any[]) => any> extends (...args: any[]) => infer R ? R : any : any;
 type Arrays<C, K extends PropertyKey> = View<C, K> extends { [Q in K]?: infer H } ? Extract<NonNullable<H>, readonly unknown[]> : never;
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Expect<T extends true> = T;
-type AnyRetained = Expect<$$IsAny<$$UnownedComponentAttrs<any>>>;
-type UnknownRetained = Expect<Equal<$$UnownedComponentAttrs<unknown>, unknown>>;
-type NeverRetained = Expect<Equal<$$UnownedComponentAttrs<never>, never>>;
-type NullishRetained = Expect<Equal<$$UnownedComponentAttrs<null | undefined>, null | undefined>>;
+type AnyRetained = Expect<$IsAny<$UnownedComponentAttrs<any>>>;
+type UnknownRetained = Expect<Equal<$UnownedComponentAttrs<unknown>, unknown>>;
+type NeverRetained = Expect<Equal<$UnownedComponentAttrs<never>, never>>;
+type NullishRetained = Expect<Equal<$UnownedComponentAttrs<null | undefined>, null | undefined>>;
 // A root's declared members must survive forwarding beside its open index.
 declare const indexedSymbol: unique symbol;
 type Indexed = { readonly [indexedSymbol]?: number; 1?: boolean; bar?: string; onFoo?: (value: string) => void } & Record<string, unknown>;
-type IndexedForward = $$UnownedComponentAttrs<Partial<Indexed>, { bar?: number }>;
+type IndexedForward = $UnownedComponentAttrs<Partial<Indexed>, { bar?: number }>;
 type IndexedArgs = Expect<Equal<Args<IndexedForward, 'onFoo'>, [value: string]>>;
 type IndexedNumber = Expect<Equal<IndexedForward[1], boolean | undefined>>;
 type IndexedSymbol = Expect<Equal<IndexedForward[typeof indexedSymbol], number | undefined>>;
 type IndexedOwnRemoved = Expect<Equal<IndexedForward['bar'], unknown>>;
-type SymbolOwnerRemoved = Expect<Equal<typeof indexedSymbol extends keyof $$UnownedComponentAttrs<Indexed, { [indexedSymbol]: number }> ? true : false, false>>;
+type SymbolOwnerRemoved = Expect<Equal<typeof indexedSymbol extends keyof $UnownedComponentAttrs<Indexed, { [indexedSymbol]: number }> ? true : false, false>>;
 declare const indexed: IndexedForward;
 indexed[indexedSymbol] = 1; // error 2540
 const wrongIndexedNumber: IndexedForward[1] = 'wrong'; // error 2322
 const wrongIndexedSymbol: IndexedForward[typeof indexedSymbol] = 'wrong'; // error 2322
-type NumericRoot = $$UnownedComponentAttrs<{ [index: number]: string; onFoo?: (value: string) => void }>;
+type NumericRoot = $UnownedComponentAttrs<{ [index: number]: string; onFoo?: (value: string) => void }>;
 type NumericArgs = Expect<Equal<Args<NumericRoot, 'onFoo'>, [value: string]>>;
 type NumericIndex = Expect<Equal<NumericRoot[2], string>>;
-type RequiredIndexed = $$UnownedComponentAttrs<{ bar: string; onFoo: (value: string) => void } & Record<string, unknown>>;
+type RequiredIndexed = $UnownedComponentAttrs<{ bar: string; onFoo: (value: string) => void } & Record<string, unknown>>;
 const requiredIndexed: RequiredIndexed = { bar: 'text', onFoo: value => value.length };
 const missingIndexed: RequiredIndexed = {}; // error 2739
-type IndexedUnion = $$UnownedComponentAttrs<({ kind: 'left'; value: number } | { kind: 'right'; value: string }) & Record<string, unknown>>;
+type IndexedUnion = $UnownedComponentAttrs<({ kind: 'left'; value: number } | { kind: 'right'; value: string }) & Record<string, unknown>>;
 const indexedLeft: IndexedUnion = { kind: 'left', value: 1 };
 const indexedRight: IndexedUnion = { kind: 'right', value: 'text' };
 const indexedWrong: IndexedUnion = { kind: 'left', value: 'wrong' }; // error 2322
-type Augmented = $$UnownedComponentAttrs<{ hidden?: string; extra?: string } | null | undefined>;
+type Augmented = $UnownedComponentAttrs<{ hidden?: string; extra?: string } | null | undefined>;
 type NullableRetained = Expect<Equal<Augmented, { extra?: string } | null | undefined>>;
-const augmented: $$PublicComponentInputProps & NonNullable<Augmented> = { hidden: true, extra: 'text' };
-const wrongAugmented: $$PublicComponentInputProps & NonNullable<Augmented> = { hidden: 'wrong' }; // error 2322
+const augmented: $PublicComponentInputProps & NonNullable<Augmented> = { hidden: true, extra: 'text' };
+const wrongAugmented: $PublicComponentInputProps & NonNullable<Augmented> = { hidden: 'wrong' }; // error 2322
 namespace BroadPublicAugmentation {
-  type $$PublicComponentInputProps = { hidden?: boolean } & { [key: \`custom-\${string}\`]: boolean | undefined };
+  type $PublicComponentInputProps = { hidden?: boolean } & { [key: \`custom-\${string}\`]: boolean | undefined };
   ${ownership}
-  type RootAttrs = $$UnownedComponentAttrs<{ 'custom-flag'?: string; label?: number }>;
-  const valid: $$PublicComponentInputProps & RootAttrs = { hidden: true, 'custom-flag': true, label: 1 };
-  const wrong: $$PublicComponentInputProps & RootAttrs = { 'custom-flag': 'wrong' }; // error 2322
+  type RootAttrs = $UnownedComponentAttrs<{ 'custom-flag'?: string; label?: number }>;
+  const valid: $PublicComponentInputProps & RootAttrs = { hidden: true, 'custom-flag': true, label: 1 };
+  const wrong: $PublicComponentInputProps & RootAttrs = { 'custom-flag': 'wrong' }; // error 2322
 }
 type Native = { onClick?: (value: PointerEvent) => void };
 type Emits = { onClick?: (value: string) => number };
-type Root = Emits & $$PublicComponentInputProps & $$UnownedComponentAttrs<Native, {}, Emits>;
+type Root = Emits & $PublicComponentInputProps & $UnownedComponentAttrs<Native, {}, Emits>;
 type Forward = (new () => { $props: Native & { bar?: number } }) & { [key: string]: any; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: { bar?: number }; readonly __vizeFallthroughProps?: Partial<Root> };
 declare const forwarded: (...args: Args<View<Forward, 'onClick'>, 'onClick'>) => Return<Forward, 'onClick'>;
 const forwardedReturn: number = forwarded('text');
@@ -425,7 +426,7 @@ const mixedReturn: number = mixed('text');
 mixed(new PointerEvent('click')); // error 2345
 const mixedArray: Arrays<MixedForward, 'onClick'> = [(value: string) => value.length];
 const wrongMixedArray: Arrays<MixedForward, 'onClick'> = [(value: PointerEvent) => 1]; // error 2322
-type UnionRoot = $$UnownedComponentAttrs<{ kind: 'left'; left: number; onClick?: (value: PointerEvent) => void } | { kind: 'right'; right: string; onClick?: (value: PointerEvent) => void }, {}, Emits>;
+type UnionRoot = $UnownedComponentAttrs<{ kind: 'left'; left: number; onClick?: (value: PointerEvent) => void } | { kind: 'right'; right: string; onClick?: (value: PointerEvent) => void }, {}, Emits>;
 const unionLeft: UnionRoot = { kind: 'left', left: 1 };
 const unionRight: UnionRoot = { kind: 'right', right: 'text' };
 const wrongUnion: UnionRoot = { kind: 'left', left: 'wrong' }; // error 2322

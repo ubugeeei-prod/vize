@@ -7,10 +7,10 @@
 //! authored ordering and spread semantics identical.
 
 use super::super::types::{VizeMapping, VizeSubSpan};
-use super::component_props::{
-    ComponentPropSource, collect_generated_class_bindings, collect_generated_named_bindings,
-    is_checkable_prop,
+use super::component_prop_bindings::{
+    collect_generated_class_bindings, collect_generated_named_bindings,
 };
+use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
@@ -20,6 +20,7 @@ use vize_croquis::{
     ScopeChain, ScopeId,
     croquis::{ComponentUsage, SpreadProp},
 };
+use vize_l0::ts;
 
 mod prop_entry;
 pub(crate) use prop_entry::entry_sub_spans as prop_entry_sub_spans;
@@ -61,7 +62,11 @@ pub(crate) fn append_props_literal(
     expr_indent: &str,
 ) -> std::ops::Range<usize> {
     let literal_gen_start = ts.len();
-    ts.push_str("{\n");
+    ts! { &mut *ts =>
+        {
+            #("\n")
+            #{
+                (|ts: &mut String| {
 
     // Listeners are props at runtime. Their separately checked handlers must
     // satisfy required `onFoo` keys without treating unknown listeners as
@@ -148,7 +153,11 @@ pub(crate) fn append_props_literal(
         );
     }
 
-    append!(*ts, "{expr_indent}}}");
+                })(__ts);
+            }
+            #expr_indent
+        }
+    }
     literal_gen_start..ts.len()
 }
 

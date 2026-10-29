@@ -89,6 +89,7 @@ vize_musea.workspace = true
 libc.workspace = true
 
 [dev-dependencies]
+davinci_harness.workspace = true
 davinci_test_support = { workspace = true, features = ["vue-fixtures"] }
 insta.workspace = true
 sha2.workspace = true

@@ -42,7 +42,7 @@ fn options_api_runtime_props_stay_in_value_scope() {
     );
     assert!(
         virtual_ts.contains(
-            "export type Props = $$OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props must be derived from the captured runtime value:\n{virtual_ts}"
     );

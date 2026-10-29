@@ -1,13 +1,13 @@
 //! Options API typed-instance bridge for the virtual TypeScript generator.
 //!
 //! The bridge re-emits every `computed`/`methods` function body inside setup
-//! scope with an explicit `this: $$This` receiver, so `this.foo` in an
+//! scope with an explicit `this: $This` receiver, so `this.foo` in an
 //! Options API component is type-checked instead of silently `any`.
 //!
 //! Only the Vue 2 dialect emits it. A Vue 3 options object is generated (or
 //! wrapped) as `defineComponent({ ... })`, so Vue's own options machinery
 //! already types `this` inside the authored copy; re-checking those bodies
-//! against the approximate `$$This` shape adds no coverage, and now that
+//! against the approximate `$This` shape adds no coverage, and now that
 //! the copies anchor on authored bytes it would publish findings vue-tsc never
 //! reports: implicit `any` callback parameters off `any`-typed members, plus
 //! every member the shape cannot see (`$emit`, plugin globals, and mixins that
@@ -34,6 +34,7 @@ use self::inherited::{INHERITED_MEMBER_HELPERS, InheritedComponent};
 use super::options_api_support::{extend_options_api_descriptor_names, is_safe_value_identifier};
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{CompactString, String, append, profile};
+use vize_l0::ts;
 
 pub(super) fn generate_options_api_bridge(
     ts: &mut String,
@@ -92,7 +93,7 @@ fn emit_options_api_bridge(
         let gen_start = ts.len();
         append!(
             ts,
-            "  type $$OptionsMap{index} = {{ {} }};\n",
+            "  type $OptionsMap{index} = {{ {} }};\n",
             mapped_type.text
         );
         mappings.push(VizeMapping {
@@ -102,16 +103,23 @@ fn emit_options_api_bridge(
         });
     }
     emit_inherited_aliases(ts, mappings, &bridge.inherited, script_offset);
-    ts.push_str("  type $$This = {\n");
-    for name in names {
-        append!(ts, "    {name}: any;\n");
+    ts! { &mut *ts =>
+        #("  type $This = ")
+        {
+            #("\n")
+            #{
+                for name in names {
+                    append!(*__ts, "    {name}: any;\n");
+                }
+            }
+            #("  ")
+        }
     }
-    ts.push_str("  }");
     for index in 0..bridge.mapped_types.len() {
-        append!(ts, " & $$OptionsMap{index}");
+        append!(ts, " & $OptionsMap{index}");
     }
     for index in 0..bridge.inherited.len() {
-        append!(ts, " & $$Inherited{index}");
+        append!(ts, " & $Inherited{index}");
     }
     ts.push_str(";\n");
 
@@ -139,7 +147,7 @@ fn emit_options_api_bridge(
     ts.push('\n');
 }
 
-/// Emit one `$$Inherited{index}` alias per `mixins:` / `extends:` entry.
+/// Emit one `$Inherited{index}` alias per `mixins:` / `extends:` entry.
 ///
 /// Each alias is anchored on the authored reference it was derived from: a
 /// finding raised by the `typeof` query (an unresolved import, say) must land
@@ -160,7 +168,7 @@ fn emit_inherited_aliases(
         let gen_start = ts.len();
         append!(
             ts,
-            "  type $$Inherited{index} = $$InheritedMembers<typeof {}>;\n",
+            "  type $Inherited{index} = $InheritedMembers<typeof {}>;\n",
             component.reference
         );
         mappings.push(VizeMapping {
@@ -178,9 +186,9 @@ fn emit_bridge_function(
     script_offset: usize,
 ) {
     let params = if function.params.is_empty() {
-        String::from("this: $$This")
+        String::from("this: $This")
     } else {
-        let mut params = String::from("this: $$This, ");
+        let mut params = String::from("this: $This, ");
         params.push_str(&function.params);
         params
     };
@@ -231,7 +239,7 @@ struct OptionsApiBridge {
     computed: Vec<OptionsFunction>,
     methods: Vec<OptionsFunction>,
     mapped_types: Vec<MappedType>,
-    /// `mixins:` / `extends:` references whose members `$$This` inherits.
+    /// `mixins:` / `extends:` references whose members `$This` inherits.
     inherited: Vec<InheritedComponent>,
 }
 

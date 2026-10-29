@@ -72,7 +72,7 @@ fn pattern_declarations_are_requested_once_and_only_when_used() {
         assert_eq!(result.virtual_ts_helpers.is_some(), used);
         if let Some(helpers) = result.virtual_ts_helpers {
             assert_eq!(
-                helpers.matches("declare namespace $$Patterns").count(),
+                helpers.matches("declare namespace $Patterns").count(),
                 1
             );
         }
@@ -82,7 +82,7 @@ fn pattern_declarations_are_requested_once_and_only_when_used() {
             result
                 .virtual_ts
                 .unwrap()
-                .matches("declare namespace $$Patterns")
+                .matches("declare namespace $Patterns")
                 .count(),
             usize::from(used)
         );

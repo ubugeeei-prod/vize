@@ -46,6 +46,7 @@ mod options_api_data_assignment;
 mod options_api_declaration_instance;
 mod options_api_import_shadow;
 mod options_api_inherited_members;
+mod package_local_vue_identity;
 mod pascal_case_prop_names;
 mod public_instance_contract;
 mod real_project_parity;
@@ -56,6 +57,7 @@ mod release_opaque_slot_hosts;
 mod sequence_prop_expressions;
 mod setup_custom_properties;
 mod sfc_syntax_error_module;
+mod shared_helper_shadowing;
 mod single_required_camel_prop;
 mod slot_key;
 mod split_script_diagnostic_anchors;
@@ -166,7 +168,7 @@ function update(value: T | undefined) {}
         snapshot.iter().all(|(file, code, message)| {
             !(file == "src/Foo.vue"
                 && *code == Some(2345)
-                && message.contains("$$WidenTemplateRef"))
+                && message.contains("$WidenTemplateRef"))
         }),
         "generic refs should keep T | undefined in templates, got: {snapshot:#?}"
     );

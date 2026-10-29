@@ -21,7 +21,7 @@ pub(super) fn full(
         return None;
     }
     let uri = &params.text_document.uri;
-    let content = state.documents.text(uri)?;
+    let content = state.documents.text_snapshot(uri)?;
     // `.jsx`/`.tsx`: highlight the dynamic JSX expressions.
     if crate::utils::is_jsx_path(uri.path()) {
         return crate::ide::JsxSemanticTokensService::tokens(&content, uri);
@@ -37,7 +37,7 @@ pub(super) fn range(
         return None;
     }
     let uri = &params.text_document.uri;
-    let content = state.documents.text(uri)?;
+    let content = state.documents.text_snapshot(uri)?;
     if crate::utils::is_jsx_path(uri.path()) {
         return crate::ide::JsxSemanticTokensService::tokens_range(&content, uri, params.range);
     }

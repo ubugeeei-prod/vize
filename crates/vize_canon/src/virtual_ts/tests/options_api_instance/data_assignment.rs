@@ -41,7 +41,7 @@ fn data_template_bindings_emit_var_while_static_options_stay_const() {
     let declarations = output
         .code
         .lines()
-        .filter(|line| line.contains("$$OptionsBinding"))
+        .filter(|line| line.contains("$OptionsBinding"))
         .filter(|line| {
             let trimmed = line.trim_start();
             trimmed.starts_with("const ") || trimmed.starts_with("var ")
@@ -50,10 +50,10 @@ fn data_template_bindings_emit_var_while_static_options_stay_const() {
     assert_eq!(
         declarations,
         [
-            "  const close: $$OptionsBinding<typeof __default__, \"close\"> = (void 0) as any;",
-            "  const initial: $$OptionsBinding<typeof __default__, \"initial\"> = (void 0) as any;",
-            "  const label: $$OptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
-            "  var open: $$OptionsBinding<typeof __default__, \"open\"> = (void 0) as any;",
+            "  const close: $OptionsBinding<typeof __default__, \"close\"> = (void 0) as any;",
+            "  const initial: $OptionsBinding<typeof __default__, \"initial\"> = (void 0) as any;",
+            "  const label: $OptionsBinding<typeof __default__, \"label\"> = (void 0) as any;",
+            "  var open: $OptionsBinding<typeof __default__, \"open\"> = (void 0) as any;",
         ]
     );
 }

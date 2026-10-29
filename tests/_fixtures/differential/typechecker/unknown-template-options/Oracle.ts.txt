@@ -1,14 +1,14 @@
 // Authored direct native contract, separate from the original SFC project.
 import type { NativeElements, VNodeProps, AllowedComponentProps, ComponentCustomProps } from 'vue';
-type $$IsAny<T> = 0 extends (1 & T) ? true : false;
-type $$NativeElements = NativeElements;
-type $$AttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<$$AttrCamel<T>>}` : S;
-type $$NativeAttrNames = { [K in keyof $$NativeElements & string]: keyof $$NativeElements[K] }[keyof $$NativeElements & string] & string;
-type $$GlobalHtmlAttrs = $$IsAny<$$NativeElements> extends true ? {} : { [K in $$NativeAttrNames as K | $$AttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };
-interface $$PublicComponentAttrs extends VNodeProps, AllowedComponentProps, ComponentCustomProps {}
+type $IsAny<T> = 0 extends (1 & T) ? true : false;
+type $NativeElements = NativeElements;
+type $AttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<$AttrCamel<T>>}` : S;
+type $NativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string] & string;
+type $GlobalHtmlAttrs = $IsAny<$NativeElements> extends true ? {} : { [K in $NativeAttrNames as K | $AttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };
+interface $PublicComponentAttrs extends VNodeProps, AllowedComponentProps, ComponentCustomProps {}
 type Props = { label: string };
-type $$ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-declare const check: (props: $$ComponentCheckProps<Props, $$PublicComponentAttrs & $$GlobalHtmlAttrs>) => void;
+type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+declare const check: (props: $ComponentCheckProps<Props, $PublicComponentAttrs & $GlobalHtmlAttrs>) => void;
 check({ "label": "ok", "unknownProp": 1 });
 const { "NotImported": missingComponent } = {} as {};
 const { "vNotADirective": missingDirective } = {} as {};

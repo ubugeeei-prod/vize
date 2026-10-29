@@ -37,7 +37,7 @@ fn props_type_of(script: &str) -> std::string::String {
     let code = code_of(script);
     let start = code
         .find("export type Props")
-        .or_else(|| code.find("type $$ResolvedProps"))
+        .or_else(|| code.find("type $ResolvedProps"))
         .expect("Props alias");
     let end = code[start..]
         .find("\n\n")

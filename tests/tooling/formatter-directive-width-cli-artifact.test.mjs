@@ -53,6 +53,10 @@ void test("closed sixteen-case CLI union preserves original thirteen and incomin
     (copy) =>
       (copy.cases.find((item) => item.id === preservedId).expectations.legacy.artifacts[0].sha256 =
         "0".repeat(64)),
+    (copy) =>
+      (copy.cases.find(
+        (item) => item.id === "formatter/sfc/plain-style-nested-comments",
+      ).dialectCoverage.evidence[0].selector = "foreign selector"),
     (copy) => (copy.adapterOptions.passes = 1),
   ]) {
     const copy = JSON.parse(current.toString());

@@ -34,14 +34,22 @@ pub(super) fn append_model_update_check(
     prop: &PassedProp,
     target: &str,
     target_source: Range<usize>,
-    indent: &str,
+    (indent, hoist_shared_preamble): (&str, bool),
 ) {
     let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
     let payload = vize_carton::cstr!("__{component_type_name}_{idx}_model_{safe_prop_name}");
-    append!(
-        *ts,
-        "{indent}type {payload} = $$EmitListeners<__{component_type_name}_Component_{idx}> extends {{ ",
-    );
+    if hoist_shared_preamble {
+        let emit_listeners = crate::virtual_ts::helpers::shared_types::EMIT_LISTENERS.select(true);
+        append!(
+            *ts,
+            "{indent}type {payload} = {emit_listeners}<__{component_type_name}_Component_{idx}> extends {{ ",
+        );
+    } else {
+        append!(
+            *ts,
+            "{indent}type {payload} = $EmitListeners<__{component_type_name}_Component_{idx}> extends {{ ",
+        );
+    }
     push_ts_string_literal(
         ts,
         &vize_carton::cstr!("onUpdate:{}", camelize(prop.name.as_str())),

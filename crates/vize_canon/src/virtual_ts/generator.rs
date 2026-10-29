@@ -43,7 +43,7 @@ use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
 use self::component_public_types::{emit_exposed_type, emit_slots_type};
-use self::emits::{emit_emit_props_helper, emit_emits_type};
+use self::emits::emit_emits_type;
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api,
@@ -81,6 +81,7 @@ use super::{
 };
 use vize_carton::{FxHashMap, FxHashSet, String, append, config::VueVersion, cstr, profile};
 use vize_croquis::{Croquis, facts::component_usage_list};
+use vize_l0::ts;
 
 pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     summary: &Croquis,
@@ -91,11 +92,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     options: &VirtualTsOptions,
     generation_options: VirtualTsGenerationOptions<'_>,
 ) -> VirtualTsOutput {
+    let _bindings_scope = super::script_facts::cache_bindings(summary);
     let check_options = generation_options.check_options;
     let check_props = check_options.check_props;
     let script_source_offset =
         |offset| generation_options.script_source_offset(script_offset, offset);
-    // Configured Vue dialect drives the Vue 2/3 template instance shape.
     let dialect = generation_options.dialect;
     let legacy_vue2 =
         generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
@@ -142,7 +143,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         recover_lone_setup,
         options_script_source,
     } = script_metadata::ScriptMetadata::new(summary, script_content, generation_options);
-
     let local_generic_parameters = generation_options
         .generic_parameters
         .is_none()
@@ -151,7 +151,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let generic_parameters = generation_options
         .generic_parameters
         .or(local_generic_parameters.as_ref());
-
     preamble::emit_module_preamble(&mut ts, summary, generation_options, legacy_vue2);
 
     let mut named_value_exports = self::script_module::collect_normal_script_named_value_exports(
@@ -402,11 +401,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let generic_params = generic_parameters
         .map(|g| cstr!("<{}>", g.authored()))
         .unwrap_or_default();
-    append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
+    let mut has_root_el = false;
+    let mut define_emits_runtime_args: Option<&String> = None;
+    let mut authored_default = super::types::AuthoredDefaultKind::None;
+    ts! { &mut ts =>
+        #async_prefix function __setup #generic_params #("() ") {
+            #("\n")
+            #{
+                (|mut ts: &mut String| {
     if let Some(aliases) = &hoisted_generic_aliases {
         aliases.emit_setup_aliases(&mut ts);
     }
-
     setup_imports.emit_setup(
         &mut ts,
         options,
@@ -634,7 +639,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         prop_source(&mut mappings, summary, script_content, source_offset),
         generic_parameters,
     );
-    let has_root_el = root_element::emit_setup_type(
+    has_root_el = root_element::emit_setup_type(
         &mut ts,
         summary,
         options,
@@ -722,6 +727,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             generic_parameters,
                             check_options,
                             virtual_ts_options: options,
+                            hoist_shared_preamble,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
                             keyed_prop_bindings: &keyed_prop_bindings,
                             syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
@@ -747,9 +753,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &global_components,
                 &syntactic_type_only_imported_names,
             );
-
             binding_anchors.emit(&mut ts, "canon.virtual_ts.emit_setup_binding_anchors");
-
             ts.push_str("  })();\n");
         });
     }
@@ -771,7 +775,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         );
     }
     emit_setup_scope_macro_anchors(&mut ts, &setup_helpers);
-    let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
+    define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
     template_record.push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
@@ -780,7 +784,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
-    let authored_default =
+    authored_default =
         generation_options.authored_default(declared_default_alias, has_script_setup);
     let preserve_authored_value = authored_default != super::types::AuthoredDefaultKind::None;
     setup_helpers::emit_return_artifacts(
@@ -792,7 +796,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
     ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
 
-    ts.push_str("}\n\n");
+                })(__ts);
+            }
+        }
+        #("\n\n")
+    }
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     semantic_links.extend(script_module::emit_exports(
@@ -829,9 +837,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
     let forwards = template_record.forwarded.emit_helpers(&mut ts);
-    let event_inference =
-        super::scope::emit_event_inference_helpers(&mut ts, summary, forwards, legacy_vue2);
-    emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
+    let emit_mode = (legacy_vue2, hoist_shared_preamble);
+    emits_info.emit(&mut ts, summary, forwards, emit_mode);
     let generic_component_params =
         setup_props_plan.generic_component_params(generic_parameters, authored_generic);
     let public_component_type = emit_component_constructors(
@@ -849,6 +856,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             has_refs: template_record.has_instance_refs(),
             jsx_slots: check_options.jsx_slots,
             has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
+            hoist_shared_preamble,
         },
         generic_parameters
             .map(|plan| plan.authored())
@@ -866,7 +874,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .component_value_props_type_ref(generic_component_params.as_ref(), legacy_vue2)
             .as_deref(),
         ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
-            .then_some("$$Slots"),
+            .then_some("$Slots"),
         (
             self::fallthrough::fallthrough_props_type_ref(
                 &fallthrough_scope,
@@ -874,16 +882,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
             )
             .as_deref(),
+            check_options.infers_omitted_native_fallthrough_listeners(legacy_vue2)
+                && self::fallthrough::has_only_native_fallthrough_targets(summary, template_ast),
             check_options,
+            hoist_shared_preamble,
         ),
     );
-    let component_name_is_setup_binding = generation_options
-        .component_name
-        .is_some_and(|name| super::script_facts::contains_binding(summary, name));
-    component_export::emit_component_default_export(
+    component_export::emit_component_default_export_for_generation(
         &mut ts,
-        generation_options.component_name,
-        component_name_is_setup_binding,
+        summary,
+        generation_options,
         script_content,
     );
     binding_output::publish(

@@ -165,6 +165,12 @@ export class LspSession {
     this.send({ jsonrpc: "2.0", method, params });
   }
 
+  /** Write several already ordered protocol messages as one stdio frame batch. */
+  sendBatch(...messages: JsonRpcMessage[]): void {
+    assert.ok(messages.length > 0, "an LSP batch must contain at least one message");
+    this.send(...messages);
+  }
+
   waitForNotification(
     method: string,
     predicate?: (params: unknown) => boolean,

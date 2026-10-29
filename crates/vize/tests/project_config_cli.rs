@@ -217,6 +217,141 @@ fn formatter_cli_exposes_bracket_layout_policies() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_sfc_body_indentation_policy() {
+    let project = project();
+    let root = project.path();
+    let source = "<script setup lang=\"ts\">\nconst value=1\n</script>\n<style>\n.card{color:red}\n</style>\n";
+    let expected = "<script setup lang=\"ts\">\n  const value = 1;\n</script>\n\n<style>\n  .card {\n    color: red;\n  }\n</style>\n";
+    write(root, "IndentedBodies.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "IndentedBodies.vue",
+        "--no-config",
+        "--preset",
+        "vize",
+        "--vue-indent-script-and-style",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("IndentedBodies.vue")).unwrap(),
+        expected
+    );
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("IndentedBodies.vue")).unwrap(),
+        expected
+    );
+}
+
+#[cfg(feature = "glyph")]
+#[test]
+fn formatter_cli_exposes_attribute_order_with_a_disabled_sort_control() {
+    let project = project();
+    let root = project.path();
+    let source = "<template>\n  <div data-z=\"z\" id=\"root\" data-a=\"a\"></div>\n</template>\n";
+    let alphabetical =
+        "<template>\n  <div id=\"root\" data-a=\"a\" data-z=\"z\"></div>\n</template>\n";
+    let as_written =
+        "<template>\n  <div id=\"root\" data-z=\"z\" data-a=\"a\"></div>\n</template>\n";
+    let controls: [(&str, &[&str], &str); 3] = [
+        (
+            "Alphabetical.vue",
+            &["--attribute-sort-order", "alphabetical"],
+            alphabetical,
+        ),
+        (
+            "AsWritten.vue",
+            &["--attribute-sort-order", "as-written"],
+            as_written,
+        ),
+        (
+            "SortingDisabled.vue",
+            &[
+                "--sort-attributes=false",
+                "--attribute-sort-order",
+                "as-written",
+            ],
+            source,
+        ),
+    ];
+
+    for (file, extra, expected) in controls {
+        write(root, file, source);
+        let mut args = vec!["fmt", "--write", file, "--no-config", "--preset", "vize"];
+        args.extend_from_slice(extra);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+    }
+}
+
+#[cfg(feature = "glyph")]
+#[test]
+fn formatter_cli_exposes_block_order_independently_of_presets() {
+    let project = project();
+    let root = project.path();
+    let source = "<template>\n  <div>{{ value }}</div>\n</template>\n\n<script setup lang=\"ts\">\nconst value=\"ready\"\n</script>\n";
+    let authored = "<template>\n  <div>{{ value }}</div>\n</template>\n\n<script setup lang=\"ts\">\nconst value = \"ready\";\n</script>\n";
+    let canonical = "<script setup lang=\"ts\">\nconst value = \"ready\";\n</script>\n\n<template>\n  <div>{{ value }}</div>\n</template>\n";
+    let controls: [(&str, &[&str], &str); 2] = [
+        (
+            "AuthoredBlocks.vue",
+            &["--preset", "vize", "--sort-blocks=false"],
+            authored,
+        ),
+        (
+            "CanonicalBlocks.vue",
+            &["--preset", "compact", "--sort-blocks"],
+            canonical,
+        ),
+    ];
+
+    for (file, extra, expected) in controls {
+        write(root, file, source);
+        let mut args = vec!["fmt", "--write", file, "--no-config"];
+        args.extend_from_slice(extra);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+    }
+}
+
+#[cfg(feature = "glyph")]
+#[test]
+fn formatter_cli_exposes_void_element_closure_independently_of_presets() {
+    let project = project();
+    let root = project.path();
+    let authored = "<template>\n  <section><img src=\"cover.png\"><br><Input></Input></section>\n</template>\n";
+    let closed = "<template>\n  <section><img src=\"cover.png\" /><br /><Input></Input></section>\n</template>\n";
+    let controls: [(&str, &[&str], &str); 2] = [
+        (
+            "ClosedVoidElements.vue",
+            &["--preset", "vize", "--self-close-void-elements"],
+            closed,
+        ),
+        (
+            "AuthoredVoidElements.vue",
+            &["--preset", "prettier", "--self-close-void-elements=false"],
+            authored,
+        ),
+    ];
+
+    for (file, extra, expected) in controls {
+        write(root, file, authored);
+        let mut args = vec!["fmt", "--write", file, "--no-config"];
+        args.extend_from_slice(extra);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+    }
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn formatter_cli_exposes_line_ending_policy() {
     let project = project();
     let root = project.path();

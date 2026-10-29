@@ -115,12 +115,12 @@ pub(super) fn emit_setup_helpers(
     let template_refs = registry.as_ref().map(|registry| registry.body.as_str());
     if let Some(registry) = registry.as_ref() {
         let dom_ref_helper = if registry.includes_dom_element {
-            "  type $$DomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\n"
+            "  type $DomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\n"
         } else {
             ""
         };
         let component_ref_helper = if registry.includes_component {
-            "  type $$TemplateComponentRef<_C> = _C extends string ? (_C extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_C] : _C extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_C] : Element) : _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\n"
+            "  type $TemplateComponentRef<_C> = _C extends string ? (_C extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_C] : _C extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_C] : Element) : _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\n"
         } else {
             ""
         };
@@ -148,17 +148,17 @@ pub(super) fn emit_setup_helpers(
             "{dom_ref_helper}{component_ref_helper}{instance_helpers}"
         );
         if component_context.helpers.template_refs.needs_registry() {
-            append!(*ts, "  type $$TemplateRefs = {{{registry_body}}};\n");
-            ts.push_str("  type $$UseTemplateRef = { <_K extends keyof $$TemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<$$TemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };\n");
+            append!(*ts, "  type $TemplateRefs = {{{registry_body}}};\n");
+            ts.push_str("  type $UseTemplateRef = { <_K extends keyof $TemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<$TemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };\n");
         }
     }
     if record.types_dollar_refs() {
         let dollar_body = registry
             .as_ref()
             .map_or("", |registry| registry.dollar_body.as_str());
-        append!(*ts, "  type $$DollarRefs = {{{dollar_body}}};\n");
+        append!(*ts, "  type $DollarRefs = {{{dollar_body}}};\n");
         if record.has_instance_refs() {
-            ts.push_str("  const __vize_refs = undefined as unknown as $$DollarRefs;\n");
+            ts.push_str("  const __vize_refs = undefined as unknown as $DollarRefs;\n");
         }
     }
     let boolean_keys =
@@ -179,13 +179,13 @@ pub(super) fn emit_setup_helpers(
 
 fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefinePropsBooleanKeys) {
     if collection.keys.is_empty() && !collection.has_unresolved_references {
-        ts.push_str("  type $$DefinePropsBooleanKeys<_T> = never;\n");
+        ts.push_str("  type $DefinePropsBooleanKeys<_T> = never;\n");
         return;
     }
 
-    ts.push_str("  type $$DefinePropsBooleanKeys<_T> =\n");
+    ts.push_str("  type $DefinePropsBooleanKeys<_T> =\n");
     if collection.has_unresolved_references {
-        ts.push_str("    $$BooleanKey<_T>\n");
+        ts.push_str("    $BooleanKey<_T>\n");
     }
     for (index, key) in collection.keys.iter().enumerate() {
         let separator = if index == 0 && !collection.has_unresolved_references {

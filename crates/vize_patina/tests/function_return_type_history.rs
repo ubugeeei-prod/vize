@@ -1,9 +1,10 @@
-//! Issue #7913: distinguish runtime functions from TypeScript type arrows.
+//! Issues #7913 and #11103: preserve runtime ownership and contextual callbacks.
 
 use vize_patina::{HelpLevel, LintDiagnostic, LintPreset, LintResult, Linter, Locale};
 
 const RULE: &str = "script/require-function-return-type";
 const ARROW_HELP: &str = "Add a return type annotation: `const fn = (...): ReturnType => { ... }`";
+const FUNCTION_HELP: &str = "Add a return type annotation: `function fn(...): ReturnType { ... }`";
 
 fn linter() -> Linter {
     Linter::with_preset(LintPreset::Incremental)
@@ -113,5 +114,106 @@ fn same_function_name_in_a_type_does_not_hide_the_runtime_function() {
         linter().lint_script(source, "shadow.ts"),
         "shadow.ts",
         vec![diagnostic],
+    );
+}
+
+#[test]
+fn contextual_object_callbacks_typed_expressions_and_iifes_are_clean() {
+    let source = r#"
+declare function useOptions(options: {
+    value: () => number;
+    clear: () => void;
+    nested: { run: () => void };
+    list: Array<() => void>;
+}): void;
+declare class Holder {
+    constructor(options: { value: () => number });
+}
+declare function register(callback: () => void): void;
+
+useOptions({
+    value: () => 1,
+    clear: function () {},
+    nested: { run: () => {} },
+    list: [() => {}],
+});
+new Holder({ value: () => 2 });
+register(function () {});
+
+const typed: () => number = () => 1;
+const typedObject: { value: () => number } = { value: () => 1 };
+const asserted = { value: () => 1 } as { value: () => number };
+const satisfied = { value: () => 1 } satisfies { value: () => number };
+function withDefault(callback: () => void = () => {}): void { callback(); }
+
+const arrowIife = (() => 1)();
+const functionIife = (function () { return 1; })();
+void typed;
+void typedObject;
+void asserted;
+void satisfied;
+void arrowIife;
+void functionIife;
+"#;
+    assert_result(
+        linter().lint_script(source, "contextual.ts"),
+        "contextual.ts",
+        vec![],
+    );
+}
+
+fn arrow_diagnostic(source: &str, params: &str) -> LintDiagnostic {
+    let start = source.find(params).unwrap();
+    let end = start + source[start..].find("=>").unwrap() + 2;
+    LintDiagnostic::warn(
+        RULE,
+        "Arrow function is missing a return type annotation",
+        start as u32,
+        end as u32,
+    )
+    .with_help(ARROW_HELP)
+}
+
+fn named_function_diagnostic(source: &str, name: &'static str) -> LintDiagnostic {
+    let marker = format!("function {name}");
+    let start = source.find(&marker).unwrap();
+    let end = start + source[start..].find(')').unwrap() + 1;
+    LintDiagnostic::warn(
+        RULE,
+        format!("Function '{name}' is missing a return type annotation"),
+        start as u32,
+        end as u32,
+    )
+    .with_help(FUNCTION_HELP)
+}
+
+#[test]
+fn standalone_functions_and_declarations_inside_callbacks_still_report_exactly() {
+    let source = r#"
+const standalone = (standaloneValue: number) => standaloneValue;
+const options = {
+    value: (objectValue: number) => objectValue,
+    clear: function objectClear() {},
+};
+declare function consume(callback: () => void): void;
+consume(() => {
+    function nestedDeclared() { return 1; }
+    const nestedArrow = (nestedValue: number) => nestedValue;
+    void nestedArrow;
+});
+void standalone;
+void options;
+"#;
+    let diagnostics = vec![
+        arrow_diagnostic(source, "(standaloneValue: number)"),
+        arrow_diagnostic(source, "(objectValue: number)"),
+        named_function_diagnostic(source, "objectClear"),
+        named_function_diagnostic(source, "nestedDeclared"),
+        arrow_diagnostic(source, "(nestedValue: number)"),
+    ];
+    assert_result(
+        linter().lint_script(source, "controls.ts"),
+        "controls.ts",
+        diagnostics,
     );
 }

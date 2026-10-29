@@ -5,12 +5,15 @@
     reason = "project owners share buffers and protocol consumers require std String"
 )]
 
+mod uri_snapshot;
+
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, OnceLock};
 
 use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
+use self::uri_snapshot::UriSnapshotCache;
 use super::DocumentText;
 use super::edit_cancel::EditCancellation;
 use crate::utils::position_to_offset;
@@ -36,7 +39,7 @@ pub struct Document {
     /// Document version
     pub version: i32,
     /// Document content stored as a rope for efficient editing
-    pub content: DocumentText,
+    content: DocumentText,
     /// Language ID (e.g., "vue", "typescript")
     pub language_id: String,
     /// Monotonic stamp for the exact content this document currently holds.
@@ -50,18 +53,29 @@ pub struct Document {
     /// document version so per-request consumers (completion, definition, ...)
     /// never re-scan the content. Reset on every edit.
     petite_vue_detected: OnceLock<bool>,
+    /// Flat immutable text shared by every request for this exact revision.
+    ///
+    /// Rope remains the edit/coordinate owner. This snapshot exists because
+    /// request futures must release the `DashMap` guard before `.await`; an
+    /// `Arc` preserves that safety without flattening the same Rope once per
+    /// hover, completion, navigation, or rename request.
+    text_snapshot: OnceLock<Arc<String>>,
 }
 
 impl Document {
     /// Create a new document.
     pub fn new(uri: Url, content: String, version: i32, language_id: String) -> Self {
+        let content = Arc::new(content);
+        let text_snapshot = OnceLock::new();
+        let _ = text_snapshot.set(Arc::clone(&content));
         Self {
             uri,
             version,
-            content: DocumentText::new(&content),
+            content: DocumentText::new(content.as_str()),
             language_id,
             revision: next_revision(),
             petite_vue_detected: OnceLock::new(),
+            text_snapshot,
         }
     }
 
@@ -81,12 +95,38 @@ impl Document {
     pub fn petite_vue_detected(&self) -> bool {
         *self
             .petite_vue_detected
-            .get_or_init(|| vize_l0::dialect::detect_petite_vue_document(&self.text()))
+            .get_or_init(|| vize_l0::dialect::detect_petite_vue_document(self.flat_text()))
     }
 
     /// Get the document content as a string.
     pub fn text(&self) -> String {
-        self.content.to_string()
+        self.flat_text().to_owned()
+    }
+
+    /// Whether `source` is byte-identical to this document revision.
+    #[inline]
+    pub fn has_text(&self, source: &str) -> bool {
+        self.flat_text() == source
+    }
+
+    /// UTF-8 byte length without flattening the resident rope.
+    #[inline]
+    pub fn byte_len(&self) -> usize {
+        self.content.len_bytes()
+    }
+
+    /// Shared owned text for this exact document revision.
+    pub fn text_snapshot(&self) -> Arc<String> {
+        Arc::clone(
+            self.text_snapshot
+                .get_or_init(|| Arc::new(self.content.to_string())),
+        )
+    }
+
+    fn flat_text(&self) -> &str {
+        self.text_snapshot
+            .get_or_init(|| Arc::new(self.content.to_string()))
+            .as_str()
     }
 
     /// Get the number of lines in the document.
@@ -107,6 +147,7 @@ impl Document {
         self.version = new_version;
         self.revision = next_revision();
         self.petite_vue_detected = OnceLock::new();
+        self.text_snapshot = OnceLock::new();
 
         if let Some(range) = change.range {
             // Incremental change
@@ -129,14 +170,22 @@ impl Document {
         } else {
             // Full content replacement
             self.content = DocumentText::new(&change.text);
+            let _ = self.text_snapshot.set(Arc::new(change.text.clone()));
         }
     }
+}
+
+/// Guard-free request input captured from one exact document revision.
+pub(crate) struct DocumentPositionSnapshot {
+    pub(crate) content: Arc<String>,
+    pub(crate) offset: usize,
 }
 
 /// Thread-safe document store.
 #[derive(Clone)]
 pub struct DocumentStore {
     documents: Arc<DashMap<Url, Document>>,
+    uri_snapshots: Arc<UriSnapshotCache>,
     revision: Arc<AtomicU64>,
     mutations: Arc<AtomicUsize>,
     edits: Arc<EditCancellation>,
@@ -153,6 +202,7 @@ impl DocumentStore {
     pub fn new() -> Self {
         Self {
             documents: Arc::new(DashMap::new()),
+            uri_snapshots: Arc::default(),
             revision: Arc::new(AtomicU64::new(0)),
             mutations: Arc::new(AtomicUsize::new(0)),
             edits: Arc::default(),
@@ -162,9 +212,11 @@ impl DocumentStore {
     /// Open a new document.
     pub fn open(&self, uri: Url, content: String, version: i32, language_id: String) {
         let _mutation = self.source_set_mutation();
+        let uri_set = self.uri_snapshots.mutation(&uri, None);
         let doc = Document::new(uri.clone(), content, version, language_id);
-        self.documents.insert(uri, doc);
+        self.documents.insert(uri.clone(), doc);
         self.revision.fetch_add(1, Ordering::Release);
+        uri_set.opened(uri);
     }
 
     /// Close a document.
@@ -173,8 +225,10 @@ impl DocumentStore {
             return;
         }
         let _mutation = self.source_set_mutation();
+        let uri_set = self.uri_snapshots.mutation(uri, None);
         if self.documents.remove(uri).is_some() {
             self.revision.fetch_add(1, Ordering::Release);
+            uri_set.closed(uri);
         }
     }
 
@@ -192,6 +246,14 @@ impl DocumentStore {
             return false;
         }
         let _mutation = self.source_set_mutation();
+        let uri_set = self.uri_snapshots.mutation(old_uri, Some(&new_uri));
+
+        // The optimistic checks above avoid stamping obvious no-ops. Repeat
+        // them after acquiring the URI stripes so conflicting key mutations
+        // and their cache commits have one order.
+        if self.documents.contains_key(&new_uri) || !self.documents.contains_key(old_uri) {
+            return false;
+        }
 
         let Some((_, mut document)) = self.documents.remove(old_uri) else {
             return false;
@@ -202,8 +264,9 @@ impl DocumentStore {
         // the path, so the entry they cached under the old URI must not be
         // mistaken for this one; a fresh stamp keeps the two unrelatable.
         document.revision = next_revision();
-        self.documents.insert(new_uri, document);
+        self.documents.insert(new_uri.clone(), document);
         self.revision.fetch_add(1, Ordering::Release);
+        uri_set.renamed(old_uri, new_uri);
         true
     }
 
@@ -216,6 +279,8 @@ impl DocumentStore {
     pub fn get_mut(&self, uri: &Url) -> Option<dashmap::mapref::one::RefMut<'_, Url, Document>> {
         let mut document = self.documents.get_mut(uri)?;
         document.revision = next_revision();
+        document.petite_vue_detected = OnceLock::new();
+        document.text_snapshot = OnceLock::new();
         self.revision.fetch_add(1, Ordering::Release);
         Some(document)
     }
@@ -231,6 +296,30 @@ impl DocumentStore {
     /// can only release by being polled on that same parked thread (#3315).
     pub fn text(&self, uri: &Url) -> Option<String> {
         self.documents.get(uri).map(|document| document.text())
+    }
+
+    /// Shared immutable text for one exact revision, with no shard guard on
+    /// return. Cloning the `Arc` is allocation-free on a warm revision.
+    pub fn text_snapshot(&self, uri: &Url) -> Option<Arc<String>> {
+        self.documents
+            .get(uri)
+            .map(|document| document.text_snapshot())
+    }
+
+    /// Capture text and an exact UTF-16 LSP position under one document guard.
+    /// Ropey owns the coordinate conversion; requests avoid a second full-text
+    /// line scan and release the map guard before any async backend work.
+    pub(crate) fn snapshot_at(
+        &self,
+        uri: &Url,
+        position: tower_lsp::lsp_types::Position,
+    ) -> Option<DocumentPositionSnapshot> {
+        let document = self.documents.get(uri)?;
+        let offset = position_to_offset(&document.content, position)?;
+        Some(DocumentPositionSnapshot {
+            content: document.text_snapshot(),
+            offset,
+        })
     }
 
     /// Owned snapshot of a document's version, holding no lock on return.
@@ -302,22 +391,26 @@ impl DocumentStore {
         self.documents.contains_key(uri)
     }
 
-    /// Get all document URIs.
-    pub fn uris(&self) -> Vec<Url> {
+    /// Get a sorted immutable snapshot of all open document URIs.
+    ///
+    /// Completed key mutations advance the snapshot generation. In-flight
+    /// mutations remain invisible until their complete delta is published, so
+    /// stale `Arc`s stay valid without exposing rename remove/insert windows.
+    pub fn uris(&self) -> Arc<[Url]> {
         vize_l0::micro_count!("lsp.document_store.uris.calls", 1);
-        let snapshots: Vec<Url> = vize_l0::micro_span!(
+        let snapshot = vize_l0::micro_span!(
             "lsp.document_store.uris.clone_snapshot",
-            self.documents.iter().map(|r| r.key().clone()).collect()
+            self.uri_snapshots.snapshot()
         );
-        vize_l0::micro_count!("lsp.document_store.uris.returned_items", snapshots.len());
+        vize_l0::micro_count!("lsp.document_store.uris.returned_items", snapshot.len());
         vize_l0::micro_count!(
             "lsp.document_store.uris.returned_uri_utf8_bytes",
-            snapshots
+            snapshot
                 .iter()
                 .map(|uri| uri.as_str().len() as u64)
                 .sum::<u64>()
         );
-        snapshots
+        snapshot
     }
 
     /// Owned snapshots of open Vue documents, holding no shard guard on return.
@@ -392,5 +485,7 @@ impl Drop for SourceSetMutation<'_> {
 mod snapshot_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod uri_snapshot_tests;
 #[cfg(test)]
 mod version_tests;

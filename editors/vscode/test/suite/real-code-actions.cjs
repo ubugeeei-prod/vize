@@ -35,7 +35,7 @@ exports.runRealCodeActionSmoke = async function runRealCodeActionSmoke() {
     120_000,
   );
   assert.match(document.getText(), /greet\(name: string\): string/);
-  assert.doesNotMatch(document.getText(), /$$|__vize/);
+  assert.doesNotMatch(document.getText(), /\$[A-Z]|__vize/);
   // The fixture stays reusable; restoration is observed by the live checker.
   const restore = new vscode.WorkspaceEdit();
   restore.replace(

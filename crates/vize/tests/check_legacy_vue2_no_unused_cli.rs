@@ -113,7 +113,7 @@ function handleClick(event: MouseEvent) {
         "generated loose emit helpers must not surface under noUnusedLocals:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
     assert!(
-        !stdout.contains("$$Vue2LooseEmitArgs"),
+        !stdout.contains("$Vue2LooseEmitArgs"),
         "JSON diagnostics should not mention the internal helper:\n{stdout}"
     );
 
@@ -169,7 +169,7 @@ const unusedLocal = 2
         "expected the user unused binding diagnostic:\n{stdout}"
     );
     assert!(
-        !stdout.contains("$$Vue2LooseEmitArgs"),
+        !stdout.contains("$Vue2LooseEmitArgs"),
         "internal helper diagnostics must stay suppressed without hiding user diagnostics:\n{stdout}"
     );
 

@@ -1,5 +1,5 @@
 use super::PropInfo;
-use crate::facts::imported_render_target;
+use crate::facts::{imported_render_target_at, template_usage_is_shadowed};
 use crate::module_paths::{import_candidates, normalize_logical_path};
 use crate::registry::{ModuleEntry, ModuleRegistry};
 use std::path::Path;
@@ -38,7 +38,38 @@ pub(super) fn extract_passed_props_for_component(
     component_name: &str,
     aliases: &[CompactString],
 ) -> Vec<PassedComponentUsage> {
+    let (mut usages, concrete_matches) =
+        extract_authored_passed_props_with_match(analysis, component_name, aliases);
+
+    if usages.is_empty() && !concrete_matches {
+        usages.push(PassedComponentUsage {
+            component_name: CompactString::new(component_name),
+            props: Vec::new(),
+            has_spread_attrs: false,
+            start: 0,
+            end: 0,
+        });
+    }
+
+    usages
+}
+
+/// Extract only authored usages, without inventing the missing-usage fallback.
+pub(super) fn extract_authored_passed_props_for_component(
+    analysis: &vize_croquis::Croquis,
+    component_name: &str,
+    aliases: &[CompactString],
+) -> Vec<PassedComponentUsage> {
+    extract_authored_passed_props_with_match(analysis, component_name, aliases).0
+}
+
+fn extract_authored_passed_props_with_match(
+    analysis: &vize_croquis::Croquis,
+    component_name: &str,
+    aliases: &[CompactString],
+) -> (Vec<PassedComponentUsage>, bool) {
     let mut usages = Vec::new();
+    let mut concrete_matches = false;
 
     for usage in vize_croquis::facts::component_usage_list(analysis) {
         // Match component name (case-insensitive for kebab-case vs PascalCase)
@@ -47,6 +78,10 @@ pub(super) fn extract_passed_props_for_component(
                 .iter()
                 .any(|alias| component_names_match(usage.name.as_str(), alias.as_str()))
         {
+            concrete_matches = true;
+            if template_usage_is_shadowed(analysis, &usage) {
+                continue;
+            }
             let props = usage
                 .props
                 .iter()
@@ -70,17 +105,20 @@ pub(super) fn extract_passed_props_for_component(
         }
     }
 
-    if usages.is_empty() {
-        usages.push(PassedComponentUsage {
-            component_name: CompactString::new(component_name),
-            props: Vec::new(),
-            has_spread_attrs: false,
-            start: 0,
-            end: 0,
-        });
-    }
+    (usages, concrete_matches)
+}
 
-    usages
+/// Whether an authored `<NuxtPage>` prop reaches the rendered route component.
+///
+/// Nuxt consumes its declared control props before forwarding the remaining
+/// attrs through `RouterView`. A runtime prop name stays conservative because
+/// it cannot be proven to name one of those controls.
+pub(super) fn nuxt_page_forwards_prop(prop: &PassedPropInfo) -> bool {
+    prop.name_is_dynamic
+        || !matches!(
+            prop.name.as_str(),
+            "name" | "transition" | "keepalive" | "route" | "pageKey" | "page-key"
+        )
 }
 
 pub(super) fn define_props_offset(entry: &ModuleEntry) -> u32 {
@@ -191,8 +229,7 @@ pub(super) fn imported_aliases_for_child(
     // chains. Attribute matching must use that same resolved identity rather
     // than comparing the barrel path with the final SFC path.
     for usage in vize_croquis::facts::component_usage_list(&parent_entry.analysis) {
-        if imported_render_target(registry, parent_entry.id, usage.name.as_str())
-            == Some(child_entry.id)
+        if imported_render_target_at(registry, parent_entry.id, &usage) == Some(child_entry.id)
             && !aliases.contains(&usage.name)
         {
             aliases.push(usage.name);
@@ -249,11 +286,40 @@ fn to_pascal_case(s: &str) -> String {
 mod tests {
     use super::{
         PassedPropInfo, actual_literal_type, import_targets_path, is_builtin_attr,
-        prop_type_accepts_actual,
+        nuxt_page_forwards_prop, prop_type_accepts_actual,
     };
     use std::path::Path;
     use vize_carton::CompactString;
     use vize_croquis::types::TypeDefinitions;
+
+    #[test]
+    fn nuxt_page_filters_static_controls_but_keeps_forwarded_and_dynamic_names() {
+        let probes = [
+            ("name", false),
+            ("transition", false),
+            ("keepalive", false),
+            ("route", false),
+            ("pageKey", false),
+            ("page-key", false),
+            ("order", false),
+            ("name", true),
+        ];
+        let retained = probes
+            .into_iter()
+            .filter(|(name, dynamic)| {
+                nuxt_page_forwards_prop(&PassedPropInfo {
+                    name: CompactString::new(*name),
+                    name_is_dynamic: *dynamic,
+                    value: None,
+                    start: 0,
+                    end: 0,
+                    is_dynamic: true,
+                })
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(retained, vec![("order", false), ("name", true)]);
+    }
 
     #[test]
     fn incomplete_types_cannot_prove_a_static_prop_mismatch() {

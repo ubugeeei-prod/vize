@@ -34,6 +34,11 @@ export const frenchRules3 = {
     "Le watcher ne fait que copier une valeur dérivée de `count` dans une seconde ref, `doubled` ; l’état dérivé est donc maintenu par synchronisation manuelle.",
     "`computed(() => count.value * 2)` exprime directement la dérivation et supprime à la fois la ref modifiable supplémentaire et le watcher qui la synchronise.",
   ],
+  "script/prefer-define-emits-binding": [
+    "Préférer la fonction capturée de defineEmits au $emit du template",
+    "Le template appelle le helper `$emit` du composant alors que `<script setup>` capture déjà la fonction typée renvoyée par `defineEmits`.",
+    "Le template appelle la liaison `emit` capturée, de sorte que les noms d’événements et les payloads passent par le contrat `defineEmits` du composant.",
+  ],
   "script/prefer-define-options": [
     "Préférer defineOptions() à un &lt;script&gt; ordinaire qui ne définit que name/inheritAttrs",
     "La seule instruction significative du script ordinaire exporte un objet contenant uniquement `name` et `inheritAttrs` ; ces options peuvent être exprimées par `defineOptions`.",

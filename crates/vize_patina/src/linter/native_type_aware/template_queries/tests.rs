@@ -174,10 +174,90 @@ fn a_nested_callee_uses_the_authored_initializer_and_the_full_expression_is_infe
         document.content.get(binding as usize..binding as usize + 1),
         Some("0")
     );
-    assert!(
-        document
-            .content
-            .starts_with("  const __expr_0 = (() => emit('retry'));\n")
+    assert_eq!(
+        document.content.as_str(),
+        format!("  const __expr_0 = (() => emit('retry'));\n{text}")
+    );
+}
+
+#[test]
+fn non_ascii_comment_before_an_arrow_keeps_the_expression_probe() {
+    for comment in [
+        "é".repeat(10),
+        "é".repeat(30),
+        "e".repeat(30),
+        "中".repeat(16),
+        "😀".repeat(13),
+    ] {
+        assert_commented_arrow_probe_stays_on_the_expression(&comment);
+    }
+}
+
+fn assert_commented_arrow_probe_stays_on_the_expression(comment: &str) {
+    let source = format!(
+        r#"<script setup lang="ts">
+function check(all: number[], current: number[]): true | string {{ return true }}
+const ids: number[] = [1]
+</script>
+<template>
+  <MyInput :rules="[
+    // {comment}
+    check(ids, ids.map(id => id + 1))
+  ]" />
+  <MyInput :rules="[
+    /* {comment} */
+    check(ids, ids.map(id => id + 1))
+  ]" />
+</template>"#
+    );
+    let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
+    let template = descriptor.template.as_ref().unwrap();
+    let script = descriptor.script_setup.as_ref().unwrap();
+    let allocator = vize_l0::Allocator::default();
+    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
+    assert!(errors.is_empty(), "{errors:?}");
+    let document = super::super::document::project_type_aware(
+        &descriptor,
+        &script.content,
+        Some(&root),
+        script.loc.start as u32,
+        template.loc.start as u32,
+        "UnicodeCommentBinding.vue",
+    );
+    let (queries, _) = super::collect_template_query_sets(
+        &document,
+        &root,
+        template.loc.start as u32,
+        true,
+        false,
+    );
+    let expressions: Vec<_> = queries
+        .iter()
+        .filter(|query| {
+            query.kind == TemplateQueryKind::Expression
+                && source
+                    .get(query.source_start as usize..query.source_end as usize)
+                    .is_some_and(|text| text.contains("=>"))
+        })
+        .collect();
+    assert_eq!(expressions.len(), 2, "{comment} {queries:#?}");
+    let mut offsets = Vec::new();
+    for (query, identifier) in expressions.into_iter().zip(["__expr_2", "__expr_5"]) {
+        let authored = query.source_start as usize..query.source_end as usize;
+        let inferred = expression_bindings::inferred_binding_offset(&document, &authored)
+            .expect("comment-stripped expression must own an inferred binding");
+        assert_eq!(query.generated_offset, inferred, "comment {comment:?}");
+        let at = query.generated_offset as usize;
+        assert_eq!(
+            document.content.get(at + 1 - identifier.len()..at + 1),
+            Some(identifier),
+            "comment {comment:?} must probe the exact inferred identifier"
+        );
+        offsets.push(at);
+    }
+    assert_ne!(
+        offsets[0], offsets[1],
+        "each expression needs its own owner"
     );
 }
 

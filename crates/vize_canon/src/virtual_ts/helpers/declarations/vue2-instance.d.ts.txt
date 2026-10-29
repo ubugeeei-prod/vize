@@ -1,4 +1,4 @@
-type $$Vue2ComponentInstance = {
+type $Vue2ComponentInstance = {
   $el: Element;
   $refs: Record<string, any>;
   $attrs: Record<string, any>;

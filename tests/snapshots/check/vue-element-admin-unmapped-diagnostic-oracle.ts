@@ -21,7 +21,7 @@ const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 // the only stale reference left is the template binding. Renaming the key
 // alone additionally leaves `this.list` stale in `fetchData`, which is the
 // shape that used to publish a generated-coordinate diagnostic
-// ("Property 'list' does not exist on type '$$This'") positioned past the
+// ("Property 'list' does not exist on type '$This'") positioned past the
 // authored EOF — line 67 of a 56-line file — that `vize check` suppressed
 // (#3299). That finding is real, and #3596 anchored it back onto the authored
 // `this.list`, so it is published now. The rule this pins is unchanged: every
@@ -51,7 +51,7 @@ const staleListMemberDiagnostic = {
   severity: 1,
   code: 2339,
   source: "vize/types",
-  message: "Property 'list' does not exist on type '$$This'.",
+  message: "Property 'list' does not exist on type '$This'.",
 };
 
 test("vue-element-admin data-key-only rename keeps every published range inside the document", async () => {

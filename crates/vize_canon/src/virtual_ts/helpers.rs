@@ -12,6 +12,7 @@ use std::ops::Range;
 mod dom_events;
 mod preamble;
 pub(crate) mod setup_macros;
+pub(crate) mod shared_types;
 mod vue2_members;
 
 pub(crate) use dom_events::{get_dom_event_type, is_known_dom_event_name};
@@ -54,14 +55,14 @@ pub(crate) fn generate_template_context(
         ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
     }
     if needs_global_helper {
-        ctx.push_str("    type $$GlobalContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $$GlobalContextProperty<T, F> = $$GlobalContextIsAny<T> extends true ? T : unknown extends T ? F : T;\n    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? $$GlobalContextProperty<__Ctx[K], F> : F;\n");
+        ctx.push_str("    type $GlobalContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $GlobalContextProperty<T, F> = $GlobalContextIsAny<T> extends true ? T : unknown extends T ? F : T;\n    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? $GlobalContextProperty<__Ctx[K], F> : F;\n");
     }
     // A prop or authored binding may be named `undefined` in this scope.
     // Operator literals never read that lexical binding when creating placeholders.
     ctx.push_str("    const __ctx = (void 0) as unknown as __Ctx;\n");
     if options.strict_instance_globals {
         ctx.push_str(
-            "    type $$StrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $$StrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type $$StrictContextProperty<T> = [T] extends [never] ? never : $$StrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type $$StrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as $$StrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: $$StrictContextProperty<__Ctx[__K]>;\n    };\n    type $$StrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & $$StrictPublicInstanceGlobals;\n    const __vize_strict_template_context = (void 0) as unknown as $$StrictTemplateContext;\n",
+            "    type $StrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $StrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type $StrictContextProperty<T> = [T] extends [never] ? never : $StrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type $StrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as $StrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: $StrictContextProperty<__Ctx[__K]>;\n    };\n    type $StrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & $StrictPublicInstanceGlobals;\n    const __vize_strict_template_context = (void 0) as unknown as $StrictTemplateContext;\n",
         );
     }
 
@@ -188,16 +189,53 @@ pub(crate) fn generated_text_range(
 /// leading character keeps its case and `_` is not a separator; renaming either
 /// way looks up a key no declared prop matches, so a bound prop reads as missing
 /// (#3863). `"my-prop"` -> `"myProp"`, `"MyProp"` -> `"MyProp"`, `"my_prop"` -> `"my_prop"`.
-/// Key of an authored component attribute in a checked props object. Like
-/// `vue-tsc` (default `htmlAttributes: ['aria-*']`), an `aria-*` name keeps its
-/// HTML spelling and is checked as an attribute; other kebab names camelize
-/// like Vue props.
+/// Key of an authored component attribute in a checked props object.
+///
+/// Vue camelizes every declared prop candidate, including `aria-*`. The
+/// whole-props emitter separately preserves vue-tsc's HTML-attribute treatment
+/// of an `undefined` value; leaving the key itself authored would make a
+/// required `ariaLabel` look absent (#11048).
 pub(crate) fn component_prop_key(name: &str) -> String {
+    to_camel_case(name)
+}
+
+/// Whether a component prop spelling belongs to the explicit ARIA namespace.
+///
+/// Keep this narrower than a general camel/kebab conversion: arbitrary attrs
+/// must not gain a second accepted spelling just because ARIA needs to retain
+/// both its declared string-literal key and Vue's generated camel key.
+pub(crate) fn is_component_aria_prop_name(name: &str) -> bool {
+    name.starts_with("aria-")
+        || name
+            .strip_prefix("aria")
+            .and_then(|tail| tail.as_bytes().first())
+            .is_some_and(u8::is_ascii_uppercase)
+}
+
+/// Return the declared kebab spelling and Vue's generated camel spelling for
+/// an ARIA prop. Both are needed by the whole-object required-prop witness:
+/// `defineProps<{ 'aria-label': string }>()` retains the raw key, while a
+/// parent binding is generated as `ariaLabel`.
+pub(crate) fn component_aria_prop_keys(name: &str) -> Option<(String, String)> {
     if name.starts_with("aria-") {
-        String::from(name)
-    } else {
-        to_camel_case(name)
+        return Some((String::from(name), to_camel_case(name)));
     }
+    let tail = name.strip_prefix("aria")?;
+    if !tail.as_bytes().first().is_some_and(u8::is_ascii_uppercase) {
+        return None;
+    }
+
+    let mut raw = String::with_capacity(name.len().saturating_add(4));
+    raw.push_str("aria");
+    for ch in tail.chars() {
+        if ch.is_ascii_uppercase() {
+            raw.push('-');
+            raw.push(ch.to_ascii_lowercase());
+        } else {
+            raw.push(ch);
+        }
+    }
+    Some((raw, to_camel_case(name)))
 }
 
 pub(crate) fn to_camel_case(s: &str) -> String {

@@ -13,6 +13,7 @@
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, Scope, ScopeKind, analysis::ComponentUsage};
+use vize_l0::ts;
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
@@ -34,7 +35,7 @@ pub(crate) const REFS_RETURN_KEY: &str = "__vizeRefs";
 /// with a `config` computed from `chart.value` would otherwise make `chart`
 /// depend on itself for every component, not only for the generic ones whose
 /// instance really is a function of their props.
-pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $$RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $$TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $$TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $$TemplateComponentRef<_C> : $$TemplateComponentRef<_C> : $$TemplateComponentRef<_C> : $$TemplateComponentRef<_C>;\n";
+pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n";
 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.
@@ -98,25 +99,33 @@ pub(super) fn emit_ref_instance_probes(
     ctx: &RefInstanceContext<'_>,
     starts: &[u32],
 ) -> String {
-    let mut record = String::from("{ ");
-    for usage in vize_croquis::facts::component_usage_list(ctx.summary) {
-        if !starts.contains(&usage.start) {
-            continue;
-        }
-        let probe = resolved_component_binding_reference(
-            ctx.summary,
-            ctx.options,
-            ctx.syntactic_type_only_imported_names,
-            usage.name.as_str(),
-        )
-        .zip(enclosing_loops(ctx.summary, &usage))
-        .map(|(component, loops)| emit_probe(ts, ctx, &usage, component.as_str(), &loops));
-        match probe {
-            Some(name) => append!(record, "\"{}\": () => {name}, ", usage.start),
-            None => append!(record, "\"{}\": () => undefined, ", usage.start),
+    let mut record = String::default();
+    ts! { &mut record =>
+        {
+            #(" ")
+            #{
+                for usage in vize_croquis::facts::component_usage_list(ctx.summary) {
+                    if !starts.contains(&usage.start) {
+                        continue;
+                    }
+                    let probe = resolved_component_binding_reference(
+                        ctx.summary,
+                        ctx.options,
+                        ctx.syntactic_type_only_imported_names,
+                        usage.name.as_str(),
+                    )
+                    .zip(enclosing_loops(ctx.summary, &usage))
+                    .map(|(component, loops)| {
+                        emit_probe(ts, ctx, &usage, component.as_str(), &loops)
+                    });
+                    match probe {
+                        Some(name) => append!(*__ts, "\"{}\": () => {name}, ", usage.start),
+                        None => append!(*__ts, "\"{}\": () => undefined, ", usage.start),
+                    }
+                }
+            }
         }
     }
-    record.push('}');
     record
 }
 
@@ -130,38 +139,117 @@ fn emit_probe(
     let name = cstr!("__vize_ref_{}", usage.start);
     append!(*ts, "\n  // Ref instance of <{}>\n", usage.name);
     let mut indent = String::from("  ");
-    let mut closers: Vec<String> = Vec::new();
+    emit_ref_loops(
+        ts,
+        ctx,
+        usage,
+        component,
+        loops,
+        0,
+        &mut indent,
+        name.as_str(),
+    );
+    name
+}
+
+/// Replay enclosing loops from the outside in. Each loop's braces are closed
+/// by [`emit_v_for_loop_open`], so the body of one loop is the next loop.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one probe threaded through its loops"
+)]
+fn emit_ref_loops(
+    ts: &mut String,
+    ctx: &RefInstanceContext<'_>,
+    usage: &ComponentUsage,
+    component: &str,
+    loops: &[&Scope],
+    index: usize,
+    indent: &mut String,
+    name: &str,
+) {
+    if index == loops.len() {
+        if let Some(raw) = usage.vif_guard.as_ref() {
+            let guard =
+                rewrite_reserved_template_binding(raw.as_str(), ctx.template_binding_access)
+                    .unwrap_or_else(|| raw.clone());
+            with_guard(ts, indent, guard.as_str(), |ts, indent| {
+                emit_ref_call(ts, ctx, usage, component, indent.as_str(), name);
+            });
+        } else {
+            emit_ref_call(ts, ctx, usage, component, indent.as_str(), name);
+        }
+        return;
+    }
+    let scope = loops[index];
+    if let Some(guard) = ctx.vfor_enclosing_guards.get(&scope.id.as_u32()) {
+        with_guard(ts, indent, guard.as_str(), |ts, indent| {
+            emit_ref_loop(ts, ctx, usage, component, loops, scope, index, indent, name);
+        });
+    } else {
+        emit_ref_loop(ts, ctx, usage, component, loops, scope, index, indent, name);
+    }
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one probe threaded through its loops"
+)]
+fn emit_ref_loop(
+    ts: &mut String,
+    ctx: &RefInstanceContext<'_>,
+    usage: &ComponentUsage,
+    component: &str,
+    loops: &[&Scope],
+    scope: &Scope,
+    index: usize,
+    indent: &mut String,
+    name: &str,
+) {
     // The replayed loops own no diagnostics: the scopes themselves report.
     let mut unmapped = Vec::new();
-    for scope in loops {
-        if let Some(guard) = ctx.vfor_enclosing_guards.get(&scope.id.as_u32()) {
-            open_guard(ts, &mut indent, &mut closers, guard.as_str());
-        }
-        emit_v_for_loop_open(
-            ts,
-            &mut unmapped,
-            ctx.template_offset,
-            None,
-            indent.as_str(),
-            scope,
-            ctx.template_binding_access,
-            false,
-        );
-        closers.push(cstr!("{indent}}}\n{indent}}}\n"));
-        indent.push_str("  ");
-    }
-    if let Some(guard) = usage.vif_guard.as_ref() {
-        let guard = rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
-            .unwrap_or_else(|| guard.clone());
-        open_guard(ts, &mut indent, &mut closers, guard.as_str());
-    }
+    let at = indent.clone();
+    emit_v_for_loop_open(
+        ts,
+        &mut unmapped,
+        ctx.template_offset,
+        None,
+        at.as_str(),
+        scope,
+        ctx.template_binding_access,
+        false,
+        |ts, _mappings| {
+            let mut nested = at.clone();
+            nested.push_str("  ");
+            emit_ref_loops(
+                ts,
+                ctx,
+                usage,
+                component,
+                loops,
+                index + 1,
+                &mut nested,
+                name,
+            );
+        },
+    );
+}
+
+fn emit_ref_call(
+    ts: &mut String,
+    ctx: &RefInstanceContext<'_>,
+    usage: &ComponentUsage,
+    component: &str,
+    indent: &str,
+    name: &str,
+) {
     append!(
         *ts,
         "{indent}// @ts-ignore Inference-only call; the usage's mapped prop checks own diagnostics.\n"
     );
     append!(
         *ts,
-        "{indent}var {name} = (undefined as unknown as $$RefInstanceFactory<typeof {component}>)({component})({{\n"
+        "{indent}var {name} = (undefined as unknown as $RefInstanceFactory<typeof {component}>)({component})({{\n"
     );
     let mut emitted = FxHashSet::default();
     for prop in &usage.props {
@@ -171,8 +259,8 @@ fn emit_probe(
         let Some(value) = generated_prop_value(prop, ctx.template_binding_access) else {
             continue;
         };
-        let name = to_camel_case(prop.name.as_str());
-        if !emitted.insert(name.clone()) {
+        let prop_name = to_camel_case(prop.name.as_str());
+        if !emitted.insert(prop_name.clone()) {
             continue;
         }
         if super::is_inline_callback_prop(prop) {
@@ -181,25 +269,28 @@ fn emit_probe(
                 "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
             );
         }
-        append!(*ts, "{indent}  \"{}\": {},\n", name, value.as_str());
+        append!(*ts, "{indent}  \"{}\": {},\n", prop_name, value.as_str());
     }
     append!(*ts, "{indent}}});\n");
-    for closer in closers.iter().rev() {
-        ts.push_str(closer.as_str());
-    }
-    name
 }
 
-fn open_guard(ts: &mut String, indent: &mut String, closers: &mut Vec<String>, guard: &str) {
+fn with_guard(
+    ts: &mut String,
+    indent: &mut String,
+    guard: &str,
+    body: impl FnOnce(&mut String, &mut String),
+) {
+    let at = indent.clone();
     let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
     let guard = isolated.as_str();
     append!(
         *ts,
-        "{indent}// @ts-ignore Inference-only guard; the authored binding checks own diagnostics.\n"
+        "{at}// @ts-ignore Inference-only guard; the authored binding checks own diagnostics.\n"
     );
-    append!(*ts, "{indent}if ({guard}) {{\n");
-    closers.push(cstr!("{indent}}}\n"));
+    append!(*ts, "{at}if ({guard}) {{\n");
     indent.push_str("  ");
+    body(ts, indent);
+    append!(*ts, "{at}}}\n");
 }
 
 #[cfg(test)]

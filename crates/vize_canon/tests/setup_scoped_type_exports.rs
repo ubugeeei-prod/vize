@@ -167,7 +167,7 @@ fn exported_setup_scoped_props_have_one_public_declaration() {
         "the setup artifact and the public source type must not emit duplicate Props aliases:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("type $$ResolvedProps = Awaited<ReturnType<typeof __setup>>"),
+        virtual_ts.contains("type $ResolvedProps = Awaited<ReturnType<typeof __setup>>"),
         "component prop checking must still resolve the setup-scoped Props shape:\n{virtual_ts}"
     );
 
@@ -207,7 +207,7 @@ fn private_setup_scoped_props_still_export_a_public_declaration() {
         "the public Props alias must resolve from the setup return:\n{virtual_ts}"
     );
     assert!(
-        !virtual_ts.contains("$$ResolvedProps"),
+        !virtual_ts.contains("$ResolvedProps"),
         "a private Props must not be treated as an existing public alias:\n{virtual_ts}"
     );
 

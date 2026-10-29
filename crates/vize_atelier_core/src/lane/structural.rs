@@ -338,7 +338,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             ctx.remove_node();
             ctx.node_removed_from = Some(if_idx + 1);
         } else {
-            ctx.on_error(ErrorCode::VElseNoAdjacentIf, None);
+            ctx.on_error(ErrorCode::VElseNoAdjacentIf, Some(directive_loc.clone()));
         }
 
         None

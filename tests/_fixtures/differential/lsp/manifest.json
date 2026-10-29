@@ -2259,6 +2259,45 @@
       }
     },
     {
+      "id": "lsp/regression/project-native-runtime-authority-10694",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "project-native-runtime-authority-10694",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "0f17d0822660dd69705aa86c8899fa5c965b74ec6910f8f953f6738c7bf6ed4e"
+          },
+          {
+            "path": "package.json.txt",
+            "sha256": "28bf6be8d60c345b957740ae97f0daa5dc9cdd953a290dfc3f1ecf7a5d6d9f3f"
+          }
+        ]
+      },
+      "case": {
+        "path": "project-native-runtime-authority-10694/case.json",
+        "sha256": "aef069cdc8b73fa33f775be3bb4403bd2c9991a10b22176587f33e62a7bb7a65"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/pug-attribute-navigation-8908",
       "state": "active",
       "targets": ["stdio"],

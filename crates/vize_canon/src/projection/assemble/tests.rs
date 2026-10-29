@@ -7,7 +7,7 @@ use crate::template_diagnostic_directives::UNUSED_EXPECT_ERROR_MESSAGE;
 use crate::virtual_ts::{ProjectionMapping, VizeMapping};
 
 const SFC: &str = "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template><p>{{ missing }}</p></template>\n";
-const GENERATED: &str = "const count = 1\nvoid (missing);\nconst __vize_match_0_unreachable: $$Patterns.Reachable<T> = true;\n";
+const GENERATED: &str = "const count = 1\nvoid (missing);\nconst __vize_match_0_unreachable: $Patterns.Reachable<T> = true;\n";
 const REPORT_UNUSED: AssemblyPolicy = AssemblyPolicy {
     report_unused: true,
 };

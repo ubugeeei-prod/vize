@@ -8,8 +8,9 @@ use crate::virtual_ts::{
 };
 
 use crate::virtual_ts::expressions::{
-    ComponentPropSource, append_props_literal, append_spread_value, generated_prop_span,
-    map_rewritten_template_binding, prop_entry_sub_spans, prop_value_source_range,
+    ComponentPropSource, append_props_literal, append_spread_value,
+    callback_parameters_on_ignored_line, generated_prop_span, map_rewritten_template_binding,
+    prop_entry_sub_spans, prop_value_source_range,
 };
 use crate::virtual_ts::types::VizeMapping;
 
@@ -28,6 +29,7 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) indent: &'a str,
+    pub(super) hoist_shared_preamble: bool,
 }
 
 pub(super) fn generate_inferred_emit_args(
@@ -58,6 +60,8 @@ pub(super) fn generate_inferred_emit_args(
         ctx.safe_event_name
     );
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
+    let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
+        .select(ctx.hoist_shared_preamble);
     let dynamic_component =
         crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage)
             || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
@@ -132,7 +136,7 @@ pub(super) fn generate_inferred_emit_args(
     if first_listener {
         append!(
             *ts,
-            "{}type {resolver_type} = $$EmitPropsFactory<typeof {}>;\n",
+            "{}type {resolver_type} = {emit_props_factory}<typeof {}>;\n",
             ctx.indent,
             ctx.component_ref,
         );
@@ -231,7 +235,19 @@ pub(super) fn generate_inferred_emit_args(
                 let key_end = ts.len();
                 ts.push_str(": ");
                 let value_start = ts.len();
-                ts.push_str(generated_value.text.as_str());
+                let owned;
+                let value = if is_inline_callback_prop(prop) {
+                    let value = generated_value.text.trim_start();
+                    owned = if generated_value.omits_tail() {
+                        None
+                    } else {
+                        callback_parameters_on_ignored_line(value)
+                    };
+                    owned.as_ref().map_or(value, |owned| owned.as_str())
+                } else {
+                    generated_value.text.as_str()
+                };
+                ts.push_str(value);
                 let entry_end = if generated_value.omits_tail() {
                     generated_value.mapped_limit(value_start)
                 } else {

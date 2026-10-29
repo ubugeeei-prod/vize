@@ -1,0 +1,8 @@
+{
+  "name": "vize-lsp-dual-server-benchmark",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vue": "3.6.0-rc.11"
+  }
+}

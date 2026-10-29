@@ -9,7 +9,7 @@ use super::{
 
 pub(crate) fn component_reference_alias(template_name: &str) -> String {
     cstr!(
-        "$$Component_{}",
+        "$Component_{}",
         to_safe_identifier_fragment(template_name).as_str()
     )
 }
@@ -20,13 +20,32 @@ pub(crate) fn component_binding_reference(
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
 ) -> String {
-    resolved_component_binding_reference(
+    component_binding_reference_with_resolution(
         summary,
         options,
         syntactic_type_only_imported_names,
         template_name,
     )
-    .unwrap_or_else(|| to_safe_identifier(template_name))
+    .0
+}
+
+pub(crate) fn component_binding_reference_with_resolution(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> (String, bool) {
+    let resolved = resolved_component_binding_reference(
+        summary,
+        options,
+        syntactic_type_only_imported_names,
+        template_name,
+    );
+    let is_resolved = resolved.is_some();
+    (
+        resolved.unwrap_or_else(|| to_safe_identifier(template_name)),
+        is_resolved,
+    )
 }
 
 pub(super) fn component_binding_reference_with_bindings(
@@ -76,7 +95,7 @@ fn resolved_component_binding_reference_with_bindings(
     // Value bindings win over a type-only PascalCase collision
     // (`chartComponent` vs `import type { ChartComponent }`).
     // Ambient `external_template_bindings` must not beat a type-only import of
-    // the same name: `import type { ElBadge }` still uses `$$Component_*`.
+    // the same name: `import type { ElBadge }` still uses `$Component_*`.
     for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
         if let Some(binding_type) = bindings.binding_type(candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)

@@ -1,11 +1,11 @@
 import type {
   __DefineProps,
   __RuntimePropCtor,
-  $$ComponentInput,
-  $$ComponentOwnKeys,
-  $$IsAny,
-  $$PublicComponentInputProps,
-  $$UnownedComponentAttrs,
+  $ComponentInput,
+  $ComponentOwnKeys,
+  $IsAny,
+  $PublicComponentInputProps,
+  $UnownedComponentAttrs,
 } from "vize/content-mapper-helpers";
 import type { ComponentCustomProps } from "vue";
 
@@ -19,7 +19,7 @@ type Equal<L, R> =
   (<T>() => T extends L ? 1 : 2) extends <T>() => T extends R ? 1 : 2 ? true : false;
 type Expect<T extends true> = T;
 type Props = { id: number; label?: string };
-type Accepts<A> = A extends $$ComponentInput<Props, {}, A> ? true : false;
+type Accepts<A> = A extends $ComponentInput<Props, {}, A> ? true : false;
 
 export type PreservesAuthoredProps = Expect<Equal<Accepts<{ id: number }>, true>>;
 export type RejectsWrongProp = Expect<Equal<Accepts<{ id: string }>, false>>;
@@ -30,16 +30,16 @@ export type PreservesNativeFallthrough = Expect<
 >;
 export type PreservesConsumerAugmentation = Expect<
   Equal<
-    $$PublicComponentInputProps["sharedProjectFlag"],
+    $PublicComponentInputProps["sharedProjectFlag"],
     ComponentCustomProps["sharedProjectFlag"]
   >
 >;
 export type AugmentationRemainsOwned = Expect<
-  Equal<"sharedProjectFlag" extends $$ComponentOwnKeys ? true : false, true>
+  Equal<"sharedProjectFlag" extends $ComponentOwnKeys ? true : false, true>
 >;
 export type KeepsOnlyUnownedAttributes = Expect<
   Equal<
-    $$UnownedComponentAttrs<
+    $UnownedComponentAttrs<
       { id: number; title: string; onSave: () => void },
       Props,
       { onSave?: () => void }
@@ -57,5 +57,5 @@ declare const declaredProps: __DefineProps<{ value: string }>;
 // @ts-expect-error compiler macro props remain readonly across the shared alias.
 declaredProps.value = "changed";
 export type DoesNotWidenToAny = Expect<
-  Equal<$$IsAny<$$ComponentInput<Props, {}, { id: number }>>, false>
+  Equal<$IsAny<$ComponentInput<Props, {}, { id: number }>>, false>
 >;

@@ -1,5 +1,6 @@
 //! Code-action request dispatch and kind filtering.
 
+use std::sync::OnceLock;
 use tower_lsp::lsp_types::{
     CodeActionKind, CodeActionOrCommand, CodeActionParams, CodeActionResponse,
 };
@@ -20,8 +21,9 @@ pub(super) async fn code_actions(
     let range = params.range;
     let (revision, content) = {
         let document = server.state.documents.get(uri)?;
-        (document.revision(), document.text())
+        (document.revision(), document.text_snapshot())
     };
+    let context = OnceLock::new();
 
     let actions = if !features.lint {
         vec![]
@@ -30,9 +32,18 @@ pub(super) async fn code_actions(
         // Lint-based (parse-only), so not gated on `typeChecker.jsxTypecheck`.
         crate::ide::JsxCodeActionService::code_actions(&content, uri, range)
     } else {
-        let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-        let ctx = IdeContext::new(&server.state, uri, offset)?;
-        CodeActionService::code_actions_for_diagnostics(&ctx, range, &params.context.diagnostics)
+        let ctx = context
+            .get_or_init(|| {
+                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+                Some(IdeContext::with_content(
+                    &server.state,
+                    uri,
+                    offset,
+                    content.clone(),
+                ))
+            })
+            .as_ref()?;
+        CodeActionService::code_actions_for_diagnostics(ctx, range, &params.context.diagnostics)
     };
 
     #[cfg(feature = "native")]
@@ -40,17 +51,37 @@ pub(super) async fn code_actions(
         let mut actions = actions;
         let range_kinds = native_range_kinds(params.context.only.as_deref());
         if features.typecheck && !range_kinds.is_empty() {
-            let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-            let ctx = IdeContext::new(&server.state, uri, offset)?;
-            actions.extend(CodeActionService::native_actions(&ctx, range, &range_kinds).await);
+            let ctx = context
+                .get_or_init(|| {
+                    let offset =
+                        position_to_offset(&content, range.start.line, range.start.character)?;
+                    Some(IdeContext::with_content(
+                        &server.state,
+                        uri,
+                        offset,
+                        content.clone(),
+                    ))
+                })
+                .as_ref()?;
+            actions.extend(CodeActionService::native_actions(ctx, range, &range_kinds).await);
         }
         // Source actions rewrite the whole script, so they are returned only
         // when the client asks for them (`only`), as on save.
         let source_kinds = native_source_kinds(params.context.only.as_deref());
         if features.typecheck && !source_kinds.is_empty() {
-            let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-            let ctx = IdeContext::new(&server.state, uri, offset)?;
-            actions.extend(CodeActionService::native_source_actions(&ctx, &source_kinds).await);
+            let ctx = context
+                .get_or_init(|| {
+                    let offset =
+                        position_to_offset(&content, range.start.line, range.start.character)?;
+                    Some(IdeContext::with_content(
+                        &server.state,
+                        uri,
+                        offset,
+                        content.clone(),
+                    ))
+                })
+                .as_ref()?;
+            actions.extend(CodeActionService::native_source_actions(ctx, &source_kinds).await);
         }
         actions
     };

@@ -1,6 +1,14 @@
+// Active #6852 pins are corpus inputs without a batch pack. Keep that manifest
+// distinction beside the pack registry instead of teaching every consumer it.
+export function packCases<T extends { pack?: unknown }>(cases: readonly T[]): T[] {
+  return cases.filter((fixture) => fixture.pack !== undefined);
+}
+
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
+  "aria-kebab-prop-11048":
+    "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -43,12 +51,16 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-props-binding-10196": "authored_props_binding_preserves_batch_acceptance",
   "content-mapper-slot-host-callbacks-10774":
     "content_mapper_slot_host_callbacks_keep_native_diagnostics",
+  "content-mapper-template-callback-listener-11023":
+    "content_mapper_template_callback_listener_11023::content_mapper_template_callback_listener_preserves_contextual_parameters",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-type-only-import-use":
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
   "content-mapper-unknown-options-10218":
     "content_mapper_unknown_options_preserve_requested_diagnostics",
+  "content-mapper-vue-generic-11051":
+    "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
   "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
@@ -63,6 +75,7 @@ export const TYPECHECKER_TESTS = {
   "empty-v-slot-expression": "empty_v_slot_expressions_keep_slot_scopes_checked",
   "escaped-import-literals-10763": "escaped_module_paths_preserve_complete_authored_diagnostics",
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
+  "event-inference-callback-10739": "event_inference_callbacks_keep_contextual_native_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
   "experimental-router-props-10579": "experimental_route_props_follow_the_admitted_project_types",
@@ -130,11 +143,14 @@ export const TYPECHECKER_TESTS = {
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "workspace-package-import-alias-10175":
     "workspace_package_import_aliases_preserve_clean_diagnostics",
+  "zero-argument-slot-constructor-11013":
+    "zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
 export const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+  "aria-kebab-prop-11048": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
@@ -164,9 +180,11 @@ export const sourceRevisions = {
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "content-mapper-slot-host-callbacks-10774": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "content-mapper-template-callback-listener-11023": "407e7cf15219405110efdd0c977bb30cb1db1644",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "content-mapper-vue-generic-11051": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
@@ -177,6 +195,7 @@ export const sourceRevisions = {
   "empty-v-slot-expression": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
+  "event-inference-callback-10739": "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
   "experimental-router-props-10579": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
@@ -232,4 +251,5 @@ export const sourceRevisions = {
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
   "workspace-alias-cache-10063": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "workspace-package-import-alias-10175": "c935e00211b3d6ca271e53658f88156921a639a7",
+  "zero-argument-slot-constructor-11013": "a95d0aad73c8403767a507f8f0768dd0ffb265c7",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;

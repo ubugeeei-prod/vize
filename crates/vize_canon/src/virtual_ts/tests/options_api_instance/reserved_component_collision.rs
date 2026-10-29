@@ -39,19 +39,19 @@ fn reserved_component_local_does_not_collide_with_authored_or_configured_names()
             .code
             .lines()
             .filter(|line| {
-                (line.starts_with("  const _as") && line.contains("$$OptionsBinding"))
+                (line.starts_with("  const _as") && line.contains("$OptionsBinding"))
                     || line.starts_with("  type __as_Component_0")
             })
             .collect::<Vec<_>>();
         let local = vize_carton::cstr!(
-            "  const {expected_local}: $$OptionsBinding<typeof __default__, \"as\"> = (void 0) as any; void {expected_local};"
+            "  const {expected_local}: $OptionsBinding<typeof __default__, \"as\"> = (void 0) as any; void {expected_local};"
         );
         let reference = vize_carton::cstr!("  type __as_Component_0 = typeof {expected_local};");
         assert_eq!(
             actual,
             vec![
-                "  const _as: $$OptionsBinding<typeof __default__, \"_as\"> = (void 0) as any;",
-                "  const _as_: $$OptionsBinding<typeof __default__, \"_as_\"> = (void 0) as any;",
+                "  const _as: $OptionsBinding<typeof __default__, \"_as\"> = (void 0) as any;",
+                "  const _as_: $OptionsBinding<typeof __default__, \"_as_\"> = (void 0) as any;",
                 local.as_str(),
                 reference.as_str(),
             ],

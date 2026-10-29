@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const target = useTemplateRef('target');
+if (target.value) target.value.focus();
+</script>
+<template><button ref="target" /></template>

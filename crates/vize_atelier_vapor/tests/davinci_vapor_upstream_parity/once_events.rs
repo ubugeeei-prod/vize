@@ -97,3 +97,25 @@ fn inherited_once_keeps_nested_event_handlers_live() {
         ],
     );
 }
+
+#[test]
+fn computed_event_names_freeze_while_handlers_stay_live() {
+    assert_native_upstream_trace(
+        r#"<main data-id="root"><button v-once data-id="button" :title="label" @[eventName]="record(label)">{{ label }}</button><span data-id="live">{{ label }}</span></main>"#,
+        json!({"eventName": "click", "label": "A"}),
+        json!([
+            {"event": "click", "selector": "[data-id=button]"},
+            {"patch": {"eventName": "mousedown", "label": "B"}},
+            {"event": "mousedown", "selector": "[data-id=button]"},
+            {"event": "click", "selector": "[data-id=button]"},
+        ]),
+        vec![
+            view("A", json!([])),
+            view("A", json!(["A"])),
+            view("B", json!(["A"])),
+            view("B", json!(["A"])),
+            view("B", json!(["A", "B"])),
+            json!({"tree": [], "events": ["A", "B"], "identities": []}),
+        ],
+    );
+}

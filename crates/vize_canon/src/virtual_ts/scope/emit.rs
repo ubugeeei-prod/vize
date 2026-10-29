@@ -6,6 +6,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_croquis::{Scope, ScopeData};
+use vize_l0::ts;
 
 use crate::virtual_ts::expressions::{
     map_rewritten_template_binding, rewrite_reserved_template_binding,
@@ -64,23 +65,36 @@ pub(super) fn emit_slot_function_open(
     props_pattern: &str,
     props_type: &String,
     capture: bool,
+    body: impl FnOnce(&mut String),
 ) {
     let declaration = if capture {
         cstr!("var {function_name} = function")
     } else {
         cstr!("void function {function_name}")
     };
-    if let Some((pattern, annotation)) = split_slot_pattern_annotation(props_pattern) {
-        append!(*ts, "{indent}{declaration}({pattern}: {annotation}) {{\n");
-        append!(
-            *ts,
-            "{indent}  const __slot_annotation_check: {annotation} = undefined as unknown as ({props_type});\n{indent}  void __slot_annotation_check;\n"
-        );
+    let annotated = split_slot_pattern_annotation(props_pattern);
+    let params = if let Some((pattern, annotation)) = annotated {
+        cstr!("{pattern}: {annotation}")
     } else {
-        append!(
-            *ts,
-            "{indent}{declaration}({props_pattern}: {props_type}) {{\n"
-        );
+        cstr!("{props_pattern}: {props_type}")
+    };
+    append!(*ts, "{indent}{declaration}({params})");
+    // The `{` and `};` are one tight group, so the closer cannot drift.
+    ts! { &mut *ts =>
+        #(" ") {
+            #("\n")
+            #{
+                if let Some((_, annotation)) = annotated {
+                    append!(
+                        *__ts,
+                        "{indent}  const __slot_annotation_check: {annotation} = undefined as unknown as ({props_type});\n{indent}  void __slot_annotation_check;\n"
+                    );
+                }
+                body(__ts);
+            }
+            #indent
+        }
+        #(";\n")
     }
 }
 
@@ -112,96 +126,142 @@ pub(super) fn append_v_for_comment(
 /// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
 /// rewritten through the template-prop bridge so a source such as `messages`
 /// resolves to `__props.messages`; all other authored syntax stays verbatim.
+/// Mappings written while the loop header is emitted. Callers that keep a
+/// diagnostics copy pass the whole [`super::context::ScopeMappings`].
+pub(super) trait AsMappings {
+    fn as_mappings(&mut self) -> &mut Vec<VizeMapping>;
+}
+
+impl AsMappings for Vec<VizeMapping> {
+    fn as_mappings(&mut self) -> &mut Vec<VizeMapping> {
+        self
+    }
+}
+
+impl AsMappings for super::context::ScopeMappings<'_> {
+    fn as_mappings(&mut self) -> &mut Vec<VizeMapping> {
+        self.navigation
+    }
+}
+
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
-pub(super) fn emit_v_for_loop_open(
+pub(super) fn emit_v_for_loop_open<M>(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut M,
     template_offset: u32,
     source_offset: Option<u32>,
     indent: &str,
     scope: &Scope,
     template_binding_access: &TemplateBindingAccess,
     capture: bool,
-) {
+    body: impl FnOnce(&mut String, &mut M),
+) where
+    M: AsMappings,
+{
     // The scope is authoritative for both the loop shape and the alias
     // declaration offsets, so the v-for data is read from it directly.
     let ScopeData::VFor(data) = scope.data() else {
+        body(ts, mappings);
         return;
     };
     // Loop bindings are in the TDZ while a for-of RHS is evaluated. Vue
     // evaluates the source in the parent scope, so capture it before entering
     // the loop. A block also isolates repeated projections of this scope.
-    append!(*ts, "{indent}{{\n");
-    if capture {
-        append!(
-            *ts,
-            "{indent}var __vize_slot_scope_{} = (() => {{\n",
-            scope.id.as_u32()
-        );
-    }
-    let source_name = cstr!("__vize_v_for_source_{}", scope.id.as_u32());
-    append!(*ts, "{indent}const {source_name} = __vForList(");
-    let source_gen_start = ts.len();
-    let rewritten_source =
-        rewrite_reserved_template_binding(data.source.as_str(), template_binding_access);
-    let source_text = rewritten_source
-        .as_ref()
-        .map_or(data.source.as_str(), |source| source.as_str());
-    let isolated_source =
-        crate::virtual_ts::expressions::isolate_incomplete_expression(source_text);
-    ts.push_str(isolated_source.as_str());
-    let (mapped_start, mapped_len) = isolated_source.mapped_bounds();
-    let source_gen_end = source_gen_start + mapped_start + mapped_len;
-    if let Some(source_offset) = source_offset {
-        let source_start = (template_offset + source_offset) as usize;
-        mappings.push(VizeMapping {
-            gen_range: source_gen_start..source_gen_end,
-            src_range: source_start..(source_start + data.source.len()),
-            sub_spans: Vec::new(),
-        });
-        map_rewritten_template_binding(
-            ts,
-            mappings,
-            source_gen_start,
-            source_start,
-            data.source.as_str(),
-            template_binding_access,
-        );
-    }
-    ts.push_str(");\n");
-    append!(*ts, "{indent}for (const [");
-    // The alias pattern is emitted verbatim, so each binding identifier sits at
-    // the same relative offset in the generated pattern as in the authored one.
-    // Mapping it to the binding's declaration offset makes hover, definition
-    // and references answer at the `v-for="it in …"` declaration itself, not
-    // only at use sites (#3894).
-    let pattern_gen_start = ts.len();
-    ts.push_str(data.value_alias.as_str());
-    for name in &data.value_bindings {
-        if let Some(relative) = pattern_identifier_offset(data.value_alias.as_str(), name) {
-            map_alias(
-                mappings,
-                scope,
-                template_offset,
-                name,
-                pattern_gen_start + relative,
-            );
+    // The block braces and the `for` braces are each one `ts!`.
+    let scope_id = scope.id.as_u32();
+    ts! { &mut *ts =>
+        #indent
+        {
+            #("\n")
+            #{
+                if capture {
+                    append!(*__ts, "{indent}var __vize_slot_scope_{scope_id} = (() => {{\n");
+                }
+                (move |ts: &mut String| {
+                    let source_name = cstr!("__vize_v_for_source_{scope_id}");
+                    append!(*ts, "{indent}const {source_name} = __vForList(");
+                    let source_gen_start = ts.len();
+                    let rewritten_source = rewrite_reserved_template_binding(
+                        data.source.as_str(),
+                        template_binding_access,
+                    );
+                    let source_text = rewritten_source
+                        .as_ref()
+                        .map_or(data.source.as_str(), |source| source.as_str());
+                    let isolated_source =
+                        crate::virtual_ts::expressions::isolate_incomplete_expression(source_text);
+                    ts.push_str(isolated_source.as_str());
+                    let (mapped_start, mapped_len) = isolated_source.mapped_bounds();
+                    let source_gen_end = source_gen_start + mapped_start + mapped_len;
+                    if let Some(source_offset) = source_offset {
+                        let source_start = (template_offset + source_offset) as usize;
+                        mappings.as_mappings().push(VizeMapping {
+                            gen_range: source_gen_start..source_gen_end,
+                            src_range: source_start..(source_start + data.source.len()),
+                            sub_spans: Vec::new(),
+                        });
+                        map_rewritten_template_binding(
+                            ts,
+                            mappings.as_mappings(),
+                            source_gen_start,
+                            source_start,
+                            data.source.as_str(),
+                            template_binding_access,
+                        );
+                    }
+                    ts.push_str(");\n");
+                    append!(*ts, "{indent}for (const [");
+                    // The alias pattern is emitted verbatim, so each binding identifier sits at
+                    // the same relative offset in the generated pattern as in the authored one.
+                    // Mapping it to the binding's declaration offset makes hover, definition
+                    // and references answer at the `v-for="it in …"` declaration itself, not
+                    // only at use sites (#3894).
+                    let pattern_gen_start = ts.len();
+                    ts.push_str(data.value_alias.as_str());
+                    for name in &data.value_bindings {
+                        if let Some(relative) =
+                            pattern_identifier_offset(data.value_alias.as_str(), name)
+                        {
+                            map_alias(
+                                mappings.as_mappings(),
+                                scope,
+                                template_offset,
+                                name,
+                                pattern_gen_start + relative,
+                            );
+                        }
+                    }
+                    if let Some(key) = data.key_alias.as_deref() {
+                        ts.push_str(", ");
+                        map_alias(mappings.as_mappings(), scope, template_offset, key, ts.len());
+                        ts.push_str(key);
+                    } else if data.index_alias.is_some() {
+                        // Keep the index in the third tuple slot even when no key alias is bound.
+                        ts.push_str(", _key");
+                    }
+                    if let Some(index) = data.index_alias.as_deref() {
+                        ts.push_str(", ");
+                        map_alias(mappings.as_mappings(), scope, template_offset, index, ts.len());
+                        ts.push_str(index);
+                    }
+                    append!(*ts, "] of {source_name})");
+                    ts! { &mut *ts =>
+                        #(" ") {
+                            #("\n")
+                            #{ body(__ts, mappings); }
+                            #indent
+                        }
+                        #("\n")
+                    }
+                })(__ts);
+                if capture {
+                    append!(*__ts, "{indent}return [];\n{indent}}})();\n");
+                }
+            }
+            #indent
         }
+        #("\n")
     }
-    if let Some(key) = data.key_alias.as_deref() {
-        ts.push_str(", ");
-        map_alias(mappings, scope, template_offset, key, ts.len());
-        ts.push_str(key);
-    } else if data.index_alias.is_some() {
-        // Keep the index in the third tuple slot even when no key alias is bound.
-        ts.push_str(", _key");
-    }
-    if let Some(index) = data.index_alias.as_deref() {
-        ts.push_str(", ");
-        map_alias(mappings, scope, template_offset, index, ts.len());
-        ts.push_str(index);
-    }
-    append!(*ts, "] of {source_name}) {{\n");
 }
 
 /// The byte offset at which `name` is declared inside the authored alias

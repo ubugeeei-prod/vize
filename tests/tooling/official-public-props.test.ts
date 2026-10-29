@@ -22,7 +22,7 @@ const cases = officialCases(fixture);
 // do not give tests stronger whole-stream oracles than the actual public actor.
 const additionalSourceStreams: Record<string, string> = {
   "public-props-9498-unknown-prop-strict":
-    "App.vue(4,46): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '$$ComponentCheckProps<$$StaticEmitProps, $$PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
+    "App.vue(4,46): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '$ComponentCheckProps<$StaticEmitProps, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
   "public-props-9498-wrong-listener-payload":
     "App.vue(5,53): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.\n",
 };
@@ -98,7 +98,7 @@ test("public9498 retains the canonical eleven-case selection without default sui
     createHash("sha256")
       .update(fs.readFileSync(path.join(root, fixturePath)))
       .digest("hex"),
-    "fdcc0187a0042d5fd59e9e75366467df09bbd6b3e91b262645bbd7eff34b7fd6",
+    "841ff82c683f41eb0147868e12c5e721f6dac0d0ddb5621dd3d3e3a93cc16f2b",
   );
   // A parser-only synthetic tuple gives no release or installed-product credit.
   const options = officialRunOptions(

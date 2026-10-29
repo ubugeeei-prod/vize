@@ -2,8 +2,9 @@
 
 use super::{emits::inner_type_of, generics::module_alias_generic_suffix};
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
-use vize_carton::{String, append, cstr};
+use vize_carton::{String, cstr};
 use vize_croquis::Croquis;
+use vize_l0::ts;
 
 /// Emit the private slot contract and preserve the public `Slots` export. When the slots type from
 /// `defineSlots` references an SFC generic parameter, the alias re-declares
@@ -32,20 +33,21 @@ pub(super) fn emit_slots_type(
                     (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", ")))
                 })
                 .unwrap_or_default();
-            append!(
-                *ts,
-                "type $$Slots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_typed_slots']"
-            );
+            // Preserve the original quote bytes: retained projections and their
+            // source coordinates are shared with independent native observers.
+            ts! { &mut *ts =>
+                type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>> #("['__vize_typed_slots']")
+            }
             mappings.emit_slot_key_witnesses(ts, &summary.macros);
-            ts.push_str(";\n");
+            ts! { &mut *ts => ; }
             generic_injection.is_some()
         } else {
             let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-            append!(*ts, "type $$Slots{suffix} = ");
+            ts! { &mut *ts => type $Slots #suffix = }
             let start = ts.len();
-            ts.push_str(inner_type);
+            ts! { &mut *ts => #inner_type }
             let end = ts.len();
-            ts.push_str(";\n");
+            ts! { &mut *ts => ; }
             mappings.map_slot_keys(start..end, &summary.macros);
             !suffix.is_empty()
         }
@@ -53,17 +55,16 @@ pub(super) fn emit_slots_type(
         let (declaration, arguments) = generic_injection
             .map(|(declaration, names)| (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", "))))
             .unwrap_or_default();
-        append!(
-            *ts,
-            "type $$Slots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_template_slots'];\n"
-        );
+        ts! { &mut *ts =>
+            type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>> #("['__vize_template_slots']");
+        }
         generic_injection.is_some()
     } else {
-        ts.push_str("type $$Slots = {};\n");
+        ts! { &mut *ts => type $Slots = {}; }
         false
     };
     if export_slots {
-        ts.push_str("export type { $$Slots as Slots };\n");
+        ts! { &mut *ts => export type { $Slots as Slots }; }
     }
     is_generic
 }
@@ -86,22 +87,21 @@ pub(super) fn emit_exposed_type(
     if let Some(ref type_args) = expose.type_args {
         let inner_type = inner_type_of(type_args);
         let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        append!(*ts, "export type Exposed{suffix} = {inner_type};\n");
+        ts! { &mut *ts => export type Exposed #suffix = #inner_type; }
         (true, !suffix.is_empty())
     } else if expose.runtime_args.is_some() {
         // Runtime args are returned from __setup() to keep them in scope.
         // Use Awaited<ReturnType<...>> to handle both sync and async setup.
         if let Some((declaration, names)) = generic_injection {
             let names = names.join(", ");
-            append!(
-                *ts,
-                "export type Exposed<{declaration}> = Awaited<ReturnType<typeof __setup<{names}>>>[\"__vize_exposed\"];\n"
-            );
+            ts! { &mut *ts =>
+                export type Exposed<#declaration> = Awaited<ReturnType<typeof __setup<#names>>>["__vize_exposed"];
+            }
             return (true, true);
         }
-        ts.push_str(
-            "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];\n",
-        );
+        ts! { &mut *ts =>
+            export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_exposed"];
+        }
         (true, false)
     } else {
         (false, false)
@@ -136,7 +136,8 @@ impl TemplateSlotsType {
         source_offset: &dyn Fn(usize) -> usize,
     ) {
         let start = ts.len();
-        ts.push_str(&self.expression);
+        let expression = self.expression.as_str();
+        ts! { &mut *ts => #expression }
         if let Some(range) = &self.authored_range {
             mappings.push(crate::virtual_ts::VizeMapping {
                 gen_range: start..ts.len(),

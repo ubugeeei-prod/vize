@@ -1,8 +1,8 @@
-//! `$$This` inherits `mixins:` / `extends:` members (#3609).
+//! `$This` inherits `mixins:` / `extends:` members (#3609).
 //!
 //! Before this, the typed-instance bridge listed only the component's own
 //! option names, so a `methods`/`computed` body calling a mixin-provided
-//! member reported `TS2339 Property 'x' does not exist on type '$$This'`
+//! member reported `TS2339 Property 'x' does not exist on type '$This'`
 //! on code `vue-tsc` accepts.
 
 use super::super::super::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -10,7 +10,7 @@ use super::super::analyze_options_api_script;
 use vize_carton::{String, cstr};
 
 /// The generated bridge from `// Options API typed instance bridge` through
-/// the `$$This` declaration, which is the whole surface these tests pin.
+/// the `$This` declaration, which is the whole surface these tests pin.
 fn bridge_header(code: &str) -> String {
     let mut lines = Vec::new();
     let mut started = false;
@@ -42,7 +42,7 @@ fn legacy_bridge_header(script: &str) -> String {
     bridge_header(&output.code)
 }
 
-const HELPERS: &str = "  type $$InheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n  interface $$NoInheritedMembers {}\n  type $$InheritedMembers<T, __I = $$InheritedInstance<T>> = [$$IsAny<__I>] extends [true] ? $$NoInheritedMembers : __I;";
+const HELPERS: &str = "  type $InheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n  interface $NoInheritedMembers {}\n  type $InheritedMembers<T, __I = $InheritedInstance<T>> = [$IsAny<__I>] extends [true] ? $NoInheritedMembers : __I;";
 
 #[test]
 fn imported_mixin_and_extends_references_join_the_this_shape() {
@@ -66,11 +66,11 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $$Inherited0 = $$InheritedMembers<typeof greeter>;\n\
-             \x20 type $$Inherited1 = $$InheritedMembers<typeof counter>;\n\
-             \x20 type $$This = {{\n\
+             \x20 type $Inherited0 = $InheritedMembers<typeof greeter>;\n\
+             \x20 type $Inherited1 = $InheritedMembers<typeof counter>;\n\
+             \x20 type $This = {{\n\
              \x20   shout: any;\n\
-             \x20 }} & $$Inherited0 & $$Inherited1;"
+             \x20 }} & $Inherited0 & $Inherited1;"
         )
     );
 }
@@ -105,10 +105,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $$Inherited0 = $$InheritedMembers<typeof inlineGreeter>;\n\
-             \x20 type $$This = {{\n\
+             \x20 type $Inherited0 = $InheritedMembers<typeof inlineGreeter>;\n\
+             \x20 type $This = {{\n\
              \x20   double: any;\n\
-             \x20 }} & $$Inherited0;"
+             \x20 }} & $Inherited0;"
         )
     );
 }
@@ -134,10 +134,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $$Inherited0 = $$InheritedMembers<typeof shared.greeter>;\n\
-             \x20 type $$This = {{\n\
+             \x20 type $Inherited0 = $InheritedMembers<typeof shared.greeter>;\n\
+             \x20 type $This = {{\n\
              \x20   shout: any;\n\
-             \x20 }} & $$Inherited0;"
+             \x20 }} & $Inherited0;"
         )
     );
 }
@@ -155,7 +155,7 @@ export default defineComponent({
     assert_eq!(
         legacy_bridge_header(script),
         "  // Options API typed instance bridge\n  \
-         type $$This = {\n    \
+         type $This = {\n    \
          greet: any;\n    \
          shout: any;\n  };"
     );
@@ -177,10 +177,10 @@ export default defineComponent({
         cstr!(
             "  // Options API typed instance bridge\n\
              {HELPERS}\n\
-             \x20 type $$Inherited0 = $$InheritedMembers<typeof untyped>;\n\
-             \x20 type $$This = {{\n\
+             \x20 type $Inherited0 = $InheritedMembers<typeof untyped>;\n\
+             \x20 type $This = {{\n\
              \x20   own: any;\n\
-             \x20 }} & $$Inherited0;"
+             \x20 }} & $Inherited0;"
         )
     );
 }

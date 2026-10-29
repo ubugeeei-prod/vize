@@ -23,86 +23,46 @@ pub(in crate::script_parser) fn walk_expression(
     expr: &Expression<'_>,
     source: &str,
 ) {
+    super::super::value_binding_origins::note_expression_mutation(result, expr);
     refuse_expression_type_reads(result, expr);
     match expr {
         // Arrow functions create closure scopes (no `arguments`, no `this` binding)
         Expression::ArrowFunctionExpression(arrow) => {
-            super::super::ssr_functions::note_arrow(result, expr);
-            let params = extract_function_params_with_occurrences(result, &arrow.params);
-
-            result.scopes.enter_closure_scope(
-                ClosureScopeData {
-                    name: None,
-                    param_names: params,
-                    is_arrow: true,
-                    is_async: arrow.r#async,
-                    is_generator: false, // Arrow functions cannot be generators
-                },
-                arrow.span.start,
-                arrow.span.end,
-            );
-            result.install_parameter_occurrences();
-
-            if arrow.expression {
-                if let Some(Statement::ExpressionStatement(expr_stmt)) =
-                    arrow.body.statements.first()
-                {
-                    walk_expression(result, &expr_stmt.expression, source);
-                }
-            } else {
-                // Block arrow: () => { ... }
-                super::super::ssr_functions::walk_body(
-                    result,
-                    &arrow.body.statements,
-                    source,
-                    arrow.body.span.end,
-                );
-            }
-
-            result.scopes.exit_scope();
+            walk_arrow_function(result, expr, arrow, source, None);
         }
 
         // Function expressions create closure scopes
         Expression::FunctionExpression(func) => {
-            super::super::ssr_functions::note_function(result, func);
-            if func.id.is_some() {
-                result.refuse_occurrences();
-            }
-            let params = extract_function_params_with_occurrences(result, &func.params);
-            let name = func
-                .id
-                .as_ref()
-                .map(|id| CompactString::new(id.name.as_str()));
-
-            result.scopes.enter_closure_scope(
-                ClosureScopeData {
-                    name,
-                    param_names: params,
-                    is_arrow: false,
-                    is_async: func.r#async,
-                    is_generator: func.generator,
-                },
-                func.span.start,
-                func.span.end,
-            );
-            result.install_parameter_occurrences();
-
-            if let Some(body) = &func.body {
-                super::super::ssr_functions::walk_body(
-                    result,
-                    &body.statements,
-                    source,
-                    body.span.end,
-                );
-            }
-
-            result.scopes.exit_scope();
+            walk_function_expression(result, func, source, None);
         }
 
         // Call expressions may contain callbacks as arguments
         Expression::CallExpression(call) => {
             result.refuse_direct_eval(&call.callee);
             walk_call_arguments(result, call, source);
+        }
+
+        Expression::NewExpression(new_expr) => {
+            walk_expression(result, &new_expr.callee, source);
+            for argument in &new_expr.arguments {
+                match argument {
+                    Argument::SpreadElement(spread) => {
+                        walk_expression(result, &spread.argument, source);
+                    }
+                    _ => {
+                        if let Some(expression) = argument.as_expression() {
+                            walk_expression(result, expression, source);
+                        }
+                    }
+                }
+            }
+        }
+
+        Expression::TaggedTemplateExpression(tagged) => {
+            walk_expression(result, &tagged.tag, source);
+            for expression in &tagged.quasi.expressions {
+                walk_expression(result, expression, source);
+            }
         }
 
         Expression::Identifier(id) => {
@@ -333,10 +293,10 @@ pub(in crate::script_parser) fn walk_expression(
             walk_expression(result, &ts_non_null.expression, source);
         }
 
-        // Template literals own only their interpolated expression references.
-        Expression::TemplateLiteral(template) if result.occurrence_capture.is_some() => {
+        // Template literals evaluate each interpolation in the current scope.
+        Expression::TemplateLiteral(template) => {
             for expression in &template.expressions {
-                super::super::occurrences::note_expression_only(result, expression);
+                walk_expression(result, expression, source);
             }
         }
         // Retain only facts for forms the existing scope walk does not visit.
@@ -345,4 +305,107 @@ pub(in crate::script_parser) fn walk_expression(
         }
         _ => {}
     }
+}
+
+/// Walk an initializer while retaining the binding name of an anonymous
+/// function expression. This makes `export const useThing = () => ...` carry
+/// the same composable identity as a function declaration without changing
+/// the generic expression walker's callback semantics.
+pub(in crate::script_parser) fn walk_expression_with_closure_name(
+    result: &mut ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+    name: &str,
+) {
+    if !super::super::result::is_composable_name(name) {
+        walk_expression(result, expr, source);
+        return;
+    }
+    match expr {
+        Expression::ArrowFunctionExpression(arrow) => {
+            refuse_expression_type_reads(result, expr);
+            walk_arrow_function(result, expr, arrow, source, Some(CompactString::new(name)));
+        }
+        Expression::FunctionExpression(function) => {
+            refuse_expression_type_reads(result, expr);
+            walk_function_expression(result, function, source, Some(CompactString::new(name)));
+        }
+        _ => walk_expression(result, expr, source),
+    }
+}
+
+fn walk_arrow_function(
+    result: &mut ScriptParseResult,
+    expression: &Expression<'_>,
+    arrow: &oxc_ast::ast::ArrowFunctionExpression<'_>,
+    source: &str,
+    name: Option<CompactString>,
+) {
+    super::super::ssr_functions::note_arrow(result, expression);
+    let params = extract_function_params_with_occurrences(result, &arrow.params);
+
+    result.scopes.enter_closure_scope(
+        ClosureScopeData {
+            name,
+            param_names: params,
+            is_arrow: true,
+            is_async: arrow.r#async,
+            is_generator: false,
+        },
+        arrow.span.start,
+        arrow.span.end,
+    );
+    result.install_parameter_occurrences();
+
+    if arrow.expression {
+        if let Some(Statement::ExpressionStatement(expr_stmt)) = arrow.body.statements.first() {
+            walk_expression(result, &expr_stmt.expression, source);
+        }
+    } else {
+        super::super::ssr_functions::walk_body(
+            result,
+            &arrow.body.statements,
+            source,
+            arrow.body.span.end,
+        );
+    }
+
+    result.scopes.exit_scope();
+}
+
+fn walk_function_expression(
+    result: &mut ScriptParseResult,
+    function: &oxc_ast::ast::Function<'_>,
+    source: &str,
+    fallback_name: Option<CompactString>,
+) {
+    super::super::ssr_functions::note_function(result, function);
+    if function.id.is_some() {
+        result.refuse_occurrences();
+    }
+    let params = extract_function_params_with_occurrences(result, &function.params);
+    let name = function
+        .id
+        .as_ref()
+        .map(|id| CompactString::new(id.name.as_str()))
+        .or(fallback_name);
+
+    result.scopes.enter_closure_scope(
+        ClosureScopeData {
+            name,
+            param_names: params,
+            is_arrow: false,
+            is_async: function.r#async,
+            is_generator: function.generator,
+        },
+        function.span.start,
+        function.span.end,
+    );
+    result.install_parameter_occurrences();
+
+    if let Some(body) = &function.body {
+        super::super::ssr_functions::walk_body(result, &body.statements, source, body.span.end);
+    }
+
+    result.scopes.exit_scope();
 }

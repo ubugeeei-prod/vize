@@ -36,6 +36,7 @@ const reviewedBuildPaths = [
 const historicalDirectory =
   "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934";
 const contractPath = "editors/vscode/test/css-hover-source-custody.json";
+const currentCheckoutPath = "editors/vscode/test/css-hover-current-checkout.json";
 // These are complete module/fixture memberships, not a list of changed files.
 // A new or renamed input inside an owned module must require a new review.
 const ownedSourcePaths = [
@@ -104,6 +105,7 @@ export function assertCssSnapshotProvenance(
   expectedCrates,
   snapshot,
   fixtures,
+  expectedCheckoutCrates = expectedCrates,
 ) {
   const loadedContract = JSON.parse(contractBytes);
   assert.deepEqual(snapshot, loadedContract.productSnapshot, "foreign product snapshot identity");
@@ -120,7 +122,7 @@ export function assertCssSnapshotProvenance(
   );
   assertExactCssTree(
     readGitTree(repoRoot, "HEAD", ownedSourcePaths),
-    expectedCrates.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
+    expectedCheckoutCrates.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
   );
   assert.ok(fixtures.every(({ path: name }) => belongsTo(name, ownedFixturePaths)));
   assertExactCssTree(readGitTree(repoRoot, "HEAD", ownedFixturePaths), fixtures);
@@ -133,6 +135,7 @@ export function assertCssSnapshotProvenance(
       ...ownedSourcePaths,
       ...ownedFixturePaths,
       contractPath,
+      currentCheckoutPath,
     ),
     "",
     "dirty, staged or untracked owned CSS inputs",
@@ -230,6 +233,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     readGitTree(repoRoot, revision, paths, recursive);
   const contractBytes = fs.readFileSync(path.join(directory, "css-hover-source-custody.json"));
   const contract = JSON.parse(contractBytes);
+  const currentCheckoutBytes = fs.readFileSync(
+    path.join(directory, "css-hover-current-checkout.json"),
+  );
+  const currentCheckout = JSON.parse(currentCheckoutBytes);
   assert.equal(contract.schema, "vize.css-hover.source-custody");
   assert.equal(contract.version, 1);
   assert.equal(contract.historicalBaselineRevision, historicalBaselineRevision);
@@ -324,6 +331,24 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     "foreign product snapshot",
   );
   assert.equal(contract.productSnapshot.cratesEntries, expected.length);
+  const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
+  assert.equal(currentCheckout.schema, "vize.css-hover.current-checkout");
+  assert.equal(currentCheckout.version, 1);
+  const currentCheckoutLayers = currentCheckout.layers;
+  assert.equal(currentCheckoutLayers[0]?.name, "shared-document-snapshots-11054");
+  assert.deepEqual(
+    currentCheckoutLayers.flatMap((layer) => layer.changes.map(({ path: name }) => name)),
+    [
+      "crates/vize_maestro/src/server/annotations.rs",
+      "crates/vize_maestro/src/server/handlers/typed.rs",
+    ],
+  );
+  const currentExpected = composeReviewedCssTrees(expected, currentCheckoutLayers);
+  assert.equal(
+    hash(git("show", `HEAD:${currentCheckoutPath}`)),
+    hash(currentCheckoutBytes),
+    "current committed checkout contract differs from the loaded contract",
+  );
   if (pinnedProduct)
     assertCssSnapshotProvenance(
       repoRoot,
@@ -331,15 +356,15 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
       expected,
       contract.productSnapshot,
       contract.reviewedFixtures,
+      currentExpected,
     );
-  const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
   // A current checkout must carry the reviewed owned CSS inputs exactly. Other
   // crates, build and VSIX inputs follow main; the build receipt binds the
   // capture to this exact clean HEAD, so they are not frozen here.
   if (!pinnedProduct) {
     assertExactCssTree(
       readTree(revision, ownedSourcePaths),
-      expected.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
+      currentExpected.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
     );
     assertExactCssTree(readTree(revision, ownedFixturePaths), contract.reviewedFixtures);
   }
@@ -419,6 +444,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     mergedMain: contract.mergedMain,
     successorMain: successor,
     currentContracts,
+    currentCheckoutLayers,
     vsixInfrastructure: infrastructure,
     cratesSha256: fingerprint(actual),
     // The pinned product revision need not be fetched; only a checkout has current inputs.

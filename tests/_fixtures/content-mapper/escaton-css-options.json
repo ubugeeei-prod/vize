@@ -167,7 +167,7 @@
         "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
         "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"'wrong'\" /></template>\n"
       },
-      "codes": [2322, 2322],
+      "codes": [2322],
       "terms": ["Type 'string' is not assignable to type 'number'."]
     },
     {

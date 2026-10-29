@@ -14,6 +14,7 @@ use std::ops::Range;
 use vize_carton::{String, append};
 use vize_croquis::ScopeId;
 use vize_croquis::croquis::{PassedProp, SpreadProp};
+use vize_l0::ts;
 
 enum SlotOutletLiteralEntry<'a> {
     Prop(&'a PassedProp),
@@ -39,7 +40,11 @@ pub(super) fn append_slot_outlet_literal(
     expr_indent: &str,
 ) -> Range<usize> {
     let literal_gen_start = ts.len();
-    ts.push_str("{\n");
+    ts! { &mut *ts =>
+        {
+            #("\n")
+            #{
+                (|ts: &mut String| {
 
     let mut entries = Vec::with_capacity(outlet.props.len() + outlet.spread_props.len());
     entries.extend(outlet.props.iter().map(SlotOutletLiteralEntry::Prop));
@@ -134,7 +139,11 @@ pub(super) fn append_slot_outlet_literal(
         }
     }
 
-    append!(*ts, "{expr_indent}}}");
+                })(__ts);
+            }
+            #expr_indent
+        }
+    }
     literal_gen_start..ts.len()
 }
 

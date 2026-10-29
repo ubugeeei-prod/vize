@@ -34,6 +34,27 @@ impl fmt::Display for AliasReference<'_> {
     }
 }
 
+impl vize_l0::ts_emit::EmitLen for AliasReference<'_> {
+    fn hole_len(&self) -> usize {
+        let mut len = self.name.len();
+        if let Some(arguments) = self.arguments {
+            len += arguments.len() + 2;
+        }
+        len
+    }
+}
+
+impl<B: vize_l0::ts_emit::TsBuf> vize_l0::ts_emit::EmitHole<B> for AliasReference<'_> {
+    fn emit_hole(&self, buffer: &mut B) {
+        buffer.push_ts_str(self.name);
+        if let Some(arguments) = self.arguments {
+            buffer.push_ts_str("<");
+            buffer.push_ts_str(arguments);
+            buffer.push_ts_str(">");
+        }
+    }
+}
+
 /// One generic setup context, streamed into the final module rather than
 /// assembled from owned exposure, listener and emit type fragments.
 pub(super) struct GenericContext<'a> {
@@ -44,6 +65,7 @@ pub(super) struct GenericContext<'a> {
     pub(super) slots: AliasReference<'a>,
     pub(super) exposed: AliasReference<'a>,
     pub(super) emit_props: bool,
+    pub(super) emit_props_type: &'a str,
     pub(super) jsx_slots: bool,
     pub(super) root_element: bool,
     pub(super) template_refs: bool,
@@ -58,21 +80,22 @@ impl fmt::Display for GenericContext<'_> {
             emits,
             slots,
             exposed,
+            emit_props_type,
             ..
         } = self;
         write!(
             formatter,
-            "type $$GenericContext{parameters} = {{\n  props: {props_type}{arguments}"
+            "type $GenericContext{parameters} = {{\n  props: {props_type}{arguments}"
         )?;
         if self.emit_props {
-            write!(formatter, " & __EmitProps<{emits}>")?;
+            write!(formatter, " & {emit_props_type}<{emits}>")?;
         }
         if self.jsx_slots {
-            write!(formatter, " & $$JsxSlotProps<{slots}>")?;
+            write!(formatter, " & $JsxSlotProps<{slots}>")?;
         }
         formatter.write_str(" & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: ")?;
         if self.emit_props {
-            write!(formatter, "$$PublicEmit<{emits}>")?;
+            write!(formatter, "$PublicEmit<{emits}>")?;
         } else {
             formatter.write_str("{}")?;
         }
@@ -113,9 +136,9 @@ pub(super) struct GenericSignature<'a> {
 impl fmt::Display for GenericSignature<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (name, props_tail) = match self.role {
-            SignatureRole::Component => ("$$GenericComponent", ""),
+            SignatureRole::Component => ("$GenericComponent", ""),
             SignatureRole::TemplateRefResolver => {
-                ("$$GenericRefResolver", " & Record<string, unknown>")
+                ("$GenericRefResolver", " & Record<string, unknown>")
             }
         };
         let Self {
@@ -125,7 +148,7 @@ impl fmt::Display for GenericSignature<'_> {
         } = self;
         writeln!(
             formatter,
-            "type {name} = {parameters}(props: $$GenericContext{arguments}['props']{props_tail}, ctx?: Pick<$$GenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: $$GenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: $$GenericContext{arguments} }};"
+            "type {name} = {parameters}(props: $GenericContext{arguments}['props']{props_tail}, ctx?: Pick<$GenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: $GenericContext{arguments} }};"
         )
     }
 }

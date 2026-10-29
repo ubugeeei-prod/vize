@@ -2983,6 +2983,16 @@ severity: warning
 category: script
 autofix: no
 docs: docs/content/rules/type-and-script.md
+=== script/prefer-define-emits-binding
+script/prefer-define-emits-binding · lint rule
+Prefer the captured defineEmits function over template $emit
+
+tier: complete
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: yes
+docs: docs/content/rules/type-and-script.md
 === script/prefer-define-options
 script/prefer-define-options · lint rule
 Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs

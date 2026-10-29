@@ -114,7 +114,7 @@ pub(super) fn native_script_syntax(
         && diagnostics
             .iter()
             .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
-        && state.documents.text(uri).is_some_and(|source| {
+        && state.documents.text_snapshot(uri).is_some_and(|source| {
             DiagnosticService::descriptor_for_collect(state, uri, &source)
                 .is_ok_and(|descriptor| vize_canon::supports_native_script_syntax(&descriptor))
         })
@@ -161,7 +161,7 @@ fn without_duplicate_required_props(
                     diagnostic.code.as_ref(),
                     Some(tower_lsp::lsp_types::NumberOrString::Number(2345))
                 )
-                && diagnostic.message.contains("$$ComponentCheckProps")
+                && diagnostic.message.contains("$ComponentCheckProps")
                 && diagnostic.message.contains("is missing")
                 && required_tags.iter().any(|tag| {
                     diagnostic.range.start.line == tag.start.line

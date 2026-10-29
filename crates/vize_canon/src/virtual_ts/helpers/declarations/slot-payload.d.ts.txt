@@ -1,0 +1,4 @@
+// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
+type $SilentAny = {}["__vizeSilentAny"];
+type $NamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+type $SlotPayload<__S, __N> = $IsAny<__S> extends true ? $SilentAny : string extends __N ? string extends keyof __S ? $NamedSlotPayload<__S, __N> : any : $NamedSlotPayload<__S, __N>;

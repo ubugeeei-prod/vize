@@ -12,14 +12,14 @@ use super::runs::Runs;
 /// Line starts under oxc's line-break rules (`\n`, `\r\n`, `\r`, U+2028,
 /// U+2029), so a (line, column) pair from its codegen resolves back to the
 /// same byte.
-struct Lines<'a> {
+pub(super) struct Lines<'a> {
     text: &'a str,
     starts: Vec<usize>,
 }
 
 impl<'a> Lines<'a> {
     /// Lines split at `\n` only, as `SourceMapBuilder` resolves them.
-    fn newline_only(text: &'a str) -> Self {
+    pub(super) fn newline_only(text: &'a str) -> Self {
         let mut starts = vec![0];
         starts.extend(text.match_indices('\n').map(|(index, _)| index + 1));
         Self { text, starts }
@@ -40,7 +40,7 @@ impl<'a> Lines<'a> {
 
     /// Byte offset of a 0-based line and UTF-16 column, if it names a character
     /// on that line.
-    fn offset(&self, line: u32, column: u32) -> Option<usize> {
+    pub(super) fn offset(&self, line: u32, column: u32) -> Option<usize> {
         let start = *self.starts.get(line as usize)?;
         let end = self
             .starts

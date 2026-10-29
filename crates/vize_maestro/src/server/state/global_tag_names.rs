@@ -94,7 +94,7 @@ impl ServerState {
             }
             if document
                 .as_ref()
-                .is_some_and(|document| document.content.len_bytes() > 4 * 1024 * 1024)
+                .is_some_and(|document| document.byte_len() > 4 * 1024 * 1024)
             {
                 cache.names.write().insert(
                     path.clone(),

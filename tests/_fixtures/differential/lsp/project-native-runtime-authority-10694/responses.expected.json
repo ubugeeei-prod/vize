@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 2,
+      "character": 1
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**<input>**\n\n_HTML element_\n\n```typescript\nconst element: HTMLElementTagNameMap[\"input\"]\n```\n\nProvides a form control whose behavior depends on its type.\n\n**Editor behavior**\n- Go-to-definition uses TypeScript DOM lib data when the type service is available.\n- Component resolution is skipped for this tag because it is part of the platform DOM surface.\n\n**Example**\n\n```vue\n<template>\n  <input>\n</template>\n```\n\n**HTML syntax**\n\nVoid elements do not have child content or an end tag.\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/input.html#the-input-element)"
+      },
+      "range": {
+        "end": {
+          "character": 6,
+          "line": 2
+        },
+        "start": {
+          "character": 1,
+          "line": 2
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 2,
+      "character": 7
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**id on <input>**\n\n_HTML attribute_\n\n```typescript\nid: HTMLElementTagNameMap[\"input\"][\"id\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <input id=\"...\">\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/id)"
+      },
+      "range": {
+        "end": {
+          "character": 9,
+          "line": 2
+        },
+        "start": {
+          "character": 7,
+          "line": 2
+        }
+      }
+    }
+  }
+]

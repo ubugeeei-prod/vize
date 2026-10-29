@@ -117,11 +117,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/effects/layouts/src/widgets/theme-toggle/$$OracleThemeButton.vue",
-          "renamedFile": "packages/effects/layouts/src/widgets/theme-toggle/$$OracleRenamedThemeButton.vue",
+          "copiedFile": "packages/effects/layouts/src/widgets/theme-toggle/$OracleThemeButton.vue",
+          "renamedFile": "packages/effects/layouts/src/widgets/theme-toggle/$OracleRenamedThemeButton.vue",
           "originalImportSpecifier": "./theme-button.vue",
-          "copiedImportSpecifier": "./$$OracleThemeButton.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedThemeButton.vue",
+          "copiedImportSpecifier": "./$OracleThemeButton.vue",
+          "renamedImportSpecifier": "./$OracleRenamedThemeButton.vue",
           "markerInsertionAnchor": "import { VbenButton } from '@vben-core/shadcn-ui';\n\n",
           "markerSymbol": "__vizeVbenThemeButtonMarker__"
         }
@@ -223,11 +223,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/hoppscotch-common/src/components/graphql/$$OracleExplorerSection.vue",
-          "renamedFile": "packages/hoppscotch-common/src/components/graphql/$$OracleRenamedExplorerSection.vue",
+          "copiedFile": "packages/hoppscotch-common/src/components/graphql/$OracleExplorerSection.vue",
+          "renamedFile": "packages/hoppscotch-common/src/components/graphql/$OracleRenamedExplorerSection.vue",
           "originalImportSpecifier": "./ExplorerSection.vue",
-          "copiedImportSpecifier": "./$$OracleExplorerSection.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedExplorerSection.vue",
+          "copiedImportSpecifier": "./$OracleExplorerSection.vue",
+          "renamedImportSpecifier": "./$OracleRenamedExplorerSection.vue",
           "requireDeletedImportDiagnostic": false,
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeHoppscotchExplorerSectionMarker__"
@@ -322,11 +322,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/components/cascader-panel/src/$$OracleCascaderNode.vue",
-          "renamedFile": "packages/components/cascader-panel/src/$$OracleRenamedCascaderNode.vue",
+          "copiedFile": "packages/components/cascader-panel/src/$OracleCascaderNode.vue",
+          "renamedFile": "packages/components/cascader-panel/src/$OracleRenamedCascaderNode.vue",
           "originalImportSpecifier": "./node.vue",
-          "copiedImportSpecifier": "./$$OracleCascaderNode.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedCascaderNode.vue",
+          "copiedImportSpecifier": "./$OracleCascaderNode.vue",
+          "renamedImportSpecifier": "./$OracleRenamedCascaderNode.vue",
           "markerInsertionAnchor": "import type { CheckboxValueType } from '@element-plus/components/checkbox'\n\n",
           "markerSymbol": "__vizeElementPlusCascaderNodeMarker__"
         }
@@ -408,11 +408,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "components/drawer/demo/descriptionItem/$$OracleDescriptionItem.vue",
-          "renamedFile": "components/drawer/demo/descriptionItem/$$OracleRenamedDescriptionItem.vue",
+          "copiedFile": "components/drawer/demo/descriptionItem/$OracleDescriptionItem.vue",
+          "renamedFile": "components/drawer/demo/descriptionItem/$OracleRenamedDescriptionItem.vue",
           "originalImportSpecifier": "./descriptionItem/index.vue",
-          "copiedImportSpecifier": "./descriptionItem/$$OracleDescriptionItem.vue",
-          "renamedImportSpecifier": "./descriptionItem/$$OracleRenamedDescriptionItem.vue",
+          "copiedImportSpecifier": "./descriptionItem/$OracleDescriptionItem.vue",
+          "renamedImportSpecifier": "./descriptionItem/$OracleRenamedDescriptionItem.vue",
           "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
           "markerSymbol": "__vizeAntDesignVueFileLifecycleMarker__"
         }
@@ -495,11 +495,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/core/src/Toolbar/$$OracleToolbarButton.vue",
-          "renamedFile": "packages/core/src/Toolbar/$$OracleRenamedToolbarButton.vue",
+          "copiedFile": "packages/core/src/Toolbar/$OracleToolbarButton.vue",
+          "renamedFile": "packages/core/src/Toolbar/$OracleRenamedToolbarButton.vue",
           "originalImportSpecifier": "./ToolbarButton.vue",
-          "copiedImportSpecifier": "./$$OracleToolbarButton.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedToolbarButton.vue",
+          "copiedImportSpecifier": "./$OracleToolbarButton.vue",
+          "renamedImportSpecifier": "./$OracleRenamedToolbarButton.vue",
           "markerInsertionAnchor": "<script lang=\"ts\">\n",
           "markerSymbol": "__vizeRekaFileLifecycleMarker__"
         }
@@ -597,11 +597,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/primevue/src/badge/$$OracleBadge.vue",
-          "renamedFile": "packages/primevue/src/badge/$$OracleRenamedBadge.vue",
+          "copiedFile": "packages/primevue/src/badge/$OracleBadge.vue",
+          "renamedFile": "packages/primevue/src/badge/$OracleRenamedBadge.vue",
           "originalImportSpecifier": "primevue/badge",
-          "copiedImportSpecifier": "../badge/$$OracleBadge.vue",
-          "renamedImportSpecifier": "../badge/$$OracleRenamedBadge.vue",
+          "copiedImportSpecifier": "../badge/$OracleBadge.vue",
+          "renamedImportSpecifier": "../badge/$OracleRenamedBadge.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizePrimeVueBadgeFileLifecycleMarker__"
         }
@@ -708,11 +708,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "apps/volt/volt/$$OracleButton.vue",
-          "renamedFile": "apps/volt/volt/$$OracleRenamedButton.vue",
+          "copiedFile": "apps/volt/volt/$OracleButton.vue",
+          "renamedFile": "apps/volt/volt/$OracleRenamedButton.vue",
           "originalImportSpecifier": "@/volt/Button.vue",
-          "copiedImportSpecifier": "@/volt/$$OracleButton.vue",
-          "renamedImportSpecifier": "@/volt/$$OracleRenamedButton.vue",
+          "copiedImportSpecifier": "@/volt/$OracleButton.vue",
+          "renamedImportSpecifier": "@/volt/$OracleRenamedButton.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizePrimeVueVoltFileLifecycleMarker__"
         }
@@ -794,11 +794,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "apps/showcase/components/doc/$$OracleDocCopyMarkdown.vue",
-          "renamedFile": "apps/showcase/components/doc/$$OracleRenamedDocCopyMarkdown.vue",
+          "copiedFile": "apps/showcase/components/doc/$OracleDocCopyMarkdown.vue",
+          "renamedFile": "apps/showcase/components/doc/$OracleRenamedDocCopyMarkdown.vue",
           "originalImportSpecifier": "./DocCopyMarkdown.vue",
-          "copiedImportSpecifier": "./$$OracleDocCopyMarkdown.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedDocCopyMarkdown.vue",
+          "copiedImportSpecifier": "./$OracleDocCopyMarkdown.vue",
+          "renamedImportSpecifier": "./$OracleRenamedDocCopyMarkdown.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizePrimeVueShowcaseFileLifecycleMarker__"
         }
@@ -893,11 +893,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/docs/src/components/home/$$OracleSnipsExample.vue",
-          "renamedFile": "packages/docs/src/components/home/$$OracleRenamedSnipsExample.vue",
+          "copiedFile": "packages/docs/src/components/home/$OracleSnipsExample.vue",
+          "renamedFile": "packages/docs/src/components/home/$OracleRenamedSnipsExample.vue",
           "originalImportSpecifier": "./SnipsExample.vue",
-          "copiedImportSpecifier": "./$$OracleSnipsExample.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedSnipsExample.vue",
+          "copiedImportSpecifier": "./$OracleSnipsExample.vue",
+          "renamedImportSpecifier": "./$OracleRenamedSnipsExample.vue",
           "markerInsertionAnchor": "<script setup>\n",
           "markerSymbol": "__vizeVuetifySnipsExampleMarker__"
         }
@@ -992,11 +992,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "demo/utils/$$OracleCopyCodeButton.vue",
-          "renamedFile": "demo/utils/$$OracleRenamedCopyCodeButton.vue",
+          "copiedFile": "demo/utils/$OracleCopyCodeButton.vue",
+          "renamedFile": "demo/utils/$OracleRenamedCopyCodeButton.vue",
           "originalImportSpecifier": "./CopyCodeButton.vue",
-          "copiedImportSpecifier": "./$$OracleCopyCodeButton.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedCopyCodeButton.vue",
+          "copiedImportSpecifier": "./$OracleCopyCodeButton.vue",
+          "renamedImportSpecifier": "./$OracleRenamedCopyCodeButton.vue",
           "requireDeletedImportDiagnostic": false,
           "markerInsertionAnchor": "import { defineComponent } from 'vue'\n\n",
           "markerSymbol": "__vizeNaiveUiCopyCodeButtonMarker__"
@@ -1080,11 +1080,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/Base/$$OracleBaseButton.vue",
-          "renamedFile": "src/components/Base/$$OracleRenamedBaseButton.vue",
+          "copiedFile": "src/components/Base/$OracleBaseButton.vue",
+          "renamedFile": "src/components/Base/$OracleRenamedBaseButton.vue",
           "originalImportSpecifier": "@/components/Base/BaseButton.vue",
-          "copiedImportSpecifier": "@/components/Base/$$OracleBaseButton.vue",
-          "renamedImportSpecifier": "@/components/Base/$$OracleRenamedBaseButton.vue",
+          "copiedImportSpecifier": "@/components/Base/$OracleBaseButton.vue",
+          "renamedImportSpecifier": "@/components/Base/$OracleRenamedBaseButton.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVoicevoxBaseButtonMarker__"
         }
@@ -1178,11 +1178,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "app/components/list/$$OracleAccountSearchResult.vue",
-          "renamedFile": "app/components/list/$$OracleRenamedAccountSearchResult.vue",
+          "copiedFile": "app/components/list/$OracleAccountSearchResult.vue",
+          "renamedFile": "app/components/list/$OracleRenamedAccountSearchResult.vue",
           "originalImportSpecifier": "~/components/list/AccountSearchResult.vue",
-          "copiedImportSpecifier": "~/components/list/$$OracleAccountSearchResult.vue",
-          "renamedImportSpecifier": "~/components/list/$$OracleRenamedAccountSearchResult.vue",
+          "copiedImportSpecifier": "~/components/list/$OracleAccountSearchResult.vue",
+          "renamedImportSpecifier": "~/components/list/$OracleRenamedAccountSearchResult.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeElkFileLifecycleMarker__"
         }
@@ -1287,11 +1287,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/frontend/src/components/$$OracleMkTooltip.vue",
-          "renamedFile": "packages/frontend/src/components/$$OracleRenamedTooltip.vue",
+          "copiedFile": "packages/frontend/src/components/$OracleMkTooltip.vue",
+          "renamedFile": "packages/frontend/src/components/$OracleRenamedTooltip.vue",
           "originalImportSpecifier": "./MkTooltip.vue",
-          "copiedImportSpecifier": "./$$OracleMkTooltip.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedTooltip.vue",
+          "copiedImportSpecifier": "./$OracleMkTooltip.vue",
+          "renamedImportSpecifier": "./$OracleRenamedTooltip.vue",
           "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
           "markerSymbol": "__vizeFileLifecycleMarker__"
         }
@@ -1413,11 +1413,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "app/src/interfaces/presentation-header/$$OracleHelperText.vue",
-          "renamedFile": "app/src/interfaces/presentation-header/$$OracleRenamedHelperText.vue",
+          "copiedFile": "app/src/interfaces/presentation-header/$OracleHelperText.vue",
+          "renamedFile": "app/src/interfaces/presentation-header/$OracleRenamedHelperText.vue",
           "originalImportSpecifier": "./helper-text.vue",
-          "copiedImportSpecifier": "./$$OracleHelperText.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedHelperText.vue",
+          "copiedImportSpecifier": "./$OracleHelperText.vue",
+          "renamedImportSpecifier": "./$OracleRenamedHelperText.vue",
           "markerInsertionAnchor": "import { computed } from 'vue';\n",
           "markerSymbol": "__vizeDirectusHelperTextMarker__"
         }
@@ -1488,11 +1488,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "playground/nuxt/pages/number-counter/$$OracleAdditionIcon.vue",
-          "renamedFile": "playground/nuxt/pages/number-counter/$$OracleRenamedAdditionIcon.vue",
+          "copiedFile": "playground/nuxt/pages/number-counter/$OracleAdditionIcon.vue",
+          "renamedFile": "playground/nuxt/pages/number-counter/$OracleRenamedAdditionIcon.vue",
           "originalImportSpecifier": "./AdditionIcon.vue",
-          "copiedImportSpecifier": "./$$OracleAdditionIcon.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedAdditionIcon.vue",
+          "copiedImportSpecifier": "./$OracleAdditionIcon.vue",
+          "renamedImportSpecifier": "./$OracleRenamedAdditionIcon.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeMotionVueFileLifecycleMarker__"
         }
@@ -1572,11 +1572,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "apps/v4/styles/reka-luma/ui/scroll-area/$$OracleScrollBar.vue",
-          "renamedFile": "apps/v4/styles/reka-luma/ui/scroll-area/$$OracleRenamedScrollBar.vue",
+          "copiedFile": "apps/v4/styles/reka-luma/ui/scroll-area/$OracleScrollBar.vue",
+          "renamedFile": "apps/v4/styles/reka-luma/ui/scroll-area/$OracleRenamedScrollBar.vue",
           "originalImportSpecifier": "./ScrollBar.vue",
-          "copiedImportSpecifier": "./$$OracleScrollBar.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedScrollBar.vue",
+          "copiedImportSpecifier": "./$OracleScrollBar.vue",
+          "renamedImportSpecifier": "./$OracleRenamedScrollBar.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeShadcnVueFileLifecycleMarker__"
         }
@@ -1645,11 +1645,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "app/components/common/dial-kit/$$OracleDialKitConfigPanel.vue",
-          "renamedFile": "app/components/common/dial-kit/$$OracleRenamedDialKitConfigPanel.vue",
+          "copiedFile": "app/components/common/dial-kit/$OracleDialKitConfigPanel.vue",
+          "renamedFile": "app/components/common/dial-kit/$OracleRenamedDialKitConfigPanel.vue",
           "originalImportSpecifier": "../../../common/dial-kit/DialKitConfigPanel.vue",
-          "copiedImportSpecifier": "../../../common/dial-kit/$$OracleDialKitConfigPanel.vue",
-          "renamedImportSpecifier": "../../../common/dial-kit/$$OracleRenamedDialKitConfigPanel.vue",
+          "copiedImportSpecifier": "../../../common/dial-kit/$OracleDialKitConfigPanel.vue",
+          "renamedImportSpecifier": "../../../common/dial-kit/$OracleRenamedDialKitConfigPanel.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeInspiraUiDialKitPanelMarker__"
         }
@@ -1729,11 +1729,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "playground/nuxt/app/components/ui/chart/$$OracleChartTooltipContent.vue",
-          "renamedFile": "playground/nuxt/app/components/ui/chart/$$OracleRenamedChartTooltipContent.vue",
+          "copiedFile": "playground/nuxt/app/components/ui/chart/$OracleChartTooltipContent.vue",
+          "renamedFile": "playground/nuxt/app/components/ui/chart/$OracleRenamedChartTooltipContent.vue",
           "originalImportSpecifier": "~/components/ui/chart/ChartTooltipContent.vue",
-          "copiedImportSpecifier": "~/components/ui/chart/$$OracleChartTooltipContent.vue",
-          "renamedImportSpecifier": "~/components/ui/chart/$$OracleRenamedChartTooltipContent.vue",
+          "copiedImportSpecifier": "~/components/ui/chart/$OracleChartTooltipContent.vue",
+          "renamedImportSpecifier": "~/components/ui/chart/$OracleRenamedChartTooltipContent.vue",
           "markerInsertionAnchor": "import type { ChartConfig } from './types'\n\n",
           "markerSymbol": "__vizeVueChartsFileLifecycleMarker__"
         }
@@ -1820,11 +1820,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/vaul-vue/src/$$OracleDrawerRoot.vue",
-          "renamedFile": "packages/vaul-vue/src/$$OracleRenamedDrawerRoot.vue",
+          "copiedFile": "packages/vaul-vue/src/$OracleDrawerRoot.vue",
+          "renamedFile": "packages/vaul-vue/src/$OracleRenamedDrawerRoot.vue",
           "originalImportSpecifier": "./DrawerRoot.vue",
-          "copiedImportSpecifier": "./$$OracleDrawerRoot.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedDrawerRoot.vue",
+          "copiedImportSpecifier": "./$OracleDrawerRoot.vue",
+          "renamedImportSpecifier": "./$OracleRenamedDrawerRoot.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVaulVueFileLifecycleMarker__"
         }
@@ -1895,11 +1895,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "docs/src/components/$$OracleSideMenuButton.vue",
-          "renamedFile": "docs/src/components/$$OracleRenamedSideMenuButton.vue",
+          "copiedFile": "docs/src/components/$OracleSideMenuButton.vue",
+          "renamedFile": "docs/src/components/$OracleRenamedSideMenuButton.vue",
           "originalImportSpecifier": "@/components/SideMenuButton.vue",
-          "copiedImportSpecifier": "@/components/$$OracleSideMenuButton.vue",
-          "renamedImportSpecifier": "@/components/$$OracleRenamedSideMenuButton.vue",
+          "copiedImportSpecifier": "@/components/$OracleSideMenuButton.vue",
+          "renamedImportSpecifier": "@/components/$OracleRenamedSideMenuButton.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVeeValidateFileLifecycleMarker__"
         }
@@ -1970,11 +1970,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "template/code/typescript-default/src/components/$$OracleHelloWorld.vue",
-          "renamedFile": "template/code/typescript-default/src/components/$$OracleRenamedHelloWorld.vue",
+          "copiedFile": "template/code/typescript-default/src/components/$OracleHelloWorld.vue",
+          "renamedFile": "template/code/typescript-default/src/components/$OracleRenamedHelloWorld.vue",
           "originalImportSpecifier": "./components/HelloWorld.vue",
-          "copiedImportSpecifier": "./components/$$OracleHelloWorld.vue",
-          "renamedImportSpecifier": "./components/$$OracleRenamedHelloWorld.vue",
+          "copiedImportSpecifier": "./components/$OracleHelloWorld.vue",
+          "renamedImportSpecifier": "./components/$OracleRenamedHelloWorld.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeCreateVueFileLifecycleMarker__"
         }
@@ -2044,11 +2044,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/router/src/tests/data-loaders/$$OracleComponentWithLoader.vue",
-          "renamedFile": "packages/router/src/tests/data-loaders/$$OracleRenamedComponentWithLoader.vue",
+          "copiedFile": "packages/router/src/tests/data-loaders/$OracleComponentWithLoader.vue",
+          "renamedFile": "packages/router/src/tests/data-loaders/$OracleRenamedComponentWithLoader.vue",
           "originalImportSpecifier": "./ComponentWithLoader.vue",
-          "copiedImportSpecifier": "./$$OracleComponentWithLoader.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedComponentWithLoader.vue",
+          "copiedImportSpecifier": "./$OracleComponentWithLoader.vue",
+          "renamedImportSpecifier": "./$OracleRenamedComponentWithLoader.vue",
           "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
           "markerSymbol": "__vizeVueRouterFileLifecycleMarker__"
         }
@@ -2122,11 +2122,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/online-playground/src/$$OracleVersionSelect.vue",
-          "renamedFile": "packages/online-playground/src/$$OracleRenamedVersionSelect.vue",
+          "copiedFile": "packages/online-playground/src/$OracleVersionSelect.vue",
+          "renamedFile": "packages/online-playground/src/$OracleRenamedVersionSelect.vue",
           "originalImportSpecifier": "./VersionSelect.vue",
-          "copiedImportSpecifier": "./$$OracleVersionSelect.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedVersionSelect.vue",
+          "copiedImportSpecifier": "./$OracleVersionSelect.vue",
+          "renamedImportSpecifier": "./$OracleRenamedVersionSelect.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizePiniaFileLifecycleMarker__"
         }
@@ -2196,11 +2196,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "examples/basic-template/src/$$OracleCounter.vue",
-          "renamedFile": "examples/basic-template/src/$$OracleRenamedCounter.vue",
+          "copiedFile": "examples/basic-template/src/$OracleCounter.vue",
+          "renamedFile": "examples/basic-template/src/$OracleRenamedCounter.vue",
           "originalImportSpecifier": "./counter.vue",
-          "copiedImportSpecifier": "./$$OracleCounter.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedCounter.vue",
+          "copiedImportSpecifier": "./$OracleCounter.vue",
+          "renamedImportSpecifier": "./$OracleRenamedCounter.vue",
           "requireDeletedImportDiagnostic": false,
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVueTuiFileLifecycleMarker__"
@@ -2279,11 +2279,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "playground/src/components/$$OracleDominoHalf.vue",
-          "renamedFile": "playground/src/components/$$OracleRenamedDominoHalf.vue",
+          "copiedFile": "playground/src/components/$OracleDominoHalf.vue",
+          "renamedFile": "playground/src/components/$OracleRenamedDominoHalf.vue",
           "originalImportSpecifier": "../../components/DominoHalf.vue",
-          "copiedImportSpecifier": "../../components/$$OracleDominoHalf.vue",
-          "renamedImportSpecifier": "../../components/$$OracleRenamedDominoHalf.vue",
+          "copiedImportSpecifier": "../../components/$OracleDominoHalf.vue",
+          "renamedImportSpecifier": "../../components/$OracleRenamedDominoHalf.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVueTermuiFileLifecycleMarker__"
         }
@@ -2355,11 +2355,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/Share/$$OracleDropdownMenu.vue",
-          "renamedFile": "src/components/Share/$$OracleRenamedDropdownMenu.vue",
+          "copiedFile": "src/components/Share/$OracleDropdownMenu.vue",
+          "renamedFile": "src/components/Share/$OracleRenamedDropdownMenu.vue",
           "originalImportSpecifier": "@/components/Share/DropdownMenu",
-          "copiedImportSpecifier": "@/components/Share/$$OracleDropdownMenu",
-          "renamedImportSpecifier": "@/components/Share/$$OracleRenamedDropdownMenu",
+          "copiedImportSpecifier": "@/components/Share/$OracleDropdownMenu",
+          "renamedImportSpecifier": "@/components/Share/$OracleRenamedDropdownMenu",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizeVueElementAdminDropdownMenuMarker__"
         }
@@ -2538,11 +2538,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/vant/src/form/demo/$$OracleBasicUsage.vue",
-          "renamedFile": "packages/vant/src/form/demo/$$OracleRenamedBasicUsage.vue",
+          "copiedFile": "packages/vant/src/form/demo/$OracleBasicUsage.vue",
+          "renamedFile": "packages/vant/src/form/demo/$OracleRenamedBasicUsage.vue",
           "originalImportSpecifier": "./BasicUsage.vue",
-          "copiedImportSpecifier": "./$$OracleBasicUsage.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedBasicUsage.vue",
+          "copiedImportSpecifier": "./$OracleBasicUsage.vue",
+          "renamedImportSpecifier": "./$OracleRenamedBasicUsage.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVantBasicUsageFileLifecycleMarker__"
         }
@@ -2875,11 +2875,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/vue-virtual-scroller/src/components/$$OracleItemView.vue",
-          "renamedFile": "packages/vue-virtual-scroller/src/components/$$OracleRenamedItemView.vue",
+          "copiedFile": "packages/vue-virtual-scroller/src/components/$OracleItemView.vue",
+          "renamedFile": "packages/vue-virtual-scroller/src/components/$OracleRenamedItemView.vue",
           "originalImportSpecifier": "./ItemView.vue",
-          "copiedImportSpecifier": "./$$OracleItemView.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedItemView.vue",
+          "copiedImportSpecifier": "./$OracleItemView.vue",
+          "renamedImportSpecifier": "./$OracleRenamedItemView.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\" generic=\"TItem, TKey\">\n",
           "markerSymbol": "__vizeVueVirtualScrollerItemViewMarker__"
         }
@@ -3069,11 +3069,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/docs/src/components/$$OracleStackBlitzEdit.vue",
-          "renamedFile": "packages/docs/src/components/$$OracleRenamedStackBlitzEdit.vue",
+          "copiedFile": "packages/docs/src/components/$OracleStackBlitzEdit.vue",
+          "renamedFile": "packages/docs/src/components/$OracleRenamedStackBlitzEdit.vue",
           "originalImportSpecifier": "./StackBlitzEdit.vue",
-          "copiedImportSpecifier": "./$$OracleStackBlitzEdit.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedStackBlitzEdit.vue",
+          "copiedImportSpecifier": "./$OracleStackBlitzEdit.vue",
+          "renamedImportSpecifier": "./$OracleRenamedStackBlitzEdit.vue",
           "markerInsertionAnchor": "import { defineComponent } from 'vue'\n",
           "markerSymbol": "__vizeBuefyStackBlitzEditMarker__"
         }
@@ -3498,10 +3498,10 @@
         },
         "fileLifecycle": {
           "originalImportSpecifier": "../CodeDemoAndExample.vue",
-          "copiedImportSpecifier": "../$$OracleCodeDemoAndExample.vue",
-          "renamedImportSpecifier": "../$$OracleRenamedCodeDemoAndExample.vue",
-          "copiedFile": "documentation/src/components/$$OracleCodeDemoAndExample.vue",
-          "renamedFile": "documentation/src/components/$$OracleRenamedCodeDemoAndExample.vue",
+          "copiedImportSpecifier": "../$OracleCodeDemoAndExample.vue",
+          "renamedImportSpecifier": "../$OracleRenamedCodeDemoAndExample.vue",
+          "copiedFile": "documentation/src/components/$OracleCodeDemoAndExample.vue",
+          "renamedFile": "documentation/src/components/$OracleRenamedCodeDemoAndExample.vue",
           "markerInsertionAnchor": "import { defineAsyncComponent } from 'vue'\n\n",
           "markerSymbol": "__vizeVueMultiselectCodeDemoMarker__"
         }
@@ -3668,11 +3668,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "docs/examples/connectionline/$$OracleCustomConnectionLine.vue",
-          "renamedFile": "docs/examples/connectionline/$$OracleRenamedCustomConnectionLine.vue",
+          "copiedFile": "docs/examples/connectionline/$OracleCustomConnectionLine.vue",
+          "renamedFile": "docs/examples/connectionline/$OracleRenamedCustomConnectionLine.vue",
           "originalImportSpecifier": "./CustomConnectionLine.vue",
-          "copiedImportSpecifier": "./$$OracleCustomConnectionLine.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedCustomConnectionLine.vue",
+          "copiedImportSpecifier": "./$OracleCustomConnectionLine.vue",
+          "renamedImportSpecifier": "./$OracleRenamedCustomConnectionLine.vue",
           "markerInsertionAnchor": "<script setup>\n",
           "markerSymbol": "__vizeVueFlowConnectionLineMarker__"
         }
@@ -4081,11 +4081,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/varlet-ui-playground/src/$$OracleHeader.vue",
-          "renamedFile": "packages/varlet-ui-playground/src/$$OracleRenamedHeader.vue",
+          "copiedFile": "packages/varlet-ui-playground/src/$OracleHeader.vue",
+          "renamedFile": "packages/varlet-ui-playground/src/$OracleRenamedHeader.vue",
           "originalImportSpecifier": "./Header.vue",
-          "copiedImportSpecifier": "./$$OracleHeader.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedHeader.vue",
+          "copiedImportSpecifier": "./$OracleHeader.vue",
+          "renamedImportSpecifier": "./$OracleRenamedHeader.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVarletHeaderMarker__"
         }
@@ -4208,11 +4208,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/$$OracleSelect.vue",
-          "renamedFile": "src/components/$$OracleRenamedSelect.vue",
+          "copiedFile": "src/components/$OracleSelect.vue",
+          "renamedFile": "src/components/$OracleRenamedSelect.vue",
           "originalImportSpecifier": "../src/components/Select",
-          "copiedImportSpecifier": "../src/components/$$OracleSelect.vue",
-          "renamedImportSpecifier": "../src/components/$$OracleRenamedSelect.vue",
+          "copiedImportSpecifier": "../src/components/$OracleSelect.vue",
+          "renamedImportSpecifier": "../src/components/$OracleRenamedSelect.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizeVueSelectMarker__"
         }
@@ -4322,11 +4322,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "example/components/infra/$$OracleNested.vue",
-          "renamedFile": "example/components/infra/$$OracleRenamedNested.vue",
+          "copiedFile": "example/components/infra/$OracleNested.vue",
+          "renamedFile": "example/components/infra/$OracleRenamedNested.vue",
           "originalImportSpecifier": "./infra/nested",
-          "copiedImportSpecifier": "./infra/$$OracleNested",
-          "renamedImportSpecifier": "./infra/$$OracleRenamedNested",
+          "copiedImportSpecifier": "./infra/$OracleNested",
+          "renamedImportSpecifier": "./infra/$OracleRenamedNested",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizeVueDraggableNextNestedMarker__"
         }
@@ -4441,11 +4441,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/landing/Features/$$OracleFeatureIcon.vue",
-          "renamedFile": "src/components/landing/Features/$$OracleRenamedFeatureIcon.vue",
+          "copiedFile": "src/components/landing/Features/$OracleFeatureIcon.vue",
+          "renamedFile": "src/components/landing/Features/$OracleRenamedFeatureIcon.vue",
           "originalImportSpecifier": "./FeatureIcon.vue",
-          "copiedImportSpecifier": "./$$OracleFeatureIcon.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedFeatureIcon.vue",
+          "copiedImportSpecifier": "./$OracleFeatureIcon.vue",
+          "renamedImportSpecifier": "./$OracleRenamedFeatureIcon.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVueBitsFileLifecycleMarker__"
         }
@@ -4555,11 +4555,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/__docs__/nested/$$OracleNestedComponent.vue",
-          "renamedFile": "src/__docs__/nested/$$OracleRenamedNestedComponent.vue",
+          "copiedFile": "src/__docs__/nested/$OracleNestedComponent.vue",
+          "renamedFile": "src/__docs__/nested/$OracleRenamedNestedComponent.vue",
           "originalImportSpecifier": "./NestedComponent.vue",
-          "copiedImportSpecifier": "./$$OracleNestedComponent.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedNestedComponent.vue",
+          "copiedImportSpecifier": "./$OracleNestedComponent.vue",
+          "renamedImportSpecifier": "./$OracleRenamedNestedComponent.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVueDraggablePlusFileLifecycleMarker__"
         }
@@ -4673,11 +4673,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/docs/src/components/$$OracleTab.vue",
-          "renamedFile": "packages/docs/src/components/$$OracleRenamedTab.vue",
+          "copiedFile": "packages/docs/src/components/$OracleTab.vue",
+          "renamedFile": "packages/docs/src/components/$OracleRenamedTab.vue",
           "originalImportSpecifier": "./Tab.vue",
-          "copiedImportSpecifier": "./$$OracleTab.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedTab.vue",
+          "copiedImportSpecifier": "./$OracleTab.vue",
+          "renamedImportSpecifier": "./$OracleRenamedTab.vue",
           "markerInsertionAnchor": "<script lang=\"ts\">\n",
           "markerSymbol": "__vizeEpicSpinnersTabMarker__"
         }
@@ -4760,11 +4760,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "example/components/toggle/$$OracleSourceComp.vue",
-          "renamedFile": "example/components/toggle/$$OracleRenamedSourceComp.vue",
+          "copiedFile": "example/components/toggle/$OracleSourceComp.vue",
+          "renamedFile": "example/components/toggle/$OracleRenamedSourceComp.vue",
           "originalImportSpecifier": "./source-comp.vue",
-          "copiedImportSpecifier": "./$$OracleSourceComp.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedSourceComp.vue",
+          "copiedImportSpecifier": "./$OracleSourceComp.vue",
+          "renamedImportSpecifier": "./$OracleRenamedSourceComp.vue",
           "markerInsertionAnchor": "import { defineComponent } from 'vue'\n",
           "markerSymbol": "__vizePortalVueSourceCompMarker__"
         }
@@ -5109,11 +5109,11 @@
         "fileLifecycle": {
           "sourceFile": "manual-testing/src/components/TheWelcome.vue",
           "importerFile": "manual-testing/src/views/HomeView.vue",
-          "copiedFile": "manual-testing/src/components/$$OracleTheWelcome.vue",
-          "renamedFile": "manual-testing/src/components/$$OracleRenamedTheWelcome.vue",
+          "copiedFile": "manual-testing/src/components/$OracleTheWelcome.vue",
+          "renamedFile": "manual-testing/src/components/$OracleRenamedTheWelcome.vue",
           "originalImportSpecifier": "../components/TheWelcome.vue",
-          "copiedImportSpecifier": "../components/$$OracleTheWelcome.vue",
-          "renamedImportSpecifier": "../components/$$OracleRenamedTheWelcome.vue",
+          "copiedImportSpecifier": "../components/$OracleTheWelcome.vue",
+          "renamedImportSpecifier": "../components/$OracleRenamedTheWelcome.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVueDataUiTheWelcomeMarker__"
         }
@@ -5292,11 +5292,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/$$OracleHighlightMessage.vue",
-          "renamedFile": "src/components/$$OracleRenamedHighlightMessage.vue",
+          "copiedFile": "src/components/$OracleHighlightMessage.vue",
+          "renamedFile": "src/components/$OracleRenamedHighlightMessage.vue",
           "originalImportSpecifier": "@/components/highlight-message.vue",
-          "copiedImportSpecifier": "@/components/$$OracleHighlightMessage.vue",
-          "renamedImportSpecifier": "@/components/$$OracleRenamedHighlightMessage.vue",
+          "copiedImportSpecifier": "@/components/$OracleHighlightMessage.vue",
+          "renamedImportSpecifier": "@/components/$OracleRenamedHighlightMessage.vue",
           "markerInsertionAnchor": "<script setup>\n",
           "markerSymbol": "__vizeSplitpanesHighlightMessageMarker__",
           "requireDeletedImportDiagnostic": false
@@ -5386,11 +5386,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/$$OracleToggleSwitch.vue",
-          "renamedFile": "src/components/$$OracleRenamedToggleSwitch.vue",
+          "copiedFile": "src/components/$OracleToggleSwitch.vue",
+          "renamedFile": "src/components/$OracleRenamedToggleSwitch.vue",
           "originalImportSpecifier": "../ToggleSwitch",
-          "copiedImportSpecifier": "../$$OracleToggleSwitch.vue",
-          "renamedImportSpecifier": "../$$OracleRenamedToggleSwitch.vue",
+          "copiedImportSpecifier": "../$OracleToggleSwitch.vue",
+          "renamedImportSpecifier": "../$OracleRenamedToggleSwitch.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizeTailwindConfigViewerToggleSwitchMarker__"
         }
@@ -5597,11 +5597,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/$$OracleBtn.vue",
-          "renamedFile": "src/components/$$OracleRenamedBtn.vue",
+          "copiedFile": "src/components/$OracleBtn.vue",
+          "renamedFile": "src/components/$OracleRenamedBtn.vue",
           "originalImportSpecifier": "./btn.vue",
-          "copiedImportSpecifier": "./$$OracleBtn.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedBtn.vue",
+          "copiedImportSpecifier": "./$OracleBtn.vue",
+          "renamedImportSpecifier": "./$OracleRenamedBtn.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizeVueUploaderBtnMarker__"
         }
@@ -5950,11 +5950,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "packages/lib/src/VueDatePicker/components/Common/$$OracleArrowBtn.vue",
-          "renamedFile": "packages/lib/src/VueDatePicker/components/Common/$$OracleRenamedArrowBtn.vue",
+          "copiedFile": "packages/lib/src/VueDatePicker/components/Common/$OracleArrowBtn.vue",
+          "renamedFile": "packages/lib/src/VueDatePicker/components/Common/$OracleRenamedArrowBtn.vue",
           "originalImportSpecifier": "@/components/Common/ArrowBtn.vue",
-          "copiedImportSpecifier": "@/components/Common/$$OracleArrowBtn.vue",
-          "renamedImportSpecifier": "@/components/Common/$$OracleRenamedArrowBtn.vue",
+          "copiedImportSpecifier": "@/components/Common/$OracleArrowBtn.vue",
+          "renamedImportSpecifier": "@/components/Common/$OracleRenamedArrowBtn.vue",
           "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
           "markerSymbol": "__vizeVueDatepickerArrowBtnMarker__"
         }
@@ -6127,11 +6127,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/$$OracleLayoutEditor.vue",
-          "renamedFile": "src/components/$$OracleRenamedLayoutEditor.vue",
+          "copiedFile": "src/components/$OracleLayoutEditor.vue",
+          "renamedFile": "src/components/$OracleRenamedLayoutEditor.vue",
           "originalImportSpecifier": "./components/LayoutEditor.vue",
-          "copiedImportSpecifier": "./components/$$OracleLayoutEditor.vue",
-          "renamedImportSpecifier": "./components/$$OracleRenamedLayoutEditor.vue",
+          "copiedImportSpecifier": "./components/$OracleLayoutEditor.vue",
+          "renamedImportSpecifier": "./components/$OracleRenamedLayoutEditor.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeLayoutitGridFileLifecycleMarker__"
         }
@@ -6244,11 +6244,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "docs/layout/$$OracleLewCodeHighlighter.vue",
-          "renamedFile": "docs/layout/$$OracleRenamedLewCodeHighlighter.vue",
+          "copiedFile": "docs/layout/$OracleLewCodeHighlighter.vue",
+          "renamedFile": "docs/layout/$OracleRenamedLewCodeHighlighter.vue",
           "originalImportSpecifier": "../layout/LewCodeHighlighter.vue",
-          "copiedImportSpecifier": "../layout/$$OracleLewCodeHighlighter.vue",
-          "renamedImportSpecifier": "../layout/$$OracleRenamedLewCodeHighlighter.vue",
+          "copiedImportSpecifier": "../layout/$OracleLewCodeHighlighter.vue",
+          "renamedImportSpecifier": "../layout/$OracleRenamedLewCodeHighlighter.vue",
           "markerInsertionAnchor": "import CodeBlock from 'shiki-code-block-vue'\n",
           "markerSymbol": "__vizeLewUiCodeHighlighterMarker__"
         }
@@ -6333,11 +6333,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "app/components/icons/$$OracleCopyIcon.vue",
-          "renamedFile": "app/components/icons/$$OracleRenamedCopyIcon.vue",
+          "copiedFile": "app/components/icons/$OracleCopyIcon.vue",
+          "renamedFile": "app/components/icons/$OracleRenamedCopyIcon.vue",
           "originalImportSpecifier": "~/components/icons/CopyIcon.vue",
-          "copiedImportSpecifier": "~/components/icons/$$OracleCopyIcon.vue",
-          "renamedImportSpecifier": "~/components/icons/$$OracleRenamedCopyIcon.vue",
+          "copiedImportSpecifier": "~/components/icons/$OracleCopyIcon.vue",
+          "renamedImportSpecifier": "~/components/icons/$OracleRenamedCopyIcon.vue",
           "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
           "markerSymbol": "__vizeVueSonnerCopyIconMarker__"
         }
@@ -6422,11 +6422,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "apps/docs/.vitepress/components/$$OracleChangelogTag.vue",
-          "renamedFile": "apps/docs/.vitepress/components/$$OracleRenamedChangelogTag.vue",
+          "copiedFile": "apps/docs/.vitepress/components/$OracleChangelogTag.vue",
+          "renamedFile": "apps/docs/.vitepress/components/$OracleRenamedChangelogTag.vue",
           "originalImportSpecifier": "./ChangelogTag.vue",
-          "copiedImportSpecifier": "./$$OracleChangelogTag.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedChangelogTag.vue",
+          "copiedImportSpecifier": "./$OracleChangelogTag.vue",
+          "renamedImportSpecifier": "./$OracleRenamedChangelogTag.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeElementPlusXChangelogTagMarker__"
         }
@@ -6563,11 +6563,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/components/Modal/$$OracleEditQueue.vue",
-          "renamedFile": "src/components/Modal/$$OracleRenamedEditQueue.vue",
+          "copiedFile": "src/components/Modal/$OracleEditQueue.vue",
+          "renamedFile": "src/components/Modal/$OracleRenamedEditQueue.vue",
           "originalImportSpecifier": "./EditQueue.vue",
-          "copiedImportSpecifier": "./$$OracleEditQueue.vue",
-          "renamedImportSpecifier": "./$$OracleRenamedEditQueue.vue",
+          "copiedImportSpecifier": "./$OracleEditQueue.vue",
+          "renamedImportSpecifier": "./$OracleRenamedEditQueue.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizePreVueEditQueueMarker__"
         }
@@ -6729,11 +6729,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "src/documentation/components/$$OracleHighlightMessage.vue",
-          "renamedFile": "src/documentation/components/$$OracleRenamedHighlightMessage.vue",
+          "copiedFile": "src/documentation/components/$OracleHighlightMessage.vue",
+          "renamedFile": "src/documentation/components/$OracleRenamedHighlightMessage.vue",
           "originalImportSpecifier": "./components/highlight-message.vue",
-          "copiedImportSpecifier": "./components/$$OracleHighlightMessage.vue",
-          "renamedImportSpecifier": "./components/$$OracleRenamedHighlightMessage.vue",
+          "copiedImportSpecifier": "./components/$OracleHighlightMessage.vue",
+          "renamedImportSpecifier": "./components/$OracleRenamedHighlightMessage.vue",
           "markerInsertionAnchor": "<script>\n",
           "markerSymbol": "__vizeVueCalV4HighlightMessageMarker__"
         }
@@ -6824,11 +6824,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "apps/stage-web/src/pages/settings/characters/components/$$OracleCharacterItem.vue",
-          "renamedFile": "apps/stage-web/src/pages/settings/characters/components/$$OracleRenamedCharacterItem.vue",
+          "copiedFile": "apps/stage-web/src/pages/settings/characters/components/$OracleCharacterItem.vue",
+          "renamedFile": "apps/stage-web/src/pages/settings/characters/components/$OracleRenamedCharacterItem.vue",
           "originalImportSpecifier": "./components/CharacterItem.vue",
-          "copiedImportSpecifier": "./components/$$OracleCharacterItem.vue",
-          "renamedImportSpecifier": "./components/$$OracleRenamedCharacterItem.vue",
+          "copiedImportSpecifier": "./components/$OracleCharacterItem.vue",
+          "renamedImportSpecifier": "./components/$OracleRenamedCharacterItem.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeAiriCharacterItemMarker__"
         }
@@ -7002,11 +7002,11 @@
           }
         },
         "fileLifecycle": {
-          "copiedFile": "app/components/$$OracleAppMasthead.vue",
-          "renamedFile": "app/components/$$OracleRenamedAppMasthead.vue",
+          "copiedFile": "app/components/$OracleAppMasthead.vue",
+          "renamedFile": "app/components/$OracleRenamedAppMasthead.vue",
           "originalImportSpecifier": "../components/AppMasthead.vue",
-          "copiedImportSpecifier": "../components/$$OracleAppMasthead.vue",
-          "renamedImportSpecifier": "../components/$$OracleRenamedAppMasthead.vue",
+          "copiedImportSpecifier": "../components/$OracleAppMasthead.vue",
+          "renamedImportSpecifier": "../components/$OracleRenamedAppMasthead.vue",
           "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
           "markerSymbol": "__vizeVueFesFileLifecycleMarker__"
         }

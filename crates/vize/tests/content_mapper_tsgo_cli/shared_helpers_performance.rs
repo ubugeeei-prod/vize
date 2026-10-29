@@ -1,10 +1,13 @@
 use super::*;
 
+mod pattern_listener_contracts;
+
 const COMPONENT_COUNT: usize = 160;
 const MIN_SAVED_INSTANTIATIONS_PER_COMPONENT: u64 = 200;
 
 #[test]
-fn shared_component_attribute_helpers_reduce_tsgo_instantiations() {
+fn standard_tsgo_reports_each_component_prop_problem_once_with_shared_helpers_reduces_instantiations()
+ {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping shared-helper performance receipt: {TSGO_ENV} is not set");
         return;
@@ -54,26 +57,45 @@ fn shared_component_attribute_helpers_reduce_tsgo_instantiations() {
     );
 }
 
-fn prepare_project(project: &Path, shared_helpers: bool) {
+fn install_shared_helper_package(project: &Path) {
+    let package_root = project.join("node_modules/vize");
+    let manifest_path = package_root.join("package.json");
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&manifest_path).unwrap()).unwrap();
+    manifest["exports"] = json!({
+        "./content-mapper-helpers": {
+            "types": "./content-mapper-helpers.d.ts"
+        }
+    });
+    std::fs::write(manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
+    std::fs::write(
+        package_root.join("content-mapper-helpers.d.ts"),
+        include_str!("../../../../npm/cli/content-mapper-helpers.d.ts"),
+    )
+    .unwrap();
+    // The helper's type-only `.js` specifier resolves to this declaration
+    // under the fixture's Bundler module resolution, as in the package.
+    let generated_root = package_root.join("generated");
+    std::fs::create_dir_all(&generated_root).unwrap();
+    let shared_types = include_str!("../../../../npm/cli/generated/content-mapper-types.d.ts");
+    let installed_types = generated_root.join("content-mapper-types.d.ts");
+    std::fs::write(&installed_types, shared_types).unwrap();
+    assert_eq!(
+        std::fs::read_to_string(installed_types).unwrap(),
+        shared_types
+    );
+}
+
+fn prepare_mapper_project(project: &Path, shared_helpers: bool) {
     install_mapper_manifest(project);
     install_vue_package(project);
     if shared_helpers {
-        let package_root = project.join("node_modules/vize");
-        let manifest_path = package_root.join("package.json");
-        let mut manifest: serde_json::Value =
-            serde_json::from_slice(&std::fs::read(&manifest_path).unwrap()).unwrap();
-        manifest["exports"] = json!({
-            "./content-mapper-helpers": {
-                "types": "./content-mapper-helpers.d.ts"
-            }
-        });
-        std::fs::write(manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
-        std::fs::write(
-            package_root.join("content-mapper-helpers.d.ts"),
-            include_str!("../../../../npm/cli/content-mapper-helpers.d.ts"),
-        )
-        .unwrap();
+        install_shared_helper_package(project);
     }
+}
+
+fn prepare_project(project: &Path, shared_helpers: bool) {
+    prepare_mapper_project(project, shared_helpers);
 
     let source_root = project.join("src");
     std::fs::create_dir_all(&source_root).unwrap();

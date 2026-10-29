@@ -1,7 +1,8 @@
 use super::IdeContext;
 use crate::server::ServerState;
 use crate::virtual_code::BlockType;
-use tower_lsp::lsp_types::Url;
+use std::sync::Arc;
+use tower_lsp::lsp_types::{Position, TextDocumentContentChangeEvent, Url};
 
 const CONTEXT_SFC: &str = "<script setup>\r\nconst count = 1\r\n</script>\r\n<template><div title=\"雪😀\"  class=\"a\">{{ count }}</div></template>";
 
@@ -21,10 +22,13 @@ fn completion_request_consumes_its_snapshot_and_keeps_every_cursor_boundary() {
                 .open(uri.clone(), source.into(), 1, "vue".into());
             for offset in (0..=source.len()).filter(|&at| source.is_char_boundary(at)) {
                 let original = IdeContext::at_completion(&state, &uri, offset).unwrap();
-                let snapshot = state.documents.text(&uri).unwrap();
-                let pointer = snapshot.as_ptr();
+                let snapshot = state.documents.text_snapshot(&uri).unwrap();
+                assert!(Arc::ptr_eq(&snapshot, &original.content));
                 let consumed = IdeContext::completion_with_content(&state, &uri, offset, snapshot);
-                assert_eq!(consumed.content.as_ptr(), pointer, "consume, do not copy");
+                assert!(
+                    Arc::ptr_eq(&consumed.content, &original.content),
+                    "consume the revision snapshot, do not copy it"
+                );
                 assert_eq!(consumed.content, original.content);
                 assert_eq!(consumed.offset, original.offset);
                 assert_eq!(consumed.block_type, original.block_type, "{path}: {offset}");
@@ -36,7 +40,7 @@ fn completion_request_consumes_its_snapshot_and_keeps_every_cursor_boundary() {
     state
         .documents
         .open(uri.clone(), source.into(), 1, "vue".into());
-    let snapshot = state.documents.text(&uri).unwrap();
+    let snapshot = state.documents.text_snapshot(&uri).unwrap();
     let offset = source.find("</script>").unwrap();
     state.documents.open(
         uri.clone(),
@@ -46,10 +50,41 @@ fn completion_request_consumes_its_snapshot_and_keeps_every_cursor_boundary() {
     );
     let consumed = IdeContext::completion_with_content(&state, &uri, offset, snapshot);
     assert_eq!(
-        consumed.content, source,
+        consumed.content.as_str(),
+        source,
         "offset and content share one revision"
     );
     assert_eq!(consumed.block_type, Some(BlockType::ScriptSetup));
+}
+
+#[test]
+fn positioned_context_shares_one_utf16_exact_revision_across_an_edit() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///workspace/Unicode.vue").unwrap();
+    let source = "<template>\r\n😀雪\r\n</template>";
+    state
+        .documents
+        .open(uri.clone(), source.into(), 1, "vue".into());
+
+    let old = IdeContext::at_position(&state, &uri, Position::new(1, 2)).unwrap();
+    let resident = state.documents.text_snapshot(&uri).unwrap();
+    assert!(Arc::ptr_eq(&old.content, &resident));
+    assert_eq!(old.offset, "<template>\r\n😀".len());
+    assert!(IdeContext::at_position(&state, &uri, Position::new(1, 1)).is_none());
+
+    assert!(state.documents.apply_changes(
+        &uri,
+        vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: "<template>\r\n海\r\n</template>".into(),
+        }],
+        2,
+    ));
+    let current = IdeContext::at_position(&state, &uri, Position::new(1, 1)).unwrap();
+    assert!(!Arc::ptr_eq(&old.content, &current.content));
+    assert_eq!(old.content.as_str(), source);
+    assert_eq!(current.content.as_str(), "<template>\r\n海\r\n</template>");
 }
 
 fn context_responses(ctx: &IdeContext<'_>) -> serde_json::Value {
@@ -227,7 +262,7 @@ fn script_insertion_points_do_not_change_byte_or_neighbor_classification() {
                 assert_eq!(point.block_type, None);
                 assert_eq!(insertion.block_type, Some(expected));
                 assert_eq!(insertion.offset, end);
-                assert_eq!(insertion.content, source);
+                assert_eq!(insertion.content.as_str(), source);
                 for offset in [opening.len() - 1, end + 1, source.len()] {
                     let point = IdeContext::testing(&state, &uri, offset, source.clone());
                     let insertion =

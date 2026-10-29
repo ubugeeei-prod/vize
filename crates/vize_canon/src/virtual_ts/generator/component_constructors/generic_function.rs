@@ -21,7 +21,7 @@ pub(super) fn emit(
     let authored_parameters = generic_suffix(authored_parameters);
     let arguments = generic_suffix(names);
     let emits = alias_ref("Emits", aliases.emits_is_generic, names);
-    let slots = alias_ref("$$Slots", aliases.slots_is_generic, names);
+    let slots = alias_ref("$Slots", aliases.slots_is_generic, names);
     let expose = if aliases.has_exposed_type {
         alias_ref("Exposed", aliases.exposed_is_generic, names)
     } else {
@@ -38,6 +38,8 @@ pub(super) fn emit(
             slots,
             exposed: expose,
             emit_props: aliases.has_emits_for_props,
+            emit_props_type: crate::virtual_ts::helpers::shared_types::EMIT_PROPS
+                .select(aliases.hoist_shared_preamble),
             jsx_slots: aliases.jsx_slots,
             root_element: aliases.has_root_el,
             template_refs: aliases.has_refs,

@@ -105,6 +105,7 @@ mod public_experimental_options_literal;
 mod runtime_patch_flags;
 mod setup_component_unref;
 mod setup_dynamic_argument_selection;
+mod setup_literal_const_prop;
 mod slot_outlet_hoist;
 mod table_control_flow;
 mod template_syntax_quirks_recovery;

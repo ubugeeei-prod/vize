@@ -6,10 +6,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 fn check_tail_line(code: &str) -> &str {
     code.lines()
-        .find(|line| {
-            line.as_bytes()
-                .starts_with(b"  type $$ComponentCheckTail")
-        })
+        .find(|line| line.as_bytes().starts_with(b"  type $ComponentCheckTail"))
         .expect("component prop helpers should declare a check tail")
 }
 
@@ -57,7 +54,7 @@ fn generate_usage(script: &str, template: &str, check_unknown_props: bool) -> vi
 fn unknown_props_off_opens_generated_check_tail() {
     assert_eq!(
         check_tail_line(&generate_parent_usage(false)),
-        "  type $$ComponentCheckTail<C> = $$IsGeneratedComponent<C> extends true ? $$PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
+        "  type $ComponentCheckTail<C> = $IsGeneratedComponent<C> extends true ? $PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
 }
 
@@ -66,11 +63,11 @@ fn unknown_props_on_keeps_native_fallthrough_tail() {
     let code = generate_parent_usage(true);
     assert_eq!(
         check_tail_line(&code),
-        "  type $$ComponentCheckTail<C> = $$IsGeneratedComponent<C> extends true ? $$PublicComponentAttrs & $$ComponentGlobalHtmlAttrs & $$AllowedFallthroughAttrs<C> : $$PublicComponentAttrs & $$ComponentGlobalHtmlAttrs;",
+        "  type $ComponentCheckTail<C> = $IsGeneratedComponent<C> extends true ? $PublicComponentAttrs & $ComponentGlobalHtmlAttrs & $AllowedFallthroughAttrs<C> : $PublicComponentAttrs & $ComponentGlobalHtmlAttrs;",
     );
-    assert_eq!(type_declaration(&code, "$$AttrCamel"), None);
-    assert_eq!(type_declaration(&code, "$$NativeAttrNames"), None);
-    assert_eq!(type_declaration(&code, "$$GlobalHtmlAttrs"), None);
+    assert_eq!(type_declaration(&code, "$AttrCamel"), None);
+    assert_eq!(type_declaration(&code, "$NativeAttrNames"), None);
+    assert_eq!(type_declaration(&code, "$GlobalHtmlAttrs"), None);
 }
 
 #[test]
@@ -80,16 +77,20 @@ fn component_listener_inference_accepts_camelized_data_and_aria_attrs() {
         r#"<Child data-test="x" :aria-hidden="true" @close="() => {}" />"#,
         true,
     );
-    assert!(code.contains("\"dataTest\": \"x\""), "{code}");
-    assert!(code.contains("\"ariaHidden\": true"), "{code}");
+    assert_eq!(code.matches("\"dataTest\": \"x\"").count(), 2, "{code}");
+    assert_eq!(code.matches("\"ariaHidden\": true").count(), 1, "{code}");
     // Listener inference instantiates the child's public constructor, not just
     // the usage's separate checker. Both spellings must inhabit that contract.
-    assert!(
-        code.contains("[K in `data-${string}` | `data${Capitalize<string>}`]"),
+    assert_eq!(
+        code.matches("[K in `data-${string}` | `data${Capitalize<string>}`]")
+            .count(),
+        2,
         "{code}"
     );
-    assert!(
-        code.contains("[K in `aria-${string}` | `aria${Capitalize<string>}`]"),
+    assert_eq!(
+        code.matches("[K in `aria-${string}` | `aria${Capitalize<string>}`]")
+            .count(),
+        1,
         "{code}"
     );
 }
@@ -154,7 +155,7 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
                 .to_generated_for(source_key, feature)
                 .expect("the primary prop owner remains navigable");
             assert!(
-                !row.gen_range.contains(&target),
+                target < row.gen_range.start || target >= row.gen_range.end,
                 "inference witnesses must not claim editor operations"
             );
         }
@@ -212,7 +213,7 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
                 super::ProjectionFeatures::DEFINITION,
             ] {
                 let target = output.mapping.to_generated_for(tag_start, feature).unwrap();
-                assert!(!row.span.gen_range.contains(&target));
+                assert!(target < row.span.gen_range.start || target >= row.span.gen_range.end);
             }
             let generated = inference
                 + output
@@ -240,13 +241,16 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         r#"<component :is="is" foo="x" />"#,
         true,
     );
-    assert!(
-        code.contains("type $$PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $$IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}"),
+    assert_eq!(
+        code.matches("type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}")
+            .count(),
+        1,
         "{code}"
     );
-    assert!(code.contains("\"foo\": \"x\""), "{code}");
-    assert!(
-        code.contains("$$ComponentRawProps<typeof is>"),
+    assert_eq!(code.matches("\"foo\": \"x\"").count(), 1, "{code}");
+    assert_eq!(
+        code.matches("$ComponentRawProps<typeof is>").count(),
+        2,
         "{code}"
     );
 }
@@ -256,32 +260,96 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
     let code = generate_usage("const Div = {}", "<Div />", false);
     // The navigation completion pattern must receive `{}`, not `unknown`,
     // even when this usage has no authored props to check.
-    assert!(
-        code.contains("$$HasStaticRawProps<C> extends true ? $$StaticRawProps<C> : $$PublicProps<C>"),
+    assert_eq!(
+        code.matches("$HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>")
+            .count(),
+        1,
         "{code}"
     );
-    assert!(
-        code.contains(
-            "const { } = undefined as unknown as $$ComponentNavigationProps<__Div_Props_0>;"
-        ),
+    assert_eq!(
+        code.matches(
+            "const { } = undefined as unknown as $ComponentNavigationProps<__Div_Props_0>;"
+        )
+        .count(),
+        1,
         "{code}"
     );
-    assert!(
-        code.contains("$$ComponentRawProps<typeof Div>"),
+    assert_eq!(
+        code.matches("$ComponentRawProps<typeof Div>").count(),
+        2,
         "{code}"
     );
 }
 
-/// `vue-tsc` keeps `aria-*` component attributes as HTML attributes
-/// (`htmlAttributes: ['aria-*']`), so the checked props object must not
-/// camelize them onto a declared `ariaLabel` prop.
+/// `aria-*` is both a Vue-camelized declared prop candidate and an HTML
+/// attribute. The whole-props value removes `undefined` so it retains
+/// vue-tsc's `htmlAttributes: ['aria-*']` exact-optional behavior, while the
+/// separately emitted per-prop check still validates the actual value.
 #[test]
-fn checked_component_props_keep_aria_attributes_as_authored() {
+fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     let code = generate_usage(
         "import Child from './Child.vue'; const label: string | undefined = undefined;",
         r#"<Child :aria-label="label" :data-test="label" />"#,
         true,
     );
-    assert!(code.contains("\"aria-label\": label"), "{code}");
-    assert!(code.contains("\"dataTest\": label"), "{code}");
+    assert_eq!(
+        code.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
+            .count(),
+        1,
+        "{code}"
+    );
+    assert_eq!(
+        code.matches("function __vizeComponentAriaPropEntries")
+            .count(),
+        1,
+        "the value witness must be emitted once per relevant SFC: {code}"
+    );
+    assert_eq!(
+        code.matches("// @ts-ignore Named prop diagnostics are owned by the per-prop check.")
+            .count(),
+        1,
+        "the whole-object ARIA witness must defer diagnostics once: {code}"
+    );
+    assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
+    assert_eq!(
+        code.matches(
+            "type __Child_0_prop_aria_label = $PropValue<__Child_ValueProps_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>;"
+        )
+        .count(),
+        1,
+        "the raw declared key must resolve before the generated camel alias: {code}"
+    );
+
+    let camel = generate_usage(
+        "import Child from './Child.vue'; const label = 'ok';",
+        r#"<Child :ariaLabel="label" />"#,
+        true,
+    );
+    assert_eq!(
+        camel
+            .matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
+            .count(),
+        1,
+        "a camel-authored binding must retain the raw quoted-key witness: {camel}"
+    );
+    assert_eq!(
+        camel
+            .matches(
+                "type __Child_0_prop_ariaLabel = $PropValue<__Child_ValueProps_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'ariaLabel'>>>;"
+            )
+            .count(),
+        1,
+        "the camel-authored check must still read the required raw declaration first: {camel}"
+    );
+
+    let non_aria = generate_usage(
+        "import Child from './Child.vue'; const label = 'ok';",
+        r#"<Child :data-test="label" />"#,
+        true,
+    );
+    assert_eq!(
+        non_aria.matches("__vizeComponentAriaPropEntries").count(),
+        0,
+        "unrelated SFCs must not pay for the aria witness: {non_aria}"
+    );
 }

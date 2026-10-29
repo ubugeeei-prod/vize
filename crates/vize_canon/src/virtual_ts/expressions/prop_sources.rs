@@ -18,6 +18,7 @@ use std::ops::Range;
 use vize_carton::String;
 use vize_croquis::croquis::PassedProp;
 use vize_croquis::drawer::strip_js_comments;
+use vize_l0::ts;
 
 fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
@@ -89,14 +90,18 @@ fn generated_prop_span_with_comment_policy(
         let mut value = String::default();
         if let Some(static_value) = prop.value.as_ref() {
             if prop.name == "style" {
-                value.push('{');
-                for (key, entry) in vize_relief::parse_inline_style(static_value) {
-                    push_ts_string_literal(&mut value, key.as_str());
-                    value.push(':');
-                    push_ts_string_literal(&mut value, entry.as_str());
-                    value.push(',');
+                ts! { &mut value =>
+                    {
+                        #{
+                            for (key, entry) in vize_relief::parse_inline_style(static_value) {
+                                push_ts_string_literal(__ts, key.as_str());
+                                __ts.push(':');
+                                push_ts_string_literal(__ts, entry.as_str());
+                                __ts.push(',');
+                            }
+                        }
+                    }
                 }
-                value.push('}');
             } else {
                 push_ts_string_literal(&mut value, static_value.as_str());
             }

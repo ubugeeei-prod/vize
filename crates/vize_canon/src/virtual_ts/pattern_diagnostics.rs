@@ -17,7 +17,7 @@ pub fn is_unreachable_pattern_diagnostic(source: &str, offset: usize, code: Opti
         && name
             .bytes()
             .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
-        && suffix.starts_with(" $$Patterns.Reachable<")
+        && suffix.starts_with(" $Patterns.Reachable<")
 }
 
 #[cfg(test)]
@@ -26,13 +26,13 @@ mod tests {
 
     #[test]
     fn only_generated_reachability_assignments_are_warnings() {
-        let source = "const __vize_match_2_unreachable: $$Patterns.Reachable<T> = true;";
+        let source = "const __vize_match_2_unreachable: $Patterns.Reachable<T> = true;";
         assert!(classify(source, 6, Some(2322)));
         assert!(!classify(source, 6, Some(2304)));
         assert!(!classify(source, 0, Some(2322)));
         assert!(!classify("value: number = 'bad'", 0, Some(2322)));
         assert!(!classify(
-            "__vize_match_0_\nunreachable: $$Patterns.Reachable<T>",
+            "__vize_match_0_\nunreachable: $Patterns.Reachable<T>",
             0,
             Some(2322)
         ));

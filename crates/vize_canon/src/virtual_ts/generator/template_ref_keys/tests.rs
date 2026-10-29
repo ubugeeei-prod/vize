@@ -66,7 +66,7 @@ fn multiline_calls_keep_key_checks_at_the_statement_and_preserve_typed_calls() {
         generate(
             "const modal = useTemplateRef(\n  'modal')\nuseTemplateRef<{\n  close: () => void\n}>('typed')\nif (ok) {\n  useTemplateRef('nested')\n}\n"
         ),
-        "void (null! as $$TemplateRefs[\"modal\"]); const modal = __vizeInferRef(\n  'modal')\nuseTemplateRef<{\n  close: () => void\n}>('typed')\nvoid (null! as $$TemplateRefs[\"nested\"]); if (ok) {\n  __vizeInferRef('nested')\n}\n"
+        "void (null! as $TemplateRefs[\"modal\"]); const modal = __vizeInferRef(\n  'modal')\nuseTemplateRef<{\n  close: () => void\n}>('typed')\nvoid (null! as $TemplateRefs[\"nested\"]); if (ok) {\n  __vizeInferRef('nested')\n}\n"
     );
 }
 
@@ -76,7 +76,7 @@ fn a_statement_that_shares_its_first_line_keeps_existing_key_check_ownership() {
         generate(
             "const a = [\n  1]; const b = useTemplateRef('b')\n  const c = useTemplateRef('c'), d = useTemplateRef('d')\n"
         ),
-        "const a = [\n  1]; const b = __vizeInferRef('b')\nvoid (null! as $$TemplateRefs[\"c\"]); void (null! as $$TemplateRefs[\"d\"]);   const c = __vizeInferRef('c'), d = __vizeInferRef('d')\n"
+        "const a = [\n  1]; const b = __vizeInferRef('b')\nvoid (null! as $TemplateRefs[\"c\"]); void (null! as $TemplateRefs[\"d\"]);   const c = __vizeInferRef('c'), d = __vizeInferRef('d')\n"
     );
 }
 
@@ -91,7 +91,7 @@ fn helper_names_avoid_authored_bindings_and_unresolved_reads() {
         assert_eq!(
             generate(&script),
             format!(
-                "{prefix}\nvoid __vize00000000;\nvoid (null! as $$TemplateRefs[\"box\"]); const box = __vize00000001('box');\n"
+                "{prefix}\nvoid __vize00000000;\nvoid (null! as $TemplateRefs[\"box\"]); const box = __vize00000001('box');\n"
             )
         );
     }
@@ -150,7 +150,7 @@ fn escaped_composable_callees_preserve_authored_spelling() {
     let script = "const target = useTemplateRe\\u0066('target');\n";
     assert_eq!(
         generate(script),
-        "void (null! as $$TemplateRefs[\"target\"]); const target = __vizeInferRef('target');\n"
+        "void (null! as $TemplateRefs[\"target\"]); const target = __vizeInferRef('target');\n"
     );
 }
 
@@ -171,7 +171,7 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
     );
     assert_eq!(
         generated,
-        "void (null! as (__vizeInferRefIsVue extends true ? $$TemplateRefs : Record<string, never>)[\"target\"]); const target = (useTemplateRe\\u0066 as __vizeInferRefGlobal)('target');\n\n"
+        "void (null! as (__vizeInferRefIsVue extends true ? $TemplateRefs : Record<string, never>)[\"target\"]); const target = (useTemplateRe\\u0066 as __vizeInferRefGlobal)('target');\n\n"
     );
     let callee = mappings
         .iter()
@@ -182,8 +182,23 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
 }
 
 #[test]
+fn ambient_signature_is_not_vue_ownership() {
+    let mut helpers = vize_carton::String::default();
+    usage("const target = useTemplateRef('target');\n").emit_inference_helpers(&mut helpers);
+    assert!(
+        helpers.contains("type __vizeInferRefIsVue = false;"),
+        "{helpers}"
+    );
+    assert!(!helpers.contains("Equal<"), "{helpers}");
+    let imported = generate(
+        "import { useTemplateRef } from 'vue';\nconst target = useTemplateRef('target');\n",
+    );
+    assert!(imported.contains("__vizeInferRef('target')"), "{imported}");
+}
+
+#[test]
 fn generated_global_type_names_cannot_capture_authored_names() {
-    for suffix in ["Source", "Equal", "Result", "IsVue", "Global"] {
+    for suffix in ["Source", "IsVue", "Global"] {
         let script = format!("type __vizeInferRef{suffix} = string;\nuseTemplateRef('target');");
         assert_ne!(usage(&script).helper_name(), "__vizeInferRef");
     }

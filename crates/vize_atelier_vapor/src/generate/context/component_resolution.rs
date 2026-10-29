@@ -26,9 +26,19 @@ impl<'a> GenerateContext<'a> {
 
         if let Some((base, suffix)) = component.split_once('.') {
             let resolved_base = resolve_base(base)?;
-            return Some(cstr!("_ctx.{}.{}", resolved_base, suffix));
+            return Some(if self.jsx_closure {
+                cstr!("{}.{}", resolved_base, suffix)
+            } else {
+                cstr!("_ctx.{}.{}", resolved_base, suffix)
+            });
         }
-        resolve_base(component).map(|binding| cstr!("_ctx.{}", binding))
+        resolve_base(component).map(|binding| {
+            if self.jsx_closure {
+                binding
+            } else {
+                cstr!("_ctx.{}", binding)
+            }
+        })
     }
 
     pub(crate) fn resolve_directive_binding_expr(&self, directive: &str) -> Option<String> {
@@ -37,10 +47,13 @@ impl<'a> GenerateContext<'a> {
             return None;
         }
         let name = cstr!("v{}", capitalize(&camelize(directive)));
-        bindings
-            .bindings
-            .contains_key(name.as_str())
-            .then(|| cstr!("_ctx.{name}"))
+        bindings.bindings.contains_key(name.as_str()).then(|| {
+            if self.jsx_closure {
+                name
+            } else {
+                cstr!("_ctx.{name}")
+            }
+        })
     }
 
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {

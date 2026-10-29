@@ -166,7 +166,7 @@ pub(super) fn emit_match(
             let narrowed = emitter.name();
             append!(
                 *ts,
-                "{inner}type {pattern_type} = {descriptor};\n{inner}type {narrowed} = $$Patterns.Match<{remaining}, {pattern_type}>;\n"
+                "{inner}type {pattern_type} = {descriptor};\n{inner}type {narrowed} = $Patterns.Match<{remaining}, {pattern_type}>;\n"
             );
             if ctx.verification {
                 let marker = cstr!("{}unreachable", emitter.name());
@@ -181,7 +181,7 @@ pub(super) fn emit_match(
                 );
                 append!(
                     *ts,
-                    ": $$Patterns.Reachable<{narrowed}> = true;\n{inner}void {marker};\n"
+                    ": $Patterns.Reachable<{narrowed}> = true;\n{inner}void {marker};\n"
                 );
             }
             let condition = cstr!(
@@ -223,7 +223,7 @@ pub(super) fn emit_match(
                 let next = emitter.name();
                 append!(
                     *ts,
-                    "{inner}type {next} = $$Patterns.Subtract<{remaining}, {pattern_type}>;\n"
+                    "{inner}type {next} = $Patterns.Subtract<{remaining}, {pattern_type}>;\n"
                 );
                 remaining = next;
             }
@@ -242,7 +242,7 @@ pub(super) fn emit_match(
         );
         append!(
             *ts,
-            ": $$Patterns.Exhaustiveness<{remaining}> = true;\n{inner}void {check};\n"
+            ": $Patterns.Exhaustiveness<{remaining}> = true;\n{inner}void {check};\n"
         );
     }
     append!(*ts, "{indent}}}\n");

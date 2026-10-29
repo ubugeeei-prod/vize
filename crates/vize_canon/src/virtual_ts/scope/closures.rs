@@ -212,6 +212,7 @@ pub(super) fn emit_scope_closures(
         syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
         template_offset,
         options: virtual_ts_options,
+        hoist_shared_preamble: options.hoist_shared_preamble,
         preserve_event_navigation: options.preserve_event_navigation,
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
         strict_v_model: check_options.strict_v_model && check_options.check_emits,
@@ -302,6 +303,7 @@ pub(super) fn emit_scope_closures(
             template_offset,
             check_options,
             legacy_vue2: options.legacy_vue2,
+            hoist_shared_preamble: options.hoist_shared_preamble,
             explicit_generics: &explicit_generics,
             event_inference_usages: &event_inference_usages,
             event_contracts: &event_contracts,
@@ -404,6 +406,7 @@ pub(super) fn emit_scope_closures(
                 options: virtual_ts_options,
                 syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
                 template_binding_access,
+                hoist_shared_preamble: options.hoist_shared_preamble,
             },
             options.forwarded_root_starts,
         );

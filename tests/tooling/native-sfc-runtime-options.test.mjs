@@ -16,6 +16,7 @@ import { join, resolve } from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
 import { closedSetupReference } from "./support/script-setup-default-expose.ts";
+import { advanceRuntimeOptionReference } from "./support/setup-component-bracket-reference.ts";
 
 const proof = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF
   ? resolve(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF)
@@ -570,7 +571,7 @@ await test("standalone single, files and statistics preserve code and maps", ski
 });
 
 await test(
-  "whole default packets equal the before-source native plus closed setup exposure",
+  "whole default packets equal the before-source native plus specified setup advances",
   skip,
   () => {
     assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
@@ -598,25 +599,7 @@ await test(
       functionStats: withoutTiming(row.functionStats),
       syntax: row.syntax,
     });
-    const advance = (row) => {
-      const out = structuredClone(row);
-      if (out.single)
-        out.single = out.single.map((packet, index) =>
-          closedSetupReference(packet, sourceFiles[index]),
-        );
-      if (out.batch)
-        out.batch.results = out.batch.results.map((packet, index) =>
-          closedSetupReference(packet, sourceFiles[index]),
-        );
-      if (out.stats) {
-        out.stats.outputBytes += out.single.reduce(
-          (bytes, packet, index) =>
-            bytes + Buffer.byteLength(packet.code) - Buffer.byteLength(row.single[index].code),
-          0,
-        );
-      }
-      return out;
-    };
+    const advance = (row) => advanceRuntimeOptionReference(row, sourceFiles);
     assert.deepEqual(
       defaults(completeCases()).map(comparable),
       defaults(before).map(advance).map(comparable),

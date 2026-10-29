@@ -134,7 +134,7 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
         .join("\n");
     assert!(
         virtual_ts.contains(
-            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $$WidenTemplateRef<T['value']> : T : T;"
+            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").$WidenTemplateRef<T['value']> : T : T;"
         ),
         "template refs should unwrap through the widening helper:\n{virtual_ts}"
     );
@@ -142,7 +142,7 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
     // in `__vize_helpers.d.ts`; re-declaring it per module is the regression
     // this guards (see #3460).
     assert_eq!(
-        virtual_ts.matches("type $$WidenTemplateRef<T>").count(),
+        virtual_ts.matches("type $WidenTemplateRef<T>").count(),
         0,
         "the widening helper must be hoisted, not re-declared per module:\n{virtual_ts}"
     );

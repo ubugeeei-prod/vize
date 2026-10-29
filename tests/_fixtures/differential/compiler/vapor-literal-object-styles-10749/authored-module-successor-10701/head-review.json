@@ -1,0 +1,938 @@
+[
+  {
+    "arenaBytes": 2344,
+    "expressionReparses": 0,
+    "family": "jsx",
+    "fold": true,
+    "id": "valid-control",
+    "output": {
+      "components": [
+        {
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"color\":\"blue\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 2344,
+    "expressionReparses": 0,
+    "family": "jsx",
+    "fold": true,
+    "id": "valid-control",
+    "output": {
+      "components": [
+        {
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+          "templates": [
+            "<button style=\"color:blue;font-weight:700;\">ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"color\":\"blue\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5304,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "valid-control",
+    "mapped": false,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button style=\"color:blue;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;blue&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5304,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "valid-control",
+    "mapped": true,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAQ,QAAO,8BAA6E;;AAA7F\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;blue&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button style=\"color:blue;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;blue&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 1608,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "valid-control",
+    "mapped": false,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button style=\"color:blue;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;blue&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 1608,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "valid-control",
+    "mapped": true,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:blue;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAQ,QAAO,8BAA6E;;AAA7F\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;blue&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button style=\"color:blue;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;blue&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "unclosed-function",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button>ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"color\":\"var(--missing\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "unclosed-function",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "templates": [
+            "<button>ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"color\":\"var(--missing\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5648,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-function",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;var(--missing&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5648,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-function",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAqG;;AAAtG;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;var(--missing&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;var(--missing&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2056,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-function",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;var(--missing&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2056,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-function",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"var(--missing\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAqG;;AAAtG;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;var(--missing&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;var(--missing&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 3424,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "unclosed-string",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button>ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 3424,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "unclosed-string",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "templates": [
+            "<button>ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5664,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-string",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;fontFamily&quot;:&quot;\\&quot;broken&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5664,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-string",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA0G;;AAA3G;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;fontFamily&quot;:&quot;\\\\&quot;broken&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;fontFamily&quot;:&quot;\\&quot;broken&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2072,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-string",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;fontFamily&quot;:&quot;\\&quot;broken&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2072,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "unclosed-string",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"fontFamily\":\"\\\"broken\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA0G;;AAA3G;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;fontFamily&quot;:&quot;\\\\&quot;broken&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;fontFamily&quot;:&quot;\\&quot;broken&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 3424,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "trailing-escape",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button>ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"color\":\"red\\\\\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 3424,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "trailing-escape",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "templates": [
+            "<button>ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"color\":\"red\\\\\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5616,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "trailing-escape",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red\\\\&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5616,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "trailing-escape",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA6F;;AAA9F;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;red\\\\\\\\&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red\\\\&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2048,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "trailing-escape",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red\\\\&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2048,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "trailing-escape",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"color\":\"red\\\\\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA6F;;AAA9F;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;red\\\\\\\\&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red\\\\&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "css-float-alias",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button>ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"cssFloat\":\"left\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "css-float-alias",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "templates": [
+            "<button>ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"cssFloat\":\"left\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5624,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "css-float-alias",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;cssFloat&quot;:&quot;left&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5624,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "css-float-alias",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA+F;;AAAhG;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;cssFloat&quot;:&quot;left&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;cssFloat&quot;:&quot;left&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2040,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "css-float-alias",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;cssFloat&quot;:&quot;left&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2040,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "css-float-alias",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssFloat\":\"left\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA+F;;AAAhG;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;cssFloat&quot;:&quot;left&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;cssFloat&quot;:&quot;left&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "css-text-member",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button>ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"cssText\":\"color:red\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "css-text-member",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "templates": [
+            "<button>ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"cssText\":\"color:red\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5632,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "css-text-member",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;cssText&quot;:&quot;color:red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5632,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "css-text-member",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAmG;;AAApG;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;cssText&quot;:&quot;color:red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;cssText&quot;:&quot;color:red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2056,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "css-text-member",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;cssText&quot;:&quot;color:red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2056,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "css-text-member",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"cssText\":\"color:red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAmG;;AAApG;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;cssText&quot;:&quot;color:red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;cssText&quot;:&quot;color:red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "capitalized-nonvendor",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button>ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"Color\":\"red\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 3392,
+    "expressionReparses": 1,
+    "family": "jsx",
+    "fold": false,
+    "id": "capitalized-nonvendor",
+    "output": {
+      "components": [
+        {
+          "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+          "templates": [
+            "<button>ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"Color\":\"red\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5584,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "capitalized-nonvendor",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;Color&quot;:&quot;red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5584,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": false,
+    "id": "capitalized-nonvendor",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA2F;;AAA5F;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;Color&quot;:&quot;red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;Color&quot;:&quot;red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2032,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "capitalized-nonvendor",
+    "mapped": false,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;Color&quot;:&quot;red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2032,
+    "expressionReparses": 1,
+    "family": "template",
+    "fold": false,
+    "id": "capitalized-nonvendor",
+    "mapped": true,
+    "output": {
+      "code": "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button>ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\"Color\":\"red\",\"fontWeight\":\"700\"}))\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAA2F;;AAA5F;;oCAAgB\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;Color&quot;:&quot;red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button>ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;Color&quot;:&quot;red&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 2360,
+    "expressionReparses": 0,
+    "family": "jsx",
+    "fold": true,
+    "id": "important-control",
+    "output": {
+      "components": [
+        {
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+          "map": null,
+          "preamble": ""
+        }
+      ],
+      "errors": [],
+      "map": null,
+      "module": "import { template as _template } from \"vue\"\n\nexport const App = ({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  return n0\n})(undefined, [])\n})()\n}\n});"
+    },
+    "source": "export const App = () => <button style={{\"color\":\"red!important\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": false
+  },
+  {
+    "arenaBytes": 2360,
+    "expressionReparses": 0,
+    "family": "jsx",
+    "fold": true,
+    "id": "important-control",
+    "output": {
+      "components": [
+        {
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+          "templates": [
+            "<button style=\"color:red!important;font-weight:700;\">ready</button>"
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "source": "export const App = () => <button style={{\"color\":\"red!important\",\"fontWeight\":\"700\"}}>ready</button>;",
+    "standalone": true
+  },
+  {
+    "arenaBytes": 5360,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "important-control",
+    "mapped": false,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button style=\"color:red!important;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red!important&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 5360,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "important-control",
+    "mapped": true,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAQ,QAAO,uCAAsF;;AAAtG\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;red!important&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button style=\"color:red!important;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": false,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red!important&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 1640,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "important-control",
+    "mapped": false,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": null,
+      "templates": [
+        "<button style=\"color:red!important;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red!important&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  },
+  {
+    "arenaBytes": 1640,
+    "expressionReparses": 0,
+    "family": "template",
+    "fold": true,
+    "id": "important-control",
+    "mapped": true,
+    "output": {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button style=\\\"color:red!important;font-weight:700;\\\">ready</button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "errors": [],
+      "map": "{\"file\":\"Original 日😀.vue\",\"mappings\":\";uBAAC,OAAQ,QAAO,uCAAsF;;AAAtG\",\"names\":[],\"sources\":[\"Original 日😀.vue\"],\"sourcesContent\":[\"<button :style=\\\"{&quot;color&quot;:&quot;red!important&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\\\">ready</button>\"],\"version\":3}",
+      "templates": [
+        "<button style=\"color:red!important;font-weight:700;\">ready</button>"
+      ],
+      "warnings": []
+    },
+    "retained": true,
+    "source": "<button :style=\"{&quot;color&quot;:&quot;red!important&quot;,&quot;fontWeight&quot;:&quot;700&quot;}\">ready</button>"
+  }
+]

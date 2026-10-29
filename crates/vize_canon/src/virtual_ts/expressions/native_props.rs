@@ -1,7 +1,7 @@
 //! Native Vue prop discovery, type assertions, and authored-range mappings.
 //!
-//! The element table these checks resolve through — `$$NativeElements`,
-//! `$$NativeElement` and `$$NativeElementProp` — is declared once per
+//! The element table these checks resolve through — `$NativeElements`,
+//! `$NativeElement` and `$NativeElementProp` — is declared once per
 //! program in `vue_type_helpers_text!` (`virtual_ts/helpers.rs`), not per file,
 //! for two reasons.
 //!
@@ -27,7 +27,7 @@
 //! `declare function __vizeNativeElementProp` exists solely to reference the two
 //! conditional aliases. They are otherwise named only by the checks below, so a
 //! program whose files bind no native prop left them unused and Corsa reported
-//! `TS6196` — `'$$NativeElement' is declared but never used.` — which reached
+//! `TS6196` — `'$NativeElement' is declared but never used.` — which reached
 //! `check-server` clients as an unmapped hint on a clean SFC. `@ts-ignore` does
 //! not help here: it filters errors, not the suggestion channel these arrive on.
 //! An ambient `declare function` is exempt from unused reporting itself, which is
@@ -35,7 +35,7 @@
 //!
 //! Declaring the conditional types once per program also lets TypeScript reuse
 //! its instantiation cache across every generated module instead of
-//! re-instantiating `keyof $$NativeElements` per file.
+//! re-instantiating `keyof $NativeElements` per file.
 //!
 //! They are deliberately absent from `DECLARATION_HELPERS_DTS`: emitted
 //! declarations never contain a native prop check, so shipping the alias would
@@ -171,7 +171,7 @@ fn renders_as_fragment(element: &ElementNode<'_>) -> bool {
 /// :href="1">` is `TS2322` exactly like `<button :disabled="'yes'">` — so the
 /// name is not filtered. An attribute the element type does not declare
 /// (`:data-id`, `:aria-label`, a custom attribute) resolves through
-/// `$$NativeElementProp` to `unknown`, which accepts any value, so the
+/// `$NativeElementProp` to `unknown`, which accepts any value, so the
 /// unchecked attributes stay unchecked without a name list to maintain.
 ///
 /// A dynamic name (`:[key]="x"`) has no statically known prop to check against
@@ -240,7 +240,7 @@ pub(super) fn generate_native_prop_statement(
     let check_name_end = ts.len();
     match &native_prop.target {
         NativePropTarget::Property { tag, name } => {
-            ts.push_str(": $$NativeElementProp<$$NativeElement<");
+            ts.push_str(": $NativeElementProp<$NativeElement<");
             push_ts_string_literal(ts, tag.as_str());
             ts.push_str(">, ");
             push_ts_string_literal(ts, name.as_str());

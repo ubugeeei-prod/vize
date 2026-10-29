@@ -44,4 +44,5 @@ fn analyzer_with_single(script: &str) -> CrossFileAnalyzer {
 }
 
 mod advanced;
+mod async_boundary_precision;
 mod basic;

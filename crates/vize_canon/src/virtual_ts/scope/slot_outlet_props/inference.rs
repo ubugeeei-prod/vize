@@ -2,6 +2,7 @@
 
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, ScopeId, ScopeKind};
+use vize_l0::ts;
 use vize_relief::{RootNode, TemplateChildNode};
 
 use super::SlotOutletChecks;
@@ -11,15 +12,15 @@ use crate::virtual_ts::helpers::push_ts_string_literal;
 /// keeps one call signature, whose payload contains every contributing outlet.
 /// Lexical child scopes return the same carrier, so no overload sampling or
 /// arbitrary signature bound is needed at the parent component boundary.
-const INFERRED_SLOT_HELPERS: &str = r#"  type $$InferredSlotKeys<U> = U extends any ? keyof U : never;
-  type $$InferredSlotOptionalKeys<U> = U extends any ? { [K in keyof U]-?: {} extends Pick<U, K> ? K : never }[keyof U] : never;
-  type $$InferredSlotRequiredKeys<U> = Exclude<keyof U, $$InferredSlotOptionalKeys<U>>;
-  type $$InferredSlotValue<U, K extends PropertyKey> = U extends any ? (K extends keyof U ? U[K] : never) : never;
-  type $$InferredSlotMerge<U> = { [K in $$InferredSlotRequiredKeys<U>]: $$InferredSlotValue<U, K> } & { [K in Exclude<$$InferredSlotKeys<U>, $$InferredSlotRequiredKeys<U>>]?: $$InferredSlotValue<U, K> };
-  type $$InferredSlotIntersection<U> = (U extends any ? (member: U) => void : never) extends (member: infer I) => void ? I : never;
-  type $$InferredSlotUnify<P> = $$IsAny<P> extends true ? P : [P] extends [$$InferredSlotIntersection<P>] ? P : $$InferredSlotMerge<P>;
-  type $$InferredSlotPayload<S, K extends PropertyKey> = S extends any ? K extends keyof S ? NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never : never : never;
-  type $$InferredSlots<S> = [$$InferredSlotKeys<S>] extends [never] ? {} : $$InferredSlotIntersection<{ [K in $$InferredSlotKeys<S>]: { [N in K]?: (props: $$InferredSlotUnify<$$InferredSlotPayload<S, K>>) => any } }[$$InferredSlotKeys<S>]>;
+const INFERRED_SLOT_HELPERS: &str = r#"  type $InferredSlotKeys<U> = U extends any ? keyof U : never;
+  type $InferredSlotOptionalKeys<U> = U extends any ? { [K in keyof U]-?: {} extends Pick<U, K> ? K : never }[keyof U] : never;
+  type $InferredSlotRequiredKeys<U> = Exclude<keyof U, $InferredSlotOptionalKeys<U>>;
+  type $InferredSlotValue<U, K extends PropertyKey> = U extends any ? (K extends keyof U ? U[K] : never) : never;
+  type $InferredSlotMerge<U> = { [K in $InferredSlotRequiredKeys<U>]: $InferredSlotValue<U, K> } & { [K in Exclude<$InferredSlotKeys<U>, $InferredSlotRequiredKeys<U>>]?: $InferredSlotValue<U, K> };
+  type $InferredSlotIntersection<U> = (U extends any ? (member: U) => void : never) extends (member: infer I) => void ? I : never;
+  type $InferredSlotUnify<P> = $IsAny<P> extends true ? P : [P] extends [$InferredSlotIntersection<P>] ? P : $InferredSlotMerge<P>;
+  type $InferredSlotPayload<S, K extends PropertyKey> = S extends any ? K extends keyof S ? NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never : never : never;
+  type $InferredSlots<S> = [$InferredSlotKeys<S>] extends [never] ? {} : $InferredSlotIntersection<{ [K in $InferredSlotKeys<S>]: { [N in K]?: (props: $InferredSlotUnify<$InferredSlotPayload<S, K>>) => any } }[$InferredSlotKeys<S>]>;
 "#;
 
 pub(super) fn emit_inferred_slot_helpers(ts: &mut String) {
@@ -116,19 +117,27 @@ impl SlotOutletChecks {
         if record.is_empty() {
             return self.emit_result(ts, summary, None, "  ");
         }
-        ts.push_str("  return { ");
-        if self.infers_slots() {
-            append!(
-                *ts,
-                "{}: {{}} as {}, ",
-                crate::virtual_ts::scope::SLOTS_RETURN_KEY,
-                self.result_type(summary, None)
-            );
+        ts! { &mut *ts =>
+            #("  return ")
+            {
+                #(" ")
+                #{
+                    if self.infers_slots() {
+                        let ty = self.result_type(summary, None);
+                        append!(
+                            *__ts,
+                            "{}: {{}} as {}, ",
+                            crate::virtual_ts::scope::SLOTS_RETURN_KEY,
+                            ty
+                        );
+                    }
+                    for (key, value) in record {
+                        append!(*__ts, "{key}: {value}, ");
+                    }
+                }
+            }
+            #(";\n")
         }
-        for (key, value) in record {
-            append!(*ts, "{key}: {value}, ");
-        }
-        ts.push_str("};\n");
     }
 
     fn result_type(&self, summary: &Croquis, scope_id: Option<ScopeId>) -> String {
@@ -148,13 +157,19 @@ impl SlotOutletChecks {
                     outlet.start
                 );
             } else {
-                slot.push_str("{ ");
-                push_ts_string_literal(&mut slot, outlet.name.as_str());
-                append!(
-                    slot,
-                    "?: (props: typeof __vize_slot_payload_{}) => any }}",
-                    outlet.start
-                );
+                ts! { &mut slot =>
+                    {
+                        #(" ")
+                        #{
+                            push_ts_string_literal(__ts, outlet.name.as_str());
+                            append!(
+                                *__ts,
+                                "?: (props: typeof __vize_slot_payload_{}) => any",
+                                outlet.start
+                            );
+                        }
+                    }
+                }
             }
             types.push(slot);
         }
@@ -175,7 +190,7 @@ impl SlotOutletChecks {
         if types.is_empty() {
             String::from("{}")
         } else if self.merge_payloads {
-            cstr!("$$InferredSlots<{}>", types.join(" | "))
+            cstr!("$InferredSlots<{}>", types.join(" | "))
         } else {
             types.join(" & ").into()
         }

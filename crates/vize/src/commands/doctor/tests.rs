@@ -241,6 +241,87 @@ defineProps<{ id: number }>()
 }
 
 #[test]
+fn composable_injects_match_and_report_in_the_calling_component() {
+    let directory = tempfile::tempdir().unwrap();
+    let form = r#"import { inject } from 'vue'
+export const FormKey = Symbol('form')
+export function useFormField() {
+  return inject(FormKey, null)
+}
+"#;
+    let provider = r#"<script setup lang="ts">
+import { provide } from 'vue'
+import { FormKey } from '../composables/form'
+provide(FormKey, {})
+</script>
+<template><form><slot /></form></template>
+"#;
+    let consumer = r#"<script setup lang="ts">
+import { useFormField } from '../composables/form'
+useFormField()
+</script>
+<template><input /></template>
+"#;
+    let app = r#"<script setup lang="ts">
+import MyForm from './components/MyForm.vue'
+import MyInput from './components/MyInput.vue'
+</script>
+<template><MyForm><MyInput /></MyForm></template>
+"#;
+    let matched = analyze_application(
+        directory.path(),
+        &[
+            doctor_source("src/App.vue", app),
+            doctor_source("src/components/MyForm.vue", provider),
+            doctor_source("src/components/MyInput.vue", consumer),
+            doctor_source("src/composables/form.ts", form),
+        ],
+        false,
+    )
+    .unwrap();
+    assert!(matched.findings().iter().all(|finding| {
+        !matches!(
+            finding.code.as_str(),
+            "VIZE_DOCTOR_CF_UNUSED_PROVIDE" | "VIZE_DOCTOR_CF_UNMATCHED_INJECT"
+        )
+    }));
+
+    let required = r#"import { inject } from 'vue'
+export const RequiredKey = Symbol('required')
+export function useRequired() {
+  return inject(RequiredKey)
+}
+"#;
+    let missing_consumer = r#"<script setup lang="ts">
+import { useRequired } from '../composables/required'
+useRequired()
+</script>
+<template><input /></template>
+"#;
+    let missing = analyze_application(
+        directory.path(),
+        &[
+            doctor_source("src/components/MyInput.vue", missing_consumer),
+            doctor_source("src/composables/required.ts", required),
+        ],
+        false,
+    )
+    .unwrap();
+    let finding = missing
+        .findings()
+        .iter()
+        .find(|finding| finding.code == "VIZE_DOCTOR_CF_UNMATCHED_INJECT")
+        .expect("required composable inject finding");
+    let expected = missing_consumer.find("useRequired()").unwrap();
+    assert_eq!(finding.primary.path, "src/components/MyInput.vue");
+    assert_eq!(finding.primary.start as usize, expected);
+    assert_eq!(
+        finding.primary.end as usize,
+        expected + "useRequired()".len()
+    );
+}
+
+#[test]
 fn serialized_report_is_deterministic_for_input_order() {
     let directory = tempfile::tempdir().unwrap();
     let a = doctor_source("src/A.vue", "<template><div id=\"shared\" /></template>");

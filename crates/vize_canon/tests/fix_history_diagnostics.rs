@@ -12,8 +12,13 @@ mod support {
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
 }
+mod aria_kebab_prop_11048;
+mod content_mapper_template_callback_listener_11023;
+mod content_mapper_vue_generic_11051;
+mod fix_history_cases;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;
+use support::fix_history_runner::native_fixture_runtime_disabled;
 
 #[test]
 fn contextual_prop_anchors_preserve_authored_diagnostics() {
@@ -683,17 +688,6 @@ fn content_mapper_musea_art_project_preserves_bound_component_diagnostics() {
 }
 
 #[test]
-fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
-    check_pack(
-        "content-mapper-nuxt-emit-10195",
-        "content_mapper_preserves_emit_with_nuxt_pattern_injections",
-        "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
-        Some(10195),
-        &["nuxt-pattern-injection-attribute-listener"],
-    );
-}
-
-#[test]
 fn content_mapper_diagnostics_keep_single_public_owners() {
     if native_fixture_runtime_disabled() {
         return;
@@ -716,10 +710,6 @@ fn pins_incomplete_setup_import_corpus() {
         Some(10200),
         &["relative-imports-before-incomplete-member"],
     );
-}
-
-fn native_fixture_runtime_disabled() -> bool {
-    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
 
 #[test]
@@ -1079,6 +1069,17 @@ fn callback_render_position_preserves_complete_authored_diagnostics() {
 }
 
 #[test]
+fn event_inference_callbacks_keep_contextual_native_diagnostics() {
+    check_pack(
+        "event-inference-callback-10739",
+        "event_inference_callbacks_keep_contextual_native_diagnostics",
+        "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
+        Some(10739),
+        &["untyped-contextual-callback", "genuine-callback-body-error"],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",
@@ -1251,7 +1252,6 @@ fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
         ],
     );
 }
-
 #[test]
 fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
     if native_fixture_runtime_disabled() {

@@ -1,0 +1,117 @@
+name: Babel plugin host contracts
+on:
+  workflow_dispatch:
+  push:
+    branches: [ci/babel-native-integration]
+  pull_request:
+    paths:
+      - npm/babel/**
+      - crates/vize_atelier_jsx/**
+      - crates/vize_atelier_vapor/**
+      - crates/vize_atelier_ssr/**
+      - crates/vize_vitrine/src/napi/jsx.rs
+      - .github/workflows/babel-plugin-hosts.yml
+permissions: { contents: read }
+concurrency:
+  group: babel-hosts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  packed-hosts:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", fetch-depth: 0, persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version: 24.14.0
+          run-install: false
+          cache: true
+          cache-save: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: babel-plugin-hosts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install frozen source and exact isolated host graphs
+        run: |
+          node tools/support/github/vp-install.ts --filter './npm/babel...' --filter './npm/native...'
+          npm ci --prefix npm/babel/test/hosts/fixtures/babel7 --ignore-scripts --no-audit --no-fund
+          npm ci --prefix npm/babel/test/hosts/fixtures/babel8 --ignore-scripts --no-audit --no-fund
+          for runtime in vdom vapor-rc9 vapor-rc11; do
+            npm ci --prefix "npm/babel/test/runtime/fixtures/$runtime" --ignore-scripts --no-audit --no-fund
+          done
+          node npm/babel/test/runtime/fixtures/vdom/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Build the actual source compiler and both public package entrypoints
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir -p "$RUNNER_TEMP/babel-plugin/packed"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/babel-plugin/source.txt"
+          git log -50 --format='%H %T %P %s' > "$RUNNER_TEMP/babel-plugin/ordered-history.txt"
+          node --version > "$RUNNER_TEMP/babel-plugin/node-version.txt"
+          vp run --workspace-root build:native:test
+          GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+          vp run --no-cache --filter './npm/babel' build
+          (cd npm/babel && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/babel-plugin/packed" --json) > "$RUNNER_TEMP/babel-plugin/pack.json"
+          sha256sum "$RUNNER_TEMP/babel-plugin/packed/"*.tgz > "$RUNNER_TEMP/babel-plugin/packed.sha256"
+          cp npm/native/.artifacts/native/build-token-receipt.json "$RUNNER_TEMP/babel-plugin/"
+      - name: Check actual packed Babel 7 and 8 ESM and CommonJS consumers
+        env:
+          VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
+          VIZE_BABEL_HOST_OUTPUT: ${{ runner.temp }}/babel-plugin/hosts
+        run: |
+          set -euo pipefail
+          export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/packed-hosts.test.ts
+      - name: Measure complete host transforms and the real native-call boundary
+        if: always()
+        env:
+          VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
+          VIZE_BABEL_PROFILE_OUTPUT: ${{ runner.temp }}/babel-plugin/profile.json
+        run: |
+          set -euo pipefail
+          export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+          node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.ts
+      - name: Qualify eight supported client SSR and hydration rows
+        if: always()
+        env:
+          VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
+          VIZE_BABEL_RUNTIME_OUTPUT: ${{ runner.temp }}/babel-plugin/runtime
+          VIZE_BABEL_RUNTIME_ROLE: supported
+        run: |
+          set -euo pipefail
+          export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/runtime-renderers.test.ts
+      - name: Qualify additive actual native CSSOM and HTML style guards
+        if: always()
+        env:
+          VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
+          VIZE_BABEL_STYLE_GUARD_OUTPUT: ${{ runner.temp }}/babel-plugin/style-guards
+        run: |
+          set -euo pipefail
+          export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/style-guards.test.ts
+      - name: Check package source and declarations
+        if: always()
+        run: vp run --filter './npm/babel' check
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: babel-plugin-hosts-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/babel-plugin
+            !${{ runner.temp }}/babel-plugin/**/node_modules/**
+            npm/native/.artifacts/native/build-token-receipt.json
+            npm/native/*.node
+            npm/babel/test/hosts/fixtures/babel7/package-lock.json
+            npm/babel/test/hosts/fixtures/babel8/package-lock.json
+          if-no-files-found: error
+          retention-days: 14

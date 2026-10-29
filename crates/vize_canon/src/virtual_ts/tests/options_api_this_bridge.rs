@@ -56,7 +56,7 @@ export default defineComponent({
     );
 
     assert!(
-        output.code.contains("type $$This ="),
+        output.code.contains("type $This ="),
         "expected typed Options API `this` bridge:\n{}",
         output.code
     );
@@ -73,7 +73,7 @@ export default defineComponent({
 
     // Vue 3 needs no bridge: the same bodies sit inside the authored
     // `defineComponent({ ... })` copy, where Vue types `this` exactly. A second
-    // copy checked against the approximate `$$This` shape would only add
+    // copy checked against the approximate `$This` shape would only add
     // findings vue-tsc does not report.
     let vue3 = generate_virtual_ts_with_offsets_options_api(
         &summary,
@@ -84,7 +84,7 @@ export default defineComponent({
         &Default::default(),
     );
     assert!(
-        !vue3.code.contains("$$This"),
+        !vue3.code.contains("$This"),
         "Vue 3 `defineComponent` already types `this`; the bridge must stay off:\n{}",
         vue3.code
     );

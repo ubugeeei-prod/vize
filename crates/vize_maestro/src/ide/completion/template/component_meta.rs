@@ -266,7 +266,7 @@ fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
     }
 }
 
-const SLOT_PROPS_TYPE_PREFIX: &str = "type $$SlotProps = ";
+const SLOT_PROPS_TYPE_PREFIX: &str = "type $SlotProps = ";
 
 /// Extract slot prop names from the already-resolved first slot parameter type
 /// and return names that are safe to put into a destructuring snippet.

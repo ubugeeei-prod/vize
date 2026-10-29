@@ -79,6 +79,18 @@ impl VirtualTsCheckOptions {
     pub(crate) fn check_event_handlers(self) -> bool {
         self.check_emits || self.check_template_bindings
     }
+
+    /// Content Mapper treats an omitted Vue 3 option as permission to infer
+    /// only a directly recorded native-root listener payload. Explicit values
+    /// and Vue 2 targets retain their existing contracts.
+    pub(crate) fn infers_omitted_native_fallthrough_listeners(self, legacy_vue2: bool) -> bool {
+        !legacy_vue2
+            && !matches!(
+                self.vue_compiler_target,
+                Some(VueVersion::V2 | VueVersion::V2_7)
+            )
+            && !self.fallthrough_attributes_specified
+    }
 }
 
 impl Default for VirtualTsCheckOptions {

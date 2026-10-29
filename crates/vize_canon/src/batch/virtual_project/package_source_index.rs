@@ -10,6 +10,14 @@ use super::VirtualProject;
 
 type PackageSources = FxHashMap<PathBuf, (PathBuf, PathBuf)>;
 
+#[cfg(test)]
+#[derive(Debug, Default, Eq, PartialEq)]
+pub(super) struct PackageRouteSourceIndexWork {
+    pub(super) route_visits: usize,
+    pub(super) source_visits: usize,
+    pub(super) ancestor_candidates: usize,
+}
+
 impl VirtualProject {
     pub(crate) fn insert_package_route_binding(&mut self, binding: crate::PackageRouteBinding) {
         let key = binding.key();
@@ -159,24 +167,88 @@ impl VirtualProject {
         route: &crate::PackageRoute,
         mut batch: Option<&mut super::project::RouteBatch>,
     ) {
-        for route in route.all_routes() {
-            let root =
-                super::project::RouteBatch::canonical(batch.as_deref_mut(), &route.package_root);
-            self.package_route_roots.entry(root.clone()).or_default();
-            for source in route.all_source_paths() {
-                let source = super::project::RouteBatch::canonical(batch.as_deref_mut(), source);
-                let Some(virtual_path) = self.original_index.get(&source).cloned() else {
+        let mut ancestor_roots = Vec::new();
+        #[cfg(test)]
+        let mut work = PackageRouteSourceIndexWork::default();
+        self.index_existing_package_route_sources_inner(
+            route,
+            &mut ancestor_roots,
+            &mut batch,
+            #[cfg(test)]
+            &mut work,
+        );
+    }
+
+    fn index_existing_package_route_sources_inner(
+        &mut self,
+        route: &crate::PackageRoute,
+        ancestor_roots: &mut Vec<PathBuf>,
+        batch: &mut Option<&mut super::project::RouteBatch>,
+        #[cfg(test)] work: &mut PackageRouteSourceIndexWork,
+    ) {
+        #[cfg(test)]
+        {
+            work.route_visits += 1;
+        }
+        let root = super::project::RouteBatch::canonical(batch.as_deref_mut(), &route.package_root);
+        self.package_route_roots.entry(root.clone()).or_default();
+        ancestor_roots.push(root);
+
+        // A direct item belongs to every enclosing package root that contains
+        // its canonical source. Walking the route tree once retains that
+        // ancestor coverage without rebuilding, sorting and deduplicating the
+        // complete descendant suffix at every level. Keep authored repeats in
+        // order: the destination map remains the same final collision point.
+        for source in route.source_paths.iter().chain(&route.dependency_paths) {
+            #[cfg(test)]
+            {
+                work.source_visits += 1;
+                work.ancestor_candidates += ancestor_roots.len();
+            }
+            let source = super::project::RouteBatch::canonical(batch.as_deref_mut(), source);
+            let Some(virtual_path) = self.original_index.get(&source).cloned() else {
+                continue;
+            };
+            for root in ancestor_roots.iter() {
+                let Ok(relative) = source.strip_prefix(root) else {
                     continue;
                 };
-                let Ok(relative) = source.strip_prefix(&root) else {
-                    continue;
-                };
-                let relative = relative.to_path_buf();
                 self.package_source_index
                     .entry(root.clone())
                     .or_default()
-                    .insert(source, (relative, virtual_path));
+                    .insert(
+                        source.clone(),
+                        (relative.to_path_buf(), virtual_path.clone()),
+                    );
             }
         }
+
+        for nested in &route.nested_routes {
+            self.index_existing_package_route_sources_inner(
+                nested,
+                ancestor_roots,
+                batch,
+                #[cfg(test)]
+                work,
+            );
+        }
+        ancestor_roots.pop();
+    }
+
+    #[cfg(test)]
+    pub(super) fn package_route_source_index_work_for_test(
+        &mut self,
+        route: &crate::PackageRoute,
+    ) -> PackageRouteSourceIndexWork {
+        let mut work = PackageRouteSourceIndexWork::default();
+        let mut ancestor_roots = Vec::new();
+        let mut batch = None;
+        self.index_existing_package_route_sources_inner(
+            route,
+            &mut ancestor_roots,
+            &mut batch,
+            &mut work,
+        );
+        work
     }
 }

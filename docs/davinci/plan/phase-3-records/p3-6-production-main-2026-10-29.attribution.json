@@ -1,0 +1,374 @@
+{
+  "schema_version": 1,
+  "workflow_run": "https://github.com/ubugeeei-prod/vize/actions/runs/40853274181",
+  "head_sha": "44f1aff002c56b932c9be27f225f7b844ab16290",
+  "manifest_sha256": "2074f89546701138e83585db2274be9ecbd535f4cc01fef30c1ec60201699011",
+  "files": 561,
+  "mode": "attribution-only (no acceptance timings)",
+  "profile": "ci-opt (opt-level=3, thin LTO, 16 codegen units)",
+  "allocator": "ProfilingAllocator<mimalloc> (attribution only; real allocation traffic, retained provenance capacities separately)",
+  "features": "native,davinci-production-profile; no retained-AST differential dual-run",
+  "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
+  "scope": "committed fixture SFCs, excluding _git, _git-worktrees and node_modules; this report does not establish universal speed or semantic parity",
+  "artifact": {
+    "name": "davinci-production-perf-1",
+    "id": 12887639614,
+    "size_in_bytes": 347901,
+    "archive_sha256": "565467ce0bc12012fed84c8b5e502d0d48646f6d922d47dc6004ec907812c976"
+  },
+  "raw_report": {
+    "path": "bridge-attribution.json",
+    "sha256": "5329f0886f073f80163826ab65f2baeaffc946172988e8acfa964803857699af",
+    "size_in_bytes": 1431930,
+    "input_bridge_spans": "retained only in the immutable workflow artifact"
+  },
+  "vapor": {
+    "accepted_files": 276,
+    "allocations": {
+      "selected": {
+        "calls": 112938,
+        "failures": 0,
+        "released_bytes": 130533295,
+        "requested_bytes": 130533295
+      },
+      "retained": {
+        "calls": 108805,
+        "failures": 0,
+        "released_bytes": 122045820,
+        "requested_bytes": 122045820
+      },
+      "accepted_selected": {
+        "calls": 47116,
+        "failures": 0,
+        "released_bytes": 53599067,
+        "requested_bytes": 53599067
+      },
+      "accepted_retained": {
+        "calls": 48506,
+        "failures": 0,
+        "released_bytes": 51052349,
+        "requested_bytes": 51052349
+      }
+    },
+    "accepted_comparison_spans": {
+      "selected": [
+        {
+          "key": "atelier.sfc.template.vapor",
+          "count": 276,
+          "wall_ns": {
+            "max": 161644,
+            "min": 3637,
+            "p50": 8000,
+            "p95": 32000,
+            "p99": 128000,
+            "self": 1383172,
+            "total": 3580187
+          },
+          "alloc": {
+            "bytes": 7421616,
+            "calls": 12866,
+            "self_bytes": 2131558,
+            "self_calls": 9338
+          }
+        },
+        {
+          "key": "atelier.vapor.template.s3_bridge",
+          "count": 276,
+          "wall_ns": {
+            "max": 87656,
+            "min": 2084,
+            "p50": 4000,
+            "p95": 32000,
+            "p99": 64000,
+            "self": 233895,
+            "total": 1987129
+          },
+          "alloc": {
+            "bytes": 5247910,
+            "calls": 3019,
+            "self_bytes": 0,
+            "self_calls": 0
+          }
+        }
+      ],
+      "retained": [
+        {
+          "key": "atelier.sfc.template.vapor",
+          "count": 276,
+          "wall_ns": {
+            "max": 129394,
+            "min": 3497,
+            "p50": 8000,
+            "p95": 32000,
+            "p99": 128000,
+            "self": 2574313,
+            "total": 2904207
+          },
+          "alloc": {
+            "bytes": 4875456,
+            "calls": 14256,
+            "self_bytes": 4806636,
+            "self_calls": 13360
+          }
+        }
+      ]
+    },
+    "accepted_selected_bridge_spans": [
+      {
+        "key": "atelier.vapor.bridge.s1_to_s2",
+        "count": 276,
+        "wall_ns": {
+          "max": 40617,
+          "min": 631,
+          "p50": 1000,
+          "p95": 8000,
+          "p99": 32000,
+          "self": 703393,
+          "total": 791896
+        },
+        "alloc": {
+          "bytes": 664998,
+          "calls": 2690,
+          "self_bytes": 315963,
+          "self_calls": 1886
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.native_admission",
+        "count": 276,
+        "wall_ns": {
+          "max": 19507,
+          "min": 191,
+          "p50": 1000,
+          "p95": 4000,
+          "p99": 16000,
+          "self": 380396,
+          "total": 380396
+        },
+        "alloc": {
+          "bytes": 32240,
+          "calls": 35,
+          "self_bytes": 32240,
+          "self_calls": 35
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.s1_parse",
+        "count": 276,
+        "wall_ns": {
+          "max": 10930,
+          "min": 200,
+          "p50": 1000,
+          "p95": 2000,
+          "p99": 8000,
+          "self": 270729,
+          "total": 270729
+        },
+        "alloc": {
+          "bytes": 4550320,
+          "calls": 277,
+          "self_bytes": 4550320,
+          "self_calls": 277
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.ir_projection",
+        "count": 276,
+        "wall_ns": {
+          "max": 11522,
+          "min": 120,
+          "p50": 1000,
+          "p95": 2000,
+          "p99": 8000,
+          "self": 209886,
+          "total": 209886
+        },
+        "alloc": {
+          "bytes": 42148,
+          "calls": 509,
+          "self_bytes": 42148,
+          "self_calls": 509
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.s2_to_s3",
+        "count": 276,
+        "wall_ns": {
+          "max": 5049,
+          "min": 50,
+          "p50": 1000,
+          "p95": 1000,
+          "p99": 2000,
+          "self": 117412,
+          "total": 117412
+        },
+        "alloc": {
+          "bytes": 0,
+          "calls": 0,
+          "self_bytes": 0,
+          "self_calls": 0
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.markup_admission",
+        "count": 276,
+        "wall_ns": {
+          "max": 2415,
+          "min": 40,
+          "p50": 1000,
+          "p95": 1000,
+          "p99": 1000,
+          "self": 56104,
+          "total": 56104
+        },
+        "alloc": {
+          "bytes": 224,
+          "calls": 7,
+          "self_bytes": 224,
+          "self_calls": 7
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.generic_verify",
+        "count": 276,
+        "wall_ns": {
+          "max": 1754,
+          "min": 50,
+          "p50": 1000,
+          "p95": 1000,
+          "p99": 1000,
+          "self": 52062,
+          "total": 52062
+        },
+        "alloc": {
+          "bytes": 0,
+          "calls": 0,
+          "self_bytes": 0,
+          "self_calls": 0
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.retained_index",
+        "count": 276,
+        "wall_ns": {
+          "max": 1643,
+          "min": 20,
+          "p50": 1000,
+          "p95": 1000,
+          "p99": 1000,
+          "self": 39118,
+          "total": 39118
+        },
+        "alloc": {
+          "bytes": 0,
+          "calls": 0,
+          "self_bytes": 0,
+          "self_calls": 0
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.text_capture",
+        "count": 276,
+        "wall_ns": {
+          "max": 9508,
+          "min": 20,
+          "p50": 1000,
+          "p95": 1000,
+          "p99": 1000,
+          "self": 35663,
+          "total": 35663
+        },
+        "alloc": {
+          "bytes": 64,
+          "calls": 8,
+          "self_bytes": 64,
+          "self_calls": 8
+        }
+      },
+      {
+        "key": "atelier.vapor.bridge.template_carriers",
+        "count": 276,
+        "wall_ns": {
+          "max": 471,
+          "min": 20,
+          "p50": 1000,
+          "p95": 1000,
+          "p99": 1000,
+          "self": 9854,
+          "total": 9854
+        },
+        "alloc": {
+          "bytes": 64,
+          "calls": 2,
+          "self_bytes": 64,
+          "self_calls": 2
+        }
+      }
+    ],
+    "accepted_selected_provenance_counters": [
+      {
+        "key": "l1_to_l2.provenance.after_heap_capacity_bytes",
+        "max": 373,
+        "min": 0,
+        "samples": 276,
+        "total": 3245
+      },
+      {
+        "key": "l1_to_l2.provenance.after_heap_strings",
+        "max": 7,
+        "min": 0,
+        "samples": 276,
+        "total": 75
+      },
+      {
+        "key": "l1_to_l2.provenance.before_heap_capacity_bytes",
+        "max": 1157,
+        "min": 0,
+        "samples": 276,
+        "total": 14635
+      },
+      {
+        "key": "l1_to_l2.provenance.before_heap_strings",
+        "max": 23,
+        "min": 0,
+        "samples": 276,
+        "total": 331
+      },
+      {
+        "key": "l1_to_l2.provenance.record_bytes",
+        "max": 8448,
+        "min": 88,
+        "samples": 276,
+        "total": 165264
+      },
+      {
+        "key": "l1_to_l2.provenance.records",
+        "max": 96,
+        "min": 1,
+        "samples": 276,
+        "total": 1878
+      },
+      {
+        "key": "l1_to_l2.provenance.rule_heap_capacity_bytes",
+        "max": 0,
+        "min": 0,
+        "samples": 276,
+        "total": 0
+      },
+      {
+        "key": "l1_to_l2.provenance.rule_heap_strings",
+        "max": 0,
+        "min": 0,
+        "samples": 276,
+        "total": 0
+      },
+      {
+        "key": "l1_to_l2.provenance.vector_capacity_bytes",
+        "max": 11264,
+        "min": 352,
+        "samples": 276,
+        "total": 215776
+      }
+    ]
+  }
+}
