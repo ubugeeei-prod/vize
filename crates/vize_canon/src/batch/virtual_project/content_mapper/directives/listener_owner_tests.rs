@@ -1,10 +1,12 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+use std::ops::Range;
 use std::path::Path;
 
 use super::super::protocol::{ContentMapperDiagnosticDirective, DIRECTIVE_POLICY_IGNORE};
 use super::super::{ContentMapperTransform, generate_vue_content_mapper_transform};
+use crate::virtual_ts::VizeMapping;
 
 fn transform(source: &str) -> ContentMapperTransform {
     generate_vue_content_mapper_transform(Path::new("/project/App.vue"), source).unwrap()
@@ -39,6 +41,11 @@ fn mapped_positions(result: &ContentMapperTransform, original: usize) -> Vec<usi
         .collect()
 }
 
+fn range_of(source: &str, needle: &str) -> Range<usize> {
+    let start = source.find(needle).unwrap();
+    start..start + needle.len()
+}
+
 #[test]
 fn listener_detection_requires_the_mapping_own_attribute_boundary() {
     for (source, needle, expected) in [
@@ -63,7 +70,7 @@ fn listener_detection_requires_the_mapping_own_attribute_boundary() {
 }
 
 #[test]
-fn listener_literals_and_ordinary_props_choose_inverse_owners() {
+fn listener_literals_and_ordinary_props_choose_inverse_owners_when_both_checks_exist() {
     for newline in ["\n", "\r\n"] {
         for prefix in ["", "日本🧭"] {
             for event in [
@@ -75,37 +82,49 @@ fn listener_literals_and_ordinary_props_choose_inverse_owners() {
                 let source = format!(
                     "<script setup lang=\"ts\">import Child from './Child.vue'; const count = 'bad'; const handler = (event: MouseEvent) => event.button;</script>{newline}<template>{prefix}<Child :count=\"count\" {event} /></template>"
                 );
-                let result = transform(&source);
-                let rows = owner_rows(&result);
-                let generated = result.text.as_str();
-                let count_check = generated
-                    .find("const __vize_prop_check_0_count")
-                    .expect("ordinary per-prop check");
-                let count_literal = generated
-                    .find("\"count\": count")
-                    .expect("ordinary whole-props literal");
-                let listener_check = generated
-                    .find("const __vize_prop_check_0_onClick")
-                    .expect("listener per-prop check");
-                let listener_literals = generated
-                    .match_indices("\"onClick\": handler")
-                    .map(|(start, _)| start)
-                    .collect::<Vec<_>>();
+                let generated = "const __vize_prop_check_0_count = count;\n\"count\": count\nconst __vize_prop_check_0_onClick = handler;\n\"onClick\": handler";
+                let count_check = range_of(generated, "const __vize_prop_check_0_count");
+                let count_literal = range_of(generated, "\"count\": count");
+                let listener_check = range_of(generated, "const __vize_prop_check_0_onClick");
+                let listener_literal = range_of(generated, "\"onClick\": handler");
+                let count_source = {
+                    let start = source.rfind("count").unwrap();
+                    start..start + "count".len()
+                };
+                let listener_source = {
+                    let start = source.rfind("handler").unwrap();
+                    start..start + "handler".len()
+                };
+                let mappings = [
+                    VizeMapping::new(count_check.clone(), count_source.clone()),
+                    VizeMapping::new(count_literal.clone(), count_source),
+                    VizeMapping::new(listener_check.clone(), listener_source.clone()),
+                    VizeMapping::new(listener_literal.clone(), listener_source),
+                ];
+                let table =
+                    super::with_component_prop_echoes(None, &source, generated, &mappings, &[])
+                        .unwrap();
+                let rows = table.directives.as_slice();
 
-                assert!(covered(rows, count_check), "{event}: {rows:?}");
-                assert!(!covered(rows, count_literal), "{event}: {rows:?}");
-                assert!(!covered(rows, listener_check), "{event}: {rows:?}");
-                assert!(!listener_literals.is_empty(), "{generated}");
-                assert!(
-                    listener_literals
-                        .iter()
-                        .all(|position| covered(rows, *position)),
-                    "{event}: {rows:?}\n{generated}"
-                );
+                assert!(covered(rows, count_check.start), "{event}: {rows:?}");
+                assert!(!covered(rows, count_literal.start), "{event}: {rows:?}");
+                assert!(!covered(rows, listener_check.start), "{event}: {rows:?}");
+                assert!(covered(rows, listener_literal.start), "{event}: {rows:?}");
                 assert!(rows.iter().all(|row| row.0[4] == DIRECTIVE_POLICY_IGNORE));
             }
         }
     }
+}
+
+#[test]
+fn listener_without_a_precise_check_keeps_the_unknown_fallthrough_literal_active() {
+    let source = "<script setup lang=\"ts\">import Child from './Child.vue'; const handler = (event: string) => event.length;</script><template><Child @click=\"handler\" /></template>";
+    let result = transform(source);
+    let rows = owner_rows(&result);
+    let generated = result.text.as_str();
+    assert!(!generated.contains("const __vize_prop_check_0_onClick"));
+    let listener_literal = generated.find("\"onClick\": handler").unwrap();
+    assert!(!covered(rows, listener_literal), "{rows:?}\n{generated}");
 }
 
 #[test]
@@ -156,7 +175,6 @@ fn authored_directives_own_sibling_prop_and_listener_errors_without_synthetic_ov
         let targets = [
             "const __vize_prop_check_0_count",
             "\"count\": wrong",
-            "const __vize_prop_check_0_onClick",
             "\"onClick\": handler",
         ]
         .map(|needle| generated.find(needle).unwrap());

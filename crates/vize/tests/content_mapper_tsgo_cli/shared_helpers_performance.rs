@@ -1,4 +1,5 @@
 use super::*;
+use sha2::{Digest, Sha256};
 
 const COMPONENT_COUNT: usize = 160;
 const MIN_SAVED_INSTANTIATIONS_PER_COMPONENT: u64 = 200;
@@ -56,6 +57,63 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_shared_helpers_re
 }
 
 #[test]
+fn official_pattern_listener_control_matches_pinned_reporter_inputs() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json"
+    ))
+    .unwrap();
+    assert_eq!(fixture["typescript"], "7.1.0-dev.20261017.1");
+    assert_eq!(fixture["vue"], "3.5.43");
+    let control = fixture["controls"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["name"] == "pattern-injections-keep-listener-errors")
+        .unwrap();
+    assert_eq!(control["codes"], json!([2322]));
+    assert_eq!(control["status"], 2);
+
+    for (file, pinned, expected_sha256) in [
+        (
+            "tsconfig.json",
+            include_str!(
+                "../../../../tests/_fixtures/differential/typechecker/content-mapper-nuxt-emit-10195/tsconfig.json.txt"
+            ),
+            "bed6b6f5f33d8a7d30e8f6c3585d833486637812a78150f3a177ab2009ae5175",
+        ),
+        (
+            "src/augment.d.ts",
+            include_str!(
+                "../../../../tests/_fixtures/differential/typechecker/content-mapper-nuxt-emit-10195/src/augment.d.ts.txt"
+            ),
+            "72824330228b07923b47dea72f5762eebe50bfe8dd9fe09204e85dcf2cd8302d",
+        ),
+        (
+            "src/MyItem.vue",
+            include_str!(
+                "../../../../tests/_fixtures/differential/typechecker/content-mapper-nuxt-emit-10195/src/MyItem.vue.txt"
+            ),
+            "158ba53462766943952897e3a358d974ef10ae2f9b673b8cc48caeb44fa9e4de",
+        ),
+        (
+            "src/App.vue",
+            include_str!(
+                "../../../../tests/_fixtures/differential/typechecker/content-mapper-nuxt-emit-10195/src/App.invalid.vue.txt"
+            ),
+            "9dc4d658c634bd3ca1947857f0213117d2aa4e9b3c6f4125807e075859ac202d",
+        ),
+    ] {
+        let actual = control["files"][file].as_str().unwrap();
+        assert_eq!(actual, pinned, "official control drifted at {file}");
+        assert_eq!(
+            format!("{:x}", Sha256::digest(actual.as_bytes())),
+            expected_sha256,
+            "pinned digest drifted at {file}"
+        );
+    }
+}
+
+#[test]
 fn standard_tsgo_reports_each_component_prop_problem_once_with_pattern_injected_listeners() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping shared-helper listener receipt: {TSGO_ENV} is not set");
@@ -75,7 +133,11 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_pattern_injected_
         .tempdir_in(&cases_root)
         .unwrap();
     for shared_helpers in [false, true] {
-        for (declared_listener, owner) in [(false, "fallthrough"), (true, "emit")] {
+        for (owner, declared_listener, native_root, invalid_status) in [
+            ("fallthrough", false, true, 2),
+            ("emit", true, true, 2),
+            ("unknown", false, false, 0),
+        ] {
             for valid_listener in [false, true] {
                 let mode = if shared_helpers { "shared" } else { "embedded" };
                 let case = if valid_listener { "valid" } else { "invalid" };
@@ -84,12 +146,13 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_pattern_injected_
                     &project,
                     shared_helpers,
                     declared_listener,
+                    native_root,
                     valid_listener,
                 );
                 let output = check_project(&tsgo, &project, "tsconfig.json");
                 assert_eq!(output.stderr, b"", "{}", output_text(&output));
                 let stdout = std::str::from_utf8(&output.stdout).unwrap();
-                if valid_listener {
+                if valid_listener || invalid_status == 0 {
                     assert_eq!(output.status.code(), Some(0), "{}", output_text(&output));
                     assert_eq!(stdout, "");
                     continue;
@@ -198,6 +261,7 @@ fn prepare_pattern_listener_project(
     project: &Path,
     shared_helpers: bool,
     declared_listener: bool,
+    native_root: bool,
     valid_listener: bool,
 ) {
     prepare_mapper_project(project, shared_helpers);
@@ -222,9 +286,14 @@ declare module "vue" {
     } else {
         "change: []"
     };
+    let template = if native_root {
+        "\n<template>\n  <div class=\"my-item\"><slot></slot></div>\n</template>\n"
+    } else {
+        ""
+    };
     std::fs::write(
         source_root.join("MyItem.vue"),
-        cstr!("<script setup lang=\"ts\">\ndefineEmits<{{ {emits} }}>();\n</script>\n"),
+        cstr!("<script setup lang=\"ts\">\ndefineEmits<{{ {emits} }}>();\n</script>\n{template}"),
     )
     .unwrap();
     let (listener, body) = if valid_listener {
