@@ -113,20 +113,21 @@ pub(super) fn generate_component_event_types(
     };
     let has_script_component_binding =
         super::super::script_facts::binding_span(summary, component_name.as_str()).is_some();
-    let contract_key = (
-        component_type_name.clone(),
-        component_ref.clone(),
-        String::from(data.event_name.as_str()),
+    let contract_key = EventContractKey {
+        component_type_name: component_type_name.clone(),
+        component_ref: component_ref.clone(),
+        event_name: String::from(data.event_name.as_str()),
         legacy_vue2,
         fallthrough_listeners,
         native_fallthrough_only,
-        needs_typed_handler_assignment && has_script_component_binding,
-        enclosing_vif_guard.map(String::from),
-        scope.parent().map(|parent| parent.as_u32()),
+        needs_typed_handler_assignment: needs_typed_handler_assignment
+            && has_script_component_binding,
+        enclosing_vif_guard: enclosing_vif_guard.map(String::from),
+        parent_scope: scope.parent().map(|parent| parent.as_u32()),
         // Aliases of the first usage are declared inside its guarded block;
         // a later block with the same guard cannot see them.
-        super::open_chained_vif_guard_block(),
-    );
+        chained_guard_block: super::open_chained_vif_guard_block(),
+    };
     let (contract_scope_id, first_contract) = {
         let mut contracts = event_contracts.borrow_mut();
         if let Some(&contract_scope_id) = contracts.get(&contract_key) {
