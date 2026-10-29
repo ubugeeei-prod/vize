@@ -18,7 +18,7 @@ use vize_l0::Allocator;
 
 const CORPUS: &str = include_str!("vue_jsx_vapor_compat/fixtures/corpus.json");
 
-fn compile_case(id: &str, source: &str, mode: JsxOutputMode, function_name: &str) -> Value {
+fn compile_case(id: &str, source: &str, mode: JsxOutputMode) -> Value {
     let allocator = Allocator::new();
     let output = compile_jsx(
         &allocator,
@@ -33,7 +33,7 @@ fn compile_case(id: &str, source: &str, mode: JsxOutputMode, function_name: &str
     assert_eq!(output.components.len(), 1, "{id}: one authored component");
     json!({
         "code": output.module_code(),
-        "functionName": function_name,
+        "functionName": "App",
     })
 }
 
@@ -47,7 +47,7 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
         .map(|case| {
             let id = case["id"].as_str().expect("case id");
             let source = case["source"].as_str().expect("case source");
-            let vapor = compile_case(id, source, JsxOutputMode::Vapor, "render");
+            let vapor = compile_case(id, source, JsxOutputMode::Vapor);
             let mut record = json!({
                 "id": id,
                 "source": source,
@@ -55,12 +55,20 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
                 "functionName": vapor["functionName"],
             });
             if case["babelCorpusId"].is_string() {
-                record["vdom"] = compile_case(id, source, JsxOutputMode::Vdom, "App");
+                record["vdom"] = compile_case(id, source, JsxOutputMode::Vdom);
             }
             record
         })
         .collect::<Vec<_>>();
 
+    let payload = json!({ "corpus": corpus, "compiled": compiled });
+    if let Some(path) = std::env::var_os("VIZE_JSX_VAPOR_COMPAT_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec(&payload).expect("whole module packets"),
+        )
+        .expect("capture before runtime execution");
+    }
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut child = Command::new("node")
         .arg(root.join("tests/tooling/jsx-vapor-oracle/oracle.mjs"))
@@ -74,10 +82,7 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
         .stdin
         .take()
         .expect("oracle stdin")
-        .write_all(
-            &serde_json::to_vec(&json!({ "corpus": corpus, "compiled": compiled }))
-                .expect("complete oracle payload"),
-        )
+        .write_all(&serde_json::to_vec(&payload).expect("complete oracle payload"))
         .expect("send Vize output to the oracle");
     let output = child
         .wait_with_output()

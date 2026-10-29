@@ -22,7 +22,7 @@ mod config;
 mod format;
 #[cfg(feature = "napi")]
 mod inspector;
-#[cfg(feature = "napi")]
+#[cfg(any(test, feature = "napi"))]
 mod jsx;
 #[cfg(feature = "napi")]
 mod language_code;

@@ -1,4 +1,4 @@
-// The JSX loader lowers `App.jsx` to a vapor render module exporting `render`.
-import { render } from "./App.jsx";
+// Consume the authored component export through the JSX loader.
+import App from "./App.jsx";
 
-export default render;
+export default App;
