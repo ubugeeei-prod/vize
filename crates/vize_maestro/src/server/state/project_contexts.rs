@@ -309,13 +309,13 @@ impl ServerState {
         );
         // Rebuild only editor-owned sources belonging to this context. Later
         // didOpen/didChange notifications update the same owner directly.
-        for uri in state.documents.uris() {
+        for uri in state.documents.uris().iter() {
             if uri
                 .to_file_path()
-                .is_ok_and(|path| self.document_belongs_to_context(&uri, &path, key))
-                && let Some(source) = state.documents.text(&uri)
+                .is_ok_and(|path| self.document_belongs_to_context(uri, &path, key))
+                && let Some(source) = state.documents.text(uri)
             {
-                state.update_virtual_docs(&uri, &source);
+                state.update_virtual_docs(uri, &source);
             }
         }
         Arc::new(state)

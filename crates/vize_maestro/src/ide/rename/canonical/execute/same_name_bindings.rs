@@ -81,8 +81,8 @@ pub(super) fn rewrite_roles(
             } else {
                 document
                     .authored_source(uri)
-                    .map(str::to_owned)
-                    .or_else(|| ctx.state.documents.text(uri))
+                    .map(|source| std::sync::Arc::new(source.to_owned()))
+                    .or_else(|| ctx.state.documents.text_snapshot(uri))
             }?;
             let local = IdeContext::for_unopened(ctx.state, uri, 0, source.clone());
             Some((source, collect(&local)?))

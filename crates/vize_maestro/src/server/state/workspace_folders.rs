@@ -231,11 +231,12 @@ impl ServerState {
         let mut affected = self
             .documents
             .uris()
-            .into_iter()
+            .iter()
             .filter(|uri| {
                 uri.to_file_path()
                     .is_ok_and(|path| changed_roots.iter().any(|root| path.starts_with(root)))
             })
+            .cloned()
             .collect::<Vec<_>>();
         affected.sort_by(|a, b| a.as_str().cmp(b.as_str()));
         affected

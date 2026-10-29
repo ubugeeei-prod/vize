@@ -16,7 +16,7 @@ impl MaestroServer {
             return Ok(None);
         }
         let uri = &params.text_document.uri;
-        let Some(content) = self.state.documents.text(uri) else {
+        let Some(content) = self.state.documents.text_snapshot(uri) else {
             return Ok(None);
         };
         #[cfg(feature = "native")]
