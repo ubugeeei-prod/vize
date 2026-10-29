@@ -42,15 +42,7 @@ void test("ordinary source-built compiler rejects legacy-only Vue 1 rows without
     assert.equal(row.legacy.observation, null);
     assert.match(row.legacy.error, /requires source-build recipe .* --features legacy/);
   }
-  assert.equal(
-    report.summary.legacyMatches,
-    loaded.cases.length - vue1.length,
-    JSON.stringify(
-      report.rows.filter((row) => row.legacy.verdict === "baseline-drift"),
-      null,
-      2,
-    ),
-  );
+  assert.equal(report.summary.legacyMatches, loaded.cases.length - vue1.length);
   assert.equal(report.summary.legacyFailures, vue1.length);
   assert.equal(report.summary.baselineDrift, 0);
   assert(
