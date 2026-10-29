@@ -111,6 +111,9 @@ mod tests {
     fn missing_runtime_never_falls_back_to_a_bare_path_lookup() {
         let error = resolved_corsa_path(Err(CorsaResolveError::NotFound)).unwrap_err();
 
-        assert!(error.contains("No native TypeScript/tsgo executable found"));
+        assert_eq!(
+            error,
+            "No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable."
+        );
     }
 }
