@@ -176,6 +176,12 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。
 明示した値は `false` を含めて `preset` より優先されます。
 
+空要素を閉じるポリシーは、CLI でも
+`--self-close-void-elements[=false]` で直接上書きできます。明示した値は設定と
+選択したプリセットより優先されます。`true` は `<img />` のように HTML の空要素を
+閉じ、`false` は記述された開始タグを保ちます。空要素ではないタグと Vue
+コンポーネントは変更しません。
+
 スクリプトの引用符ポリシーも設定、CLI の直接上書き、Node で共有されます。
 `--jsx-single-quote[=false]` は `jsxSingleQuote`、
 `--quote-props <as-needed|consistent|preserve>` は `quoteProps` に対応します。

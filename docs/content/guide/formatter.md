@@ -174,6 +174,12 @@ The native Node `formatSfc` API accepts the five Prettier migration booleans
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
 Explicit values override `preset`, including `false`.
 
+Void-element closure is also available as the direct CLI override
+`--self-close-void-elements[=false]`. An explicit value applies after config
+and a selected preset. `true` closes HTML void elements such as `<img />`;
+`false` preserves their authored opening tag while leaving non-void and Vue
+components unchanged.
+
 Script quote policies are also shared across config, direct CLI overrides and
 Node: `--jsx-single-quote[=false]` maps to `jsxSingleQuote`, while
 `--quote-props <as-needed|consistent|preserve>` maps to `quoteProps`.
