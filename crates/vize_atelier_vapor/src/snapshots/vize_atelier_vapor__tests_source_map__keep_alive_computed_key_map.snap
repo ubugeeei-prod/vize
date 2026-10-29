@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: segments
+---
+[
+    "2:0 \"export f\" -> \"<KeepAli\"",
+    "3:47 \"MyComp\\\")\" -> \"MyComp /\"",
+    "4:64 \"_ctx.fil\" -> \"[filter]\" [filter]",
+    "4:79 \"_ctx.nam\" -> \"names\\\"><\" [names]",
+]
