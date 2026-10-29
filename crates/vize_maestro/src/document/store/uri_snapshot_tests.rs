@@ -5,6 +5,7 @@
 
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Barrier};
+use std::time::{Duration, Instant};
 
 use dashmap::try_result::TryResult;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
@@ -27,12 +28,19 @@ fn names(snapshot: &Arc<[Url]>) -> Vec<&str> {
     snapshot.iter().map(Url::as_str).collect()
 }
 
-fn wait_for_mutation(store: &DocumentStore, document: &Url, sources: usize) {
-    while store.mutations.load(Ordering::Acquire) < sources
-        || !store.uri_snapshots.mutation_is_locked(document)
-    {
+fn wait_until(message: &str, mut ready: impl FnMut() -> bool) {
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while !ready() {
+        assert!(Instant::now() < deadline, "{message}");
         std::thread::yield_now();
     }
+}
+
+fn wait_for_mutation(store: &DocumentStore, document: &Url, sources: usize) {
+    wait_until("writer never reached the expected mutation state", || {
+        store.mutations.load(Ordering::Acquire) >= sources
+            && store.uri_snapshots.mutation_is_locked(document)
+    });
 }
 
 fn independent_uri(store: &DocumentStore, guarded: &Url) -> Url {
@@ -202,9 +210,9 @@ fn overlapping_conflicting_writers_commit_in_uri_stripe_order() {
             String::from("vue"),
         );
     });
-    while store.mutations.load(Ordering::Acquire) < 2 {
-        std::thread::yield_now();
-    }
+    wait_until("second writer never reached the mutation state", || {
+        store.mutations.load(Ordering::Acquire) >= 2
+    });
     assert!(Arc::ptr_eq(&seeded, &store.uris()));
 
     drop(document_guard);
